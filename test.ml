@@ -68,12 +68,28 @@ let rec reverso a b =
     )
   )
 
+let rec reverso' a b =
+  fresh (fun h ->
+    fresh (fun t ->
+      disj
+        (conj (a === []) (b === []))
+        (conj (a === h::t)
+              (fresh (fun a' -> 
+                 conj (reverso' t a')
+                      (appendo a' [h] b)
+              ))                 
+        )
+    )
+  )
+
 let int_list e = show_list e show_int
 
 let _ = 
   run "appendo"  int_list 1  (fun q st -> appendo q [3; 4] [1; 2; 3; 4] st);
+  run "appendo"  int_list 1  (fun q st -> appendo [1; 2] q [1; 2; 3; 4] st);
+  run "appendo"  int_list 1  (fun q st -> appendo [1; 2] [3; 4] q st);
   run "reverso"  int_list 1  (fun q st -> reverso q [1; 2; 3; 4] st);
-  run "reverso"  int_list 1  (fun q st -> reverso [1; 2; 3; 4] q st); 
+  run "reverso'" int_list 1  (fun q st -> reverso' [1; 2; 3; 4] q st); 
   run "just_a"   show_int 1  (fun q st -> just_a q st);
   run "a_and_b"  show_int 1  (fun q st -> a_and_b q st);
   run "a_and_b'" show_int 2  (fun q st -> a_and_b' q st);
