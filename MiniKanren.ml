@@ -1,7 +1,7 @@
 let (!!) = Obj.magic
 
-type t = Var of int
-type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid
+type var = Var of int
+type w   = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
 let rec wrap (x : Obj.t) = 
   Obj.(
@@ -26,8 +26,22 @@ let rec wrap (x : Obj.t) =
       then 
 	let f = if t = double_array_tag then !! double_field else field in
 	Boxed (t, size x, f x)
-      else Invalid
+      else Invalid t
   )
+
+let generic_show (x : Obj.t) =
+  let b = Buffer.create 1024 in
+  let rec inner o =
+    match wrap o with
+    | Invalid n         -> Buffer.add_string b (Printf.sprintf "<invalid %d>; " n)
+    | Unboxed n         -> Buffer.add_string b (Printf.sprintf "int<%d>; " (!!n))
+    | Boxed   (t, l, f) -> 
+        Buffer.add_string b (Printf.sprintf "boxed %d <" t);
+        for i = 0 to l - 1 do inner (f i) done;
+        Buffer.add_string b ">; "
+  in
+  inner x;
+  Buffer.contents b
 
 module Env :
   sig
@@ -36,12 +50,13 @@ module Env :
     val empty  : unit -> t
     val fresh  : t -> 'a * t
     val var    : t -> 'a -> int option
-    val vars   : t -> 'a list
+    val vars   : t -> var list
+    val show   : t -> string
   end =
   struct
     module H = Hashtbl.Make (
       struct 
-        type t = Obj.t 
+        type t = var
         let hash = Hashtbl.hash 
         let equal = (==) 
       end)
@@ -51,16 +66,19 @@ module Env :
     let empty () = (H.create 1024, 0)
 
     let fresh (h, current) = 
-      let v = !! (Var current) in
+      let v = Var current in
       H.add h v (); 
-      (v, (h, current+1))
+      (!!v, (h, current+1))
 
     let var (h, _) x = 
       if H.mem h (!! x) 
       then let Var i = !! x in Some i
       else None
 
-    let vars (h, _) = H.fold (fun v _ acc -> !! v :: acc) h []
+    let vars (h, _) = H.fold (fun v _ acc -> v :: acc) h []
+
+    let show env = (List.fold_left (fun acc (Var i) -> acc ^ (Printf.sprintf "$%d; " i)) "env {" (vars env)) ^ "}"
+
   end
 
 module Subst :
@@ -71,11 +89,14 @@ module Subst :
     val walk  : Env.t -> 'a -> t -> 'a    
     val walk' : Env.t -> 'a -> t -> 'a
     val unify : Env.t -> 'a -> 'a -> t option -> t option    
+    val show  : t -> string
   end =
   struct
     module M = Map.Make (struct type t = int let compare = Pervasives.compare end)
 
     type t = Obj.t M.t
+
+    let show m = (M.fold (fun i x s -> s ^ Printf.sprintf "%d -> %s; " i (generic_show x)) m "subst {") ^ "}"
 
     let empty = M.empty
 
@@ -100,7 +121,7 @@ module Subst :
                  sf (Obj.repr var) i (!!(walk' env (!!(f i)) subst))
                done;
 	       var
-	   | Invalid -> invalid_arg "Invalid value for reconstruction (object/function/lazy)"
+	   | Invalid n -> invalid_arg (Printf.sprintf "Invalid value for reconstruction (%d)" n)
           )      
 
       | Some i -> 
@@ -132,7 +153,7 @@ module Subst :
                   in
 		  inner 0 s
                 else None
-	     | Invalid, _ | _, Invalid -> invalid_arg "Invalid values for unification (object/function/lazy)"
+	     | Invalid n, _ | _, Invalid n -> invalid_arg (Printf.sprintf "Invalid values for unification (%d)" n)
 	     | _ -> None
 	    )
   end
@@ -140,11 +161,13 @@ module Subst :
 type state = Env.t * Subst.t
 type lunit = state -> state Stream.t
 
+let show_st (env, subst) = Printf.sprintf "st {%s, %s}\n" (Env.show env) (Subst.show subst)
+  
 let print_if_var e x k =
   match Env.var e x with
   | Some i -> Printf.sprintf "_.%d" i
   | None   -> k ()
-
+  
 type    int    = GT.int
 type    string = GT.string
 type 'a list   = 'a GT.list
@@ -170,30 +193,33 @@ class ['a] minikanren_list_t =
 
 let minikanren t = t.GT.plugins#minikanren
 
-let show_list   e fa l = GT.transform(GT.list) fa (new minikanren_list_t) e l
-let show_int    e i    = GT.transform(GT.int)    (new minikanren_int_t) e i
-let show_string e s    = GT.transform(GT.string) (new minikanren_string_t) e s
+let show_list   e fa l = GT.transform(GT.list) fa (new minikanren_list_t  ) e l
+let show_int    e i    = GT.transform(GT.int)     (new minikanren_int_t   ) e i
+let show_string e s    = GT.transform(GT.string)  (new minikanren_string_t) e s
 
 let fresh f (env, subst) =
   let x, env' = Env.fresh env in
   f x (env', subst)
 
 let (===) x y (env, subst) =
+  Printf.printf "unify %s %s in %s = " (generic_show !!x) (generic_show !!y) (show_st (env, subst)); flush stdout;
   match Subst.unify env x y (Some subst) with
-  | None   -> Stream.nil
-  | Some s -> Stream.cons (env, s) Stream.nil
+  | None   -> Printf.printf "none\n"; flush stdout; Stream.nil
+  | Some s -> Printf.printf "%s" (show_st (env, s)); flush stdout; Stream.cons (env, s) Stream.nil
   
 let conj f g st = 
+  Printf.printf "conj %s\n" (show_st st); flush stdout;
   Stream.foldl Stream.concat Stream.nil (Stream.map g (f st))
 
 let disj f g st =
+  Printf.printf "disj %s\n" (show_st st); flush stdout;
   let rec interleave fs gs =
     Stream.from_fun (
       fun () ->
 	match Stream.destruct fs with
 	| `Nil -> gs
-	| `Cons (hd, tl) -> Stream.cons hd (interleave gs tl)      
-   )
+	| `Cons (hd, tl) -> Stream.cons hd (interleave gs tl)
+    )
   in 
   interleave (f st) (g st)
   

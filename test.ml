@@ -4,13 +4,14 @@ open MiniKanren
 @type t = A of int | B of string | C of t * t with show, minikanren
 
 let run memo printer n goal =
-  let q, e   = Env.fresh (Env.empty ()) in
-  let st     = e, Subst.empty in 
-  let result = Stream.take n (goal q st) in
+  let q, e   = Env.fresh (Env.empty ())  in
+  let r, e   = Env.fresh e               in
+  let st     = e, Subst.empty            in 
+  let result = Stream.take n (goal q r st) in
   Printf.printf "%s {\n" memo;
   List.iter 
     (fun (env, subst) ->
-        Printf.printf "%s\n" (printer env (Subst.walk' env q subst))
+        Printf.printf "%s, %s\n" (printer env (Subst.walk' env q subst)) (printer env (Subst.walk' env r subst))
     )
     result;
   Printf.printf "}\n";
@@ -39,8 +40,12 @@ let a_and_b' b =
 let rec fives x =
   disj (x === 5)
        (fun st -> Stream.from_fun (fun () -> fives x st))
+
+let int_list e = show_list e show_int
        
-let rec appendo a b ab =
+let rec appendo a b ab ((env, subst) as st) =
+  Printf.printf "appendo: %s %s %s\n" (generic_show !!a) (generic_show !!b) (generic_show !!ab); flush stdout;
+(*  Printf.printf "appendo: %s, %s, %s\n" "" "" "" (*(int_list env a) (int_list env b) (int_list env ab)*); flush stdout; *)
   fresh (fun h ->
     fresh (fun t ->
       disj 
@@ -52,9 +57,14 @@ let rec appendo a b ab =
            ))
         )
     )
-  )
+  ) st
 
-let rec reverso a b =
+let rec reverso a b ((env, subst) as st) =    
+  Printf.printf "reverso: %s %s\n" (generic_show !!a) (generic_show !!b); flush stdout;
+(*
+  Printf.printf "reverso: %s, " (generic_show !!b); flush stdout; 
+  Printf.printf "%s\n" (int_list env b); flush stdout;
+*)
   fresh (fun h ->
     fresh (fun t ->
       disj
@@ -66,31 +76,16 @@ let rec reverso a b =
               ))                 
         )
     )
-  )
-
-let rec reverso' a b =
-  fresh (fun h ->
-    fresh (fun t ->
-      disj
-        (conj (a === []) (b === []))
-        (conj (a === h::t)
-              (fresh (fun a' -> 
-                 conj (reverso' t a')
-                      (appendo a' [h] b)
-              ))                 
-        )
-    )
-  )
-
-let int_list e = show_list e show_int
+  ) st
 
 let _ = 
+(*
   run "appendo"  int_list 1  (fun q st -> appendo q [3; 4] [1; 2; 3; 4] st);
-  run "appendo"  int_list 1  (fun q st -> appendo [1; 2] q [1; 2; 3; 4] st);
-  run "appendo"  int_list 1  (fun q st -> appendo [1; 2] [3; 4] q st);
-  run "reverso"  int_list 1  (fun q st -> reverso q [1; 2; 3; 4] st);
-  run "reverso'" int_list 1  (fun q st -> reverso' [1; 2; 3; 4] q st); 
+*)
+  run "appendo" int_list 1 (fun q r st -> appendo q [] r st)
+(*  run "reverso"  int_list 1  (fun q st -> reverso [1] q st)*)(*;
+  run "reverso"  int_list 1  (fun q st -> reverso [1; 2; 3; 4] q st); 
   run "just_a"   show_int 1  (fun q st -> just_a q st);
   run "a_and_b"  show_int 1  (fun q st -> a_and_b q st);
   run "a_and_b'" show_int 2  (fun q st -> a_and_b' q st);
-  run "fives"    show_int 10 (fun q st -> fives q st)
+  run "fives"    show_int 10 (fun q st -> fives q st)*)
