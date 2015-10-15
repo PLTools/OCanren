@@ -88,8 +88,8 @@ let rec reverso a b ((env, subst) as st) =
 
 let _ =
   (* run "appendo" int_list 1 (fun q st -> appendo q [3; 4] [1; 2; 3; 4] st); *)
-  run1 "appendo" int_list (fun q r st -> appendo q [] r st);
-  run2 "appendo" int_list (fun q r st -> appendo q [] r st);
+  run1 "appendo q [] r" int_list (fun q r st -> appendo q [] r st);
+  run2 "appendo q [] r" int_list (fun q r st -> appendo q [] r st);
 (*  run "reverso"  int_list 1  (fun q st -> reverso [1] q st)*)(*;
   run "reverso"  int_list 1  (fun q st -> reverso [1; 2; 3; 4] q st);
   run "just_a"   show_int 1  (fun q st -> just_a q st);

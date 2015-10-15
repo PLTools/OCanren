@@ -236,4 +236,6 @@ let disj f g st =
 	| `Cons (hd, tl) -> Stream.cons hd (interleave gs tl)
     )
   in
-  interleave (f st) (g st)
+  interleave
+    (let () = logn "calling f" in f st)
+    (Stream.from_fun (fun () -> let () = logn "calling g" in g st) )
