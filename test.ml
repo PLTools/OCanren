@@ -4,7 +4,7 @@ open Printf
 
 @type t = A of int | B of string | C of t * t with show, minikanren
 
-let run memo printer n goal =
+let run_2var memo printer n goal =
   let q, e   = Env.fresh (Env.empty ())  in
   let r, e   = Env.fresh e               in
   let st     = e, Subst.empty            in
@@ -17,8 +17,21 @@ let run memo printer n goal =
     result;
   Printf.printf "}\n%!"
 
-let run1 memo printer = run memo printer 1
-let run2 memo printer = run memo printer 2
+(* copy and pase
+   Maybe we should implement more polymorphic runner like Oleg Kiselev
+*)
+let run_1var memo printer n goal =
+  let q, e   = Env.fresh (Env.empty ())  in
+  let st     = e, Subst.empty            in
+  let result = Stream.take n (goal q st) in
+  Printf.printf "%s {\n" memo;
+  List.iter
+    (fun (env, subst) ->
+        Printf.printf "%s \n" (printer env (Subst.walk' env q subst))
+    )
+    result;
+  Printf.printf "}\n%!"
+
 
 let just_a a = a === 5
 
@@ -86,11 +99,18 @@ let rec reverso a b ((env, subst) as st) =
     )
   ) st
 
+
+
 let _ =
   (* run "appendo" int_list 1 (fun q st -> appendo q [3; 4] [1; 2; 3; 4] st); *)
-  run1 "appendo q [] r" int_list (fun q r st -> appendo q [] r st);
-  run2 "appendo q [] r" int_list (fun q r st -> appendo q [] r st);
-(*  run "reverso"  int_list 1  (fun q st -> reverso [1] q st)*)(*;
+  run_2var "appendo q [] r" int_list 1 (fun q r st -> appendo q [] r st);
+  run_2var "appendo q [] r" int_list 1 (fun q r st -> appendo q [] r st);
+  run_1var "reverso q [1] max 1 result" int_list 1 (fun q st -> reverso q [1] st);
+  (* run_1 "reverso [1] 1 max 1 result" int_list 1 (fun q st -> reverso [1] q st); *)
+
+  run_1var "reverso q [1] max 2 results" int_list 1 (fun q st -> reverso q [1] st);
+  (* run_1 "reverso [1] 1 max 2 results" int_list 1 (fun q st -> reverso [1] q st); *)
+  (*
   run "reverso"  int_list 1  (fun q st -> reverso [1; 2; 3; 4] q st);
   run "just_a"   show_int 1  (fun q st -> just_a q st);
   run "a_and_b"  show_int 1  (fun q st -> a_and_b q st);
