@@ -1,44 +1,56 @@
 let (!!) = Obj.magic
+open Printf
 
 type var = Var of int
 type w   = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
-let rec wrap (x : Obj.t) = 
+let do_log = false
+
+let logn fmt =
+  if do_log then kprintf (printf "%s\n%!") fmt
+  else  kprintf (fun fmt -> ignore (sprintf "%s" fmt)) fmt
+
+let logf fmt =
+  if do_log then kprintf (printf "%s%!") fmt
+  else  kprintf (fun fmt -> ignore (sprintf "%s" fmt)) fmt
+
+let rec wrap (x : Obj.t) =
   Obj.(
-    let is_valid_tag = 
-      List.fold_left 
+    let is_valid_tag =
+      List.fold_left
       (fun f t tag -> tag <> t && f tag)
       (fun _ -> true)
-      [lazy_tag   ; closure_tag  ; object_tag  ; infix_tag ; 
-       forward_tag; no_scan_tag  ; abstract_tag; custom_tag; 
-       final_tag  ; unaligned_tag; out_of_heap_tag 
+      [lazy_tag   ; closure_tag  ; object_tag  ; infix_tag ;
+       forward_tag; no_scan_tag  ; abstract_tag; custom_tag;
+       final_tag  ; unaligned_tag; out_of_heap_tag
       ]
-    in      
-    let is_unboxed obj = 
-      is_int obj || 
+    in
+    let is_unboxed obj =
+      is_int obj ||
       (fun t -> t = string_tag || t = double_tag) (tag obj)
     in
-    if is_unboxed x 
+    if is_unboxed x
     then Unboxed x
-    else 
+    else
       let t = tag x in
       if is_valid_tag t
-      then 
+      then
 	let f = if t = double_array_tag then !! double_field else field in
 	Boxed (t, size x, f x)
       else Invalid t
-  )
+    )
 
 let generic_show (x : Obj.t) =
   let b = Buffer.create 1024 in
   let rec inner o =
     match wrap o with
-    | Invalid n         -> Buffer.add_string b (Printf.sprintf "<invalid %d>; " n)
-    | Unboxed n         -> Buffer.add_string b (Printf.sprintf "int<%d>; " (!!n))
-    | Boxed   (t, l, f) -> 
+    | Invalid n             -> Buffer.add_string b (Printf.sprintf "<invalid %d>" n)
+    | Unboxed n when !!n=0  -> Buffer.add_string b "[]"
+    | Unboxed n             -> Buffer.add_string b (Printf.sprintf "int<%d>" (!!n))
+    | Boxed   (t, l, f) ->
         Buffer.add_string b (Printf.sprintf "boxed %d <" t);
-        for i = 0 to l - 1 do inner (f i) done;
-        Buffer.add_string b ">; "
+        for i = 0 to l - 1 do (inner (f i); if i<l-1 then Buffer.add_string b " ") done;
+        Buffer.add_string b ">"
   in
   inner x;
   Buffer.contents b
@@ -55,23 +67,25 @@ module Env :
   end =
   struct
     module H = Hashtbl.Make (
-      struct 
+      struct
         type t = var
-        let hash = Hashtbl.hash 
-        let equal = (==) 
+        let hash = Hashtbl.hash
+        let equal = (==)
       end)
 
     type t = unit H.t * int
 
-    let empty () = (H.create 1024, 0)
+    let counter_start = 1 (* 1 to be able to detect empty list *)
+    let empty () = (H.create 1024, counter_start)
 
-    let fresh (h, current) = 
+    let fresh (h, current) =
+      logn "fresh var %d\n%!" current;
       let v = Var current in
-      H.add h v (); 
+      H.add h v ();
       (!!v, (h, current+1))
 
-    let var (h, _) x = 
-      if H.mem h (!! x) 
+    let var (h, _) x =
+      if H.mem h (!! x)
       then let Var i = !! x in Some i
       else None
 
@@ -86,9 +100,9 @@ module Subst :
     type t
 
     val empty : t
-    val walk  : Env.t -> 'a -> t -> 'a    
+    val walk  : Env.t -> 'a -> t -> 'a
     val walk' : Env.t -> 'a -> t -> 'a
-    val unify : Env.t -> 'a -> 'a -> t option -> t option    
+    val unify : Env.t -> 'a -> 'a -> t option -> t option
     val show  : t -> string
   end =
   struct
@@ -106,25 +120,26 @@ module Subst :
       | Some i ->
           try walk env (M.find i (!! subst)) subst with Not_found -> var
 
-    let rec walk' env var subst =      
+    let rec walk' env var subst =
+
       match Env.var env var with
-      | None -> 
+      | None ->
 	  (match wrap (Obj.repr var) with
 	   | Unboxed _ -> var
-	   | Boxed (t, s, f) -> 
-               let sf = 
-		 if t = Obj.double_array_tag 
-		 then !! Obj.set_double_field 
-		 else Obj.set_field 
-	       in 
+	   | Boxed (t, s, f) ->
+               let sf =
+		 if t = Obj.double_array_tag
+		 then !! Obj.set_double_field
+		 else Obj.set_field
+	       in
 	       for i = 0 to s - 1 do
                  sf (Obj.repr var) i (!!(walk' env (!!(f i)) subst))
                done;
 	       var
 	   | Invalid n -> invalid_arg (Printf.sprintf "Invalid value for reconstruction (%d)" n)
-          )      
+          )
 
-      | Some i -> 
+      | Some i ->
 	  (try walk' env (M.find i (!! subst)) subst
 	   with Not_found -> var
 	  )
@@ -137,17 +152,17 @@ module Subst :
 	| Some xi, Some yi -> if xi = yi then s else Some (!! (M.add xi y (!! subst)))
 	| Some xi, _       -> Some (!! (M.add xi y (!! subst)))
 	| _      , Some yi -> Some (!! (M.add yi x (!! subst)))
-	| _ -> 
+	| _ ->
 	    let wx, wy = wrap (Obj.repr x), wrap (Obj.repr y) in
             (match wx, wy with
              | Unboxed vx, Unboxed vy -> if vx = vy then s else None
              | Boxed (tx, sx, fx), Boxed (ty, sy, fy) ->
-                if tx = ty && sx = sy 
-		then 
+                if tx = ty && sx = sy
+		then
 		  let rec inner i = function
                   | None -> None
                   | (Some _) as s ->
-	               if i < sx 
+	               if i < sx
 		       then inner (i+1) (unify env (!!(fx i)) (!!(fy i)) s)
 		       else s
                   in
@@ -161,20 +176,20 @@ module Subst :
 type state = Env.t * Subst.t
 type lunit = state -> state Stream.t
 
-let show_st (env, subst) = Printf.sprintf "st {%s, %s}\n" (Env.show env) (Subst.show subst)
-  
+let show_st (env, subst) = sprintf "st {%s, %s}" (Env.show env) (Subst.show subst)
+
 let print_if_var e x k =
   match Env.var e x with
-  | Some i -> Printf.sprintf "_.%d" i
+  | Some i -> sprintf "_.%d" i
   | None   -> k ()
-  
+
 type    int    = GT.int
 type    string = GT.string
 type 'a list   = 'a GT.list
 
 class minikanren_string_t =
   object
-    method t_string env str = print_if_var env str (fun _ -> str) 
+    method t_string env str = print_if_var env str (fun _ -> str)
   end
 
 class minikanren_int_t =
@@ -186,7 +201,7 @@ class ['a] minikanren_list_t =
   object
     inherit ['a, Env.t, string, Env.t, string] @GT.list
     method c_Nil  e s      = print_if_var e s.GT.x (fun _ -> "[]")
-    method c_Cons e s x xs = 
+    method c_Cons e s x xs =
       print_if_var e x.GT.x  (fun _ -> x.GT.fx e) ^ ", " ^
       print_if_var e xs.GT.x (fun _ -> xs.GT.fx e)
   end
@@ -202,17 +217,17 @@ let fresh f (env, subst) =
   f x (env', subst)
 
 let (===) x y (env, subst) =
-  Printf.printf "unify %s %s in %s = " (generic_show !!x) (generic_show !!y) (show_st (env, subst)); flush stdout;
+  logf "unify '%s' and '%s' in '%s' = " (generic_show !!x) (generic_show !!y) (show_st (env, subst));
   match Subst.unify env x y (Some subst) with
-  | None   -> Printf.printf "none\n"; flush stdout; Stream.nil
-  | Some s -> Printf.printf "%s" (show_st (env, s)); flush stdout; Stream.cons (env, s) Stream.nil
-  
-let conj f g st = 
-  Printf.printf "conj %s\n" (show_st st); flush stdout;
+  | None   -> logn "none"; Stream.nil
+  | Some s -> logn "'%s'" (show_st (env, s)); Stream.cons (env, s) Stream.nil
+
+let conj f g st =
+  logn "conj %s\n%!" (show_st st);
   Stream.foldl Stream.concat Stream.nil (Stream.map g (f st))
 
 let disj f g st =
-  Printf.printf "disj %s\n" (show_st st); flush stdout;
+  logn "disj %s" (show_st st);
   let rec interleave fs gs =
     Stream.from_fun (
       fun () ->
@@ -220,7 +235,5 @@ let disj f g st =
 	| `Nil -> gs
 	| `Cons (hd, tl) -> Stream.cons hd (interleave gs tl)
     )
-  in 
+  in
   interleave (f st) (g st)
-  
-  
