@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -x
+
 ocamlc -c -pp "camlp5o " -I `ocamlfind -query GT` -I `camlp5o -where` GT.cma minikanren.ml
 ocamlc -rectypes -c Stream.ml
 ocamlc -rectypes -c -pp "camlp5o pa_gt.cmo -L `camlp5o -where` -L ." -I `ocamlfind -query typeutil` -I `ocamlfind -query GT` MiniKanren.ml
