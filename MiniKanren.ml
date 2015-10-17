@@ -4,7 +4,7 @@ open Printf
 type var = Var of int
 type w   = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
-let do_log = true
+let do_log = false
 
 let logn fmt =
   if do_log then kprintf (printf "%s\n%!") fmt
@@ -83,7 +83,7 @@ module Env :
 
     let fresh (h, current) =
       logn "fresh var %d" current;
-      let _ : string = read_line () in
+      (* let _ : string = read_line () in *)
       let v = Var current in
       H.add h v ();
       (!!v, (h, current+1))
@@ -227,7 +227,8 @@ let (===) x y (env, subst) =
 
 let conj f g st =
   logn "conj %s" (show_st st);
-  Stream.from_fun (fun () -> Stream.foldl Stream.concat Stream.nil (Stream.map g (f st)) )
+  Stream.from_fun (fun () -> Stream.concat_map g (f st))
+
 
 let disj f g st =
   logn "disj %s" (show_st st);

@@ -65,7 +65,7 @@ let rec appendo a b ab ((env, subst) as st) =
   (* logn "show [5] = '%s'" (generic_show !![5]); *)
 
   logn "appendo %s, %s, %s" (generic_show !!a) (generic_show !!b) (generic_show !!ab);
-  let _ : string = read_line () in
+  (* let _ : string = read_line () in *)
 
   disj
     (conj (a === []) (b === ab) )
@@ -82,7 +82,7 @@ let rec appendo a b ab ((env, subst) as st) =
 
 let rec reverso a b ((env, subst) as st) =
   logn "reverso: %s %s" (generic_show !!a) (generic_show !!b);
-  let _ : string = read_line () in
+  (* let _ : string = read_line () in *)
 
   disj
     (conj (a === []) (b === []))
@@ -135,8 +135,11 @@ let _ =
   (* run_1var "reverso [1] q max 1 result" int_list 1 (fun q st -> reverso [1] q st); *)
 
   (* run_1var "rev_test1 max 1 result" int_list 1 (fun q st -> rev_test1 q q st); *)
-  run_1var "reverso q q max 1 result" int_list 1 (fun q st -> reverso q q st);
-  run_1var "reverso q q max 2 result" int_list 2 (fun q st -> reverso q q st);
+
+  run_1var "reverso q q max 1  result" int_list 1  (fun q st -> reverso q q st);
+  run_1var "reverso q q max 2  result" int_list 2  (fun q st -> reverso q q st);
+  run_1var "reverso q q max 3  result" int_list 3  (fun q st -> reverso q q st);
+  run_1var "reverso q q max 10 result" int_list 10 (fun q st -> reverso q q st);
 
   (* run_1var "reverso q [1] max 2 results" int_list 1 (fun q st -> reverso q [1] st); *)
   (* run_1 "reverso [1] 1 max 2 results" int_list 1 (fun q st -> reverso [1] q st); *)

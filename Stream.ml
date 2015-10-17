@@ -22,15 +22,13 @@ let destruct (s: 'a t) =
   try `Cons (Lazy.force s) with End_of_stream -> `Nil
 
 let rec concat s1 s2 =
-  from_fun (
-    fun () ->
+  from_fun (fun () ->
       match destruct s1 with
       | `Nil -> s2
       | `Cons (h, t) -> cons h (concat t s2)
   )
 
 let rec foldl f acc s =
-  printf "Stream.foldl\n%!";
   match destruct s with
   | `Nil -> acc
   | `Cons (x, xs) -> foldl f (f acc x) xs
@@ -48,7 +46,7 @@ let take n s =
     if i = 0
     then []
     else
-      let () = printf "requesting element on pos %d\n%!" (n-i) in
+      (* let () = printf "requesting element on pos %d\n%!" (n-i) in *)
       match destruct s with
       | `Nil -> []
       | `Cons (x, xs) -> x :: inner (i-1) xs
@@ -57,36 +55,34 @@ let take n s =
 
 let take_all s = take (-1) s
 
+let concat_map : ('a -> 'b t) -> 'b t -> 'a t = fun f xs ->
+  let rec helper ms xs =
+    match destruct ms with
+    | `Nil -> go_next xs
+    | `Cons (x, tl) -> cons x (concat tl (go_next xs))
+  and go_next xs =
+    match destruct xs with
+    | `Nil -> nil
+    | `Cons (h, tl) -> from_fun (fun () -> helper (f h) tl)
+  in
+  match destruct xs with
+  | `Nil -> nil
+  | `Cons (h, tl) -> from_fun (fun () -> helper (f h) tl)
 
-(*
-#
-let r =
-  let a = from_fun (fun () -> print_endline "eval 1"; cons 1 nil) in
-  let b = from_fun (fun () -> print_endline "eval 100"; cons 100 nil) in
-  concat a b
-;;
+let () =
+  let r =
+    let a = from_fun (fun () -> (* print_endline "eval 1"; *) cons 1 nil) in
+    let b = from_fun (fun () -> (* print_endline "eval 100";  *)cons 100 nil) in
+    concat a b
+  in
 
-val r : int t = <lazy>
-let f x =
-  let a = from_fun (fun () -> let n = x+2 in printf "eval %d\n%!" n; cons n nil) in
-  let b = from_fun (fun () -> let n = x*2 in printf "eval %d\n%!" n; cons n nil) in
-  concat a b
-;;
+  let f x =
+    let a = from_fun (fun () -> let n = x+2 in (* printf "eval %d\n%!" n; *) cons n nil) in
+    let b = from_fun (fun () -> let n = x*2 in (* printf "eval %d\n%!" n; *) cons n nil) in
+    concat a b
+  in
 
-val f : int -> int t = <fun>
-#
-let ans  = from_fun (fun () -> foldl concat nil (map f r));;
+  let ans  = from_fun (fun () -> concat_map f r) in
 
-val ans : int t = <lazy>
-#   take 1 ans;;
-requesting element on pos 0
-Stream.foldl
-eval 1
-Stream.foldl
-eval 100
-Stream.foldl
-eval 3
-- : int list = [3]
-#
-
-*)
+  let () = assert (take 4 ans = [3;2;102;200]) in
+  ()

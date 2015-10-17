@@ -11,7 +11,6 @@ BINDIR=$(shell opam config var bin)
 all: minikanren.cmo $(CMOS) $(TEST_OUT)
 
 test.cmo: CAMLP5PP += -L `camlp5 -where` -L .
-test.cmo: MiniKanren.cmo
 
 .ml.cmo:
 	$(OCAMLC) -c $<
@@ -30,3 +29,7 @@ install: $(TEST_OUT)
 
 uninstall:
 	$(RM) $(BINDIR)/minikanren_test
+
+# depends
+test.cmo: MiniKanren.cmo Stream.cmo
+MiniKanren.cmo: Stream.cmo
