@@ -4,7 +4,7 @@ open Printf
 type var = Var of int
 type w   = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
-let do_log = false
+let do_log = true
 
 let logn fmt =
   if do_log then kprintf (printf "%s\n%!") fmt
@@ -47,6 +47,9 @@ let generic_show (x : Obj.t) =
     | Invalid n             -> Buffer.add_string b (Printf.sprintf "<invalid %d>" n)
     | Unboxed n when !!n=0  -> Buffer.add_string b "[]"
     | Unboxed n             -> Buffer.add_string b (Printf.sprintf "int<%d>" (!!n))
+    | Boxed (t,l,f) when t=0 && l=1 && (match wrap (f 0) with Unboxed i when !!i >=10 -> true | _ -> false) ->
+       bprintf b "var%d" (match wrap (f 0) with Unboxed i -> !!i | _ -> failwith "shit")
+
     | Boxed   (t, l, f) ->
         Buffer.add_string b (Printf.sprintf "boxed %d <" t);
         for i = 0 to l - 1 do (inner (f i); if i<l-1 then Buffer.add_string b " ") done;
@@ -75,11 +78,12 @@ module Env :
 
     type t = unit H.t * int
 
-    let counter_start = 1 (* 1 to be able to detect empty list *)
+    let counter_start = 10 (* 1 to be able to detect empty list *)
     let empty () = (H.create 1024, counter_start)
 
     let fresh (h, current) =
-      logn "fresh var %d\n%!" current;
+      logn "fresh var %d" current;
+      let _ : string = read_line () in
       let v = Var current in
       H.add h v ();
       (!!v, (h, current+1))
@@ -121,7 +125,6 @@ module Subst :
           try walk env (M.find i (!! subst)) subst with Not_found -> var
 
     let rec walk' env var subst =
-
       match Env.var env var with
       | None ->
 	  (match wrap (Obj.repr var) with
@@ -223,19 +226,22 @@ let (===) x y (env, subst) =
   | Some s -> logn "'%s'" (show_st (env, s)); Stream.cons (env, s) Stream.nil
 
 let conj f g st =
-  logn "conj %s\n%!" (show_st st);
-  Stream.foldl Stream.concat Stream.nil (Stream.map g (f st))
+  logn "conj %s" (show_st st);
+  Stream.from_fun (fun () -> Stream.foldl Stream.concat Stream.nil (Stream.map g (f st)) )
 
 let disj f g st =
   logn "disj %s" (show_st st);
   let rec interleave fs gs =
+    logn "interleave";
     Stream.from_fun (
       fun () ->
 	match Stream.destruct fs with
-	| `Nil -> gs
-	| `Cons (hd, tl) -> Stream.cons hd (interleave gs tl)
+	| `Nil -> logn "destruct says `Nil"; gs
+	| `Cons (hd, tl) ->
+           logn "descruct says Cons(_,_)";
+           Stream.cons hd (interleave gs tl)
     )
   in
   interleave
-    (let () = logn "calling f" in f st)
-    (Stream.from_fun (fun () -> let () = logn "calling g" in g st) )
+    (let () = logn "calling f in disj" in f st)
+    (Stream.from_fun (fun () -> let () = logn "calling g in disj" in g st) )

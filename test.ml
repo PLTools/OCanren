@@ -60,15 +60,15 @@ let rec fives x =
 let int_list e = show_list e show_int
 
 let rec appendo a b ab ((env, subst) as st) =
-  logn "show [] = '%s'" (generic_show !![]);
-  logn "show 5  = '%s'" (generic_show !!5);
-  logn "show [5] = '%s'" (generic_show !![5]);
-  logn "appendo%!";
-  logn " %s, %s, %s" (generic_show !!a) (generic_show !!b) (generic_show !!ab);
+  (* logn "show [] = '%s'" (generic_show !![]); *)
+  (* logn "show 5  = '%s'" (generic_show !!5); *)
+  (* logn "show [5] = '%s'" (generic_show !![5]); *)
 
+  logn "appendo %s, %s, %s" (generic_show !!a) (generic_show !!b) (generic_show !!ab);
+  let _ : string = read_line () in
 
   disj
-    (conj (a === (logn "1st uni\n%!"; []) ) (logn "2st uni\n%!"; (b === ab)) )
+    (conj (a === []) (b === ab) )
     (fresh (fun h ->
       (fresh (fun t ->
         (conj (a === h::t)
@@ -81,34 +81,64 @@ let rec appendo a b ab ((env, subst) as st) =
   st
 
 let rec reverso a b ((env, subst) as st) =
-  logn "reverso: %s %s\n" (generic_show !!a) (generic_show !!b); flush stdout;
-(*
-  logn "reverso: %s, " (generic_show !!b); flush stdout;
-  logn "%s\n" (int_list env b); flush stdout;
-*)
-  fresh (fun h ->
-    fresh (fun t ->
-      disj
-        (conj (a === []) (b === []))
-        (conj (a === h::t)
+  logn "reverso: %s %s" (generic_show !!a) (generic_show !!b);
+  let _ : string = read_line () in
+
+  disj
+    (conj (a === []) (b === []))
+    (fresh (fun h ->
+      (fresh (fun t ->
+          (conj (a === h::t)
               (fresh (fun a' ->
                  conj (appendo a' [h] b)
                       (reverso t a')
               ))
         )
     )
-  ) st
+  ))) st
+
+(* let rec test_rev1 a b ((env, subst) as st) = *)
+(*   fresh (fun h -> *)
+(*     fresh (fun t -> *)
+(*       disj *)
+(*         (conj (a === []) (b === [])) *)
+(*         (conj (a === h::t) *)
+(*               (fresh (fun a' -> *)
+(*                       (reverso t a') *)
+(*               )) *)
+(*         ) *)
+(*      ) *)
+(*   ) st *)
+
+let rec rev_test1 f g (e,st) =
+(*  reverso: boxed 0 <int<12>> boxed 0 <int<13>>
+disj st {env {$10; $13; $11; $12; }, subst {10 -> boxed 0 <boxed 0 <int<11>> []>; 11 -> int<1>; 12 -> []; 13 -> []; }} *)
+  let q, e   = Env.fresh e  in
+  let r, e   = Env.fresh e               in
+  let st = Subst.unify e q [] (Some st) in
+  let st = Subst.unify e r [] st in
+  match st with
+    | None -> failwith "st is bad"
+    | Some st -> reverso q r (e,st)
+
+
+
 
 
 
 let _ =
   (* run "appendo" int_list 1 (fun q st -> appendo q [3; 4] [1; 2; 3; 4] st); *)
-  run_2var "appendo q [] r" int_list 1 (fun q r st -> appendo q [] r st);
-  run_2var "appendo q [] r" int_list 1 (fun q r st -> appendo q [] r st);
-  run_1var "reverso q [1] max 1 result" int_list 1 (fun q st -> reverso q [1] st);
-  (* run_1 "reverso [1] 1 max 1 result" int_list 1 (fun q st -> reverso [1] q st); *)
+  (* run_2var "appendo q [] r" int_list 1 (fun q r st -> appendo q [] r st); *)
+  (* run_2var "appendo q [] r" int_list 1 (fun q r st -> appendo q [] r st); *)
+  (* run_1var "reverso q [1] max 1 result" int_list 1 (fun q st -> reverso q [1] st); (\* works *\) *)
+  (* run_1var "reverso [] [] max 1 result" int_list 1 (fun q st -> reverso [] [] st); *)
+  (* run_1var "reverso [1] q max 1 result" int_list 1 (fun q st -> reverso [1] q st); *)
 
-  run_1var "reverso q [1] max 2 results" int_list 1 (fun q st -> reverso q [1] st);
+  (* run_1var "rev_test1 max 1 result" int_list 1 (fun q st -> rev_test1 q q st); *)
+  run_1var "reverso q q max 1 result" int_list 1 (fun q st -> reverso q q st);
+  run_1var "reverso q q max 2 result" int_list 2 (fun q st -> reverso q q st);
+
+  (* run_1var "reverso q [1] max 2 results" int_list 1 (fun q st -> reverso q [1] st); *)
   (* run_1 "reverso [1] 1 max 2 results" int_list 1 (fun q st -> reverso [1] q st); *)
   (*
   run "reverso"  int_list 1  (fun q st -> reverso [1; 2; 3; 4] q st);
