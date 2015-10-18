@@ -8,7 +8,7 @@ CMOS=Stream.cmo MiniKanren.cmo test.cmo
 BINDIR=$(shell opam config var bin)
 # camlp5o pr_o.cmo pa_gt.cmo -L /home/kakadu/.opam/4.01.0/lib/camlp5 -L . test.ml
 
-all: minikanren.cmo $(CMOS) $(TEST_OUT)
+all:  $(CMOS) $(TEST_OUT)
 
 test.cmo: CAMLP5PP += -L `camlp5 -where` -L .
 

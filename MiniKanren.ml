@@ -4,14 +4,27 @@ open Printf
 type var = Var of int
 type w   = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
-let do_log = false
+type config =
+  { mutable do_log: bool;
+    mutable do_readline: bool }
+
+let config = { do_log=true; do_readline=false }
+
+let () =
+  Arg.parse
+    [ ("-v", Arg.Unit (fun () -> config.do_log <- true), "verbose")
+    ; ("-q", Arg.Unit (fun () -> config.do_log <- false), "quite")
+    ; ("-r", Arg.Unit (fun () -> config.do_readline <- true), "readlines")
+    ;
+    ] (fun s -> printf "Unknown parameter %s\n" s; exit 0)
+    "This is usage message"
 
 let logn fmt =
-  if do_log then kprintf (printf "%s\n%!") fmt
+  if config.do_log then kprintf (printf "%s\n%!") fmt
   else  kprintf (fun fmt -> ignore (sprintf "%s" fmt)) fmt
 
 let logf fmt =
-  if do_log then kprintf (printf "%s%!") fmt
+  if config.do_log then kprintf (printf "%s%!") fmt
   else  kprintf (fun fmt -> ignore (sprintf "%s" fmt)) fmt
 
 let rec wrap (x : Obj.t) =
@@ -83,7 +96,7 @@ module Env :
 
     let fresh (h, current) =
       logn "fresh var %d" current;
-      (* let _ : string = read_line () in *)
+      if config.do_readline then ignore (read_line ());
       let v = Var current in
       H.add h v ();
       (!!v, (h, current+1))
@@ -125,6 +138,7 @@ module Subst :
           try walk env (M.find i (!! subst)) subst with Not_found -> var
 
     let rec walk' env var subst =
+      (* logn "walk'"; *)
       match Env.var env var with
       | None ->
 	  (match wrap (Obj.repr var) with
@@ -233,7 +247,7 @@ let conj f g st =
 let disj f g st =
   logn "disj %s" (show_st st);
   let rec interleave fs gs =
-    logn "interleave";
+    (* logn "interleave"; *)
     Stream.from_fun (
       fun () ->
 	match Stream.destruct fs with

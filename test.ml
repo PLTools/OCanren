@@ -2,7 +2,55 @@ open GT
 open MiniKanren
 open Printf
 
-@type t = A of int | B of string | C of t * t with show, minikanren
+(* @type t = A of int | B of string | C of t * t with show, minikanren *)
+let (|>) x f = f x
+
+let () =
+  let (>>=) m f = match m with Some x -> Some (f x) | None -> None in
+  let iter m ~f =
+    print_endline "";
+    match m with Some x -> f x | None -> print_endline "bad" in
+  print_endline "testing unification";
+  let var10, e   = Env.fresh (Env.empty ())  in
+  let var11, e   = Env.fresh e  in
+  let var12, e   = Env.fresh e  in
+  let var13, e   = Env.fresh e  in
+  let var14, e   = Env.fresh e  in
+  let var15, e   = Env.fresh e  in
+  let var16, e   = Env.fresh e  in
+  let var17, e   = Env.fresh e  in
+
+  let printer e x =
+    (* print_endline "\nprinter"; *)
+    sprintf "%s" (generic_show !!x)
+    (* show_list e show_int *)
+  in
+
+  let s = Some Subst.empty in
+  let s = s |> Subst.unify e var15 (Obj.magic [])  in
+  let s = Subst.unify e var14 (Obj.magic [var15; var17]) s in
+  let s = Subst.unify e var13 (Obj.magic [var15; var16]) s in
+  let s = Subst.unify e var11 (Obj.magic [var12; var14]) s in
+  let s = s |> Subst.unify e var10 (Obj.magic [var12; var13])  in
+  (* iter s ~f:(fun subst -> *)
+  (*     printf "subst = %s\n%!" (Subst.show subst); *)
+  (*     printf "var10=%s, var11=%s\n%!" (printer e (Subst.walk' e var10 subst)) (printer e (Subst.walk' e var11 subst)) *)
+  (*   ); *)
+
+  (* iter s ~f:(fun subst -> *)
+  (*     printf "subst = %s\n%!" (Subst.show subst); *)
+  (*     printf "var10=%s, var11=%s\n%!" (printer e (Subst.walk' e var10 subst)) (printer e (Subst.walk' e var11 subst)) *)
+  (*   ); *)
+
+
+  iter s ~f:(fun subst ->
+      printf "subst = %s\n%!" (Subst.show subst);
+      printf "var10=%s, var11=%s\n%!" (printer e (Subst.walk' e var10 subst)) (printer e (Subst.walk' e var11 subst))
+    );
+
+  (* exit  0 *)
+  ()
+
 
 let run_2var memo printer n goal =
   let q, e   = Env.fresh (Env.empty ())  in
@@ -12,7 +60,7 @@ let run_2var memo printer n goal =
   Printf.printf "%s {\n" memo;
   List.iter
     (fun (env, subst) ->
-        Printf.printf "%s, %s\n" (printer env (Subst.walk' env q subst)) (printer env (Subst.walk' env r subst))
+        printf "q=%s, r=%s\n" (printer env (Subst.walk' env q subst)) (printer env (Subst.walk' env r subst))
     )
     result;
   Printf.printf "}\n%!"
@@ -27,7 +75,7 @@ let run_1var memo printer n goal =
   Printf.printf "%s {\n" memo;
   List.iter
     (fun (env, subst) ->
-        Printf.printf "%s \n" (printer env (Subst.walk' env q subst))
+        printf "q='%s'\n" (printer env (Subst.walk' env q subst))
     )
     result;
   Printf.printf "}\n%!"
@@ -65,7 +113,7 @@ let rec appendo a b ab ((env, subst) as st) =
   (* logn "show [5] = '%s'" (generic_show !![5]); *)
 
   logn "appendo %s, %s, %s" (generic_show !!a) (generic_show !!b) (generic_show !!ab);
-  (* let _ : string = read_line () in *)
+  if MiniKanren.config.do_readline then ignore (read_line ());
 
   disj
     (conj (a === []) (b === ab) )
@@ -82,7 +130,7 @@ let rec appendo a b ab ((env, subst) as st) =
 
 let rec reverso a b ((env, subst) as st) =
   logn "reverso: %s %s" (generic_show !!a) (generic_show !!b);
-  (* let _ : string = read_line () in *)
+  if MiniKanren.config.do_readline then ignore (read_line ());
 
   disj
     (conj (a === []) (b === []))
@@ -128,18 +176,19 @@ disj st {env {$10; $13; $11; $12; }, subst {10 -> boxed 0 <boxed 0 <int<11>> []>
 
 let _ =
   (* run "appendo" int_list 1 (fun q st -> appendo q [3; 4] [1; 2; 3; 4] st); *)
-  (* run_2var "appendo q [] r" int_list 1 (fun q r st -> appendo q [] r st); *)
-  (* run_2var "appendo q [] r" int_list 1 (fun q r st -> appendo q [] r st); *)
+  run_2var "appendo q [] r max 1 result" int_list 1 (fun q r st -> appendo q [] r st);
+  run_2var "appendo q [] r max 2 result" int_list 2 (fun q r st -> appendo q [] r st);
+  run_2var "appendo q [] r max 3 result" int_list 3 (fun q r st -> appendo q [] r st);
   (* run_1var "reverso q [1] max 1 result" int_list 1 (fun q st -> reverso q [1] st); (\* works *\) *)
   (* run_1var "reverso [] [] max 1 result" int_list 1 (fun q st -> reverso [] [] st); *)
   (* run_1var "reverso [1] q max 1 result" int_list 1 (fun q st -> reverso [1] q st); *)
 
   (* run_1var "rev_test1 max 1 result" int_list 1 (fun q st -> rev_test1 q q st); *)
 
-  run_1var "reverso q q max 1  result" int_list 1  (fun q st -> reverso q q st);
-  run_1var "reverso q q max 2  result" int_list 2  (fun q st -> reverso q q st);
-  run_1var "reverso q q max 3  result" int_list 3  (fun q st -> reverso q q st);
-  run_1var "reverso q q max 10 result" int_list 10 (fun q st -> reverso q q st);
+  (* run_1var "reverso q q max 1  result" int_list 1  (fun q st -> reverso q q st); *)
+  (* run_1var "reverso q q max 2  result" int_list 2  (fun q st -> reverso q q st); *)
+  (* run_1var "reverso q q max 3  result" int_list 3  (fun q st -> reverso q q st); *)
+  (* run_1var "reverso q q max 10 result" int_list 10 (fun q st -> reverso q q st); *)
 
   (* run_1var "reverso q [1] max 2 results" int_list 1 (fun q st -> reverso q [1] st); *)
   (* run_1 "reverso [1] 1 max 2 results" int_list 1 (fun q st -> reverso [1] q st); *)
