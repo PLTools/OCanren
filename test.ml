@@ -6,49 +6,39 @@ open Printf
 let (|>) x f = f x
 
 let () =
-  let (>>=) m f = match m with Some x -> Some (f x) | None -> None in
-  let iter m ~f =
-    print_endline "";
-    match m with Some x -> f x | None -> print_endline "bad" in
-  print_endline "testing unification";
-  let var10, e   = Env.fresh (Env.empty ())  in
-  let var11, e   = Env.fresh e  in
-  let var12, e   = Env.fresh e  in
-  let var13, e   = Env.fresh e  in
-  let var14, e   = Env.fresh e  in
-  let var15, e   = Env.fresh e  in
-  let var16, e   = Env.fresh e  in
-  let var17, e   = Env.fresh e  in
+  (* let (>>=) m f = match m with Some x -> Some (f x) | None -> None in *)
+  (* let iter m ~f = *)
+  (*   print_endline ""; *)
+  (*   match m with Some x -> f x | None -> print_endline "bad" in *)
+  (* print_endline "testing unification"; *)
+  (* let var10, e   = Env.fresh (Env.empty ())  in *)
+  (* let var11, e   = Env.fresh e  in *)
+  (* let var12, e   = Env.fresh e  in *)
+  (* let var13, e   = Env.fresh e  in *)
+  (* let var14, e   = Env.fresh e  in *)
+  (* let var15, e   = Env.fresh e  in *)
+  (* let var16, e   = Env.fresh e  in *)
+  (* let var17, e   = Env.fresh e  in *)
 
-  let printer e x =
-    (* print_endline "\nprinter"; *)
-    sprintf "%s" (generic_show !!x)
-    (* show_list e show_int *)
-  in
+  (* let printer e x = *)
+  (*   (\* print_endline "\nprinter"; *\) *)
+  (*   sprintf "%s" (generic_show !!x) *)
+  (*   (\* show_list e show_int *\) *)
+  (* in *)
 
-  let s = Some Subst.empty in
-  let s = s |> Subst.unify e var15 (Obj.magic [])  in
-  let s = Subst.unify e var14 (Obj.magic [var15; var17]) s in
-  let s = Subst.unify e var13 (Obj.magic [var15; var16]) s in
-  let s = Subst.unify e var11 (Obj.magic [var12; var14]) s in
-  let s = s |> Subst.unify e var10 (Obj.magic [var12; var13])  in
-  (* iter s ~f:(fun subst -> *)
-  (*     printf "subst = %s\n%!" (Subst.show subst); *)
-  (*     printf "var10=%s, var11=%s\n%!" (printer e (Subst.walk' e var10 subst)) (printer e (Subst.walk' e var11 subst)) *)
-  (*   ); *)
+  (* let s = Some Subst.empty in *)
+  (* let s = s |> Subst.unify e var10 (Obj.magic (var12::var13)) in *)
+  (* let s = s |> Subst.unify e var11 (Obj.magic (var12::var14)) in *)
+  (* let s = s |> Subst.unify e var13 (Obj.magic (var15::var16)) in *)
+  (* let s = s |> Subst.unify e var16 (Obj.magic []) in *)
+  (* let s = s |> Subst.unify e var14 (Obj.magic (var15::var17)) in *)
+  (* let s = s |> Subst.unify e var17 (Obj.magic []) in *)
 
   (* iter s ~f:(fun subst -> *)
   (*     printf "subst = %s\n%!" (Subst.show subst); *)
   (*     printf "var10=%s, var11=%s\n%!" (printer e (Subst.walk' e var10 subst)) (printer e (Subst.walk' e var11 subst)) *)
   (*   ); *)
 
-
-  iter s ~f:(fun subst ->
-      printf "subst = %s\n%!" (Subst.show subst);
-      printf "var10=%s, var11=%s\n%!" (printer e (Subst.walk' e var10 subst)) (printer e (Subst.walk' e var11 subst))
-    );
-
-  (* exit  0 *)
   ()
 
 
@@ -116,7 +106,7 @@ let rec appendo a b ab ((env, subst) as st) =
   if MiniKanren.config.do_readline then ignore (read_line ());
 
   disj
-    (conj (a === []) (b === ab) )
+    (conj (a === []) ( === ab) )
     (fresh (fun h ->
       (fresh (fun t ->
         (conj (a === h::t)
@@ -179,6 +169,7 @@ let _ =
   run_2var "appendo q [] r max 1 result" int_list 1 (fun q r st -> appendo q [] r st);
   run_2var "appendo q [] r max 2 result" int_list 2 (fun q r st -> appendo q [] r st);
   run_2var "appendo q [] r max 3 result" int_list 3 (fun q r st -> appendo q [] r st);
+  (* run_2var "appendo q [] r max 4 result" int_list 4 (fun q r st -> appendo q [] r st); *)
   (* run_1var "reverso q [1] max 1 result" int_list 1 (fun q st -> reverso q [1] st); (\* works *\) *)
   (* run_1var "reverso [] [] max 1 result" int_list 1 (fun q st -> reverso [] [] st); *)
   (* run_1var "reverso [1] q max 1 result" int_list 1 (fun q st -> reverso [1] q st); *)
