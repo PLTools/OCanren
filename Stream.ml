@@ -42,11 +42,12 @@ let rec map f s =
   )
 
 let take n s =
+  Printf.printf "take\n%!";
   let rec inner i s =
     if i = 0
     then []
     else
-      (* let () = printf "requesting element on pos %d\n%!" (n-i) in *)
+      let _ = Printf.printf "requesting element on pos %d\n%!" (n-i) in
       match destruct s with
       | `Nil -> []
       | `Cons (x, xs) -> x :: inner (i-1) xs

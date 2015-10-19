@@ -2,7 +2,7 @@ open GT
 open MiniKanren
 open Printf
 
-(* @type t = A of int | B of string | C of t * t with show, minikanren *)
+@type t = A of int | B of string | C of t * t with show, minikanren 
 let (|>) x f = f x
 
 let () =
@@ -49,7 +49,10 @@ let run_2var memo printer n goal =
   let result = Stream.take n (goal q r st) in
   Printf.printf "%s {\n" memo;
   List.iter
-    (fun (env, subst) ->
+    (fun ((env, subst) as st) ->
+        printf "State:\n"; flush stdout;
+        printf "%s\n" (show_st st); flush stdout;
+        printf "q=%d, r=%d\n" (let Var i = !! q in i) (let Var i = !!r in i);
         printf "q=%s, r=%s\n" (printer env (Subst.walk' env q subst)) (printer env (Subst.walk' env r subst))
     )
     result;
@@ -64,7 +67,10 @@ let run_1var memo printer n goal =
   let result = Stream.take n (goal q st) in
   Printf.printf "%s {\n" memo;
   List.iter
-    (fun (env, subst) ->
+    (fun ((env, subst) as st) ->
+        printf "State:\n"; flush stdout;
+        printf "%s\n" (show_st st); flush stdout;
+        printf "q=%d\n%!" (let Var i = !! q in i);
         printf "q='%s'\n" (printer env (Subst.walk' env q subst))
     )
     result;
@@ -95,7 +101,11 @@ let rec fives x =
   disj (x === 5)
        (fun st -> Stream.from_fun (fun () -> fives x st))
 
-let int_list e = show_list e show_int
+let int_list e l = 
+  printf "int_list: env=%s, list=%s\n%!"
+     (Env.show e)
+     (generic_show !!l);
+  show_list e show_int l
 
 let rec appendo a b ab ((env, subst) as st) =
   (* logn "show [] = '%s'" (generic_show !![]); *)
@@ -106,7 +116,7 @@ let rec appendo a b ab ((env, subst) as st) =
   if MiniKanren.config.do_readline then ignore (read_line ());
 
   disj
-    (conj (a === []) ( === ab) )
+    (conj (a === []) (b === ab) )
     (fresh (fun h ->
       (fresh (fun t ->
         (conj (a === h::t)
@@ -166,15 +176,14 @@ disj st {env {$10; $13; $11; $12; }, subst {10 -> boxed 0 <boxed 0 <int<11>> []>
 
 let _ =
   (* run "appendo" int_list 1 (fun q st -> appendo q [3; 4] [1; 2; 3; 4] st); *)
-  run_2var "appendo q [] r max 1 result" int_list 1 (fun q r st -> appendo q [] r st);
-  run_2var "appendo q [] r max 2 result" int_list 2 (fun q r st -> appendo q [] r st);
-  run_2var "appendo q [] r max 3 result" int_list 3 (fun q r st -> appendo q [] r st);
+(*  run_2var "appendo q [] r max 1 result" int_list 1 (fun q r st -> appendo q [] r st); *)
+(*   run_2var "appendo q [] r max 2 result" int_list 2 (fun q r st -> appendo q [] r st); *)
+ (*  run_2var "appendo q [] r max 3 result" int_list 3 (fun q r st -> appendo q [] r st); *)
   (* run_2var "appendo q [] r max 4 result" int_list 4 (fun q r st -> appendo q [] r st); *)
-  (* run_1var "reverso q [1] max 1 result" int_list 1 (fun q st -> reverso q [1] st); (\* works *\) *)
-  (* run_1var "reverso [] [] max 1 result" int_list 1 (fun q st -> reverso [] [] st); *)
-  (* run_1var "reverso [1] q max 1 result" int_list 1 (fun q st -> reverso [1] q st); *)
-
-  (* run_1var "rev_test1 max 1 result" int_list 1 (fun q st -> rev_test1 q q st); *)
+(*   run_1var "reverso q [1] max 1 result" int_list 1 (fun q st -> reverso q [1; 2; 3; 4] st); *) 
+   run_1var "reverso [] [] max 1 result" int_list 1 (fun q st -> reverso [] [] st); 
+   run_1var "reverso [1] q max 1 result" int_list 1 (fun q st -> reverso [1; 2; 3; 4] q st);  
+   run_1var "rev_test1 max 1 result" int_list 1 (fun q st -> rev_test1 q q st); 
 
   (* run_1var "reverso q q max 1  result" int_list 1  (fun q st -> reverso q q st); *)
   (* run_1var "reverso q q max 2  result" int_list 2  (fun q st -> reverso q q st); *)

@@ -144,15 +144,16 @@ module Subst :
 	  (match wrap (Obj.repr var) with
 	   | Unboxed _ -> var
 	   | Boxed (t, s, f) ->
+               let var = Obj.dup (Obj.repr var) in
                let sf =
 		 if t = Obj.double_array_tag
 		 then !! Obj.set_double_field
 		 else Obj.set_field
 	       in
 	       for i = 0 to s - 1 do
-                 sf (Obj.repr var) i (!!(walk' env (!!(f i)) subst))
+                 sf var i (!!(walk' env (!!(f i)) subst))
                done;
-	       var
+	       !!var
 	   | Invalid n -> invalid_arg (Printf.sprintf "Invalid value for reconstruction (%d)" n)
           )
 
@@ -225,9 +226,9 @@ class ['a] minikanren_list_t =
 
 let minikanren t = t.GT.plugins#minikanren
 
-let show_list   e fa l = GT.transform(GT.list) fa (new minikanren_list_t  ) e l
-let show_int    e i    = GT.transform(GT.int)     (new minikanren_int_t   ) e i
-let show_string e s    = GT.transform(GT.string)  (new minikanren_string_t) e s
+let show_list   e fa l = print_if_var e l (fun _ -> GT.transform(GT.list) fa (new minikanren_list_t  ) e l)
+let show_int    e i    = print_if_var e i (fun _ -> GT.transform(GT.int)     (new minikanren_int_t   ) e i)
+let show_string e s    = print_if_var e s (fun _ -> GT.transform(GT.string)  (new minikanren_string_t) e s)
 
 let fresh f (env, subst) =
   let x, env' = Env.fresh env in
@@ -247,15 +248,16 @@ let conj f g st =
 let disj f g st =
   logn "disj %s" (show_st st);
   let rec interleave fs gs =
-    (* logn "interleave"; *)
+    logn "interleave"; 
     Stream.from_fun (
       fun () ->
+        logn "fs=%s" (generic_show !!fs);
 	match Stream.destruct fs with
 	| `Nil -> logn "destruct says `Nil"; gs
 	| `Cons (hd, tl) ->
-           logn "descruct says Cons(_,_)";
+           logn "descruct says Cons(%s,%s)" (show_st hd) (generic_show !!tl); 
            Stream.cons hd (interleave gs tl)
-    )
+    ) 
   in
   interleave
     (let () = logn "calling f in disj" in f st)
