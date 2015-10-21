@@ -49,10 +49,10 @@ let run_2var memo printer n goal =
   let result = Stream.take n (goal q r st) in
   Printf.printf "%s {\n" memo;
   List.iter
-    (fun ((env, subst) as st) ->
-        printf "State:\n"; flush stdout;
-        printf "%s\n" (show_st st); flush stdout;
-        printf "q=%d, r=%d\n" (let Var i = !! q in i) (let Var i = !!r in i);
+    (fun ((env, subst) (* as st *)) ->
+        LOG[trace1] (logn "State:";
+                     logn "%s" (show_st st);
+                     logn "q=%d, r=%d" (let Var i = !! q in i) (let Var i = !!r in i));
         printf "q=%s, r=%s\n" (printer env (Subst.walk' env q subst)) (printer env (Subst.walk' env r subst))
     )
     result;
@@ -67,10 +67,10 @@ let run_1var memo printer n goal =
   let result = Stream.take n (goal q st) in
   Printf.printf "%s {\n" memo;
   List.iter
-    (fun ((env, subst) as st) ->
-        printf "State:\n"; flush stdout;
-        printf "%s\n" (show_st st); flush stdout;
-        printf "q=%d\n%!" (let Var i = !! q in i);
+    (fun ((env, subst) (* as st *)) ->
+        LOG[trace1] (printf "State:\n%!");
+        LOG[trace1] (printf "%s" (show_st st));
+        LOG[trace1] (printf "q=%d\n%!" (let Var i = !! q in i));
         printf "q='%s'\n" (printer env (Subst.walk' env q subst))
     )
     result;
@@ -102,9 +102,7 @@ let rec fives x =
        (fun st -> Stream.from_fun (fun () -> fives x st))
 
 let int_list e l =
-  printf "int_list: env=%s, list=%s\n%!"
-     (Env.show e)
-     (generic_show !!l);
+  LOG[trace1] (logn "int_list: env=%s, list=%s\n%!"  (Env.show e)  (generic_show !!l));
   show_list e show_int l
 
 let rec appendo a b ab ((env, subst) as st) =
@@ -112,7 +110,7 @@ let rec appendo a b ab ((env, subst) as st) =
   (* logn "show 5  = '%s'" (generic_show !!5); *)
   (* logn "show [5] = '%s'" (generic_show !![5]); *)
 
-  logn "appendo %s, %s, %s" (generic_show !!a) (generic_show !!b) (generic_show !!ab);
+  LOG[trace1] (logn "appendo %s, %s, %s" (generic_show !!a) (generic_show !!b) (generic_show !!ab));
   if MiniKanren.config.do_readline then ignore (read_line ());
 
   disj
@@ -129,7 +127,7 @@ let rec appendo a b ab ((env, subst) as st) =
   st
 
 let rec reverso a b ((env, subst) as st) =
-  logn "reverso: %s %s" (generic_show !!a) (generic_show !!b);
+  LOG[trace1] (logn "reverso: %s %s" (generic_show !!a) (generic_show !!b));
   if MiniKanren.config.do_readline then ignore (read_line ());
 
   disj
@@ -145,34 +143,14 @@ let rec reverso a b ((env, subst) as st) =
     )
   ))) st
 
-(* let rec test_rev1 a b ((env, subst) as st) = *)
-(*   fresh (fun h -> *)
-(*     fresh (fun t -> *)
-(*       disj *)
-(*         (conj (a === []) (b === [])) *)
-(*         (conj (a === h::t) *)
-(*               (fresh (fun a' -> *)
-(*                       (reverso t a') *)
-(*               )) *)
-(*         ) *)
-(*      ) *)
-(*   ) st *)
-
 let rec rev_test1 f g (e,st) =
-(*  reverso: boxed 0 <int<12>> boxed 0 <int<13>>
-disj st {env {$10; $13; $11; $12; }, subst {10 -> boxed 0 <boxed 0 <int<11>> []>; 11 -> int<1>; 12 -> []; 13 -> []; }} *)
   let q, e   = Env.fresh e  in
-  let r, e   = Env.fresh e               in
+  let r, e   = Env.fresh e  in
   let st = Subst.unify e q [] (Some st) in
   let st = Subst.unify e r [] st in
   match st with
     | None -> failwith "st is bad"
     | Some st -> reverso q r (e,st)
-
-
-
-
-
 
 let _ =
   (* run "appendo" int_list 1 (fun q st -> appendo q [3; 4] [1; 2; 3; 4] st); *)

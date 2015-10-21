@@ -1,8 +1,9 @@
 OCAML_OPTS=-rectypes -g #-verbose
-#OCAMLOPT=ocamlfind opt $(OCAML_OPTS) -package typeutil,camlp5,GT,logger -pp $(CAMLP5PP)
-OCAMLC=ocamlfind c $(OCAML_OPTS) -package typeutil,camlp5,GT,logger.syntax,GT.syntax -syntax camlp5o
+TRACE1_LOG=-VIEW trace1
+PP=camlp5o pa_log.cmo pa_gt.cmo #$(TRACE1_LOG)
+OCAMLC=ocamlfind c $(OCAML_OPTS) -package typeutil,camlp5,GT,logger.syntax,GT.syntax -pp "$(PP)"
 TEST_OUT=test.byte
-PLUGINS=minikanren.cmo   # camlp5 plugin
+PLUGINS=minikanren.cmo   # camlp5 plugin -- not user at the moment
 CMOS+=Stream.cmo MiniKanren.cmo test.cmo
 BINDIR=$(shell opam config var bin)
 # camlp5o pr_o.cmo pa_gt.cmo -L /home/kakadu/.opam/4.01.0/lib/camlp5 -L . test.ml
@@ -23,7 +24,7 @@ clean:
 	$(RM) *.cm[ioxa] *.o $(TEST_OUT)
 
 install: $(TEST_OUT)
-	install -m 644 $(TEST_OUT) $(BINDIR)/minikanren_test
+	install -m 755 $(TEST_OUT) $(BINDIR)/minikanren_test
 
 uninstall:
 	$(RM) $(BINDIR)/minikanren_test

@@ -11,13 +11,13 @@ type config =
 let config = { do_log=true; do_readline=false }
 
 let () =
-  Arg.parse
-    [ ("-v", Arg.Unit (fun () -> config.do_log <- true), "verbose")
-    ; ("-q", Arg.Unit (fun () -> config.do_log <- false), "quite")
-    ; ("-r", Arg.Unit (fun () -> config.do_readline <- true), "readlines")
-    ;
-    ] (fun s -> printf "Unknown parameter %s\n" s; exit 0)
-    "This is usage message"
+  let args = ref [("-r", Arg.Unit (fun () -> config.do_readline <- true), "readlines")] in
+  LOG[trace1](
+       args := ("-q", Arg.Unit (fun () -> config.do_log <- false), "quite") :: !args;
+       args := ("-v", Arg.Unit (fun () -> config.do_log <- true), "verbose") :: !args );
+  Arg.parse !args
+            (fun s -> eprintf "Unknown parameter '%s'\n" s; exit 0)
+            "This is usage message"
 
 let logn fmt =
   if config.do_log then kprintf (printf "%s\n%!") fmt
@@ -95,7 +95,7 @@ module Env :
     let empty () = (H.create 1024, counter_start)
 
     let fresh (h, current) =
-      logn "fresh var %d" current;
+      LOG[trace1] (logn "fresh var %d" current);
       if config.do_readline then ignore (read_line ());
       let v = Var current in
       H.add h v ();
@@ -127,7 +127,7 @@ module Subst :
 
     type t = Obj.t M.t
 
-    let show m = (M.fold (fun i x s -> s ^ Printf.sprintf "%d -> %s; " i (generic_show x)) m "subst {") ^ "}"
+    let show m = (M.fold (fun i x s -> s ^ sprintf "%d -> %s; " i (generic_show x)) m "subst {") ^ "}"
 
     let empty = M.empty
 
@@ -138,7 +138,6 @@ module Subst :
           try walk env (M.find i (!! subst)) subst with Not_found -> var
 
     let rec walk' env var subst =
-      (* logn "walk'"; *)
       match Env.var env var with
       | None ->
 	  (match wrap (Obj.repr var) with
@@ -186,7 +185,8 @@ module Subst :
                   in
 		  inner 0 s
                 else None
-	     | Invalid n, _ | _, Invalid n -> invalid_arg (Printf.sprintf "Invalid values for unification (%d)" n)
+	     | Invalid n, _
+             | _, Invalid n -> invalid_arg (Printf.sprintf "Invalid values for unification (%d)" n)
 	     | _ -> None
 	    )
   end
@@ -235,30 +235,30 @@ let fresh f (env, subst) =
   f x (env', subst)
 
 let (===) x y (env, subst) =
-  logf "unify '%s' and '%s' in '%s' = " (generic_show !!x) (generic_show !!y) (show_st (env, subst));
+  LOG[trace1] (logf "unify '%s' and '%s' in '%s' = " (generic_show !!x) (generic_show !!y) (show_st (env, subst)));
   match Subst.unify env x y (Some subst) with
-  | None   -> logn "none"; Stream.nil
-  | Some s -> logn "'%s'" (show_st (env, s)); Stream.cons (env, s) Stream.nil
+  | None   -> Stream.nil
+  | Some s -> LOG[trace1] (logn "'%s'" (show_st (env, s))); Stream.cons (env, s) Stream.nil
 
 let conj f g st =
-  logn "conj %s" (show_st st);
+  LOG[trace1] (logn "conj %s" (show_st st));
   Stream.from_fun (fun () -> Stream.concat_map g (f st))
 
 
 let disj f g st =
-  logn "disj %s" (show_st st);
+  LOG[trace1] (logn "disj %s" (show_st st));
   let rec interleave fs gs =
-    logn "interleave"; 
+    LOG[trace1] (logn "interleave");
     Stream.from_fun (
       fun () ->
-        logn "fs=%s" (generic_show !!fs);
+        (* logn "fs=%s" (generic_show !!fs); *)
 	match Stream.destruct fs with
-	| `Nil -> logn "destruct says `Nil"; gs
+	| `Nil -> gs
 	| `Cons (hd, tl) ->
-           logn "descruct says Cons(%s,%s)" (show_st hd) (generic_show !!tl); 
+           (* logn "destruct says Cons(%s,%s)" (show_st hd) (generic_show !!tl); *)
            Stream.cons hd (interleave gs tl)
-    ) 
+    )
   in
   interleave
-    (let () = logn "calling f in disj" in f st)
-    (Stream.from_fun (fun () -> let () = logn "calling g in disj" in g st) )
+    (f st)
+    (Stream.from_fun (fun () -> g st) )
