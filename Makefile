@@ -1,25 +1,23 @@
-CAMLP5PP=camlp5o pa_gt.cmo -L `ocamlfind query GT`
-OCAML_OPTS=-rectypes -g
-OCAMLOPT=ocamlfind opt $(OCAML_OPTS) -package typeutil,camlp5,GT -pp $(CAMLP5PP)
-OCAMLC=ocamlfind c $(OCAML_OPTS) -package typeutil,camlp5,GT -pp "$(CAMLP5PP)"
+OCAML_OPTS=-rectypes -g #-verbose
+#OCAMLOPT=ocamlfind opt $(OCAML_OPTS) -package typeutil,camlp5,GT,logger -pp $(CAMLP5PP)
+OCAMLC=ocamlfind c $(OCAML_OPTS) -package typeutil,camlp5,GT,logger.syntax,GT.syntax -syntax camlp5o
 TEST_OUT=test.byte
-.SUFFIXES: .cmo .cmx .ml
-CMOS=Stream.cmo MiniKanren.cmo test.cmo
+PLUGINS=minikanren.cmo   # camlp5 plugin
+CMOS+=Stream.cmo MiniKanren.cmo test.cmo
 BINDIR=$(shell opam config var bin)
 # camlp5o pr_o.cmo pa_gt.cmo -L /home/kakadu/.opam/4.01.0/lib/camlp5 -L . test.ml
 
-all:  $(CMOS) $(TEST_OUT)
+.SUFFIXES: .cmo .cmx .ml
 
-test.cmo: CAMLP5PP += -L `camlp5 -where` -L .
+all: $(PLUGINS) $(CMOS) $(TEST_OUT)
+
 
 .ml.cmo:
 	$(OCAMLC) -c $<
 
 
-$(TEST_OUT): CAMLP5PP :=
-
 $(TEST_OUT): $(CMOS)
-	$(OCAMLC) -package camlp5,typeutil,dynlink,GT -linkpkg $^ -o $@
+	$(OCAMLC) -linkpkg $^ -o $@
 
 clean:
 	$(RM) *.cm[ioxa] *.o $(TEST_OUT)
