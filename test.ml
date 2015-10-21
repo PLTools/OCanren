@@ -2,7 +2,7 @@ open GT
 open MiniKanren
 open Printf
 
-@type t = A of int | B of string | C of t * t with show, minikanren 
+(* @type t = A of int | B of string | C of t * t with show, minikanren  *)
 let (|>) x f = f x
 
 let () =
@@ -101,7 +101,7 @@ let rec fives x =
   disj (x === 5)
        (fun st -> Stream.from_fun (fun () -> fives x st))
 
-let int_list e l = 
+let int_list e l =
   printf "int_list: env=%s, list=%s\n%!"
      (Env.show e)
      (generic_show !!l);
@@ -180,10 +180,10 @@ let _ =
 (*   run_2var "appendo q [] r max 2 result" int_list 2 (fun q r st -> appendo q [] r st); *)
  (*  run_2var "appendo q [] r max 3 result" int_list 3 (fun q r st -> appendo q [] r st); *)
   (* run_2var "appendo q [] r max 4 result" int_list 4 (fun q r st -> appendo q [] r st); *)
-(*   run_1var "reverso q [1] max 1 result" int_list 1 (fun q st -> reverso q [1; 2; 3; 4] st); *) 
-   run_1var "reverso [] [] max 1 result" int_list 1 (fun q st -> reverso [] [] st); 
-   run_1var "reverso [1] q max 1 result" int_list 1 (fun q st -> reverso [1; 2; 3; 4] q st);  
-   run_1var "rev_test1 max 1 result" int_list 1 (fun q st -> rev_test1 q q st); 
+(*   run_1var "reverso q [1] max 1 result" int_list 1 (fun q st -> reverso q [1; 2; 3; 4] st); *)
+   run_1var "reverso [] [] max 1 result" int_list 1 (fun q st -> reverso [] [] st);
+   run_1var "reverso [1] q max 1 result" int_list 1 (fun q st -> reverso [1; 2; 3; 4] q st);
+   run_1var "rev_test1 max 1 result" int_list 1 (fun q st -> rev_test1 q q st);
 
   (* run_1var "reverso q q max 1  result" int_list 1  (fun q st -> reverso q q st); *)
   (* run_1var "reverso q q max 2  result" int_list 2  (fun q st -> reverso q q st); *)
