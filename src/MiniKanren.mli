@@ -65,7 +65,7 @@ val show_string : Env.t -> string -> string
 (** {2 miniKanren basic primitives} *)
 
 (** [fresh f] creates a step from a functions, which takes a fresh
-    logicsl variable *)
+    logical variable *)
 val fresh : ('a -> step) -> step
 
 (** [x === y] creates a step, which performs a unifications of
@@ -86,6 +86,6 @@ val take : int -> State.t MKStream.t -> State.t list
 (** [take_all s] takes all answers from the result of calculations *)
 val take_all : State.t MKStream.t -> State.t list
 
-(** [refine s x] refines a logical variable (created with [fresh]) w.r.t.
+(** [refine s x] refines a logical variable [x] (created with [fresh]) w.r.t.
     state [s] *)
 val refine : State.t -> 'a -> 'a
