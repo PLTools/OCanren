@@ -1,4 +1,4 @@
-SUBDIRS = src plugin regression
+SUBDIRS = src plugin camlp5 regression
 
 .PHONY: doc
 doc:
