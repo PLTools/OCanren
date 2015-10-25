@@ -32,6 +32,9 @@ module State :
     (** State type *)
     type t
 
+    (** [empty ()] creates empty state *)
+    val empty : unit -> t
+
     (** [env s] takes an environment from the state [s] *)
     val env  : t -> Env.t 
 
@@ -54,19 +57,19 @@ type 'a list = 'a GT.list
 (** {2 Printing functions} *)
 
 (** Printing helper for minikanren lists (requires an environment) *)
-val show_list : Env.t -> (Env.t -> 'a -> string) -> 'a list -> string
+val show_list : State.t -> (State.t -> 'a -> string) -> 'a list -> string
 
 (** Printing helper for minikanren ints (requires an environment) *)
-val show_int : Env.t -> int -> string
+val show_int : State.t -> int -> string
 
 (** Printing helper for minikanren ints (requires an environment) *)
-val show_string : Env.t -> string -> string
+val show_string : State.t -> string -> string
 
 (** {2 miniKanren basic primitives} *)
 
-(** [fresh f] creates a step from a functions, which takes a fresh
+(** [call_fresh f] creates a step from a functions, which takes a fresh
     logical variable *)
-val fresh : ('a -> step) -> step
+val call_fresh : ('a -> State.t -> 'b) -> State.t -> 'b
 
 (** [x === y] creates a step, which performs a unifications of
     [x] and [y] *)
@@ -80,11 +83,9 @@ val disj : step -> step -> step
 
 (** {2 Top-level running primitives} *)
 
-(** [take n s] takes at most [n] answers from the result of calculations *)
-val take : int -> State.t MKStream.t -> State.t list
-
-(** [take_all s] takes all answers from the result of calculations *)
-val take_all : State.t MKStream.t -> State.t list
+(** [run ~n:k s st] takes at most [k] answers from the result of calculations. The
+    default case returns all answers. *)
+val run : ?n:int -> step -> State.t -> State.t list
 
 (** [refine s x] refines a logical variable [x] (created with [fresh]) w.r.t.
     state [s] *)

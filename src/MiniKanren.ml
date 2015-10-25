@@ -194,17 +194,16 @@ module Subst :
   end
 
 module State =
-  struct
-  
+  struct  
     type t = Env.t * Subst.t
+    let empty () = (Env.empty (), Subst.empty)
     let env = fst
     let show (env, subst) = Printf.sprintf "st {%s, %s}" (Env.show env) (Subst.show subst)
-
   end
 
 type step = State.t -> State.t MKStream.t
 
-let print_if_var e x k =
+let print_if_var : State.t -> 'a -> (unit -> string) -> 'string = fun (e, _) x k ->
   match Env.var e x with
   | Some i -> Printf.sprintf "_.%d" i
   | None   -> k ()
@@ -225,7 +224,7 @@ class minikanren_int_t =
 
 class ['a] minikanren_list_t =
   object
-    inherit ['a, Env.t, string, Env.t, string] @GT.list
+    inherit ['a, State.t, string, State.t, string] @GT.list
     method c_Nil  e s      = print_if_var e s.GT.x (fun _ -> "[]")
     method c_Cons e s x xs =
       print_if_var e x.GT.x  (fun _ -> x.GT.fx e) ^ ", " ^
@@ -238,7 +237,7 @@ let show_list   e fa l = print_if_var e l (fun _ -> GT.transform(GT.list) fa (ne
 let show_int    e i    = print_if_var e i (fun _ -> GT.transform(GT.int)     (new minikanren_int_t   ) e i)
 let show_string e s    = print_if_var e s (fun _ -> GT.transform(GT.string)  (new minikanren_string_t) e s)
 
-let fresh f (env, subst) =
+let call_fresh f (env, subst) =
   let x, env' = Env.fresh env in
   f x (env', subst)
 
@@ -268,6 +267,6 @@ let disj f g st =
     (f st)
     (Stream.from_fun (fun () -> g st) )
 
-let take     = Stream.take
-let take_all = Stream.take_all
+let run ?(n=(-1)) f st = Stream.take n (f st (*State.empty*))
+
 let refine (e, s) x = Subst.walk' e x s

@@ -1,4 +1,4 @@
-SUBDIRS = src plugin
+SUBDIRS = src plugin regression
 
 .PHONY: doc
 doc:
