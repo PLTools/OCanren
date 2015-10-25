@@ -270,3 +270,5 @@ let disj f g st =
 let run f = f (State.empty ())
 
 let refine (e, s) x = Subst.walk' e x s
+
+let take = Stream.take

@@ -77,3 +77,7 @@ val run : (State.t -> 'a) -> 'a
 (** [refine s x] refines a logical variable [x] (created with [fresh]) w.r.t.
     state [s] *)
 val refine : State.t -> 'a -> 'a
+
+(** [take ?(n=k) s] takes at most [k] first answers from the lazy
+    stream [s] (reexported from MKStream for convenience) *)
+val take : ?n:int -> State.t MKStream.t -> State.t list
