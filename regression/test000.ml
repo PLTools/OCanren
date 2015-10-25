@@ -2,29 +2,31 @@ open GT
 open MiniKanren
 
 let run2 memo printer n goal =
-  call_fresh (fun q -> 
-    call_fresh (fun r st -> 
-      let result = run ~n:n (goal q r) st in
+  run (
+    call_fresh (fun q -> 
+      call_fresh (fun r st -> 
+        let result = take ~n:n (goal q r st) in
+        Printf.printf "%s {\n" memo;
+        List.iter
+          (fun st -> 
+             Printf.printf "q=%s, r=%s\n" (printer st (refine st q)) (printer st (refine st r))
+          )
+          result;
+        Printf.printf "}\n%!"
+  )))
+
+let run1 memo printer n goal =
+  run (
+    call_fresh (fun q st -> 
+      let result = take ~n:n (goal q st) in
       Printf.printf "%s {\n" memo;
       List.iter
-        (fun st -> 
-           Printf.printf "q=%s, r=%s\n" (printer st (refine st q)) (printer st (refine st r))
+        (fun st ->        
+           Printf.printf "q=%s\n" (printer st (refine st q))
         )
         result;
       Printf.printf "}\n%!"
-  )) (State.empty ())
-
-let run1 memo printer n goal =
-  call_fresh (fun q st -> 
-    let result = run ~n:n (goal q) st in
-    Printf.printf "%s {\n" memo;
-    List.iter
-      (fun st ->        
-         Printf.printf "q=%s\n" (printer st (refine st q))
-      )
-      result;
-    Printf.printf "}\n%!"
-  ) (State.empty ())
+  ))
 
 let just_a a = a === 5
 

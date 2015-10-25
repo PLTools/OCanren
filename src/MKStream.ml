@@ -56,7 +56,7 @@ let rec map f s =
       | `Nil -> nil
   )
 
-let take n s =
+let take ?(n=(-1)) s =
   let rec inner i s =
     if i = 0
     then []
@@ -66,8 +66,6 @@ let take n s =
       | `Cons (x, xs) -> x :: inner (i-1) xs
   in
   inner n s
-
-let take_all s = take (-1) s
 
 let concat_map : ('a -> 'b t) -> 'a t -> 'b t = fun f xs ->
   let rec helper ms xs =

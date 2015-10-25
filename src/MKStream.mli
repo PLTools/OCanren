@@ -54,11 +54,8 @@ val foldl : ('b -> 'a -> 'b) -> 'b -> 'a t -> 'b
 (** [map f s] maps a stream [s] into stream of [f]'s images *)
 val map : ('a -> 'b) -> 'a t -> 'b t
 
-(** [take n s] takes at most [n]-first elements from [s] *)
-val take : int -> 'a t -> 'a list
-
-(** [take_all s] converts a stream [s] into regular list *)
-val take_all : 'a t -> 'a list
+(** [take ~n:k s] takes at most [k] first elements from [s] *)
+val take : ?n:int -> 'a t -> 'a list
 
 (** [concat_map f s] calculates the concatenation of [map f s] *)
 val concat_map : ('a -> 'b t) -> 'a t -> 'b t

@@ -267,6 +267,6 @@ let disj f g st =
     (f st)
     (Stream.from_fun (fun () -> g st) )
 
-let run ?(n=(-1)) f st = Stream.take n (f st (*State.empty*))
+let run f = f (State.empty ())
 
 let refine (e, s) x = Subst.walk' e x s

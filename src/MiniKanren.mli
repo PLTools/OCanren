@@ -19,24 +19,11 @@
 
 (** {2 Basic modules and types} *)
 
-(** Environment (needed to print out the results of calculations) *)
-module Env :
-  sig
-    (** Environment type *)
-    type t
-  end
-
 (** State (needed to perform calculations) *)
 module State :
   sig
     (** State type *)
     type t
-
-    (** [empty ()] creates empty state *)
-    val empty : unit -> t
-
-    (** [env s] takes an environment from the state [s] *)
-    val env  : t -> Env.t 
 
     (** Printing helper *)
     val show : t -> string
@@ -83,9 +70,9 @@ val disj : step -> step -> step
 
 (** {2 Top-level running primitives} *)
 
-(** [run ~n:k s st] takes at most [k] answers from the result of calculations. The
-    default case returns all answers. *)
-val run : ?n:int -> step -> State.t -> State.t list
+(** [run s] runs a state transformer [s] (not necessarily a step) in
+    initial state *)
+val run : (State.t -> 'a) -> 'a
 
 (** [refine s x] refines a logical variable [x] (created with [fresh]) w.r.t.
     state [s] *)
