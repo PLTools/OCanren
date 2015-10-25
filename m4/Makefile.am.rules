@@ -1,0 +1,31 @@
+# $URL: dd $
+# $Revision: 19 $
+
+-include .depend
+
+# generic rules
+###############
+%.cmi: %.mli
+	$(OCAMLC) -c $(BFLAGS) $(PXFLAGS) $<
+
+# Note: cmi <- mli should go first
+%.cmi: %.ml
+	$(OCAMLC) -c $(BFLAGS) $(PXFLAGS) $<
+
+%.cmo: %.ml
+	$(OCAMLC) -c $(BFLAGS) $(PXFLAGS) $<
+
+%.o: %.ml
+	$(OCAMLOPT) -c $(OFLAGS) $(STATIC) $(PXFLAGS) $<
+
+%.cmx: %.ml
+	$(OCAMLOPT) -c $(OFLAGS) $(STATIC) $(PXFLAGS) $<
+
+%.ml: %.mll
+	$(OCAMLLEX) $<
+
+%.ml: %.mly
+	$(OCAMLYACC) -v $<
+
+%.mli: %.mly
+	$(OCAMLYACC) -v $<
