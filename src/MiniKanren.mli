@@ -65,8 +65,25 @@ val (===) : 'a -> 'a -> step
 (** [conj s1 s2] creates a step, which is a conjunction of its arguments *)
 val conj : step -> step -> step
 
+(** [&&&] is left-associative infix synonym for [conj] *)
+val (&&&) : step -> step -> step
+
 (** [disj s1 s2] creates a step, which is a disjunction of its arguments *)
 val disj : step -> step -> step
+
+(** [|||] is left-associative infix synonym for [disj] *)
+val (|||) : step -> step -> step
+
+(** [?| [s1; s2; ...; sk]] calculates [s1 ||| s2 ||| ... ||| sk] for a
+    non-empty list of steps *)
+val (?|) : step list -> step
+
+(** [conde] is a synonym for [?|] *)
+val conde : step list -> step
+
+(** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a
+    non-empty list of steps *)
+val (?&) : step list -> step
 
 (** {2 Top-level running primitives} *)
 

@@ -251,6 +251,8 @@ let conj f g st =
   LOG[trace1] (logn "conj %s" (show_st st));
   Stream.from_fun (fun () -> Stream.concat_map g (f st))
 
+let (&&&) = conj
+
 let disj f g st =
   LOG[trace1] (logn "disj %s" (show_st st));
   let rec interleave fs gs =
@@ -267,6 +269,18 @@ let disj f g st =
     (f st)
     (Stream.from_fun (fun () -> g st) )
 
+let (|||) = disj 
+
+let rec (?|) = function
+| [h]  -> h
+| h::t -> h ||| ?| t
+
+let rec (?&) = function
+| [h]  -> h
+| h::t -> h &&& ?& t
+
+let conde = (?|)
+ 
 let run f = f (State.empty ())
 
 let refine (e, s) x = Subst.walk' e x s
