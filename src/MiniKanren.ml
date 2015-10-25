@@ -1,5 +1,6 @@
+module Stream = MKStream 
+
 let (!!) = Obj.magic
-open Printf
 
 type var = Var of int
 type w   = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
@@ -16,16 +17,16 @@ let () =
        args := ("-q", Arg.Unit (fun () -> config.do_log <- false), "quite") :: !args;
        args := ("-v", Arg.Unit (fun () -> config.do_log <- true), "verbose") :: !args );
   Arg.parse !args
-            (fun s -> eprintf "Unknown parameter '%s'\n" s; exit 0)
+            (fun s -> Printf.eprintf "Unknown parameter '%s'\n" s; exit 0)
             "This is usage message"
 
 let logn fmt =
-  if config.do_log then kprintf (printf "%s\n%!") fmt
-  else  kprintf (fun fmt -> ignore (sprintf "%s" fmt)) fmt
+  if config.do_log then Printf.kprintf (Printf.printf "%s\n%!") fmt
+  else Printf.kprintf (fun fmt -> ignore (Printf.sprintf "%s" fmt)) fmt
 
 let logf fmt =
-  if config.do_log then kprintf (printf "%s%!") fmt
-  else  kprintf (fun fmt -> ignore (sprintf "%s" fmt)) fmt
+  if config.do_log then Printf.kprintf (Printf.printf "%s%!") fmt
+  else Printf.kprintf (fun fmt -> ignore (Printf.sprintf "%s" fmt)) fmt
 
 let rec wrap (x : Obj.t) =
   Obj.(
@@ -53,7 +54,8 @@ let rec wrap (x : Obj.t) =
       else Invalid t
     )
 
-let generic_show (x : Obj.t) =
+let generic_show x =
+  let x = Obj.repr x in
   let b = Buffer.create 1024 in
   let rec inner o =
     match wrap o with
@@ -61,7 +63,7 @@ let generic_show (x : Obj.t) =
     | Unboxed n when !!n=0  -> Buffer.add_string b "[]"
     | Unboxed n             -> Buffer.add_string b (Printf.sprintf "int<%d>" (!!n))
     | Boxed (t,l,f) when t=0 && l=1 && (match wrap (f 0) with Unboxed i when !!i >=10 -> true | _ -> false) ->
-       bprintf b "var%d" (match wrap (f 0) with Unboxed i -> !!i | _ -> failwith "shit")
+       Printf.bprintf b "var%d" (match wrap (f 0) with Unboxed i -> !!i | _ -> failwith "shit")
 
     | Boxed   (t, l, f) ->
         Buffer.add_string b (Printf.sprintf "boxed %d <" t);
@@ -80,7 +82,7 @@ module Env :
     val var    : t -> 'a -> int option
     val vars   : t -> var list
     val show   : t -> string
-  end =
+  end = 
   struct
     module H = Hashtbl.Make (
       struct
@@ -127,7 +129,7 @@ module Subst :
 
     type t = Obj.t M.t
 
-    let show m = (M.fold (fun i x s -> s ^ sprintf "%d -> %s; " i (generic_show x)) m "subst {") ^ "}"
+    let show m = (M.fold (fun i x s -> s ^ Printf.sprintf "%d -> %s; " i (generic_show x)) m "subst {") ^ "}"
 
     let empty = M.empty
 
@@ -191,14 +193,20 @@ module Subst :
 	    )
   end
 
-type state = Env.t * Subst.t
-type lunit = state -> state Stream.t
+module State =
+  struct
+  
+    type t = Env.t * Subst.t
+    let env = fst
+    let show (env, subst) = Printf.sprintf "st {%s, %s}" (Env.show env) (Subst.show subst)
 
-let show_st (env, subst) = sprintf "st {%s, %s}" (Env.show env) (Subst.show subst)
+  end
+
+type step = State.t -> State.t MKStream.t
 
 let print_if_var e x k =
   match Env.var e x with
-  | Some i -> sprintf "_.%d" i
+  | Some i -> Printf.sprintf "_.%d" i
   | None   -> k ()
 
 type    int    = GT.int
@@ -244,21 +252,22 @@ let conj f g st =
   LOG[trace1] (logn "conj %s" (show_st st));
   Stream.from_fun (fun () -> Stream.concat_map g (f st))
 
-
 let disj f g st =
   LOG[trace1] (logn "disj %s" (show_st st));
   let rec interleave fs gs =
     LOG[trace1] (logn "interleave");
     Stream.from_fun (
       fun () ->
-        (* logn "fs=%s" (generic_show !!fs); *)
 	match Stream.destruct fs with
 	| `Nil -> gs
 	| `Cons (hd, tl) ->
-           (* logn "destruct says Cons(%s,%s)" (show_st hd) (generic_show !!tl); *)
            Stream.cons hd (interleave gs tl)
     )
   in
   interleave
     (f st)
     (Stream.from_fun (fun () -> g st) )
+
+let take     = Stream.take
+let take_all = Stream.take_all
+let refine (e, s) x = Subst.walk' e x s
