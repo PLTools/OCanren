@@ -208,9 +208,15 @@ let show_var : State.t -> 'a -> (unit -> string) -> 'string = fun (e, _) x k ->
   | Some i -> Printf.sprintf "_.%d" i
   | None   -> k ()
 
-type    int    = GT.int
-type    string = GT.string
-type 'a list   = 'a GT.list
+type    int       = GT.int
+type    string    = GT.string
+type 'a list      = 'a GT.list
+type    bool      = GT.bool
+type    char      = GT.char
+type    unit      = GT.unit
+type    int32     = GT.int32
+type    int64     = GT.int64
+type    nativeint = GT.nativeint
 
 class mkshow_string_t =
   object
@@ -222,6 +228,36 @@ class mkshow_int_t =
     method t_int env int = show_var env int (fun _ -> string_of_int int)
   end
 
+class mkshow_bool_t =
+  object
+    method t_bool env bool = show_var env bool (fun _ -> string_of_bool bool)
+  end
+
+class mkshow_char_t =
+  object
+    method t_char env char = show_var env char (fun _ -> String.make 1 char)
+  end
+
+class mkshow_unit_t =
+  object
+    method t_unit env (unit : unit) = show_var env unit (fun _ -> "()")
+  end
+
+class mkshow_int32_t =
+  object
+    method t_int32 env int32 = show_var env int32 (fun _ -> Int32.to_string int32)
+  end
+
+class mkshow_int64_t =
+  object
+    method t_int64 env int64 = show_var env int64 (fun _ -> Int64.to_string int64)
+  end
+
+class mkshow_nativeint_t =
+  object
+    method t_nativeint env nativeint = show_var env nativeint (fun _ -> Nativeint.to_string nativeint)
+  end
+
 class ['a] mkshow_list_t =
   object
     inherit ['a, State.t, string, State.t, string] @GT.list
@@ -229,6 +265,13 @@ class ['a] mkshow_list_t =
     method c_Cons e s x xs =
       show_var e x.GT.x  (fun _ -> x.GT.fx e) ^ ", " ^
       show_var e xs.GT.x (fun _ -> xs.GT.fx e)
+  end
+
+class ['a] mkshow_option_t =
+  object
+    inherit ['a, State.t, string, State.t, string] @GT.option
+    method c_None e s   = show_var e s.GT.x (fun _ -> "None")
+    method c_Some e s x = show_var e s.GT.x (fun _ -> "Some (" ^ x.fx e ^ ")")
   end
 
 let mkshow t = t.GT.plugins#mkshow
@@ -261,6 +304,90 @@ let string = {GT.gcata = GT.string.GT.gcata;
                 end
              }
 
+let bool = {GT.gcata = GT.string.GT.gcata;
+            GT.plugins = 
+              object
+                method show    = GT.bool.GT.plugins#show
+                method html    = GT.bool.GT.plugins#html
+                method compare = GT.bool.GT.plugins#compare
+                method eq      = GT.bool.GT.plugins#eq
+                method map     = GT.bool.GT.plugins#map
+                method foldl   = GT.bool.GT.plugins#foldl
+                method foldr   = GT.bool.GT.plugins#foldr
+                method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.bool) (new mkshow_bool_t) e s))
+              end
+           }
+
+let char = {GT.gcata = GT.char.GT.gcata;
+            GT.plugins = 
+              object
+                method show    = GT.char.GT.plugins#show
+                method html    = GT.char.GT.plugins#html
+                method compare = GT.char.GT.plugins#compare
+                method eq      = GT.char.GT.plugins#eq
+                method map     = GT.char.GT.plugins#map
+                method foldl   = GT.char.GT.plugins#foldl
+                method foldr   = GT.char.GT.plugins#foldr
+                method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.char) (new mkshow_char_t) e s))
+              end
+           }
+
+let unit = {GT.gcata = GT.unit.GT.gcata;
+            GT.plugins = 
+              object
+                method show    = GT.unit.GT.plugins#show
+                method html    = GT.unit.GT.plugins#html
+                method compare = GT.unit.GT.plugins#compare
+                method eq      = GT.unit.GT.plugins#eq
+                method map     = GT.unit.GT.plugins#map
+                method foldl   = GT.unit.GT.plugins#foldl
+                method foldr   = GT.unit.GT.plugins#foldr
+                method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.unit) (new mkshow_unit_t) e s))
+              end
+           }
+
+let int32 = {GT.gcata = GT.int32.GT.gcata;
+             GT.plugins = 
+               object
+                 method show    = GT.int32.GT.plugins#show
+                 method html    = GT.int32.GT.plugins#html
+                 method compare = GT.int32.GT.plugins#compare
+                 method eq      = GT.int32.GT.plugins#eq
+                 method map     = GT.int32.GT.plugins#map
+                 method foldl   = GT.int32.GT.plugins#foldl
+                 method foldr   = GT.int32.GT.plugins#foldr
+                 method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.int32) (new mkshow_int32_t) e s))
+               end
+            }
+
+let int64 = {GT.gcata = GT.int64.GT.gcata;
+             GT.plugins = 
+               object
+                 method show    = GT.int64.GT.plugins#show
+                 method html    = GT.int64.GT.plugins#html
+                 method compare = GT.int64.GT.plugins#compare
+                 method eq      = GT.int64.GT.plugins#eq
+                 method map     = GT.int64.GT.plugins#map
+                 method foldl   = GT.int64.GT.plugins#foldl
+                 method foldr   = GT.int64.GT.plugins#foldr
+                 method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.int64) (new mkshow_int64_t) e s))
+               end
+            }
+
+let nativeint = {GT.gcata = GT.nativeint.GT.gcata;
+                 GT.plugins = 
+                   object
+                     method show    = GT.nativeint.GT.plugins#show
+                     method html    = GT.nativeint.GT.plugins#html
+                     method compare = GT.nativeint.GT.plugins#compare
+                     method eq      = GT.nativeint.GT.plugins#eq
+                     method map     = GT.nativeint.GT.plugins#map
+                     method foldl   = GT.nativeint.GT.plugins#foldl
+                     method foldr   = GT.nativeint.GT.plugins#foldr
+                     method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.nativeint) (new mkshow_nativeint_t) e s))
+                   end
+                }
+
 let list = {GT.gcata = GT.list.GT.gcata;
             GT.plugins = 
               object
@@ -274,6 +401,20 @@ let list = {GT.gcata = GT.list.GT.gcata;
                 method mkshow  = (fun fa e s -> show_var e s (fun _ -> GT.transform(GT.list) fa (new mkshow_list_t) e s))
               end
            }
+
+let option = {GT.gcata = GT.option.GT.gcata;
+              GT.plugins = 
+                object
+                  method show    = GT.option.GT.plugins#show
+                  method html    = GT.option.GT.plugins#html
+                  method compare = GT.option.GT.plugins#compare
+                  method eq      = GT.option.GT.plugins#eq
+                  method map     = GT.option.GT.plugins#map
+                  method foldl   = GT.option.GT.plugins#foldl
+                  method foldr   = GT.option.GT.plugins#foldr
+                  method mkshow  = (fun fa e s -> show_var e s (fun _ -> GT.transform(GT.option) fa (new mkshow_option_t) e s))
+                end
+             }
 
 let call_fresh f (env, subst) =
   let x, env' = Env.fresh env in
