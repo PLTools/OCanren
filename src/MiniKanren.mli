@@ -41,6 +41,7 @@ type string = GT.string
 (** Minikanren lists *)
 type 'a list = 'a GT.list
 
+(*
 (** {2 Printing functions} *)
 
 (** [show_var st x k] inspects [x] w.r.t. state [st] and either shows it
@@ -59,6 +60,56 @@ val show_int : State.t -> int -> string
 (** Printing helper for minikanren strings (requires state to discover 
     bindings of logical variables) *)
 val show_string : State.t -> string -> string
+*)
+
+class mkshow_string_t :
+  object method t_string : State.t -> string -> string end
+class mkshow_int_t : object method t_int : State.t -> int -> string end
+class ['a] mkshow_list_t :
+  object
+    method c_Cons :
+      State.t ->
+      (State.t, 'a GT.list, string, < a : State.t -> 'a -> string >) GT.a ->
+      (State.t, 'a, string, < a : State.t -> 'a -> string >) GT.a ->
+      (State.t, 'a GT.list, string, < a : State.t -> 'a -> string >) GT.a ->
+      string
+    method c_Nil :
+      State.t ->
+      (State.t, 'a GT.list, string, < a : State.t -> 'a -> string >) GT.a ->
+      string
+    method t_list :
+      (State.t -> 'a -> string) -> State.t -> 'a GT.list -> string
+  end
+val mkshow : ('a, < mkshow : 'b; .. >) GT.t -> 'b
+val int :
+  (('a, 'b) #GT.int_tt -> 'a -> GT.int -> 'b,
+   < compare : GT.int -> GT.int -> GT.comparison;
+     eq : GT.int -> GT.int -> GT.bool; foldl : 'c -> GT.int -> 'c;
+     foldr : 'd -> GT.int -> 'd; html : GT.int -> HTMLView.er;
+     map : GT.int -> GT.int; mkshow : State.t -> GT.int -> string;
+     show : GT.int -> string >)
+  GT.t
+val string :
+  (('a, 'b) #GT.string_tt -> 'a -> GT.string -> 'b,
+   < compare : GT.string -> GT.string -> GT.comparison;
+     eq : GT.string -> GT.string -> GT.bool; foldl : 'c -> GT.string -> 'c;
+     foldr : 'd -> GT.string -> 'd; html : GT.string -> HTMLView.er;
+     map : GT.string -> GT.string; mkshow : State.t -> GT.string -> string;
+     show : GT.string -> GT.string >)
+  GT.t
+val list :
+  (('a -> 'b -> 'c) ->
+   ('b, 'a, 'c, 'd, 'e) #GT.list_tt -> 'd -> 'b GT.list -> 'e,
+   < compare : ('f -> 'f -> GT.comparison) ->
+               'f GT.list -> 'f GT.list -> GT.comparison;
+     eq : ('g -> 'g -> GT.bool) -> 'g GT.list -> 'g GT.list -> GT.bool;
+     foldl : ('h -> 'i -> 'h) -> 'h -> 'i GT.list -> 'h;
+     foldr : ('j -> 'k -> 'j) -> 'j -> 'k GT.list -> 'j;
+     html : ('l -> HTMLView.er) -> 'l GT.list -> HTMLView.er;
+     map : ('m -> 'n) -> 'm GT.list -> 'n GT.list;
+     mkshow : (State.t -> 'o -> string) -> State.t -> 'o GT.list -> string;
+     show : ('p -> GT.string) -> 'p GT.list -> GT.string >)
+  GT.t
 
 (** {2 miniKanren basic primitives} *)
 

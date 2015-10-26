@@ -212,17 +212,17 @@ type    int    = GT.int
 type    string = GT.string
 type 'a list   = 'a GT.list
 
-class minikanren_string_t =
+class mkshow_string_t =
   object
     method t_string env str = show_var env str (fun _ -> str)
   end
 
-class minikanren_int_t =
+class mkshow_int_t =
   object
     method t_int env int = show_var env int (fun _ -> string_of_int int)
   end
 
-class ['a] minikanren_list_t =
+class ['a] mkshow_list_t =
   object
     inherit ['a, State.t, string, State.t, string] @GT.list
     method c_Nil  e s      = show_var e s.GT.x (fun _ -> "[]")
@@ -231,11 +231,49 @@ class ['a] minikanren_list_t =
       show_var e xs.GT.x (fun _ -> xs.GT.fx e)
   end
 
-let minikanren t = t.GT.plugins#minikanren
+let mkshow t = t.GT.plugins#mkshow
 
-let show_list   e fa l = show_var e l (fun _ -> GT.transform(GT.list) fa (new minikanren_list_t  ) e l)
-let show_int    e i    = show_var e i (fun _ -> GT.transform(GT.int)     (new minikanren_int_t   ) e i)
-let show_string e s    = show_var e s (fun _ -> GT.transform(GT.string)  (new minikanren_string_t) e s)
+let int = {GT.gcata = GT.int.GT.gcata;
+           GT.plugins = 
+             object
+               method show    = GT.int.GT.plugins#show
+               method html    = GT.int.GT.plugins#html
+               method compare = GT.int.GT.plugins#compare
+               method eq      = GT.int.GT.plugins#eq
+               method map     = GT.int.GT.plugins#map
+               method foldl   = GT.int.GT.plugins#foldl
+               method foldr   = GT.int.GT.plugins#foldr
+               method mkshow  = (fun e x -> show_var e x (fun _ -> GT.transform(GT.int) (new mkshow_int_t) e x))
+             end
+          }
+
+let string = {GT.gcata = GT.string.GT.gcata;
+              GT.plugins = 
+                object
+                  method show    = GT.string.GT.plugins#show
+                  method html    = GT.string.GT.plugins#html
+                  method compare = GT.string.GT.plugins#compare
+                  method eq      = GT.string.GT.plugins#eq
+                  method map     = GT.string.GT.plugins#map
+                  method foldl   = GT.string.GT.plugins#foldl
+                  method foldr   = GT.string.GT.plugins#foldr
+                  method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.string) (new mkshow_string_t) e s))
+                end
+             }
+
+let list = {GT.gcata = GT.list.GT.gcata;
+            GT.plugins = 
+              object
+                method show    = GT.list.GT.plugins#show
+                method html    = GT.list.GT.plugins#html
+                method compare = GT.list.GT.plugins#compare
+                method eq      = GT.list.GT.plugins#eq
+                method map     = GT.list.GT.plugins#map
+                method foldl   = GT.list.GT.plugins#foldl
+                method foldr   = GT.list.GT.plugins#foldr
+                method mkshow  = (fun fa e s -> show_var e s (fun _ -> GT.transform(GT.list) fa (new mkshow_list_t) e s))
+              end
+           }
 
 let call_fresh f (env, subst) =
   let x, env' = Env.fresh env in
