@@ -5,12 +5,12 @@ open Printf
 open List
 
 let _ =
-  register "minikanren" 
+  register "mkshow" 
     (fun loc d -> 
        let module H = Helper (struct let loc = loc end) in
        H.(
         {
-          inh_t       = <:ctyp< MiniKanren.Env.t >>; 
+          inh_t       = <:ctyp< MiniKanren.State.t >>; 
           syn_t       = T.id "string";
           proper_args = d.type_args; 
           fixed_inh   = None;
@@ -23,7 +23,7 @@ let _ =
 	      x, y, 
 	      (fun env arg x ->
 		 E.app [
-                   <:expr< MiniKanren.print_if_var >>;
+                   <:expr< MiniKanren.show_var >>;
 		   E.lid env.inh;
 		   arg;
 		   (E.func [<:patt< () >>] x)

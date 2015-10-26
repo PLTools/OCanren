@@ -1,0 +1,96 @@
+1 answer, addo O (S O) q {
+q=S (O ())
+}
+1 answer, addo (S O) (S O) q {
+q=S (S (O ()))
+}
+2 answers, addo O (S O) q {
+q=S (O ())
+}
+2 answers, addo (S O) (S O) q {
+q=S (S (O ()))
+}
+1 answer, addo q (S O) (S O) {
+q=O ()
+}
+1 answer, addo (S O) q (S O) {
+q=O ()
+}
+2 answers, addo q (S O) (S O) {
+q=O ()
+}
+2 answers, addo (S O) q (S O) {
+q=O ()
+}
+all answers, addo q r (S (S (S (S O)))) {
+q=O (), r=S (S (S (S (O ()))))
+q=S (O ()), r=S (S (S (O ())))
+q=S (S (O ())), r=S (S (O ()))
+q=S (S (S (O ()))), r=S (O ())
+q=S (S (S (S (O ())))), r=O ()
+}
+1 answer, mulo O (S O) q {
+q=O ()
+}
+1 answer, mulo (S (S O)) (S (S O)) q {
+q=S (S (S (S (O ()))))
+}
+2 answers, mulo O (S O) q {
+q=O ()
+}
+1 answer, mulo q (S (S O)) (S (S O)) {
+q=S (O ())
+}
+1 answer, mulo q (S (S O)) (S (S (S O))) {
+}
+2 answers, mulo q (S (S O)) (S (S O)) {
+q=S (O ())
+}
+2 answers, mulo q (S (S O)) (S (S (S O))) {
+}
+1 answer, mulo (S (S O)) q (S (S O)) {
+q=S (O ())
+}
+1 answer, mulo (S (S O)) q (S (S (S O))) {
+}
+2 answers, mulo (S (S O)) q (S (S O)) {
+q=S (O ())
+}
+2 answers, mulo (S (S O)) q (S (S (S O))) {
+}
+1 answer, mulo q (S O) r {
+q=O (), r=O ()
+}
+10 answers, mulo q (S O) r {
+q=O (), r=O ()
+q=S (O ()), r=S (O ())
+q=S (S (O ())), r=S (S (O ()))
+q=S (S (S (O ()))), r=S (S (S (O ())))
+q=S (S (S (S (O ())))), r=S (S (S (S (O ()))))
+q=S (S (S (S (S (O ()))))), r=S (S (S (S (S (O ())))))
+q=S (S (S (S (S (S (O ())))))), r=S (S (S (S (S (S (O ()))))))
+q=S (S (S (S (S (S (S (O ()))))))), r=S (S (S (S (S (S (S (O ())))))))
+q=S (S (S (S (S (S (S (S (O ())))))))), r=S (S (S (S (S (S (S (S (O ()))))))))
+q=S (S (S (S (S (S (S (S (S (O ()))))))))), r=S (S (S (S (S (S (S (S (S (O ())))))))))
+}
+1 answer, mulo (S O) q r {
+q=O (), r=O ()
+}
+10 answers, mulo (S O) q r {
+q=O (), r=O ()
+q=S (O ()), r=S (O ())
+q=S (S (O ())), r=S (S (O ()))
+q=S (S (S (O ()))), r=S (S (S (O ())))
+q=S (S (S (S (O ())))), r=S (S (S (S (O ()))))
+q=S (S (S (S (S (O ()))))), r=S (S (S (S (S (O ())))))
+q=S (S (S (S (S (S (O ())))))), r=S (S (S (S (S (S (O ()))))))
+q=S (S (S (S (S (S (S (O ()))))))), r=S (S (S (S (S (S (S (O ())))))))
+q=S (S (S (S (S (S (S (S (O ())))))))), r=S (S (S (S (S (S (S (S (O ()))))))))
+q=S (S (S (S (S (S (S (S (S (O ()))))))))), r=S (S (S (S (S (S (S (S (S (O ())))))))))
+}
+1 answer, mulo q r O {
+q=O (), r=_.11
+}
+1 answer, mulo (S O) (S O) q {
+q=S (O ())
+}
