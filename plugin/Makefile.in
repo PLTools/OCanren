@@ -200,7 +200,7 @@ target_os = @target_os@
 target_vendor = @target_vendor@
 
 # type in sources here
-SOURCES = minikanren.ml
+SOURCES = mkshow.ml
 
 # define macros that creates directiries
 mkinstalldirs = $(INSTALL_SCRIPT) -d
