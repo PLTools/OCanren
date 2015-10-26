@@ -3,8 +3,8 @@ open MiniKanren
 
 let run2 memo printer n goal =
   run (
-    call_fresh (fun q -> 
-      call_fresh (fun r st -> 
+    fresh (q r)
+      (fun st -> 
         let result = take ~n:n (goal q r st) in
         Printf.printf "%s {\n" memo;
         List.iter
@@ -13,64 +13,53 @@ let run2 memo printer n goal =
           )
           result;
         Printf.printf "}\n%!"
-  )))
+  ))
 
 let run1 memo printer n goal =
   run (
-    call_fresh (fun q st -> 
-      let result = take ~n:n (goal q st) in
-      Printf.printf "%s {\n" memo;
-      List.iter
-        (fun st ->        
-           Printf.printf "q=%s\n" (printer st (refine st q))
-        )
-        result;
-      Printf.printf "}\n%!"
+    fresh (q)
+      (fun st ->
+        let result = take ~n:n (goal q st) in
+        Printf.printf "%s {\n" memo;
+        List.iter
+          (fun st ->        
+             Printf.printf "q=%s\n" (printer st (refine st q))
+          )
+          result;
+        Printf.printf "}\n%!"
   ))
 
 let just_a a = a === 5
 
 let a_and_b a =
-  call_fresh (
-    fun b ->
-      (a === 7) &&&
-      conde [b === 6; b === 5]
-  )
+  fresh (b)
+    (a === 7)
+    (conde [b === 6; b === 5])
 
 let a_and_b' b =
-  call_fresh (
-    fun a ->
-      (a === 7) &&&
-      conde [b === 6; b === 5]
-  )
-
-let rec fives x =
-  (x === 5) |||
-  (fun st -> MKStream.from_fun (fun () -> fives x st))
+  fresh (a)
+    (a === 7)
+    (conde [b === 6; b === 5])
+  
+let rec fives x = (x === 5) ||| defer (fives x) 
 
 let rec appendo a b ab =
-  ?| [  
-  (a === []) &&& (b === ab);
-  call_fresh (fun h ->
-    (call_fresh (fun t ->
-      ((a === h::t) &&&
-       (call_fresh (fun ab' ->
-          (h::ab' === ab) &&& (appendo t b ab')
-       ))
-    ))))
+  conde [
+    (a === []) &&& (b === ab);
+    fresh (h t ab')
+      (a === h::t) 
+      (h::ab' === ab) 
+      (appendo t b ab')    
   ]
   
 let rec reverso a b = 
   conde [
     (a === []) &&& (b === []);
-    call_fresh (fun h ->
-      (call_fresh (fun t ->
-          ((a === h::t) &&&
-           (call_fresh (fun a' ->
-              ?& [appendo a' [h] b; reverso t a']
-           ))
-        )  
-    )))]
+    fresh (h t a')
+      (a === h::t)
+      (appendo a' [h] b)
+      (reverso t a')
+  ]
 
 let int_list st l = show_list st show_int l
 
@@ -90,3 +79,4 @@ let _ =
    run1 "a_and_b"                                    show_int 1  (fun q   -> a_and_b q);
    run1 "a_and_b'"                                   show_int 2  (fun q   -> a_and_b' q);
    run1 "fives"                                      show_int 10 (fun q   -> fives q)
+
