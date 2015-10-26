@@ -201,7 +201,7 @@ module State =
     let show (env, subst) = Printf.sprintf "st {%s, %s}" (Env.show env) (Subst.show subst)
   end
 
-type step = State.t -> State.t MKStream.t
+type goal = State.t -> State.t MKStream.t
 
 let print_if_var : State.t -> 'a -> (unit -> string) -> 'string = fun (e, _) x k ->
   match Env.var e x with

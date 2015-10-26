@@ -29,8 +29,8 @@ module State :
     val show : t -> string
   end
 
-(** Step converts a state into a lazy stream of states *)
-type step = State.t -> State.t MKStream.t
+(** Goal converts a state into a lazy stream of states *)
+type goal = State.t -> State.t MKStream.t
 
 (** Minikanren integers *)
 type int = GT.int
@@ -43,51 +43,54 @@ type 'a list = 'a GT.list
 
 (** {2 Printing functions} *)
 
-(** Printing helper for minikanren lists (requires an environment) *)
+(** Printing helper for minikanren lists (requires state to discover 
+    bindings of logical variables) *)
 val show_list : State.t -> (State.t -> 'a -> string) -> 'a list -> string
 
-(** Printing helper for minikanren ints (requires an environment) *)
+(** Printing helper for minikanren ints (requires state to discover 
+    bindings of logical variables) *)
 val show_int : State.t -> int -> string
 
-(** Printing helper for minikanren ints (requires an environment) *)
+(** Printing helper for minikanren strings (requires state to discover 
+    bindings of logical variables) *)
 val show_string : State.t -> string -> string
 
 (** {2 miniKanren basic primitives} *)
 
-(** [call_fresh f] creates a step from a functions, which takes a fresh
-    logical variable *)
+(** [call_fresh f] creates a fresh logical variable and passes it to the
+    parameter *)
 val call_fresh : ('a -> State.t -> 'b) -> State.t -> 'b
 
-(** [x === y] creates a step, which performs a unifications of
+(** [x === y] creates a goal, which performs a unifications of
     [x] and [y] *)
-val (===) : 'a -> 'a -> step
+val (===) : 'a -> 'a -> goal
 
-(** [conj s1 s2] creates a step, which is a conjunction of its arguments *)
-val conj : step -> step -> step
+(** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
+val conj : goal -> goal -> goal
 
 (** [&&&] is left-associative infix synonym for [conj] *)
-val (&&&) : step -> step -> step
+val (&&&) : goal -> goal -> goal
 
-(** [disj s1 s2] creates a step, which is a disjunction of its arguments *)
-val disj : step -> step -> step
+(** [disj s1 s2] creates a goal, which is a disjunction of its arguments *)
+val disj : goal -> goal -> goal
 
 (** [|||] is left-associative infix synonym for [disj] *)
-val (|||) : step -> step -> step
+val (|||) : goal -> goal -> goal
 
 (** [?| [s1; s2; ...; sk]] calculates [s1 ||| s2 ||| ... ||| sk] for a
-    non-empty list of steps *)
-val (?|) : step list -> step
+    non-empty list of goals *)
+val (?|) : goal list -> goal
 
 (** [conde] is a synonym for [?|] *)
-val conde : step list -> step
+val conde : goal list -> goal
 
 (** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a
-    non-empty list of steps *)
-val (?&) : step list -> step
+    non-empty list of goals *)
+val (?&) : goal list -> goal
 
 (** {2 Top-level running primitives} *)
 
-(** [run s] runs a state transformer [s] (not necessarily a step) in
+(** [run s] runs a state transformer [s] (not necessarily a goal) in
     initial state *)
 val run : (State.t -> 'a) -> 'a
 
