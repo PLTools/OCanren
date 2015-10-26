@@ -68,6 +68,7 @@ let _ =
 	    body env (E.str "(") (E.str ")") (E.str ", ") (wrap_id elems)
 	  method constructor env name args = 
 	    body env (E.str ((if d.is_polyvar then "`" else "") ^ name ^ " (")) (E.str ")") (E.str ", ") (wrap_id args)
+          method default e = <:expr< fun st x -> MiniKanren.show_var st x (fun () -> $e$ st x) >>
 	end
      )
     )

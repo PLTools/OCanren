@@ -203,7 +203,7 @@ module State =
 
 type goal = State.t -> State.t MKStream.t
 
-let print_if_var : State.t -> 'a -> (unit -> string) -> 'string = fun (e, _) x k ->
+let show_var : State.t -> 'a -> (unit -> string) -> 'string = fun (e, _) x k ->
   match Env.var e x with
   | Some i -> Printf.sprintf "_.%d" i
   | None   -> k ()
@@ -214,28 +214,28 @@ type 'a list   = 'a GT.list
 
 class minikanren_string_t =
   object
-    method t_string env str = print_if_var env str (fun _ -> str)
+    method t_string env str = show_var env str (fun _ -> str)
   end
 
 class minikanren_int_t =
   object
-    method t_int env int = print_if_var env int (fun _ -> string_of_int int)
+    method t_int env int = show_var env int (fun _ -> string_of_int int)
   end
 
 class ['a] minikanren_list_t =
   object
     inherit ['a, State.t, string, State.t, string] @GT.list
-    method c_Nil  e s      = print_if_var e s.GT.x (fun _ -> "[]")
+    method c_Nil  e s      = show_var e s.GT.x (fun _ -> "[]")
     method c_Cons e s x xs =
-      print_if_var e x.GT.x  (fun _ -> x.GT.fx e) ^ ", " ^
-      print_if_var e xs.GT.x (fun _ -> xs.GT.fx e)
+      show_var e x.GT.x  (fun _ -> x.GT.fx e) ^ ", " ^
+      show_var e xs.GT.x (fun _ -> xs.GT.fx e)
   end
 
 let minikanren t = t.GT.plugins#minikanren
 
-let show_list   e fa l = print_if_var e l (fun _ -> GT.transform(GT.list) fa (new minikanren_list_t  ) e l)
-let show_int    e i    = print_if_var e i (fun _ -> GT.transform(GT.int)     (new minikanren_int_t   ) e i)
-let show_string e s    = print_if_var e s (fun _ -> GT.transform(GT.string)  (new minikanren_string_t) e s)
+let show_list   e fa l = show_var e l (fun _ -> GT.transform(GT.list) fa (new minikanren_list_t  ) e l)
+let show_int    e i    = show_var e i (fun _ -> GT.transform(GT.int)     (new minikanren_int_t   ) e i)
+let show_string e s    = show_var e s (fun _ -> GT.transform(GT.string)  (new minikanren_string_t) e s)
 
 let call_fresh f (env, subst) =
   let x, env' = Env.fresh env in
@@ -267,7 +267,7 @@ let disj f g st =
   in
   interleave
     (f st)
-    (Stream.from_fun (fun () -> g st) )
+    (Stream.from_fun (fun () -> g st))
 
 let (|||) = disj 
 
