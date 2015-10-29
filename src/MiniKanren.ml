@@ -271,7 +271,7 @@ class ['a] mkshow_option_t =
   object
     inherit ['a, State.t, string, State.t, string] @GT.option
     method c_None e s   = show_var e s.GT.x (fun _ -> "None")
-    method c_Some e s x = show_var e s.GT.x (fun _ -> "Some (" ^ x.fx e ^ ")")
+    method c_Some e s x = show_var e s.GT.x (fun _ -> "Some (" ^ x.GT.fx e ^ ")")
   end
 
 let mkshow t = t.GT.plugins#mkshow
@@ -421,32 +421,27 @@ let call_fresh f (env, subst) =
   f x (env', subst)
 
 let (===) x y (env, subst) =
-  LOG[trace1] (logf "unify '%s' and '%s' in '%s' = " (generic_show !!x) (generic_show !!y) (show_st (env, subst)));
+  LOG[trace1] (logf "unify '%s' and '%s' in '%s' = " (generic_show !!x) (generic_show !!y) (State.show (env, subst)));
   match Subst.unify env x y (Some subst) with
   | None   -> Stream.nil
-  | Some s -> LOG[trace1] (logn "'%s'" (show_st (env, s))); Stream.cons (env, s) Stream.nil
+  | Some s -> LOG[trace1] (logn "'%s'" (State.show (env, s))); Stream.cons (env, s) Stream.nil
 
-let conj f g st =
-  LOG[trace1] (logn "conj %s" (show_st st));
-  Stream.from_fun (fun () -> Stream.concat_map g (f st))
+let conj f g st = 
+  LOG[trace1] (logn "conj %s" (State.show st));
+  Stream.concat_map g (f st) 
 
 let (&&&) = conj
 
 let disj f g st =
-  LOG[trace1] (logn "disj %s" (show_st st));
+  LOG[trace1] (logn "disj %s" (State.show st));
   let rec interleave fs gs =
     LOG[trace1] (logn "interleave");
-    Stream.from_fun (
-      fun () ->
-	match Stream.destruct fs with
-	| `Nil -> gs
-	| `Cons (hd, tl) ->
-           Stream.cons hd (interleave gs tl)
-    )
+    match Stream.destruct fs with
+    | `Nil -> gs
+    | `Cons (hd, tl) ->
+         Stream.cons hd (Stream.from_fun (fun _ -> interleave gs tl))
   in
-  interleave
-    (f st)
-    (Stream.from_fun (fun () -> g st))
+  interleave (f st) (g st)
 
 let (|||) = disj 
 

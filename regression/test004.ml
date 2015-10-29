@@ -3,6 +3,8 @@ open MiniKanren
 
 @type nat = O | S of nat with mkshow
 
+let rec copy = function O -> O | S n -> S (copy n)
+
 let run2 memo printer n goal =
   run (
     fresh (q r)
@@ -49,9 +51,9 @@ let rec addo x y z =
 let rec mulo x y z =
   conde [
     (x === O) &&& (z === O);
-    fresh (x' z')
-      (x === S x')      
-      (addo y z' z)
+    fresh (x' z') 
+      (x === S x') 
+      (addo y z' z) 
       (mulo x' y z')
   ]
 
@@ -87,8 +89,10 @@ let _ =
    run2 "10 answers, mulo (S O) q r"                (mkshow nat)  10  (fun q r -> mulo (S O) q r);
 
    run2 "1 answer, mulo q r O"    (mkshow nat)   1  (fun q r -> mulo q r O);
-(*   run2 "1 answer, mulo q r (S O)"    (mkshow nat)   1  (fun q r -> mulo q r (S O)); *)
-   run1 "1 answer, mulo (S O) (S O) q"    (mkshow nat)   1  (fun q -> mulo (S O) (S O) q);
+(*  
+   run2 "1 answer, mulo q r (S O)"    (mkshow nat)   1  (fun q r -> mulo q r (S O)); 
+  *)
+ run1 "1 answer, mulo (S O) (S O) q"    (mkshow nat)   1  (fun q -> mulo (S O) (S O) q); 
 
 (*
    run2 "1 answer, mulo q r (S (S (S (S O))))"    (mkshow nat)   1  (fun q r -> mulo q r (S (S (S (S O)))));

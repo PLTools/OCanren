@@ -24,7 +24,7 @@ let from_fun (f: unit -> 'a t) : 'a t =
 
 let nil = from_fun (fun () -> raise End_of_stream)
 
-let cons h t : 'a t  = Lazy.lazy_from_val (h, t)
+let cons h t : 'a t = Lazy.lazy_from_val (h, t)
 
 let is_empty (s: 'a t) =
   try ignore (Lazy.force s); false with End_of_stream -> true
@@ -38,21 +38,21 @@ let destruct (s: 'a t) =
 
 let rec concat s1 s2 =
   from_fun (fun () ->
-      match destruct s1 with
-      | `Nil -> s2
-      | `Cons (h, t) -> cons h (concat t s2)
+    match destruct s1 with
+    | `Nil -> s2
+    | `Cons (h, t) -> cons h (from_fun (fun () -> concat t s2))
   )
 
 let rec foldl f acc s =
   match destruct s with
   | `Nil -> acc
   | `Cons (x, xs) -> foldl f (f acc x) xs
-
+  
 let rec map f s =
   from_fun (
     fun () ->
       match destruct s with
-      | `Cons (x, xs) -> cons (f x) (map f xs)
+      | `Cons (x, xs) -> cons (f x) (from_fun (fun () -> map f xs))
       | `Nil -> nil
   )
 
@@ -67,17 +67,9 @@ let take ?(n=(-1)) s =
   in
   inner n s
 
-let concat_map : ('a -> 'b t) -> 'a t -> 'b t = fun f xs ->
-  let rec helper ms xs =
-    match destruct ms with
-    | `Nil -> go_next xs
-    | `Cons (x, tl) -> cons x (concat tl (go_next xs))
-  and go_next xs =
+let rec concat_map : ('a -> 'b t) -> 'a t -> 'b t = fun f xs ->
+  from_fun (fun () ->
     match destruct xs with
+    | `Cons (x, xs) -> concat (f x) (concat_map f xs)
     | `Nil -> nil
-    | `Cons (h, tl) -> from_fun (fun () -> helper (f h) tl)
-  in
-  match destruct xs with
-  | `Nil -> nil
-  | `Cons (h, tl) -> from_fun (fun () -> helper (f h) tl)
-
+  )
