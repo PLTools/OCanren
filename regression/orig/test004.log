@@ -91,6 +91,32 @@ q=S (S (S (S (S (S (S (S (S (O ()))))))))), r=S (S (S (S (S (S (S (S (S (O ())))
 1 answer, mulo q r O {
 q=O (), r=_.11
 }
+1 answer, mulo q r (S O) {
+q=S (O ()), r=S (O ())
+}
 1 answer, mulo (S O) (S O) q {
 q=S (O ())
+}
+1 answer, mulo q r (S (S (S (S O)))) {
+q=S (S (S (S (O ())))), r=S (O ())
+}
+3 answers, mulo q r (S (S (S (S O)))) {
+q=S (S (S (S (O ())))), r=S (O ())
+q=S (S (O ())), r=S (S (O ()))
+q=S (O ()), r=S (S (S (S (O ()))))
+}
+1 answer, mulo q r t {
+q=O (), r=_.11, t=O ()
+}
+10 answers, mulo q r t {
+q=O (), r=_.11, t=O ()
+q=S (O ()), r=O (), t=O ()
+q=S (S (O ())), r=O (), t=O ()
+q=S (O ()), r=S (O ()), t=S (O ())
+q=S (S (S (O ()))), r=O (), t=O ()
+q=S (S (S (S (O ())))), r=O (), t=O ()
+q=S (O ()), r=S (S (O ())), t=S (S (O ()))
+q=S (S (S (S (S (O ()))))), r=O (), t=O ()
+q=S (S (O ())), r=S (O ()), t=S (S (O ()))
+q=S (S (S (S (S (S (O ())))))), r=O (), t=O ()
 }

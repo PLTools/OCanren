@@ -29,12 +29,15 @@ module State :
     val show : t -> string
   end
 
+(** Lazy streams *)
 module Stream :
   sig
+
+    (** Type of the stream *)
     type 'a t
 
+    (** Lazy constructor *)
     val from_fun : (unit -> 'a t) -> 'a t
-    val take     : ?n:int -> 'a t -> 'a list
   end
 
 (** Goal converts a state into a lazy stream of states *)

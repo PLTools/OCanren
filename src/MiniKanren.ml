@@ -34,6 +34,7 @@ module Stream =
   end
 *)
 
+(*
 module Stream :
   sig 
     type 'a t
@@ -80,19 +81,67 @@ module Stream :
       inner n s
 
     let rec mplus fs gs =
-      LOG[trace1] (logn "interleave");
+      LOG[trace1] (logn "mplus");
       from_fun (fun () ->
          match destruct fs with
-         | `Nil -> gs
-         | `Cons (hd, tl) ->
-              cons hd (from_fun (fun _ -> mplus gs tl))
+         | `Nil           -> gs
+         | `Cons (hd, tl) -> cons hd (mplus gs tl) 
       )
 
     let rec bind xs f =
       from_fun (fun () ->
         match destruct xs with
         | `Cons (x, xs) -> mplus (f x) (bind xs f)
-        | `Nil -> nil
+        | `Nil          -> nil
+     )
+
+  end
+*)
+
+module Stream :
+  sig 
+    type 'a t
+
+    val from_fun : (unit -> 'a t) -> 'a t
+    val nil : 'a t
+    val cons : 'a -> 'a t -> 'a t
+    val take : ?n:int -> 'a t -> 'a list
+    val mplus : 'a t -> 'a t -> 'a t
+    val bind  : 'a t -> ('a -> 'b t) -> 'b t
+  end =
+  struct
+
+    type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t
+
+    let from_fun (f: unit -> 'a t) : 'a t = Lazy (Lazy.lazy_from_fun f)
+
+    let nil = Nil
+
+    let cons h t = Cons (h, t)
+
+    let rec take ?(n=(-1)) s =
+      if n = 0
+      then []
+      else match s with
+           | Nil          -> []
+           | Cons (x, xs) -> x :: take ~n:(n-1) xs
+	   | Lazy  z      -> take ~n:n (Lazy.force z)            
+
+    let rec mplus fs gs =
+      LOG[trace1] (logn "mplus");
+      from_fun (fun () ->
+         match fs with
+         | Nil           -> gs
+         | Cons (hd, tl) -> cons hd (mplus gs tl) 
+	 | Lazy z        -> mplus gs (Lazy.force z)
+      )
+
+    let rec bind xs f =
+      from_fun (fun () ->
+        match xs with
+        | Cons (x, xs) -> mplus (f x) (bind xs f)
+	| Nil          -> nil
+        | Lazy z       -> bind (Lazy.force z) f
      )
 
   end
