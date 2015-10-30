@@ -29,8 +29,16 @@ module State :
     val show : t -> string
   end
 
+module Stream :
+  sig
+    type 'a t
+
+    val from_fun : (unit -> 'a t) -> 'a t
+    val take     : ?n:int -> 'a t -> 'a list
+  end
+
 (** Goal converts a state into a lazy stream of states *)
-type goal = State.t -> State.t MKStream.t
+type goal = State.t -> State.t Stream.t
 
 (** {2 GT-based printing functions} *)
 
@@ -216,4 +224,4 @@ val refine : State.t -> 'a -> 'a
 
 (** [take ?(n=k) s] takes at most [k] first answers from the lazy
     stream [s] (reexported from MKStream for convenience) *)
-val take : ?n:int -> State.t MKStream.t -> State.t list
+val take : ?n:int -> State.t Stream.t -> State.t list

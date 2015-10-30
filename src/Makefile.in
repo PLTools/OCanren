@@ -209,8 +209,8 @@ target_vendor = @target_vendor@
 SUBDIRS = 
 
 # type in sources here
-SOURCES = MKStream.ml MiniKanren.ml
-MLI = MKStream.mli MiniKanren.mli
+SOURCES = MiniKanren.ml
+MLI = MiniKanren.mli
 
 # define macros that creates directiries
 mkinstalldirs = $(INSTALL_SCRIPT) -d

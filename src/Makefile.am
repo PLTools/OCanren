@@ -2,8 +2,8 @@ PACKAGE := MiniKanren
 SUBDIRS = 
 
 # type in sources here
-SOURCES = MKStream.ml MiniKanren.ml
-MLI = MKStream.mli MiniKanren.mli
+SOURCES = MiniKanren.ml
+MLI = MiniKanren.mli
 
 include $(top_srcdir)/m4/Makefile.am.vars
 

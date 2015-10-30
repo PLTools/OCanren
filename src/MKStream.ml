@@ -70,6 +70,6 @@ let take ?(n=(-1)) s =
 let rec concat_map : ('a -> 'b t) -> 'a t -> 'b t = fun f xs ->
   from_fun (fun () ->
     match destruct xs with
-    | `Cons (x, xs) -> concat (f x) (concat_map f xs)
+    | `Cons (x, xs) -> concat (from_fun (fun _ -> f x)) (concat_map f xs)
     | `Nil -> nil
   )

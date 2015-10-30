@@ -1,4 +1,101 @@
-module Stream = MKStream 
+(*
+module Stream =
+  struct
+    type 'a t = Nil | Mature of 'a * 'a t | Immature of (unit -> 'a t)
+
+    let nil      = Nil
+    let cons h t = Mature (h, t)
+
+    let take ?(n=(-1)) s =
+      let rec inner n s =
+        if n = 0 
+        then []
+        else match s with 
+	     | Nil -> []
+	     | Mature (h, t) -> h :: inner (n-1) t
+	     | Immature f    -> inner n (f ())
+      in
+      inner n s     
+
+    let from_fun f = Immature f
+
+    let rec mplus x y =
+      match x with
+      | Nil           -> y
+      | Immature _    -> mplus y x
+      | Mature (h, t) -> Mature (h, mplus t y)
+
+    let rec bind f g =
+      match f with
+      | Nil           -> Nil
+      | Immature  _   -> from_fun (fun () -> bind f g)
+      | Mature (h, t) -> mplus (g h) (bind t g)
+
+  end
+*)
+
+module Stream :
+  sig 
+    type 'a t
+
+    val from_fun : (unit -> 'a t) -> 'a t
+    val nil : 'a t
+    val cons : 'a -> 'a t -> 'a t
+    val take : ?n:int -> 'a t -> 'a list
+    val mplus : 'a t -> 'a t -> 'a t
+    val bind  : 'a t -> ('a -> 'b t) -> 'b t
+  end =
+  struct
+
+    type 'a t = ('a * 'a t) Lazy.t
+
+    exception End_of_stream
+
+    let from_fun (f: unit -> 'a t) : 'a t =
+      Lazy.lazy_from_fun (fun () -> Lazy.force (f ()))
+
+    let nil = from_fun (fun () -> raise End_of_stream)
+
+    let cons h t = Lazy.lazy_from_val (h, t)
+
+    let destruct (s: 'a t) =
+      try `Cons (Lazy.force s) with End_of_stream -> `Nil
+
+    let rec concat s1 s2 =
+      from_fun (fun () ->
+        match destruct s1 with
+        | `Nil -> s2
+        | `Cons (h, t) -> cons h (from_fun (fun () -> concat t s2))
+      )
+
+    let take ?(n=(-1)) s =
+      let rec inner i s =
+        if i = 0
+        then []
+        else
+          match destruct s with
+          | `Nil -> []
+          | `Cons (x, xs) -> x :: inner (i-1) xs
+      in
+      inner n s
+
+    let rec mplus fs gs =
+      LOG[trace1] (logn "interleave");
+      from_fun (fun () ->
+         match destruct fs with
+         | `Nil -> gs
+         | `Cons (hd, tl) ->
+              cons hd (from_fun (fun _ -> mplus gs tl))
+      )
+
+    let rec bind xs f =
+      from_fun (fun () ->
+        match destruct xs with
+        | `Cons (x, xs) -> mplus (f x) (bind xs f)
+        | `Nil -> nil
+     )
+
+  end
 
 let (!!) = Obj.magic
 
@@ -201,7 +298,7 @@ module State =
     let show (env, subst) = Printf.sprintf "st {%s, %s}" (Env.show env) (Subst.show subst)
   end
 
-type goal = State.t -> State.t MKStream.t
+type goal = State.t -> State.t Stream.t
 
 let show_var : State.t -> 'a -> (unit -> string) -> 'string = fun (e, _) x k ->
   match Env.var e x with
@@ -426,22 +523,11 @@ let (===) x y (env, subst) =
   | None   -> Stream.nil
   | Some s -> LOG[trace1] (logn "'%s'" (State.show (env, s))); Stream.cons (env, s) Stream.nil
 
-let conj f g st = 
-  LOG[trace1] (logn "conj %s" (State.show st));
-  Stream.concat_map g (f st) 
+let conj f g st = Stream.bind (f st) g 
 
 let (&&&) = conj
 
-let disj f g st =
-  LOG[trace1] (logn "disj %s" (State.show st));
-  let rec interleave fs gs =
-    LOG[trace1] (logn "interleave");
-    match Stream.destruct fs with
-    | `Nil -> gs
-    | `Cons (hd, tl) ->
-         Stream.cons hd (Stream.from_fun (fun _ -> interleave gs tl))
-  in
-  interleave (f st) (g st)
+let disj f g st = Stream.mplus (f st) (g st)
 
 let (|||) = disj 
 

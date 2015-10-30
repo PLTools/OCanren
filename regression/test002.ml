@@ -46,7 +46,7 @@ let a_and_b' b =
 
 let rec fives x =
   (x === 5) |||
-  (fun st -> MKStream.from_fun (fun () -> fives x st))
+  (fun st -> Stream.from_fun (fun () -> fives x st))
 
 let rec appendo a b ab =
   ?| [  

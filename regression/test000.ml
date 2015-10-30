@@ -49,8 +49,8 @@ let a_and_b' b =
   )
 
 let rec fives x =
-  disj (x === 5)
-       (fun st -> MKStream.from_fun (fun () -> fives x st))
+  disj (x === 5) 
+       (fun st -> Stream.from_fun (fun () -> fives x st))
 
 let rec appendo a b ab =
   disj
@@ -60,7 +60,7 @@ let rec appendo a b ab =
         (conj (a === h::t)
            (call_fresh (fun ab' ->
               conj (h::ab' === ab)
-                   (appendo t b ab')
+                   (fun st -> Stream.from_fun (fun () -> appendo t b ab' st))
            ))
       )))
     ))
@@ -72,8 +72,8 @@ let rec reverso a b =
       (call_fresh (fun t ->
           (conj (a === h::t)
               (call_fresh (fun a' ->
-                 conj (appendo a' [h] b)
-                      (reverso t a')
+                 conj (fun st -> Stream.from_fun (fun () -> appendo a' [h] b st))
+                      (fun st -> Stream.from_fun (fun () -> reverso t a' st))
               ))
         )
     )
@@ -83,8 +83,8 @@ let int_list st l = mkshow(list) (mkshow(int)) st l
 
 let _ =
    run1 "appendo q [3; 4] [1; 2; 3; 4] max 1 result" int_list       1 (fun q   -> appendo q [3; 4] [1; 2; 3; 4]); 
-   run2 "appendo q [] r max 4 results"               int_list       4 (fun q r -> appendo q [] r);
-   run1 "reverso q [1; 2; 3; 4] max 1 result"        int_list       1 (fun q   -> reverso q [1; 2; 3; 4]); 
+   run2 "appendo q [] r max 4 results"               int_list       4 (fun q r -> appendo q [] r); 
+   run1 "reverso q [1; 2; 3; 4] max 1 result"        int_list       1 (fun q   -> reverso q [1; 2; 3; 4]);  
    run1 "reverso [] [] max 1 result"                 int_list       1 (fun q   -> reverso [] []); 
    run1 "reverso [1; 2; 3; 4] q max 1 result"        int_list       1 (fun q   -> reverso [1; 2; 3; 4] q);  
    run1 "reverso q q max 1 result"                   int_list       1 (fun q   -> reverso q q); 

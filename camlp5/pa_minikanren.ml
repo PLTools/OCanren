@@ -48,7 +48,7 @@ EXTEND
       ) vars body
     ] |
     [ "defer"; subj=expr LEVEL "." ->
-      <:expr< (fun __st__ -> MKStream.from_fun (fun () -> $subj$ __st__)) >>
+      <:expr< (fun __st__ -> MiniKanren.Stream.from_fun (fun () -> $subj$ __st__)) >>
     ]
   ];
 
