@@ -50,7 +50,7 @@ let _ =
                         >>
 		      )
                   | arg, typ, wrapper -> 
-		      (match env.trait "minikanren" typ with
+		      (match env.trait "mkshow" typ with
 		       | Some e -> append (wrapper env (E.lid arg) <:expr< $e$ $E.lid env.inh$ $E.lid arg$>>)
 		       | None   -> acc
 		      )

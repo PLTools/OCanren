@@ -51,15 +51,17 @@ type goal = State.t -> State.t Stream.t
 val show_var : State.t -> 'a -> (unit -> string) -> string
 
 (** Type synonyms *)
-type    int       = GT.int
-type    string    = GT.string
-type 'a list      = 'a GT.list
-type    bool      = GT.bool
-type    char      = GT.char
-type    unit      = GT.unit
-type    int32     = GT.int32
-type    int64     = GT.int64
-type    nativeint = GT.nativeint
+type          int       = GT.int
+type          string    = GT.string
+type 'a       list      = 'a GT.list
+type 'a       option    = 'a GT.option
+type ('a, 'b) pair      = ('a, 'b) GT.pair
+type          bool      = GT.bool
+type          char      = GT.char
+type          unit      = GT.unit
+type          int32     = GT.int32
+type          int64     = GT.int64
+type          nativeint = GT.nativeint
 
 (** OO printing transformers *)
 class mkshow_string_t    : object method t_string    : State.t -> string    -> string end
@@ -84,6 +86,31 @@ class ['a] mkshow_list_t :
       string
     method t_list :
       (State.t -> 'a -> string) -> State.t -> 'a GT.list -> string
+  end
+class ['a] mkshow_option_t :
+  object
+    method c_Some :
+      State.t ->
+      (State.t, 'a GT.option, string, < a : State.t -> 'a -> string >) GT.a ->
+      (State.t, 'a, string, < a : State.t -> 'a -> string >) GT.a ->
+      string
+    method c_None :
+      State.t ->
+      (State.t, 'a GT.option, string, < a : State.t -> 'a -> string >) GT.a ->
+      string
+    method t_option :
+      (State.t -> 'a -> string) -> State.t -> 'a GT.option -> string
+  end
+class ['a, 'b] mkshow_pair_t :
+  object
+    method c_Pair :
+      State.t ->
+      (State.t, ('a, 'b) GT.pair, string, < a : State.t -> 'a -> string; b : State.t -> 'b -> string >) GT.a ->
+      (State.t, 'a, string, < a : State.t -> 'a -> string; b : State.t -> 'b -> string >) GT.a ->
+      (State.t, 'b, string, < a : State.t -> 'a -> string; b : State.t -> 'b -> string >) GT.a ->
+      string
+    method t_pair :
+      (State.t -> 'a -> string) -> (State.t -> 'b -> string) -> State.t -> ('a, 'b) GT.pair -> string
   end
 
 (** Type-indexed containers *)
@@ -178,6 +205,30 @@ val option :
      mkshow : (State.t -> 'o -> string) -> State.t -> 'o GT.option -> string;
      show : ('p -> GT.string) -> 'p GT.option -> GT.string >)
   GT.t
+val pair :
+  (('a -> 'b -> 'c) ->
+   ('d -> 'e -> 'f) ->
+   ('b, 'a, 'c, 'e, 'd, 'f, 'g, 'h) #GT.pair_tt ->
+   'g -> ('b, 'e) GT.pair -> 'h,
+   < compare : ('i -> 'i -> GT.comparison) ->
+               ('j -> 'j -> GT.comparison) ->
+               ('i, 'j) GT.pair -> ('i, 'j) GT.pair -> GT.comparison;
+     eq : ('k -> 'k -> GT.bool) ->
+          ('l -> 'l -> GT.bool) ->
+          ('k, 'l) GT.pair -> ('k, 'l) GT.pair -> GT.bool;
+     foldl : ('m -> 'n -> 'm) ->
+             ('m -> 'o -> 'm) -> 'm -> ('n, 'o) GT.pair -> 'm;
+     foldr : ('p -> 'q -> 'p) ->
+             ('p -> 'r -> 'p) -> 'p -> ('q, 'r) GT.pair -> 'p;
+     html : ('s -> HTMLView.er) ->
+            ('t -> HTMLView.er) -> ('s, 't) GT.pair -> HTMLView.er;
+     map : ('u -> 'v) -> ('w -> 'x) -> ('u, 'w) GT.pair -> ('v, 'x) GT.pair;
+     mkshow : (State.t -> 'y -> string) ->
+              (State.t -> 'z -> string) ->
+              State.t -> ('y, 'z) GT.pair -> string;
+     show : ('a1 -> GT.string) ->
+            ('b1 -> GT.string) -> ('a1, 'b1) GT.pair -> GT.string >) 
+  GT.t
 
 (** MiniKanren show type-indexed wrapper *)
 val mkshow : ('a, < mkshow : 'b; .. >) GT.t -> 'b
@@ -191,6 +242,10 @@ val call_fresh : ('a -> State.t -> 'b) -> State.t -> 'b
 (** [x === y] creates a goal, which performs a unifications of
     [x] and [y] *)
 val (===) : 'a -> 'a -> goal
+
+(** [x === y] creates a goal, which performs a non-unification check for
+    [x] and [y] *)
+val (=/=) : 'a -> 'a -> goal
 
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
 val conj : goal -> goal -> goal

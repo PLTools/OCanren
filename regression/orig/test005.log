@@ -1,0 +1,24 @@
+lookupo "x" [] q st, 1 answer {
+}
+lookupo "x" ["x", V "x"] q st, 1 answer {
+q=V (x); 
+}
+lookupo "x" ["y", V "y"; "x", V "x"] q st, 1 answer {
+q=V (x); 
+}
+lookupo q ["y", V "y"; "x", V "x"] (V "x") st, 1 answer {
+q=x; 
+}
+lookupo q ["y", V "y"; "x", V "x"] (V "y") st, 1 answer {
+q=y; 
+}
+lookupo "x" q (V "y") st, 1 answer {
+q=(x, V (y)), _.14; 
+}
+lookupo "x" q (V "y") st, 5 answers {
+q=(x, V (y)), _.14; 
+q=(_.12, _.13), (x, V (y)), _.18; 
+q=(_.12, _.13), (_.16, _.17), (x, V (y)), _.22; 
+q=(_.12, _.13), (_.16, _.17), (_.20, _.21), (x, V (y)), _.26; 
+q=(_.12, _.13), (_.16, _.17), (_.20, _.21), (_.24, _.25), (x, V (y)), _.30; 
+}

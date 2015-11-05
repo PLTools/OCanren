@@ -244,15 +244,17 @@ let show_var : State.t -> 'a -> (unit -> string) -> 'string = fun (e, _) x k ->
   | Some i -> Printf.sprintf "_.%d" i
   | None   -> k ()
 
-type    int       = GT.int
-type    string    = GT.string
-type 'a list      = 'a GT.list
-type    bool      = GT.bool
-type    char      = GT.char
-type    unit      = GT.unit
-type    int32     = GT.int32
-type    int64     = GT.int64
-type    nativeint = GT.nativeint
+type          int       = GT.int
+type          string    = GT.string
+type 'a       list      = 'a GT.list
+type 'a       option    = 'a GT.option
+type ('a, 'b) pair      = ('a, 'b) GT.pair
+type          bool      = GT.bool
+type          char      = GT.char
+type          unit      = GT.unit
+type          int32     = GT.int32
+type          int64     = GT.int64
+type          nativeint = GT.nativeint
 
 class mkshow_string_t =
   object
@@ -308,6 +310,12 @@ class ['a] mkshow_option_t =
     inherit ['a, State.t, string, State.t, string] @GT.option
     method c_None e s   = show_var e s.GT.x (fun _ -> "None")
     method c_Some e s x = show_var e s.GT.x (fun _ -> "Some (" ^ x.GT.fx e ^ ")")
+  end
+
+class ['a, 'b] mkshow_pair_t =
+  object
+    inherit ['a, State.t, string, 'b, State.t, string, State.t, string] @GT.pair
+    method c_Pair e s x y = show_var e s.GT.x (fun _ -> "(" ^ x.GT.fx e ^ ", " ^ y.GT.fx e ^ ")")
   end
 
 let mkshow t = t.GT.plugins#mkshow
@@ -452,6 +460,20 @@ let option = {GT.gcata = GT.option.GT.gcata;
                 end
              }
 
+let pair = {GT.gcata = GT.pair.GT.gcata;
+            GT.plugins = 
+              object
+                method show    = GT.pair.GT.plugins#show
+                method html    = GT.pair.GT.plugins#html
+                method compare = GT.pair.GT.plugins#compare
+                method eq      = GT.pair.GT.plugins#eq
+                method map     = GT.pair.GT.plugins#map
+                method foldl   = GT.pair.GT.plugins#foldl
+                method foldr   = GT.pair.GT.plugins#foldr
+                method mkshow  = (fun fa fb e s -> show_var e s (fun _ -> GT.transform(GT.pair) fa fb (new mkshow_pair_t) e s))
+              end
+           }
+
 let call_fresh f (env, subst) =
   let x, env' = Env.fresh env in
   f x (env', subst)
@@ -461,6 +483,11 @@ let (===) x y (env, subst) =
   match Subst.unify env x y (Some subst) with
   | None   -> Stream.nil
   | Some s -> LOG[trace1] (logn "'%s'" (State.show (env, s))); Stream.cons (env, s) Stream.nil
+
+let (=/=) x y ((env, subst) as st) =
+  match Subst.unify env x y (Some subst) with
+  | None   -> Stream.cons st Stream.nil
+  | Some _ -> Stream.nil 
 
 let conj f g st = Stream.bind (f st) g 
 
