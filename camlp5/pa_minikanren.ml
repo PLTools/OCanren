@@ -35,7 +35,7 @@ open Printf
 EXTEND
   GLOBAL: expr; 
 
-  expr: LEVEL "top" [
+  expr: LEVEL "expr1" [
     [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
       let rec fold f = function 
       | [h]  -> h

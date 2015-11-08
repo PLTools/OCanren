@@ -16,17 +16,17 @@ let rec lookupo a g t =
 let infero expr typ =
   let rec infero gamma expr typ =
     conde [
-      (fresh (x)
-         (expr === X x)
-         (lookupo x gamma typ));
-      (fresh (m n t)    
-         (expr === App (m, n)) 
-         (infero gamma m (Arr (t, typ))) 
-         (infero gamma n t));
-      (fresh (x l t t') 
-         (expr === Abs (x, l)) 
-         (typ  === Arr (t, t'))
-         (infero ((x, t)::gamma) l t'))
+      fresh (x)
+        (expr === X x)
+        (lookupo x gamma typ);
+      fresh (m n t)    
+        (expr === App (m, n)) 
+        (infero gamma m (Arr (t, typ))) 
+        (infero gamma n t);
+      fresh (x l t t') 
+        (expr === Abs (x, l)) 
+        (typ  === Arr (t, t'))
+        (infero ((x, t)::gamma) l t')
     ]
   in
   infero [] expr typ      
