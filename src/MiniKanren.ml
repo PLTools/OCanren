@@ -38,8 +38,10 @@ module Stream =
 
 let (!!) = Obj.magic
 
-type var = Var of int
-type w   = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
+type 'a logic = Var of int 
+type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
+
+let (~?) = (!!)
 
 type config =
   { mutable do_log: bool;
@@ -114,15 +116,15 @@ module Env :
     type t
 
     val empty  : unit -> t
-    val fresh  : t -> 'a * t
+    val fresh  : t -> 'a logic * t
     val var    : t -> 'a -> int option
-    val vars   : t -> var list
+    val vars   : t -> unit logic list 
     val show   : t -> string
   end = 
   struct
     module H = Hashtbl.Make (
       struct
-        type t = var
+        type t = unit logic
         let hash = Hashtbl.hash
         let equal = (==)
       end)
@@ -155,9 +157,9 @@ module Subst :
     type t
 
     val empty : t
-    val walk  : Env.t -> 'a -> t -> 'a
+    val walk  : Env.t -> 'a -> t -> 'a 
     val walk' : Env.t -> 'a -> t -> 'a
-    val unify : Env.t -> 'a -> 'a -> t option -> t option
+    val unify : Env.t -> 'a logic -> 'a logic -> t option -> t option
     val show  : t -> string
   end =
   struct
@@ -179,7 +181,7 @@ module Subst :
       match Env.var env var with
       | None ->
 	  (match wrap (Obj.repr var) with
-	   | Unboxed _ -> var
+	   | Unboxed _ -> !!var
 	   | Boxed (t, s, f) ->
                let var = Obj.dup (Obj.repr var) in
                let sf =
@@ -196,7 +198,7 @@ module Subst :
 
       | Some i ->
 	  (try walk' env (M.find i (!! subst)) subst
-	   with Not_found -> var
+	   with Not_found -> !!var
 	  )
 
     let rec unify env x y = function
@@ -240,7 +242,7 @@ module State =
 type goal = State.t -> State.t Stream.t
 
 let show_var : State.t -> 'a -> (unit -> string) -> 'string = fun (e, _) x k ->
-  match Env.var e x with
+  match Env.var e (!!x) with
   | Some i -> Printf.sprintf "_.%d" i
   | None   -> k ()
 
@@ -509,6 +511,6 @@ let conde = (?|)
  
 let run f = f (State.empty ())
 
-let refine (e, s) x = Subst.walk' e x s
+let refine (e, s) x = Subst.walk' e (!!x) s
 
 let take = Stream.take

@@ -15,7 +15,7 @@ let _ =
           proper_args = d.type_args; 
           fixed_inh   = None;
           sname       = (fun _ -> T.id "string");
-          iname       = (fun _ -> <:ctyp< MiniKanren.Env.t >>)
+          iname       = (fun _ -> <:ctyp< MiniKanren.State.t >>)
         }, 
 	let wrap_id l = 
 	  map 
@@ -68,8 +68,16 @@ let _ =
 	    body env (E.str "(") (E.str ")") (E.str ", ") (wrap_id elems)
 	  method constructor env name args = 
 	    body env (E.str ((if d.is_polyvar then "`" else "") ^ name ^ " (")) (E.str ")") (E.str ", ") (wrap_id args)
-          method default e = <:expr< fun st x -> MiniKanren.show_var st x (fun () -> $e$ st x) >>
+          method default e = 
+            let args = List.map (fun a -> "p" ^ a) d.type_args @ ["st"; "x"] in
+            let pags = List.map P.id args in
+            let eags = List.map E.id args in
+            let eapp = E.app (e::eags) in 
+            E.func pags <:expr< MiniKanren.show_var st x (fun () -> $eapp$) >>
+(*
+<:expr< fun a b st x -> MiniKanren.show_var st x (fun () -> $e$ a b st x) >> (* a b => type args *)
+*)
 	end
-     )
+       )
     )
     

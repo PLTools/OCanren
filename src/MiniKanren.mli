@@ -19,6 +19,12 @@
 
 (** {2 Basic modules and types} *)
 
+(** Type of typed logic variable *)
+type 'a logic
+
+(** Lifting primitive *)
+val (~?) : 'a -> 'a logic
+
 (** State (needed to perform calculations) *)
 module State :
   sig
@@ -237,15 +243,15 @@ val mkshow : ('a, < mkshow : 'b; .. >) GT.t -> 'b
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the
     parameter *)
-val call_fresh : ('a -> State.t -> 'b) -> State.t -> 'b
+val call_fresh : ('a logic -> State.t -> 'b) -> State.t -> 'b
 
 (** [x === y] creates a goal, which performs a unifications of
     [x] and [y] *)
-val (===) : 'a -> 'a -> goal
+val (===) : 'a logic -> 'a logic -> goal
 
 (** [x === y] creates a goal, which performs a non-unification check for
     [x] and [y] *)
-val (=/=) : 'a -> 'a -> goal
+val (=/=) : 'a logic -> 'a logic -> goal
 
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
 val conj : goal -> goal -> goal
@@ -278,7 +284,7 @@ val run : (State.t -> 'a) -> 'a
 
 (** [refine s x] refines a logical variable [x] (created with [fresh]) w.r.t.
     state [s] *)
-val refine : State.t -> 'a -> 'a
+val refine : State.t -> 'a logic -> 'a
 
 (** [take ?(n=k) s] takes at most [k] first answers from the lazy
     stream [s] (reexported from MKStream for convenience) *)
