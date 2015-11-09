@@ -33,8 +33,8 @@ let rec appendo a b ab =
       (call_fresh (fun t ->
         (conj (a === h::t)
            (call_fresh (fun ab' ->
-              conj (h::ab' === ab)
-                   (fun st -> Stream.from_fun (fun () -> appendo t b ab' st))
+              conj (h::ab' === ab) 
+                   (appendo t b ab')
            ))
       )))
     ))
@@ -46,8 +46,8 @@ let rec reverso a b =
       (call_fresh (fun t ->
           (conj (a === h::t)
               (call_fresh (fun a' ->
-                 conj (fun st -> Stream.from_fun (fun () -> appendo a' [h] b st))
-                      (fun st -> Stream.from_fun (fun () -> reverso t a' st))
+                 conj (appendo a' [h] b) 
+                      (reverso t a')
               ))
         )
     )
