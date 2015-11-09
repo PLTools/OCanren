@@ -74,9 +74,6 @@ let _ =
             let eags = List.map E.id args in
             let eapp = E.app (e::eags) in 
             E.func pags <:expr< MiniKanren.show_var st x (fun () -> $eapp$) >>
-(*
-<:expr< fun a b st x -> MiniKanren.show_var st x (fun () -> $e$ a b st x) >> (* a b => type args *)
-*)
 	end
        )
     )
