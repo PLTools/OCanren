@@ -4492,7 +4492,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile plugin/Makefile camlp5/Makefile regression/Makefile doc/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile camlp5/Makefile regression/Makefile doc/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5219,7 +5219,6 @@ do
   case $ac_config_target in
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
-    "plugin/Makefile") CONFIG_FILES="$CONFIG_FILES plugin/Makefile" ;;
     "camlp5/Makefile") CONFIG_FILES="$CONFIG_FILES camlp5/Makefile" ;;
     "regression/Makefile") CONFIG_FILES="$CONFIG_FILES regression/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;

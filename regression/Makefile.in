@@ -257,7 +257,7 @@ TARGET =
 AM_P4FLAGS = -pp "$(CAMLP4OF) $(PARSER_INCLUDES)"
 
 # OCaml parser call with flags
-AM_P5FLAGS = -pp "$(CAMLP5O) $(PARSER_INCLUDES) pr_o.cmo pa_log.cmo pa_minikanren.cmo pa_gt.cmo -L ../plugin -L `camlp5o -where`" tester.ml
+AM_P5FLAGS = -pp "$(CAMLP5O) $(PARSER_INCLUDES) pr_o.cmo pa_log.cmo pa_minikanren.cmo pa_gt.cmo -L `camlp5o -where`" tester.ml
 
 # OCaml documentator called with flags
 AM_DOCFLAGS = -html

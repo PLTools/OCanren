@@ -34,7 +34,7 @@ val (%) : 'a logic -> 'a llist logic -> 'a llist logic
 (** [x %< y] is a synonym for [Cons (x, !(Cons (y, !Nil)))] *)
 val (%<) : 'a logic -> 'a logic -> 'a llist logic
 
-(** [!< x] is a synonym for [Cons (x, !Nil) *)
+(** [!< x] is a synonym for [Cons (x, !Nil)] *)
 val (!<) : 'a logic -> 'a llist logic
 
 (** [of_list l] converts a regular list into logic one *)
