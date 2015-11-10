@@ -39,19 +39,18 @@ val (!<) : 'a logic -> 'a llist logic
 
 (** [of_list l] converts a regular list into logic one *)
 val of_list : 'a list -> 'a llist logic
-(*
+
 (** [to_listk k l] converts logic list [l] into a regular one, calling [k] to
-    convert elements [Cons (x, xs)], when either of [x] and [xs] are not a
-    value *)
-val to_listk : ('a llist -> 'a list) -> 'a llist logic -> 'a list
+    convert elements, which are not a value *)
+val to_listk : ('a llist logic -> 'a list) -> 'a llist logic -> 'a list
 
 (** Exception to raise on a non-value case *)
 exception Not_a_value
 
 (** [to_list l] converts logic list [l] into a regular one, raising
-    Not_a_value on a non-value case *)
+    [Not_a_value] on a non-value case *)
 val to_list : 'a llist logic -> 'a list
-*)
+
 (** State (needed to perform calculations) *)
 module State :
   sig
@@ -81,6 +80,27 @@ type goal = State.t -> State.t Stream.t
 (** [call_fresh f] creates a fresh logical variable and passes it to the
     parameter *)
 val call_fresh : ('a logic -> State.t -> 'b) -> State.t -> 'b
+
+(** [succ num f] increments the number of free logic variables in
+    a goal; can be used to get rid of ``fresh'' syntax extension *)
+val succ : ('a -> State.t -> 'b) -> ('c logic -> 'a) -> State.t -> 'b
+
+(** Zero logic parameters *)
+val zero : 'a -> 'a
+
+(** One to five logic parameter(s) *)
+val one   : ('a logic ->                                                 State.t -> 'b) -> State.t -> 'b
+val two   : ('a logic -> 'b logic ->                                     State.t -> 'c) -> State.t -> 'c
+val three : ('a logic -> 'b logic -> 'c logic ->                         State.t -> 'd) -> State.t -> 'd
+val four  : ('a logic -> 'b logic -> 'c logic -> 'd logic ->             State.t -> 'e) -> State.t -> 'e
+val five  : ('a logic -> 'b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'f
+
+(** One to five logic parameter(s), conventional names *)
+val q     : ('a logic ->                                                 State.t -> 'b) -> State.t -> 'b
+val qr    : ('a logic -> 'b logic ->                                     State.t -> 'c) -> State.t -> 'c
+val qrs   : ('a logic -> 'b logic -> 'c logic ->                         State.t -> 'd) -> State.t -> 'd
+val qrst  : ('a logic -> 'b logic -> 'c logic -> 'd logic ->             State.t -> 'e) -> State.t -> 'e
+val pqrst : ('a logic -> 'b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'f
 
 (** [x === y] creates a goal, which performs a unifications of
     [x] and [y] *)

@@ -1,18 +1,5 @@
 open MiniKanren
 
-let succ prev f = call_fresh (fun x -> prev (f x))
-
-let zero  f = f 
-let one   f = succ zero f
-let two   f = succ one f
-let three f = succ two f
-let four  f = succ three f
-
-let q    = one
-let qp   = two
-let qpr  = three
-let qprt = four
-
 let run printer n runner goal =
   run (fun st -> 
     let (repr, result), vars = runner goal st in

@@ -5,46 +5,54 @@ open Tester
 let just_a a = a === !5
 
 let a_and_b a =
-  call_fresh (
+  q (
     fun b ->
-      (a === !7) &&&
-      conde [b === !6; b === !5]
+      conj (a === !7)
+           (disj (b === !6)
+                 (b === !5)
+           )
   )
 
 let a_and_b' b =
-  call_fresh (
+  q (
     fun a ->
-      (a === !7) &&&
-      conde [b === !6; b === !5]
+      conj (a === !7)
+           (disj (b === !6)
+                 (b === !5)
+           )
   )
 
 let rec fives x =
-  (x === !5) |||
-  (fun st -> Stream.from_fun (fun () -> fives x st))
+  disj (x === !5) 
+       (fun st -> Stream.from_fun (fun () -> fives x st))
 
 let rec appendo a b ab =
-  ?| [  
-  (a === !Nil) &&& (b === ab);
-  call_fresh (fun h ->
-    (call_fresh (fun t ->
-      ((a === h%t) &&&
-       (call_fresh (fun ab' ->
-          (h%ab' === ab) &&& (appendo t b ab')
-       ))
-    ))))
-  ]
-  
-let rec reverso a b = 
-  conde [
-    (a === !Nil) &&& (b === !Nil);
-    call_fresh (fun h ->
-      (call_fresh (fun t ->
-          ((a === h%t) &&&
-           (call_fresh (fun a' ->
-              ?& [appendo a' !<h b; reverso t a']
+  disj
+    (conj (a === !Nil) (b === ab) )
+    (two
+      (fun h t ->
+        (conj (a === h % t)
+           (one (fun ab' ->
+              conj (h % ab' === ab)
+                   (appendo t b ab')
            ))
-        )  
-    )))]
+        )
+      )
+    )
+
+let rec reverso a b =
+  disj
+    (conj (a === !Nil) (b === !Nil))
+    (succ one
+      (fun h t ->
+          (conj (a === h % t)
+                (one (fun a' ->
+                   conj (appendo a' !< h b)
+                        (reverso t a')
+                ))
+        )
+      )
+    )
 
 let show_int      = show(logic) (show int)
 let show_int_list = show(logic) (show(llist) (show int))
@@ -64,3 +72,4 @@ let _ =
   run show_int       1  q (fun q   st -> REPR (a_and_b q                                         st), ["q", q]); 
   run show_int       2  q (fun q   st -> REPR (a_and_b' q                                        st), ["q", q]); 
   run show_int      10  q (fun q   st -> REPR (fives q                                           st), ["q", q])
+

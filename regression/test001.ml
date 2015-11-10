@@ -50,7 +50,7 @@ let show_int_list = show(logic) (show(llist) (show int))
 
 let _ =
   run show_int_list  1  q (fun q   st -> REPR (appendo q (of_list [3; 4]) (of_list [1; 2; 3; 4]) st), ["q", q]);  
-  run show_int_list  4 qp (fun q p st -> REPR (appendo q (of_list []) p                          st), ["q", q; "p", p]);
+  run show_int_list  4 qr (fun q r st -> REPR (appendo q (of_list []) r                          st), ["q", q; "r", r]);
   run show_int_list  1  q (fun q   st -> REPR (reverso q (of_list [1; 2; 3; 4])                  st), ["q", q]);
   run show_int_list  1  q (fun q   st -> REPR (reverso (of_list []) (of_list [])                 st), ["q", q]);
   run show_int_list  1  q (fun q   st -> REPR (reverso (of_list [1; 2; 3; 4]) q                  st), ["q", q]);

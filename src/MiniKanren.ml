@@ -73,14 +73,14 @@ let rec of_list = function
 | x::xs -> !x % (of_list xs)
 
 exception Not_a_value 
-(*
+
 let rec to_listk k = function
-| Nil -> []
-| Cons (Value x, Value xs) -> x :: to_listk k xs
+| Value Nil -> []
+| Value (Cons (Value x, xs)) -> x :: to_listk k xs
 | z -> k z
 
 let to_list l = to_listk (fun _ -> raise Not_a_value) l
-*)
+
 
 let llist = {
   llist with plugins = 
@@ -91,8 +91,8 @@ let llist = {
       method foldr   = llist.plugins#foldr
       method foldl   = llist.plugins#foldl
       method map     = llist.plugins#map    
-      method show fa x = 
-        GT.transform(llist) 
+      method show fa x = "[" ^
+        (GT.transform(llist) 
            (GT.lift fa) 
            (object inherit ['a] @llist[show]              
               method c_Nil   _ _      = ""
@@ -100,6 +100,7 @@ let llist = {
             end) 
            () 
            x
+        ) ^ "]"
     end
 }
 
@@ -281,6 +282,21 @@ type goal = State.t -> State.t Stream.t
 let call_fresh f (env, subst) =
   let x, env' = Env.fresh env in
   f x (env', subst)
+
+let succ prev f = call_fresh (fun x -> prev (f x))
+
+let zero  f = f 
+let one   f = succ zero f
+let two   f = succ one f
+let three f = succ two f
+let four  f = succ three f
+let five  f = succ four f
+
+let q     = one
+let qr    = two
+let qrs   = three
+let qrst  = four
+let pqrst = five
 
 let (===) x y (env, subst) =
   match Subst.unify env x y (Some subst) with
