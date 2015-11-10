@@ -18,7 +18,6 @@ module Stream =
 	   | Lazy  z      -> take ~n:n (Lazy.force z)            
 
     let rec mplus fs gs =
-      LOG[trace1] (logn "mplus");
       from_fun (fun () ->
          match fs with
          | Nil           -> gs
@@ -36,35 +35,75 @@ module Stream =
 
   end
 
-let (!!) = Obj.magic
+let (!!) = Obj.magic;;
 
-type 'a logic = Var of int 
+@type 'a logic = Var of GT.int | Value of 'a with show, html, eq, compare, foldl, foldr, map
+
+let logic = {
+  logic with plugins = 
+    object 
+      method html    = logic.plugins#html
+      method eq      = logic.plugins#eq
+      method compare = logic.plugins#compare
+      method foldr   = logic.plugins#foldr
+      method foldl   = logic.plugins#foldl
+      method map     = logic.plugins#map    
+      method show fa x = 
+        GT.transform(logic) 
+           (GT.lift fa) 
+           (object inherit ['a] @logic[show]              
+              method c_Var   _ _ i = Printf.sprintf "_.%d" i
+              method c_Value _ _ x = x.GT.fx ()
+            end) 
+           () 
+           x
+    end
+};;
+
+@type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, map
+
+let (!) x = Value x
+
+let (%)  x y = !(Cons (x, y))
+let (%<) x y = !(Cons (x, !(Cons (y, !Nil))))
+let (!<) x   = !(Cons (x, !Nil))
+
+let rec of_list = function
+| [] -> !Nil
+| x::xs -> !x % (of_list xs)
+
+exception Not_a_value 
+(*
+let rec to_listk k = function
+| Nil -> []
+| Cons (Value x, Value xs) -> x :: to_listk k xs
+| z -> k z
+
+let to_list l = to_listk (fun _ -> raise Not_a_value) l
+*)
+
+let llist = {
+  llist with plugins = 
+    object 
+      method html    = llist.plugins#html
+      method eq      = llist.plugins#eq
+      method compare = llist.plugins#compare
+      method foldr   = llist.plugins#foldr
+      method foldl   = llist.plugins#foldl
+      method map     = llist.plugins#map    
+      method show fa x = 
+        GT.transform(llist) 
+           (GT.lift fa) 
+           (object inherit ['a] @llist[show]              
+              method c_Nil   _ _      = ""
+              method c_Cons  i s x xs = GT.show(logic) fa x ^ (match xs with Value Nil -> "" | _ -> "; " ^ GT.show(logic) (s.GT.f i) xs)
+            end) 
+           () 
+           x
+    end
+}
+
 type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
-
-let (~?) = (!!)
-
-type config =
-  { mutable do_log: bool;
-    mutable do_readline: bool }
-
-let config = { do_log=true; do_readline=false }
-
-let () =
-  let args = ref [("-r", Arg.Unit (fun () -> config.do_readline <- true), "readlines")] in
-  LOG[trace1](
-       args := ("-q", Arg.Unit (fun () -> config.do_log <- false), "quite") :: !args;
-       args := ("-v", Arg.Unit (fun () -> config.do_log <- true), "verbose") :: !args );
-  Arg.parse !args
-            (fun s -> Printf.eprintf "Unknown parameter '%s'\n" s; exit 0)
-            "This is usage message"
-
-let logn fmt =
-  if config.do_log then Printf.kprintf (Printf.printf "%s\n%!") fmt
-  else Printf.kprintf (fun fmt -> ignore (Printf.sprintf "%s" fmt)) fmt
-
-let logf fmt =
-  if config.do_log then Printf.kprintf (Printf.printf "%s%!") fmt
-  else Printf.kprintf (fun fmt -> ignore (Printf.sprintf "%s" fmt)) fmt
 
 let rec wrap (x : Obj.t) =
   Obj.(
@@ -117,7 +156,7 @@ module Env :
 
     val empty  : unit -> t
     val fresh  : t -> 'a logic * t
-    val var    : t -> 'a -> int option
+    val var    : t -> 'a logic -> int option
     val vars   : t -> unit logic list 
     val show   : t -> string
   end = 
@@ -135,8 +174,6 @@ module Env :
     let empty () = (H.create 1024, counter_start)
 
     let fresh (h, current) =
-      LOG[trace1] (logn "fresh var %d" current);
-      if config.do_readline then ignore (read_line ());
       let v = Var current in
       H.add h v ();
       (!!v, (h, current+1))
@@ -157,8 +194,8 @@ module Subst :
     type t
 
     val empty : t
-    val walk  : Env.t -> 'a -> t -> 'a 
-    val walk' : Env.t -> 'a -> t -> 'a
+    val walk  : Env.t -> 'a logic -> t -> 'a logic
+    val walk' : Env.t -> 'a logic -> t -> 'a logic
     val unify : Env.t -> 'a logic -> 'a logic -> t option -> t option
     val show  : t -> string
   end =
@@ -241,250 +278,14 @@ module State =
 
 type goal = State.t -> State.t Stream.t
 
-let show_var : State.t -> 'a -> (unit -> string) -> 'string = fun (e, _) x k ->
-  match Env.var e (!!x) with
-  | Some i -> Printf.sprintf "_.%d" i
-  | None   -> k ()
-
-type          int       = GT.int
-type          string    = GT.string
-type 'a       list      = 'a GT.list
-type 'a       option    = 'a GT.option
-type ('a, 'b) pair      = ('a, 'b) GT.pair
-type          bool      = GT.bool
-type          char      = GT.char
-type          unit      = GT.unit
-type          int32     = GT.int32
-type          int64     = GT.int64
-type          nativeint = GT.nativeint
-
-class mkshow_string_t =
-  object
-    method t_string env str = show_var env str (fun _ -> str)
-  end
-
-class mkshow_int_t =
-  object
-    method t_int env int = show_var env int (fun _ -> string_of_int int)
-  end
-
-class mkshow_bool_t =
-  object
-    method t_bool env bool = show_var env bool (fun _ -> string_of_bool bool)
-  end
-
-class mkshow_char_t =
-  object
-    method t_char env char = show_var env char (fun _ -> String.make 1 char)
-  end
-
-class mkshow_unit_t =
-  object
-    method t_unit env (unit : unit) = show_var env unit (fun _ -> "()")
-  end
-
-class mkshow_int32_t =
-  object
-    method t_int32 env int32 = show_var env int32 (fun _ -> Int32.to_string int32)
-  end
-
-class mkshow_int64_t =
-  object
-    method t_int64 env int64 = show_var env int64 (fun _ -> Int64.to_string int64)
-  end
-
-class mkshow_nativeint_t =
-  object
-    method t_nativeint env nativeint = show_var env nativeint (fun _ -> Nativeint.to_string nativeint)
-  end
-
-class ['a] mkshow_list_t =
-  object
-    inherit ['a, State.t, string, State.t, string] @GT.list
-    method c_Nil  e s      = show_var e s.GT.x (fun _ -> "[]")
-    method c_Cons e s x xs =
-      show_var e x.GT.x  (fun _ -> x.GT.fx e) ^ ", " ^
-      show_var e xs.GT.x (fun _ -> xs.GT.fx e)
-  end
-
-class ['a] mkshow_option_t =
-  object
-    inherit ['a, State.t, string, State.t, string] @GT.option
-    method c_None e s   = show_var e s.GT.x (fun _ -> "None")
-    method c_Some e s x = show_var e s.GT.x (fun _ -> "Some (" ^ x.GT.fx e ^ ")")
-  end
-
-class ['a, 'b] mkshow_pair_t =
-  object
-    inherit ['a, State.t, string, 'b, State.t, string, State.t, string] @GT.pair
-    method c_Pair e s x y = show_var e s.GT.x (fun _ -> "(" ^ x.GT.fx e ^ ", " ^ y.GT.fx e ^ ")")
-  end
-
-let mkshow t = t.GT.plugins#mkshow
-
-let int = {GT.gcata = GT.int.GT.gcata;
-           GT.plugins = 
-             object
-               method show    = GT.int.GT.plugins#show
-               method html    = GT.int.GT.plugins#html
-               method compare = GT.int.GT.plugins#compare
-               method eq      = GT.int.GT.plugins#eq
-               method map     = GT.int.GT.plugins#map
-               method foldl   = GT.int.GT.plugins#foldl
-               method foldr   = GT.int.GT.plugins#foldr
-               method mkshow  = (fun e x -> show_var e x (fun _ -> GT.transform(GT.int) (new mkshow_int_t) e x))
-             end
-          }
-
-let string = {GT.gcata = GT.string.GT.gcata;
-              GT.plugins = 
-                object
-                  method show    = GT.string.GT.plugins#show
-                  method html    = GT.string.GT.plugins#html
-                  method compare = GT.string.GT.plugins#compare
-                  method eq      = GT.string.GT.plugins#eq
-                  method map     = GT.string.GT.plugins#map
-                  method foldl   = GT.string.GT.plugins#foldl
-                  method foldr   = GT.string.GT.plugins#foldr
-                  method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.string) (new mkshow_string_t) e s))
-                end
-             }
-
-let bool = {GT.gcata = GT.string.GT.gcata;
-            GT.plugins = 
-              object
-                method show    = GT.bool.GT.plugins#show
-                method html    = GT.bool.GT.plugins#html
-                method compare = GT.bool.GT.plugins#compare
-                method eq      = GT.bool.GT.plugins#eq
-                method map     = GT.bool.GT.plugins#map
-                method foldl   = GT.bool.GT.plugins#foldl
-                method foldr   = GT.bool.GT.plugins#foldr
-                method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.bool) (new mkshow_bool_t) e s))
-              end
-           }
-
-let char = {GT.gcata = GT.char.GT.gcata;
-            GT.plugins = 
-              object
-                method show    = GT.char.GT.plugins#show
-                method html    = GT.char.GT.plugins#html
-                method compare = GT.char.GT.plugins#compare
-                method eq      = GT.char.GT.plugins#eq
-                method map     = GT.char.GT.plugins#map
-                method foldl   = GT.char.GT.plugins#foldl
-                method foldr   = GT.char.GT.plugins#foldr
-                method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.char) (new mkshow_char_t) e s))
-              end
-           }
-
-let unit = {GT.gcata = GT.unit.GT.gcata;
-            GT.plugins = 
-              object
-                method show    = GT.unit.GT.plugins#show
-                method html    = GT.unit.GT.plugins#html
-                method compare = GT.unit.GT.plugins#compare
-                method eq      = GT.unit.GT.plugins#eq
-                method map     = GT.unit.GT.plugins#map
-                method foldl   = GT.unit.GT.plugins#foldl
-                method foldr   = GT.unit.GT.plugins#foldr
-                method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.unit) (new mkshow_unit_t) e s))
-              end
-           }
-
-let int32 = {GT.gcata = GT.int32.GT.gcata;
-             GT.plugins = 
-               object
-                 method show    = GT.int32.GT.plugins#show
-                 method html    = GT.int32.GT.plugins#html
-                 method compare = GT.int32.GT.plugins#compare
-                 method eq      = GT.int32.GT.plugins#eq
-                 method map     = GT.int32.GT.plugins#map
-                 method foldl   = GT.int32.GT.plugins#foldl
-                 method foldr   = GT.int32.GT.plugins#foldr
-                 method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.int32) (new mkshow_int32_t) e s))
-               end
-            }
-
-let int64 = {GT.gcata = GT.int64.GT.gcata;
-             GT.plugins = 
-               object
-                 method show    = GT.int64.GT.plugins#show
-                 method html    = GT.int64.GT.plugins#html
-                 method compare = GT.int64.GT.plugins#compare
-                 method eq      = GT.int64.GT.plugins#eq
-                 method map     = GT.int64.GT.plugins#map
-                 method foldl   = GT.int64.GT.plugins#foldl
-                 method foldr   = GT.int64.GT.plugins#foldr
-                 method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.int64) (new mkshow_int64_t) e s))
-               end
-            }
-
-let nativeint = {GT.gcata = GT.nativeint.GT.gcata;
-                 GT.plugins = 
-                   object
-                     method show    = GT.nativeint.GT.plugins#show
-                     method html    = GT.nativeint.GT.plugins#html
-                     method compare = GT.nativeint.GT.plugins#compare
-                     method eq      = GT.nativeint.GT.plugins#eq
-                     method map     = GT.nativeint.GT.plugins#map
-                     method foldl   = GT.nativeint.GT.plugins#foldl
-                     method foldr   = GT.nativeint.GT.plugins#foldr
-                     method mkshow  = (fun e s -> show_var e s (fun _ -> GT.transform(GT.nativeint) (new mkshow_nativeint_t) e s))
-                   end
-                }
-
-let list = {GT.gcata = GT.list.GT.gcata;
-            GT.plugins = 
-              object
-                method show    = GT.list.GT.plugins#show
-                method html    = GT.list.GT.plugins#html
-                method compare = GT.list.GT.plugins#compare
-                method eq      = GT.list.GT.plugins#eq
-                method map     = GT.list.GT.plugins#map
-                method foldl   = GT.list.GT.plugins#foldl
-                method foldr   = GT.list.GT.plugins#foldr
-                method mkshow  = (fun fa e s -> show_var e s (fun _ -> GT.transform(GT.list) fa (new mkshow_list_t) e s))
-              end
-           }
-
-let option = {GT.gcata = GT.option.GT.gcata;
-              GT.plugins = 
-                object
-                  method show    = GT.option.GT.plugins#show
-                  method html    = GT.option.GT.plugins#html
-                  method compare = GT.option.GT.plugins#compare
-                  method eq      = GT.option.GT.plugins#eq
-                  method map     = GT.option.GT.plugins#map
-                  method foldl   = GT.option.GT.plugins#foldl
-                  method foldr   = GT.option.GT.plugins#foldr
-                  method mkshow  = (fun fa e s -> show_var e s (fun _ -> GT.transform(GT.option) fa (new mkshow_option_t) e s))
-                end
-             }
-
-let pair = {GT.gcata = GT.pair.GT.gcata;
-            GT.plugins = 
-              object
-                method show    = GT.pair.GT.plugins#show
-                method html    = GT.pair.GT.plugins#html
-                method compare = GT.pair.GT.plugins#compare
-                method eq      = GT.pair.GT.plugins#eq
-                method map     = GT.pair.GT.plugins#map
-                method foldl   = GT.pair.GT.plugins#foldl
-                method foldr   = GT.pair.GT.plugins#foldr
-                method mkshow  = (fun fa fb e s -> show_var e s (fun _ -> GT.transform(GT.pair) fa fb (new mkshow_pair_t) e s))
-              end
-           }
-
 let call_fresh f (env, subst) =
   let x, env' = Env.fresh env in
   f x (env', subst)
 
 let (===) x y (env, subst) =
-  LOG[trace1] (logf "unify '%s' and '%s' in '%s' = " (generic_show !!x) (generic_show !!y) (State.show (env, subst)));
   match Subst.unify env x y (Some subst) with
   | None   -> Stream.nil
-  | Some s -> LOG[trace1] (logn "'%s'" (State.show (env, s))); Stream.cons (env, s) Stream.nil
+  | Some s -> Stream.cons (env, s) Stream.nil
 
 let (=/=) x y ((env, subst) as st) =
   match Subst.unify env x y (Some subst) with

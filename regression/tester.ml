@@ -23,7 +23,7 @@ let run printer n runner goal =
     List.iter
       (fun st ->        
          List.iter
-           (fun (s, x) -> Printf.printf "%s=%s; " s (printer st (refine st x)))
+           (fun (s, x) -> Printf.printf "%s=%s; " s (printer (refine st x)))
            vars;
          Printf.printf "\n"
       )
