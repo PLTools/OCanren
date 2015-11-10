@@ -4,57 +4,43 @@ open Tester
 
 @type lam = X of string logic | App of lam logic * lam logic | Abs of string logic * lam logic with show
 
-let match_lam a var (*app abs*) =
+let match_lam a var app abs =
   conde [
-    fresh (x)   (a === !(X x))        (var x); (*
-    fresh (p q) (a === App (p, q)) (app p q);
-    fresh (x l) (a === Abs (x, l)) (abs x l) *)
+    fresh (x)   (a === !(X x))        (var x); 
+    fresh (p q) (a === !(App (p, q))) (app p q);
+    fresh (x l) (a === !(Abs (x, l))) (abs x l) 
   ]
-(*
+
 let rec substo l x a l' =  
   match_lam l
-    (fun y   -> conde [x === y &&& l' === a; l' === l]) (*
-    (fun p q -> fresh (p' q') (l' === App (p', q')) (substo p x a p') (substo q x a q'))
-    (fun v b -> conde [x === v &&& l' === l; fresh (b') (l' === Abs (v, b')) (substo b x a b')]) *)
-*)
-
-let rec substo l x a l' =
-  conde [
-    fresh (y) (l === !(X y))(y === x)(l' === a);
-    fresh (m n m' n')
-       (l  === !(App (m, n)))
-       (l' === !(App (m', n')))
-       (substo m x a m')
-       (substo n x a n');     
-    fresh (v b)
-      (l === !(Abs (v, b)))
-      (conde [
-         (x  === v) &&& (l' === l);
-         fresh (b') (l' === !(Abs (v, b'))) (substo b x a b')
-       ])    
-  ]
+    (fun y   -> (x === y) &&& (l' === a)) 
+    (fun p q -> fresh (p' q') 
+                  (l' === !(App (p', q'))) 
+                  (substo p x a p') 
+                  (substo q x a q')
+    )
+    (fun v b -> conde [(x === v) &&& (l' === l); 
+                       fresh (b') 
+                         (l' === !(Abs (v, b'))) 
+                         (substo b x a b')
+                      ]) 
 
 let rec evalo m n =
-  conde [
-    fresh (x) 
-      (m === !(X x))
-      (n === m);    
-    fresh (x l)
-      (m === !(Abs (x, l)))
-      (n === m);    
-    fresh (f a f' a') 
-      (m === !(App (f, a)))
-      (conde [
-         fresh (x l l')     
-           (f' === !(Abs (x, l)))
-           (substo l x a' l')
-           (evalo l' n);         
-         fresh (p q) (f' === !(App (p, q))) (n === !(App (f', a')));
-         fresh (x) (f' === !(X x)) (n === !(App (f', a')))
-       ])
-      (evalo f f')
-      (evalo a a')
-  ]
+  match_lam m
+    (fun _ -> n === m)
+    (fun f a -> 
+       fresh (f' a') 
+         (match_lam f' 
+            (fun _   -> n === !(App (f', a')))
+            (fun _ _ -> n === !(App (f', a')))
+            (fun x l -> fresh (l') 
+                          (substo l x a' l') 
+                          (evalo l' n))
+         )
+         (evalo f f')
+         (evalo a a')
+    )
+    (fun _ _ -> n === m)
 
 let show_lam = show logic (show lam)
 
