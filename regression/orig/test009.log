@@ -1,0 +1,21 @@
+pExpr (of_list [Id]) q st, 1 answer {
+q=I (); 
+}
+pExpr (of_list [Id; Mul; Id]) q st, 1 answer {
+q=M (I (), I ()); 
+}
+pExpr (of_list [Id; Mul; Id; Mul; Id]) q st, 1 answer {
+q=M (I (), M (I (), I ())); 
+}
+pExpr (of_list [Id; Mul; Id; Add; Id]) q st, 1 answer {
+q=A (M (I (), I ()), I ()); 
+}
+pExpr (of_list [Id; Add; Id; Mul; Id]) q st, 1 answer {
+q=A (I (), M (I (), I ())); 
+}
+pExpr (of_list [Id; Add; Id; Add; Id]) q st, 1 answer {
+q=A (I (), A (I (), I ())); 
+}
+pExpr q !(M (!I, !I)) st, 1 answer {
+q=[Id (); Mul (); Id ()]; 
+}
