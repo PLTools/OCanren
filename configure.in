@@ -85,7 +85,6 @@ dnl produce output files
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
-plugin/Makefile
 camlp5/Makefile
 regression/Makefile
 doc/Makefile

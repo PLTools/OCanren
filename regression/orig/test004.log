@@ -1,124 +1,124 @@
-addo O (S O) q st, 1 answer {
+addo !O !(S !O) q st, 1 answer {
 q=S (O ()); 
 }
-addo (S O) (S O) q st, 1 answer {
+addo !(S !O) !(S !O) q st, 1 answer {
 q=S (S (O ())); 
 }
-addo O (S O) q st, 2 answers {
+addo !O !(S !O) q st, 2 answers {
 q=S (O ()); 
 }
-addo (S O) (S O) q st, 2 answers {
+addo !(S !O) !(S !O) q st, 2 answers {
 q=S (S (O ())); 
 }
-addo q (S O) (S O) st, 1 answer {
+addo q !(S !O) !(S !O) st, 1 answer {
 q=O (); 
 }
-addo (S O) q (S O) st, 1 answer {
+addo !(S !O) q !(S !O) st, 1 answer {
 q=O (); 
 }
-addo q (S O) (S O) st, 2 answers {
+addo q !(S !O) !(S !O) st, 2 answers {
 q=O (); 
 }
-addo (S O) q (S O) st, 2 answers {
+addo !(S !O) q !(S !O) st, 2 answers {
 q=O (); 
 }
-addo q p (S (S (S (S O)))) st, all answers {
-q=O (); p=S (S (S (S (O ())))); 
-q=S (O ()); p=S (S (S (O ()))); 
-q=S (S (O ())); p=S (S (O ())); 
-q=S (S (S (O ()))); p=S (O ()); 
-q=S (S (S (S (O ())))); p=O (); 
+addo q r !(S !(S !(S !(S !O)))) st, all answers {
+q=O (); r=S (S (S (S (O ())))); 
+q=S (O ()); r=S (S (S (O ()))); 
+q=S (S (O ())); r=S (S (O ())); 
+q=S (S (S (O ()))); r=S (O ()); 
+q=S (S (S (S (O ())))); r=O (); 
 }
-mulo O (S O) q st, 1 answer {
+mulo !O !(S !O) q st, 1 answer {
 q=O (); 
 }
-mulo (S (S O)) (S (S O)) q st, 1 answer {
+mulo !(S !(S !O)) !(S !(S !O)) q st, 1 answer {
 q=S (S (S (S (O ())))); 
 }
-mulo O (S O) q st, 2 answers {
+mulo !O !(S !O) q st, 2 answers {
 q=O (); 
 }
-mulo q (S (S O)) (S (S O)) st, 1 answer {
+mulo q !(S !(S !O)) !(S !(S !O)) st, 1 answer {
 q=S (O ()); 
 }
-mulo q (S (S O)) (S (S (S O))) st, 1 answer {
+mulo q !(S !(S !O)) !(S !(S !(S !O))) st, 1 answer {
 }
-mulo q (S (S O)) (S (S O)) st, 2 answers {
+mulo q !(S !(S !O)) !(S !(S !O)) st, 2 answers {
 q=S (O ()); 
 }
-mulo q (S (S O)) (S (S (S O))) st, 2 answers {
+mulo q !(S !(S !O)) !(S !(S !(S !O))) st, 2 answers {
 }
-mulo (S (S O)) q (S (S O)) st, 1 answer {
+mulo !(S !(S !O)) q !(S !(S !O)) st, 1 answer {
 q=S (O ()); 
 }
-mulo (S (S O)) q (S (S (S O))) st, 1 answer {
+mulo !(S !(S !O)) q !(S !(S !(S !O))) st, 1 answer {
 }
-mulo (S (S O)) q (S (S O)) st, 2 answers {
+mulo !(S !(S !O)) q !(S !(S !O)) st, 2 answers {
 q=S (O ()); 
 }
-mulo (S (S O)) q (S (S (S O))) st, 2 answers {
+mulo !(S !(S !O)) q !(S !(S !(S !O))) st, 2 answers {
 }
-mulo q (S O) p st, 1 answer {
-q=O (); p=O (); 
+mulo q !(S !O) r st, 1 answer {
+q=O (); r=O (); 
 }
-mulo q (S O) p st, 10 answers {
-q=O (); p=O (); 
-q=S (O ()); p=S (O ()); 
-q=S (S (O ())); p=S (S (O ())); 
-q=S (S (S (O ()))); p=S (S (S (O ()))); 
-q=S (S (S (S (O ())))); p=S (S (S (S (O ())))); 
-q=S (S (S (S (S (O ()))))); p=S (S (S (S (S (O ()))))); 
-q=S (S (S (S (S (S (O ())))))); p=S (S (S (S (S (S (O ())))))); 
-q=S (S (S (S (S (S (S (O ()))))))); p=S (S (S (S (S (S (S (O ()))))))); 
-q=S (S (S (S (S (S (S (S (O ())))))))); p=S (S (S (S (S (S (S (S (O ())))))))); 
-q=S (S (S (S (S (S (S (S (S (O ()))))))))); p=S (S (S (S (S (S (S (S (S (O ()))))))))); 
+mulo q !(S !O) r st, 10 answers {
+q=O (); r=O (); 
+q=S (O ()); r=S (O ()); 
+q=S (S (O ())); r=S (S (O ())); 
+q=S (S (S (O ()))); r=S (S (S (O ()))); 
+q=S (S (S (S (O ())))); r=S (S (S (S (O ())))); 
+q=S (S (S (S (S (O ()))))); r=S (S (S (S (S (O ()))))); 
+q=S (S (S (S (S (S (O ())))))); r=S (S (S (S (S (S (O ())))))); 
+q=S (S (S (S (S (S (S (O ()))))))); r=S (S (S (S (S (S (S (O ()))))))); 
+q=S (S (S (S (S (S (S (S (O ())))))))); r=S (S (S (S (S (S (S (S (O ())))))))); 
+q=S (S (S (S (S (S (S (S (S (O ()))))))))); r=S (S (S (S (S (S (S (S (S (O ()))))))))); 
 }
-mulo (S O) q p st, 1 answer {
-q=O (); p=O (); 
+mulo !(S !O) q r st, 1 answer {
+q=O (); r=O (); 
 }
-mulo (S O) q p st, 10 answers {
-q=O (); p=O (); 
-q=S (O ()); p=S (O ()); 
-q=S (S (O ())); p=S (S (O ())); 
-q=S (S (S (O ()))); p=S (S (S (O ()))); 
-q=S (S (S (S (O ())))); p=S (S (S (S (O ())))); 
-q=S (S (S (S (S (O ()))))); p=S (S (S (S (S (O ()))))); 
-q=S (S (S (S (S (S (O ())))))); p=S (S (S (S (S (S (O ())))))); 
-q=S (S (S (S (S (S (S (O ()))))))); p=S (S (S (S (S (S (S (O ()))))))); 
-q=S (S (S (S (S (S (S (S (O ())))))))); p=S (S (S (S (S (S (S (S (O ())))))))); 
-q=S (S (S (S (S (S (S (S (S (O ()))))))))); p=S (S (S (S (S (S (S (S (S (O ()))))))))); 
+mulo !(S !O) q r st, 10 answers {
+q=O (); r=O (); 
+q=S (O ()); r=S (O ()); 
+q=S (S (O ())); r=S (S (O ())); 
+q=S (S (S (O ()))); r=S (S (S (O ()))); 
+q=S (S (S (S (O ())))); r=S (S (S (S (O ())))); 
+q=S (S (S (S (S (O ()))))); r=S (S (S (S (S (O ()))))); 
+q=S (S (S (S (S (S (O ())))))); r=S (S (S (S (S (S (O ())))))); 
+q=S (S (S (S (S (S (S (O ()))))))); r=S (S (S (S (S (S (S (O ()))))))); 
+q=S (S (S (S (S (S (S (S (O ())))))))); r=S (S (S (S (S (S (S (S (O ())))))))); 
+q=S (S (S (S (S (S (S (S (S (O ()))))))))); r=S (S (S (S (S (S (S (S (S (O ()))))))))); 
 }
-mulo q p O st, 1 answer {
-q=O (); p=_.11; 
+mulo q r !O st, 1 answer {
+q=O (); r=_.11; 
 }
-mulo q p (S O) st, 1 answer {
-q=S (O ()); p=S (O ()); 
+mulo q r !(S !O) st, 1 answer {
+q=S (O ()); r=S (O ()); 
 }
-mulo (S O) (S O) q st, 1 answer {
+mulo !(S !O) !(S !O) q st, 1 answer {
 q=S (O ()); 
 }
-mulo q p (S (S (S (S O)))) st, 1 answer {
-q=S (S (S (S (O ())))); p=S (O ()); 
+mulo q r !(S !(S !(S !(S !O)))) st, 1 answer {
+q=S (S (S (S (O ())))); r=S (O ()); 
 }
-mulo q p (S (S (S (S O)))) st, 3 answers {
-q=S (S (S (S (O ())))); p=S (O ()); 
-q=S (S (O ())); p=S (S (O ())); 
-q=S (O ()); p=S (S (S (S (O ())))); 
+mulo q r !(S !(S !(S !(S !O)))) st, 3 answers {
+q=S (S (S (S (O ())))); r=S (O ()); 
+q=S (S (O ())); r=S (S (O ())); 
+q=S (O ()); r=S (S (S (S (O ())))); 
 }
-mulo q p r st, 3 answers {
-q=O (); p=_.11; r=O (); 
-q=S (O ()); p=O (); r=O (); 
-q=S (S (O ())); p=O (); r=O (); 
+mulo q r s st, 3 answers {
+q=O (); r=_.11; s=O (); 
+q=S (O ()); r=O (); s=O (); 
+q=S (S (O ())); r=O (); s=O (); 
 }
-mulo q p r st, 10 answers {
-q=O (); p=_.11; r=O (); 
-q=S (O ()); p=O (); r=O (); 
-q=S (S (O ())); p=O (); r=O (); 
-q=S (O ()); p=S (O ()); r=S (O ()); 
-q=S (S (S (O ()))); p=O (); r=O (); 
-q=S (S (S (S (O ())))); p=O (); r=O (); 
-q=S (O ()); p=S (S (O ())); r=S (S (O ())); 
-q=S (S (S (S (S (O ()))))); p=O (); r=O (); 
-q=S (S (O ())); p=S (O ()); r=S (S (O ())); 
-q=S (S (S (S (S (S (O ())))))); p=O (); r=O (); 
+mulo q r s st, 10 answers {
+q=O (); r=_.11; s=O (); 
+q=S (O ()); r=O (); s=O (); 
+q=S (S (O ())); r=O (); s=O (); 
+q=S (O ()); r=S (O ()); s=S (O ()); 
+q=S (S (S (O ()))); r=O (); s=O (); 
+q=S (S (S (S (O ())))); r=O (); s=O (); 
+q=S (O ()); r=S (S (O ())); s=S (S (O ())); 
+q=S (S (O ())); r=S (O ()); s=S (S (O ())); 
+q=S (S (S (S (S (O ()))))); r=O (); s=O (); 
+q=S (S (S (S (S (S (O ())))))); r=O (); s=O (); 
 }
