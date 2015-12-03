@@ -267,7 +267,7 @@ DOCFILES = $(PACKAGE).ps $(PACKAGE).html
 # add extra compiled libraries used for linking
 # EXTRA_CMA += $(addsuffix .cma, str)
 # EXTRA_CMXA += $(addsuffix .cmxa, str)
-TARGET := $(MLI) $(CMO) $(CMA) $(CMX) $(CMXA) META 
+TARGET := $(CMI) $(MLI) $(CMO) $(CMA) $(CMX) $(CMXA) META 
 
 # OCaml parser called with flags
 AM_P4FLAGS = -pp "$(CAMLP4OF) $(PARSER_INCLUDES)"

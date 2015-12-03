@@ -26,7 +26,7 @@ CAMLPXLIB = $(CAMLP5LIB)
 # EXTRA_CMA += $(addsuffix .cma, str)
 # EXTRA_CMXA += $(addsuffix .cmxa, str)
 
-TARGET := $(MLI) $(CMO) $(CMA) $(CMX) $(CMXA) META 
+TARGET := $(CMI) $(MLI) $(CMO) $(CMA) $(CMX) $(CMXA) META 
 
 include $(top_srcdir)/m4/Makefile.am.targets
 
