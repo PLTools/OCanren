@@ -146,3 +146,6 @@ val refine : State.t -> 'a logic -> 'a logic
 (** [take ?(n=k) s] takes at most [k] first answers from the lazy
     stream [s] (reexported from MKStream for convenience) *)
 val take : ?n:int -> State.t Stream.t -> State.t list
+
+(** Exception to raise on infinine unification result *)
+exception Occurs_check

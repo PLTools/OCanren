@@ -73,6 +73,7 @@ let rec of_list = function
 | x::xs -> !x % (of_list xs)
 
 exception Not_a_value 
+exception Occurs_check
 
 let rec to_listk k = function
 | Value Nil -> []
@@ -80,7 +81,6 @@ let rec to_listk k = function
 | z -> k z
 
 let to_list l = to_listk (fun _ -> raise Not_a_value) l
-
 
 let llist = {
   llist with plugins = 
@@ -215,6 +215,22 @@ module Subst :
       | Some i ->
           try walk env (M.find i (!! subst)) subst with Not_found -> var
 
+    let rec occurs env xi term subst =
+      let y = walk env term subst in
+      match Env.var env y with
+      | Some yi -> xi = yi
+      | None -> 
+         let wy = wrap (Obj.repr y) in
+	 match wy with
+	 | Unboxed _ -> false
+	 | Invalid n -> invalid_arg (Printf.sprintf "Invalid value in occurs check (%d)" n)
+	 | Boxed (_, s, f) ->
+            let rec inner i =
+              if i >= s then false
+	      else occurs env xi (!!(f i)) subst || inner (i+1)
+	    in
+	    inner 0
+
     let rec walk' env var subst =
       match Env.var env var with
       | None ->
@@ -239,34 +255,39 @@ module Subst :
 	   with Not_found -> !!var
 	  )
 
-    let rec unify env x y = function
-    | None -> None
-    | (Some subst) as s ->
-        let x, y = walk env x subst, walk env y subst in
-        match Env.var env x, Env.var env y with
-	| Some xi, Some yi -> if xi = yi then s else Some (!! (M.add xi y (!! subst)))
-	| Some xi, _       -> Some (!! (M.add xi y (!! subst)))
-	| _      , Some yi -> Some (!! (M.add yi x (!! subst)))
-	| _ ->
-	    let wx, wy = wrap (Obj.repr x), wrap (Obj.repr y) in
-            (match wx, wy with
-             | Unboxed vx, Unboxed vy -> if vx = vy then s else None
-             | Boxed (tx, sx, fx), Boxed (ty, sy, fy) ->
-                if tx = ty && sx = sy
-		then
-		  let rec inner i = function
-                  | None -> None
-                  | (Some _) as s ->
-	               if i < sx
-		       then inner (i+1) (unify env (!!(fx i)) (!!(fy i)) s)
-		       else s
-                  in
-		  inner 0 s
-                else None
-	     | Invalid n, _
-             | _, Invalid n -> invalid_arg (Printf.sprintf "Invalid values for unification (%d)" n)
-	     | _ -> None
-	    )
+    let rec unify env x y subst = 
+      let extend xi term subst =
+        if occurs env xi term subst then raise Occurs_check
+        else Some (!! (M.add xi term (!! subst)))
+      in
+      match subst with
+      | None -> None
+      | (Some subst) as s ->
+          let x, y = walk env x subst, walk env y subst in
+          match Env.var env x, Env.var env y with
+  	  | Some xi, Some yi -> if xi = yi then s else extend xi y subst
+	  | Some xi, _       -> extend xi y subst
+	  | _      , Some yi -> extend yi x subst
+	  | _ ->
+	      let wx, wy = wrap (Obj.repr x), wrap (Obj.repr y) in
+              (match wx, wy with
+               | Unboxed vx, Unboxed vy -> if vx = vy then s else None
+               | Boxed (tx, sx, fx), Boxed (ty, sy, fy) ->
+                  if tx = ty && sx = sy
+	  	  then
+		    let rec inner i = function
+                    | None -> None
+                    | (Some _) as s ->
+	                 if i < sx
+		         then inner (i+1) (unify env (!!(fx i)) (!!(fy i)) s)
+		         else s
+                    in
+		    inner 0 s
+                  else None
+	       | Invalid n, _
+               | _, Invalid n -> invalid_arg (Printf.sprintf "Invalid values for unification (%d)" n)
+	       | _ -> None
+	      )
   end
 
 module State =
