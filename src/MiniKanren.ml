@@ -194,26 +194,33 @@ module Subst :
   sig
     type t
 
-    val empty : t
-    val walk  : Env.t -> 'a logic -> t -> 'a logic
-    val walk' : Env.t -> 'a logic -> t -> 'a logic
-    val unify : Env.t -> 'a logic -> 'a logic -> t option -> t option
-    val show  : t -> string
+    val empty   : t
+
+    val of_list : (int * Obj.t * Obj.t) list -> t 
+    val split   : t -> Obj.t list * Obj.t list 
+    val walk    : Env.t -> 'a logic -> t -> 'a logic
+    val walk'   : Env.t -> 'a logic -> t -> 'a logic
+    val unify   : Env.t -> 'a logic -> 'a logic -> t option -> (int * Obj.t * Obj.t) list * t option
+    val show    : t -> string
   end =
   struct
     module M = Map.Make (struct type t = int let compare = Pervasives.compare end)
 
-    type t = Obj.t M.t
+    type t = (Obj.t * Obj.t) M.t
 
-    let show m = (M.fold (fun i x s -> s ^ Printf.sprintf "%d -> %s; " i (generic_show x)) m "subst {") ^ "}"
+    let show m = (M.fold (fun i (_, x) s -> s ^ Printf.sprintf "%d -> %s; " i (generic_show x)) m "subst {") ^ "}"
 
     let empty = M.empty
+
+    let of_list l = List.fold_left (fun s (i, v, t) -> M.add i (v, t) s) empty l
+
+    let split s = M.fold (fun _ (x, t) (xs, ts) -> x::xs, t::ts) s ([], []) 
 
     let rec walk env var subst =
       match Env.var env var with
       | None   -> var
       | Some i ->
-          try walk env (M.find i (!! subst)) subst with Not_found -> var
+          try walk env (snd (M.find i (!! subst))) subst with Not_found -> var
 
     let rec occurs env xi term subst =
       let y = walk env term subst in
@@ -251,58 +258,63 @@ module Subst :
           )
 
       | Some i ->
-	  (try walk' env (M.find i (!! subst)) subst
+	  (try walk' env (snd (M.find i (!! subst))) subst
 	   with Not_found -> !!var
 	  )
 
-    let rec unify env x y subst = 
-      let extend xi term subst =
-        if occurs env xi term subst then raise Occurs_check
-        else Some (!! (M.add xi term (!! subst)))
+    let unify env x y subst =
+      let rec unify x y (delta, subst) = 
+        let extend xi x term delta subst =
+          if occurs env xi term subst then raise Occurs_check
+          else (xi, !!x, !!term)::delta, Some (!! (M.add xi (!!x, term) (!! subst)))
+        in
+        match subst with
+        | None -> delta, None
+        | (Some subst) as s ->
+            let x, y = walk env x subst, walk env y subst in
+            match Env.var env x, Env.var env y with
+            | Some xi, Some yi -> if xi = yi then delta, s else extend xi x y delta subst 
+            | Some xi, _       -> extend xi x y delta subst 
+	    | _      , Some yi -> extend yi y x delta subst 
+	    | _ ->
+	        let wx, wy = wrap (Obj.repr x), wrap (Obj.repr y) in
+                (match wx, wy with
+                 | Unboxed vx, Unboxed vy -> if vx = vy then delta, s else delta, None
+                 | Boxed (tx, sx, fx), Boxed (ty, sy, fy) ->
+                    if tx = ty && sx = sy
+	  	    then
+		      let rec inner i (delta, subst) = 
+			match subst with
+                        | None -> delta, None
+                        | Some _ ->
+  	                   if i < sx
+		           then inner (i+1) (unify (!!(fx i)) (!!(fy i)) (delta, subst))
+		           else delta, subst
+                      in
+		      inner 0 (delta, s)
+                    else delta, None
+	         | Invalid n, _
+                 | _, Invalid n -> invalid_arg (Printf.sprintf "Invalid values for unification (%d)" n)
+	         | _ -> delta, None
+	        )
       in
-      match subst with
-      | None -> None
-      | (Some subst) as s ->
-          let x, y = walk env x subst, walk env y subst in
-          match Env.var env x, Env.var env y with
-  	  | Some xi, Some yi -> if xi = yi then s else extend xi y subst
-	  | Some xi, _       -> extend xi y subst
-	  | _      , Some yi -> extend yi x subst
-	  | _ ->
-	      let wx, wy = wrap (Obj.repr x), wrap (Obj.repr y) in
-              (match wx, wy with
-               | Unboxed vx, Unboxed vy -> if vx = vy then s else None
-               | Boxed (tx, sx, fx), Boxed (ty, sy, fy) ->
-                  if tx = ty && sx = sy
-	  	  then
-		    let rec inner i = function
-                    | None -> None
-                    | (Some _) as s ->
-	                 if i < sx
-		         then inner (i+1) (unify env (!!(fx i)) (!!(fy i)) s)
-		         else s
-                    in
-		    inner 0 s
-                  else None
-	       | Invalid n, _
-               | _, Invalid n -> invalid_arg (Printf.sprintf "Invalid values for unification (%d)" n)
-	       | _ -> None
-	      )
+      unify x y ([], subst)
+
   end
 
 module State =
   struct  
-    type t = Env.t * Subst.t
-    let empty () = (Env.empty (), Subst.empty)
-    let env = fst
-    let show (env, subst) = Printf.sprintf "st {%s, %s}" (Env.show env) (Subst.show subst)
+    type t = Env.t * Subst.t * Subst.t list
+    let empty () = (Env.empty (), Subst.empty, [])
+    let env   (env, _, _) = env
+    let show  (env, subst, constr) = Printf.sprintf "st {%s, %s, %s}" (Env.show env) (Subst.show subst) (GT.show(GT.list) Subst.show constr)
   end
 
 type goal = State.t -> State.t Stream.t
 
-let call_fresh f (env, subst) =
+let call_fresh f (env, subst, constr) =
   let x, env' = Env.fresh env in
-  f x (env', subst)
+  f x (env', subst, constr)
 
 let succ prev f = call_fresh (fun x -> prev (f x))
 
@@ -319,15 +331,42 @@ let qrs   = three
 let qrst  = four
 let pqrst = five
 
-let (===) x y (env, subst) =
-  match Subst.unify env x y (Some subst) with
-  | None   -> Stream.nil
-  | Some s -> Stream.cons (env, s) Stream.nil
+exception Disequality_violated
 
-let (=/=) x y ((env, subst) as st) =
-  match Subst.unify env x y (Some subst) with
-  | None   -> Stream.cons st Stream.nil
-  | Some _ -> Stream.nil 
+let (===) x y (env, subst, constr) =
+  let prefix, subst' = Subst.unify env x y (Some subst) in
+  match subst' with
+  | None -> Stream.nil
+  | Some s -> 
+      try
+        (* TODO: only apply constraints with the relevant vars *)
+        let constr' =
+          List.fold_left (fun css' cs -> 
+            let x, t  = Subst.split cs in
+            let p, s' = Subst.unify env (!!x) (!!t) subst' in
+            match s' with
+	    | None -> css'
+	    | Some _ ->
+                match p with
+	        | [] -> raise Disequality_violated
+	        | _  -> (Subst.of_list p)::css'
+          ) 
+          []
+          constr
+	in
+        Stream.cons (env, s, constr') Stream.nil
+      with Disequality_violated -> Stream.nil
+
+(* TODO: normalize_store *)
+let (=/=) x y ((env, subst, constr) as st) =
+  let prefix, subst' = Subst.unify env x y (Some subst) in
+  match subst' with
+  | None -> Stream.cons st Stream.nil
+  | Some s -> 
+      (match prefix with
+      | [] -> Stream.nil
+      | _  -> Stream.cons (env, subst, (Subst.of_list prefix)::constr) Stream.nil
+      )
 
 let conj f g st = Stream.bind (f st) g 
 
@@ -349,6 +388,6 @@ let conde = (?|)
  
 let run f = f (State.empty ())
 
-let refine (e, s) x = Subst.walk' e (!!x) s
+let refine (e, s, c) x = Subst.walk' e (!!x) s
 
 let take = Stream.take

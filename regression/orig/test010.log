@@ -1,0 +1,9 @@
+g123 q st, 3 answers {
+q=1; 
+q=2; 
+q=3; 
+}
+g12 q st, 3 answers {
+q=1; 
+q=2; 
+}
