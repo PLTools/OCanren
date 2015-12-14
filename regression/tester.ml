@@ -1,6 +1,8 @@
 open MiniKanren
 
-let run printer n runner goal =
+let empty_reifier _ _ = ""
+
+let run printer reifier n runner goal =
   run (fun st -> 
     let (repr, result), vars = runner goal st in
     Printf.printf "%s, %s answer%s {\n" 
@@ -10,7 +12,13 @@ let run printer n runner goal =
     List.iter
       (fun st ->        
          List.iter
-           (fun (s, x) -> Printf.printf "%s=%s; " s (printer (refine st x)))
+           (fun (s, x) -> 
+	      let v, dc = refine st x in          
+              let pv = printer v in  
+              match reifier dc x with  
+              | "" -> Printf.printf "%s=%s; " s pv
+              | r  -> Printf.printf "%s=%s (%s);" s pv r              
+	   )
            vars;
          Printf.printf "\n"
       )

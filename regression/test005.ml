@@ -38,20 +38,20 @@ let show_lam    = show logic (show lam)
 let show_string = show logic (show string)
 
 let _ =
-  run show_typ    1 q (fun q st -> REPR (lookupo !"x" (of_list []) q                                          st), ["q", q]);
-  run show_typ    1 q (fun q st -> REPR (lookupo !"x" (of_list [!"x", !(V !"x")]) q                           st), ["q", q]); 
-  run show_typ    1 q (fun q st -> REPR (lookupo !"x" (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) q          st), ["q", q]);
+  run show_typ    empty_reifier  1 q (fun q st -> REPR (lookupo !"x" (of_list []) q                                          st), ["q", q]);
+  run show_typ    empty_reifier 1 q (fun q st -> REPR (lookupo !"x" (of_list [!"x", !(V !"x")]) q                           st), ["q", q]); 
+  run show_typ    empty_reifier 1 q (fun q st -> REPR (lookupo !"x" (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) q          st), ["q", q]);
 
-  run show_string 1 q (fun q st -> REPR (lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x")     st), ["q", q]);
-  run show_string 1 q (fun q st -> REPR (lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y")     st), ["q", q]);
-  run show_env    1 q (fun q st -> REPR (lookupo !"x" q !(V !"y")                                             st), ["q", q]);
-  run show_env    5 q (fun q st -> REPR (lookupo !"x" q !(V !"y")                                             st), ["q", q]); 
-  run show_typ    1 q (fun q st -> REPR (infero !(Abs (!"x", !(X !"x"))) q                                    st), ["q", q]);
-  run show_typ    1 q (fun q st -> REPR (infero !(Abs (!"f", !(Abs (!"x", !(App (!(X !"f"), !(X !"x"))))))) q st), ["q", q]);
-  run show_typ    1 q (fun q st -> REPR (infero !(Abs (!"x", !(Abs (!"f", !(App (!(X !"f"), !(X !"x"))))))) q st), ["q", q]);
-  run show_lam    1 q (fun q st -> REPR (infero q !(Arr (!(V !"x"), !(V !"x")))                               st), ["q", q]);
+  run show_string empty_reifier 1 q (fun q st -> REPR (lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x")     st), ["q", q]);
+  run show_string empty_reifier 1 q (fun q st -> REPR (lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y")     st), ["q", q]);
+  run show_env    empty_reifier 1 q (fun q st -> REPR (lookupo !"x" q !(V !"y")                                             st), ["q", q]);
+  run show_env    empty_reifier 5 q (fun q st -> REPR (lookupo !"x" q !(V !"y")                                             st), ["q", q]); 
+  run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"x", !(X !"x"))) q                                    st), ["q", q]);
+  run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"f", !(Abs (!"x", !(App (!(X !"f"), !(X !"x"))))))) q st), ["q", q]);
+  run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"x", !(Abs (!"f", !(App (!(X !"f"), !(X !"x"))))))) q st), ["q", q]);
+  run show_lam    empty_reifier 1 q (fun q st -> REPR (infero q !(Arr (!(V !"x"), !(V !"x")))                               st), ["q", q]);
 
-  try run show_typ 1 q (fun q st -> REPR (infero !(Abs (!"x", !(App (!(X !"x"), !(X !"x"))))) q st), ["q", q]) with
+  try run show_typ empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"x", !(App (!(X !"x"), !(X !"x"))))) q st), ["q", q]) with
     Occurs_check -> Printf.printf "Occurs check happened, ok.\n" 
 
 

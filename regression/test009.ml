@@ -47,10 +47,10 @@ let show_expr   = show(logic) (show expr)
 let show_stream = show(logic) (show llist (show token))
 
 let _ =
-  run show_expr   1 q (fun q   st -> REPR (pExpr (of_list [Id]) q                   st), ["q", q]);  
-  run show_expr   1 q (fun q   st -> REPR (pExpr (of_list [Id; Mul; Id]) q          st), ["q", q]);  
-  run show_expr   1 q (fun q   st -> REPR (pExpr (of_list [Id; Mul; Id; Mul; Id]) q st), ["q", q]);  
-  run show_expr   1 q (fun q   st -> REPR (pExpr (of_list [Id; Mul; Id; Add; Id]) q st), ["q", q]);  
-  run show_expr   1 q (fun q   st -> REPR (pExpr (of_list [Id; Add; Id; Mul; Id]) q st), ["q", q]);  
-  run show_expr   1 q (fun q   st -> REPR (pExpr (of_list [Id; Add; Id; Add; Id]) q st), ["q", q]);  
-  run show_stream 1 q (fun q   st -> REPR (pExpr q !(M (!I, !I))                    st), ["q", q])
+  run show_expr   empty_reifier 1 q (fun q   st -> REPR (pExpr (of_list [Id]) q                   st), ["q", q]);  
+  run show_expr   empty_reifier 1 q (fun q   st -> REPR (pExpr (of_list [Id; Mul; Id]) q          st), ["q", q]);  
+  run show_expr   empty_reifier 1 q (fun q   st -> REPR (pExpr (of_list [Id; Mul; Id; Mul; Id]) q st), ["q", q]);  
+  run show_expr   empty_reifier 1 q (fun q   st -> REPR (pExpr (of_list [Id; Mul; Id; Add; Id]) q st), ["q", q]);  
+  run show_expr   empty_reifier 1 q (fun q   st -> REPR (pExpr (of_list [Id; Add; Id; Mul; Id]) q st), ["q", q]);  
+  run show_expr   empty_reifier 1 q (fun q   st -> REPR (pExpr (of_list [Id; Add; Id; Add; Id]) q st), ["q", q]);  
+  run show_stream empty_reifier 1 q (fun q   st -> REPR (pExpr q !(M (!I, !I))                    st), ["q", q])

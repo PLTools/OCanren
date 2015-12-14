@@ -388,6 +388,16 @@ let conde = (?|)
  
 let run f = f (State.empty ())
 
-let refine (e, s, c) x = Subst.walk' e (!!x) s
+type diseq = Env.t * Subst.t list
+
+let refine (e, s, c) x = (Subst.walk' e (!!x) s, (e, c))
+
+let reify (env, dcs) = function
+| (Var xi) as v -> 
+    List.map (fun s -> 
+      Subst.walk' env (!!v) s 
+    ) 
+    dcs
+| _ -> []
 
 let take = Stream.take
