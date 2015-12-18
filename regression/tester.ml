@@ -15,7 +15,7 @@ let run printer reifier n runner goal =
            (fun (s, x) -> 
 	      let v, dc = refine st x in          
               let pv = printer v in  
-              match reifier dc x with  
+              match reifier dc v with  
               | "" -> Printf.printf "%s=%s; " s pv
               | r  -> Printf.printf "%s=%s (%s);" s pv r              
 	   )

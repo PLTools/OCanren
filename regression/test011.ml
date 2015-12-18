@@ -14,10 +14,14 @@ let int_reifier dc x =
   | [] -> ""
   | cs -> show(list) (fun c -> Printf.sprintf "%s =/= %s" (show_int x) (show_int c)) cs
 
-let list_reifier dc x =
-  match reify dc x with
-  | [] -> ""
-  | cs -> show(list) (fun c -> Printf.sprintf "%s =/= %s" (show_list x) (show_list c)) cs
+let list_reifier dc = function
+  | (Var _) as x ->
+    begin match reify dc x with
+    | [] -> ""
+    | cs -> show(list) (fun c -> Printf.sprintf "%s =/= %s" (show_list x) (show_list c)) cs
+    end
+  | Value l -> 
+      List.fold_left (fun acc -> function (Var _) as x -> acc ^ int_reifier dc x | _ -> acc) "" l
 
 let _ = 
   run show_t         empty_reifier (-1) q (fun q st -> REPR((fresh(x) (x =/= !(A x)))                                                                   st), ["q", q]);
@@ -31,71 +35,16 @@ let _ =
   run show_int       empty_reifier (-1) q (fun q st -> REPR ((fresh (x y)(![x; !1] =/= ![!2; y])(x === !2))                                             st), ["q", q]);
   run show_int       empty_reifier (-1) q (fun q st -> REPR ((fresh (x y)(![x; !1] =/= ![!2; y])(y === !1))                                             st), ["q", q]);
   run show_int       empty_reifier (-1) q (fun q st -> REPR ((fresh (x y)(![x; !1] =/= ![!2; y])(x === !2)(y === !1))                                   st), ["q", q]);
-(* Fix reify:
   run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; !1] =/= ![!2; y])(![x; y] === q))                                        st), ["q", q]);
-*)
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; !1] =/= ![!2; y])(x === !2)(![x; y] === q))                              st), ["q", q]);
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; !1] =/= ![!2; y])(x === !2)(y === !9)(![x; y] === q))                    st), ["q", q]);
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (a d)(![a; d] === q)(q =/= ![!5; !6])(a === !5)(d === !6))                          st), ["q", q]);
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; !1] =/= ![!2; y])(x === !2)(y === !1)(![x; y] === q))                    st), ["q", q]);
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (a x z)(a =/= ![x; !1])(a === ![z; !1])(x === z))                                   st), ["q", q]);
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (a x z)(a =/= ![x; !1])(a === ![z; !1])(x === !5)(![x; z] === q))                   st), ["q", q]);
 
  
 (*
-
-(test "=/=-22"
-  (run* (q)
-    (fresh (x y)
-      (=/= `(,x 1) `(2 ,y))
-      (== `(,x ,y) q)))
-  '(((_.0 _.1) (=/= ((_.0 2) (_.1 1))))))
-
-(test "=/=-23"
-  (run* (q)
-    (fresh (x y)
-      (=/= `(,x 1) `(2 ,y))
-      (== x 2)
-      (== `(,x ,y) q)))
-  '(((2 _.0) (=/= ((_.0 1))))))
-
-(test "=/=-24"
-  (run* (q)
-    (fresh (x y)
-      (=/= `(,x 1) `(2 ,y))
-      (== x 2)
-      (== y 9)
-      (== `(,x ,y) q)))
-  '((2 9)))
-
-(test "=/=-24b"
-  (run* (q)
-  (fresh (a d)
-    (== `(,a . ,d) q)
-    (=/= q `(5 . 6))
-    (== a 5)
-    (== d 6)))
-  '())
-
-(test "=/=-25"
-  (run* (q)
-    (fresh (x y)
-      (=/= `(,x 1) `(2 ,y))
-      (== x 2)
-      (== y 1)
-      (== `(,x ,y) q)))
-  '())
-
-(test "=/=-26"
-  (run* (q)
-    (fresh (a x z)
-      (=/= a `(,x 1))
-      (== a `(,z 1))
-      (== x z)))
-  '())
-
-(test "=/=-27"
-  (run* (q)
-    (fresh (a x z)
-      (=/= a `(,x 1))
-      (== a `(,z 1))
-      (== x 5)
-      (== `(,x ,z) q)))
-  '(((5 _.0) (=/= ((_.0 5))))))
 
 (test "=/=-28"
   (run* (q)
