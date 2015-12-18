@@ -362,8 +362,28 @@ let (===) x y (env, subst, constr) =
     end
   with Occurs_check -> Stream.nil
 
-(* TODO: normalize_store *)
 let (=/=) x y ((env, subst, constr) as st) =
+  let normalize_store prefix constr =
+    let subst = Subst.of_list prefix in
+    let prefix = List.map (fun (_, x, t) -> (x, t)) prefix in
+    let subsumes subst (vs, ts) = 
+      try 
+        match Subst.unify env !!vs !!ts (Some subst) with
+	| [], Some _ -> true
+        | _ -> false
+      with Occurs_check -> false
+    in
+    let rec traverse = function
+    | [] -> [subst]
+    | (c::cs) as ccs -> 
+	if subsumes c (List.split prefix) 
+	then ccs
+        else if subsumes subst (Subst.split c) 
+             then traverse cs
+             else c :: traverse cs
+    in
+    traverse constr
+  in
   try 
     let prefix, subst' = Subst.unify env x y (Some subst) in
     match subst' with
@@ -371,7 +391,7 @@ let (=/=) x y ((env, subst, constr) as st) =
     | Some s -> 
         (match prefix with
         | [] -> Stream.nil
-        | _  -> Stream.cons (env, subst, (Subst.of_list prefix)::constr) Stream.nil
+        | _  -> Stream.cons (env, subst, normalize_store prefix constr) Stream.nil
         )
   with Occurs_check -> Stream.cons st Stream.nil
 
