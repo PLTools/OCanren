@@ -334,39 +334,46 @@ let pqrst = five
 exception Disequality_violated
 
 let (===) x y (env, subst, constr) =
-  let prefix, subst' = Subst.unify env x y (Some subst) in
-  match subst' with
-  | None -> Stream.nil
-  | Some s -> 
-      try
-        (* TODO: only apply constraints with the relevant vars *)
-        let constr' =
-          List.fold_left (fun css' cs -> 
-            let x, t  = Subst.split cs in
-            let p, s' = Subst.unify env (!!x) (!!t) subst' in
-            match s' with
-	    | None -> css'
-	    | Some _ ->
-                match p with
-	        | [] -> raise Disequality_violated
-	        | _  -> (Subst.of_list p)::css'
-          ) 
-          []
-          constr
-	in
-        Stream.cons (env, s, constr') Stream.nil
-      with Disequality_violated -> Stream.nil
+  try
+    let prefix, subst' = Subst.unify env x y (Some subst) in
+    begin match subst' with
+    | None -> Stream.nil
+    | Some s -> 
+        try
+          (* TODO: only apply constraints with the relevant vars *)
+          let constr' =
+            List.fold_left (fun css' cs -> 
+              let x, t  = Subst.split cs in
+	      try
+                let p, s' = Subst.unify env (!!x) (!!t) subst' in
+                match s' with
+	        | None -> css'
+	        | Some _ ->
+                    match p with
+	            | [] -> raise Disequality_violated
+	            | _  -> (Subst.of_list p)::css'
+	      with Occurs_check -> css'
+            ) 
+            []
+            constr
+	  in
+          Stream.cons (env, s, constr') Stream.nil
+        with Disequality_violated -> Stream.nil
+    end
+  with Occurs_check -> Stream.nil
 
 (* TODO: normalize_store *)
 let (=/=) x y ((env, subst, constr) as st) =
-  let prefix, subst' = Subst.unify env x y (Some subst) in
-  match subst' with
-  | None -> Stream.cons st Stream.nil
-  | Some s -> 
-      (match prefix with
-      | [] -> Stream.nil
-      | _  -> Stream.cons (env, subst, (Subst.of_list prefix)::constr) Stream.nil
-      )
+  try 
+    let prefix, subst' = Subst.unify env x y (Some subst) in
+    match subst' with
+    | None -> Stream.cons st Stream.nil
+    | Some s -> 
+        (match prefix with
+        | [] -> Stream.nil
+        | _  -> Stream.cons (env, subst, (Subst.of_list prefix)::constr) Stream.nil
+        )
+  with Occurs_check -> Stream.cons st Stream.nil
 
 let conj f g st = Stream.bind (f st) g 
 
@@ -394,9 +401,12 @@ let refine (e, s, c) x = (Subst.walk' e (!!x) s, (e, c))
 
 let reify (env, dcs) = function
 | (Var xi) as v -> 
-    List.map (fun s -> 
-      Subst.walk' env (!!v) s 
+    List.fold_left (fun acc s -> 
+      match Subst.walk' env (!!v) s with
+      | Var yi when yi = xi -> acc
+      | t -> t :: acc
     ) 
+    []
     dcs
 | _ -> []
 

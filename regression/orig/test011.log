@@ -1,0 +1,100 @@
+call_fresh (fun x -> (=/=) x !(A x)) st, all answers {
+q=_.10; 
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          call_fresh
+            (fun z ->
+               conj ((=/=) x y)
+                 (conj ((===) x ![!0; z; !1]) ((===) y ![!0; !1; !1])))))
+  st, all answers {
+q=_.10; 
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          call_fresh
+            (fun z ->
+               conj ((=/=) x y)
+                 (conj ((===) x ![!0; z; !1])
+                    (conj ((===) y ![!0; !1; !1])
+                       (conj ((===) z !1) ((===) ![x; y] q)))))))
+  st, all answers {
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          call_fresh
+            (fun z ->
+               conj ((=/=) x y)
+                 (conj ((===) x ![!0; z; !1])
+                    (conj ((===) y ![!0; !1; !1]) ((===) z !0))))))
+  st, all answers {
+q=_.10; 
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          call_fresh
+            (fun z ->
+               conj ((===) z !0)
+                 (conj ((=/=) x y)
+                    (conj ((===) x ![!0; z; !1]) ((===) y ![!0; !1; !1]))))))
+  st, all answers {
+q=_.10; 
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          call_fresh
+            (fun z ->
+               conj ((===) x ![!0; z; !1])
+                 (conj ((===) y ![!0; !1; !1]) ((=/=) x y)))))
+  st, all answers {
+q=_.10; 
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          call_fresh
+            (fun z ->
+               conj ((===) z !1)
+                 (conj ((=/=) x y)
+                    (conj ((===) x ![!0; z; !1]) ((===) y ![!0; !1; !1]))))))
+  st, all answers {
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          call_fresh
+            (fun z ->
+               conj ((===) z !1)
+                 (conj ((===) x ![!0; z; !1])
+                    (conj ((===) y ![!0; !1; !1]) ((=/=) x y))))))
+  st, all answers {
+}
+call_fresh
+  (fun x -> call_fresh (fun y -> conj ((=/=) ![x; !1] ![!2; y]) ((===) x !2)))
+  st, all answers {
+q=_.10; 
+}
+call_fresh
+  (fun x -> call_fresh (fun y -> conj ((=/=) ![x; !1] ![!2; y]) ((===) y !1)))
+  st, all answers {
+q=_.10; 
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          conj ((=/=) ![x; !1] ![!2; y]) (conj ((===) x !2) ((===) y !1))))
+  st, all answers {
+}

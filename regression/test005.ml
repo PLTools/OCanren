@@ -50,9 +50,7 @@ let _ =
   run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"f", !(Abs (!"x", !(App (!(X !"f"), !(X !"x"))))))) q st), ["q", q]);
   run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"x", !(Abs (!"f", !(App (!(X !"f"), !(X !"x"))))))) q st), ["q", q]);
   run show_lam    empty_reifier 1 q (fun q st -> REPR (infero q !(Arr (!(V !"x"), !(V !"x")))                               st), ["q", q]);
-
-  try run show_typ empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"x", !(App (!(X !"x"), !(X !"x"))))) q st), ["q", q]) with
-    Occurs_check -> Printf.printf "Occurs check happened, ok.\n" 
-
+  run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"x", !(App (!(X !"x"), !(X !"x")))))                q st), ["q", q])
+  
 
 

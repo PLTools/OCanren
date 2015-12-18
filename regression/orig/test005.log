@@ -35,4 +35,4 @@ infero q !(Arr (!(V !"x"), !(V !"x"))) st, 1 answer {
 q=Abs (_.15, X (_.15)); 
 }
 infero !(Abs (!"x", !(App (!(X !"x"), !(X !"x"))))) q st, 1 answer {
-Occurs check happened, ok.
+}
