@@ -1,4 +1,4 @@
-open GT
+1open GT
 open MiniKanren
 open Tester
 
@@ -57,75 +57,21 @@ let _ =
   run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (a d)(![a; d] === q)(q =/= ![!5; !6])(a === !5))                                    st), ["q", q]);
   run show_int       int_reifier   (-1) q (fun q st -> REPR ((fresh (a)(!3 === a)(a =/= !4))                                                            st), ["q", q]);
   run show_int       int_reifier   (-1) q (fun q st -> REPR (((!4 =/= q) &&& (!3 =/= q))                                                                st), ["q", q]);
-
-  (* Extra constraint *)
   run show_int       int_reifier   (-1) q (fun q st -> REPR (((q =/= !5) &&& (q =/= !5))                                                                st), ["q", q]);
   run show_int       int_reifier   (-1) q (fun q st -> REPR ((let foo x = fresh (a)(x =/= a) in fresh(a)(foo a))                                        st), ["q", q]);
   run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; y] === q)(x =/= y))                                                      st), ["q", q]);
   run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (a d)(![a; d] === q)(q =/= ![!5; !6]))                                              st), ["q", q]);
   run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (a d)(![a; d] === q)(q =/= ![!5; !6])(a === !3))                                    st), ["q", q]);
   run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; y] === q)(y =/= x))                                                      st), ["q", q]);
-
-  (* Extra constraint *)
   run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; y] === q)(x =/= y)(y =/= x))                                             st), ["q", q]);
-
-  (* Extra constraint *)
   run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; y] === q)(x =/= y)(x =/= y))                                             st), ["q", q]);
-
-  (* Extra constraint *)
   run show_int       int_reifier   (-1) q (fun q st -> REPR (((q =/= !5) &&& (!5 =/= q))                                                                st), ["q", q]);
-
-(*
-(test "=/=-42"
-  (run* (q)
-    (fresh (x y)
-      (== `(,x ,y) q)
-      (=/= `(,x ,y) `(5 6))
-      (=/= x 5)))
-  '(((_.0 _.1) (=/= ((_.0 5)))))) <- why not (=/= ((_.0 5)(_.1 6))) ?
-*)
-  (* Extra constraint *)
   run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; y] === q)(![x; y] =/= ![!5; !6])(x =/= !5))                              st), ["q", q]);
- 
-
-(*
-This test also suspicios:
-
-(test "=/=-43"
-  (run* (q)
-    (fresh (x y)
-      (== `(,x ,y) q)
-      (=/= x 5)
-      (=/= `(,x ,y) `(5 6))))
-  '(((_.0 _.1) (=/= ((_.0 5))))))
-
-(test "=/=-44"
-  (run* (q)
-    (fresh (x y)
-      (=/= x 5)
-      (=/= `(,x ,y) `(5 6))
-      (== `(,x ,y) q)))
-  '(((_.0 _.1) (=/= ((_.0 5))))))
-
-(test "=/=-45"
-  (run* (q)
-    (fresh (x y)
-      (=/= 5 x)
-      (=/= `(,x ,y) `(5 6))
-      (== `(,x ,y) q)))
-  '(((_.0 _.1) (=/= ((_.0 5))))))
-
-(test "=/=-46"
-  (run* (q)
-    (fresh (x y)
-      (=/= 5 x)
-      (=/= `( ,y ,x) `(6 5))
-      (== `(,x ,y) q)))
-  '(((_.0 _.1) (=/= ((_.0 5))))))
-*)
-
-  (* Extra constraint *)
-  run show_list      list_reifier  (-1) q (fun x st -> REPR ((fresh (y z)(x =/= ![y; !2])(x === ![z; !2]))                                                      st), ["x", x]);
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(![x; y] === q)(x =/= !5)(![x; y] =/= ![!5; !6]))                              st), ["q", q]);
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(x =/= !5)(![x; y] =/= ![!5; !6])(![x; y] === q))                              st), ["q", q]);
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(!5 =/= x)(![x; y] =/= ![!5; !6])(![x; y] === q))                              st), ["q", q]);
+  run show_list      list_reifier  (-1) q (fun q st -> REPR ((fresh (x y)(!5 =/= x)(![y; x] =/= ![!6; !5])(![x; y] === q))                              st), ["q", q]);
+  run show_list      list_reifier  (-1) q (fun x st -> REPR ((fresh (y z)(x =/= ![y; !2])(x === ![z; !2]))                                              st), ["x", x]);
 
   let rec distincto l =
     conde [
@@ -138,10 +84,8 @@ This test also suspicios:
          (distincto (ad % dd))
       ))
     ]
-
    in
-
-   run show_int      int_reifier  (-1) q (fun q st -> REPR (distincto (!2 % (!3 %< q))                                        st), ["q", q]);
+   run show_int int_reifier (-1) q (fun q st -> REPR (distincto (!2 % (!3 %< q)) st), ["q", q]);
 
    let rec rembero x ls out =
      conde [
@@ -156,9 +100,8 @@ This test also suspicios:
        )
      ]
    in 
-
-   run show_llist    empty_reifier  (-1) q (fun q st -> REPR (rembero !1 (!1 % (!2 % (!1 %< !3))) q                                        st), ["q", q]);
-   run show_llist    empty_reifier  (-1) q (fun q st -> REPR (rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3))                                       st), ["q", q]);
+   run show_llist empty_reifier (-1) q (fun q st -> REPR (rembero !1 (!1 % (!2 % (!1 %< !3))) q          st), ["q", q]);
+   run show_llist empty_reifier (-1) q (fun q st -> REPR (rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)) st), ["q", q]);
 
    let rec rembero x ls out =
      conde [
@@ -173,6 +116,5 @@ This test also suspicios:
        )
      ]
    in 
-
-   run show_llist    empty_reifier  (-1) q (fun q st -> REPR (rembero !1 (!1 % (!2 % (!1 %< !3))) q                                        st), ["q", q]);
-   run show_llist    empty_reifier  (-1) q (fun q st -> REPR (rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3))                                       st), ["q", q])
+   run show_llist empty_reifier (-1) q (fun q st -> REPR (rembero !1 (!1 % (!2 % (!1 %< !3))) q          st), ["q", q]);
+   run show_llist empty_reifier (-1) q (fun q st -> REPR (rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)) st), ["q", q])

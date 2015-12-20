@@ -233,7 +233,43 @@ call_fresh
           conj ((===) ![x; y] q)
             (conj ((=/=) ![x; y] ![!5; !6]) ((=/=) x !5))))
   st, all answers {
-q=[_.11; _.12] ([_.11 =/= 5][_.12 =/= 6]);
+q=[_.11; _.12] ([_.11 =/= 5]);
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          conj ((===) ![x; y] q)
+            (conj ((=/=) x !5) ((=/=) ![x; y] ![!5; !6]))))
+  st, all answers {
+q=[_.11; _.12] ([_.11 =/= 5]);
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          conj ((=/=) x !5)
+            (conj ((=/=) ![x; y] ![!5; !6]) ((===) ![x; y] q))))
+  st, all answers {
+q=[_.11; _.12] ([_.11 =/= 5]);
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          conj ((=/=) !5 x)
+            (conj ((=/=) ![x; y] ![!5; !6]) ((===) ![x; y] q))))
+  st, all answers {
+q=[_.11; _.12] ([_.11 =/= 5]);
+}
+call_fresh
+  (fun x ->
+     call_fresh
+       (fun y ->
+          conj ((=/=) !5 x)
+            (conj ((=/=) ![y; x] ![!6; !5]) ((===) ![x; y] q))))
+  st, all answers {
+q=[_.11; _.12] ([_.11 =/= 5]);
 }
 call_fresh
   (fun y -> call_fresh (fun z -> conj ((=/=) x ![y; !2]) ((===) x ![z; !2])))

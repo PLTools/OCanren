@@ -364,8 +364,8 @@ let (===) x y (env, subst, constr) =
 
 let (=/=) x y ((env, subst, constr) as st) =
   let normalize_store prefix constr =
-    let subst = Subst.of_list prefix in
-    let prefix = List.map (fun (_, x, t) -> (x, t)) prefix in
+    let subst  = Subst.of_list prefix in
+    let prefix = List.split (List.map (fun (_, x, t) -> (x, t)) prefix) in
     let subsumes subst (vs, ts) = 
       try 
         match Subst.unify env !!vs !!ts (Some subst) with
@@ -376,9 +376,9 @@ let (=/=) x y ((env, subst, constr) as st) =
     let rec traverse = function
     | [] -> [subst]
     | (c::cs) as ccs -> 
-	if subsumes c (List.split prefix) 
+	if subsumes subst (Subst.split c)
 	then ccs
-        else if subsumes subst (Subst.split c) 
+        else if subsumes c prefix
              then traverse cs
              else c :: traverse cs
     in
