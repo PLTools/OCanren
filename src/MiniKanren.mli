@@ -20,13 +20,13 @@
 (** {2 Basic modules and types} *)
 
 (** Type of typed logic variable *)
-@type 'a logic = private Var of GT.int | Value of 'a with show, html, eq, compare, foldl, foldr, map
+@type 'a logic = private Var of GT.int | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 (** Lifting primitive *)
 val (!) : 'a -> 'a logic
 
 (** Type of ligic lists *)
-@type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, map
+@type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, gmap
 
 (** Infix synonym for [Cons] *)
 val (%) : 'a logic -> 'a llist logic -> 'a llist logic

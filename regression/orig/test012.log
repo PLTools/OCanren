@@ -1,0 +1,38 @@
+lookupo !"x" (of_list []) q st, 1 answer {
+}
+lookupo !"x" (of_list [!"x", !(V !"x")]) q st, 1 answer {
+q=V ("x"); 
+}
+lookupo !"x" (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) q st, 1 answer {
+q=V ("x"); 
+}
+lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x") st, 1 answer {
+q="x"; 
+}
+lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y") st, 1 answer {
+q="y"; 
+}
+lookupo !"x" q !(V !"y") st, 1 answer {
+q=[("x", V ("y")); _.13]; 
+}
+lookupo !"x" q !(V !"y") st, 5 answers {
+q=[("x", V ("y")); _.13]; 
+q=[(_.11, _.12); ("x", V ("y")); _.16]; 
+q=[(_.11, _.12); (_.14, _.15); ("x", V ("y")); _.19]; 
+q=[(_.11, _.12); (_.14, _.15); (_.17, _.18); ("x", V ("y")); _.22]; 
+q=[(_.11, _.12); (_.14, _.15); (_.17, _.18); (_.20, _.21); ("x", V ("y")); _.25]; 
+}
+infero !(Abs (!"x", !(X !"x"))) q st, 1 answer {
+q=Arr (_.14, _.14); 
+}
+infero !(Abs (!"f", !(Abs (!"x", !(App (!(X !"f"), !(X !"x"))))))) q st, 1 answer {
+q=Arr (Arr (_.21, _.18), Arr (_.21, _.18)); 
+}
+infero !(Abs (!"x", !(Abs (!"f", !(App (!(X !"f"), !(X !"x"))))))) q st, 1 answer {
+q=Arr (_.21, Arr (Arr (_.21, _.18), _.18)); 
+}
+infero q !(Arr (!(V !"x"), !(V !"x"))) st, 1 answer {
+q=Abs (_.15, X (_.15)); 
+}
+infero !(Abs (!"x", !(App (!(X !"x"), !(X !"x"))))) q st, 1 answer {
+}

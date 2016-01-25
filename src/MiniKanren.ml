@@ -37,7 +37,7 @@ module Stream =
 
 let (!!) = Obj.magic;;
 
-@type 'a logic = Var of GT.int | Value of 'a with show, html, eq, compare, foldl, foldr, map
+@type 'a logic = Var of GT.int | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 let logic = {
   logic with plugins = 
@@ -47,7 +47,7 @@ let logic = {
       method compare = logic.plugins#compare
       method foldr   = logic.plugins#foldr
       method foldl   = logic.plugins#foldl
-      method map     = logic.plugins#map    
+      method gmap    = logic.plugins#gmap    
       method show fa x = 
         GT.transform(logic) 
            (GT.lift fa) 
@@ -60,7 +60,7 @@ let logic = {
     end
 };;
 
-@type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, map
+@type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, gmap
 
 let (!) x = Value x
 
@@ -90,7 +90,7 @@ let llist = {
       method compare = llist.plugins#compare
       method foldr   = llist.plugins#foldr
       method foldl   = llist.plugins#foldl
-      method map     = llist.plugins#map    
+      method gmap    = llist.plugins#gmap    
       method show fa x = "[" ^
         (GT.transform(llist) 
            (GT.lift fa) 
@@ -395,7 +395,7 @@ let (=/=) x y ((env, subst, constr) as st) =
         )
   with Occurs_check -> Stream.cons st Stream.nil
 
-let conj f g st = Stream.bind (f st) g 
+let conj f g st = Stream.bind (f st) g
 
 let (&&&) = conj
 
