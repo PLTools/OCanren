@@ -47,6 +47,11 @@ val to_listk : ('a llist logic -> 'a list) -> 'a llist logic -> 'a list
 (** Exception to raise on a non-value case *)
 exception Not_a_value
 
+(** [to_value x] converts logic into value; raises [Not_a_value] on a
+    non-value case
+*)
+val to_value : 'a logic -> 'a
+
 (** [to_list l] converts logic list [l] into a regular one, raising
     [Not_a_value] on a non-value case *)
 val to_list : 'a llist logic -> 'a list

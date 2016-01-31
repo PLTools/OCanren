@@ -80,6 +80,8 @@ let rec to_listk k = function
 | Value (Cons (Value x, xs)) -> x :: to_listk k xs
 | z -> k z
 
+let to_value = function Var _ -> raise Not_a_value | Value x -> x
+
 let to_list l = to_listk (fun _ -> raise Not_a_value) l
 
 let llist = {
