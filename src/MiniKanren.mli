@@ -107,6 +107,8 @@ val qrs   : ('a logic -> 'b logic -> 'c logic ->                         State.t
 val qrst  : ('a logic -> 'b logic -> 'c logic -> 'd logic ->             State.t -> 'e) -> State.t -> 'e
 val pqrst : ('a logic -> 'b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'f
 
+val bool : bool -> goal
+
 (** [x === y] creates a goal, which performs a unifications of
     [x] and [y] *)
 val (===) : 'a logic -> 'a logic -> goal
