@@ -333,10 +333,6 @@ let qrs   = three
 let qrst  = four
 let pqrst = five
 
-let bool = function 
-| true  -> fun st -> Stream.cons st Stream.Nil
-| false -> fun st -> Stream.Nil
-
 exception Disequality_violated
 
 let (===) x y (env, subst, constr) =
