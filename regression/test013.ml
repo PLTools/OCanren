@@ -1,6 +1,6 @@
 (*
  * MiniKanren: bool, int and list relations tests
- * Copyright (C) 2015
+ * Copyright (C) 2016
  * Aleksei Semin, St.Petersburg State University
  * 
  * This software is free software; you can redistribute it and/or
@@ -75,20 +75,6 @@ let rec mulo x y z =
       (mulo x' y z')
   ]
 
-let rec eveno n = 
-  conde [
-    (n === !O);
-    defer (
-      fresh (k)
-        (oddo k)
-        (addo ?$1 k n)
-    )
-  ]
-and oddo n =
-  fresh (k)
-    (eveno k)
-    (addo ?$1 k n)
-
 (****************************************************************************)
 (* polymorphic list relations *)
 
@@ -97,26 +83,46 @@ let rec foldro f a xs r =
     (xs === !Nil) &&& (a === r);
     fresh (h t a')
       (xs === h % t)
-      (foldro f a t a')
       (f h a' r)
+      (foldro f a t a')
   ]
 
-let mapo f xs ys =
-  let folder x a a' =
-    fresh (y)
-      (f x y)
-      (y % a === a')
-  in
-    foldro folder !Nil xs ys 
+let rec mapo f xs ys =
+  conde [
+    (xs === !Nil) &&& (ys === !Nil);
+    fresh (z zs)
+      (xs === z % zs)
+      (fresh (a1 a2)
+        (f z a1)
+        (mapo f zs a2)
+        (ys === a1 % a2)
+      )
+  ]
 
 let filtero p xs ys =
   let folder x a a' =
     conde [
-      (p x) &&& (x % a === a');
-      (a === a')
+      (p x !true) &&& (x % a === a');
+      (p x !false) &&& (a === a')
     ]
   in
     foldro folder !Nil xs ys
+
+let rec lookup' p = function
+| [] -> None
+| x::xs -> if p x then Some x else lookup' p xs
+
+let rec lookup p xs mx =
+  conde [
+    (xs === !Nil) &&& (mx === !None);
+    fresh(h t )
+      (h % t === xs)
+      (conde [
+        (p h !true) &&& (mx === !(Some h));
+        (p h !false) &&& (lookup p t mx)
+      ])
+  ]
+
 
 (****************************************************************************)
 (* bools and lists *)
@@ -150,6 +156,7 @@ let show_nat_list  = show logic (show list show_nat)
 let show_bool_llist = show logic (show llist (show bool))
 let show_int_llist = show logic (show llist (show int))
 let show_nat_llist = show logic (show llist (show nat))
+let show_option t = show logic (show option (show logic (show t)))
 
 
 (****************************************************************************)
@@ -228,11 +235,11 @@ let _ =
   (* mul ? 0 == 0 *)
   run show_nat empty_reifier 3  q (fun q st   -> REPR (mulo q   ?$0 ?$0 st), ["q", q]);
 
-  (* even ? *)
+(*   (* even ? *)
   run show_nat empty_reifier 3  q (fun q st   -> REPR (eveno q st), ["q", q]);
   (* odd  ? *)
   run show_nat empty_reifier 3  q (fun q st   -> REPR (oddo  q st), ["q", q]);
-
+ *)
 
   (****************************************************************************)
   (* foldr *)
@@ -308,17 +315,31 @@ let _ =
   (****************************************************************************)
   (* filter *)
 
-  run show_nat_llist empty_reifier (-1) q (fun q st -> REPR (filtero ((===) ?$2) (nats [0;1;2;3]) q st), ["q", q]); 
+  let eqo x y t =
+    conde [
+      (x === y) &&& (t === !true);
+      (x =/= y) &&& (t === !false);
+    ]
+  in
+  let neqo x y t =
+    conde [
+      (x =/= y) &&& (t === !true);
+      (x === y) &&& (t === !false);
+    ]
+  in
 
-  run show_nat_llist empty_reifier 4 q (fun q st -> REPR (filtero eveno (nats [0;1;2;3]) q st), ["q", q]); 
+  run show_nat_llist empty_reifier (-1) q (fun q st -> REPR (filtero (eqo ?$2) (nats [0;1;2;3]) q st), ["q", q]); 
+
+(*   run show_nat_llist empty_reifier 4 q (fun q st -> REPR (filtero eveno (nats [0;1;2;3]) q st), ["q", q]); 
 
   run show_nat_llist empty_reifier 4 q (fun q st -> REPR (filtero oddo  (nats [0;1;2;3]) q st), ["q", q]); 
 
   run show_nat_llist empty_reifier 4 q (fun q st -> REPR (filtero eveno q (of_list []) st), ["q", q]); 
 
   run show_nat_llist empty_reifier 4 q (fun q st -> REPR (filtero eveno q (nats [2]) st), ["q", q]); 
+ *)
 
-
+  run (show_option nat) empty_reifier 1 q (fun q st -> REPR (lookup (eqo ?$1) (nats [0;2;1;3]) q st), ["q", q]);
 
 
 
