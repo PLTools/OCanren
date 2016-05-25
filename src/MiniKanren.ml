@@ -409,8 +409,41 @@ let rec (?&) = function
 
 let conde = (?|)
 
-let refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->
-  let rec walk' e x s = Subst.walk e x s in
+let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->
+  let rec walk' env var subst =
+    match Env.var env (Subst.walk env var subst) with
+    | None ->
+        (match wrap (Obj.repr var) with
+         | Unboxed _ -> !!var
+         | Boxed (t, s, f) ->
+            let var = Obj.dup (Obj.repr var) in
+            let sf =
+              if t = Obj.double_array_tag
+              then !! Obj.set_double_field
+              else Obj.set_field
+            in
+            for i = 0 to s - 1 do
+              sf var i (!!(walk' env (!!(f i)) subst))
+           done;
+           !!var
+         | Invalid n -> invalid_arg (Printf.sprintf "Invalid value for reconstruction (%d)" n)
+        )
+    | Some i -> 
+        (match var with
+         | Var (i, _) -> 
+            let cs = 
+	      List.fold_left 
+		(fun acc s -> 
+		   match Subst.walk' env (!!var) s with
+		   | Var (j, _) when i = j -> acc
+		   | t -> (refine st t) :: acc
+		)	
+		[]
+		c
+	    in
+	    Var (i, cs)
+        )
+  in
   walk' e (!!x) s
 
 module ExtractDeepest = 

@@ -29,6 +29,9 @@ module Stream :
     (** Lazy constructor *)
     val from_fun : (unit -> 'a t) -> 'a t
 
+    (** [map f s] maps function [f] over the stream [s] *)
+    val map : ('a -> 'b) -> 'a t -> 'b t
+
   end
 
 (** Type of typed logic variable *)
@@ -122,17 +125,19 @@ val (?&) : goal list -> goal
 
 (** {2 Top-level running primitives} *)
 
+val run : (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
+
 type 'a reifier = State.t Stream.t -> 'a logic Stream.t
+
+val succ :
+  (unit -> ('a -> State.t -> 'b) * ('c -> 'd -> 'e) * (('f -> 'g -> 'h) * ('i -> 'j * 'k))) -> 
+  (unit -> (('l logic -> 'a) -> State.t -> 'l reifier * 'b) * (('m -> 'c) -> 'm * 'd -> 'e) * (('f -> ('f -> 'n) * 'g -> 'n * 'h) * ('o * 'i -> ('o * 'j) * 'k)))
 
 val one :
   unit ->
   (('a logic -> State.t -> 'b) -> State.t -> 'a reifier * 'b) *
   (('c -> 'd) -> 'c -> 'd) * 
   (('e -> ('e -> 'f) -> 'f) * ('g -> 'g))
-
-val succ :
-  (unit -> ('a -> State.t -> 'b) * ('c -> 'd -> 'e) * (('f -> 'g -> 'h) * ('i -> 'j * 'k))) -> 
-  (unit -> (('l logic -> 'a) -> State.t -> 'l reifier * 'b) * (('m -> 'c) -> 'm * 'd -> 'e) * (('f -> ('f -> 'n) * 'g -> 'n * 'h) * ('o * 'i -> ('o * 'j) * 'k)))
 
 val two :
   unit ->
@@ -187,7 +192,4 @@ val pqrst :
   (('b logic -> 'c logic -> 'd logic -> 'e logic -> 'f logic -> State.t -> 'g) -> State.t ->	'b reifier * ('c reifier * ('d reifier * ('e reifier * ('f reifier * 'g))))) *
   (('h -> 'i -> 'j -> 'k -> 'l -> 'm) -> 'h * ('i * ('j * ('k * 'l))) -> 'm) * 
   (('n -> ('n -> 'o) * (('n -> 'p) * (('n -> 'q) * (('n -> 'r) * ('n -> 's)))) -> 'o * ('p * ('q * ('r * 's)))) * ('t * ('u * ('v * ('w * ('x * 'y)))) -> ('t * ('u * ('v * ('w * 'x)))) * 'y))
-
-val run :
-  (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
 
