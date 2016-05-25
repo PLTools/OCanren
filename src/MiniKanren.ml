@@ -9,13 +9,15 @@ module Stream =
 
     let cons h t = Cons (h, t)
 
-    let rec take ?(n=(-1)) s =
+    let rec retrieve ?(n=(-1)) s =
       if n = 0
-      then []
+      then [], s
       else match s with
-           | Nil          -> []
-           | Cons (x, xs) -> x :: take ~n:(n-1) xs
-	   | Lazy  z      -> take ~n:n (Lazy.force z)            
+           | Nil          -> [], s
+           | Cons (x, xs) -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
+	   | Lazy  z      -> retrieve ~n:n (Lazy.force z)            
+
+    let take ?(n=(-1)) s = retrieve ~n:n s
 
     let rec mplus fs gs =
       from_fun (fun () ->
@@ -33,11 +35,18 @@ module Stream =
         | Lazy z       -> bind (Lazy.force z) f
      )
 
+    let rec map f = function
+    | Nil -> Nil
+    | Cons (x, xs) -> Cons (f x, map f xs)
+    | Lazy s -> Lazy (Lazy.lazy_from_fun (fun () -> map f @@ Lazy.force s))
+
   end
 
 let (!!) = Obj.magic;;
 
-@type 'a logic = Var of GT.int | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
+type var = GT.int
+
+@type 'a logic = Var of GT.int * 'a logic GT.list | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 let logic = {
   logic with plugins = 
@@ -52,7 +61,7 @@ let logic = {
         GT.transform(logic) 
            (GT.lift fa) 
            (object inherit ['a] @logic[show]              
-              method c_Var   _ _ i = Printf.sprintf "_.%d" i
+              method c_Var   _ _ i _ = Printf.sprintf "_.%d" i
               method c_Value _ _ x = x.GT.fx ()
             end) 
            () 
@@ -177,18 +186,18 @@ module Env :
     let empty () = (H.create 1024, counter_start)
 
     let fresh (h, current) =
-      let v = Var current in
+      let v = Var (current, []) in
       H.add h v ();
       (!!v, (h, current+1))
 
     let var (h, _) x =
       if H.mem h (!! x)
-      then let Var i = !! x in Some i
+      then let Var (i, _) = !! x in Some i
       else None
 
     let vars (h, _) = H.fold (fun v _ acc -> v :: acc) h []
 
-    let show env = (List.fold_left (fun acc (Var i) -> acc ^ (Printf.sprintf "$%d; " i)) "env {" (vars env)) ^ "}"
+    let show env = (List.fold_left (fun acc (Var (i, _)) -> acc ^ (Printf.sprintf "$%d; " i)) "env {" (vars env)) ^ "}"
 
   end
 
@@ -318,25 +327,6 @@ let call_fresh f (env, subst, constr) =
   let x, env' = Env.fresh env in
   f x (env', subst, constr)
 
-let succ prev f = call_fresh (fun x -> prev (f x))
-
-let zero  f = f 
-let one   f = succ zero f
-let two   f = succ one f
-let three f = succ two f
-let four  f = succ three f
-let five  f = succ four f
-
-let q     = one
-let qr    = two
-let qrs   = three
-let qrst  = four
-let pqrst = five
-
-let bool = function 
-| true  -> fun st -> Stream.cons st Stream.Nil
-| false -> fun st -> Stream.Nil
-
 exception Disequality_violated
 
 let (===) x y (env, subst, constr) =
@@ -418,22 +408,75 @@ let rec (?&) = function
 | h::t -> h &&& ?& t
 
 let conde = (?|)
+
+let refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->
+  let rec walk' e x s = Subst.walk e x s in
+  walk' e (!!x) s
+
+module ExtractDeepest = 
+  struct
+    let ext2 x = x 
+
+    let succ prev (a, z) =
+      let foo, base = prev z in
+      ((a, foo), base)
+  end
+
+module ApplyTuple = 
+  struct
+    let one arg x = x arg
+
+    let succ prev = fun arg (x, y) -> (x arg, prev arg y)
+  end
+
+module ApplyLatest = 
+  struct
+    let two = (ApplyTuple.one, ExtractDeepest.ext2)
+
+    let apply (appf, extf) tup =
+      let x, base = extf tup in
+      appf base x
+
+    let succ (appf, extf) = (ApplyTuple.succ appf, ExtractDeepest.succ extf) 
+  end
+
+module Uncurry = 
+  struct
+    let succ k f (x,y) = k (f x) y
+  end
+
+type 'a reifier = State.t Stream.t -> 'a logic Stream.t
+
+let reifier : 'a logic -> 'a reifier = fun x ans ->
+  Stream.map (fun st -> refine st x) ans
+
+module LogicAdder = 
+  struct
+    let zero f = f
  
-let run f = f (State.empty ())
+    let succ (prev: 'a -> State.t -> 'b) (f: 'c logic -> 'a) : State.t -> 'c reifier * 'b =
+      call_fresh (fun logic st -> (reifier logic, prev (f logic) st))
+  end
 
-type diseq = Env.t * Subst.t list
+let one () = (fun x -> LogicAdder.(succ zero) x), (@@), ApplyLatest.two
 
-let refine (e, s, c) x = (Subst.walk' e (!!x) s, (e, c))
+let succ n () = 
+  let adder, currier, app = n () in
+  (LogicAdder.succ adder, Uncurry.succ currier, ApplyLatest.succ app)
 
-let reify (env, dcs) = function
-| (Var xi) as v -> 
-    List.fold_left (fun acc s -> 
-      match Subst.walk' env (!!v) s with
-      | Var yi when yi = xi -> acc
-      | t -> t :: acc
-    ) 
-    []
-    dcs
-| _ -> []
+let two   () = succ one   ()
+let three () = succ two   ()
+let four  () = succ three ()
+let five  () = succ four  ()
 
-let take = Stream.take
+let q     = one
+let qr    = two
+let qrs   = three
+let qrst  = four
+let pqrst = five
+
+let run n goalish f =
+  let adder, currier, app_num = n () in
+  let run f = f (State.empty ()) in
+  run (adder goalish) |> ApplyLatest.apply app_num |> (currier f)
+

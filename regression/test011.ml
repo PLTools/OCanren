@@ -20,7 +20,7 @@ let list_reifier dc t =
   let check_var i = Hashtbl.mem h i in
   let add_var   i = Hashtbl.add h i true in
   match t with
-  | (Var i) as x ->
+  | (Var (i, _)) as x ->
       if check_var i 
       then ""
       else begin
@@ -30,7 +30,7 @@ let list_reifier dc t =
 	| cs -> show(list) (fun c -> Printf.sprintf "%s =/= %s" (show_list x) (show_list c)) cs
       end
   | Value l -> 
-      List.fold_left (fun acc -> function (Var i) as x when not (check_var i) -> add_var i; acc ^ int_reifier dc x | _ -> acc) "" l
+      List.fold_left (fun acc -> function (Var (i, _)) as x when not (check_var i) -> add_var i; acc ^ int_reifier dc x | _ -> acc) "" l
 
 let _ = 
   run show_t         empty_reifier (-1) q (fun q st -> REPR((fresh(x) (x =/= !(A x)))                                                                   st), ["q", q]);

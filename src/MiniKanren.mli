@@ -1,6 +1,6 @@
 (*
  * MiniKanren: miniKanren primitives implementation.
- * Copyright (C) 2015
+ * Copyright (C) 2015-2016
  * Dmitri Boulytchev, Dmitry Kosarev, St.Petersburg State University
  * 
  * This software is free software; you can redistribute it and/or
@@ -19,8 +19,22 @@
 
 (** {2 Basic modules and types} *)
 
+(** Lazy streams *)
+module Stream :
+  sig
+
+    (** Type of the stream *)
+    type 'a t
+
+    (** Lazy constructor *)
+    val from_fun : (unit -> 'a t) -> 'a t
+
+  end
+
 (** Type of typed logic variable *)
-@type 'a logic = private Var of GT.int | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
+type var
+
+@type 'a logic = private Var of var * 'a logic GT.list | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 (** Lifting primitive *)
 val (!) : 'a -> 'a logic
@@ -66,17 +80,6 @@ module State :
     val show : t -> string
   end
 
-(** Lazy streams *)
-module Stream :
-  sig
-
-    (** Type of the stream *)
-    type 'a t
-
-    (** Lazy constructor *)
-    val from_fun : (unit -> 'a t) -> 'a t
-  end
-
 (** Goal converts a state into a lazy stream of states *)
 type goal = State.t -> State.t Stream.t
 
@@ -85,29 +88,6 @@ type goal = State.t -> State.t Stream.t
 (** [call_fresh f] creates a fresh logical variable and passes it to the
     parameter *)
 val call_fresh : ('a logic -> State.t -> 'b) -> State.t -> 'b
-
-(** [succ num f] increments the number of free logic variables in
-    a goal; can be used to get rid of ``fresh'' syntax extension *)
-val succ : ('a -> State.t -> 'b) -> ('c logic -> 'a) -> State.t -> 'b
-
-(** Zero logic parameters *)
-val zero : 'a -> 'a
-
-(** One to five logic parameter(s) *)
-val one   : ('a logic ->                                                 State.t -> 'b) -> State.t -> 'b
-val two   : ('a logic -> 'b logic ->                                     State.t -> 'c) -> State.t -> 'c
-val three : ('a logic -> 'b logic -> 'c logic ->                         State.t -> 'd) -> State.t -> 'd
-val four  : ('a logic -> 'b logic -> 'c logic -> 'd logic ->             State.t -> 'e) -> State.t -> 'e
-val five  : ('a logic -> 'b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'f
-
-(** One to five logic parameter(s), conventional names *)
-val q     : ('a logic ->                                                 State.t -> 'b) -> State.t -> 'b
-val qr    : ('a logic -> 'b logic ->                                     State.t -> 'c) -> State.t -> 'c
-val qrs   : ('a logic -> 'b logic -> 'c logic ->                         State.t -> 'd) -> State.t -> 'd
-val qrst  : ('a logic -> 'b logic -> 'c logic -> 'd logic ->             State.t -> 'e) -> State.t -> 'e
-val pqrst : ('a logic -> 'b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'f
-
-val bool : bool -> goal
 
 (** [x === y] creates a goal, which performs a unifications of
     [x] and [y] *)
@@ -142,24 +122,72 @@ val (?&) : goal list -> goal
 
 (** {2 Top-level running primitives} *)
 
-(** [run s] runs a state transformer [s] (not necessarily a goal) in
-    initial state *)
-val run : (State.t -> 'a) -> 'a
+type 'a reifier = State.t Stream.t -> 'a logic Stream.t
 
-(** [diseq] is a type for disequality constraint *)
-type diseq
+val one :
+  unit ->
+  (('a logic -> State.t -> 'b) -> State.t -> 'a reifier * 'b) *
+  (('c -> 'd) -> 'c -> 'd) * 
+  (('e -> ('e -> 'f) -> 'f) * ('g -> 'g))
 
-(** [refine s x] refines a logical variable [x] (created with [fresh]) w.r.t.
-    state [s] *)
-val refine : State.t -> 'a logic -> 'a logic * diseq
+val succ :
+  (unit -> ('a -> State.t -> 'b) * ('c -> 'd -> 'e) * (('f -> 'g -> 'h) * ('i -> 'j * 'k))) -> 
+  (unit -> (('l logic -> 'a) -> State.t -> 'l reifier * 'b) * (('m -> 'c) -> 'm * 'd -> 'e) * (('f -> ('f -> 'n) * 'g -> 'n * 'h) * ('o * 'i -> ('o * 'j) * 'k)))
 
-(** [reify s x] reifies disequality constraint for a given logic variable; the result
-    is a list of logic expressions, which given variable should not be equal to *)
-val reify : diseq -> 'a logic -> 'a logic list
+val two :
+  unit ->
+  (('b logic -> 'c logic -> State.t -> 'd) -> State.t -> 'b reifier * ('c reifier * 'd)) *
+  (('e -> 'f -> 'g) -> 'e * 'f -> 'g) * 
+  (('h -> ('h -> 'i) * ('h -> 'j) -> 'i * 'j) * ('k * ('l * 'm) -> ('k * 'l) * 'm))
+	    
+val three :
+  unit ->
+  (('b logic -> 'c logic -> 'd logic -> State.t -> 'e) -> State.t -> 'b reifier * ('c reifier * ('d reifier * 'e))) *
+  (('f -> 'g -> 'h -> 'i) -> 'f * ('g * 'h) -> 'i) *
+  (('j -> ('j -> 'k) * (('j -> 'l) * ('j -> 'm)) -> 'k * ('l * 'm)) * ('n * ('o * ('p * 'q)) -> ('n * ('o * 'p)) * 'q))
+	    
+val four :
+  unit ->
+  (('b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'b reifier * ('c reifier * ('d reifier * ('e reifier * 'f)))) *
+  (('g -> 'h -> 'i -> 'j -> 'k) -> 'g * ('h * ('i * 'j)) -> 'k) *
+  (('l -> ('l -> 'm) * (('l -> 'n) * (('l -> 'o) * ('l -> 'p))) -> 'm * ('n * ('o * 'p))) * ('q * ('r * ('s * ('t * 'u))) -> ('q * ('r * ('s * 't))) * 'u))
+	    
+val five :
+  unit ->
+  (('b logic -> 'c logic -> 'd logic -> 'e logic -> 'f logic -> State.t -> 'g) -> State.t ->	'b reifier * ('c reifier * ('d reifier * ('e reifier * ('f reifier * 'g))))) *
+  (('h -> 'i -> 'j -> 'k -> 'l -> 'm) -> 'h * ('i * ('j * ('k * 'l))) -> 'm) * 
+  (('n -> ('n -> 'o) * (('n -> 'p) * (('n -> 'q) * (('n -> 'r) * ('n -> 's)))) -> 'o * ('p * ('q * ('r * 's)))) * ('t * ('u * ('v * ('w * ('x * 'y)))) -> ('t * ('u * ('v * ('w * 'x)))) * 'y))
 
-(** [take ?(n=k) s] takes at most [k] first answers from the lazy
-    stream [s] (reexported from MKStream for convenience) *)
-val take : ?n:int -> State.t Stream.t -> State.t list
+val q :
+  unit ->
+  (('a logic -> State.t -> 'b) -> State.t -> 'a reifier * 'b) *
+  (('c -> 'd) -> 'c -> 'd) * 
+  (('e -> ('e -> 'f) -> 'f) * ('g -> 'g))
 
-(** Exception to raise on infinine unification result *)
-exception Occurs_check
+val qr :
+  unit ->
+  (('b logic -> 'c logic -> State.t -> 'd) -> State.t -> 'b reifier * ('c reifier * 'd)) *
+  (('e -> 'f -> 'g) -> 'e * 'f -> 'g) * 
+  (('h -> ('h -> 'i) * ('h -> 'j) -> 'i * 'j) * ('k * ('l * 'm) -> ('k * 'l) * 'm))
+	    
+val qrs :
+  unit ->
+  (('b logic -> 'c logic -> 'd logic -> State.t -> 'e) -> State.t -> 'b reifier * ('c reifier * ('d reifier * 'e))) *
+  (('f -> 'g -> 'h -> 'i) -> 'f * ('g * 'h) -> 'i) *
+  (('j -> ('j -> 'k) * (('j -> 'l) * ('j -> 'm)) -> 'k * ('l * 'm)) * ('n * ('o * ('p * 'q)) -> ('n * ('o * 'p)) * 'q))
+	    
+val qrst :
+  unit ->
+  (('b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'b reifier * ('c reifier * ('d reifier * ('e reifier * 'f)))) *
+  (('g -> 'h -> 'i -> 'j -> 'k) -> 'g * ('h * ('i * 'j)) -> 'k) *
+  (('l -> ('l -> 'm) * (('l -> 'n) * (('l -> 'o) * ('l -> 'p))) -> 'm * ('n * ('o * 'p))) * ('q * ('r * ('s * ('t * 'u))) -> ('q * ('r * ('s * 't))) * 'u))
+	    
+val pqrst :
+  unit ->
+  (('b logic -> 'c logic -> 'd logic -> 'e logic -> 'f logic -> State.t -> 'g) -> State.t ->	'b reifier * ('c reifier * ('d reifier * ('e reifier * ('f reifier * 'g))))) *
+  (('h -> 'i -> 'j -> 'k -> 'l -> 'm) -> 'h * ('i * ('j * ('k * 'l))) -> 'm) * 
+  (('n -> ('n -> 'o) * (('n -> 'p) * (('n -> 'q) * (('n -> 'r) * ('n -> 's)))) -> 'o * ('p * ('q * ('r * 's)))) * ('t * ('u * ('v * ('w * ('x * 'y)))) -> ('t * ('u * ('v * ('w * 'x)))) * 'y))
+
+val run :
+  (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
+
