@@ -1,13 +1,13 @@
-g123 q st, 3 answers {
+fun q -> g123 q, 3 answers {
 q=1; 
 q=2; 
 q=3; 
 }
-g12 q st, 3 answers {
+fun q -> g12 q, 3 answers {
 q=1; 
 q=2; 
 }
-gxy q r st, 10 answers {
+fun q r -> gxy q r, 10 answers {
 q=1; r=1; 
 q=1; r=2; 
 q=1; r=3; 
@@ -18,7 +18,7 @@ q=2; r=3;
 q=3; r=2; 
 q=3; r=3; 
 }
-gxy' q r st, 10 answers {
+fun q r -> gxy' q r, 10 answers {
 q=1; r=2; 
 q=1; r=3; 
 q=2; r=1; 
@@ -26,64 +26,72 @@ q=3; r=1;
 q=2; r=3; 
 q=3; r=2; 
 }
-(=/=) q !5 st, all answers {
-q=_.10 ([_.10 =/= 5]);
+fun q -> (=/=) q !5, all answers {
+q=_.10 [=/= 5]; 
 }
-(&&&) ((=/=) q !3) ((===) q !3) st, all answers {
+fun q -> (&&&) ((=/=) q !3) ((===) q !3), all answers {
 }
-(&&&) ((===) q !3) ((=/=) !3 q) st, all answers {
+fun q -> (&&&) ((===) q !3) ((=/=) !3 q), all answers {
 }
-call_fresh (fun x -> call_fresh (fun y -> conj ((===) x y) ((=/=) x y))) st, all answers {
+fun q ->
+  call_fresh (fun x -> call_fresh (fun y -> conj ((===) x y) ((=/=) x y))), all answers {
 }
-call_fresh (fun x -> call_fresh (fun y -> conj ((=/=) x y) ((===) x y))) st, all answers {
+fun q ->
+  call_fresh (fun x -> call_fresh (fun y -> conj ((=/=) x y) ((===) x y))), all answers {
 }
-call_fresh
-  (fun x ->
-     call_fresh (fun y -> conj ((=/=) x y) (conj ((===) !3 x) ((===) !3 y))))
-  st, all answers {
+fun q ->
+  call_fresh
+    (fun x ->
+       call_fresh
+         (fun y -> conj ((=/=) x y) (conj ((===) !3 x) ((===) !3 y)))), all answers {
 }
-call_fresh
-  (fun x ->
-     call_fresh (fun y -> conj ((===) !3 x) (conj ((=/=) x x) ((===) !3 y))))
-  st, all answers {
+fun q ->
+  call_fresh
+    (fun x ->
+       call_fresh
+         (fun y -> conj ((===) !3 x) (conj ((=/=) x x) ((===) !3 y)))), all answers {
 }
-call_fresh
-  (fun x ->
-     call_fresh (fun y -> conj ((===) !3 x) (conj ((===) !3 y) ((=/=) x y))))
-  st, all answers {
+fun q ->
+  call_fresh
+    (fun x ->
+       call_fresh
+         (fun y -> conj ((===) !3 x) (conj ((===) !3 y) ((=/=) x y)))), all answers {
 }
-call_fresh
-  (fun x ->
-     call_fresh (fun y -> conj ((===) !3 x) (conj ((===) !3 y) ((=/=) y x))))
-  st, all answers {
+fun q ->
+  call_fresh
+    (fun x ->
+       call_fresh
+         (fun y -> conj ((===) !3 x) (conj ((===) !3 y) ((=/=) y x)))), all answers {
 }
-call_fresh
-  (fun x ->
-     call_fresh
-       (fun y ->
-          call_fresh
-            (fun z ->
-               conj ((===) x y)
-                 (conj ((===) y z) (conj ((=/=) x !4) ((===) z !(2 + 2)))))))
-  st, all answers {
+fun q ->
+  call_fresh
+    (fun x ->
+       call_fresh
+         (fun y ->
+            call_fresh
+              (fun z ->
+                 conj ((===) x y)
+                   (conj ((===) y z)
+                      (conj ((=/=) x !4) ((===) z !(2 + 2))))))), all answers {
 }
-call_fresh
-  (fun x ->
-     call_fresh
-       (fun y ->
-          call_fresh
-            (fun z ->
-               conj ((===) x y)
-                 (conj ((===) y z) (conj ((===) z !(2 + 2)) ((=/=) x !4))))))
-  st, all answers {
+fun q ->
+  call_fresh
+    (fun x ->
+       call_fresh
+         (fun y ->
+            call_fresh
+              (fun z ->
+                 conj ((===) x y)
+                   (conj ((===) y z)
+                      (conj ((===) z !(2 + 2)) ((=/=) x !4)))))), all answers {
 }
-call_fresh
-  (fun x ->
-     call_fresh
-       (fun y ->
-          call_fresh
-            (fun z ->
-               conj ((=/=) x !4)
-                 (conj ((===) y z) (conj ((===) x y) ((===) z !(2 + 2)))))))
-  st, all answers {
+fun q ->
+  call_fresh
+    (fun x ->
+       call_fresh
+         (fun y ->
+            call_fresh
+              (fun z ->
+                 conj ((=/=) x !4)
+                   (conj ((===) y z) (conj ((===) x y) ((===) z !(2 + 2))))))), all answers {
 }

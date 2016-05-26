@@ -61,7 +61,14 @@ let logic = {
         GT.transform(logic) 
            (GT.lift fa) 
            (object inherit ['a] @logic[show]              
-              method c_Var   _ _ i _ = Printf.sprintf "_.%d" i
+              method c_Var   _ s i cs = 
+                let c =
+		  match cs with 
+		  | [] -> ""
+                  | _  -> Printf.sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ s.GT.f () l) cs)
+		in
+                Printf.sprintf "_.%d%s" i c
+                
               method c_Value _ _ x = x.GT.fx ()
             end) 
            () 
@@ -409,6 +416,26 @@ let rec (?&) = function
 
 let conde = (?|)
 
+module Fresh =
+  struct
+
+    let succ prev f = call_fresh (fun x -> prev (f x))
+ 
+    let zero  f = f 
+    let one   f = succ zero f
+    let two   f = succ one f
+    let three f = succ two f
+    let four  f = succ three f
+    let five  f = succ four f
+ 
+    let q     = one
+    let qr    = two
+    let qrs   = three
+    let qrst  = four
+    let pqrst = five
+
+  end
+
 let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->  
   let rec walk' env var subst =
     let var = Subst.walk env var subst in
@@ -479,17 +506,17 @@ module Uncurry =
     let succ k f (x,y) = k (f x) y
   end
 
-type 'a reifier = State.t Stream.t -> 'a logic Stream.t
+type 'a refiner = State.t Stream.t -> 'a logic Stream.t
 
-let reifier : 'a logic -> 'a reifier = fun x ans ->
+let refiner : 'a logic -> 'a refiner = fun x ans ->
   Stream.map (fun st -> refine st x) ans
 
 module LogicAdder = 
   struct
     let zero f = f
  
-    let succ (prev: 'a -> State.t -> 'b) (f: 'c logic -> 'a) : State.t -> 'c reifier * 'b =
-      call_fresh (fun logic st -> (reifier logic, prev (f logic) st))
+    let succ (prev: 'a -> State.t -> 'b) (f: 'c logic -> 'a) : State.t -> 'c refiner * 'b =
+      call_fresh (fun logic st -> (refiner logic, prev (f logic) st))
   end
 
 let one () = (fun x -> LogicAdder.(succ zero) x), (@@), ApplyLatest.two

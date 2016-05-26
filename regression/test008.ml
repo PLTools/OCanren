@@ -5,34 +5,54 @@ open Tester
 let just_a a = a === !5
 
 let a_and_b a =
-  fresh (b)
-    (a === !7)
-    (conde [b === !6; b === !5])
+  Fresh.q (
+    fun b ->
+      conj (a === !7)
+           (disj (b === !6)
+                 (b === !5)
+           )
+  )
 
 let a_and_b' b =
-  fresh (a)
-    (a === !7)
-    (conde [b === !6; b === !5])
-  
-let rec fives x = (x === !5) ||| defer (fives x) 
+  Fresh.q (
+    fun a ->
+      conj (a === !7)
+           (disj (b === !6)
+                 (b === !5)
+           )
+  )
+
+let rec fives x =
+  disj (x === !5)
+       (fun st -> Stream.from_fun (fun () -> fives x st))
 
 let rec appendo a b ab =
-  conde [
-    (a === !Nil) &&& (b === ab);
-    fresh (h t ab')
-      (a === h%t) 
-      (h%ab' === ab) 
-      (appendo t b ab')    
-  ]
-  
-let rec reverso a b = 
-  conde [
-    (a === !Nil) &&& (b === !Nil);
-    fresh (h t a')
-      (a === h%t)
-      (appendo a' !<h b)
-      (reverso t a')
-  ]
+  disj
+    (conj (a === !Nil) (b === ab) )
+    (Fresh.two
+      (fun h t ->
+        (conj (a === h % t)
+           (Fresh.one (fun ab' ->
+              conj (h % ab' === ab)
+                   (appendo t b ab')
+           ))
+        )
+      )
+    )
+
+let rec reverso a b =
+  disj
+    (conj (a === !Nil) (b === !Nil))
+    (Fresh.succ Fresh.one
+      (fun h t ->
+          (conj (a === h % t)
+                (Fresh.one (fun a' ->
+                   conj (appendo a' !< h b)
+                        (reverso t a')
+                ))
+        )
+      )
+    )
 
 let show_int      = show(logic) (show int)
 let show_int_list = show(logic) (show(llist) (show int))
