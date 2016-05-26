@@ -17,7 +17,7 @@ module Stream =
            | Cons (x, xs) -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
 	   | Lazy  z      -> retrieve ~n:n (Lazy.force z)            
 
-    let take ?(n=(-1)) s = retrieve ~n:n s
+    let take ?(n=(-1)) s = fst @@ retrieve ~n:n s
 
     let rec mplus fs gs =
       from_fun (fun () ->
@@ -409,9 +409,10 @@ let rec (?&) = function
 
 let conde = (?|)
 
-let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->
+let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->  
   let rec walk' env var subst =
-    match Env.var env (Subst.walk env var subst) with
+    let var = Subst.walk env var subst in
+    match Env.var env var with
     | None ->
         (match wrap (Obj.repr var) with
          | Unboxed _ -> !!var

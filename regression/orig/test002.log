@@ -1,34 +1,34 @@
-appendo q (of_list [3; 4]) (of_list [1; 2; 3; 4]) st, 1 answer {
+fun q -> appendo q (of_list [3; 4]) (of_list [1; 2; 3; 4]), 1 answer {
 q=[1; 2]; 
 }
-appendo q (of_list []) r st, 4 answers {
+fun q r -> appendo q (of_list []) r, 4 answers {
 q=[]; r=[]; 
 q=[_.12]; r=[_.12]; 
 q=[_.12; _.15]; r=[_.12; _.15]; 
 q=[_.12; _.15; _.18]; r=[_.12; _.15; _.18]; 
 }
-reverso q (of_list [1; 2; 3; 4]) st, 1 answer {
+fun q -> reverso q (of_list [1; 2; 3; 4]), 1 answer {
 q=[4; 3; 2; 1]; 
 }
-reverso (of_list []) (of_list []) st, 1 answer {
+fun q -> reverso (of_list []) (of_list []), 1 answer {
 q=_.10; 
 }
-reverso (of_list [1; 2; 3; 4]) q st, 1 answer {
+fun q -> reverso (of_list [1; 2; 3; 4]) q, 1 answer {
 q=[4; 3; 2; 1]; 
 }
-reverso q q st, 1 answer {
+fun q -> reverso q q, 1 answer {
 q=[]; 
 }
-reverso q q st, 2 answers {
+fun q -> reverso q q, 2 answers {
 q=[]; 
 q=[_.11]; 
 }
-reverso q q st, 3 answers {
+fun q -> reverso q q, 3 answers {
 q=[]; 
 q=[_.11]; 
 q=[_.17; _.17]; 
 }
-reverso q q st, 10 answers {
+fun q -> reverso q q, 10 answers {
 q=[]; 
 q=[_.11]; 
 q=[_.17; _.17]; 
@@ -40,20 +40,20 @@ q=[_.92; _.86; _.77; _.65; _.77; _.86; _.92];
 q=[_.116; _.110; _.101; _.89; _.89; _.101; _.110; _.116]; 
 q=[_.143; _.137; _.128; _.116; _.101; _.116; _.128; _.137; _.143]; 
 }
-reverso q (of_list [1]) st, 2 answers {
+fun q -> reverso q (of_list [1]), 2 answers {
 q=[1]; 
 }
-reverso (of_list [1]) q st, 1 answer {
+fun q -> reverso (of_list [1]) q, 1 answer {
 q=[1]; 
 }
-a_and_b q st, 1 answer {
+fun q -> a_and_b q, 1 answer {
 q=7; 
 }
-a_and_b' q st, 2 answers {
+fun q -> a_and_b' q, 2 answers {
 q=6; 
 q=5; 
 }
-fives q st, 10 answers {
+fun q -> fives q, 10 answers {
 q=5; 
 q=5; 
 q=5; 

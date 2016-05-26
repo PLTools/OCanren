@@ -46,16 +46,16 @@ let infero expr typ =
   infero !Nil expr typ      
 
 let _ =
-  run show_typ    empty_reifier 1 q (fun q st -> REPR (lookupo !"x" (of_list []) q                                          st), ["q", q]);
-  run show_typ    empty_reifier 1 q (fun q st -> REPR (lookupo !"x" (of_list [!"x", !(V !"x")]) q                           st), ["q", q]); 
-  run show_typ    empty_reifier 1 q (fun q st -> REPR (lookupo !"x" (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) q          st), ["q", q]);
+  run show_typ    1 q (REPR (fun q -> lookupo !"x" (of_list []) q                                         )) qh;
+  run show_typ    1 q (REPR (fun q -> lookupo !"x" (of_list [!"x", !(V !"x")]) q                          )) qh; 
+  run show_typ    1 q (REPR (fun q -> lookupo !"x" (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) q         )) qh;
 
-  run show_string empty_reifier 1 q (fun q st -> REPR (lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x")     st), ["q", q]);
-  run show_string empty_reifier 1 q (fun q st -> REPR (lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y")     st), ["q", q]);
-  run show_env    empty_reifier 1 q (fun q st -> REPR (lookupo !"x" q !(V !"y")                                             st), ["q", q]);
-  run show_env    empty_reifier 5 q (fun q st -> REPR (lookupo !"x" q !(V !"y")                                             st), ["q", q]); 
-  run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"x", !(X !"x"))) q                                    st), ["q", q]);
-  run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"f", !(Abs (!"x", !(App (!(X !"f"), !(X !"x"))))))) q st), ["q", q]);
-  run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"x", !(Abs (!"f", !(App (!(X !"f"), !(X !"x"))))))) q st), ["q", q]);
-  run show_lam    empty_reifier 1 q (fun q st -> REPR (infero q !(Arr (!(V !"x"), !(V !"x")))                               st), ["q", q]);
-  run show_typ    empty_reifier 1 q (fun q st -> REPR (infero !(Abs (!"x", !(App (!(X !"x"), !(X !"x")))))                q st), ["q", q])
+  run show_string 1 q (REPR (fun q -> lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x")    )) qh;
+  run show_string 1 q (REPR (fun q -> lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y")    )) qh;
+  run show_env    1 q (REPR (fun q -> lookupo !"x" q !(V !"y")                                            )) qh;
+  run show_env    5 q (REPR (fun q -> lookupo !"x" q !(V !"y")                                            )) qh; 
+  run show_typ    1 q (REPR (fun q -> infero !(Abs (!"x", !(X !"x"))) q                                   )) qh;
+  run show_typ    1 q (REPR (fun q -> infero !(Abs (!"f", !(Abs (!"x", !(App (!(X !"f"), !(X !"x"))))))) q)) qh;
+  run show_typ    1 q (REPR (fun q -> infero !(Abs (!"x", !(Abs (!"f", !(App (!(X !"f"), !(X !"x"))))))) q)) qh;
+  run show_lam    1 q (REPR (fun q -> infero q !(Arr (!(V !"x"), !(V !"x")))                              )) qh;
+  run show_typ    1 q (REPR (fun q -> infero !(Abs (!"x", !(App (!(X !"x"), !(X !"x")))))                q)) qh

@@ -25,42 +25,42 @@ let rec mulo x y z =
 let show_nat = show logic (show nat)
 
 let _ = 
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (addo !O !(S !O) q                     st), ["q", q]);
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (addo !(S !O) !(S !O) q                st), ["q", q]);
-  run show_nat empty_reifier   2    q  (fun q     st -> REPR (addo !O !(S !O) q                     st), ["q", q]);
-  run show_nat empty_reifier   2    q  (fun q     st -> REPR (addo !(S !O) !(S !O) q                st), ["q", q]);
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (addo q !(S !O) !(S !O)                st), ["q", q]);
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (addo !(S !O) q !(S !O)                st), ["q", q]);
-  run show_nat empty_reifier   2    q  (fun q     st -> REPR (addo q !(S !O) !(S !O)                st), ["q", q]);
-  run show_nat empty_reifier   2    q  (fun q     st -> REPR (addo !(S !O) q !(S !O)                st), ["q", q]);
-  run show_nat empty_reifier (-1)  qr  (fun q r   st -> REPR (addo q r !(S !(S !(S !(S !O))))       st), ["q", q; "r", r]);
+  run show_nat  1    q  (REPR (fun q   -> addo !O !(S !O) q                    )) qh;
+  run show_nat  1    q  (REPR (fun q   -> addo !(S !O) !(S !O) q               )) qh;
+  run show_nat  2    q  (REPR (fun q   -> addo !O !(S !O) q                    )) qh;
+  run show_nat  2    q  (REPR (fun q   -> addo !(S !O) !(S !O) q               )) qh;
+  run show_nat  1    q  (REPR (fun q   -> addo q !(S !O) !(S !O)               )) qh;
+  run show_nat  1    q  (REPR (fun q   -> addo !(S !O) q !(S !O)               )) qh;
+  run show_nat  2    q  (REPR (fun q   -> addo q !(S !O) !(S !O)               )) qh;
+  run show_nat  2    q  (REPR (fun q   -> addo !(S !O) q !(S !O)               )) qh;
+  run show_nat (-1) qr  (REPR (fun q r -> addo q r !(S !(S !(S !(S !O))))      )) qrh;
 
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (mulo !O !(S !O) q                     st), ["q", q]);
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (mulo !(S !(S !O)) !(S !(S !O)) q      st), ["q", q]);
-  run show_nat empty_reifier   2    q  (fun q     st -> REPR (mulo !O !(S !O) q                     st), ["q", q]);
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (mulo q !(S !(S !O)) !(S !(S !O))      st), ["q", q]);
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (mulo q !(S !(S !O)) !(S !(S !(S !O))) st), ["q", q]);
-  run show_nat empty_reifier   2    q  (fun q     st -> REPR (mulo q !(S !(S !O)) !(S !(S !O))      st), ["q", q]);
-  run show_nat empty_reifier   2    q  (fun q     st -> REPR (mulo q !(S !(S !O)) !(S !(S !(S !O))) st), ["q", q]);
+  run show_nat  1    q  (REPR (fun q   -> mulo !O !(S !O) q                    )) qh;
+  run show_nat  1    q  (REPR (fun q   -> mulo !(S !(S !O)) !(S !(S !O)) q     )) qh;
+  run show_nat  2    q  (REPR (fun q   -> mulo !O !(S !O) q                    )) qh;
+  run show_nat  1    q  (REPR (fun q   -> mulo q !(S !(S !O)) !(S !(S !O))     )) qh;
+  run show_nat  1    q  (REPR (fun q   -> mulo q !(S !(S !O)) !(S !(S !(S !O))))) qh;
+  run show_nat  2    q  (REPR (fun q   -> mulo q !(S !(S !O)) !(S !(S !O))     )) qh;
+  run show_nat  2    q  (REPR (fun q   -> mulo q !(S !(S !O)) !(S !(S !(S !O))))) qh;
 
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (mulo !(S !(S !O)) q !(S !(S !O))      st), ["q", q]);
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (mulo !(S !(S !O)) q !(S !(S !(S !O))) st), ["q", q]);
-  run show_nat empty_reifier   2    q  (fun q     st -> REPR (mulo !(S !(S !O)) q !(S !(S !O)) st)     , ["q", q]);
-  run show_nat empty_reifier   2    q  (fun q     st -> REPR (mulo !(S !(S !O)) q !(S !(S !(S !O))) st), ["q", q]);
+  run show_nat  1    q  (REPR (fun q   -> mulo !(S !(S !O)) q !(S !(S !O))     )) qh;
+  run show_nat  1    q  (REPR (fun q   -> mulo !(S !(S !O)) q !(S !(S !(S !O))))) qh;
+  run show_nat  2    q  (REPR (fun q   -> mulo !(S !(S !O)) q !(S !(S !O)) )    ) qh;
+  run show_nat  2    q  (REPR (fun q   -> mulo !(S !(S !O)) q !(S !(S !(S !O))))) qh;
   
-  run show_nat empty_reifier   1   qr  (fun q r   st -> REPR (mulo q !(S !O) r                      st), ["q", q; "r", r]);
-  run show_nat empty_reifier  10   qr  (fun q r   st -> REPR (mulo q !(S !O) r                      st), ["q", q; "r", r]);
+  run show_nat  1   qr  (REPR (fun q r -> mulo q !(S !O) r                     )) qrh;
+  run show_nat 10   qr  (REPR (fun q r -> mulo q !(S !O) r                     )) qrh;
 
-  run show_nat empty_reifier   1   qr  (fun q r   st -> REPR (mulo !(S !O) q r                      st), ["q", q; "r", r]);
-  run show_nat empty_reifier  10   qr  (fun q r   st -> REPR (mulo !(S !O) q r                      st), ["q", q; "r", r]);
+  run show_nat  1   qr  (REPR (fun q r -> mulo !(S !O) q r                     )) qrh;
+  run show_nat 10   qr  (REPR (fun q r -> mulo !(S !O) q r                     )) qrh;
 
-  run show_nat empty_reifier   1   qr  (fun q r   st -> REPR (mulo q r !O                           st), ["q", q; "r", r]);
-  run show_nat empty_reifier   1   qr  (fun q r   st -> REPR (mulo q r !(S !O)                      st), ["q", q; "r", r]);
+  run show_nat  1   qr  (REPR (fun q r -> mulo q r !O                          )) qrh;
+  run show_nat  1   qr  (REPR (fun q r -> mulo q r !(S !O)                     )) qrh;
   
-  run show_nat empty_reifier   1    q  (fun q     st -> REPR (mulo !(S !O) !(S !O) q                st), ["q", q]);
-  run show_nat empty_reifier   1   qr  (fun q r   st -> REPR (mulo q r !(S !(S !(S !(S !O))))       st), ["q", q; "r", r]);
-  run show_nat empty_reifier   3   qr  (fun q r   st -> REPR (mulo q r !(S !(S !(S !(S !O))))       st), ["q", q; "r", r]);
+  run show_nat  1    q  (REPR (fun q   -> mulo !(S !O) !(S !O) q               )) qh;
+  run show_nat  1   qr  (REPR (fun q r -> mulo q r !(S !(S !(S !(S !O))))      )) qrh;
+  run show_nat  3   qr  (REPR (fun q r -> mulo q r !(S !(S !(S !(S !O))))      )) qrh;
 
-  run show_nat empty_reifier   3  qrs  (fun q r s st -> REPR (mulo q r s                            st), ["q", q; "r", r; "s", s]);
-  run show_nat empty_reifier  10  qrs  (fun q r s st -> REPR (mulo q r s                            st), ["q", q; "r", r; "s", s])
+  run show_nat  3  qrs  (REPR (fun q r s -> mulo q r s                         )) qrsh;
+  run show_nat 10  qrs  (REPR (fun q r s -> mulo q r s                         )) qrsh
 

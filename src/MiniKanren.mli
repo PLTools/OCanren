@@ -29,6 +29,9 @@ module Stream :
     (** Lazy constructor *)
     val from_fun : (unit -> 'a t) -> 'a t
 
+    (** [take ~n:n s] returns the list of [n]-first elements of [s] *)
+    val take : ?n:int -> 'a t -> 'a list
+
     (** [map f s] maps function [f] over the stream [s] *)
     val map : ('a -> 'b) -> 'a t -> 'b t
 
