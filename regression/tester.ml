@@ -28,3 +28,5 @@ let run printer n num (repr, goal) handler =
 let qh   = fun qs       -> ["q", qs]
 let qrh  = fun qs rs    -> ["q", qs; "r", rs]
 let qrsh = fun qs rs ss -> ["q", qs; "r", rs; "s", ss]
+
+let (!) = (!?)

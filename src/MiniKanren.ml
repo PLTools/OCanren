@@ -1,4 +1,4 @@
-module Stream =
+1module Stream =
   struct
 
     type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t
@@ -44,9 +44,8 @@ module Stream =
 
 let (!!) = Obj.magic;;
 
-type var = GT.int
-
-@type 'a logic = Var of GT.int * 'a logic GT.list | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
+@type var = {a: GT.int GT.list; id: GT.int} with show, html, eq, compare, foldl, foldr, gmap
+@type 'a logic = Var of var * 'a logic GT.list | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 let logic = {
   logic with plugins = 
@@ -67,7 +66,7 @@ let logic = {
 		  | [] -> ""
                   | _  -> Printf.sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ s.GT.f () l) cs)
 		in
-                Printf.sprintf "_.%d%s" i c
+                Printf.sprintf "_.%d%s" i.id c
                 
               method c_Value _ _ x = x.GT.fx ()
             end) 
@@ -78,15 +77,16 @@ let logic = {
 
 @type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, gmap
 
-let (!) x = Value x
+let (!?) x = Value x
+let inj = (!?)
 
-let (%)  x y = !(Cons (x, y))
-let (%<) x y = !(Cons (x, !(Cons (y, !Nil))))
-let (!<) x   = !(Cons (x, !Nil))
+let (%)  x y = !?(Cons (x, y))
+let (%<) x y = !?(Cons (x, !?(Cons (y, !?Nil))))
+let (!<) x   = !?(Cons (x, !?Nil))
 
 let rec of_list = function
-| [] -> !Nil
-| x::xs -> !x % (of_list xs)
+| [] -> !?Nil
+| x::xs -> !?x % (of_list xs)
 
 exception Not_a_value 
 exception Occurs_check
@@ -176,35 +176,33 @@ module Env :
     val empty  : unit -> t
     val fresh  : t -> 'a logic * t
     val var    : t -> 'a logic -> int option
-    val vars   : t -> unit logic list 
-    val show   : t -> string
   end = 
   struct
-    module H = Hashtbl.Make (
-      struct
-        type t = unit logic
-        let hash = Hashtbl.hash
-        let equal = (==)
-      end)
+    type t = GT.int GT.list * int 
 
-    type t = unit H.t * int
+    let empty () = ([0], 10)
 
-    let counter_start = 10 (* 1 to be able to detect empty list *)
-    let empty () = (H.create 1024, counter_start)
+    let fresh (a, current) =
+      let v = Var ({a=a; id=current}, []) in
+      (!!v, (a, current+1))
 
-    let fresh (h, current) =
-      let v = Var (current, []) in
-      H.add h v ();
-      (!!v, (h, current+1))
+    let var_tag, var_size, str_tag, str_size =
+      let s = {a=[]; id=0} in
+      let v = Var (s, []) in
+      Obj.tag (!! v), Obj.size (!! v), Obj.tag (!! s), Obj.size (!! s)
 
-    let var (h, _) x =
-      if H.mem h (!! x)
-      then let Var (i, _) = !! x in Some i
+    let var (a, _) x =
+      let t = !! x in
+      if Obj.tag  t = var_tag  &&
+         Obj.size t = var_size &&
+         (let s = Obj.field t 0 in
+          Obj.tag  s = str_tag  &&
+          Obj.size s = str_size &&
+          let q = Obj.field s 0 in
+          not (Obj.is_int q) && q == (!!a)
+         )
+      then let Var (i, _) = !! x in Some i.id
       else None
-
-    let vars (h, _) = H.fold (fun v _ acc -> v :: acc) h []
-
-    let show env = (List.fold_left (fun acc (Var (i, _)) -> acc ^ (Printf.sprintf "$%d; " i)) "env {" (vars env)) ^ "}"
 
   end
 
@@ -217,7 +215,6 @@ module Subst :
     val of_list : (int * Obj.t * Obj.t) list -> t 
     val split   : t -> Obj.t list * Obj.t list 
     val walk    : Env.t -> 'a logic -> t -> 'a logic
-    val walk'   : Env.t -> 'a logic -> t -> 'a logic
     val unify   : Env.t -> 'a logic -> 'a logic -> t option -> (int * Obj.t * Obj.t) list * t option
     val show    : t -> string
   end =
@@ -255,30 +252,6 @@ module Subst :
 	      else occurs env xi (!!(f i)) subst || inner (i+1)
 	    in
 	    inner 0
-
-    let rec walk' env var subst =
-      match Env.var env var with
-      | None ->
-	  (match wrap (Obj.repr var) with
-	   | Unboxed _ -> !!var
-	   | Boxed (t, s, f) ->
-               let var = Obj.dup (Obj.repr var) in
-               let sf =
-		 if t = Obj.double_array_tag
-		 then !! Obj.set_double_field
-		 else Obj.set_field
-	       in
-	       for i = 0 to s - 1 do
-                 sf var i (!!(walk' env (!!(f i)) subst))
-               done;
-	       !!var
-	   | Invalid n -> invalid_arg (Printf.sprintf "Invalid value for reconstruction (%d)" n)
-          )
-
-      | Some i ->
-	  (try walk' env (snd (M.find i (!! subst))) subst
-	   with Not_found -> !!var
-	  )
 
     let unify env x y subst =
       let rec unify x y (delta, subst) = 
@@ -325,7 +298,7 @@ module State =
     type t = Env.t * Subst.t * Subst.t list
     let empty () = (Env.empty (), Subst.empty, [])
     let env   (env, _, _) = env
-    let show  (env, subst, constr) = Printf.sprintf "st {%s, %s, %s}" (Env.show env) (Subst.show subst) (GT.show(GT.list) Subst.show constr)
+    let show  (env, subst, constr) = Printf.sprintf "st {%s, %s}" (Subst.show subst) (GT.show(GT.list) Subst.show constr)
   end
 
 type goal = State.t -> State.t Stream.t
@@ -437,7 +410,7 @@ module Fresh =
   end
 
 let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->  
-  let rec walk' env var subst =
+  let rec walk' recursive env var subst =
     let var = Subst.walk env var subst in
     match Env.var env var with
     | None ->
@@ -451,18 +424,18 @@ let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x 
               else Obj.set_field
             in
             for i = 0 to s - 1 do
-              sf var i (!!(walk' env (!!(f i)) subst))
+              sf var i (!!(walk' true env (!!(f i)) subst))
            done;
            !!var
          | Invalid n -> invalid_arg (Printf.sprintf "Invalid value for reconstruction (%d)" n)
         )
-    | Some i -> 
+    | Some i when recursive ->        
         (match var with
          | Var (i, _) -> 
             let cs = 
 	      List.fold_left 
 		(fun acc s -> 
-		   match Subst.walk' env (!!var) s with
+		   match walk' false env (!!var) s with
 		   | Var (j, _) when i = j -> acc
 		   | t -> (refine st t) :: acc
 		)	
@@ -471,8 +444,9 @@ let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x 
 	    in
 	    Var (i, cs)
         )
+    | _ -> var
   in
-  walk' e (!!x) s
+  walk' true e (!!x) s
 
 module ExtractDeepest = 
   struct

@@ -44,13 +44,17 @@ module Stream :
 type var
 
 (** Type of logic values: free variable with the list of disequality constraints or some value *)
+
 @type 'a logic = private 
   Var   of var * 'a logic GT.list 
 | Value of 'a                     
 with show, html, eq, compare, foldl, foldr, gmap
 
 (** Lifting primitive *)
-val (!) : 'a -> 'a logic
+val (!?) : 'a -> 'a logic
+
+(** Synonym for (!?) *)
+val inj : 'a -> 'a logic 
 
 (** Type of logic lists *)
 @type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, gmap
