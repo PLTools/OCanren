@@ -1,4 +1,4 @@
-1module Stream =
+module Stream =
   struct
 
     type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t

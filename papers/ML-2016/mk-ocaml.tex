@@ -1,0 +1,208 @@
+\documentclass[10pt, oneside, nocopyrightspace]{sigplanconf}
+
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{indentfirst}
+\usepackage{verbatim}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage[hyphens]{url}
+\usepackage[hidelinks]{hyperref}
+
+\topmargin 2.0cm
+\setlength{\textheight}{25.3cm}
+
+\lstdefinelanguage{ocaml}{
+keywords={let, begin, end, in, match, type, and, fun, function, try, with, when, class, 
+object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit, 
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual},
+sensitive=true,
+basicstyle=\small,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\ttfamily\underbar,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+fontadjust=true,
+literate={->}{{$\;\;\to\;\;$}}1,
+morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+basicstyle=\small,
+identifierstyle=\ttfamily,
+keywordstyle=\bfseries,
+commentstyle=\scriptsize\rmfamily,
+basewidth={0.5em,0.5em},
+fontadjust=true,
+escapechar=~,
+language=ocaml
+}
+
+\sloppy
+
+\newcommand{\miniKanren}{\texttt{miniKanren}}
+
+\begin{document}
+
+\title{Typed Embedding of Relational Language in OCaml}
+
+\authorinfo{Dmitry Kosarev \and Dmitri Boulytchev}
+{St.Petersburg State University \\ 
+  Saint-Petersburg, Russia }
+{$\mathtt{dboulytchev@gmail.com}$ \and $\mathtt{dboulytchev@math.spbu.ru}$}
+
+\maketitle
+
+\small
+\section*{Introduction}
+
+either to implement unification for each user type or to inject ...
+
+
+\section{Logical Values}
+
+
+\begin{lstlisting}[mathescape=true]
+type $\alpha$ logic = private
+| Var   of var * $\alpha$ logic list
+| Value of $\alpha$
+\end{lstlisting}
+
+injection, projection, mapping and generic programming.
+
+\section{Polymorphic Unification}
+
+We consider it rather natural to employ polymorphic unification in the
+language, already equipped with polymorphic comparison~--- a convenient, but
+somewhat disputable\footnote{See, for example, 
+             \href{https://blogs.janestreet.com/the-perils-of-polymorphic-compare}
+                  {https://blogs.janestreet.com/the-perils-of-polymorphic-compare}
+          } 
+feature. Like polymorphic comparison, polymorphic unification performs traversal
+of values, exploiting intrinsic knowledge of their runtime representation. 
+The undeniable benefit of this solution is that in order to perform unification 
+for user types no ``boilerplate'' code is needed. On the other hand, all pitfalls of
+polymorphic comparison are inherited as well; in particular, unification can loop 
+for cyclic data structures and does not work for functional values. Since we generally 
+do not expect any reasonable outcome in these cases, the only remaining problem is that
+the compiler 
+%is completely oblivious to them and 
+is uncapable to provide any assistance in identifying 
+and avoiding them. Another drawback is that the implementation of polymorphic unification
+relies on runtime representation of values and have to be fixed every time the representation changes. 
+Finally, as it written in unsafe manner using \lstinline{Obj} interface, it has to be
+carefully developed and tested.
+
+An important difference between polymorphic comparison and unification is that the former 
+only inspects its operands, while the results of unification are recorded in a substitution
+(mapping from logical variables to terms), which later is used to refine answers and reify 
+constraints. So, generally speaking, we have to show, that no ill-typed terms are constructed 
+as a result.
+
+Polymorphic unification is introduced by the following function:
+
+\begin{lstlisting}[mathescape=true]
+val unify : 
+  $\alpha$ logic -> $\;\;\alpha$ logic -> $\;\;$subst option -> $\;\;$subst option
+\end{lstlisting}
+
+\noindent where ``\lstinline{subst}'' stands for the type of substitution. Unification can 
+fail (hence ``\lstinline{option}'' in the result type), is performed in the context of
+existing substitution (hence ``\lstinline{subst}'' in the third argument) and
+can be chained (hence ``\lstinline{option}'' in the third argument). Note, that the 
+type of substitution is not polymorphic, which means, that compiler competely looses the 
+track of types for values, stored in a substitution. These types are recovered later during
+refinement of answers.
+
+To justify the correctness of unification, we consider the set of typed terms, each of which
+has one of two forms
+
+$$
+x^\tau \mid C^\tau(t_1^{\tau_1},\dots,t_k^{\tau_k})
+$$
+
+\noindent where $x^\tau$ denotes a logical variable of type $\tau$, 
+$C^\tau$~--- some constructor of type $\tau$, $t_i^{\tau_i}$~--- some terms of types $\tau_i$.
+We reflect by $t_1^\tau[t_2^\rho]$ the fact of $t_2^\rho$ being a subterm of $t_1^\tau$, and
+assume, that $\rho$ is unabiguously determined by $t_1$, $\tau$, and a position of $t_2$ 
+``inside'' $t_1$.
+
+Outside unification code the compiler maintains typing, which means, that all 
+terms, subterms, and variables agree in their types in all contexts. However, inside
+the unification all types are ``erased'' and we no longer have this guarantee. 
+We pretend in this case, that all terms have their types attached to them as runtime attributes. 
+This assumption makes it possible to reason about the values of these attributes. Once we show, 
+that the typing is preserved and type attributes are actually unused, we drop them off, 
+which concludes the justification.
+
+We argue, that the following three invariants are maintained for any substitution $s$, involved 
+in unification:
+
+\begin{enumerate}
+\item if \mbox{$t_1^{\_}[x^{\tau}]$} and \mbox{$t_2^{\_}[x^{\rho}]$}~--- two arbitrary terms (in particular, 
+$t_1^{\_}$ and $t_2^{\_}$ may be the same), bound in $s$ and containing an occurrence of variable $x$, 
+then $\rho=\tau$ (different occurrences of the same variable in $s$ are attributed with the same type);
+
+\item if \mbox{$(s\;\;x^\tau)$} is defined, then \mbox{$(s\;\;x^\tau) = t^\tau$} (a substitution always
+binds a variable to a term of the same type);
+
+\item each variable in $s$ preserves its type, assigned by the compiler (from the first two invariants 
+it is follows, that this type is unique; note also, that all variables are created and have their 
+types assigned outside unification, in a type-safe world).
+\end{enumerate}
+
+The initial (empty) substitution trivially fulfills these invariants; hence, it is sufficient
+to show, that they are preserved by unification.
+
+The following snippet presents the implementation of unification with triangular 
+substitution in only a little bit more abstract form, than actual code. 
+
+\begin{lstlisting}[mathescape=true,numbers=left,numberstyle=\tiny,stepnumber=1,numbersep=5pt]
+let rec walk $s$ = function
+| $x^\tau$ when $x\in dom(s)$ -> $\;\;$walk $s$ $(s\;\;x)^\tau$
+| $t^\tau$ -> $\;\;t^\tau$
+
+let rec unify $t_1^\tau$ $t_2^\tau$ = function
+| None -> None
+| Some $s$ as $sub$  ->
+    match walk $s$ $t_1$, walk $s$ $t_2$ with
+    | $x_1^\tau$, $x_2^\tau$ when $x_1$ = $x_2$ -> $\;\;sub$
+    | $x_1^\tau$, $(t_2^\prime)^\tau$ -> $\;\;$Some ($s[x_1 \gets t_2^\prime]$)
+    | $(t_1^\prime)^\tau$, $x_2^\tau$ -> $\;\;$Some ($s[x_2 \gets t_1^\prime]$)
+    | $C^\tau(t_1^{\tau_1},\dots,t_k^{\tau_k})$, $C^\tau(p_1^{\tau_1},\dots,p_k^{\tau_k})$ -> 
+        unify $t_k^{\tau_k}$ $p_k^{\tau_k}$$(..$(unify $t_2^{\tau_2}$ $p_2^{\tau_2}$ (unify $t_1^{\tau_1}$ $p_1^{\tau_1}$ $sub$))$..$)
+    | $\_$, $\_$ -> $\;\;$None
+\end{lstlisting}
+
+The type annotations, included in the snippet above, can be justified by the following 
+reasonings\footnote{We omit the verbal description of unification algorithm due to the 
+looming lack of space; the details can be found in~\cite{MicroKanren}.}:
+
+\begin{enumerate}
+\item Line 2: the type of \mbox{$(s\;\;x^\tau)$} is $\tau$ due to invariant 2; hence, 
+\lstinline{walk} preserves the type of its second argument.
+
+\item Line 9: the substitution is left unchanged, hence the invariants are preserved.
+
+\item Line 10 (and, symmetrically, line 11): first, 
+\end{enumerate}
+
+\begin{thebibliography}{99}
+\bibitem{TRS}
+Daniel P. Friedman, William E.Byrd, Oleg Kiselyov. The Reasoned Schemer. The MIT
+Press, 2005.
+
+\bibitem{MicroKanren}
+Jason Hemann, Daniel P. Friedman. $\mu$Kanren: A Minimal Core for Relational Programming //
+Proceedings of the 2013 Workshop on Scheme and Functional Programming (Scheme '13).
+
+\bibitem{CKanren}
+Claire E. Alvis, Jeremiah J. Willcock, Kyle M. Carter, William E. Byrd, and Daniel P. Friedman.
+cKanren: miniKanren with Constraints // 
+Proceedings of the 2011 Workshop on Scheme and Functional Programming (Scheme '11).
+
+\end{thebibliography}
+
+\end{document}
+
