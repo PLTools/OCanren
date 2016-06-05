@@ -100,7 +100,7 @@ only inspects its operands, while the results of unification are recorded in a s
 constraints. So, generally speaking, we have to show, that no ill-typed terms are constructed 
 as a result.
 
-Polymorphic unification is introduced by the following function:
+Polymorphic unification is introduced via the following function:
 
 \begin{lstlisting}[mathescape=true]
 val unify : 
@@ -128,20 +128,17 @@ We reflect by $t_1^\tau[t_2^\rho]$ the fact of $t_2^\rho$ being a subterm of $t_
 assume, that $\rho$ is unabiguously determined by $t_1$, $\tau$, and a position of $t_2$ 
 ``inside'' $t_1$.
 
-Outside unification code the compiler maintains typing, which means, that all 
-terms, subterms, and variables agree in their types in all contexts. However, inside
-the unification all types are ``erased'' and we no longer have this guarantee. 
-We pretend in this case, that all terms have their types attached to them as runtime attributes. 
-This assumption makes it possible to reason about the values of these attributes. Once we show, 
-that the typing is preserved and type attributes are actually unused, we drop them off, 
-which concludes the justification.
+Outside unification the compiler maintains typing, which means, that all 
+terms, subterms, and variables agree in their types in all contexts. However, as 
+our implementation resorts to unsafe features, we have to make this work for unification
+code on our own.
 
 We argue, that the following three invariants are maintained for any substitution $s$, involved 
 in unification:
 
 \begin{enumerate}
 \item if \mbox{$t_1^{\_}[x^{\tau}]$} and \mbox{$t_2^{\_}[x^{\rho}]$}~--- two arbitrary terms (in particular, 
-$t_1^{\_}$ and $t_2^{\_}$ may be the same), bound in $s$ and containing an occurrence of variable $x$, 
+$t_1^{\_}$ and $t_2^{\_}$ may be the same), bound in $s$ and containing occurrences of variable $x$, 
 then $\rho=\tau$ (different occurrences of the same variable in $s$ are attributed with the same type);
 
 \item if \mbox{$(s\;\;x^\tau)$} is defined, then \mbox{$(s\;\;x^\tau) = t^\tau$} (a substitution always
@@ -156,7 +153,8 @@ The initial (empty) substitution trivially fulfills these invariants; hence, it 
 to show, that they are preserved by unification.
 
 The following snippet presents the implementation of unification with triangular 
-substitution in only a little bit more abstract form, than actual code. 
+substitution in only a little bit more abstract form, than actual code (for example, 
+``occurs check'' is omitted):
 
 \begin{lstlisting}[mathescape=true,numbers=left,numberstyle=\tiny,stepnumber=1,numbersep=5pt]
 let rec walk $s$ = function
@@ -175,17 +173,23 @@ let rec unify $t_1^\tau$ $t_2^\tau$ = function
     | $\_$, $\_$ -> $\;\;$None
 \end{lstlisting}
 
-The type annotations, included in the snippet above, can be justified by the following 
-reasonings\footnote{We omit the verbal description of unification algorithm due to the 
+Type annotations, included in the snippet above, can be justified by the following 
+reasonings\footnote{We omit the verbal description of unification algorithm due to a
 looming lack of space; the details can be found in~\cite{MicroKanren}.}:
 
 \begin{enumerate}
-\item Line 2: the type of \mbox{$(s\;\;x^\tau)$} is $\tau$ due to invariant 2; hence, 
-\lstinline{walk} preserves the type of its second argument.
+\item Line 2: the type of \mbox{$(s\;\;x^\tau)$} is $\tau$ due to the invariant 2; hence, 
+the type of \lstinline{walk} result coincides with the type of its second argument.
 
-\item Line 9: the substitution is left unchanged, hence the invariants are preserved.
+\item Line 9: the substitution is left unchanged, hence all invariants are preserved.
 
-\item Line 10 (and, symmetrically, line 11): first, 
+\item Line 10 (and, symmetrically, line 11): first, note, that \mbox{$(s\;\;x_1)$} is undefined
+(otherwise \lstinline{walk} would not return $x_1$). Then, $x_1$ and $t_2^\prime$ have the
+same type, which justifies the preservation of invariant 2. Finally, either \mbox{$x_1=t_1$}
+(and, then, $\tau$ is the type of $x_1$, assigned by the compiler), or $x_1$ is retrieved
+from $s$ with type $\tau$~--- both cases justify invariants 1 and 3. The same applies to 
+the pair $t_2^\prime$ and $t_2$.
+
 \end{enumerate}
 
 \begin{thebibliography}{99}
