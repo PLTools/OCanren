@@ -55,19 +55,15 @@ language=ocaml
 \maketitle
 
 \small
-\section*{Introduction}
+\section{Introduction}
+
+Relational programming~\cite{TRS}
+We report an implementation of in a form of shallow DSL.
 
 either to implement unification for each user type or to inject ...
 
 
-\section{Logical Values}
-
-
-\begin{lstlisting}[mathescape=true]
-type $\alpha$ logic = private
-| Var   of var * $\alpha$ logic list
-| Value of $\alpha$
-\end{lstlisting}
+\section{Logical Values, States, Goals and Toplevel Primitives}
 
 injection, projection, mapping and generic programming.
 
@@ -189,8 +185,15 @@ same type, which justifies the preservation of invariant 2. Finally, either \mbo
 (and, then, $\tau$ is the type of $x_1$, assigned by the compiler), or $x_1$ is retrieved
 from $s$ with type $\tau$~--- both cases justify invariants 1 and 3. The same applies to 
 the pair $t_2^\prime$ and $t_2$.
-
 \end{enumerate}
+
+Induction; environment and variable recognition; (===) and (=/=).
+
+\section{Refinement}
+
+\section{Examples}
+
+\section{Conclusion}
 
 \begin{thebibliography}{99}
 \bibitem{TRS}
