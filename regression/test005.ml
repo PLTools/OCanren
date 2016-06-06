@@ -37,12 +37,12 @@ let show_lam    = show logic (show lam)
 let show_string = show logic (show string)
 
 let _ =
-  run show_typ    1 q (REPR (fun q -> lookupo !"x" (of_list []) q                                         )) qh;
-  run show_typ    1 q (REPR (fun q -> lookupo !"x" (of_list [!"x", !(V !"x")]) q                          )) qh; 
-  run show_typ    1 q (REPR (fun q -> lookupo !"x" (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) q         )) qh;
+  run show_typ    1 q (REPR (fun q -> lookupo !"x" (inj_list []) q                                        )) qh;
+  run show_typ    1 q (REPR (fun q -> lookupo !"x" (inj_list [!"x", !(V !"x")]) q                         )) qh; 
+  run show_typ    1 q (REPR (fun q -> lookupo !"x" (inj_list [!"y", !(V !"y"); !"x", !(V !"x")]) q        )) qh;
 
-  run show_string 1 q (REPR (fun q -> lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x")    )) qh;
-  run show_string 1 q (REPR (fun q -> lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y")    )) qh;
+  run show_string 1 q (REPR (fun q -> lookupo q (inj_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x")   )) qh;
+  run show_string 1 q (REPR (fun q -> lookupo q (inj_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y")   )) qh;
   run show_env    1 q (REPR (fun q -> lookupo !"x" q !(V !"y")                                            )) qh;
   run show_env    5 q (REPR (fun q -> lookupo !"x" q !(V !"y")                                            )) qh; 
   run show_typ    1 q (REPR (fun q -> infero !(Abs (!"x", !(X !"x"))) q                                   )) qh;

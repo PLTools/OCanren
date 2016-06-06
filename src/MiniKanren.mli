@@ -40,21 +40,47 @@ module Stream :
 
   end
 
-(** Type of typed logic variable *)
-type var
+(** A type of abstract logic values *)
+type 'a logic
 
-(** Type of logic values: free variable with the list of disequality constraints or some value *)
+(** A GT-compatible typeinfo for ['a logic] *)
+val logic :
+  (unit, 
+   < show    : ('a -> string) -> 'a logic -> string;    
+     html    : ('a -> HTMLView.viewer) -> 'a logic -> HTMLView.viewer;
+     eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool;
+     compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison;
+     foldl   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
+     foldr   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
+     gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic 
+   >) GT.t
 
-@type 'a logic = private 
-  Var   of var * 'a logic GT.list 
-| Value of 'a                     
-with show, html, eq, compare, foldl, foldr, gmap
+(** A type of concrete logic values: either a free variable with integer id and 
+    the list, representing all disequality constraints, or some value *)
+@type 'a unlogic = [`Var of GT.int * 'a logic GT.list | `Value of 'a] with show, html, eq, compare, foldl, foldr, gmap
 
-(** Lifting primitive *)
-val (!?) : 'a -> 'a logic
+(** [destruct l] destructs abstract logic into cocrete *)
+val destruct : 'a logic -> 'a unlogic
 
-(** Synonym for (!?) *)
+(** Injecting values into logics *)
+val (!!) : 'a -> 'a logic
+
+(** A synonym for [(!!)] *)
 val inj : 'a -> 'a logic 
+
+(** Exception to raise on a non-value case *)
+exception Not_a_value
+
+(** Projecting logics to values (partial, can raise [Not_a_value]) *)
+val (!?) : 'a logic -> 'a
+
+(** A synonym for [(!?)] *)
+val prj : 'a logic -> 'a
+
+(** Projection with continuation; [prj_k k l] calls continuation [k],
+    when a free variable is encountered inside [l]; this variable is
+    passed to [k] as its argument *)
+val prj_k : ('a logic -> 'a) -> 'a logic -> 'a
 
 (** Type of logic lists *)
 @type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, gmap
@@ -68,24 +94,14 @@ val (%<) : 'a logic -> 'a logic -> 'a llist logic
 (** [!< x] is a synonym for [Cons (x, !Nil)] *)
 val (!<) : 'a logic -> 'a llist logic
 
-(** [of_list l] converts a regular list into logic one *)
-val of_list : 'a list -> 'a llist logic
+(** Deep injection for lists *)
+val inj_list : 'a list -> 'a llist logic
 
-(** [to_listk k l] converts logic list [l] into a regular one, calling [k] to
-    convert elements, which are not a value *)
-val to_listk : ('a llist logic -> 'a list) -> 'a llist logic -> 'a list
+(** Deep projection for logic lists *)
+val prj_list : 'a llist logic -> 'a list
 
-(** Exception to raise on a non-value case *)
-exception Not_a_value
-
-(** [to_value x] converts logic into value; raises [Not_a_value] on a
-    non-value case
-*)
-val to_value : 'a logic -> 'a
-
-(** [to_list l] converts logic list [l] into a regular one, raising
-    [Not_a_value] on a non-value case *)
-val to_list : 'a llist logic -> 'a list
+(** Deep projection with continuation for logic lists *)
+val prj_list_k : ('a llist logic -> 'a list) -> 'a llist logic -> 'a list
 
 (** State (needed to perform calculations) *)
 module State :

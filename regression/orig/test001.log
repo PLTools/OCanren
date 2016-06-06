@@ -1,19 +1,19 @@
-fun q -> appendo q (of_list [3; 4]) (of_list [1; 2; 3; 4]), 1 answer {
+fun q -> appendo q (inj_list [3; 4]) (inj_list [1; 2; 3; 4]), 1 answer {
 q=[1; 2]; 
 }
-fun q r -> appendo q (of_list []) r, 4 answers {
+fun q r -> appendo q (inj_list []) r, 4 answers {
 q=[]; r=[]; 
 q=[_.12]; r=[_.12]; 
 q=[_.12; _.15]; r=[_.12; _.15]; 
 q=[_.12; _.15; _.18]; r=[_.12; _.15; _.18]; 
 }
-fun q -> reverso q (of_list [1; 2; 3; 4]), 1 answer {
+fun q -> reverso q (inj_list [1; 2; 3; 4]), 1 answer {
 q=[4; 3; 2; 1]; 
 }
-fun q -> reverso (of_list []) (of_list []), 1 answer {
+fun q -> reverso (inj_list []) (inj_list []), 1 answer {
 q=_.10; 
 }
-fun q -> reverso (of_list [1; 2; 3; 4]) q, 1 answer {
+fun q -> reverso (inj_list [1; 2; 3; 4]) q, 1 answer {
 q=[4; 3; 2; 1]; 
 }
 fun q -> reverso q q, 1 answer {
@@ -40,10 +40,10 @@ q=[_.92; _.86; _.77; _.65; _.77; _.86; _.92];
 q=[_.116; _.110; _.101; _.89; _.89; _.101; _.110; _.116]; 
 q=[_.143; _.137; _.128; _.116; _.101; _.116; _.128; _.137; _.143]; 
 }
-fun q -> reverso q (of_list [1]), 2 answers {
+fun q -> reverso q (inj_list [1]), 2 answers {
 q=[1]; 
 }
-fun q -> reverso (of_list [1]) q, 1 answer {
+fun q -> reverso (inj_list [1]) q, 1 answer {
 q=[1]; 
 }
 fun q -> a_and_b q, 1 answer {

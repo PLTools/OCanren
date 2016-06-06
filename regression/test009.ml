@@ -47,10 +47,10 @@ let show_expr   = show(logic) (show expr)
 let show_stream = show(logic) (show llist (show token))
 
 let _ =
-  run show_expr   1 q (REPR (fun q -> pExpr (of_list [Id]) q                  )) qh;
-  run show_expr   1 q (REPR (fun q -> pExpr (of_list [Id; Mul; Id]) q         )) qh;  
-  run show_expr   1 q (REPR (fun q -> pExpr (of_list [Id; Mul; Id; Mul; Id]) q)) qh;  
-  run show_expr   1 q (REPR (fun q -> pExpr (of_list [Id; Mul; Id; Add; Id]) q)) qh;  
-  run show_expr   1 q (REPR (fun q -> pExpr (of_list [Id; Add; Id; Mul; Id]) q)) qh;  
-  run show_expr   1 q (REPR (fun q -> pExpr (of_list [Id; Add; Id; Add; Id]) q)) qh;  
+  run show_expr   1 q (REPR (fun q -> pExpr (inj_list [Id]) q                  )) qh;
+  run show_expr   1 q (REPR (fun q -> pExpr (inj_list [Id; Mul; Id]) q         )) qh;  
+  run show_expr   1 q (REPR (fun q -> pExpr (inj_list [Id; Mul; Id; Mul; Id]) q)) qh;  
+  run show_expr   1 q (REPR (fun q -> pExpr (inj_list [Id; Mul; Id; Add; Id]) q)) qh;  
+  run show_expr   1 q (REPR (fun q -> pExpr (inj_list [Id; Add; Id; Mul; Id]) q)) qh;  
+  run show_expr   1 q (REPR (fun q -> pExpr (inj_list [Id; Add; Id; Add; Id]) q)) qh;  
   run show_stream 1 q (REPR (fun q -> pExpr q !(M (!I, !I))                   )) qh

@@ -1,15 +1,15 @@
-fun q -> lookupo !"x" (of_list []) q, 1 answer {
+fun q -> lookupo !"x" (inj_list []) q, 1 answer {
 }
-fun q -> lookupo !"x" (of_list [!"x", !(V !"x")]) q, 1 answer {
+fun q -> lookupo !"x" (inj_list [!"x", !(V !"x")]) q, 1 answer {
 q=V ("x"); 
 }
-fun q -> lookupo !"x" (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) q, 1 answer {
+fun q -> lookupo !"x" (inj_list [!"y", !(V !"y"); !"x", !(V !"x")]) q, 1 answer {
 q=V ("x"); 
 }
-fun q -> lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x"), 1 answer {
+fun q -> lookupo q (inj_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x"), 1 answer {
 q="x"; 
 }
-fun q -> lookupo q (of_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y"), 1 answer {
+fun q -> lookupo q (inj_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y"), 1 answer {
 q="y"; 
 }
 fun q -> lookupo !"x" q !(V !"y"), 1 answer {
