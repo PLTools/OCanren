@@ -57,13 +57,88 @@ language=ocaml
 \small
 \section{Introduction}
 
-Relational programming~\cite{TRS}
-We report an implementation of in a form of shallow DSL.
+Relational programming~\cite{TRS} is an attractive technique, based on the idea 
+of constructing programs as relations.  As a result, relational programs can be
+``queried'' in various ``directions'', making it possible, for example, to simulate
+reversed execution. Apart from being interesting from purely theoretical standpoint, 
+this approach may have a practical value: some problems look much simpler, 
+if they are considered as queries to relational specification. There is a 
+number of appealing examples, confirming this observation: a type checker 
+for simply typed lambda calculus (and, at the same time, type inferencer and solver 
+for the inhabitation problem), an interpreter (capable of generating ``quines''~--- 
+programs, producing themselves as result)~\cite{Untagged}, list sorting (capable of 
+producing all permutations) etc. 
 
-either to implement unification for each user type or to inject ...
+Many logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
+or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}} to some extent
+can be considered as relational. We have chosen, however, miniKanren\footnote{\url{http://minikanren.org}} 
+as model language, because it was initially designed as relational DSL, embedded in Scheme/Racket. 
+Being rather a minimalistic language, which can be implemented with just a few data structures 
+and combinators, miniKanren found its way in dozens of host languages, including Haskell, 
+Standard ML and OCaml.
+
+There is, however, a predictable glitch in implementing miniKanren for strongly typed language. 
+Designed in a metaprogramming-friendly and dynamically typed realm of Scheme/Racket, original 
+miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
+ML or Haskell. In particular, one of cupstone constructs of miniKanren~--- unification~--- has to work for 
+different data structures, which may have different (beyond parametricity) types.
+
+There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
+provide unification for some concrete type, rich enough to represent any reasonable data structures.
+Some Haskell miniKanren libraries\footnote{\url{https://github.com/JaimieMurdock/HK}, \url{https://github.com/rntz/ukanren}}
+as well as existing OCaml implementation\footnote{\url{https://github.com/lightyang/minikanren-ocaml}} take this way. 
+As a result, the original implementation can be retold with all its elegance; relational specifications, however,
+become weakly typed. Another approach is to utilize \emph{ad hoc} polymorphism and provide type-specific
+unification for each ``interesting'' type; Molog\footnote{\url{https://github.com/acfoltzer/Molog}} and 
+MiniKanrenT\footnote{\url{https://github.com/jvranish/MiniKanrenT}}, both for Haskell, can be mentioned as examples.
+While preserving strong typing, this approach requires a lot of ``boilerplate'' code to be written, so some
+automation, for example, using Template Haskell\footnote{\url{https://wiki.haskell.org/Template_Haskell}},
+is desirable. There is, actually, another potential approach, but we do not know, if anybody tried
+it: to implement unification for generic representation of types as sum-of-products and fixpoints of 
+functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types, for which representation
+is provided. We assume, that implementing representation would require less boilerplate code.
+
+As it follows from given exposition, typed embeddeing of miniKanren in OCaml requires
+a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a number of 
+generic frameworks for OCaml (for example,~\cite{Deriving}); 
+
+We present an implementation of a set of relational combinators in OCaml, which, 
+technically speaking, correspond to $\mu$Kanren~\cite{MicroKanren} with disequality 
+constraints~\cite{CKanren}. The contribution of our work is as follows:
+
+\begin{enumerate}
+\item Our implementation is based on \emph{polymorphic unification}, which, like polymorphic comparison,
+can be used for almost arbitrary types. The implementation of polymorphic unification is unsafe and
+relies on intrinsic knowledge of runtime representation of values; we show, however, that all code outside 
+unification remains type-safe. 
+
+\item We describe a uniform and scalable scenario for using types for relational programming, which
+helps in converting typed data to- and from relational domain. For this scenario, only one
+generic feature (``\lstinline{map/morphism/Functor}'') is needed, and thus virtually any generic 
+framework for OCaml can be used.
+
+\item We provide a simplified way to integrate relational and functional code. Our approach utilizes
+well-known pattern~\cite{UNparsing, DoWeNeed} for variadic function implementation and 
+\end{enumerate}
+
+We also want to express our gratitude to William Byrd, who infected us with relational programming, for his 
 
 
 \section{Logical Values, States, Goals and Toplevel Primitives}
+
+\begin{lstlisting}[mathescape=true]
+type ('v, 'l) lam = 
+  Lam of 'v * 'l | Var of 'v | Abs of 'l * 'l
+
+type glam = (string      , glam) lam
+type llam = (string logic, llam) lam logic
+
+let rec inj_lam : glam -> llam = 
+  fun l -> $\uparrow$($map^{lam}$ ($\uparrow$) inj_lam l)
+
+let rec prj_lam : llam -> glam =
+  fun l -> $map^{lam}$ ($\downarrow$) prj_lam @@ $\downarrow$l
+\end{lstlisting}
 
 injection, projection, mapping and generic programming.
 
@@ -71,10 +146,7 @@ injection, projection, mapping and generic programming.
 
 We consider it rather natural to employ polymorphic unification in the
 language, already equipped with polymorphic comparison~--- a convenient, but
-somewhat disputable\footnote{See, for example, 
-             \href{https://blogs.janestreet.com/the-perils-of-polymorphic-compare}
-                  {https://blogs.janestreet.com/the-perils-of-polymorphic-compare}
-          } 
+somewhat disputable\footnote{See, for example, \url{https://blogs.janestreet.com/the-perils-of-polymorphic-compare}} 
 feature. Like polymorphic comparison, polymorphic unification performs traversal
 of values, exploiting intrinsic knowledge of their runtime representation. 
 The undeniable benefit of this solution is that in order to perform unification 
@@ -82,9 +154,7 @@ for user types no ``boilerplate'' code is needed. On the other hand, all pitfall
 polymorphic comparison are inherited as well; in particular, unification can loop 
 for cyclic data structures and does not work for functional values. Since we generally 
 do not expect any reasonable outcome in these cases, the only remaining problem is that
-the compiler 
-%is completely oblivious to them and 
-is uncapable to provide any assistance in identifying 
+the compiler is uncapable to provide any assistance in identifying 
 and avoiding them. Another drawback is that the implementation of polymorphic unification
 relies on runtime representation of values and have to be fixed every time the representation changes. 
 Finally, as it written in unsafe manner using \lstinline{Obj} interface, it has to be
@@ -205,10 +275,41 @@ Jason Hemann, Daniel P. Friedman. $\mu$Kanren: A Minimal Core for Relational Pro
 Proceedings of the 2013 Workshop on Scheme and Functional Programming (Scheme '13).
 
 \bibitem{CKanren}
-Claire E. Alvis, Jeremiah J. Willcock, Kyle M. Carter, William E. Byrd, and Daniel P. Friedman.
+Claire E. Alvis, Jeremiah J. Willcock, Kyle M. Carter, William E. Byrd, Daniel P. Friedman.
 cKanren: miniKanren with Constraints // 
 Proceedings of the 2011 Workshop on Scheme and Functional Programming (Scheme '11).
 
+\bibitem{Untagged}
+William E. Byrd, Eric Holk, Daniel P. Friedman.
+miniKanren, Live and Untagged: Quine Generation via Relational Interpreters (Programming Pearl) //
+Proceedings of the 2012 Workshop on Scheme and Functional Programming (Scheme '12).
+
+\bibitem{Implicits}
+Leo White, Fr\'ed\'eric Bour, Jeremy Yallop. 
+Modular Implicits // Workshop on ML, 2014, arXiv:1512.01438.
+
+\bibitem{Unparsing}
+Olivier Danvy.
+Functional Unparsing // Journal of Functional Programming, Vol.~8, Issue~6, November 1998.
+
+\bibitem{DoWeNeed}
+Daniel Fridlender, Mia Indrika.
+Do we need dependent types? // Journal of Functional Programming, Vol.~10, Issue~4, July 2000.
+
+\bibitem{DGP}
+Jeremy Gibbons. Datatype-generic Programming //
+Proceedings of the 2006 International Conference on Datatype-generic Programming.
+
+\bibitem{Deriving}
+Jeremy Yallop. 
+Practical Generic Programming in OCaml // Proceedings of 2007 Workshop on ML.
+
+\bibitem{InstantGenerics}
+Manuel M. T. Chakravarty, Gabriel C. Ditu, Roman Leshchinskiy. 
+Instant Generics: Fast and Easy. \url{http://www.cse.unsw.edu.au/~chak/papers/CDL09.html}, 2009.
+
+\bibitem{ALaCarte}
+Wouter Swierstra. Data Types \'a la Carte  // Journal of Functional Programming, Vol.~18, Issue~4, 2008.
 \end{thebibliography}
 
 \end{document}
