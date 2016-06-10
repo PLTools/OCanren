@@ -50,11 +50,20 @@ language=ocaml
 \authorinfo{Dmitry Kosarev \and Dmitri Boulytchev}
 {St.Petersburg State University \\ 
   Saint-Petersburg, Russia }
-{$\mathtt{dboulytchev@gmail.com}$ \and $\mathtt{dboulytchev@math.spbu.ru}$}
+{$\mathtt{Dmitrii.Kosarev@protonmail.ch}$ \and $\mathtt{dboulytchev@math.spbu.ru}$}
 
 \maketitle
 
 \small
+\begin{abstract}
+We present an implementation of relational programming language miniKanren as a set 
+of combinators for OCaml. The key feature of our approach is \emph{polymorphic unification}, 
+which can be used to unify structures of almost arbitrary types. In addition we provide
+a useful generic programming pattern to systematically develop relational
+specifications in a typed manner, and address the problem of relational and functional 
+code integration.
+\end{abstract}
+
 \section{Introduction}
 
 Relational programming~\cite{TRS} is an attractive technique, based on the idea 
@@ -72,16 +81,16 @@ producing all permutations) etc.
 Many logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
 or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}} to some extent
 can be considered as relational. We have chosen, however, miniKanren\footnote{\url{http://minikanren.org}} 
-as model language, because it was initially designed as relational DSL, embedded in Scheme/Racket. 
-Being rather a minimalistic language, which can be implemented with just a few data structures 
-and combinators, miniKanren found its way in dozens of host languages, including Haskell, 
+as model language, because it was specifically designed as relational DSL, embedded in Scheme/Racket. 
+Being rather a minimalistic language, which can be implemented with just a few data structures and
+combinators miniKanren found its way in dozens of host languages, including Haskell, 
 Standard ML and OCaml.
 
 There is, however, a predictable glitch in implementing miniKanren for strongly typed language. 
 Designed in a metaprogramming-friendly and dynamically typed realm of Scheme/Racket, original 
 miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
 ML or Haskell. In particular, one of cupstone constructs of miniKanren~--- unification~--- has to work for 
-different data structures, which may have different (beyond parametricity) types.
+different data structures, which may have types, different beyond parametricity.
 
 There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
 provide unification for some concrete type, rich enough to represent any reasonable data structures.
@@ -98,49 +107,40 @@ it: to implement unification for generic representation of types as sum-of-produ
 functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types, for which representation
 is provided. We assume, that implementing representation would require less boilerplate code.
 
-As it follows from given exposition, typed embeddeing of miniKanren in OCaml requires
-a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a number of 
-generic frameworks for OCaml (for example,~\cite{Deriving}); 
+As it follows from given exposition, typed embeddeing of miniKanren in OCaml can be done with
+a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a 
+number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
+for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power with Haskell 
+type classes, and despite sometimes object-oriented layer of the language can be used to mimic
+desirable behaviour, the result as a rule is far from satisfactory. Existing proposals (for example, 
+module implicits~\cite{Implicits}) require patching the compiler, which we tend to avoid.
 
 We present an implementation of a set of relational combinators in OCaml, which, 
-technically speaking, correspond to $\mu$Kanren~\cite{MicroKanren} with disequality 
+technically speaking, corresponds to $\mu$Kanren~\cite{MicroKanren} with disequality 
 constraints~\cite{CKanren}. The contribution of our work is as follows:
 
 \begin{enumerate}
 \item Our implementation is based on \emph{polymorphic unification}, which, like polymorphic comparison,
-can be used for almost arbitrary types. The implementation of polymorphic unification is unsafe and
-relies on intrinsic knowledge of runtime representation of values; we show, however, that all code outside 
-unification remains type-safe. 
+can be used for almost arbitrary types. The implementation of polymorphic unification uses unsafe features and
+relies on intrinsic knowledge of runtime representation of values; we show, however, that this does not
+compromise type safety. Practically, we applied purely \emph{ad hoc} approach since the features, 
+which would provide less \emph{ad hoc} solution are not yet integrated into the mainstream language.
 
-\item We describe a uniform and scalable scenario for using types for relational programming, which
-helps in converting typed data to- and from relational domain. For this scenario, only one
+\item We describe a uniform and scalable pattern for using types for relational programming, which
+helps in converting typed data to- and from relational domain. With this pattern, only one
 generic feature (``\lstinline{map/morphism/Functor}'') is needed, and thus virtually any generic 
-framework for OCaml can be used.
+framework for OCaml can be used. Despite being rather a pragmatic observation, this pattern, as we
+believe, would lead to a more regular and easy to maintain relational specifications.
 
 \item We provide a simplified way to integrate relational and functional code. Our approach utilizes
-well-known pattern~\cite{UNparsing, DoWeNeed} for variadic function implementation and 
+well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementation and makes it
+possible to hide refinement of answers phase from an end-user.
 \end{enumerate}
 
-We also want to express our gratitude to William Byrd, who infected us with relational programming, for his 
+The source code of our implementation is accessible from \url{https://github.com/dboulytchev/miniKanren-ocaml-typed}.
 
-
-\section{Logical Values, States, Goals and Toplevel Primitives}
-
-\begin{lstlisting}[mathescape=true]
-type ('v, 'l) lam = 
-  Lam of 'v * 'l | Var of 'v | Abs of 'l * 'l
-
-type glam = (string      , glam) lam
-type llam = (string logic, llam) lam logic
-
-let rec inj_lam : glam -> llam = 
-  fun l -> $\uparrow$($map^{lam}$ ($\uparrow$) inj_lam l)
-
-let rec prj_lam : llam -> glam =
-  fun l -> $map^{lam}$ ($\downarrow$) prj_lam @@ $\downarrow$l
-\end{lstlisting}
-
-injection, projection, mapping and generic programming.
+We also want to express our gratitude to William Byrd, who infected us with relational programming, for 
+the time he sacrificed during very instructive and clarifying conversations.
 
 \section{Polymorphic Unification}
 
@@ -173,7 +173,8 @@ val unify :
   $\alpha$ logic -> $\;\;\alpha$ logic -> $\;\;$subst option -> $\;\;$subst option
 \end{lstlisting}
 
-\noindent where ``\lstinline{subst}'' stands for the type of substitution. Unification can 
+\noindent where ``\lstinline[mathescape=true]{$\alpha$ logic}'' stands for the type $\alpha$, 
+injected into logic domain, ``\lstinline{subst}''~--- for the type of substitution. Unification can 
 fail (hence ``\lstinline{option}'' in the result type), is performed in the context of
 existing substitution (hence ``\lstinline{subst}'' in the third argument) and
 can be chained (hence ``\lstinline{option}'' in the third argument). Note, that the 
@@ -257,13 +258,32 @@ from $s$ with type $\tau$~--- both cases justify invariants 1 and 3. The same ap
 the pair $t_2^\prime$ and $t_2$.
 \end{enumerate}
 
-Induction; environment and variable recognition; (===) and (=/=).
+%Induction; environment and variable recognition; (===) and (=/=).
 
-\section{Refinement}
+%\section{Logical Values, States, Goals and Toplevel Primitives}
 
-\section{Examples}
+%\begin{lstlisting}[mathescape=true]
+%type ('v, 'l) lam = 
+%  Lam of 'v * 'l | Var of 'v | Abs of 'l * 'l
 
-\section{Conclusion}
+%type glam = (string      , glam) lam
+%type llam = (string logic, llam) lam logic
+
+%let rec inj_lam : glam -> llam = 
+%  fun l -> $\uparrow$($map^{lam}$ ($\uparrow$) inj_lam l)
+
+%let rec prj_lam : llam -> glam =
+%  fun l -> $map^{lam}$ ($\downarrow$) prj_lam @@ $\downarrow$l
+%\end{lstlisting}
+
+%injection, projection, mapping and generic programming.
+
+
+%\section{Refinement}
+
+%\section{Examples}
+
+%\section{Conclusion}
 
 \begin{thebibliography}{99}
 \bibitem{TRS}
