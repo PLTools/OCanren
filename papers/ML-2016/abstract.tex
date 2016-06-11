@@ -107,7 +107,7 @@ Standard ML and OCaml.
 There is, however, a predictable glitch in implementing miniKanren for strongly typed language. 
 Designed in a metaprogramming-friendly and dynamically typed realm of Scheme/Racket, original 
 miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
-ML or Haskell. In particular, one of cupstone constructs of miniKanren~--- unification~--- has to work for 
+ML or Haskell. In particular, one of capstone constructs of miniKanren~--- unification~--- has to work for 
 different data structures, which may have types, different beyond parametricity.
 
 \begin{comment}
@@ -126,12 +126,12 @@ it: to implement unification for generic representation of types as sum-of-produ
 functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types, for which representation
 is provided. We assume, that implementing representation would require less boilerplate code.
 
-As it follows from given exposition, typed embeddeing of miniKanren in OCaml can be done with
+As it follows from given exposition, typed embedding of miniKanren in OCaml can be done with
 a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a 
 number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
 for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power with Haskell 
 type classes, and despite sometimes object-oriented layer of the language can be used to mimic
-desirable behaviour, the result as a rule is far from satisfactory. Existing proposals (for example, 
+desirable behavior, the result as a rule is far from satisfactory. Existing proposals (for example, 
 module implicits~\cite{Implicits}) require patching the compiler, which we tend to avoid.
 \end{comment}
 
@@ -189,7 +189,7 @@ On the other hand, all pitfalls of
 polymorphic comparison are inherited as well; in particular, unification can loop 
 for cyclic data structures and does not work for functional values. Since we generally 
 do not expect any reasonable outcome in these cases, the only remaining problem is that
-the compiler is uncapable to provide any assistance in identifying 
+the compiler is incapable to provide any assistance in identifying 
 and avoiding them. Another drawback is that the implementation of polymorphic unification
 relies on runtime representation of values and have to be fixed every time the representation changes. 
 Finally, as it written in unsafe manner using \lstinline{Obj} interface, it has to be
@@ -217,7 +217,7 @@ Unification can
 fail (hence ``\lstinline{option}'' in the result type), is performed in the context of
 existing substitution (hence ``\lstinline{subst}'' in the third argument) and
 can be chained (hence ``\lstinline{option}'' in the third argument). Note, that the 
-type of substitution is not polymorphic, which means, that compiler competely looses the 
+type of substitution is not polymorphic, which means, that compiler completely looses the 
 track of types for values, stored in a substitution. These types are recovered later during
 refinement of answers.
 \end{comment}
@@ -232,7 +232,7 @@ $$
 \noindent where $x^\tau$ denotes a logical variable of type $\tau$, 
 $C^\tau$~--- some constructor of type $\tau$, $t_i^{\tau_i}$~--- some terms of types $\tau_i$.
 We reflect by $t_1^\tau[t_2^\rho]$ the fact of $t_2^\rho$ being a subterm of $t_1^\tau$, and
-assume, that $\rho$ is unabiguously determined by $t_1$, $\tau$, and a position of $t_2$ 
+assume, that $\rho$ is unambiguously determined by $t_1$, $\tau$, and a position of $t_2$ 
 ``inside'' $t_1$.
 
 \begin{comment}
@@ -336,7 +336,7 @@ for these purposes
 \end{lstlisting}
 
 As expected, injection is total, while projection is partial. Using these functions and type-specific
-``\lstinline{map}'', which can be derived automaticlly using a number of existing frameworks for
+``\lstinline{map}'', which can be derived automatically using a number of existing frameworks for
 generic programming, one can easily provide injection and projection for user-defined datatypes. We
 consider user-defined list type as an example:
 
@@ -354,7 +354,7 @@ Here ``\lstinline{list}'' is a custom type for lists; note, that it made more
 polymorphic, than usual~--- we abstracted it from itself and made it non-recursive. Then
 we provided two specialized versions~--- ``\lstinline{glist}'' (``ground'' list), which 
 corresponds to regular, non-logic lists, and ``\lstinline{llist}'' (``logical'' list), which
-correcponds to logical lists with logical elements. Using a single type-specific function
+corresponds to logical lists with logical elements. Using a single type-specific function
 \lstinline[mathescape=true]{map$_{\mbox{\texttt{list}}}$}, we easily provided injection 
 (of type {\lstinline[mathescape=true]{$\alpha$ glist -> $\;\;\alpha$ llist}}) and
 projection (of type {\lstinline[mathescape=true]{$\alpha$ llist -> $\;\;\alpha$ glist}}).
