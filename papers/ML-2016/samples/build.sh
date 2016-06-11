@@ -1,0 +1,1 @@
+ocamlc -rectypes -o permsort -pp "camlp5o pa_minikanren.cmo pa_log.cmo pa_gt.cmo -L `camlp5 -where`" -I `ocamlfind -query typeutil` -I `ocamlfind -query GT` -I `ocamlfind -query MiniKanren` typeutil.cma GT.cma MiniKanren.cma permsort.ml
