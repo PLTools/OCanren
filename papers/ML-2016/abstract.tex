@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage[hyphens]{url}
 \usepackage[hidelinks]{hyperref}
+\usepackage{verbatim}
 
 \topmargin 2.0cm
 \setlength{\textheight}{25.3cm}
@@ -59,7 +60,7 @@ language=ocaml
 \small
 We present an implementation of relational programming language miniKanren as a set 
 of combinators and syntax extension for OCaml. The key feature of our approach is 
-\emph{polymorphic unification}, which can be used to unify structures of almost 
+\emph{polymorphic unification}, which can be used to unify data structures of almost 
 arbitrary types. In addition we provide a useful generic programming pattern to 
 systematically develop relational specifications in a typed manner, and address 
 the problem of relational and functional code integration.
@@ -71,18 +72,33 @@ the problem of relational and functional code integration.
 Relational programming~\cite{TRS} is an attractive technique, based on the idea 
 of constructing programs as relations.  As a result, relational programs can be
 ``queried'' in various ``directions'', making it possible, for example, to simulate
-reversed execution. Apart from being interesting from purely theoretical standpoint, 
+reversed execution. 
+
+\begin{comment}
+Apart from being interesting from purely theoretical standpoint, 
 this approach may have a practical value: some problems look much simpler, 
-if they are considered as queries to relational specification. There is a 
+if they are considered as queries to relational specification. 
+\end{comment}
+
+\begin{comment}
+There is a 
 number of appealing examples, confirming this observation: a type checker 
 for simply typed lambda calculus (and, at the same time, type inferencer and solver 
 for the inhabitation problem), an interpreter (capable of generating ``quines''~--- 
 programs, producing themselves as result)~\cite{Untagged}, list sorting (capable of 
 producing all permutations) etc. 
+\end{comment}
 
-Many logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
-or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}} to some extent
-can be considered as relational. We have chosen, however, miniKanren\footnote{\url{http://minikanren.org}} 
+\begin{comment}
+Many logic programming languages, such as Prolog, Mercury
+%\footnote{\url{https://mercurylang.org}}, 
+or Curry
+%\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}} 
+to some extent
+can be considered as relational.
+\end{comment}
+
+We have chosen miniKanren\footnote{\url{http://minikanren.org}} 
 as model language, because it was specifically designed as relational DSL, embedded in Scheme/Racket. 
 Being rather a minimalistic language, which can be implemented with just a few data structures and
 combinators miniKanren found its way in dozens of host languages, including Haskell, 
@@ -94,6 +110,7 @@ miniKanren implementation pays very little attention to what has a significant i
 ML or Haskell. In particular, one of cupstone constructs of miniKanren~--- unification~--- has to work for 
 different data structures, which may have types, different beyond parametricity.
 
+\begin{comment}
 There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
 provide unification for some concrete type, rich enough to represent any reasonable data structures.
 Some Haskell miniKanren libraries\footnote{\url{https://github.com/JaimieMurdock/HK}, \url{https://github.com/rntz/ukanren}}
@@ -116,6 +133,7 @@ for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in 
 type classes, and despite sometimes object-oriented layer of the language can be used to mimic
 desirable behaviour, the result as a rule is far from satisfactory. Existing proposals (for example, 
 module implicits~\cite{Implicits}) require patching the compiler, which we tend to avoid.
+\end{comment}
 
 We present an implementation of a set of relational combinators in OCaml, which, 
 technically speaking, corresponds to $\mu$Kanren~\cite{MicroKanren} with disequality 
@@ -124,32 +142,50 @@ added as well. The contribution of our work is as follows:
 
 \begin{enumerate}
 \item Our implementation is based on \emph{polymorphic unification}, which, like polymorphic comparison,
-can be used for almost arbitrary types. The implementation of polymorphic unification uses unsafe features and
+can be used for almost arbitrary types. 
+
+\begin{comment}
+The implementation of polymorphic unification uses unsafe features and
 relies on intrinsic knowledge of runtime representation of values; we show, however, that this does not
 compromise type safety. Practically, we applied purely \emph{ad hoc} approach since the features, 
 which would provide less \emph{ad hoc} solution are not yet integrated into the mainstream language.
+\end{comment}
 
 \item We describe a uniform and scalable pattern for using types for relational programming, which
-helps in converting typed data to- and from relational domain. With this pattern, only one
+helps in converting typed data to- and from relational domain. 
+
+\begin{comment}
+With this pattern, only one
 generic feature (``\lstinline{map/morphism/Functor}'') is needed, and thus virtually any generic 
 framework for OCaml can be used. Despite being rather a pragmatic observation, this pattern, as we
 believe, would lead to a more regular and easy to maintain relational specifications.
+\end{comment}
 
 \item We provide a simplified way to integrate relational and functional code. Our approach utilizes
 well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementation and makes it
 possible to hide refinement of answers phase from an end-user.
 \end{enumerate}
 
+The source code of our implementation is accessible from \url{https://github.com/dboulytchev/miniKanren-ocaml-typed}.
+Extended version of this abstract can be downloaded from \url{http://oops.math.spbu.ru/papers/mk-ocaml.pdf}.
+
 \section{Polymorphic Unification}
 \label{polyuni}
 
 We consider it rather natural to employ polymorphic unification in the
 language, already equipped with polymorphic comparison~--- a convenient, but
-somewhat disputable\footnote{See, for example, \url{https://blogs.janestreet.com/the-perils-of-polymorphic-compare}} 
-feature. Like polymorphic comparison, polymorphic unification performs traversal
+somewhat disputable
+%\footnote{See, for example, \url{https://blogs.janestreet.com/the-perils-of-polymorphic-compare}} 
+feature. 
+
+\begin{comment}
+Like polymorphic comparison, polymorphic unification performs traversal
 of values, exploiting intrinsic knowledge of their runtime representation. 
 The undeniable benefit of this solution is that in order to perform unification 
-for user types no ``boilerplate'' code is needed. On the other hand, all pitfalls of
+for user types no ``boilerplate'' code is needed. 
+\end{comment}
+\begin{comment}
+On the other hand, all pitfalls of
 polymorphic comparison are inherited as well; in particular, unification can loop 
 for cyclic data structures and does not work for functional values. Since we generally 
 do not expect any reasonable outcome in these cases, the only remaining problem is that
@@ -158,6 +194,7 @@ and avoiding them. Another drawback is that the implementation of polymorphic un
 relies on runtime representation of values and have to be fixed every time the representation changes. 
 Finally, as it written in unsafe manner using \lstinline{Obj} interface, it has to be
 carefully developed and tested.
+\end{comment}
 
 An important difference between polymorphic comparison and unification is that the former 
 only inspects its operands, while the results of unification are recorded in a substitution
@@ -173,15 +210,19 @@ Polymorphic unification is introduced via the following function:
 \end{lstlisting}
 
 \noindent where ``\lstinline[mathescape=true]{$\alpha$ logic}'' stands for the type $\alpha$, 
-injected into logic domain, ``\lstinline{subst}''~--- for the type of substitution. Unification can 
+injected into logic domain, ``\lstinline{subst}''~--- for the type of substitution. 
+
+\begin{comment}
+Unification can 
 fail (hence ``\lstinline{option}'' in the result type), is performed in the context of
 existing substitution (hence ``\lstinline{subst}'' in the third argument) and
 can be chained (hence ``\lstinline{option}'' in the third argument). Note, that the 
 type of substitution is not polymorphic, which means, that compiler competely looses the 
 track of types for values, stored in a substitution. These types are recovered later during
 refinement of answers.
+\end{comment}
 
-To justify the correctness of unification, we consider the set of typed terms, each of which
+To justify the correctness of unification, we consider a set of typed terms, each of which
 has one of two forms
 
 $$
@@ -194,10 +235,12 @@ We reflect by $t_1^\tau[t_2^\rho]$ the fact of $t_2^\rho$ being a subterm of $t_
 assume, that $\rho$ is unabiguously determined by $t_1$, $\tau$, and a position of $t_2$ 
 ``inside'' $t_1$.
 
+\begin{comment}
 Outside unification the compiler maintains typing, which means, that all 
 terms, subterms, and variables agree in their types in all contexts. However, as 
 our implementation resorts to unsafe features, we have to make this work for unification
 code on our own.
+\end{comment}
 
 We argue, that the following three invariants are maintained for any substitution $s$, involved 
 in unification:
@@ -215,6 +258,7 @@ it is follows, that this type is unique; note also, that all variables are creat
 types assigned outside unification, in a type-safe world).
 \end{enumerate}
 
+\begin{comment}
 The initial (empty) substitution trivially fulfills these invariants; hence, it is sufficient
 to show, that they are preserved by unification.
 
@@ -260,8 +304,9 @@ the pair $t_2^\prime$ and $t_2$.
 \item The previous paragraph justifies the base case for inductive proof on the number of
 recursive invocations of \lstinline{unify}.
 \end{enumerate}
+\end{comment}
 
-The function \lstinline{unify} is not directly accessible at the user level; it used
+Function \lstinline{unify} is not directly accessible at the user level; it used
 to implement both unification (``\lstinline{===}'') and disequality (``\lstinline{=/=}'') 
 goals. The implementation generally follows~\cite{CKanren}.
 
@@ -269,16 +314,20 @@ goals. The implementation generally follows~\cite{CKanren}.
 \label{logics}
 
 Unification, considered in Section~\ref{polyuni}, works for values of type \lstinline[mathescape=true]{$\alpha$ logic}. 
-Any value of this type can be seen as either value of type $\alpha$, or logical variable of type $\alpha$. The type 
+Any value of this type can be seen as either value of type $\alpha$, or logical variable of type $\alpha$. 
+
+\begin{comment}
+The type 
 itself in made abstract, but its values can be uncovered after refinement (see Section~\ref{refinement}).
+\end{comment}
 
 Free variables solely can be created using ``\lstinline{fresh}'' construct of miniKanren. Note, that 
 since the unification is implemented in untyped manner, we can not use simple pattern matching to
 distinguish logical variables from other logical values. A special attention was paid to implement
 variable recognition in constant time.
 
-Apart from variables, other logical values can be obtained by injecting; conversely, sometimes
-logical value can be projected to a regular one. We supply two functions\footnote{``\lstinline{inj}'' and ``\lstinline{prj}'' in concrete syntax.}
+Apart from variables, other logical values can be obtained by injection; conversely, sometimes
+a logical value can be projected to regular one. We supply two functions\footnote{``\lstinline{inj}'' and ``\lstinline{prj}'' in concrete syntax.}
 for these purposes
 
 \begin{lstlisting}[mathescape=true]
@@ -310,8 +359,8 @@ correcponds to logical lists with logical elements. Using a single type-specific
 (of type {\lstinline[mathescape=true]{$\alpha$ glist -> $\;\;\alpha$ llist}}) and
 projection (of type {\lstinline[mathescape=true]{$\alpha$ llist -> $\;\;\alpha$ glist}}).
 
-In context of these definitions, now we can implement relational list concatenation, 
-which is one of first-step examples of miniKanren programming:
+In context of these definitions, we can implement relational list concatenation, 
+which is often considered as one of first-step examples of miniKanren programming:
 
 \begin{lstlisting}[mathescape=true]
    let rec append$^o$ x y xy =
@@ -324,16 +373,18 @@ which is one of first-step examples of miniKanren programming:
      ]
 \end{lstlisting}
 
+\begin{comment}
 Note, than in the definition of \lstinline[mathescape=true]{append$^o$} we
 used only default injection (``$\uparrow$''). Customized version most likely would 
 appear in some top-level goal, for example:
 
 \begin{lstlisting}[mathescape=true]
    (fun q -> append$^o$ (inj_list [1; 2; 3]) 
-                    (inj_list [4, 5, 6]) 
+                    (inj_list [4; 5; 6]) 
                     q
    )
 \end{lstlisting}
+\end{comment}
 
 \section{Refinement and Top-Level Primitives}
 \label{refinement}
@@ -364,7 +415,10 @@ In addition to performing substitutions, \lstinline{refine} also \emph{reifies}
 disequality constrains. Reification attaches to each free variable in a refined
 term a list of \emph{refined} terms, describing disequality constraint for that
 free variable. Note, that disequality can be established only for equally typed
-terms, which justifies type-safety of reification. Note also, that additional care has 
+terms, which justifies type-safety of reification. 
+
+\begin{comment}
+Note also, that additional care has 
 to be taken to avoid infinite looping, since refinement and reification are
 mutually recursive, and refinement of a variable can be potentially invoked from 
 itself due to a chain of disequalify constraints.
@@ -380,12 +434,15 @@ function:
 Constructor \lstinline{`Var} corresponds to a free variable with unique
 integer identifier and a list of terms, representing all disequality constraints
 for this variable. These terms are refined as well.
+\end{comment}
 
+\begin{comment}
 We did not make \lstinline{refine} accessible for an end-user; instead we provided
 a set of top-level combinators, which should be used to surround relational code
 and perform refinement in a transparent manner. Note, that from pragmatic
 standpoint only variables, supplied as arguments for the top-level goal, have
 to be refined (the original miniKanren implementation follows the same convention).
+\end{comment}
 
 The toplevel primitive in our implementation is \lstinline{run}, which takes three
 arguments. The exact type of \lstinline{run} is rather complex and non-instructive, 
@@ -395,7 +452,7 @@ so we better describe the typical form of its application:
    run $\overline{n}$ (fun $l_1\dots l_n$ -> $\;\;G$) (fun $a_1\dots a_n$ -> $\;\;H$)
 \end{lstlisting}
 
-Here $\overline{n}$ stands for \emph{numeral}, which describes the number of
+Here $\overline{n}$ stands for a \emph{numeral}, which describes the number of
 parameters for two other arguments of \lstinline{run}, \mbox{$l_1\dots l_n$}~---
 free logical variables, $G$~--- a goal (which can make use of \mbox{$l_1\dots l_n$}), 
 \mbox{$a_1\dots a_n$}~--- refined answers for \mbox{$l_1\dots l_n$}, respectively, and, 
@@ -403,7 +460,7 @@ finally, $H$~--- a \emph{handler} (which can make use of \mbox{$a_1\dots a_n$}).
 \mbox{$l_1\dots l_n$} are inferred from $G$, and the types of \mbox{$a_1\dots a_n$} are
 inferred from types of \mbox{$l_1\dots l_n$}: if $l_i$ has type \lstinline[mathescape=true]{$t$ logic}, then
 $a_i$ has type \lstinline[mathescape=true]{$t$ logic stream}. In other words, user-defined handler
-takes streams of refined answers for all variables, supplied to the top-level goal. All streams $a_i$ contains
+takes streams of refined answers for all variables, supplied to the top-level goal. All streams $a_i$ contain
 coherent elements, so they all have the same length and $n$-th elements of all streams correspond 
 to the $n$-th answer, produced by the goal $G$.
 
@@ -426,6 +483,7 @@ omitted):
 Here \lstinline{take} is a function for streams, which returns specified number of
 theirs first items as regular lists.
 
+\begin{comment}
 \section{Conclusion}
 
 We presented strongly typed implementation of miniKanren for OCaml. Our implementation
@@ -439,6 +497,7 @@ The source code of our implementation is accessible from \url{https://github.com
 
 We also want to express our gratitude to William Byrd, who infected us with relational programming, for 
 the time he sacrificed to very instructive and clarifying conversations.
+\end{comment}
 
 \begin{thebibliography}{99}
 \bibitem{TRS}
@@ -459,9 +518,11 @@ William E. Byrd, Eric Holk, Daniel P. Friedman.
 miniKanren, Live and Untagged: Quine Generation via Relational Interpreters (Programming Pearl) //
 Proceedings of the 2012 Workshop on Scheme and Functional Programming (Scheme '12).
 
+\begin{comment}
 \bibitem{Implicits}
 Leo White, Fr\'ed\'eric Bour, Jeremy Yallop. 
 Modular Implicits // Workshop on ML, 2014, arXiv:1512.01438.
+\end{comment}
 
 \bibitem{Unparsing}
 Olivier Danvy.
@@ -471,6 +532,7 @@ Functional Unparsing // Journal of Functional Programming, Vol.~8, Issue~6, Nove
 Daniel Fridlender, Mia Indrika.
 Do we need dependent types? // Journal of Functional Programming, Vol.~10, Issue~4, July 2000.
 
+\begin{comment}
 \bibitem{DGP}
 Jeremy Gibbons. Datatype-generic Programming //
 Proceedings of the 2006 International Conference on Datatype-generic Programming.
@@ -478,13 +540,17 @@ Proceedings of the 2006 International Conference on Datatype-generic Programming
 \bibitem{Deriving}
 Jeremy Yallop. 
 Practical Generic Programming in OCaml // Proceedings of 2007 Workshop on ML.
+\end{comment}
 
+\begin{comment}
 \bibitem{InstantGenerics}
 Manuel M. T. Chakravarty, Gabriel C. Ditu, Roman Leshchinskiy. 
 Instant Generics: Fast and Easy. \url{http://www.cse.unsw.edu.au/~chak/papers/CDL09.html}, 2009.
 
 \bibitem{ALaCarte}
 Wouter Swierstra. Data Types \'a la Carte  // Journal of Functional Programming, Vol.~18, Issue~4, 2008.
+\end{comment}
+
 \end{thebibliography}
 
 \end{document}

@@ -59,7 +59,7 @@ language=ocaml
 \small
 We present an implementation of relational programming language miniKanren as a set 
 of combinators and syntax extension for OCaml. The key feature of our approach is 
-\emph{polymorphic unification}, which can be used to unify structures of almost 
+\emph{polymorphic unification}, which can be used to unify data structures of almost 
 arbitrary types. In addition we provide a useful generic programming pattern to 
 systematically develop relational specifications in a typed manner, and address 
 the problem of relational and functional code integration.
@@ -181,7 +181,7 @@ type of substitution is not polymorphic, which means, that compiler competely lo
 track of types for values, stored in a substitution. These types are recovered later during
 refinement of answers.
 
-To justify the correctness of unification, we consider the set of typed terms, each of which
+To justify the correctness of unification, we consider a set of typed terms, each of which
 has one of two forms
 
 $$
@@ -261,7 +261,7 @@ the pair $t_2^\prime$ and $t_2$.
 recursive invocations of \lstinline{unify}.
 \end{enumerate}
 
-The function \lstinline{unify} is not directly accessible at the user level; it used
+Function \lstinline{unify} is not directly accessible at the user level; it used
 to implement both unification (``\lstinline{===}'') and disequality (``\lstinline{=/=}'') 
 goals. The implementation generally follows~\cite{CKanren}.
 
@@ -330,7 +330,7 @@ appear in some top-level goal, for example:
 
 \begin{lstlisting}[mathescape=true]
    (fun q -> append$^o$ (inj_list [1; 2; 3]) 
-                    (inj_list [4, 5, 6]) 
+                    (inj_list [4; 5; 6]) 
                     q
    )
 \end{lstlisting}
