@@ -44,7 +44,7 @@ let pExpr i r = fresh (i') (pTop i i' r) (eof i')
 
 let show_token  = show(logic) (show token)
 let show_expr   = show(logic) (show expr)
-let show_stream = show(logic) (show llist (show token))
+let show_stream = show(List.logic) (show(logic) (show token))
 
 let _ =
   run show_expr   1 q (REPR (fun q -> pExpr (inj_list [Id]) q                  )) qh;

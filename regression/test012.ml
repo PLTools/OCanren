@@ -17,7 +17,7 @@ type typ = (string logic, typ logic) atyp
 let show_string    = show logic (show string)
 let rec show_typ t = show logic (show atyp show_string show_typ) t
 let rec show_lam l = show logic (show alam show_string show_lam) l
-let show_env       = show logic (show llist (show pair show_string show_typ))
+let show_env       = show(List.logic) (show(logic) (show pair show_string show_typ))
 
 let rec lookupo a g t =
   fresh (a' t' tl) 

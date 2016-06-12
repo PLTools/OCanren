@@ -8,7 +8,7 @@ let show_t         = show(logic) (show t)
 let show_int       = show(logic) (show int)
 let show_list      = show(logic) (show list show_int)
 let show_list_list = show(logic) (show list show_list)
-let show_llist     = show(logic) (show llist (show int))
+let show_llist     = show(List.logic) (show(logic) (show int))
 
 let _ = 
   run show_t         (-1) q (REPR (fun q -> (fresh(x) (x =/= !(A x)))                                                                 )) qh;

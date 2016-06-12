@@ -82,21 +82,57 @@ val prj : 'a logic -> 'a
     passed to [k] as its argument *)
 val prj_k : ('a logic -> 'a) -> 'a logic -> 'a
 
+(** Abstract list type *)
+@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
+
 (** {3 Relational list manipulation} *)
 module List :
   sig
 
+    (** {3 Standard list definitions} *)
+    include module type of struct include List end
+
     (** Type synonym to avoid toplevel [logic] from being hidden *)
     type 'a logic' = 'a logic 
 
-    (** Abstract list type *)
-    @type ('a, 'l) t = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
+    (** Synonym for abstract list type *)
+    type ('a, 'l) t = ('a, 'l) llist
 
     (** Ground lists (isomorphic to regular ones) *)
     type 'a ground = ('a, 'a ground) t
 
+    (** GT-compatible typeinfo for ['a ground] *)
+    val ground :
+      (unit,
+       < compare : ('a -> 'a -> GT.comparison) -> 'a ground -> 'a ground -> GT.comparison;
+         eq      : ('a -> 'a -> bool) -> 'a ground -> 'a ground -> bool;
+         foldl   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
+         foldr   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
+         gmap    : ('a -> 'b) -> 'a ground -> 'b ground;
+         html    : ('a -> HTMLView.viewer) -> 'a ground -> HTMLView.viewer;
+         show    : ('a -> string) -> 'a ground -> string >)
+      GT.t
+
+    (** [of_list l] makes ground list from a regular one *)
+    val of_list : 'a list -> 'a ground
+
+    (** [to_list l] make regular list from a ground one *)
+    val to_list : 'a ground -> 'a list
+   
     (** Logic lists (with the tails as logic lists) *)
     type 'a logic  = ('a, 'a logic)  t logic'
+
+    (** GT-compatible typeinfo for ['a logic] *)
+    val logic :
+      (unit,
+       < compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison; 
+         eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool; 
+         foldr   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
+         foldl   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b; 
+         gmap    : ('a -> 'b) -> 'a logic -> 'b logic;
+         html    : ('a -> HTMLView.viewer) -> 'a logic -> HTMLView.viewer;
+         show    : ('a -> string) -> 'a logic -> GT.string >)
+      GT.t 
 
     (** Infix synonym for [Cons] *)
     val (%) : 'a -> 'a logic -> 'a logic
@@ -119,6 +155,9 @@ module List :
   end
 
 (** {3 Some list operators exported to the toplevel} *)
+
+(** [inj_list l] is a shortcut for [List.inj inj @@ List.of_list l] *)
+val inj_list : 'a list -> 'a logic List.logic
 
 (** Infix synonym for [Cons] *)
 val (%) : 'a -> 'a List.logic -> 'a List.logic

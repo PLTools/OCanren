@@ -31,10 +31,10 @@ let infero expr typ =
   in
   infero !Nil expr typ      
 
-let show_env    = show logic (show llist (show pair (show logic (show string)) (show logic (show typ))))
-let show_typ    = show logic (show typ)
-let show_lam    = show logic (show lam)
-let show_string = show logic (show string)
+let show_typ    = show(logic) (show typ)
+let show_lam    = show(logic) (show lam)
+let show_string = show(logic) (show string)
+let show_env    = show(List.logic) (show(logic) (show(pair) show_string show_typ))
 
 let _ =
   run show_typ    1 q (REPR (fun q -> lookupo !"x" (inj_list []) q                                        )) qh;
