@@ -80,9 +80,6 @@ let logic = {logic with
 let destruct = function
 | Var (_, i, c) -> `Var (i, c)
 | Value x       -> `Value x
-;;
-
-@type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, gmap
 
 exception Not_a_value 
 
@@ -94,51 +91,100 @@ let prj x = prj_k (fun _ -> raise Not_a_value) x
 
 let (!?) = prj
 
-let (%)  x y = !!(Cons (x, y))
-let (%<) x y = !!(Cons (x, !!(Cons (y, !!Nil))))
-let (!<) x   = !!(Cons (x, !!Nil))
+module TopList = List
 
-let rec inj_list = function
-| [] -> !!Nil
-| x::xs -> !!x % (inj_list xs)
+module List =
+  struct
+ 
+    @type ('a, 'l) t = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
+
+    type 'a logic' = 'a logic
+
+    let logic' = logic
+
+    type 'a ground = ('a, 'a ground) t
+    type 'a logic  = ('a, 'a logic)  t logic'
+
+    let (%)  x y = !!(Cons (x, y))
+    let (%<) x y = !!(Cons (x, !!(Cons (y, !!Nil))))
+    let (!<) x   = !!(Cons (x, !!Nil))
+
+    let rec inj fa l = !! (GT.gmap(t) fa (inj fa) l)
+    
+    let prj_k fa k l =
+      let rec inner l =
+        GT.gmap(t) fa inner (prj_k k l)
+      in
+      inner l
+
+    let prj fa l = prj_k fa (fun _ -> raise Not_a_value) l
+
+    let ground = {
+      GT.gcata = ();
+      GT.plugins = 
+        object(this) 
+          method html    fa l = GT.html   (t) fa (this#html    fa) l
+          method eq      fa l = GT.eq     (t) fa (this#eq      fa) l
+          method compare fa l = GT.compare(t) fa (this#compare fa) l
+          method foldr   fa l = GT.foldr  (t) fa (this#foldr   fa) l
+          method foldl   fa l = GT.foldl  (t) fa (this#foldl   fa) l
+          method gmap    fa l = GT.gmap   (t) fa (this#gmap    fa) l
+          method show    fa l = "[" ^
+            (GT.transform(t) 
+               (GT.lift fa)
+               (GT.lift (this#show fa))
+               (object inherit ['a,'a ground] @t[show]
+                  method c_Nil   _ _      = ""
+                  method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Nil -> "" | _ -> "; " ^ xs.GT.fx ())
+                end) 
+               () 
+               l
+            ) ^ "]"
+        end
+    }
+
+    let logic = {
+      GT.gcata = ();
+      GT.plugins = 
+        object(this) 
+          method html    fa l = GT.html   (t) fa (this#html    fa) l
+          method eq      fa l = GT.eq     (t) fa (this#eq      fa) l
+          method compare fa l = GT.compare(t) fa (this#compare fa) l
+          method foldr   fa l = GT.foldr  (t) fa (this#foldr   fa) l
+          method foldl   fa l = GT.foldl  (t) fa (this#foldl   fa) l
+          method gmap    fa l = GT.gmap   (t) fa (this#gmap    fa) l
+          method show    fa l = 
+            GT.show(logic')
+              (fun l -> "[" ^            
+                 (GT.transform(t) 
+                    (GT.lift fa)
+                    (GT.lift (this#show fa))
+                    (object inherit ['a,'a logic] @t[show]
+                       method c_Nil   _ _      = ""
+                       method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Value Nil -> "" | _ -> "; " ^ xs.GT.fx ())
+                     end) 
+                    () 
+                    l
+                 ) ^ "]"
+              ) 
+              l
+        end
+    }
+
+  end
+
+let (%)  = List.(%)
+let (%<) = List.(%<)
+let (!<) = List.(!<)
 
 exception Occurs_check
-
-let rec prj_list_k k = function
-| Value Nil -> []
-| Value (Cons (Value x, xs)) -> x :: prj_list_k k xs
-| z -> k z
-
-let prj_list l = prj_list_k (fun _ -> raise Not_a_value) l
-
-let llist = {
-  llist with plugins = 
-    object 
-      method html    = llist.plugins#html
-      method eq      = llist.plugins#eq
-      method compare = llist.plugins#compare
-      method foldr   = llist.plugins#foldr
-      method foldl   = llist.plugins#foldl
-      method gmap    = llist.plugins#gmap    
-      method show fa x = "[" ^
-        (GT.transform(llist) 
-           (GT.lift fa) 
-           (object inherit ['a] @llist[show]              
-              method c_Nil   _ _      = ""
-              method c_Cons  i s x xs = GT.show(logic) fa x ^ (match xs with Value Nil -> "" | _ -> "; " ^ GT.show(logic) (s.GT.f i) xs)
-            end) 
-           () 
-           x
-        ) ^ "]"
-    end
-}
 
 type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
 let rec wrap (x : Obj.t) =
   Obj.(
     let is_valid_tag =
-      List.fold_left
+      TopList.fold_left
       (fun f t tag -> tag <> t && f tag)
       (fun _ -> true)
       [lazy_tag   ; closure_tag  ; object_tag  ; infix_tag ;
@@ -234,7 +280,7 @@ module Subst :
 
     let empty = M.empty
 
-    let of_list l = List.fold_left (fun s (i, v, t) -> M.add i (v, t) s) empty l
+    let of_list l = TopList.fold_left (fun s (i, v, t) -> M.add i (v, t) s) empty l
 
     let split s = M.fold (fun _ (x, t) (xs, ts) -> x::xs, t::ts) s ([], []) 
 
@@ -325,7 +371,7 @@ let (===) x y (env, subst, constr) =
         try
           (* TODO: only apply constraints with the relevant vars *)
           let constr' =
-            List.fold_left (fun css' cs -> 
+            TopList.fold_left (fun css' cs -> 
               let x, t  = Subst.split cs in
 	      try
                 let p, s' = Subst.unify env (!!!x) (!!!t) subst' in
@@ -348,7 +394,7 @@ let (===) x y (env, subst, constr) =
 let (=/=) x y ((env, subst, constr) as st) =
   let normalize_store prefix constr =
     let subst  = Subst.of_list prefix in
-    let prefix = List.split (List.map (fun (_, x, t) -> (x, t)) prefix) in
+    let prefix = TopList.split (TopList.map (fun (_, x, t) -> (x, t)) prefix) in
     let subsumes subst (vs, ts) = 
       try 
         match Subst.unify env !!!vs !!!ts (Some subst) with
@@ -440,7 +486,7 @@ let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x 
         (match var with
          | Var (a, i, _) -> 
             let cs = 
-	      List.fold_left 
+	      TopList.fold_left 
 		(fun acc s -> 
 		   match walk' false env (!!!var) s with
 		   | Var (_, j, _) when i = j -> acc

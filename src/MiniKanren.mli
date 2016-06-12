@@ -77,31 +77,59 @@ val (!?) : 'a logic -> 'a
 (** A synonym for [(!?)] *)
 val prj : 'a logic -> 'a
 
-(** Projection with continuation; [prj_k k l] calls continuation [k],
+(** Projection with failure continuation; [prj_k k l] calls continuation [k],
     when a free variable is encountered inside [l]; this variable is
     passed to [k] as its argument *)
 val prj_k : ('a logic -> 'a) -> 'a logic -> 'a
 
-(** Type of logic lists *)
-@type 'a llist = Nil | Cons of 'a logic * 'a llist logic with show, html, eq, compare, foldl, foldr, gmap
+(** {3 Relational list manipulation} *)
+module List :
+  sig
+
+    (** Type synonym to avoid toplevel [logic] from being hidden *)
+    type 'a logic' = 'a logic 
+
+    (** Abstract list type *)
+    @type ('a, 'l) t = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
+
+    (** Ground lists (isomorphic to regular ones) *)
+    type 'a ground = ('a, 'a ground) t
+
+    (** Logic lists (with the tails as logic lists) *)
+    type 'a logic  = ('a, 'a logic)  t logic'
+
+    (** Infix synonym for [Cons] *)
+    val (%) : 'a -> 'a logic -> 'a logic
+
+    (** [x %< y] is a synonym for [Cons (x, !(Cons (y, !Nil)))] *)
+    val (%<) : 'a -> 'a -> 'a logic
+
+    (** [!< x] is a synonym for [Cons (x, !Nil)] *)
+    val (!<) : 'a -> 'a logic
+
+    (** List injection *)
+    val inj : ('a -> 'b) -> 'a ground -> 'b logic
+
+    (** List projection with failure continuation *)
+    val prj_k : ('a -> 'b) -> ('a logic -> ('a, 'a logic) t) ->  'a logic -> 'b ground
+
+    (** List projection with default continuation *)
+    val prj : ('a -> 'b) -> 'a logic -> 'b ground
+
+  end
+
+(** {3 Some list operators exported to the toplevel} *)
 
 (** Infix synonym for [Cons] *)
-val (%) : 'a logic -> 'a llist logic -> 'a llist logic
+val (%) : 'a -> 'a List.logic -> 'a List.logic
 
 (** [x %< y] is a synonym for [Cons (x, !(Cons (y, !Nil)))] *)
-val (%<) : 'a logic -> 'a logic -> 'a llist logic
+val (%<) : 'a -> 'a -> 'a List.logic
 
 (** [!< x] is a synonym for [Cons (x, !Nil)] *)
-val (!<) : 'a logic -> 'a llist logic
+val (!<) : 'a -> 'a List.logic
 
-(** Deep injection for lists *)
-val inj_list : 'a list -> 'a llist logic
-
-(** Deep projection for logic lists *)
-val prj_list : 'a llist logic -> 'a list
-
-(** Deep projection with continuation for logic lists *)
-val prj_list_k : ('a llist logic -> 'a list) -> 'a llist logic -> 'a list
+(** {3 Some abstract data structures} *)
 
 (** State (needed to perform calculations) *)
 module State :
