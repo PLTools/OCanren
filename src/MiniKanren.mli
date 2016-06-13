@@ -1,7 +1,8 @@
 (*
- * MiniKanren: miniKanren primitives implementation.
+ * MiniKanren: miniKanren implementation.
  * Copyright (C) 2015-2016
- * Dmitri Boulytchev, Dmitry Kosarev, St.Petersburg State University
+ * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, 
+ * St.Petersburg State University, JetBrains Research
  * 
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -39,6 +40,21 @@ module Stream :
     val map : ('a -> 'b) -> 'a t -> 'b t
 
   end
+
+(** {3 Some abstract data structures} *)
+
+(** State (needed to perform calculations) *)
+module State :
+  sig
+    (** State type *)
+    type t
+
+    (** Printing helper *)
+    val show : t -> string
+  end
+
+(** Goal converts a state into lazy stream of states *)
+type goal = State.t -> State.t Stream.t
 
 (** A type of abstract logic values *)
 type 'a logic
@@ -85,14 +101,135 @@ val prj_k : ('a logic -> 'a) -> 'a logic -> 'a
 (** Abstract list type *)
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
 
-(** {3 Relational list manipulation} *)
+(** Abstract nat type *)
+@type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
+
+(** {3 Relational bools} *)
+module Bool :
+  sig
+
+    (** Type synonym to prevent toplevel [logic] from being hidden *)
+    type 'a logic' = 'a logic 
+
+    (** Ground boolean (the regular one) *)
+    type ground = bool
+
+    (** GT-compatible typeinfo for [ground] *)
+    val ground :
+      (unit,
+       < compare : ground -> ground -> GT.comparison;
+         eq      : ground -> ground -> bool;
+         foldl   : 'a -> ground -> 'a;
+         foldr   : 'a -> ground -> 'a;
+         gmap    : ground -> ground;
+         html    : ground -> HTMLView.viewer;
+         show    : ground -> string >)
+      GT.t 
+
+    (** Logic boolean *)
+    type logic = bool logic'
+
+    (** GT-compatible typeinfo for [logic] *)
+    val logic :
+      (unit,
+       < compare : logic -> logic -> GT.comparison;
+         eq      : logic -> logic -> bool;
+         foldl   : 'a -> logic -> 'a;
+         foldr   : 'a -> logic -> 'a;
+         gmap    : logic -> logic;
+         html    : logic -> HTMLView.viewer;
+         show    : logic -> string >)
+      GT.t
+
+    (** Sheffer stroke *)
+    val (|^) : logic -> logic -> logic -> goal
+
+    (** Negation *)
+    val noto : logic -> logic -> goal
+
+    (** Disjunction *)
+    val oro : logic -> logic -> logic -> goal 
+
+    (** Conjunction *)
+    val ando : logic -> logic -> logic -> goal
+
+  end
+
+(** {3 Relational nats} *)
+module Nat :
+  sig
+
+    (** Type synonym to prevent toplevel [logic] from being hidden *)
+    type 'a logic' = 'a logic 
+
+    (** Synonym for abstract nat type *)
+    type 'a t = 'a lnat
+
+    (** Ground nat are ismorphic for regular one *)
+    type ground = ground t
+
+    (** GT-compatible typeinfo for [ground] *)
+    val ground :
+      (unit,
+       < compare : ground -> ground -> GT.comparison;
+         eq      : ground -> ground -> bool;
+         foldl   : 'a -> ground -> 'a;
+         foldr   : 'a -> ground -> 'a;
+         gmap    : ground -> ground;
+         html    : ground -> HTMLView.viewer;
+         show    : ground -> string >)
+      GT.t
+
+    (** Logic nat *)
+    type logic = logic t logic'
+
+    (** GT-compatible typeinfo for [logic] *)
+    val logic :
+      (unit,
+       < compare : logic -> logic -> GT.comparison;
+         eq      : logic -> logic -> bool;
+         foldl   : 'a -> logic -> 'a;
+         foldr   : 'a -> logic -> 'a;
+         gmap    : logic -> logic;
+         html    : logic -> HTMLView.viewer;
+         show    : logic -> string >)
+      GT.t
+
+    (** [of_int n] converts integer [n] into [ground]; negtive
+        integers become [O] *)
+    val of_int : int -> ground
+
+    (** [to_int g] converts ground [n] into integer *)
+    val to_int : ground -> int
+    
+    (** [inj n] converts ground nat [n] into logic one *)
+    val inj : ground -> logic
+
+    (** Projection with failure continuation *)
+    val prj_k : (logic -> logic t) -> logic -> ground
+
+    (** Projection with default continuation *)
+    val prj : logic -> ground
+
+    (** Relational addition *)
+    val addo : logic -> logic -> logic -> goal 
+
+    (** Relational multiplication *)
+    val mulo : logic -> logic -> logic -> goal 
+
+  end
+
+(** [inj_nat n] is a deforested synonym for [Nat.inj @@ Nat.of_int n] *)
+val inj_nat : int -> Nat.logic
+
+(** {3 Relational lists} *)
 module List :
   sig
 
     (** {3 Standard list definitions} *)
     include module type of struct include List end
 
-    (** Type synonym to avoid toplevel [logic] from being hidden *)
+    (** Type synonym to prevent toplevel [logic] from being hidden *)
     type 'a logic' = 'a logic 
 
     (** Synonym for abstract list type *)
@@ -134,15 +271,6 @@ module List :
          show    : ('a -> string) -> 'a logic -> GT.string >)
       GT.t 
 
-    (** Infix synonym for [Cons] *)
-    val (%) : 'a -> 'a logic -> 'a logic
-
-    (** [x %< y] is a synonym for [Cons (x, !(Cons (y, !Nil)))] *)
-    val (%<) : 'a -> 'a -> 'a logic
-
-    (** [!< x] is a synonym for [Cons (x, !Nil)] *)
-    val (!<) : 'a -> 'a logic
-
     (** List injection *)
     val inj : ('a -> 'b) -> 'a ground -> 'b logic
 
@@ -152,11 +280,23 @@ module List :
     (** List projection with default continuation *)
     val prj : ('a -> 'b) -> 'a logic -> 'b ground
 
+    (** Relational foldr *)
+    val foldro : ('a logic' -> 'b logic' -> 'b logic' -> goal) -> 'b logic' -> 'a logic' logic -> 'b logic' ->  goal
+
+    (** Relational map *)
+    val mapo : ('a logic' -> 'b logic' -> goal) -> 'a logic' logic ->'b logic' logic -> goal
+
+    (** Relational filter *)
+    val filtero : ('a logic' -> Bool.logic -> goal) -> 'a logic' logic ->'a logic' logic -> goal
+
+    (** Relational lookup *)
+    val lookupo : ('a logic' -> Bool.logic -> goal) ->  'a logic' logic -> 'a logic' option logic' -> goal
+
   end
 
 (** {3 Some list operators exported to the toplevel} *)
 
-(** [inj_list l] is a shortcut for [List.inj inj @@ List.of_list l] *)
+(** [inj_list l] is a deforested synonym for [List.inj inj @@ List.of_list l] *)
 val inj_list : 'a list -> 'a logic List.logic
 
 (** Infix synonym for [Cons] *)
@@ -167,21 +307,6 @@ val (%<) : 'a -> 'a -> 'a List.logic
 
 (** [!< x] is a synonym for [Cons (x, !Nil)] *)
 val (!<) : 'a -> 'a List.logic
-
-(** {3 Some abstract data structures} *)
-
-(** State (needed to perform calculations) *)
-module State :
-  sig
-    (** State type *)
-    type t
-
-    (** Printing helper *)
-    val show : t -> string
-  end
-
-(** Goal converts a state into lazy stream of states *)
-type goal = State.t -> State.t Stream.t
 
 (** {2 miniKanren basic primitives} *)
 

@@ -1,3 +1,21 @@
+(*
+ * MiniKanren: miniKanren implementation.
+ * Copyright (C) 2015-2016
+ * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, 
+ * St.Petersburg State University, JetBrains Research
+ * 
+ * This software is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License version 2, as published by the Free Software Foundation.
+ * 
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * 
+ * See the GNU Library General Public License version 2 for more details
+ * (enclosed in the file COPYING).
+ *)
+
 module Stream =
   struct
 
@@ -91,106 +109,6 @@ let prj x = prj_k (fun _ -> raise Not_a_value) x
 
 let (!?) = prj
 
-module TopList = List
-
-@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
-
-module List =
-  struct
-
-    include List
-
-    type 'a logic' = 'a logic
-
-    let logic' = logic
-
-    type ('a, 'l) t = ('a, 'l) llist
-
-    type 'a ground = ('a, 'a ground) t
-    type 'a logic  = ('a, 'a logic)  t logic'
-
-    let rec of_list = function [] -> Nil | x::xs -> Cons (x, of_list xs)
-    let rec to_list = function Nil -> [] | Cons (x, xs) -> x::to_list xs
-
-    let (%)  x y = !!(Cons (x, y))
-    let (%<) x y = !!(Cons (x, !!(Cons (y, !!Nil))))
-    let (!<) x   = !!(Cons (x, !!Nil))
-
-    let rec inj fa l = !! (GT.gmap(llist) fa (inj fa) l)
-    
-    let prj_k fa k l =
-      let rec inner l =
-        GT.gmap(llist) fa inner (prj_k k l)
-      in
-      inner l
-
-    let prj fa l = prj_k fa (fun _ -> raise Not_a_value) l
-
-    let ground = {
-      GT.gcata = ();
-      GT.plugins = 
-        object(this) 
-          method html    fa l = GT.html   (llist) fa (this#html    fa) l
-          method eq      fa l = GT.eq     (llist) fa (this#eq      fa) l
-          method compare fa l = GT.compare(llist) fa (this#compare fa) l
-          method foldr   fa l = GT.foldr  (llist) fa (this#foldr   fa) l
-          method foldl   fa l = GT.foldl  (llist) fa (this#foldl   fa) l
-          method gmap    fa l = GT.gmap   (llist) fa (this#gmap    fa) l
-          method show    fa l = "[" ^
-	    let rec inner l =
-              (GT.transform(llist) 
-                 (GT.lift fa)
-                 (GT.lift inner)
-                 (object inherit ['a,'a ground] @llist[show]
-                    method c_Nil   _ _      = ""
-                    method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Nil -> "" | _ -> "; " ^ xs.GT.fx ())
-                  end) 
-                 () 
-                 l
-              ) 
-            in inner l ^ "]"
-        end
-    }
-
-    let logic = {
-      GT.gcata = ();
-      GT.plugins = 
-        object(this) 
-          method html    fa l   = GT.html   (logic') (GT.html   (llist) fa (this#html    fa)) l
-          method eq      fa a b = GT.eq     (logic') (GT.eq     (llist) fa (this#eq      fa)) a b
-          method compare fa a b = GT.compare(logic') (GT.compare(llist) fa (this#compare fa)) a b
-          method foldr   fa a l = GT.foldr  (logic') (GT.foldr  (llist) fa (this#foldr   fa)) a l 
-          method foldl   fa a l = GT.foldl  (logic') (GT.foldl  (llist) fa (this#foldl   fa)) a l 
-          method gmap    fa l   = GT.gmap   (logic') (GT.gmap   (llist) fa (this#gmap    fa)) l 
-          method show    fa l = 
-            GT.show(logic')
-              (fun l -> "[" ^            
-                 let rec inner l =
-                   (GT.transform(llist) 
-                      (GT.lift fa)
-                      (GT.lift (GT.show(logic) inner))
-                      (object inherit ['a,'a logic] @llist[show]
-                         method c_Nil   _ _      = ""
-                         method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Value Nil -> "" | _ -> "; " ^ xs.GT.fx ())
-                       end) 
-                      () 
-                      l
-                   ) 
-		 in inner l ^ "]"
-              ) 
-              l
-        end
-    }
-
-  end
-
-let inj_list l = List.inj inj @@ List.of_list l
-
-
-let (%)  = List.(%)
-let (%<) = List.(%<)
-let (!<) = List.(!<)
-
 exception Occurs_check
 
 type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
@@ -198,7 +116,7 @@ type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 let rec wrap (x : Obj.t) =
   Obj.(
     let is_valid_tag =
-      TopList.fold_left
+      List.fold_left
       (fun f t tag -> tag <> t && f tag)
       (fun _ -> true)
       [lazy_tag   ; closure_tag  ; object_tag  ; infix_tag ;
@@ -227,7 +145,7 @@ let generic_show x =
   let rec inner o =
     match wrap o with
     | Invalid n             -> Buffer.add_string b (Printf.sprintf "<invalid %d>" n)
-    | Unboxed n when !!!n=0  -> Buffer.add_string b "[]"
+    | Unboxed n when !!!n=0 -> Buffer.add_string b "[]"
     | Unboxed n             -> Buffer.add_string b (Printf.sprintf "int<%d>" (!!!n))
     | Boxed (t,l,f) when t=0 && l=1 && (match wrap (f 0) with Unboxed i when !!!i >=10 -> true | _ -> false) ->
        Printf.bprintf b "var%d" (match wrap (f 0) with Unboxed i -> !!!i | _ -> failwith "shit")
@@ -294,7 +212,7 @@ module Subst :
 
     let empty = M.empty
 
-    let of_list l = TopList.fold_left (fun s (i, v, t) -> M.add i (v, t) s) empty l
+    let of_list l = List.fold_left (fun s (i, v, t) -> M.add i (v, t) s) empty l
 
     let split s = M.fold (fun _ (x, t) (xs, ts) -> x::xs, t::ts) s ([], []) 
 
@@ -385,7 +303,7 @@ let (===) x y (env, subst, constr) =
         try
           (* TODO: only apply constraints with the relevant vars *)
           let constr' =
-            TopList.fold_left (fun css' cs -> 
+            List.fold_left (fun css' cs -> 
               let x, t  = Subst.split cs in
 	      try
                 let p, s' = Subst.unify env (!!!x) (!!!t) subst' in
@@ -408,7 +326,7 @@ let (===) x y (env, subst, constr) =
 let (=/=) x y ((env, subst, constr) as st) =
   let normalize_store prefix constr =
     let subst  = Subst.of_list prefix in
-    let prefix = TopList.split (TopList.map (fun (_, x, t) -> (x, t)) prefix) in
+    let prefix = List.split (List.map (fun (_, x, t) -> (x, t)) prefix) in
     let subsumes subst (vs, ts) = 
       try 
         match Subst.unify env !!!vs !!!ts (Some subst) with
@@ -476,6 +394,324 @@ module Fresh =
 
   end
 
+@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
+@type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
+
+module Bool =
+  struct
+
+    type 'a logic' = 'a logic 
+    let logic' = logic
+
+    type ground = bool
+
+    let ground = {
+      GT.gcata = ();
+      GT.plugins = 
+        object(this) 
+          method html    n   = GT.html   (GT.bool) n
+          method eq      n m = GT.eq     (GT.bool) n m
+          method compare n m = GT.compare(GT.bool) n m
+          method foldr   n   = GT.foldr  (GT.bool) n
+          method foldl   n   = GT.foldl  (GT.bool) n
+          method gmap    n   = GT.gmap   (GT.bool) n
+          method show    n   = GT.show   (GT.bool) n
+        end
+    }
+
+    type logic = bool logic'
+
+    let logic = {
+      GT.gcata = ();
+      GT.plugins = 
+        object(this) 
+          method html    n   = GT.html   (logic') (GT.html   (ground)) n
+          method eq      n m = GT.eq     (logic') (GT.eq     (ground)) n m
+          method compare n m = GT.compare(logic') (GT.compare(ground)) n m
+          method foldr   a n = GT.foldr  (logic') (GT.foldr  (ground)) a n
+          method foldl   a n = GT.foldl  (logic') (GT.foldl  (ground)) a n
+          method gmap    n   = GT.gmap   (logic') (GT.gmap   (ground)) n
+          method show    n   = GT.show   (logic') (GT.show   (ground)) n
+        end
+    }
+
+    let (!) = (!!)
+
+    let (|^) a b c =
+      conde [
+        (a === !false) &&& (b === !false) &&& (c === !true);
+        (a === !false) &&& (b === !true)  &&& (c === !true);
+        (a === !true)  &&& (b === !false) &&& (c === !true);
+        (a === !true)  &&& (b === !true)  &&& (c === !false);
+      ]
+
+    let noto a na = (a |^ a) na
+
+    let oro a b c = 
+      Fresh.two (fun aa bb ->
+        ((a  |^ a) aa) &&&
+        ((b  |^ b) bb) &&&
+        ((aa |^ bb) c)
+      )
+
+    let ando a b c = 
+      Fresh.one (fun ab ->
+        ((a  |^ b) ab) &&&
+        ((ab |^ ab) c)
+      )
+
+  end
+
+module Nat =
+  struct
+
+    type 'a logic' = 'a logic
+    let logic' = logic
+
+    type 'a t = 'a lnat
+
+    type ground = ground t
+
+    let ground = {
+      GT.gcata = ();
+      GT.plugins = 
+        object(this) 
+          method html    n = GT.html   (lnat) this#html    n
+          method eq      n = GT.eq     (lnat) this#eq      n
+          method compare n = GT.compare(lnat) this#compare n
+          method foldr   n = GT.foldr  (lnat) this#foldr   n
+          method foldl   n = GT.foldl  (lnat) this#foldl   n
+          method gmap    n = GT.gmap   (lnat) this#gmap    n
+          method show    n = GT.show   (lnat) this#show    n
+        end
+    }
+
+    type logic  = logic t logic'
+
+    let logic = {
+      GT.gcata = ();
+      GT.plugins = 
+        object(this) 
+          method html    n   = GT.html   (logic') (GT.html   (lnat) this#html   ) n
+          method eq      n m = GT.eq     (logic') (GT.eq     (lnat) this#eq     ) n m
+          method compare n m = GT.compare(logic') (GT.compare(lnat) this#compare) n m
+          method foldr   a n = GT.foldr  (logic') (GT.foldr  (lnat) this#foldr  ) a n
+          method foldl   a n = GT.foldl  (logic') (GT.foldl  (lnat) this#foldl  ) a n
+          method gmap    n   = GT.gmap   (logic') (GT.gmap   (lnat) this#gmap   ) n
+          method show    n   = GT.show   (logic') (GT.show   (lnat) this#show   ) n
+        end
+    }
+
+    let rec of_int n = if n <= 0 then O else S (of_int (n-1))
+    let rec to_int   = function O -> 0 | S n -> 1 + to_int n
+
+    let (!) = (!!)
+    
+    let rec inj n = ! (GT.gmap(lnat) inj n)
+
+    let prj_k (k : logic -> logic t) (n : logic) =
+      let rec inner n =
+        GT.gmap(lnat) inner (prj_k k n)
+      in
+      inner n
+
+    let prj n = prj_k (fun _ -> raise Not_a_value) n
+
+    let rec addo x y z =
+      conde [
+        (x === !O) &&& (z === y);
+        Fresh.two (fun x' z' ->
+           (x === !(S x')) &&&
+           (z === !(S z')) &&&
+           (addo x' y z')
+        )
+      ]
+
+    let rec mulo x y z =
+      conde [
+        (x === !O) &&& (z === !O);
+        Fresh.two (fun x' z' ->
+          (x === !(S x')) &&&
+          (addo y z' z) &&&
+          (mulo x' y z')
+        )
+      ]
+
+  end
+
+let rec inj_nat n = 
+  if n <= 0 then inj O
+  else inj (S (inj_nat @@ n-1))
+
+module List =
+  struct
+
+    include List
+
+    type 'a logic' = 'a logic
+
+    let logic' = logic
+
+    type ('a, 'l) t = ('a, 'l) llist
+
+    type 'a ground = ('a, 'a ground) t
+    type 'a logic  = ('a, 'a logic)  t logic'
+
+    let rec of_list = function [] -> Nil | x::xs -> Cons (x, of_list xs)
+    let rec to_list = function Nil -> [] | Cons (x, xs) -> x::to_list xs
+
+    let (%)  x y = !!(Cons (x, y))
+    let (%<) x y = !!(Cons (x, !!(Cons (y, !!Nil))))
+    let (!<) x   = !!(Cons (x, !!Nil))
+
+    let rec inj fa l = !! (GT.gmap(llist) fa (inj fa) l)
+    
+    let prj_k fa k l =
+      let rec inner l =
+        GT.gmap(llist) fa inner (prj_k k l)
+      in
+      inner l
+
+    let prj fa l = prj_k fa (fun _ -> raise Not_a_value) l
+
+    let ground = {
+      GT.gcata = ();
+      GT.plugins = 
+        object(this) 
+          method html    fa l = GT.html   (llist) fa (this#html    fa) l
+          method eq      fa l = GT.eq     (llist) fa (this#eq      fa) l
+          method compare fa l = GT.compare(llist) fa (this#compare fa) l
+          method foldr   fa l = GT.foldr  (llist) fa (this#foldr   fa) l
+          method foldl   fa l = GT.foldl  (llist) fa (this#foldl   fa) l
+          method gmap    fa l = GT.gmap   (llist) fa (this#gmap    fa) l
+          method show    fa l = "[" ^
+	    let rec inner l =
+              (GT.transform(llist) 
+                 (GT.lift fa)
+                 (GT.lift inner)
+                 (object inherit ['a,'a ground] @llist[show]
+                    method c_Nil   _ _      = ""
+                    method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Nil -> "" | _ -> "; " ^ xs.GT.fx ())
+                  end) 
+                 () 
+                 l
+              ) 
+            in inner l ^ "]"
+        end
+    }
+
+    let logic = {
+      GT.gcata = ();
+      GT.plugins = 
+        object(this) 
+          method html    fa l   = GT.html   (logic') (GT.html   (llist) fa (this#html    fa)) l
+          method eq      fa a b = GT.eq     (logic') (GT.eq     (llist) fa (this#eq      fa)) a b
+          method compare fa a b = GT.compare(logic') (GT.compare(llist) fa (this#compare fa)) a b
+          method foldr   fa a l = GT.foldr  (logic') (GT.foldr  (llist) fa (this#foldr   fa)) a l 
+          method foldl   fa a l = GT.foldl  (logic') (GT.foldl  (llist) fa (this#foldl   fa)) a l 
+          method gmap    fa l   = GT.gmap   (logic') (GT.gmap   (llist) fa (this#gmap    fa)) l 
+          method show    fa l = 
+            GT.show(logic')
+              (fun l -> "[" ^            
+                 let rec inner l =
+                   (GT.transform(llist) 
+                      (GT.lift fa)
+                      (GT.lift (GT.show(logic) inner))
+                      (object inherit ['a,'a logic] @llist[show]
+                         method c_Nil   _ _      = ""
+                         method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Value Nil -> "" | _ -> "; " ^ xs.GT.fx ())
+                       end) 
+                      () 
+                      l
+                   ) 
+		 in inner l ^ "]"
+              ) 
+              l
+        end
+    }
+
+    let (!) = (!!)
+
+    let rec foldro f a xs r =
+      conde [
+        (xs === !Nil) &&& (a === r);
+        Fresh.three (
+          fun h t a'->
+            (xs === h % t) &&&
+            (f h a' r) &&&
+            (foldro f a t a')
+        )
+      ]
+
+    let rec mapo f xs ys =
+      conde [
+        (xs === !Nil) &&& (ys === !Nil);
+        Fresh.two (
+          fun z zs ->
+            (xs === z % zs) &&&
+            (Fresh.two (
+               fun a1 a2 ->
+                 (f z a1) &&&
+                 (mapo f zs a2) &&&
+                 (ys === a1 % a2)
+            ))
+        )
+      ]
+
+    let filtero p xs ys =
+      let folder x a a' =
+        conde [
+          (p x !true) &&& (x % a === a');
+          (p x !false) &&& (a === a')
+        ]
+      in
+      foldro folder !Nil xs ys
+
+    let rec lookupo p xs mx =
+      conde [
+        (xs === !Nil) &&& (mx === !None);
+        Fresh.two (
+          fun h t ->
+             (h % t === xs) &&&
+             (conde [
+                (p h !true) &&& (mx === !(Some h));
+                (p h !false) &&& (lookupo p t mx)
+             ])
+        )
+      ]
+
+(*
+(****************************************************************************)
+(* bools and lists *)
+
+let anyo = foldro oro  !false
+
+let allo = foldro ando !true
+
+(****************************************************************************)
+(* nats and lists *)
+
+let sumo = foldro addo ?$0
+
+let lengtho xs n =
+  let folder x a a' =
+    (addo ?$1 a a')
+  in 
+    foldro folder ?$0 xs n
+
+*)
+(* ======== *)
+
+  end
+
+let rec inj_list = function
+| []    -> inj Nil
+| x::xs -> inj (Cons (inj x, inj_list xs))
+
+let (%)  = List.(%)
+let (%<) = List.(%<)
+let (!<) = List.(!<)
+
 let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->  
   let rec walk' recursive env var subst =
     let var = Subst.walk env var subst in
@@ -500,7 +736,7 @@ let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x 
         (match var with
          | Var (a, i, _) -> 
             let cs = 
-	      TopList.fold_left 
+	      List.fold_left 
 		(fun acc s -> 
 		   match walk' false env (!!!var) s with
 		   | Var (_, j, _) when i = j -> acc
