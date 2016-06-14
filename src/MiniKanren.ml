@@ -394,6 +394,18 @@ module Fresh =
 
   end
 
+let eqo x y t =
+  conde [
+    (x === y) &&& (t === !!true);
+    (x =/= y) &&& (t === !!false);
+  ]
+
+let neqo x y t =
+  conde [
+    (x =/= y) &&& (t === !!true);
+    (x === y) &&& (t === !!false);
+  ];;
+
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
 @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
@@ -447,6 +459,8 @@ module Bool =
 
     let noto a na = (a |^ a) na
 
+    let noto' a = noto a !true
+
     let oro a b c = 
       Fresh.two (fun aa bb ->
         ((a  |^ a) aa) &&&
@@ -454,11 +468,15 @@ module Bool =
         ((aa |^ bb) c)
       )
 
+    let oro' a b = oro a b !true
+
     let ando a b c = 
       Fresh.one (fun ab ->
         ((a  |^ b) ab) &&&
         ((ab |^ ab) c)
       )
+
+    let ando' a b = ando a b !true
 
   end
 
@@ -537,6 +555,19 @@ module Nat =
         )
       ]
 
+    let rec leo x y b =
+      conde [
+        (x === !O) &&& (b === !true);
+        Fresh.two (fun x' y' ->
+          conde [
+            (x === !(S x')) &&& (y === !(S y')) &&& (leo x' y' b);
+            b === !false
+          ]
+        )
+      ]
+
+    let leo' x y = leo x y !true
+    
   end
 
 let rec inj_nat n = 
@@ -680,28 +711,48 @@ module List =
         )
       ]
 
-(*
-(****************************************************************************)
-(* bools and lists *)
+    let anyo = foldro Bool.oro !false
 
-let anyo = foldro oro  !false
+    let allo = foldro Bool.ando !true
 
-let allo = foldro ando !true
+    let rec lengtho l n =
+      conde [
+        (l === !Nil) &&& (n === !O);
+        Fresh.three (fun x xs n' ->
+          (l === x % xs)  &&& 
+          (n === !(S n')) &&&
+          (lengtho xs n')
+        )
+      ]
+	
+    let rec appendo a b ab =
+      conde [
+        (a === !Nil) &&& (b === ab);
+        Fresh.three (fun h t ab' ->
+  	  (a === h%t) &&&
+	  (h%ab' === ab) &&&
+	  (appendo t b ab') 
+        )   
+      ]
+  
+    let rec reverso a b = 
+      conde [
+        (a === !Nil) &&& (b === !Nil);
+        Fresh.three (fun h t a' ->
+	  (a === h%t) &&&
+	  (appendo a' !<h b) &&&
+	  (reverso t a')
+        )
+      ]
 
-(****************************************************************************)
-(* nats and lists *)
-
-let sumo = foldro addo ?$0
-
-let lengtho xs n =
-  let folder x a a' =
-    (addo ?$1 a a')
-  in 
-    foldro folder ?$0 xs n
-
-*)
-(* ======== *)
-
+    let rec membero l a =
+      Fresh.two (fun x xs ->
+        (l === x % xs) &&&
+        (conde [
+           x === a;
+           (x =/= a) &&& (membero xs a)
+         ])
+      )
   end
 
 let rec inj_list = function

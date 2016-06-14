@@ -20,14 +20,15 @@
 
 (** {2 Basic modules and types} *)
 
-(** Lazy streams *)
+(** {3 Lazy streams} *)
+
 module Stream :
   sig
 
-    (** Type of the stream *)
+    (** A type of the stream *)
     type 'a t
 
-    (** Lazy constructor *)
+    (** Constructor *)
     val from_fun : (unit -> 'a t) -> 'a t
 
     (** [retrieve ~n:n s] returns the list of [n]-first elements of [s] and the rest of the stream *)
@@ -41,9 +42,9 @@ module Stream :
 
   end
 
-(** {3 Some abstract data structures} *)
+(** {3 States and goals} *)
 
-(** State (needed to perform calculations) *)
+(** A state *)
 module State :
   sig
     (** State type *)
@@ -55,6 +56,8 @@ module State :
 
 (** Goal converts a state into lazy stream of states *)
 type goal = State.t -> State.t Stream.t
+
+(** {3 Logics} *)
 
 (** A type of abstract logic values *)
 type 'a logic
@@ -98,13 +101,14 @@ val prj : 'a logic -> 'a
     passed to [k] as its argument *)
 val prj_k : ('a logic -> 'a) -> 'a logic -> 'a
 
+(** {3 Support for some predefined types (lists, nats, bools etc.)} *)
+
 (** Abstract list type *)
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
 
 (** Abstract nat type *)
 @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
-(** {3 Relational bools} *)
 module Bool :
   sig
 
@@ -147,15 +151,23 @@ module Bool :
     (** Negation *)
     val noto : logic -> logic -> goal
 
+    (** Negation as a goal *)
+    val noto' : logic -> goal
+
     (** Disjunction *)
     val oro : logic -> logic -> logic -> goal 
+
+    (** Disjunction as a goal *)
+    val oro' : logic -> logic -> goal
 
     (** Conjunction *)
     val ando : logic -> logic -> logic -> goal
 
+    (** Conjunction as a goal *)
+    val ando' : logic -> logic -> goal
+
   end
 
-(** {3 Relational nats} *)
 module Nat :
   sig
 
@@ -217,12 +229,17 @@ module Nat :
     (** Relational multiplication *)
     val mulo : logic -> logic -> logic -> goal 
 
+    (** Less-or-equal *)
+    val leo : logic -> logic -> Bool.logic -> goal
+
+    (** Less-or-equal as a goal *)
+    val leo' : logic -> logic -> goal
+
   end
 
 (** [inj_nat n] is a deforested synonym for [Nat.inj @@ Nat.of_int n] *)
 val inj_nat : int -> Nat.logic
 
-(** {3 Relational lists} *)
 module List :
   sig
 
@@ -292,9 +309,25 @@ module List :
     (** Relational lookup *)
     val lookupo : ('a logic' -> Bool.logic -> goal) ->  'a logic' logic -> 'a logic' option logic' -> goal
 
-  end
+    (** Boolean list disjunctions *)
+    val anyo : Bool.logic logic -> Bool.logic -> goal
 
-(** {3 Some list operators exported to the toplevel} *)
+    (** Boolean list conjunction *)
+    val allo : Bool.logic logic -> Bool.logic -> goal
+
+    (** Relational length *)
+    val lengtho : 'a logic' logic -> Nat.logic -> goal
+
+    (** Relational append *)
+    val appendo : 'a logic' logic -> 'a logic' logic -> 'a logic' logic -> goal
+
+    (** Relational reverse *)
+    val reverso : 'a logic' logic -> 'a logic' logic -> goal
+
+    (** Relational occurrence check (a shortcut) *)
+    val membero : 'a logic' logic -> 'a logic' -> goal
+
+  end
 
 (** [inj_list l] is a deforested synonym for [List.inj inj @@ List.of_list l] *)
 val inj_list : 'a list -> 'a logic List.logic
@@ -321,6 +354,12 @@ val (===) : 'a logic -> 'a logic -> goal
 (** [x === y] creates a goal, which performs a non-unification check for
     [x] and [y] *)
 val (=/=) : 'a logic -> 'a logic -> goal
+
+(** Equality as boolean relation *)
+val eqo : 'a logic -> 'a logic -> Bool.logic -> goal
+
+(** Disequality as boolean relation *)
+val neqo : 'a logic -> 'a logic -> Bool.logic -> goal
 
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
 val conj : goal -> goal -> goal

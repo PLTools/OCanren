@@ -1,0 +1,144 @@
+fun q -> noto !true q, 1 answer {
+q=false; 
+}
+fun q -> noto !false q, 1 answer {
+q=true; 
+}
+fun q -> noto q !true, 1 answer {
+q=false; 
+}
+fun q -> oro !false !false q, 1 answer {
+q=false; 
+}
+fun q -> oro !false !true q, 1 answer {
+q=true; 
+}
+fun q -> oro !true !false q, 1 answer {
+q=true; 
+}
+fun q -> oro !true !true q, 1 answer {
+q=true; 
+}
+fun q -> ando !false !false q, 1 answer {
+q=false; 
+}
+fun q -> ando !false !true q, 1 answer {
+q=false; 
+}
+fun q -> ando !true !false q, 1 answer {
+q=false; 
+}
+fun q -> ando !true !true q, 1 answer {
+q=true; 
+}
+fun q -> addo ((?$) 0) ((?$) 1) q, 1 answer {
+q=S (O ()); 
+}
+fun q -> addo ((?$) 1) q ((?$) 3), 1 answer {
+q=S (S (O ())); 
+}
+fun q r -> addo q r q, 3 answers {
+q=O (); r=O (); 
+q=S (O ()); r=O (); 
+q=S (S (O ())); r=O (); 
+}
+fun q -> mulo ((?$) 1) ((?$) 2) q, 1 answer {
+q=S (S (O ())); 
+}
+fun q -> mulo ((?$) 3) q ((?$) 6), 1 answer {
+q=S (S (O ())); 
+}
+fun q -> mulo ((?$) 3) ((?$) 0) q, 1 answer {
+q=O (); 
+}
+fun q r -> mulo q r q, 3 answers {
+q=O (); r=_.11; 
+q=S (O ()); r=S (O ()); 
+q=S (S (O ())); r=S (O ()); 
+}
+fun q -> mulo q ((?$) 5) ((?$) 0), 1 answer {
+q=O (); 
+}
+fun q -> mulo q ((?$) 0) ((?$) 0), 3 answers {
+q=O (); 
+q=S (O ()); 
+q=S (S (O ())); 
+}
+fun q -> sumo (inj_list []) q, 1 answer {
+q=O (); 
+}
+fun q -> sumo (nats [3; 1; 2]) q, 1 answer {
+q=S (S (S (S (S (S (O ())))))); 
+}
+fun q -> sumo ((%) ((?$) 0) ((%) ((?$) 1) ((%<) q ((?$) 3)))) ((?$) 6), 1 answer {
+q=S (S (O ())); 
+}
+fun q -> lengtho (inj_list [1; 2; 3; 4]) q, 1 answer {
+q=S (S (S (S (O ())))); 
+}
+fun q -> lengtho (inj_list [(); (); ()]) q, 1 answer {
+q=S (S (S (O ()))); 
+}
+fun q -> lengtho (inj_list [false; true]) q, 1 answer {
+q=S (S (O ())); 
+}
+fun q -> lengtho (nats [4; 3; 2; 1; 0]) q, 1 answer {
+q=S (S (S (S (S (O ()))))); 
+}
+fun q -> lengtho q ((?$) 3), 1 answer {
+q=[_.11; _.14; _.17]; 
+}
+fun q -> lengtho q ((?$) 0), 1 answer {
+q=[]; 
+}
+fun q -> anyo (inj_list [false; false; true]) q, 1 answer {
+q=true; 
+}
+fun q -> anyo (inj_list [false; false]) q, 1 answer {
+q=false; 
+}
+fun q -> allo (inj_list [true; false; true]) q, 1 answer {
+q=false; 
+}
+fun q -> allo ((%) !true ((%<) q !true)) !true, 1 answer {
+q=true; 
+}
+fun q r s -> allo ((%) !true ((%<) q r)) s, all answers {
+q=false; r=false; s=false; 
+q=true; r=true; s=true; 
+q=false; r=true; s=false; 
+q=true; r=false; s=false; 
+}
+fun q -> mapo (addo ((?$) 1)) (nats [0; 1; 2]) q, 1 answer {
+q=[S (O ()); S (S (O ())); S (S (S (O ())))]; 
+}
+fun q -> mapo (addo ((?$) 2)) q (nats [4; 3; 2]), 1 answer {
+q=[S (S (O ())); S (O ()); O ()]; 
+}
+fun q -> mapo (addo q) (nats [1; 2; 3]) (nats [4; 5; 6]), 1 answer {
+q=S (S (S (O ()))); 
+}
+fun q -> mapo (mulo q) (nats [1; 2; 3]) (nats [2; 4; 6]), 1 answer {
+q=S (S (O ())); 
+}
+fun q r -> mapo (mulo q) (nats [1; 2]) ((%<) ((?$) 2) r), 1 answer {
+q=S (S (O ())); r=S (S (S (S (O ())))); 
+}
+fun q -> mapo (===) (inj_list [1; 2; 3]) q, 1 answer {
+q=[1; 2; 3]; 
+}
+fun q -> mapo (===) (inj_list [1; 2; 3]) ((%) !1 ((%<) !2 q)), 1 answer {
+q=3; 
+}
+fun q -> mapo noto (inj_list [true; false; true]) q, 1 answer {
+q=[false; true; false]; 
+}
+fun q -> mapo noto (inj_list []) q, 1 answer {
+q=[]; 
+}
+fun q -> filtero (eqo ((?$) 2)) (nats [0; 1; 2; 3]) q, all answers {
+q=[S (S (O ()))]; 
+}
+fun q -> lookupo (eqo ((?$) 1)) (nats [0; 2; 1; 3]) q, 1 answer {
+q=Some (S (O ())); 
+}
