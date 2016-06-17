@@ -101,7 +101,7 @@ can be considered as relational.
 We have chosen miniKanren\footnote{\url{http://minikanren.org}} 
 as model language, because it was specifically designed as relational DSL, embedded in Scheme/Racket. 
 Being rather a minimalistic language, which can be implemented with just a few data structures and
-combinators miniKanren found its way in dozens of host languages, including Haskell, 
+combinators, miniKanren found its way in dozens of host languages, including Haskell, 
 Standard ML and OCaml.
 
 There is, however, a predictable glitch in implementing miniKanren for strongly typed language. 
@@ -306,7 +306,7 @@ recursive invocations of \lstinline{unify}.
 \end{enumerate}
 \end{comment}
 
-Function \lstinline{unify} is not directly accessible at the user level; it used
+Function \lstinline{unify} is not directly accessible at the user level; it is used
 to implement both unification (``\lstinline{===}'') and disequality (``\lstinline{=/=}'') 
 goals. The implementation generally follows~\cite{CKanren}.
 

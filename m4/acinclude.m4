@@ -167,7 +167,6 @@ touch conftest.ml
 ac_ext=ml
 ac_link="$CC conftest.ml && ( rm -f conftest.cm?; test -f camlprog.exe && mv camlprog.exe a.exe || true )"
 _AC_COMPILER_EXEEXT_DEFAULT
-_AC_COMPILER_EXEEXT_WORKS
 _AC_COMPILER_EXEEXT_O
 rm -f a.out a.exe
 CC=$OLDCC

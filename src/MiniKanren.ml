@@ -27,6 +27,11 @@ module Stream =
 
     let cons h t = Cons (h, t)
 
+    let rec is_empty = function
+    | Nil    -> true
+    | Lazy s -> is_empty @@ Lazy.force s
+    | _ -> false
+
     let rec retrieve ?(n=(-1)) s =
       if n = 0
       then [], s
@@ -36,6 +41,8 @@ module Stream =
 	   | Lazy  z      -> retrieve ~n:n (Lazy.force z)            
 
     let take ?(n=(-1)) s = fst @@ retrieve ~n:n s
+
+    let hd s = List.hd @@ take ~n:1 s
 
     let rec mplus fs gs =
       from_fun (fun () ->
@@ -394,6 +401,9 @@ module Fresh =
 
   end
 
+let success st = Stream.cons st Stream.nil
+let failure _  = Stream.nil
+ 
 let eqo x y t =
   conde [
     (x === y) &&& (t === !!true);
@@ -457,18 +467,16 @@ module Bool =
         (a === !true)  &&& (b === !true)  &&& (c === !false);
       ]
 
-    let noto a na = (a |^ a) na
+    let noto' a na = (a |^ a) na
 
-    let noto' a = noto a !true
+    let noto a = noto' a !true
 
     let oro a b c = 
-      Fresh.two (fun aa bb ->
+      Fresh.two (fun aa bb ->      
         ((a  |^ a) aa) &&&
         ((b  |^ b) bb) &&&
         ((aa |^ bb) c)
       )
-
-    let oro' a b = oro a b !true
 
     let ando a b c = 
       Fresh.one (fun ab ->
@@ -476,7 +484,8 @@ module Bool =
         ((ab |^ ab) c)
       )
 
-    let ando' a b = ando a b !true
+    let (&&) a b = ando a b !true
+    let (||) a b = oro  a b !true
 
   end
 
@@ -558,21 +567,34 @@ module Nat =
     let rec leo x y b =
       conde [
         (x === !O) &&& (b === !true);
-        Fresh.two (fun x' y' ->
+        Fresh.two (fun x' y' ->	
           conde [
-            (x === !(S x')) &&& (y === !(S y')) &&& (leo x' y' b);
-            b === !false
+            (x === !(S x')) &&& (y === !(S y')) &&& (leo x' y' b)           
           ]
-        )
+        )        
       ]
 
-    let leo' x y = leo x y !true
+    let geo x y b = leo y x b
+
+    let (<=) x y = leo x y !true
+    let (>=) x y = geo x y !true
+
+    let gt x y b = conde [(x >= y) &&& (x =/= y) &&& (b === !true)]
+    let lt x y b = gt y x b
+
+    let (>) x y = gt x y !true
+    let (<) x y = lt x y !true
     
   end
 
 let rec inj_nat n = 
   if n <= 0 then inj O
   else inj (S (inj_nat @@ n-1))
+
+let rec prj_nat n = 
+  match prj n with
+  | O   -> 0
+  | S n -> 1 + prj_nat n
 
 module List =
   struct
@@ -759,11 +781,25 @@ let rec inj_list = function
 | []    -> inj Nil
 | x::xs -> inj (Cons (inj x, inj_list xs))
 
+let rec prj_list l =
+  match prj l with
+  | Nil -> []
+  | Cons (x, xs) -> prj x :: prj_list xs
+
 let (%)  = List.(%)
 let (%<) = List.(%<)
 let (!<) = List.(!<)
 
-let rec refine : 'a . State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->  
+let rec inj_nat_list = function
+| []    -> !!Nil
+| x::xs -> inj_nat x % inj_nat_list xs
+
+let rec prj_nat_list l =
+  match prj l with
+  | Nil -> []
+  | Cons (x, xs) -> prj_nat x :: prj_nat_list xs
+
+let rec refine : State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->  
   let rec walk' recursive env var subst =
     let var = Subst.walk env var subst in
     match Env.var env var with

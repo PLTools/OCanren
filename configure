@@ -3011,7 +3011,6 @@ $as_echo_n "checking for C compiler default output file name... " >&6; }
 $as_echo "$ac_file" >&6; }
 ac_exeext=$ac_cv_exeext
 
-_AC_COMPILER_EXEEXT_WORKS
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for suffix of executables" >&5
 $as_echo_n "checking for suffix of executables... " >&6; }
 if { { ac_try="$ac_link"

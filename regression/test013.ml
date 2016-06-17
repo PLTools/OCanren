@@ -11,7 +11,7 @@ let show_int        = show(logic) (show(int))
 let show_int_list   = show(List.logic) show_int
 
 let (?$) = inj_nat
-let nats : int list -> Nat.logic List.logic = fun l -> List.inj Nat.inj @@ List.of_list (List.map Nat.of_int l)
+let nats = inj_nat_list
 
 open Bool
 open Nat
@@ -20,9 +20,9 @@ open List
 let sumo = foldro addo ?$0
 
 let _ =
-  run show_bool         1    q (REPR (fun q     -> noto !true  q                                 ))   qh;
-  run show_bool         1    q (REPR (fun q     -> noto !false q                                 ))   qh;
-  run show_bool         1    q (REPR (fun q     -> noto q      !true                             ))   qh;
+  run show_bool         1    q (REPR (fun q     -> noto' !true  q                                ))   qh;
+  run show_bool         1    q (REPR (fun q     -> noto' !false q                                ))   qh;
+  run show_bool         1    q (REPR (fun q     -> noto' q      !true                            ))   qh;
   run show_bool         1    q (REPR (fun q     -> oro  !false !false q                          ))   qh;
   run show_bool         1    q (REPR (fun q     -> oro  !false !true  q                          ))   qh;
   run show_bool         1    q (REPR (fun q     -> oro  !true  !false q                          ))   qh;
@@ -65,8 +65,8 @@ let _ =
   run show_nat          1   qr (REPR (fun q r   -> mapo (mulo q) (nats [1;2]) (?$2 %< r)         ))  qrh;
   run show_int_list     1    q (REPR (fun q     -> mapo (===) (inj_list [1;2;3]) q               ))   qh; 
   run show_int          1    q (REPR (fun q     -> mapo (===) (inj_list [1;2;3]) (!1 % (!2 %< q))))   qh; 
-  run show_bool_list    1    q (REPR (fun q     -> mapo noto (inj_list [true;false;true;]) q     ))   qh;
-  run show_bool_list    1    q (REPR (fun q     -> mapo noto (inj_list []) q                     ))   qh;
+  run show_bool_list    1    q (REPR (fun q     -> mapo noto' (inj_list [true;false;true;]) q    ))   qh;
+  run show_bool_list    1    q (REPR (fun q     -> mapo noto' (inj_list []) q                    ))   qh;
   run show_nat_list   (-1)   q (REPR (fun q     -> filtero (eqo ?$2) (nats [0;1;2;3]) q          ))   qh; 
-  run show_option_nat   1    q (REPR (fun q     -> lookupo (eqo ?$1) (nats [0;2;1;3]) q           ))   qh
+  run show_option_nat   1    q (REPR (fun q     -> lookupo (eqo ?$1) (nats [0;2;1;3]) q          ))   qh
 

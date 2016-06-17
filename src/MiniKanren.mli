@@ -28,6 +28,9 @@ module Stream :
     (** A type of the stream *)
     type 'a t
 
+    (** Emptiness test *)
+    val is_empty : 'a t -> bool
+
     (** Constructor *)
     val from_fun : (unit -> 'a t) -> 'a t
 
@@ -36,6 +39,9 @@ module Stream :
 
     (** [take ~n:n s] returns the list of [n]-first elements of [s] *)
     val take : ?n:int -> 'a t -> 'a list
+
+    (** [hd s] gets a head of the stream *)
+    val hd : 'a t -> 'a
 
     (** [map f s] maps function [f] over the stream [s] *)
     val map : ('a -> 'b) -> 'a t -> 'b t
@@ -149,22 +155,22 @@ module Bool :
     val (|^) : logic -> logic -> logic -> goal
 
     (** Negation *)
-    val noto : logic -> logic -> goal
+    val noto' : logic -> logic -> goal
 
     (** Negation as a goal *)
-    val noto' : logic -> goal
+    val noto : logic -> goal
 
     (** Disjunction *)
     val oro : logic -> logic -> logic -> goal 
 
     (** Disjunction as a goal *)
-    val oro' : logic -> logic -> goal
+    val (||) : logic -> logic -> goal
 
     (** Conjunction *)
     val ando : logic -> logic -> logic -> goal
 
     (** Conjunction as a goal *)
-    val ando' : logic -> logic -> goal
+    val (&&) : logic -> logic -> goal
 
   end
 
@@ -229,16 +235,25 @@ module Nat :
     (** Relational multiplication *)
     val mulo : logic -> logic -> logic -> goal 
 
-    (** Less-or-equal *)
+    (** Comparisons *)
     val leo : logic -> logic -> Bool.logic -> goal
+    val geo : logic -> logic -> Bool.logic -> goal
+    val gt  : logic -> logic -> Bool.logic -> goal
+    val lt  : logic -> logic -> Bool.logic -> goal
 
-    (** Less-or-equal as a goal *)
-    val leo' : logic -> logic -> goal
+    (** Comparisons as goals *)
+    val (<=) : logic -> logic -> goal
+    val (>=) : logic -> logic -> goal
+    val (>)  : logic -> logic -> goal
+    val (<)  : logic -> logic -> goal
 
   end
 
-(** [inj_nat n] is a deforested synonym for [Nat.inj @@ Nat.of_int n] *)
+(** [inj_nat n] is a deforested synonym for injection *)
 val inj_nat : int -> Nat.logic
+
+(** [prj_nat n] is a deforested synonym for projection *)
+val prj_nat : Nat.logic -> int
 
 module List :
   sig
@@ -329,8 +344,17 @@ module List :
 
   end
 
-(** [inj_list l] is a deforested synonym for [List.inj inj @@ List.of_list l] *)
+(** [inj_list l] is a deforested synonym for injection *)
 val inj_list : 'a list -> 'a logic List.logic
+
+(** [prj_list] is a deforested synonym for projection *)
+val prj_list : 'a logic List.logic -> 'a list
+
+(** [inj_nat_list l] is a deforsted synonym for injection *)
+val inj_nat_list : int list -> Nat.logic List.logic
+
+(** [inj_nat_list l] is a deforsted synonym for projection *)
+val prj_nat_list : Nat.logic List.logic -> int list
 
 (** Infix synonym for [Cons] *)
 val (%) : 'a -> 'a List.logic -> 'a List.logic
@@ -383,6 +407,14 @@ val conde : goal list -> goal
 (** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a
     non-empty list of goals *)
 val (?&) : goal list -> goal
+
+(** {2 Some predefined goals} *)
+
+(** [success] always succeeds *)
+val success : goal
+
+(** [failure] always fails *)
+val failure : goal
 
 (** {2 Combinators to produce fresh variables} *)
 module Fresh :

@@ -37,7 +37,7 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/configure \
+	$(srcdir)/Makefile.in $(top_srcdir)/configure COPYING INSTALL \
 	config/config.guess config/config.sub config/install-sh \
 	config/missing
 subdir = .

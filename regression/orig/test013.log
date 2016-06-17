@@ -1,10 +1,10 @@
-fun q -> noto !true q, 1 answer {
+fun q -> noto' !true q, 1 answer {
 q=false; 
 }
-fun q -> noto !false q, 1 answer {
+fun q -> noto' !false q, 1 answer {
 q=true; 
 }
-fun q -> noto q !true, 1 answer {
+fun q -> noto' q !true, 1 answer {
 q=false; 
 }
 fun q -> oro !false !false q, 1 answer {
@@ -130,10 +130,10 @@ q=[1; 2; 3];
 fun q -> mapo (===) (inj_list [1; 2; 3]) ((%) !1 ((%<) !2 q)), 1 answer {
 q=3; 
 }
-fun q -> mapo noto (inj_list [true; false; true]) q, 1 answer {
+fun q -> mapo noto' (inj_list [true; false; true]) q, 1 answer {
 q=[false; true; false]; 
 }
-fun q -> mapo noto (inj_list []) q, 1 answer {
+fun q -> mapo noto' (inj_list []) q, 1 answer {
 q=[]; 
 }
 fun q -> filtero (eqo ((?$) 2)) (nats [0; 1; 2; 3]) q, all answers {
