@@ -1,6 +1,6 @@
 # OCanren
 
-OCanren is a statically typed embedding of [miniKanren](http://minikanren.org) relational 
+OCanren is a strongly-typed embedding of [miniKanren](http://minikanren.org) relational 
 programming language into [Objective Caml] (http://ocaml.org). More precisely, OCanren
 implements [microKanren](http://webyrd.net/scheme-2013/papers/HemannMuKanren2013.pdf) 
 with [disequality constraints] (http://scheme2011.ucombinator.org/papers/Alvis2011.pdf).
@@ -16,7 +16,7 @@ The correspondence between original MiniKanren and OCanren constructs is shown b
 | `(conde (a b ...) (c d ...) ...)` | `conde [a &&& b &&& ...; c &&& d &&& ...; ...]` |
 | `(fresh (x y ...) a b ...      )` | `fresh (x y ...) a b ...`                       |
 
-In addition, OCanren introduces explicit disjunction (`|||`) and conjunctions
+In addition, OCanren introduces explicit disjunction (`|||`) and conjunction
 (`&&&`) operators for goals.
 
 ## Injecting and Projecting User-Type Data
@@ -24,10 +24,36 @@ In addition, OCanren introduces explicit disjunction (`|||`) and conjunctions
 To make it possible to work with OCanren, user-type data have to be *injected* into
 logic domain. In the simplest case (non-parametric, non-recursive) the function
 
-`inj : 'a -> 'a logic`
+```ocaml
+inj : 'a -> 'a logic
+```
 
-can be used for this purpose.
+can be used for this purpose:
+
+`inj 1`
+
+`inj true`
+
+`inj "abc"`
+
+There is also prefix synonym `!!` for `inj`.
+
+If the type is parametric (but non-recursive), then (as a rule) all its type parameters
+have to be injected as well:
+
+`!! (gmap(option) (!!) (Some x))`  
+
+`!! (gmap(pair) (!!) (!!) (x, y))`
  
+Here `gmap(type)` is a type-indexed morphism for the type `type`; it can be written
+by hands, or constructed using one of the existing generic programming 
+frameworks (the library itself uses [GT](https://github.com/dboulytchev/generic-transformers)).
+
+If the type is recursive, then, as a rule, it has to be abstracted from itself, and then
+injected as in the previous case:
+
+
+
 ## Bool, Nat, List
 
 ## Run
