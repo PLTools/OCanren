@@ -19,56 +19,43 @@
 open GT
 open MiniKanren 
 
-(*
-let rec leo x y =
-  conde [
-    x === !!O;
-    fresh (x' y') 
-      (x === !!(S x'))
-      (y === !!(S y'))
-      (leo x' y')
-  ]
-*)
-
 (* Relational minimum/maximum (for nats only) *)
-let minmaxo a b min max = Nat.(
-  conde [
+let minmaxo a b min max = Nat.(conde [
     (min === a) &&& (max === b) &&& (a <= b);
     (max === a) &&& (min === b) &&& (a >  b)
-  ]
-)
+])
 
 (* [l] is a (non-empty) list, [s] is its smallest element, 
    [l'] --- all other elements
 *)
-let rec smallesto l s l' =
-  conde [       
-    (l === !< s) &&& (l' === !!Nil);
-    fresh (h t s' t' max)
-      (l === h % t)
-      (minmaxo h s' s max)
-      (l' === max % t')
-      (smallesto t s' t')
-  ] 
+let rec smallesto l s l' = conde [       
+  (l === !< s) &&& (l' === !!Nil);
+  fresh (h t s' t' max)
+    (l' === max % t')
+    (l === h % t)
+    (minmaxo h s' s max)
+    (smallesto t s' t')
+] 
 
 (* Relational sort *)
-let rec sorto x y =
-  conde [
-    (* either both lists are empty *)
-    (x === !!Nil) &&& (y === !!Nil);
-    fresh (s xs xs')
-      (* or the sorted one is a concatenation of the
-         smallest (s)element and sorted list of all other elements (xs') *)
-      (y === s % xs')
-      (smallesto x s xs)
-      (sorto xs xs')
-  ]
+let rec sorto x y = conde [
+  (* either both lists are empty *)
+  (x === !!Nil) &&& (y === !!Nil);
+  fresh (s xs xs')
+    (* or the sorted one is a concatenation of the
+       smallest element (s) and sorted list of all other elements (xs') 
+    *)
+    (y === s % xs')
+    (sorto xs xs')       (* 1 *)
+    (smallesto x s xs)   (* 2 *)
+]
 
 (* Making regular sorting from relational one *)
 let sort l =
   run q (sorto @@ inj_nat_list l)
         (fun qs -> prj_nat_list @@ Stream.hd qs)
 
+(* Making permutations from relational sorting *)
 let perm l = 
   let rec fact = function 0 -> 1 | n -> n * fact (n-1) in
   List.map prj_nat_list @@
@@ -77,32 +64,43 @@ let perm l =
 
 (* Entry point *)
 let _ =
+  (* Sorting: *)
 
-  Printf.printf "%s\n" (show(list) (show(int)) @@ sort [3; 4; 5; 1; 6; 2]);
-  Printf.printf "%s\n" (show(list) (show(int)) @@ sort [1; 6; 7; 8; 3; 4; 5]);
-  Printf.printf "%s\n" (show(list) (show(int)) @@ sort [2; 3; 6; 7; 8; 3; 6; 7; 2]);
+  Printf.printf "%s\n\n%!" (show(list) (show(int)) @@ sort []);
+  Printf.printf "%s\n\n%!" (show(list) (show(int)) @@ sort [1]);
+  Printf.printf "%s\n\n%!" (show(list) (show(int)) @@ sort [2; 1]);
+  Printf.printf "%s\n\n%!" (show(list) (show(int)) @@ sort [3; 2; 1]);
+  Printf.printf "%s\n\n%!" (show(list) (show(int)) @@ sort [4; 3; 2; 1]);
 
+  (* Alas, this one is too slow:
+ 
+       Printf.printf "%s\n\n%!" (show(list) (show(int)) @@ sort [7; 4; 3; 2; 1]);
 
-  Printf.printf "%s\n" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3; 4])
+     To make it run faster, lines (* 1 *) and (* 2 *) in ``sorto'' implementation 
+     has to be switched; then, naturally, permutations stop to work.
+  
+     The following (somewhat shameful) implementation, however, works for both cases:
 
-(*
-  run qr (fun q  r  -> minmaxo q r (inj_nat 4) (inj_nat 3))
-         (fun qs rs ->
-            Printf.printf "%s\n%s\n"
-              (show(list) (show(int)) (List.map prj_nat (Stream.take ~n:1 qs)))
-              (show(list) (show(int)) (List.map prj_nat (Stream.take ~n:1 rs)))
-         )
-*)
-(*
-  run q (fun q -> leo (inj_nat 2) (inj_nat 3))
-        (fun qs ->
-           match Stream.take ~n:1 qs with
-	   | [] -> Printf.printf "No answer.\n"
-	   | _  -> Printf.printf "Some answer(s).\n"
-        )
+     let rec sorto x y = conde [
+       (x === !!Nil) &&& (y === !!Nil);
+       fresh (s xs xs')
+         (y === s % xs')   
+         (smallesto x s xs)
+         (sorto xs xs');    
+       fresh (s xs xs')
+         (y === s % xs')
+         (sorto xs xs')       
+         (smallesto x s xs)  
+     ]
+  *)
 
-*)
-(*
-  run qr (fun q  r -> smallesto (inj_nat_list [2; 5; 6; 7]) r q)
-         (fun qs rs -> Printf.printf "%s\n" (show(list) (show(int)) @@ prj_nat_list (Stream.hd qs)))
-*)
+  (* Permutations: *)
+
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm []);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1]);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2]);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3]);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3; 4]);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3; 4; 5]);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3; 4; 5; 6])
+

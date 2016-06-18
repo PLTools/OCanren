@@ -365,6 +365,9 @@ val (%<) : 'a -> 'a -> 'a List.logic
 (** [!< x] is a synonym for [Cons (x, !Nil)] *)
 val (!<) : 'a -> 'a List.logic
 
+(** [nil] is a synonym for [inj Nil] *)
+val nil : 'a List.logic
+
 (** {2 miniKanren basic primitives} *)
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the

@@ -359,6 +359,7 @@ corresponds to logical lists with logical elements. Using a single type-specific
 (of type {\lstinline[mathescape=true]{$\alpha$ glist -> $\;\;\alpha$ llist}}) and
 projection (of type {\lstinline[mathescape=true]{$\alpha$ llist -> $\;\;\alpha$ glist}}).
 
+\begin{comment}
 In context of these definitions, we can implement relational list concatenation, 
 which is often considered as one of first-step examples of miniKanren programming:
 
@@ -372,6 +373,7 @@ which is often considered as one of first-step examples of miniKanren programmin
          (append$^o$ t y ty)
      ]
 \end{lstlisting}
+\end{comment}
 
 \begin{comment}
 Note, than in the definition of \lstinline[mathescape=true]{append$^o$} we
@@ -469,19 +471,43 @@ There are a few predefined numerals for one, two, etc. arguments (called, by tra
 can be applied to existing numeral to increment the number of expected arguments. The
 technique, used to implement them, generally follows~\cite{Unparsing, DoWeNeed}.
 
-As a final example we consider a program, which calculates a list of all permutations of
-given list of integers, using relational sorting (supplementary function definitions are
-omitted):
+As a final example we consider a program, which calculates the list of all permutations 
+of given list of integers, using relational sorting (some supplementary function 
+definitions are omitted):
 
+\begin{lstlisting}[mathescape=true]
+let minmax$^o$ a b min max = conde [
+    (min === a) &&& (max === b) &&& (le$^o$ a b);
+    (max === a) &&& (min === b) &&& (gt$^o$ a b)]
+let rec smallest$^o$ l s l' = conde [       
+    (l === $\uparrow$(Cons (s, $\uparrow$Nil))) &&& (l' === $\uparrow$Nil);
+    fresh (h t s' t' max)
+      (l' === $\uparrow$(Cons(max,t')))
+      (l === $\uparrow$(Cons(h,t)))
+      (minmax$^o$ h s' s max)
+      (smallest$^o$ t s' t')] 
+let rec sort$^o$ x y = conde [
+    (x === $\uparrow$Nil) &&& (y === $\uparrow$Nil);
+    fresh (s xs xs')
+      (y === $\uparrow$(Cons (s, xs')))
+      (sort$^o$ xs xs')       
+      (smallest$^o$ x s xs)]
+let perm l = map prj_nat_list @@
+  run q (fun q -> sort$^o$ q @@ inj_nat_list (sort compare l))
+        (take ~n:(fact @@ length l))
+\end{lstlisting}
+
+\begin{comment}
 \begin{lstlisting}[mathescape=true]
    let perm l = map prj_int_list @@ 
      run q 
        (fun q -> sort$^o$ q (inj_int_list (sort compare l))) 
        (take ~n:(fact @@ length l))
 \end{lstlisting}
+\end{comment}
 
-Here \lstinline{take} is a function for streams, which returns specified number of
-theirs first items as regular lists.
+Here \lstinline{take} is a function for a stream, which returns the specified 
+number of its first items as regular list.
 
 \begin{comment}
 \section{Conclusion}

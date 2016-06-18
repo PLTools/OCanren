@@ -617,6 +617,8 @@ module List =
     let (%<) x y = !!(Cons (x, !!(Cons (y, !!Nil))))
     let (!<) x   = !!(Cons (x, !!Nil))
 
+    let nil = inj Nil
+
     let rec inj fa l = !! (GT.gmap(llist) fa (inj fa) l)
     
     let prj_k fa k l =
@@ -789,6 +791,7 @@ let rec prj_list l =
 let (%)  = List.(%)
 let (%<) = List.(%<)
 let (!<) = List.(!<)
+let nil  = List.nil
 
 let rec inj_nat_list = function
 | []    -> !!Nil
