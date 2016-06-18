@@ -210,7 +210,7 @@ Polymorphic unification is introduced via the following function:
 \end{lstlisting}
 
 \noindent where ``\lstinline[mathescape=true]{$\alpha$ logic}'' stands for the type $\alpha$, 
-injected into logic domain, ``\lstinline{subst}''~--- for the type of substitution. 
+injected into the logic domain, ``\lstinline{subst}''~--- for the type of substitution. 
 
 \begin{comment}
 Unification can 
@@ -354,7 +354,7 @@ Here ``\lstinline{list}'' is a custom type for lists; note, that it made more
 polymorphic, than usual~--- we abstracted it from itself and made it non-recursive. Then
 we provided two specialized versions~--- ``\lstinline{glist}'' (``ground'' list), which 
 corresponds to regular, non-logic lists, and ``\lstinline{llist}'' (``logical'' list), which
-corresponds to logical lists with logical elements. Using a single type-specific function
+corresponds to logical lists with logical elements. Using single type-specific function
 \lstinline[mathescape=true]{map$_{\mbox{\texttt{list}}}$}, we easily provided injection 
 (of type {\lstinline[mathescape=true]{$\alpha$ glist -> $\;\;\alpha$ llist}}) and
 projection (of type {\lstinline[mathescape=true]{$\alpha$ llist -> $\;\;\alpha$ glist}}).
