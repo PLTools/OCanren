@@ -118,13 +118,13 @@ on regular lists and their OCanren counterparts:
 ## Synax Extensions
 
 There are two constructs, implemented as syntax extensions: `fresh` and `defer`. The latter
-is used to eta-expand enclosed goal.
+is used to eta-expand enclosed goal ("inverse-eta delay").
 
-However, neither of them actually needed. Instead of `defer (G)` manual expansion can
+However, neither of them actually needed. Instead of `defer (g)` manual expansion can
 be used:
 
 ```ocaml
-(fun st -> Lazy.from_fun (fun () -> G st))
+(fun st -> Lazy.from_fun (fun () -> g st))
 ```
 
 To get rid of `fresh` one can use `Fresh` module, which introduces variadic function
@@ -132,23 +132,31 @@ support by means of a few predefined numerals and a successor function. For
 example, instead of
 
 ```ocaml
-fresh (x y z) G
+fresh (x y z) g
 ```
 
 one can write
 
 ```ocaml
-Fresh.three (fun x y z -> G)
+Fresh.three (fun x y z -> g)
 ```
 
 or even
 
 ```ocaml
-(Fresh.succ Fresh.two) (fun x y z -> G)
+(Fresh.succ Fresh.two) (fun x y z -> g)
 ```
 
 ## Run
 
+```ocaml
+run n (fun q1 q2 ... qn -> g) (fun a1 a2 ... an -> h)
+```
+
+Here `n` stands for *numeral* (some value, describing the number of arguments, 
+`q1`, `q2`, ..., `qn` --- free logic variables, `a1`, `a2`, ..., `an` --- streams
+of answers for `q1`, `q2`, ..., `qn` respectively, `g` --- some goal, `h` --- a
+*handler* (some peace of code, presumable making use of `a1`, `a2`, ..., `an`).
 
 ## Installation
 
