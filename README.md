@@ -74,6 +74,15 @@ type 'self tree = Leaf | Node of 'self * 'self
 let rec inj_tree t = !! (gmap(tree) inj_tree t)
 ```
 
+Pragmatically speaking, it is desirable to make a type fully abstract, thus
+logic variable can be placed in arbitrary position:
+
+```ocaml
+type ('a, 'b, 'self) tree = Leaf of 'a | Node of 'b * 'self * 'self
+
+let rec inj_tree t = !! (gmap(tree) (!!) (!!) inj_tree t)
+
+```
 
 
 ## Bool, Nat, List
