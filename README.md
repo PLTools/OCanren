@@ -5,11 +5,12 @@ programming language into [Objective Caml] (http://ocaml.org). More precisely, O
 implements [microKanren](http://webyrd.net/scheme-2013/papers/HemannMuKanren2013.pdf) 
 with [disequality constraints] (http://scheme2011.ucombinator.org/papers/Alvis2011.pdf).
 
-| miniKanren                      | OCanren                                       |
-| ------------------------------- | ----------------------------------------------|
-| ((==) a b)                      | (a === b)                                     |
-| (conde (a b ...) (c d ...) ...) | conde [a &&& b &&& ...; c &&& d &&& ...; ...] |
-| (fresh (x y ...) a b ...      ) | fresh (x y ...) a b ...                       |
+| miniKanren                        | OCanren                                         |
+| --------------------------------- | ------------------------------------------------|
+| `((==) a b)`                      | `(a === b)`                                     |
+| `((=/=) a b)`                     | `(a =/= b)`                                     |
+| `(conde (a b ...) (c d ...) ...)` | `conde [a &&& b &&& ...; c &&& d &&& ...; ...]` |
+| `(fresh (x y ...) a b ...      )` | `fresh (x y ...) a b ...`                       |
 
 # Installation
 
