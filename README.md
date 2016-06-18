@@ -9,6 +9,8 @@ The correspondence between original MiniKanren and OCanren constructs is shown b
 
 | miniKanren                        | OCanren                                         |
 | --------------------------------- | ------------------------------------------------|
+| `#u`                              | success                                         |
+| `#f`                              | failure                                         |
 | `((==) a b)`                      | `(a === b)`                                     |
 | `((=/=) a b)`                     | `(a =/= b)`                                     |
 | `(conde (a b ...) (c d ...) ...)` | `conde [a &&& b &&& ...; c &&& d &&& ...; ...]` |
@@ -19,6 +21,13 @@ In addition, OCanren introduces explicit disjunction (`|||`) and conjunctions
 
 ## Injecting and Projecting User-Type Data
 
+To make it possible to work with OCanren, user-type data have to be *injected* into
+logic domain. In the simplest case (non-parametric, non-recursive) the function
+
+`inj : 'a -> 'a logic`
+
+can be used for this purpose.
+ 
 ## Bool, Nat, List
 
 ## Run
