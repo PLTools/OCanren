@@ -161,6 +161,10 @@ Here `n` stands for *numeral* (some value, describing the number of arguments,
 of answers for `q1`, `q2`, ..., `qn` respectively, `g` --- some goal, `h` --- a
 *handler* (some peace of code, presumable making use of `a1`, `a2`, ..., `an`).
 
+There are a few predefined numerals (`q`, `qr`, `qrs`, `qrst` etc.) and a
+successor function, `succ`, which can be used to "manufacture" greater
+numerals from smaller ones.
+
 ## Sample
 
 We consider here a complete example of OCanren specification (relational
