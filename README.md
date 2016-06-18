@@ -30,20 +30,30 @@ inj : 'a -> 'a logic
 
 can be used for this purpose:
 
-`inj 1`
+```ocaml
+inj 1
+```
 
-`inj true`
+```ocaml
+inj true
+```
 
-`inj "abc"`
+```ocaml
+inj "abc"
+```
 
-There is also prefix synonym `!!` for `inj`.
+There is also a prefix synonym `!!` for `inj`.
 
 If the type is parametric (but non-recursive), then (as a rule) all its type parameters
 have to be injected as well:
 
-`!! (gmap(option) (!!) (Some x))`  
+```ocaml
+!! (gmap(option) (!!) (Some x))
+```
 
-`!! (gmap(pair) (!!) (!!) (x, y))`
+```ocaml
+!! (gmap(pair) (!!) (!!) (x, y))
+```
  
 Here `gmap(type)` is a type-indexed morphism for the type `type`; it can be written
 by hands, or constructed using one of the existing generic programming 
@@ -51,6 +61,17 @@ frameworks (the library itself uses [GT](https://github.com/dboulytchev/generic-
 
 If the type is recursive, then, as a rule, it has to be abstracted from itself, and then
 injected as in the previous case:
+
+```ocaml
+type tree = Leaf | Node of tree * tree
+```
+
+
+```ocaml
+type 'self tree = Leaf | Node of 'self * 'self
+
+let rec inj_tree t = !! (gmap(tree) inj_tree t)
+```
 
 
 
