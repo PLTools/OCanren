@@ -60,12 +60,13 @@ by hands, or constructed using one of the existing generic programming
 frameworks (the library itself uses [GT](https://github.com/dboulytchev/generic-transformers)).
 
 If the type is recursive, then, as a rule, it has to be abstracted from itself, and then
-injected as in the previous case:
+injected as in the previous case, for example,
 
 ```ocaml
 type tree = Leaf | Node of tree * tree
 ```
 
+is converted into
 
 ```ocaml
 type 'self tree = Leaf | Node of 'self * 'self
