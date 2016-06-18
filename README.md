@@ -173,7 +173,7 @@ open MiniKanren
 (* Abstracted type for the tree *)
 @type ('a, 'self) tree = Nil | Node of 'a * 'self * 'self with gmap, show
 
-(* A shortcut for "ground" tree we're going to work in "functional" code *)
+(* A shortcut for "ground" tree we're going to work with in "functional" code *)
 type gtree = (int, gtree) tree
 
 (* Logic counterpart *)
