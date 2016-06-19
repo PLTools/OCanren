@@ -84,7 +84,7 @@ val logic :
     the list, representing all disequality constraints, or some value *)
 @type 'a unlogic = [`Var of GT.int * 'a logic GT.list | `Value of 'a] with show, html, eq, compare, foldl, foldr, gmap
 
-(** [destruct l] destructs abstract logic into cocrete *)
+(** [destruct l] destructs abstract logic into concrete *)
 val destruct : 'a logic -> 'a unlogic
 
 (** Injecting values into logics *)
@@ -238,8 +238,8 @@ module Nat :
     (** Comparisons *)
     val leo : logic -> logic -> Bool.logic -> goal
     val geo : logic -> logic -> Bool.logic -> goal
-    val gt  : logic -> logic -> Bool.logic -> goal
-    val lt  : logic -> logic -> Bool.logic -> goal
+    val gto : logic -> logic -> Bool.logic -> goal
+    val lto : logic -> logic -> Bool.logic -> goal
 
     (** Comparisons as goals *)
     val (<=) : logic -> logic -> goal

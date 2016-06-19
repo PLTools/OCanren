@@ -579,11 +579,11 @@ module Nat =
     let (<=) x y = leo x y !true
     let (>=) x y = geo x y !true
 
-    let gt x y b = conde [(x >= y) &&& (x =/= y) &&& (b === !true)]
-    let lt x y b = gt y x b
+    let gto x y b = conde [(x >= y) &&& (x =/= y) &&& (b === !true)]
+    let lto x y b = gto y x b
 
-    let (>) x y = gt x y !true
-    let (<) x y = lt x y !true
+    let (>) x y = gto x y !true
+    let (<) x y = lto x y !true
     
   end
 
