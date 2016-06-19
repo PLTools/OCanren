@@ -378,7 +378,7 @@ val call_fresh : ('a logic -> State.t -> 'b) -> State.t -> 'b
     [x] and [y] *)
 val (===) : 'a logic -> 'a logic -> goal
 
-(** [x === y] creates a goal, which performs a non-unification check for
+(** [x =/= y] creates a goal, which introduces a disequality constraint for
     [x] and [y] *)
 val (=/=) : 'a logic -> 'a logic -> goal
 
