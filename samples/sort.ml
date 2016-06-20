@@ -62,6 +62,13 @@ let perm l =
   run q (fun q -> sorto q @@ inj_nat_list (List.sort Pervasives.compare l))
         (Stream.take ~n:(fact @@ List.length l))
 
+(* More hardcore version: no standard sorting required *)
+let perm' l = 
+  let rec fact = function 0 -> 1 | n -> n * fact (n-1) in
+  List.map prj_nat_list @@
+  run q (fun q -> fresh (r) (sorto (inj_nat_list l) r) (sorto q r))
+        (Stream.take ~n:(fact @@ List.length l))
+
 (* Entry point *)
 let _ =
   (* Sorting: *)
@@ -95,12 +102,18 @@ let _ =
   *)
 
   (* Permutations: *)
-
+ 
   Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm []);
   Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1]);
   Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2]);
   Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3]);
   Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3; 4]);
   Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3; 4; 5]);
-  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3; 4; 5; 6])
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm [1; 2; 3; 4; 5; 6]);
+  
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' []);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' [1]);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' [1; 2]);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' [1; 2; 3]);
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' [1; 2; 3; 4]);
 

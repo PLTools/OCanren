@@ -13,7 +13,7 @@
 \setlength{\textheight}{25.3cm}
 
 \lstdefinelanguage{ocaml}{
-keywords={let, begin, end, in, match, type, and, fun, function, try, with, when, class, 
+keywords={fresh, let, begin, end, in, match, type, and, fun, function, try, with, when, class, 
 object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit, 
 new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual},
 sensitive=true,
@@ -82,11 +82,11 @@ producing all permutations) etc.
 
 Many logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
 or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}} to some extent
-can be considered as relational. We have chosen, however, miniKanren\footnote{\url{http://minikanren.org}} 
+can be considered as relational. We have chosen miniKanren\footnote{\url{http://minikanren.org}} 
 as model language, because it was specifically designed as relational DSL, embedded in Scheme/Racket. 
 Being rather a minimalistic language, which can be implemented with just a few data structures and
-combinators miniKanren found its way in dozens of host languages, including Haskell, 
-Standard ML and OCaml.
+combinators, miniKanren found its way in dozens of host languages, including Haskell, 
+Standard ML, and OCaml.
 
 There is, however, a predictable glitch in implementing miniKanren for strongly typed language. 
 Designed in a metaprogramming-friendly and dynamically typed realm of Scheme/Racket, original 
@@ -127,18 +127,28 @@ added as well. The contribution of our work is as follows:
 can be used for almost arbitrary types. The implementation of polymorphic unification uses unsafe features and
 relies on intrinsic knowledge of runtime representation of values; we show, however, that this does not
 compromise type safety. Practically, we applied purely \emph{ad hoc} approach since the features, 
-which would provide less \emph{ad hoc} solution are not yet integrated into the mainstream language.
+which would provide less \emph{ad hoc} solution, are not yet integrated into the mainstream language.
 
 \item We describe a uniform and scalable pattern for using types for relational programming, which
 helps in converting typed data to- and from relational domain. With this pattern, only one
 generic feature (``\lstinline{map/morphism/Functor}'') is needed, and thus virtually any generic 
 framework for OCaml can be used. Despite being rather a pragmatic observation, this pattern, as we
-believe, would lead to a more regular and easy to maintain relational specifications.
+believe, would lead to  more regular and easy to maintain relational specifications.
 
 \item We provide a simplified way to integrate relational and functional code. Our approach utilizes
 well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementation and makes it
 possible to hide refinement of answers phase from an end-user.
 \end{enumerate}
+
+The rest of the paper is organized as follows: in the next section we discuss polymorphic
+unification, and show, that standard unification with triangular substitution respects
+typing. Then we present our approach to handle user-defined types by injecting them 
+into logic domain. Next section describes top-level primitives and addresses the problem of
+relational and functional code integration. Then, we present a complete example of relational
+specification, written with the aid of our library. The final section concludes.
+
+We expect from reader some familiarity with basic concepts behind original miniKanren 
+implementation as well as principles of relational programming.
 
 \section{Polymorphic Unification}
 \label{polyuni}
@@ -196,8 +206,8 @@ assume, that $\rho$ is unambiguously determined by $t_1$, $\tau$, and a position
 
 Outside unification the compiler maintains typing, which means, that all 
 terms, subterms, and variables agree in their types in all contexts. However, as 
-our implementation resorts to unsafe features, we have to make this work for unification
-code on our own.
+our implementation resorts to unsafe features, we have to manually repeat this work for 
+unification code.
 
 We argue, that the following three invariants are maintained for any substitution $s$, involved 
 in unification:
@@ -211,7 +221,7 @@ then $\rho=\tau$ (different occurrences of the same variable in $s$ are attribut
 binds a variable to a term of the same type);
 
 \item each variable in $s$ preserves its type, assigned by the compiler (from the first two invariants 
-it is follows, that this type is unique; note also, that all variables are created and have their 
+it follows, that this type is unique; note also, that all variables are created and have their 
 types assigned outside unification, in a type-safe world).
 \end{enumerate}
 
@@ -240,13 +250,13 @@ substitution in only a little bit more abstract form, than actual code (for exam
 \end{lstlisting}
 
 Type annotations, included in the snippet above, can be justified by the following 
-reasonings\footnote{We omit the verbal description of unification algorithm; 
+reasonings\footnote{We omit verbal description of unification algorithm; 
 the details can be found in~\cite{MicroKanren}.}:
 
 \begin{enumerate}
-\item Line 2: the type of \mbox{$(s\;\;x^\tau)$} is $\tau$ due to the invariant 2; hence, 
+\item Line 2: the type of \mbox{$(s\;\;x^\tau)$} is $\tau$ due to invariant 2; hence, 
 the type of \lstinline{walk} result coincides with the type of its second argument (technically,
-an induction on a number of recursive invocations of \lstinline{walk} is needed).
+an induction on the number of recursive invocations of \lstinline{walk} is needed).
 
 \item Line 9: the substitution is left unchanged, hence all invariants are preserved.
 
@@ -277,7 +287,7 @@ since the unification is implemented in untyped manner, we can not use simple pa
 distinguish logical variables from other logical values. A special attention was paid to implement
 variable recognition in constant time.
 
-Apart from variables, other logical values can be obtained by injecting; conversely, sometimes
+Apart from variables, other logical values can be obtained by injection; conversely, sometimes
 logical value can be projected to a regular one. We supply two functions\footnote{``\lstinline{inj}'' and ``\lstinline{prj}'' in concrete syntax.}
 for these purposes
 
@@ -302,8 +312,11 @@ consider user-defined list type as an example:
 \end{lstlisting}
 
 Here ``\lstinline{list}'' is a custom type for lists; note, that it made more
-polymorphic, than usual~--- we abstracted it from itself and made it non-recursive. Then
-we provided two specialized versions~--- ``\lstinline{glist}'' (``ground'' list), which 
+polymorphic, than usual~--- we abstracted it from itself and made it non-recursive 
+(pragmatically speaking, it is desirable to make a type fully abstract, thus logic variables 
+can be placed in arbitrary positions).
+
+Then we provided two specialized versions~--- ``\lstinline{glist}'' (``ground'' list), which 
 corresponds to regular, non-logic lists, and ``\lstinline{llist}'' (``logical'' list), which
 corresponds to logical lists with logical elements. Using a single type-specific function
 \lstinline[mathescape=true]{map$_{\mbox{\texttt{list}}}$}, we easily provided injection 
@@ -412,30 +425,116 @@ There are a few predefined numerals for one, two, etc. arguments (called, by tra
 can be applied to existing numeral to increment the number of expected arguments. The
 technique, used to implement them, generally follows~\cite{Unparsing, DoWeNeed}.
 
-As a final example we consider a program, which calculates a list of all permutations of
-given list of integers, using relational sorting (supplementary function definitions are
-omitted):
+\section{An Example}
+\label{example}
+
+Here we present an example of relational specification, written with the aid of our library. 
+For this example we take list sorting; specifically, we present sorting for lists of
+natural numbers in Peano form since our library already contains built-in
+support for them. However our example can be easily extended for arbitrary (but
+linearly ordered) types.
+
+List sorting can be implemented in miniKanren in a variety of ways~--- 
+virtually any existing algorithm can be rewritten relationally. We, however, 
+try to be as much declarative as possible to demonstrate the
+advantages of relational approach. From this standpoint, we can
+claim, that sorted version of empty list is empty list, and sorted version
+of non-empty list is its smallest element, concatenated with sorted
+version of list, containing all its remaining elements.
+
+The following snippet literally implements this definition:
 
 \begin{lstlisting}[mathescape=true]
-   let perm l = map prj_int_list @@ 
-     run q 
-       (fun q -> sort$^o$ q (inj_int_list (sort compare l))) 
-       (take ~n:(fact @@ length l))
+   let rec sort$^o$ x y = conde [
+       (x === $\uparrow$Nil) &&& (y === $\uparrow$Nil);
+       fresh (s xs xs')
+         (y === $\uparrow$(Cons (s, xs')))
+         (sort$^o$ xs xs')       
+         (smallest$^o$ x s xs)]
 \end{lstlisting}
 
-Here \lstinline{take} is a function for streams, which returns specified number of
-theirs first items as regular lists.
+The meaning of the expression
+
+\begin{lstlisting}[mathescape=true]
+   smallest$^o$ x s xs
+\end{lstlisting}
+
+is
+
+\begin{quotation}
+\noindent ``\lstinline{s}'' is the smallest element of a (non-empty) list ``\lstinline{x}'', and 
+``\lstinline{xs}'' is the list of all its remaining elements.
+\end{quotation}
+
+Now, \lstinline[mathescape=true]{smallest$^o$} can be imlpemented
+using case analysis (note, that ``\lstinline{l}'' here is a non-empty 
+list):
+
+\begin{lstlisting}[mathescape=true]
+   let rec smallest$^o$ l s l' = conde [       
+       (l === $\uparrow$(Cons (s, $\uparrow$Nil))) &&& (l' === $\uparrow$Nil);
+       fresh (h t s' t' max)
+         (l' === $\uparrow$(Cons(max,t')))
+         (l === $\uparrow$(Cons(h,t)))
+         (minmax$^o$ h s' s max)
+         (smallest$^o$ t s' t')] 
+\end{lstlisting}
+
+Finally, we implement relational minimum-maximum calculation
+primitive:
+
+\begin{lstlisting}[mathescape=true]
+   let minmax$^o$ a b min max = conde [
+      (min === a) &&& (max === b) &&& (le$^o$ a b);
+      (max === a) &&& (min === b) &&& (gt$^o$ a b)]
+\end{lstlisting}
+
+Here ``\lstinline[mathescape=true]{le$^o$}'' and ``\lstinline[mathescape=true]{gt$^o$}'' are
+built-in comparison goals for natural numbers in Peano form.
+
+Having relational \lstinline[mathescape=true]{sort$^o$}, we can implement 
+sorting for regular integer lists:
+
+\begin{lstlisting}[mathescape=true]
+   let sort l =
+     run q (sorto @@ inj_nat_list l)
+           (fun qs -> prj_nat_list @@ Stream.hd qs)
+\end{lstlisting}
+
+Here \lstinline{Stream.hd} is a function, which takes a head from a 
+lazy stream of answers. 
+
+It is interesting, that since \lstinline[mathescape=true]{sort$^o$} is
+relational, it can be used to calculate the list of all \emph{permutations}
+for a given list. Indeed, each permutation, being sorted, results in the same list. 
+So, the problem of finding all permutations can be relationally reformulated into 
+the problem of finding all lists, which are converted into the given by
+sorting:
+
+\begin{lstlisting}[mathescape=true]
+let perm l = map prj_nat_list @@
+  run q (fun q -> fresh (r)
+                    (sort$^o$ (inj_nat_list l) r) 
+                    (sort$^o$ q r)
+        )
+        (Stream.take ~n:(fact @@ length l))
+\end{lstlisting}
+
+Note, that for sorting of original list we used exactly the same primitive. Note also, 
+that we requested exactly \lstinline{fact @@ length l} answers; requesting more
+would result in infinite search for non-existing answers.
+This concludes our example.
 
 \section{Conclusion}
 
 We presented strongly typed implementation of miniKanren for OCaml. Our implementation
 passes all tests, written for miniKanren (including those for disequality constraints);
-in addition we implemented many of interesting relational programs, known from
+in addition we implemented many interesting relational programs, known from
 the literature. We claim, that our implementation can be used both as a convenient
 relational DSL for OCaml and an experimental framework for future research in the area of
 relational programming. 
 
-The source code of our implementation is accessible from \url{https://github.com/dboulytchev/miniKanren-ocaml-typed}.
+The source code of our implementation is accessible from \url{https://github.com/dboulytchev/OCanren}.
 
 We also want to express our gratitude to William Byrd, who infected us with relational programming, for 
 the time he sacrificed to very instructive and clarifying conversations.

@@ -14,7 +14,7 @@
 \setlength{\textheight}{25.3cm}
 
 \lstdefinelanguage{ocaml}{
-keywords={let, begin, end, in, match, type, and, fun, function, try, with, when, class, 
+keywords={fresh, let, begin, end, in, match, type, and, fun, function, try, with, when, class, 
 object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit, 
 new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual},
 sensitive=true,
@@ -167,7 +167,7 @@ possible to hide refinement of answers phase from an end-user.
 \end{enumerate}
 
 The source code of our implementation is accessible from \url{https://github.com/dboulytchev/OCanren}.
-Extended version of this abstract can be downloaded from \url{http://oops.math.spbu.ru/papers/mk-ocaml.pdf}.
+Extended version of this abstract can be downloaded from \url{http://oops.math.spbu.ru/papers/ocanren.pdf}.
 
 \section{Polymorphic Unification}
 \label{polyuni}
@@ -254,7 +254,7 @@ then $\rho=\tau$ (different occurrences of the same variable in $s$ are attribut
 binds a variable to a term of the same type);
 
 \item each variable in $s$ preserves its type, assigned by the compiler (from the first two invariants 
-it is follows, that this type is unique; note also, that all variables are created and have their 
+it follows, that this type is unique; note also, that all variables are created and have their 
 types assigned outside unification, in a type-safe world).
 \end{enumerate}
 
@@ -492,9 +492,9 @@ let rec sort$^o$ x y = conde [
       (y === $\uparrow$(Cons (s, xs')))
       (sort$^o$ xs xs')       
       (smallest$^o$ x s xs)]
-let perm l = map prj_nat_list @@
-  run q (fun q -> sort$^o$ q @@ inj_nat_list (sort compare l))
-        (take ~n:(fact @@ length l))
+let perm l = map prj_nat_list @@ run q 
+  (fun q -> fresh (r) (sort$^o$ (inj_nat_list l) r)(sort$^o$ q r))
+  (take ~n:(fact @@ length l))
 \end{lstlisting}
 
 \begin{comment}
