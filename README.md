@@ -115,7 +115,7 @@ on regular lists and their OCanren counterparts:
 | `x::y::z::tl`   | `x % (y % (z % tl))` |
 | `x::xs`         | `x % xs`             |
 
-## Synax Extensions
+## Syntax Extensions
 
 There are two constructs, implemented as syntax extensions: `fresh` and `defer`. The latter
 is used to eta-expand enclosed goal ("inverse-eta delay").
@@ -159,7 +159,7 @@ run n (fun q1 q2 ... qn -> g) (fun a1 a2 ... an -> h)
 Here `n` stands for *numeral* (some value, describing the number of arguments, 
 `q1`, `q2`, ..., `qn` --- free logic variables, `a1`, `a2`, ..., `an` --- streams
 of answers for `q1`, `q2`, ..., `qn` respectively, `g` --- some goal, `h` --- a
-*handler* (some peace of code, presumable making use of `a1`, `a2`, ..., `an`).
+*handler* (some piece of code, presumable making use of `a1`, `a2`, ..., `an`).
 
 There are a few predefined numerals (`q`, `qr`, `qrs`, `qrst` etc.) and a
 successor function, `succ`, which can be used to "manufacture" greater

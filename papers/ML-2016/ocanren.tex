@@ -380,7 +380,7 @@ free variable. Note, that disequality can be established only for equally typed
 terms, which justifies type-safety of reification. Note also, that additional care has 
 to be taken to avoid infinite looping, since refinement and reification are
 mutually recursive, and refinement of a variable can be potentially invoked from 
-itself due to a chain of disequalify constraints.
+itself due to a chain of disequality constraints.
 
 After refinement the content of logical value can be inspected via the following 
 function:
@@ -450,7 +450,8 @@ The following snippet literally implements this definition:
        fresh (s xs xs')
          (y === $\uparrow$(Cons (s, xs')))
          (sort$^o$ xs xs')       
-         (smallest$^o$ x s xs)]
+         (smallest$^o$ x s xs)
+   ]
 \end{lstlisting}
 
 The meaning of the expression
@@ -466,7 +467,7 @@ is
 ``\lstinline{xs}'' is the list of all its remaining elements.
 \end{quotation}
 
-Now, \lstinline[mathescape=true]{smallest$^o$} can be imlpemented
+Now, \lstinline[mathescape=true]{smallest$^o$} can be implemented
 using case analysis (note, that ``\lstinline{l}'' here is a non-empty 
 list):
 
@@ -477,7 +478,8 @@ list):
          (l' === $\uparrow$(Cons(max,t')))
          (l === $\uparrow$(Cons(h,t)))
          (minmax$^o$ h s' s max)
-         (smallest$^o$ t s' t')] 
+         (smallest$^o$ t s' t')
+   ] 
 \end{lstlisting}
 
 Finally, we implement relational minimum-maximum calculation
@@ -508,8 +510,7 @@ It is interesting, that since \lstinline[mathescape=true]{sort$^o$} is
 relational, it can be used to calculate the list of all \emph{permutations}
 for a given list. Indeed, each permutation, being sorted, results in the same list. 
 So, the problem of finding all permutations can be relationally reformulated into 
-the problem of finding all lists, which are converted into the given by
-sorting:
+the problem of finding all lists, which are converted by sorting into the given one:
 
 \begin{lstlisting}[mathescape=true]
 let perm l = map prj_nat_list @@
@@ -520,10 +521,9 @@ let perm l = map prj_nat_list @@
         (Stream.take ~n:(fact @@ length l))
 \end{lstlisting}
 
-Note, that for sorting of original list we used exactly the same primitive. Note also, 
+Note, that for sorting original list we used exactly the same primitive. Note also, 
 that we requested exactly \lstinline{fact @@ length l} answers; requesting more
-would result in infinite search for non-existing answers.
-This concludes our example.
+would result in infinite search for non-existing answers. This concludes our example.
 
 \section{Conclusion}
 
