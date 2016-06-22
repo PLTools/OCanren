@@ -45,7 +45,7 @@ language=ocaml
 
 \begin{document}
 
-\title{Typed Embedding of Relational Language in OCaml}
+\title{Typed Embedding of a Relational Language in OCaml}
 
 \authorinfo{Dmitry Kosarev \and Dmitri Boulytchev}
 {St.Petersburg State University \\ 
@@ -57,7 +57,7 @@ language=ocaml
 \small
 \begin{abstract}
 \small
-We present an implementation of relational programming language miniKanren as a set 
+We present an implementation of the relational programming language miniKanren as a set 
 of combinators and syntax extension for OCaml. The key feature of our approach is 
 \emph{polymorphic unification}, which can be used to unify data structures of almost 
 arbitrary types. In addition we provide a useful generic programming pattern to 
@@ -78,7 +78,7 @@ number of appealing examples, confirming this observation: a type checker
 for simply typed lambda calculus (and, at the same time, type inferencer and solver 
 for the inhabitation problem), an interpreter (capable of generating ``quines''~--- 
 programs, producing themselves as result)~\cite{Untagged}, list sorting (capable of 
-producing all permutations) etc. 
+producing all permutations), etc. 
 
 Many logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
 or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}} to some extent
@@ -88,7 +88,7 @@ Being rather a minimalistic language, which can be implemented with just a few d
 combinators, miniKanren found its way in dozens of host languages, including Haskell, 
 Standard ML, and OCaml.
 
-There is, however, a predictable glitch in implementing miniKanren for strongly typed language. 
+There is, however, a predictable glitch in implementing miniKanren for a strongly typed language. 
 Designed in a metaprogramming-friendly and dynamically typed realm of Scheme/Racket, original 
 miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
 ML or Haskell. In particular, one of capstone constructs of miniKanren~--- unification~--- has to work for 
@@ -97,7 +97,7 @@ different data structures, which may have types, different beyond parametricity.
 There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
 provide unification for some concrete type, rich enough to represent any reasonable data structures.
 Some Haskell miniKanren libraries\footnote{\url{https://github.com/JaimieMurdock/HK}, \url{https://github.com/rntz/ukanren}}
-as well as existing OCaml implementation\footnote{\url{https://github.com/lightyang/minikanren-ocaml}} take this way. 
+as well as existing OCaml implementation\footnote{\url{https://github.com/lightyang/minikanren-ocaml}} take this approach. 
 As a result, the original implementation can be retold with all its elegance; relational specifications, however,
 become weakly typed. Another approach is to utilize \emph{ad hoc} polymorphism and provide type-specific
 unification for each ``interesting'' type; Molog\footnote{\url{https://github.com/acfoltzer/Molog}} and 
@@ -107,9 +107,9 @@ automation, for example, using Template Haskell\footnote{\url{https://wiki.haske
 is desirable. There is, actually, another potential approach, but we do not know, if anybody tried
 it: to implement unification for generic representation of types as sum-of-products and fixpoints of 
 functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types, for which representation
-is provided. We assume, that implementing representation would require less boilerplate code.
+is provided. We assume that implementing representation would require less boilerplate code.
 
-As it follows from given exposition, typed embedding of miniKanren in OCaml can be done with
+As follows from this exposition, typed embedding of miniKanren in OCaml can be done with
 a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a 
 number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
 for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power with Haskell 
@@ -163,10 +163,10 @@ for user types no ``boilerplate'' code is needed. On the other hand, all pitfall
 polymorphic comparison are inherited as well; in particular, unification can loop 
 for cyclic data structures and does not work for functional values. Since we generally 
 do not expect any reasonable outcome in these cases, the only remaining problem is that
-the compiler is incapable to provide any assistance in identifying 
+the compiler is incapable of providing any assistance in identifying 
 and avoiding them. Another drawback is that the implementation of polymorphic unification
 relies on runtime representation of values and have to be fixed every time the representation changes. 
-Finally, as it written in unsafe manner using \lstinline{Obj} interface, it has to be
+Finally, as it is written in unsafe manner using \lstinline{Obj} interface, it has to be
 carefully developed and tested.
 
 An important difference between polymorphic comparison and unification is that the former 
@@ -183,10 +183,10 @@ Polymorphic unification is introduced via the following function:
 \end{lstlisting}
 
 \noindent where ``\lstinline[mathescape=true]{$\alpha$ logic}'' stands for the type $\alpha$, 
-injected into logic domain, ``\lstinline{subst}''~--- for the type of substitution. Unification can 
+injected into the logic domain, ``\lstinline{subst}''~--- for the type of substitution. Unification can 
 fail (hence ``\lstinline{option}'' in the result type), is performed in the context of
 existing substitution (hence ``\lstinline{subst}'' in the third argument) and
-can be chained (hence ``\lstinline{option}'' in the third argument). Note, that the 
+can be chained (hence ``\lstinline{option}'' in the third argument). Note, the 
 type of substitution is not polymorphic, which means, that compiler completely looses the 
 track of types for values, stored in a substitution. These types are recovered later during
 refinement of answers.
@@ -280,11 +280,11 @@ goals. The implementation generally follows~\cite{CKanren}.
 
 Unification, considered in Section~\ref{polyuni}, works for values of type \lstinline[mathescape=true]{$\alpha$ logic}. 
 Any value of this type can be seen as either value of type $\alpha$, or logical variable of type $\alpha$. The type 
-itself in made abstract, but its values can be uncovered after refinement (see Section~\ref{refinement}).
+itself is made abstract, but its values can be uncovered after refinement (see Section~\ref{refinement}).
 
-Free variables solely can be created using ``\lstinline{fresh}'' construct of miniKanren. Note, that 
+Free variables solely can be created using ``\lstinline{fresh}'' construct of miniKanren. Note,  
 since the unification is implemented in untyped manner, we can not use simple pattern matching to
-distinguish logical variables from other logical values. A special attention was paid to implement
+distinguish logical variables from other logical values. Special attention was paid to implement
 variable recognition in constant time.
 
 Apart from variables, other logical values can be obtained by injection; conversely, sometimes
@@ -311,7 +311,7 @@ consider user-defined list type as an example:
    let rec prj_list l = map$_{\mbox{\texttt{list}}}$ ($\downarrow$) prj_list ($\downarrow$ l)
 \end{lstlisting}
 
-Here ``\lstinline{list}'' is a custom type for lists; note, that it made more
+Here ``\lstinline{list}'' is a custom type for lists; note, that it is made more
 polymorphic, than usual~--- we abstracted it from itself and made it non-recursive 
 (pragmatically speaking, it is desirable to make a type fully abstract, thus logic variables 
 can be placed in arbitrary positions).
@@ -337,7 +337,7 @@ which is one of first-step examples of miniKanren programming:
      ]
 \end{lstlisting}
 
-Note, than in the definition of \lstinline[mathescape=true]{append$^o$} we
+Note, in the definition of \lstinline[mathescape=true]{append$^o$} we
 used only default injection (``$\uparrow$''). Customized version most likely would 
 appear in some top-level goal, for example:
 
@@ -351,7 +351,7 @@ appear in some top-level goal, for example:
 \section{Refinement and Top-Level Primitives}
 \label{refinement}
 
-The result of relational program is a stream of substitutions, each of which represents
+The result of a relational program is a stream of substitutions, each of which represents
 a certain answer. As a rule, a substitution binds many intermediate logical variables, 
 created by ``\lstinline{fresh}'' in the course of execution. A meaningful answer has to be
 \emph{refined}.
@@ -376,13 +376,13 @@ well-typedness.
 In addition to performing substitutions, \lstinline{refine} also \emph{reifies} 
 disequality constrains. Reification attaches to each free variable in a refined
 term a list of \emph{refined} terms, describing disequality constraint for that
-free variable. Note, that disequality can be established only for equally typed
-terms, which justifies type-safety of reification. Note also, that additional care has 
+free variable. Note, disequality can be established only for equally typed
+terms, which justifies type-safety of reification. Note also, additional care has 
 to be taken to avoid infinite looping, since refinement and reification are
 mutually recursive, and refinement of a variable can be potentially invoked from 
 itself due to a chain of disequality constraints.
 
-After refinement the content of logical value can be inspected via the following 
+After refinement, the content of a logical value can be inspected via the following 
 function:
 
 \begin{lstlisting}[mathescape=true]
@@ -396,7 +396,7 @@ for this variable. These terms are refined as well.
 
 We did not make \lstinline{refine} accessible for an end-user; instead we provided
 a set of top-level combinators, which should be used to surround relational code
-and perform refinement in a transparent manner. Note, that from pragmatic
+and perform refinement in a transparent manner. Note, from pragmatic
 standpoint only variables, supplied as arguments for the top-level goal, have
 to be refined (the original miniKanren implementation follows the same convention).
 
@@ -521,8 +521,8 @@ let perm l = map prj_nat_list @@
         (Stream.take ~n:(fact @@ length l))
 \end{lstlisting}
 
-Note, that for sorting original list we used exactly the same primitive. Note also, 
-that we requested exactly \lstinline{fact @@ length l} answers; requesting more
+Note, for sorting original list we used exactly the same primitive. Note also, 
+we requested exactly \lstinline{fact @@ length l} answers; requesting more
 would result in infinite search for non-existing answers. This concludes our example.
 
 \section{Conclusion}
@@ -536,8 +536,8 @@ relational programming.
 
 The source code of our implementation is accessible from \url{https://github.com/dboulytchev/OCanren}.
 
-We also want to express our gratitude to William Byrd, who infected us with relational programming, for 
-the time he sacrificed to very instructive and clarifying conversations.
+We also want to express our gratitude to William Byrd, who infected us with relational programming, 
+and for the extra time he sacrificed as both out tutor and friend.
 
 \begin{thebibliography}{99}
 \bibitem{TRS}
