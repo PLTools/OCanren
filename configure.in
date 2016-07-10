@@ -64,7 +64,7 @@ dnl library name, modules to open,
 dnl 1st dir <space> 2nd dir <space> etc., library homepage.
 dnl more module checks
 AC_CHECK_OCAML_LIBRARY(str, Str)
-AC_CHECK_OCAML_LIBRARY(typeutil, View, ../typeutil/src, http://oops.math.spbu.ru/projects/typeutil) dnl GET: svn co http://oops.math.spbu.ru/svn/typeutil/trunk
+dnl AC_CHECK_OCAML_LIBRARY(typeutil, View, ../typeutil/src, http://oops.math.spbu.ru/projects/typeutil) dnl GET: svn co http://oops.math.spbu.ru/svn/typeutil/trunk
 AC_CHECK_OCAML_LIBRARY(GT, GT, ../generic-transformers/src, http://oops.math.spbu.ru/projects/checked) dnl GET: svn co http://oops.math.spbu.ru/svn/chec
 
 AC_SUBST(MODULE_INCLUDES)

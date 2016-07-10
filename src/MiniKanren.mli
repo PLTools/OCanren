@@ -72,7 +72,7 @@ type 'a logic
 val logic :
   (unit, 
    < show    : ('a -> string) -> 'a logic -> string;    
-     html    : ('a -> HTMLView.viewer) -> 'a logic -> HTMLView.viewer;
+     html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
      eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool;
      compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison;
      foldl   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
@@ -132,7 +132,7 @@ module Bool :
          foldl   : 'a -> ground -> 'a;
          foldr   : 'a -> ground -> 'a;
          gmap    : ground -> ground;
-         html    : ground -> HTMLView.viewer;
+         html    : ground -> HTML.viewer;
          show    : ground -> string >)
       GT.t 
 
@@ -147,7 +147,7 @@ module Bool :
          foldl   : 'a -> logic -> 'a;
          foldr   : 'a -> logic -> 'a;
          gmap    : logic -> logic;
-         html    : logic -> HTMLView.viewer;
+         html    : logic -> HTML.viewer;
          show    : logic -> string >)
       GT.t
 
@@ -194,7 +194,7 @@ module Nat :
          foldl   : 'a -> ground -> 'a;
          foldr   : 'a -> ground -> 'a;
          gmap    : ground -> ground;
-         html    : ground -> HTMLView.viewer;
+         html    : ground -> HTML.viewer;
          show    : ground -> string >)
       GT.t
 
@@ -209,7 +209,7 @@ module Nat :
          foldl   : 'a -> logic -> 'a;
          foldr   : 'a -> logic -> 'a;
          gmap    : logic -> logic;
-         html    : logic -> HTMLView.viewer;
+         html    : logic -> HTML.viewer;
          show    : logic -> string >)
       GT.t
 
@@ -278,7 +278,7 @@ module List :
          foldl   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
          foldr   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
          gmap    : ('a -> 'b) -> 'a ground -> 'b ground;
-         html    : ('a -> HTMLView.viewer) -> 'a ground -> HTMLView.viewer;
+         html    : ('a -> HTML.viewer) -> 'a ground -> HTML.viewer;
          show    : ('a -> string) -> 'a ground -> string >)
       GT.t
 
@@ -299,7 +299,7 @@ module List :
          foldr   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
          foldl   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b; 
          gmap    : ('a -> 'b) -> 'a logic -> 'b logic;
-         html    : ('a -> HTMLView.viewer) -> 'a logic -> HTMLView.viewer;
+         html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
          show    : ('a -> string) -> 'a logic -> GT.string >)
       GT.t 
 

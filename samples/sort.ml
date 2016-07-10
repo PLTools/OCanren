@@ -114,6 +114,5 @@ let _ =
   Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' []);
   Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' [1]);
   Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' [1; 2]);
-  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' [1; 2; 3]);
-  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' [1; 2; 3; 4])
+  Printf.printf "%s\n\n%!" (show(list) (show(list) (show(int))) @@ perm' [1; 2; 3])
 
