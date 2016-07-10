@@ -225,6 +225,7 @@ Prerequisites:
 - [ocaml](http://ocaml.org) version >= 4.01.0
 - [camlp5](http://camlp5.gforge.inria.fr) version >= 6.11
 - [findlib](http://projects.camlcity.org/projects/findlib.html)
+- [logger] (https://github.com/dboulytchev/logger)
 - [GT](https://github.com/dboulytchev/generic-transformers)
 
 Build steps:
