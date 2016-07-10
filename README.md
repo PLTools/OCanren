@@ -1,3 +1,15 @@
+Table of Contents
+=================
+
+  * [OCanren](#ocanren)
+    * [Injecting and Projecting User-Type Data](#injecting-and-projecting-user-type-data)
+    * [Bool, Nat, List](#bool-nat-list)
+    * [Syntax Extensions](#syntax-extensions)
+    * [Run](#run)
+    * [Sample](#sample)
+    * [Installation](#installation)
+  * [More info](#more-info)
+
 # OCanren
 
 OCanren is a strongly-typed embedding of [miniKanren](http://minikanren.org) relational 
