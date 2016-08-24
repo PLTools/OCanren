@@ -100,7 +100,7 @@ let logic = {logic with
     end
 };;
 
-@type 'a unlogic = [`Var of GT.int * 'a logic GT.list | `Value of 'a] with show, html, eq, compare, foldl, foldr, gmap
+@type 'a unlogic = [`Var of GT.int * 'a logic GT.list | `Value of 'a] with show, html, eq, compare, foldl, foldr (*, gmap*)
 
 let destruct = function
 | Var (_, i, c) -> `Var (i, c)

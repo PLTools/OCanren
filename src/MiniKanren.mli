@@ -82,7 +82,7 @@ val logic :
 
 (** A type of concrete logic values: either a free variable with integer id and 
     the list, representing all disequality constraints, or some value *)
-@type 'a unlogic = [`Var of GT.int * 'a logic GT.list | `Value of 'a] with show, html, eq, compare, foldl, foldr, gmap
+@type 'a unlogic = [`Var of GT.int * 'a logic GT.list | `Value of 'a] with show, html, eq, compare, foldl, foldr(*, gmap*)
 
 (** [destruct l] destructs abstract logic into concrete *)
 val destruct : 'a logic -> 'a unlogic
