@@ -46,7 +46,7 @@ language=ocaml
 
 \begin{document}
 
-\title{Typed Embedding of Relational Language in OCaml}
+\title{Typed Embedding of a Relational Language in OCaml}
 
 \authorinfo{Dmitry Kosarev \and Dmitri Boulytchev}
 {St.Petersburg State University \\ 
@@ -107,7 +107,7 @@ Standard ML and OCaml.
 There is, however, a predictable glitch in implementing miniKanren for strongly typed language. 
 Designed in a metaprogramming-friendly and dynamically typed realm of Scheme/Racket, original 
 miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
-ML or Haskell. In particular, one of capstone constructs of miniKanren~--- unification~--- has to work for 
+ML or Haskell. In particular, one of the capstone constructs of miniKanren~--- unification~--- has to work for 
 different data structures, which may have types, different beyond parametricity.
 
 \begin{comment}
@@ -137,7 +137,7 @@ module implicits~\cite{Implicits}) require patching the compiler, which we tend 
 
 We present an implementation of a set of relational combinators in OCaml, which, 
 technically speaking, corresponds to $\mu$Kanren~\cite{MicroKanren} with disequality 
-constraints~\cite{CKanren}; syntax extension for ``\lstinline{fresh}'' construct is
+constraints~\cite{CKanren}; syntax extension for the ``\lstinline{fresh}'' construct is
 added as well. The contribution of our work is as follows:
 
 \begin{enumerate}
@@ -163,11 +163,11 @@ believe, would lead to a more regular and easy to maintain relational specificat
 
 \item We provide a simplified way to integrate relational and functional code. Our approach utilizes
 well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementation and makes it
-possible to hide refinement of answers phase from an end-user.
+possible to hide refinement of the answers phase from an end-user.
 \end{enumerate}
 
 The source code of our implementation is accessible from \url{https://github.com/dboulytchev/OCanren}.
-Extended version of this abstract can be downloaded from \url{http://oops.math.spbu.ru/papers/ocanren.pdf}.
+An extended version of this abstract can be downloaded from \url{http://oops.math.spbu.ru/papers/ocanren.pdf}.
 
 \section{Polymorphic Unification}
 \label{polyuni}
@@ -242,7 +242,7 @@ our implementation resorts to unsafe features, we have to make this work for uni
 code on our own.
 \end{comment}
 
-We argue, that the following three invariants are maintained for any substitution $s$, involved 
+We show, that the following three invariants are maintained for any substitution $s$, involved 
 in unification:
 
 \begin{enumerate}
@@ -306,7 +306,7 @@ recursive invocations of \lstinline{unify}.
 \end{enumerate}
 \end{comment}
 
-Function \lstinline{unify} is not directly accessible at the user level; it is used
+The function \lstinline{unify} is not directly accessible at the user level; it is used
 to implement both unification (``\lstinline{===}'') and disequality (``\lstinline{=/=}'') 
 goals. The implementation generally follows~\cite{CKanren}.
 
@@ -314,15 +314,15 @@ goals. The implementation generally follows~\cite{CKanren}.
 \label{logics}
 
 Unification, considered in Section~\ref{polyuni}, works for values of type \lstinline[mathescape=true]{$\alpha$ logic}. 
-Any value of this type can be seen as either value of type $\alpha$, or logical variable of type $\alpha$. 
+Any value of this type can be seen as either a value of type $\alpha$, or a logical variable of type $\alpha$. 
 
 \begin{comment}
 The type 
 itself in made abstract, but its values can be uncovered after refinement (see Section~\ref{refinement}).
 \end{comment}
 
-Free variables solely can be created using ``\lstinline{fresh}'' construct of miniKanren. Note, that 
-since the unification is implemented in untyped manner, we can not use simple pattern matching to
+Free variables can be created solely using the ``\lstinline{fresh}'' construct of miniKanren. Note, that 
+since the unification is implemented in an untyped manner, we can not use simple pattern matching to
 distinguish logical variables from other logical values. A special attention was paid to implement
 variable recognition in constant time.
 
@@ -460,7 +460,7 @@ free logical variables, $G$~--- a goal (which can make use of \mbox{$l_1\dots l_
 \mbox{$a_1\dots a_n$}~--- refined answers for \mbox{$l_1\dots l_n$}, respectively, and, 
 finally, $H$~--- a \emph{handler} (which can make use of \mbox{$a_1\dots a_n$}). The types of 
 \mbox{$l_1\dots l_n$} are inferred from $G$, and the types of \mbox{$a_1\dots a_n$} are
-inferred from types of \mbox{$l_1\dots l_n$}: if $l_i$ has type \lstinline[mathescape=true]{$t$ logic}, then
+inferred from the types of \mbox{$l_1\dots l_n$}: if $l_i$ has type \lstinline[mathescape=true]{$t$ logic}, then
 $a_i$ has type \lstinline[mathescape=true]{$t$ logic stream}. In other words, user-defined handler
 takes streams of refined answers for all variables, supplied to the top-level goal. All streams $a_i$ contain
 coherent elements, so they all have the same length and $n$-th elements of all streams correspond 
