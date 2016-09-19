@@ -205,24 +205,94 @@ let rec append$^o$ xs ys xys!\pause! =
 \vskip5mm
 \end{frame}
 
-\begin{frame}[fragile]{Implementation Sketch}
+\begin{frame}[fragile]{A Sketch of Minimalistic Implementation}
 Jason Hemann, Daniel P. Friedman. \emph{$\mu$Kanren: A Minimal Functional 
 Core for Relational Programming} // Scheme'13:
+\vskip5mm
+\small
+\pause
+\begin{tabular}{p{5cm}c}
+Logic variables & $X=\{x_1,x_2,\dots\}$ \vspace*{-\baselineskip}\pause \\ 
+Symbols (constructors) & $S=\{s_1,s_2,\dots\}$ \vspace*{-\baselineskip}\pause \\
+Terms & $T=X\cup\{s\;(t_1,\dots,t_k)\mid s\in S,\; t_i \in T\}$ \vspace*{-\baselineskip}\pause \\
+Substitutions & $\Sigma=T^X$ \vspace*{-\baselineskip}\pause \\
+Unification & $(\equiv)\colon\Sigma\to T\to T\to\Sigma_\perp$ \vspace*{-\baselineskip}\pause \\
+State (a substitution + some info to create fresh variables) & $\sigma$ \vspace*{-\baselineskip}\pause \\
+Goal (a function from a state to a stream of states) & $g : \sigma\to\sigma\;\inml{stream}$ \vspace*{-\baselineskip}\pause \\
+Conjunction $g \wedge g$ & ``bind'' \vspace*{-\baselineskip}\pause \\
+Disjunction $g \vee g$ & ``mplus'' \vspace*{-\baselineskip}\pause 
+\end{tabular}
+
+\begin{center}
+{\bf Unification is virtually the main thing to implement}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Dealing with Typed Terms}
 
 \begin{itemize}
-\item Logic variables: $X=\{x_1,x_2,\dots\}$;
-\item Symbols (constructors): $S=\{s_1,s_2,\dots\}$;
-\item Terms: $T=X\cup\{s\;(t_1,\dots,t_k)\mid s\in S,\; t_i \in T\}$;
-\item Substitutions: $\Sigma=T^X$;
-\item Unification: $(\equiv) \colon \Sigma \to T \to T \to \Sigma_\perp$;
-\item State: a substitution + some info to create fresh variables;
-\item Goal: 
+  \item Non-solution: 
+     \begin{itemize}
+        \item implement unification for a fixed term representation;
+        \item convert user-type data to- and from that universal representation.
+      \end{itemize} 
+
 \end{itemize}
 
 \end{frame}
 
-\begin{frame}[fragile]{Current Implementation}
+\begin{frame}[fragile]{Polymorphic Unification}
+\begin{itemize}
+\item Types are erased in substitution
+\item Have to be reconstructed properly during refinement
+\item States must not escape the scope
+\end{itemize}
+\end{frame}
 
+\begin{frame}[fragile]{Datatype-Generic Pattern}
+
+\small
+Injecting a user-type into logic domain and projecting the
+logical results back:
+
+$$
+\begin{array}{rcl}
+\uparrow_t&\colon &t \to \oo{t}\\
+\downarrow_t&\colon& \oo{t} \to t
+\end{array}
+$$
+\pause
+Can be done systematically using generic programming:
+
+\begin{itemize}
+\item ``$\uparrow_\forall$'', ``$\downarrow_\forall$'' are polymorphic shallow injection/projection;
+\item for the deep case, make the type a functor and use $fmap$.
+\end{itemize}
+\pause
+\begin{lstlisting}[mathescape=true]
+type tree = Leaf of int | Node of tree * tree!\pause!
+$\leadsto$
+type ('int, 'tree) tree$_f$ = Leaf of 'int | Node of 'tree * 'tree!\pause!
+type tree  = (int, tree) tree$_f$!\pause!
+type tree$^o$ = ((int$^o$, ltree) tree$_f$)$^o$!\pause!
+
+let rec ($\uparrow_{\mbox{\small\ttfamily tree}}$) t = $\uparrow_\forall$ (!\graybox{$fmap_{\mbox{\small\ttfamily tree}_f}$}! ($\uparrow_\forall$) ($\uparrow_{\mbox{\small\ttfamily tree}}$) t)!\pause! 
+let rec ($\downarrow_{\mbox{\small\ttfamily tree}}$) l = !\graybox{$fmap_{\mbox{\small\ttfamily tree}_f}$}! ($\downarrow_\forall$) ($\downarrow_{\mbox{\small\ttfamily tree}}$) ($\downarrow_\forall$ l) 
+
+\end{lstlisting}
+
+
+\end{frame}
+
+\begin{frame}[fragile]{Capturing the States}
+.
+\end{frame}
+
+\begin{frame}[fragile]{Example}
+.
+\end{frame}
+
+\begin{frame}[fragile]{Current Implementation}
 \begin{itemize}
 \item Repository: \url{https://github.com/dboulytchev/OCanren}
 \item Implements $\mu$Kanren + disequality constraints
