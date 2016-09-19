@@ -1,4 +1,4 @@
-\documentclass [mathserif]{beamer}
+\documentclass[10pt, mathserif]{beamer}
 
 \usepackage{listings}
 \usepackage{color}
@@ -9,6 +9,35 @@
 \usepackage{epigraph}
 \usepackage{verbatim}
 \usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{array}
+
+\makeatletter
+\newcolumntype{e}[1]{%--- Enumerated cells ---
+   >{\minipage[t]{\linewidth}%
+     \NoHyper%                Hyperref adds a vertical space
+     \let\\\tabularnewline
+     \enumerate
+        \addtolength{\rightskip}{0pt plus 50pt}% for raggedright
+        \setlength{\itemsep}{-\parsep}}%
+   p{#1}%
+   <{\@finalstrut\@arstrutbox\endenumerate
+     \endNoHyper
+     \endminipage}}
+
+\newcolumntype{i}[1]{%--- Itemized cells ---
+   >{\minipage[t]{\linewidth}%
+        \let\\\tabularnewline
+        \itemize
+           \addtolength{\rightskip}{0pt plus 50pt}%
+           \setlength{\itemsep}{-\parsep}}%
+   p{#1}%
+   <{\@finalstrut\@arstrutbox\enditemize\endminipage}}
+
+\AtBeginDocument{%
+    \@ifpackageloaded{hyperref}{}%
+        {\let\NoHyper\relax\let\endNoHyper\relax}}
+\makeatother
 
 \definecolor{shadecolor}{gray}{1.00}
 \definecolor{darkgray}{gray}{0.30}
@@ -17,11 +46,13 @@
 \newcommand{\angled}[1]{\langle {#1} \rangle}
 \newcommand{\fib}{\rightarrow_{\mathit{fib}}}
 \newcommand{\fibm}{\Rightarrow_{\mathit{fib}}}
+\newcommand{\oo}[1]{{#1}^o}
+\newcommand{\inml}[1]{\mbox{\lstinline{#1}}}
 
 \setlength{\epigraphwidth}{.55\textwidth}
 
 \definecolor{light-gray}{gray}{0.90}
-\newcommand{\graybox}[1]{\colorbox{light-gray}{\texttt{#1}}}
+\newcommand{\graybox}[1]{\colorbox{light-gray}{#1}}
 
 \newcommand{\nredrule}[3]{
   \begin{array}{cl}
@@ -42,7 +73,7 @@
 keywords={let, begin, end, in, match, type, and, fun, 
 function, try, with, class, object, method, of, rec, repeat, until,
 while, not, do, done, as, val, inherit, module, sig, @type, struct, 
-if, then, else, open, virtual, new},
+if, then, else, open, virtual, new, fresh},
 sensitive=true,
 basicstyle=\small,
 commentstyle=\scriptsize\rmfamily,
@@ -52,6 +83,20 @@ basewidth={0.5em,0.5em},
 columns=fixed,
 fontadjust=true,
 literate={->}{{$\to$}}1
+         {===}{{$\equiv$}}1
+}
+
+\lstdefinelanguage{scheme}{
+keywords={define, conde, fresh},
+sensitive=true,
+basicstyle=\small,
+commentstyle=\scriptsize\rmfamily,
+keywordstyle=\ttfamily\bfseries,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+fontadjust=true,
+literate={==}{{$\equiv$}}1
 }
 
 \lstset{
@@ -76,21 +121,23 @@ language=ocaml
 
 \theoremstyle{definition}
 
-\title{Typed embedding of relational programming language}
+\title{Typed Embedding of a Relational Language in OCaml}
 
-\author[Dmitrii Kosarev, Dmitrii Boulytchev]{Dmitrii Kosarev  (presenter), Dmitrii Boulytchev}
-\date{22 Septemper 2016}
-
-\date{
-   \textbf{ML Workshop 2016}\\
-   \small{%22 September 2016 \\
-   Nara, Japan}
-}
+\author[Dmitrii Kosarev, Dmitrii Boulytchev]{\underline{Dmitrii Kosarev}, Dmitrii Boulytchev}
 
 \institute[]{
-%\textbf{Software Engineering Chair }\\ 
+\small{
 \textbf{Saint-Petersburg State University} \\
-\texttt{Dmitrii.Kosarev@protonmail.ch}
+\textbf{JetBrains Research}
+}
+}
+
+\date{
+   \vskip 1cm
+   \small{
+   \textbf{ML Family Workshop}\\
+   September 22, 2016 \\
+   Nara, Japan}
 }
 
 \begin{document}
@@ -98,620 +145,91 @@ language=ocaml
   \titlepage
 \end{frame}
 
-\begin{frame}[fragile]{}
-Example 1:
-\begin{lstlisting}
-let typecheck: _ -> Parsetree.expr -> Types.t
-\end{lstlisting}
-\pause
-
-\begin{lstlisting}
-let inhabitance: _ -> Types.t -> Parsetree.expr 
-\end{lstlisting}
-\pause
-
-Example 2:
-\begin{lstlisting}
-let eval_match: Expr.t -> rule list -> Expr.t
-\end{lstlisting}
-\pause
-
-\begin{lstlisting}
-let check_exhaustiveness: Expr.t -> rule list -> Expr.t 
-...
-check_exhaustiveness (ExceptionExpr Not_exhaustive) rules
-\end{lstlisting}
-\pause
-
-Reverse execution.
-\end{frame}
-
-\begin{frame}[fragile]{3rd example (1)}
-\begin{lstlisting}
-let rec append xs ys = match xs with
-| [] -> ys
-| h::tl -> h :: (append tl ys)
-\end{lstlisting}
-
-\pause
-We are going to emulate \textit{ reverse execution} using \textit{relational programming}.
-
-\begin{verbatim}
-function: (xs,ys) -> result
-relation: (xs, ys, result)
-\end{verbatim}
-
-\end{frame}
-
-\begin{frame}[fragile]{3rd example  (2)}
-\onslide<1->
-\begin{verbatim}
-let rec append xs ys = match xs with
-| [] -> ys
-| h::tl -> h :: (append tl ys)
-\end{verbatim}
-
-Going to rewrite as `mathy` formula:
-
-\onslide<2->\begin{verbatim}
-let rec appendo xs ys rez =
-\end{verbatim}
-\vspace{-.5cm}
-\onslide<4->\begin{lstlisting}[mathescape,frame=none]
-  ((xs $\equiv$ []) $\wedge$ (ys $\equiv$ rez))\end{lstlisting}
-\vspace{-.2cm}
-\onslide<3->$\vee$
-\vspace{-.2cm}
-\onslide<6->\begin{lstlisting}[mathescape,frame=none]
-  $\exists$ h,tl,tmp: \end{lstlisting}
-\vspace{-.4cm}
-\onslide<5->\begin{lstlisting}[mathescape,frame=none]
-    ((xs$\equiv$ h::tl) $\wedge$ (appendo tl ys tmp) $\wedge$ (rez$\equiv$ h::tmp))
-\end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]{}
-
-\begin{lstlisting}
-let rec appendo xs ys rez = 
-  ((xs === llist_nil) &&& (ys===rez))
-  |||
-  Fresh.three (fun h tl tmp ->
-     (xs === h % tl) &&& (appendo tl ys tmp) &&& (rez === x % tmp) 
-  )
-\end{lstlisting}
-\begin{onlyenv}<2,3>
-Let's try to execute it.
-\begin{verbatim}
-# ...give me q such that (appendo [1;2] [3;4] q)
-[1;2;3;4]
-\end{verbatim}
-\end{onlyenv}
-
-\begin{onlyenv}<3,4>
-\begin{verbatim}
-# ...give me q such that (appendo q [3;4] [1;2;3;4])
-[1;2]
-\end{verbatim}
-\end{onlyenv}
-
-\begin{onlyenv}<4,5>
-%\uncover<4->{
-%\only<4,5>{
-\begin{verbatim}
-# ...give me (q,r) such that (appendo q r [1;2])
-([], [1;2])
-([1], [2])
-([1;2], [])
-\end{verbatim}
-\end{onlyenv}
-%}
-
-\begin{onlyenv}<5>
-\begin{verbatim}
-# ...give me (r,q) such that (appendo r q q)
-([], _.0)
-\end{verbatim}
-\end{onlyenv}
-\end{frame}
-%-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}{Relational programming}
-
-\begin{itemize}
- \item Relational programming $\equiv$ miniKanren
- \item \url{ http://minikanren.org/}
- \item A family of many languages: $alpha$-Kanren, $\mu$Kanren, constrained Kanren, etc.
- \item Implemented in many languages: various LISPS, OCaml, Haskell, F\#, Scala, etc.
-\end{itemize}
+\begin{frame}{Relational Programming in miniKanren}
+ \vskip1cm
+ \begin{center}
+ From programs as \emph{functions} to programs as \emph{relations}: 
+ \end{center}
  
+ $$
+ f \colon X \to Y\;\leadsto\;\oo{f} \subseteq X\times Y
+ $$
+ \vskip5mm
+ \begin{tabular}{m{4cm}m{6cm}}
+    \includegraphics[scale=0.3]{trs.jpg} &
+    \begin{itemize} 
+       \item Daniel P. Friedman, William Byrd and Oleg Kiselyov. \emph{The Reasoned Schemer}, 
+             The MIT Press, Cambridge, MA, 2005    
+       \item A DSL for Scheme/Racket with rather simple minimal implementation 
+       \item A family of languages ($\mu$Kanren, $\alpha$-Kanren, cKanren etc.)
+       \item Implemented as DSL for a wide range of host languages (including OCaml, Haskell, Scala etc.)  
+    \end{itemize}   
+ \end{tabular}
+ \vskip 3cm
 \end{frame}
 
-\begin{frame}{Contributions of this work}
-\begin{itemize}
- \item 2nd implementation of miniKanren in OCaml (more type-safe than first one: 
-   \url{https://github.com/lightyang/minikanren-ocaml}.
- \item Less verbose programming than other approaches
-   \begin{itemize}
-    \item No need for ad-hoc conversions to \texttt{term} type.
-   \end{itemize}
-  \item No typeclasses used.
-  \item We are reusing OCaml specific features in \textit{unification} (algorithm behind $\equiv$).
-\end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{About implementations with \texttt{term} type}
-\begin{itemize}
- \item Special type for relation-related evaluations.
- \item \begin{lstlisting}
-type term = Var of int
-           | ConstString of string
-           | ConstInt of int
-           | ListNil
-           | ListCons of term * term
-           | Atom of string
-           | etc...
+\begin{frame}[fragile]{An Example: Relational List Append}
+\vskip5mm
+\begin{tabular}{m{5cm}m{5cm}}
+ \graybox{$\inml{append} \colon \alpha\:\inml{list} \to \alpha\:\inml{list} \to \alpha\:\inml{list}$} &
+ \graybox{$\oo{\inml{append}} \subseteq \alpha\:\inml{list} \times \alpha\:\inml{list} \times \alpha\:\inml{list}$}\\
+ \begin{lstlisting}[language=ocaml] 
+!\pause!let rec append xs ys!\pause! = 
+  match xs with!\pause!
+  | []    ->  ys!\pause!
+  | h::tl ->  h :: (append tl ys)!\pause!
+ \end{lstlisting} &
+ \begin{lstlisting}[mathescape=true,language=ocaml]
+let rec append$^o$ xs ys xys!\pause! = 
+  ((xs === nil) &&& (xys === ys))!\pause! |||  
+  (fresh (h t tys)!\pause!
+     (xs  === h % t)!\pause! 
+     (xys === h % tys)!\pause!
+     (append$^o$ t ys tys)
+  ) 
  \end{lstlisting}
- \item Special convertion functions for every type \texttt{t}: \begin{lstlisting}
- val inject_t:  t -> term
- val project_t: term -> t
- \end{lstlisting}
- \item And \texttt{project} is partial by two reasons: 
-  \begin{itemize}
-    \item Value of type \texttt{term} can contain free logic variables. "
-    \item The value \texttt{ListCons(ConstInt, ListCons(ConstString "a"),ListNil))} cannot be converted 
-    neither to OCaml \texttt{int list} not to \texttt{string list}.
-  \end{itemize}
-
-\end{itemize}
-
- %\item Special type for 
-%\end{lstlisting}
- 
+\end{tabular}\pause
+\begin{center}
+\begin{minipage}{6cm}
+\begin{lstlisting}[mathescape=true,language=scheme]
+(define (append$^o$ xs ys xys) 
+   (conde 
+      [(== '() xs) (== ys xys)]
+      [(fresh (h t tys)
+         (== `(,h . ,t) xs)
+         (== `(,h . ,tys) xys)
+         (append$^o$ t ys tys))]))
+\end{lstlisting}
+\end{minipage}
+\end{center}
+\vskip5mm
 \end{frame}
 
+\begin{frame}[fragile]{Implementation Sketch}
+Jason Hemann, Daniel P. Friedman. \emph{$\mu$Kanren: A Minimal Functional 
+Core for Relational Programming} // Scheme'13:
 
-% \begin{frame}[fragile]{}
-% \begin{tabular}{||p{5cm}|p{5cm}||}
-% \hline
-% ADT & Object Representation \\
-% \hline
-% \hline
-% Single type definition with multiple constructors & Multiple class definitions\\
-% \hline
-% Adding new transformation is easy & Adding new transformation is tedious\\
-% \hline
-% \textcolor{red}{Adding new constructor is tedious} & Adding new class is (rather) easy\\
-% \hline
-% \textcolor{red}{Joining types is tough} & Joining class hierarchies is tedious \\
-% \hline
-% \textcolor{red}{Modifying existing transformation is tough} & Modifying existing transformation is easy\\
-% \hline
-% \end{tabular}
-% 
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Polymorphic Variants in OCaml}
-% 
-% ``The Expression Problem'' [\emph{Wadler, 1998}]
-% 
-% ``Code Reuse Through Polymorphic Variants'' [\emph{Garrigue, 2002}]
-% \begin{lstlisting}
-% type var = [`Var of string]
-% 
-% let evalVar s (`Var n) = s n
-% 
-% type 'a bin = [`Add of 'a * 'a | `Mul of 'a * 'a]
-% 
-% let evalBin eval = function
-% | `Add (x, y) -> eval x + eval y
-% | `Mul (x, y) -> eval x * eval y
-% 
-% type 'a expr = [var | 'a bin]
-% 
-% let evalExpr eval s = function
-% | #var as e -> evalVar s e
-% | #bin as e -> evalBin eval e
-% 
-% let rec eval s e = evalExpr (eval s) s e
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Local Modification of Existing Transformation}
-% 
-% Artificial example: counting number of leaves in a tree:
-% 
-% \begin{lstlisting}
-% type tree = Leaf of string | Node of tree * tree
-% 
-% let rec leaves = function
-% | Leaf _ -> 1 
-% | Node (l, r) -> leaves l + leaves r
-% \end{lstlisting}
-% 
-% \pause
-% Modification: do not count ``empty leaves'':
-% \pause
-% 
-% \begin{lstlisting}
-% let non_empty_leaves = function
-% | Leaf "" -> 0
-% | t       -> leaves t 
-% \end{lstlisting}
-% \pause
-% In OO: visitors.
-% 
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Object-Encoded Transformers}
-% 
-% \begin{itemize}
-% \item Data representation is left untouched.
-% \item Transformation is represented as object with method
-% per each constructor.
-% \item Traversal function to match against constructors and
-% call appropriate methods. 
-% \end{itemize}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Object-Encoded Transformers}
-% 
-% Object-encoded transformer for counting leaves:
-% \begin{lstlisting}
-% class leaves = object
-%   method c_Leaf l = 1
-%   method c_Node l r = l+r
-% end
-% \end{lstlisting}
-% \pause
-% 
-% Traversal function:
-% \begin{lstlisting}
-% let rec transform t = function
-% | Leaf l -> t#c_Leaf l
-% | Node (l, r) -> t#c_Node (transform t l) (transform t r)
-% \end{lstlisting}
-% \pause
-% 
-% Example:
-% \begin{lstlisting}
-% let leaves = transform (new leaves)
-% let non_empty_leaves = transform 
-%   object inherit leaves as super
-%     method c_Leaf l = if l = "" then 0 else super#c_Leaf l
-%   end
-% \end{lstlisting}
-% 
-% \end{frame}
-% 
-% \begin{frame}[fragile]{More Elaborated Version}
-% \begin{itemize}
-% \item Transformation class: catamorphisms (folds/attribute grammar-defined 
-% transformations).
-% \item One traversal function per type.
-% \item Arguments of per-constructor methods are augmented with
-% transformation functions. 
-% \item One abstract transformer (virtual class) to inherit from.
-% \item Support for polymorphic ADT and polymorphic variant types.
-% \item Syntax extension to generate all boilerplate code from type definitions.
-% \end{itemize}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Example: ``show'' and ``eval''}
-% \begin{lstlisting}
-% !\graybox{\bfseries @}!type expr = Var of string | Add of expr * expr | Const of int
-% 
-% class eval = object inherit [string -> int, int] !\graybox{@expr}!
-%   method c_Const _ _ n = n
-%   method c_Add s _ l r = !\graybox{l.fx s}! + !\graybox{r.fx s}!
-%   method c_Var s _ x   = s x
-% end
-% 
-% class show = object inherit [unit, string] @expr
-%   method c_Const _ _ n = string_of_int n
-%   method c_Add s _ l r = "Add (" ^ !\graybox{l.fx s}! ^ ", " ^ !\graybox{r.fx s}! ^ ")"
-%   method c_Var _ _ x   = "Var " ^ x
-% end
-% 
-% let eval = transform(expr) (new eval)
-% let show = transform(expr) (new show) ()
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Example: Expression Problem}
-% \begin{lstlisting}
-% !\graybox{\bfseries @}!type var = [`Var of string] 
-% class ['v] var_eval = object inherit [string -> 'v, 'v] !\graybox{@var}!      
-%   method c_Var s _ x = s x
-% end
-% 
-% !\graybox{\bfseries @}!type 'a bin = [ `Add of 'a * 'a | `Mul of 'a * 'a] 
-% class ['a, 'b] bin_eval = object inherit ['a, int, 'b, int] !\graybox{@bin}!
-%   method c_Add s _ l r = !\graybox{l.fx s}! + !\graybox{r.fx s}!
-%   method c_Mul s _ l r = !\graybox{l.fx s}! * !\graybox{r.fx s}!
-% end
-% 
-% !\graybox{\bfseries @}!type 'a expr = [ var | 'a arith ] 
-% class ['a] expr_eval = object
-%   inherit ['a, int, string->int, int] !\graybox{@expr}!
-%   inherit [int] var_eval
-%   inherit ['a, string -> int] bin_eval
-% end
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Custom Traits/Plugins}
-% 
-% \begin{itemize}
-% \item User-defined generators for concrete transformers.
-% \item Dynamically loaded during syntax extension phase.
-% \item Easy to implement for simple boilerplate transformations.
-% \item Examples: \lstinline{show}, \lstinline{map}, \lstinline{fold}. 
-% \end{itemize}
-% \pause
-% \begin{lstlisting}
-% !\graybox{\bfseries @}!type tree = Leaf of string | Node of tree * tree !\graybox{{\bfseries with} foldl}!
-% 
-% let leaves = transform(tree) 
-%   object inherit [int] !\graybox{@fold[tree]}! 
-%     method c_Leaf a _ _ = a+1 
-%   end 0
-% 
-% let non_empty_leaves = transform(tree)
-%   object inherit [int] !\graybox{@fold[tree]}!
-%     method c_Leaf a _ l = if l = "" then a else a+1
-%   end 0 
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Custom Traits/Plugins}
-% \begin{lstlisting}
-% !\graybox{\bfseries @}!type expr = Var   of string 
-%               | Add   of expr * expr 
-%               | Const of int !\graybox{{\bfseries with} map}!
-% 
-% class simplify = object inherit !\graybox{@map[expr]}!
-%   method c_Add _ _ l r = match !\graybox{l.fx ()}!, !\graybox{r.fx ()}! with
-%   | Add (Const x, y), Add (Const z, t) -> Add (Const (x+z), Add (y, t))
-%   | Add (Const x, y), Const z -> Add (Const (x+z), y)
-%   | Const x, Add (Const y, z) -> Add (Const (x+y), z) 
-%   | Const x, Const y          -> Const (x+y)
-%   | x      , (Const _ as y)   -> Add (y, x)
-%   | x      , y                -> Add (x, y)  
-% end
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Example: Lambda Reductions}
-% 
-% ``Demonstrating Lambda Calculus Reduction'' [\emph{Sestoft, 2002}]:
-% \vskip 3mm
-% 
-% \begin{itemize}
-%   \item categorization of steps;
-%   \item seven different reduction orders;
-%   \item big-step operational semantics;
-%   \item one-to-one correspondence between semantic
-% specification and implementation code;
-%   \item seven similarly looking pieces of code (\emph{actually, three}).
-% \end{itemize}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Example: Lambdas, Variables, Free Variables}
-% \begin{lstlisting}
-% !\graybox{\bfseries @}!type lam = 
-% | Var of string 
-% | App of lam * lam
-% | Lam of string * lam !\graybox{{\bfseries with} show, foldl}!
-% \end{lstlisting}
-% 
-% \pause
-% 
-% \begin{lstlisting}
-% class var = object inherit [S.t] !\graybox{@foldl[lam]}!
-%   method c_Var s _ x = S.add x s
-% end
-% 
-% let vars = transform(lam) (new var) S.empty
-% \end{lstlisting}
-% 
-% \pause
-% 
-% \begin{lstlisting}
-% let fv = transform(lam) 
-%   object inherit var   
-%     method c_Lam s _ x l = S.union s (S.remove x (!\graybox{l.fx S.empty}!))
-%   end S.empty 
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Example: Object-Encoded Reducer}
-% \begin{lstlisting}
-% class virtual reducer = object inherit [unit, lam] !\graybox{@lam}!
-%   method virtual arg  : (unit, lam, lam, < >) a -> lam
-%   method head : (unit, lam, lam, < >) a -> lam = fun x -> !\graybox{x.fx ()}!
-%   method c_Var _ x _ = !\graybox{\textasciitilde:x}!
-% end
-% \end{lstlisting}
-% 
-% \pause
-% 
-% \begin{lstlisting}
-% let reduce r = transform(lam) r ()
-% \end{lstlisting}
-% 
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Example: Dealing With Abstractions and Arguments}
-% 
-% \pause
-% 
-% \begin{lstlisting}
-% class virtual reduce_under_abstractions = 
-%   object inherit reducer
-%     method c_Lam _ _ x l = Lam (x, !\graybox{l.fx ()}!)
-%   end
-% 
-% class virtual dont_reduce_under_abstractions = 
-%   object inherit reducer
-%     method c_Lam _ s _ _ = !\graybox{\textasciitilde:s}!
-%   end
-% \end{lstlisting}
-% 
-% \pause
-% 
-% \begin{lstlisting}
-% class virtual reduce_arguments =
-%   object inherit reducer
-%     method arg x = !\graybox{x.fx ()}!
-%   end
-% 
-% class virtual dont_reduce_arguments =
-%   object inherit reducer
-%     method arg x = !\graybox{\textasciitilde:x}!
-%   end
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Example: Strict vs. Non-strict}
-% \pause
-% 
-% \begin{lstlisting}
-% class virtual strict g =
-%   object (this) inherit reducer
-%     method c_App _ s l m = 
-%       match this#head l with
-%       | Lam (x, l') -> !\graybox{s.f ()}! (subst g x (!\graybox{m.fx ()}!) l')
-%       | l'          -> let l'' = !\graybox{s.f () l'}! in 
-%                        App (l'', this#arg m)
-%   end
-% \end{lstlisting}
-% 
-% \pause
-% 
-% \begin{lstlisting}
-% class virtual non_strict g =
-%   object (this) inherit reducer
-%     method c_App _ s l m = 
-%       match this#head l with
-%       | Lam (x, l') -> !\graybox{s.f ()}! (subst g x !\graybox{\textasciitilde:m}! l')
-%       | l'          -> let l'' = !\graybox{s.f () l'}! in 
-%                        App (l'', this#arg m)
-%   end
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Example: Building Reduction Orders}
-% \pause
-% 
-% Call-by-name:
-% 
-% \begin{lstlisting}
-% class bn g = object 
-%   inherit dont_reduce_under_abstractions
-%   inherit dont_reduce_arguments      
-%   inherit non_strict g
-% end 
-% 
-% let bn l = reduce (new bn (context l)) l
-% \end{lstlisting}
-% 
-% \pause
-% 
-% Call-by-value:
-% \begin{lstlisting}
-% class bv g = object
-%   inherit dont_reduce_under_abstractions
-%   inherit reduce_arguments
-%   inherit strict g
-% end
-% 
-% let bv l = reduce (new bv (context l)) l
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Examlpe: Building Reduction Orders}
-% \pause
-% 
-% Normal order:
-% \begin{lstlisting}
-% class nor g = object
-%   inherit reduce_under_abstractions
-%   inherit reduce_arguments
-%   inherit non_strict g
-%   method  head x = bn !\graybox{\textasciitilde:x}!
-% end 
-% 
-% let nor l = reduce (new nor (context l)) l
-% \end{lstlisting}
-% 
-% \pause
-% 
-% Applicative order:
-% \begin{lstlisting}
-% class ao c = object
-%   inherit bv c
-%   inherit reduce_under_abstractions
-% end
-% 
-% let ao l = reduce (new ao (context l)) l
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Examlpe: Building Reduction Orders}
-% \pause
-% Hybrid Applicative/Head Spine/Hybrid Normal Orders:
-% 
-% \begin{lstlisting}
-% class ha c = object
-%   inherit ao c
-%   method head x = bv !\graybox{\textasciitilde:x}!
-% end
-% let ha l = reduce (new ha (context l)) l
-% 
-% class he c = object
-%   inherit bn c
-%   inherit reduce_under_abstractions
-% end
-% let he l = reduce (new he (context l)) l
-% 
-% class hn c = object
-%   inherit nor c
-%   method  head x = he !\graybox{\textasciitilde:x}!
-% end
-% let hn l = reduce (new hn (context l)) l
-% \end{lstlisting}
-% \end{frame}
-% 
-% \begin{frame}[fragile]{Conclusions}
-% 
-% By now:
-% \begin{itemize}
-% \item lighweight datatype-generic framework;
-% \item one per-type traversal function, one abstract
-% object-encoded transformer (generated automatically);
-% \item a number of plugins to generate concrete transformers
-% for some widespread transformations 
-% (\lstinline{show}, \lstinline{map}, \lstinline{fold}, 
-% \lstinline{eq}, \lstinline{compare},...);
-% \item an ability to modify existing transformations;
-% \item an ability to ``join'' transformations for
-% ``joined'' types.
-% \end{itemize}
-% 
-% Future work:
-% \begin{itemize}
-% \item find more applications;
-% \item evaluate and address performance issues;
-% \item implement more plugins (with contexts?).
-% \end{itemize}
-% 
-% \end{frame}
-% 
-% \begin{frame}{Thank you!}
-% \begin{itemize}
-% \item Source code: \texttt{https://code.google.com/p/generic-transformers}
-% \end{itemize}
-% \end{frame}
+\begin{itemize}
+\item Logic variables: $X=\{x_1,x_2,\dots\}$;
+\item Symbols (constructors): $S=\{s_1,s_2,\dots\}$;
+\item Terms: $T=X\cup\{s\;(t_1,\dots,t_k)\mid s\in S,\; t_i \in T\}$;
+\item Substitutions: $\Sigma=T^X$;
+\item Unification: $(\equiv) \colon \Sigma \to T \to T \to \Sigma_\perp$;
+\item State: a substitution + some info to create fresh variables;
+\item Goal: 
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Current Implementation}
+
+\begin{itemize}
+\item Repository: \url{https://github.com/dboulytchev/OCanren}
+\item Implements $\mu$Kanren + disequality constraints
+\item Passes most of the orignal tests
+\item Outperforms $\mu$Kanren on long queries
+\end{itemize}
+
+\end{frame}
 
 \end{document}
