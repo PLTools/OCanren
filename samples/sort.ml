@@ -50,6 +50,15 @@ let rec sorto x y = conde [
     (smallesto x s xs)   (* 2 *)
 ]
 
+let _ =
+  run four (fun q1 q2 q3 p -> sorto (q1 % (q2 % (q3 % nil))) p) 
+           (fun _  _  _  p ->
+              match Stream.take ~n:10 p with
+	      | qp ->
+                  Printf.printf "%s\n" 
+                    (show(list) (show(List.logic) (show(Nat.logic))) qp)        
+           ) 
+
 (* Making regular sorting from relational one *)
 let sort l =
   run q (sorto @@ inj_nat_list l)

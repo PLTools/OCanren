@@ -45,16 +45,16 @@ let rec evalo m n =
 let show_lam = show logic (show lam)
 
 let _ =
-  run show_lam 1  q (REPR (fun q   -> substo !(X !"x") !"x" !(X !"y") q                   )) qh;
-  run show_lam 1  q (REPR (fun q   -> evalo !(Abs (!"x", !(X !"x"))) q                    )) qh;
-  run show_lam 2  q (REPR (fun q   -> evalo !(Abs (!"x", !(X !"x"))) q                    )) qh;
-  run show_lam 1  q (REPR (fun q   -> evalo !(App (!(Abs (!"x", !(X !"x"))), !(X !"y"))) q)) qh; 
-  run show_lam 1  q (REPR (fun q   -> evalo !(App (!(Abs (!"x", !(X !"x"))), q)) !(X !"y"))) qh;
-  run show_lam 1  q (REPR (fun q   -> evalo !(App (!(Abs (!"x", q)), !(X !"y"))) !(X !"y"))) qh;
-  run show_lam 1  q (REPR (fun q   -> evalo !(App (q, !(X !"x"))) !(X !"x")               )) qh; 
-  run show_lam 1  q (REPR (fun q   -> evalo !(App (!(X !"x"), !(X !"x"))) q               )) qh; 
-  run show_lam 1  q (REPR (fun q   -> evalo !(X !"x") q                                   )) qh; 
-  run show_lam 1 qr (REPR (fun q r -> evalo !(App (r, q)) !(X !"x")                       )) qrh
-
+  run show_lam 1   q (REPR (fun q   -> substo !(X !"x") !"x" !(X !"y") q                   )) qh;
+  run show_lam 1   q (REPR (fun q   -> evalo !(Abs (!"x", !(X !"x"))) q                    )) qh;
+  run show_lam 2   q (REPR (fun q   -> evalo !(Abs (!"x", !(X !"x"))) q                    )) qh;
+  run show_lam 1   q (REPR (fun q   -> evalo !(App (!(Abs (!"x", !(X !"x"))), !(X !"y"))) q)) qh; 
+  run show_lam 1   q (REPR (fun q   -> evalo !(App (!(Abs (!"x", !(X !"x"))), q)) !(X !"y"))) qh;
+  run show_lam 1   q (REPR (fun q   -> evalo !(App (!(Abs (!"x", q)), !(X !"y"))) !(X !"y"))) qh;
+  run show_lam 1   q (REPR (fun q   -> evalo !(App (q, !(X !"x"))) !(X !"x")               )) qh; 
+  run show_lam 1   q (REPR (fun q   -> evalo !(App (!(X !"x"), !(X !"x"))) q               )) qh; 
+  run show_lam 1   q (REPR (fun q   -> evalo !(X !"x") q                                   )) qh; 
+  run show_lam 1  qr (REPR (fun q r -> evalo !(App (r, q)) !(X !"x")                       )) qrh;
+  run show_lam 3 qrs (REPR (fun q r s -> (evalo !(App (q, r)) s) &&& (evalo !(App (r, s)) q) &&& (evalo !(App (s, q)) r))) qrsh
 
 

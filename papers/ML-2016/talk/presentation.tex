@@ -313,17 +313,17 @@ is invoked:\pause
     run $\bar{n}$ (fun $q_1\;q_2\;\dots\;q_n\;$ -> $\;\;$g) (fun $a_1\;a_2\;\dots\;a_n\;$ -> $\;\;$h)
 \end{lstlisting}\pause
 
-Here:\pause
+Here:
 {\small
 \begin{itemize}
-\item \lstinline{run}~--- the only way to run goals;\pause
+\item \lstinline{run}~--- the only way to run goals;
 \item $\bar{n}$~--- a \emph{numeral}, describing the number of fresh variables, 
 available for running the goal \lstinline{g}; numerals can be manufactured
-\emph{quantum satis} using the successor function, which is provided as well;\pause
-\item $q_1, q_2\dots q_n$~--- these fresh variables;\pause
+\emph{quantum satis} using the successor function, which is provided as well;
+\item $q_1, q_2\dots q_n$~--- these fresh variables;
 \item $a_1, a_2\dots a_n$~--- the streams of \emph{refined} answers for the variables
-$q_1, q_2\dots q_n$ respectively;\pause
-\item \lstinline{h}~--- a \emph{handler}, which can make use of refined answers.\pause
+$q_1, q_2\dots q_n$ respectively;
+\item \lstinline{h}~--- a \emph{handler}, which can make use of refined answers.
 \end{itemize}
 }
 
@@ -356,7 +356,7 @@ type tree = Leaf of int | Node of tree * tree!\pause!
 $\leadsto$
 type ('int, 'tree) tree$_f$ = Leaf of 'int | Node of 'tree * 'tree!\pause!
 type tree  = (int, tree) tree$_f$!\pause!
-type tree$^o$ = ((int$^o$, ltree) tree$_f$)$^o$!\pause!
+type tree$^o$ = ((int$^o$, tree$^o$) tree$_f$)$^o$!\pause!
 
 let rec ($\uparrow_{\mbox{\small\ttfamily tree}}$) t = $\uparrow_\forall$ (!\graybox{$fmap_{\mbox{\small\ttfamily tree}_f}$}! ($\uparrow_\forall$) ($\uparrow_{\mbox{\small\ttfamily tree}}$) t)!\pause! 
 let rec ($\downarrow_{\mbox{\small\ttfamily tree}}$) l = !\graybox{$fmap_{\mbox{\small\ttfamily tree}_f}$}! ($\downarrow_\forall$) ($\downarrow_{\mbox{\small\ttfamily tree}}$) ($\downarrow_\forall$ l) 
