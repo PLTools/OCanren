@@ -43,6 +43,7 @@ module Stream =
     let take ?(n=(-1)) s = fst @@ retrieve ~n:n s
 
     let hd s = List.hd @@ take ~n:1 s
+    let tl s = snd @@ retrieve ~n:1 s
 
     let rec mplus fs gs =
       from_fun (fun () ->
@@ -64,6 +65,11 @@ module Stream =
     | Nil -> Nil
     | Cons (x, xs) -> Cons (f x, map f xs)
     | Lazy s -> Lazy (Lazy.lazy_from_fun (fun () -> map f @@ Lazy.force s))
+
+    let rec iter f = function
+    | Nil -> ()
+    | Cons (x, xs) -> f x; iter f xs
+    | Lazy s -> iter f @@ Lazy.force s
 
   end
 
@@ -554,6 +560,8 @@ module Nat =
         )
       ]
 
+    let (+) = addo
+
     let rec mulo x y z =
       conde [
         (x === !O) &&& (z === !O);
@@ -563,6 +571,8 @@ module Nat =
           (mulo x' y z')
         )
       ]
+
+    let ( * ) = mulo
 
     let rec leo x y b =
       conde [

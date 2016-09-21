@@ -43,8 +43,14 @@ module Stream :
     (** [hd s] gets a head of the stream *)
     val hd : 'a t -> 'a
 
+    (** [hd s] gets a tail of the stream *)
+    val tl : 'a t -> 'a t
+    
     (** [map f s] maps function [f] over the stream [s] *)
     val map : ('a -> 'b) -> 'a t -> 'b t
+
+    (** [iter f s] iterates function [f] over the stream [s] *)
+    val iter : ('a -> unit) -> 'a t -> unit
 
   end
 
@@ -232,8 +238,14 @@ module Nat :
     (** Relational addition *)
     val addo : logic -> logic -> logic -> goal 
 
+    (** Infix syninym for [addo] *)
+    val (+) : logic -> logic -> logic -> goal
+
     (** Relational multiplication *)
     val mulo : logic -> logic -> logic -> goal 
+
+    (** Infix syninym for [mulo] *)
+    val ( + ) : logic -> logic -> logic -> goal
 
     (** Comparisons *)
     val leo : logic -> logic -> Bool.logic -> goal

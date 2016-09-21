@@ -28,3 +28,9 @@ q=X ("x");
 fun q r -> evalo !(App (r, q)) !(X !"x"), 1 answer {
 q=X ("x"); r=Abs (_.21, X (_.21)); 
 }
+fun q r s ->
+  (&&&) ((&&&) (evalo !(App (q, r)) s) (evalo !(App (r, s)) q))
+    (evalo !(App (s, q)) r), 2 answers {
+q=Abs (_.53, X (_.53)); r=Abs (_.53, X (_.53)); s=Abs (_.53, X (_.53)); 
+q=Abs (_.57, X (_.57)); r=Abs (_.57, Abs (_.57, X (_.57))); s=Abs (_.57, Abs (_.57, X (_.57))); 
+}
