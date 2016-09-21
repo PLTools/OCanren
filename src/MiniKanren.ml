@@ -117,7 +117,7 @@ exception Not_a_value
 let (!!) x = Value x
 let inj = (!!)
 
-let prj_k k = function Value x -> x | v -> k v
+let prj_k k = function Value x -> x | Var (_, i, c) -> k i c
 let prj x = prj_k (fun _ -> raise Not_a_value) x
 
 let (!?) = prj
@@ -542,7 +542,7 @@ module Nat =
     
     let rec inj n = ! (GT.gmap(lnat) inj n)
 
-    let prj_k (k : logic -> logic t) (n : logic) =
+    let prj_k k n =
       let rec inner n =
         GT.gmap(lnat) inner (prj_k k n)
       in

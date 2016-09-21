@@ -86,13 +86,6 @@ val logic :
      gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic 
    >) GT.t
 
-(** A type of concrete logic values: either a free variable with integer id and 
-    the list, representing all disequality constraints, or some value *)
-@type 'a unlogic = [`Var of GT.int * 'a logic GT.list | `Value of 'a] with show, html, eq, compare, foldl, foldr(*, gmap*)
-
-(** [destruct l] destructs abstract logic into concrete *)
-val destruct : 'a logic -> 'a unlogic
-
 (** Injecting values into logics *)
 val (!!) : 'a -> 'a logic
 
@@ -109,9 +102,9 @@ val (!?) : 'a logic -> 'a
 val prj : 'a logic -> 'a
 
 (** Projection with failure continuation; [prj_k k l] calls continuation [k],
-    when a free variable is encountered inside [l]; this variable is
+    when a free variable is encountered inside [l]; the number of variable is
     passed to [k] as its argument *)
-val prj_k : ('a logic -> 'a) -> 'a logic -> 'a
+val prj_k : (int -> 'a logic list -> 'a) -> 'a logic -> 'a
 
 (** {3 Support for some predefined types (lists, nats, bools etc.)} *)
 
@@ -230,7 +223,7 @@ module Nat :
     val inj : ground -> logic
 
     (** Projection with failure continuation *)
-    val prj_k : (logic -> logic t) -> logic -> ground
+    val prj_k : (int -> logic list -> logic t) -> logic -> ground
 
     (** Projection with default continuation *)
     val prj : logic -> ground
@@ -319,7 +312,7 @@ module List :
     val inj : ('a -> 'b) -> 'a ground -> 'b logic
 
     (** List projection with failure continuation *)
-    val prj_k : ('a -> 'b) -> ('a logic -> ('a, 'a logic) t) ->  'a logic -> 'b ground
+    val prj_k : ('a -> 'b) -> (int -> 'a logic list -> ('a, 'a logic) t) ->  'a logic -> 'b ground
 
     (** List projection with default continuation *)
     val prj : ('a -> 'b) -> 'a logic -> 'b ground

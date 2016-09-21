@@ -23,7 +23,7 @@ let a_and_b' b =
   )
 
 let rec fives x =
-  disj (x === !5) 
+  disj (x === !5)       
        (fun st -> Stream.from_fun (fun () -> fives x st))
 
 let rec appendo a b ab =
