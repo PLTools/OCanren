@@ -10,12 +10,14 @@ ERROR=0
 
 RUN="${TEST}"
 ARGS=""
-CHECKS="${TEST}.log"
+# it is meant that script takes only one argument
+CHECKS=`basename ${RUN}`
+CHECKS=${CHECKS%.native}
 
 for i in ${RUN}; do
     if [ ! -x ${i} ]; then
-	echo "File ${i} does not exist or not executable"
-	ERROR=$((${ERROR} + 1))
+      echo "File ${i} does not exist or not executable"
+      ERROR=$((${ERROR} + 1))
     fi
 done
 
@@ -27,18 +29,17 @@ OLDPATH=${PATH}
 PATH=.:${PATH}
 
 for i in ${RUN}; do
-    log=`basename ${i}`
-    ${i} ${ARGS} > ${log}.log
+    ${i} ${ARGS} > ${CHECKS}.log
 done
 
 PATH=${OLDPATH}
 
 for i in ${CHECKS}; do
-    if ! diff -u orig/${i} ${i} > ${i}.diff; then
-	echo "${TEST}: FAILED (see ${i}.diff)"
-	ERROR=$((${ERROR} + 1))
+    if ! diff -u orig/${i}.log ${i}.log > ${i}.diff; then
+        echo "${TEST}: FAILED (see ${i}.diff)"
+        ERROR=$((${ERROR} + 1))
     else
-	rm -f ${i}.diff
+        rm -f ${i}.diff
     fi
 done
 

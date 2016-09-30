@@ -1,0 +1,17 @@
+version = "0.1"
+description = "ocanren"
+requires = "GT"
+archive(byte) = "MiniKanren.cma"
+archive(native) = "MiniKanren.cmxa"
+
+package "syntax" (
+  description="Camlp5 syntax extension"
+  archive(syntax,preprocessor) = "pa_minikanren.cmo"
+  archive(syntax,toploop)      = "pa_minikanren.cmo"
+)
+package "tester" (
+  description="Tests helper"
+  requires="ocanren"
+  archive(byte)  ="tester.cmo"
+  archive(native)="tester.cmx"
+)
