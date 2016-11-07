@@ -1,2 +1,7 @@
+\ *undo-tree*
+*.native
 *.byte
+*.swp
+_build
+
 

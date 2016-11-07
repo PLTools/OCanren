@@ -1,0 +1,128 @@
+MKDIR ?= mkdir -vp
+CP    ?= cp
+
+OB=ocamlbuild -use-ocamlfind -plugin-tag "package(str)" -classic-display
+ifdef OBV
+OB += -verbose 6
+endif
+
+CMA_TARGETS=src/MiniKanren.cma
+CMO_TARGETS=#src/tester.cmo
+BYTE_TARGETS=$(CMA_TARGETS) $(CMO_TARGETS)
+NATIVE_TARGETS= $(CMA_TARGETS:.cma=.cmxa) $(CMO_TARGETS:.cmo=.cmx)
+TESTS_ENVIRONMENT=./test.sh
+JSOO_LIB=jsoo_runner/jsoo_runner.cma
+
+.PHONY: all celan clean clean_tests install uninstall tests test regression promote \
+	only-toplevel toplevel minikanren_stuff tester bundle plugin
+
+.DEFAULT_GOAL: all
+
+all: minikanren_stuff bundle
+
+minikanren_stuff:
+	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
+
+plugin:
+	$(OB) camlp5/pa_minikanren.cmo
+
+celan: clean
+
+clean: clean_tests
+	$(RM) -r _build *.log  *.native *.byte
+	#$(MAKE) -C regression clean
+
+######################## Tests related stuff  ##########################
+REGRES_CASES := 000 001 002 003 004 005 006 007 008 009 010 011 012 013 014
+
+define TESTRULES
+BYTE_TEST_EXECUTABLES += regression/test$(1).byte
+NATIVE_TEST_EXECUTABLES += regression/test$(1).native
+TEST_MLS += regression/test$(1).ml
+
+.PHONY: test_$(1) test$(1).native compile_tests_native compile_tests_byte
+
+test$(1).native: regression/test$(1).native
+test$(1).byte:   regression/test$(1).byte
+
+regression/test$(1).byte: regression/test$(1).ml
+	$(OB) -Is src $$@
+
+regression/test$(1).native: regression/test$(1).ml
+	$(OB) -Is src $$@
+
+run_tests: test_$(1)
+test_$(1):
+	@cd regression  && $(TESTS_ENVIRONMENT) ../test$(1).native; \
+	if [ $$$$? -ne 0 ] ; then echo "$(1) FAILED"; else echo "$(1) PASSED"; fi
+endef
+$(foreach i,$(REGRES_CASES),$(eval $(call TESTRULES,$(i)) ) )
+
+.PHONY: compile_tests_native compile_tests_byte compile_tests run_tests
+
+compile_tests_native: $(TEST_MLS)
+	$(OB) -Is src $(NATIVE_TEST_EXECUTABLES)
+
+compile_tests_byte: $(TEST_MLS)
+	$(OB) -Is src $(BYTE_TEST_EXECUTABLES)
+
+compile_tests: compile_tests_native
+
+clean_tests:
+	$(RM) -r _build/regression
+
+promote:
+	$(MAKE) -C regression promote TEST=$(TEST)
+
+tests: plugin minikanren_stuff compile_tests run_tests
+regression: tests
+test: tests
+
+######################## Installation related stuff ##########################
+INSTALL_TARGETS=META \
+	$(wildcard _build/regression/tester.cmi) \
+	$(wildcard _build/regression/tester.cmo) \
+	$(wildcard _build/regression/tester.cmx) \
+	$(wildcard _build/src/*.cmi) \
+	_build/src/MiniKanren.cma \
+	_build/src/MiniKanren.cmxa \
+	$(wildcard _build/src/MiniKanren.[oa]) \
+	$(wildcard _build/camlp5/pa_minikanren.cm[oi]) \
+#	_build/src/tester.o \
+
+
+MAYBE_INSTALL_TARGETS=\
+	_build/jsoo_runner/jsoo_runner.cmi \
+	_build/jsoo_runner/jsoo_runner.cma \
+
+define MAYBE_ADD_TARGET
+ifneq (,$(wildcard $(1)))
+INSTALL_TARGETS += $(1)
+endif
+endef
+
+$(foreach i,$(MAYBE_INSTALL_TARGETS),$(eval $(call MAYBE_ADD_TARGET,$(i)) ) )
+
+BUNDLEDIR=_build/bundle/ocanren
+
+define MAKE_BUNDLE_RULE
+$(BUNDLEDIR)/$(notdir $(1)): $(1)
+	cp $(1) $(BUNDLEDIR)
+MAKE_BUNDLE_TARGETS += $(BUNDLEDIR)/$(notdir $(1))
+
+endef
+$(foreach i,$(INSTALL_TARGETS),$(eval $(call MAKE_BUNDLE_RULE,$(i)) ) )
+
+rmbundledir:
+	@$(RM) -r $(BUNDLEDIR)
+
+$(BUNDLEDIR):
+	@$(MKDIR) $@
+
+bundle: rmbundledir $(BUNDLEDIR) $(MAKE_BUNDLE_TARGETS)
+
+install: bundle
+	ocamlfind install ocanren $(BUNDLEDIR)/*
+
+uninstall:
+	ocamlfind remove ocanren

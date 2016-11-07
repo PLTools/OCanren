@@ -1,0 +1,31 @@
+true: debug, rectypes
+
+<camlp5/pa_minikanren.*>: syntax(camlp5o), package(camlp5)
+
+<src/MiniKanren.*>: syntax(camlp5o),package(GT,GT.syntax.all)
+
+<regression/orig/*>: traverse
+<regression/test*.native> or <regression/test*.byte>: package(str)
+#<regression/test003.ml>: use_pa_minikanren
+
+
+<regression/test0*.*>: package(GT,logger.syntax), syntax(camlp5o)
+#<regression/test004.ml> or <regression/test009.ml> or <regression/test005.ml> or <regression/test000.ml> : use_pa_minkanren
+#<regression/test004.*>: 
+<regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test011.*> or <regression/test010.*> or <regression/test009.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test003.*>: use_pa_minikanren, package(GT.syntax.all)
+
+####################################################################
+# JSOO toplevel related stuff
+#<jsoo_runner/jsoo_runner.*>: package(js_of_ocaml.ppx,js_of_ocaml.tyxml), use_MiniKanren
+
+# toplevel related stuff
+#<toplevel/toplevel.cppo.cmo>: package(js_of_ocaml.ppx,base64)
+<toplevel/toplevel.ml> or <toplevel/colorize.ml> or <toplevel/indent.ml>: package(js_of_ocaml.ppx,tyxml)
+<toplevel/toplevel.cmo>: cppo,package(js_of_ocaml.ppx,compiler-libs.common,base64), js_of_ocaml
+<toplevel/colorize.cm*>: package(js_of_ocaml.tyxml)
+<toplevel/indent.mli> or <toplevel/colorize.mli>: package(js_of_ocaml.tyxml)
+<toplevel/toplevel.byte>: cppo, pretty, package(js_of_ocaml.tyxml,js_of_ocaml.toplevel),export_package(lwt)
+<toplevel/toplevel.js>: export_package(lwt),export_package(js_of_ocaml),export_package(js_of_ocaml.toplevel),package(ppx_tools)
+<toplevel/toplevel.js>: jsopt(+toplevel.js),jsopt(+dynlink.js),jsopt(+nat.js),jsopt(+weak.js)
+<toplevel/toplevel.js>: package(compiler-libs.common)
+<toplevel/*>:  not_hygienic

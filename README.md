@@ -232,21 +232,10 @@ let insert' t t' =
 
 ## Installation
 
-Prerequisites:
+OCanren can be installed using [opam](https://opam.ocaml.org):
 
-- [ocaml](http://ocaml.org) version >= 4.01.0
-- [camlp5](http://camlp5.gforge.inria.fr) version >= 6.11
-- [findlib](http://projects.camlcity.org/projects/findlib.html)
-- [logger] (https://github.com/dboulytchev/logger)
-- [GT](https://github.com/dboulytchev/generic-transformers)
-
-Build steps:
-
-- `./configure`
-- `make`
-- `make check` (optional)
-- `make install` (to install), `make uninstall` (to uninstall)
-- `make doc` (optional)
+- `opam pin add ocanren https://github.com/dboulytchev/ocanren.git -n -y`	
+- `opam install ocanren`
 
 # More info
 
