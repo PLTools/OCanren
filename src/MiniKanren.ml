@@ -366,13 +366,12 @@ let (===) x y (env, subst, constr) =
   with Occurs_check -> Stream.nil
 
 let (=/=) x y ((env, subst, constr) as st) =
-  let env = Env.nonlocal_scope env in
   let normalize_store prefix constr =
     let subst  = Subst.of_list prefix in
     let prefix = List.split (List.map (fun (_, x, t) -> (x, t)) prefix) in
     let subsumes subst (vs, ts) = 
       try 
-        match Subst.unify env !!!vs !!!ts (Some subst) with
+        match Subst.unify (Env.nonlocal_scope env) !!!vs !!!ts (Some subst) with
 	| [], Some _ -> true
         | _ -> false
       with Occurs_check -> false
@@ -389,7 +388,7 @@ let (=/=) x y ((env, subst, constr) as st) =
     traverse constr
   in
   try 
-    let prefix, subst' = Subst.unify env x y (Some subst) in
+    let prefix, subst' = Subst.unify (Env.nonlocal_scope env) x y (Some subst) in
     match subst' with
     | None -> Stream.cons st Stream.nil
     | Some s -> 
