@@ -71,9 +71,12 @@ type goal = State.t -> State.t Stream.t
 
 (** {3 Logics} *)
 
-(** A type of abstract logic values *)
-type 'a logic
+type ('a, 'b) fancy (* { , } *)
 
+(** A type of abstract logic values *)
+type 'a logic (* [ ] *)
+
+(*
 (** A GT-compatible typeinfo for ['a logic] *)
 val logic :
   (unit, 
@@ -85,16 +88,20 @@ val logic :
      foldr   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
      gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic 
    >) GT.t
+*)
+
+val lift : 'a -> ('a, 'a) fancy
 
 (** Injecting values into logics *)
-val (!!) : 'a -> 'a logic
+val (!!) : ('a, 'b) fancy -> ('a, 'b logic) fancy
 
 (** A synonym for [(!!)] *)
-val inj : 'a -> 'a logic 
+val inj : ('a, 'b) fancy -> ('a, 'b logic) fancy
 
 (** Exception to raise on a non-value case *)
 exception Not_a_value
 
+(*
 (** Projecting logics to values (partial, can raise [Not_a_value]) *)
 val (!?) : 'a logic -> 'a
 
@@ -105,15 +112,36 @@ val prj : 'a logic -> 'a
     when a free variable is encountered inside [l]; the number of variable is
     passed to [k] as its argument *)
 val prj_k : (int -> 'a logic list -> 'a) -> 'a logic -> 'a
-
+*)
 (** {3 Support for some predefined types (lists, nats, bools etc.)} *)
 
 (** Abstract list type *)
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
 
+
+module type T =
+  sig
+    type 'a t
+    val fmap : ('a -> 'b) -> 'a t -> 'b t
+  end
+
+module Fmap (T : T) :
+  sig
+
+    val fmap : ('a, 'b) fancy T.t -> ('a T.t, 'b T.t) fancy
+
+  end
+
+val lmap : ('a, 'b) fancy -> (('a, 'l) llist as 'l, ('b, 'm) llist as 'm) fancy
+
+val cons : ('a, 'b logic) fancy -> (('a, 'z) llist as 'z, ('b logic, 'c) llist logic as 'c) fancy -> (('a, 'z) llist, ('b logic, 'c) llist logic) fancy
+
+val nil : (('a, 'z) llist as 'z, ('a logic, 'c) llist logic as 'c) fancy 
+
+
 (** Abstract nat type *)
 @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
-
+(*
 module Bool :
   sig
 
@@ -372,27 +400,28 @@ val (!<) : 'a -> 'a List.logic
 
 (** [nil] is a synonym for [inj Nil] *)
 val nil : 'a List.logic
-
+*)
 (** {2 miniKanren basic primitives} *)
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the
     parameter *)
-val call_fresh : ('a logic -> State.t -> 'b) -> State.t -> 'b
+val call_fresh : (('a, 'b logic) fancy -> State.t -> 'c) -> State.t -> 'c
 
 (** [x === y] creates a goal, which performs a unifications of
     [x] and [y] *)
-val (===) : 'a logic -> 'a logic -> goal
+val (===) : ('a, 'b logic) fancy -> ('a, 'b logic) fancy -> goal
 
 (** [x =/= y] creates a goal, which introduces a disequality constraint for
     [x] and [y] *)
-val (=/=) : 'a logic -> 'a logic -> goal
+val (=/=) : ('a, 'b logic) fancy -> ('a, 'b logic) fancy -> goal
 
+(*
 (** Equality as boolean relation *)
-val eqo : 'a logic -> 'a logic -> Bool.logic -> goal
+val eqo : ('a, 'b logic) fancy -> ('a, 'b logic) fancy -> Bool.logic -> goal
 
 (** Disequality as boolean relation *)
-val neqo : 'a logic -> 'a logic -> Bool.logic -> goal
-
+val neqo : ('a, 'b logic) fancy -> ('a, 'b logic) fancy -> Bool.logic -> goal
+*)
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
 val conj : goal -> goal -> goal
 
@@ -430,26 +459,26 @@ module Fresh :
 
     (** [succ num f] increments the number of free logic variables in
         a goal; can be used to get rid of ``fresh'' syntax extension *)
-    val succ : ('a -> State.t -> 'b) -> ('c logic -> 'a) -> State.t -> 'b
+    val succ : ('a -> State.t -> 'b) -> (('c, 'd logic) fancy -> 'a) -> State.t -> 'b
 
     (** Zero logic parameters *)
     val zero : 'a -> 'a
  
     (** {3 One to five logic parameter(s)} *)
 
-    val one   : ('a logic ->                                                 State.t -> 'b) -> State.t -> 'b
-    val two   : ('a logic -> 'b logic ->                                     State.t -> 'c) -> State.t -> 'c
-    val three : ('a logic -> 'b logic -> 'c logic ->                         State.t -> 'd) -> State.t -> 'd
-    val four  : ('a logic -> 'b logic -> 'c logic -> 'd logic ->             State.t -> 'e) -> State.t -> 'e
-    val five  : ('a logic -> 'b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'f
+    val one   : (('a, 'b logic) fancy ->                                                                                                 State.t -> 'c) -> State.t -> 'c
+    val two   : (('a, 'b logic) fancy -> ('c, 'd logic) fancy ->                                                                         State.t -> 'e) -> State.t -> 'e
+    val three : (('a, 'b logic) fancy -> ('c, 'd logic) fancy -> ('e, 'f logic) fancy ->                                                 State.t -> 'g) -> State.t -> 'g
+    val four  : (('a, 'b logic) fancy -> ('c, 'd logic) fancy -> ('e, 'f logic) fancy -> ('g, 'h logic) fancy ->                         State.t -> 'i) -> State.t -> 'i
+    val five  : (('a, 'b logic) fancy -> ('c, 'd logic) fancy -> ('e, 'f logic) fancy -> ('g, 'h logic) fancy -> ('i, 'j logic) fancy -> State.t -> 'k) -> State.t -> 'k
  
     (** {3 One to five logic parameter(s), conventional names} *)
 
-    val q     : ('a logic ->                                                 State.t -> 'b) -> State.t -> 'b
-    val qr    : ('a logic -> 'b logic ->                                     State.t -> 'c) -> State.t -> 'c
-    val qrs   : ('a logic -> 'b logic -> 'c logic ->                         State.t -> 'd) -> State.t -> 'd
-    val qrst  : ('a logic -> 'b logic -> 'c logic -> 'd logic ->             State.t -> 'e) -> State.t -> 'e
-    val pqrst : ('a logic -> 'b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'f
+    val q     : (('a, 'b logic) fancy ->                                                                                                 State.t -> 'c) -> State.t -> 'c
+    val qr    : (('a, 'b logic) fancy -> ('c, 'd logic) fancy ->                                                                         State.t -> 'e) -> State.t -> 'e
+    val qrs   : (('a, 'b logic) fancy -> ('c, 'd logic) fancy -> ('e, 'f logic) fancy ->                                                 State.t -> 'g) -> State.t -> 'g
+    val qrst  : (('a, 'b logic) fancy -> ('c, 'd logic) fancy -> ('e, 'f logic) fancy -> ('g, 'h logic) fancy ->                         State.t -> 'i) -> State.t -> 'i
+    val pqrst : (('a, 'b logic) fancy -> ('c, 'd logic) fancy -> ('e, 'f logic) fancy -> ('g, 'h logic) fancy -> ('i, 'j logic) fancy -> State.t -> 'k) -> State.t -> 'k
  
   end
 
@@ -472,74 +501,107 @@ val run : (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) 
 
 (** Some type to refine a stream of states into the stream of answers (w.r.t. some known
     logic variable *)
-type 'a refiner = State.t Stream.t -> 'a logic Stream.t
+type 'a refiner = State.t Stream.t -> 'a Stream.t
 
 (** Successor function *)
 val succ :
   (unit -> ('a -> State.t -> 'b) * ('c -> 'd -> 'e) * (('f -> 'g -> 'h) * ('i -> 'j * 'k))) -> 
-  (unit -> (('l logic -> 'a) -> State.t -> 'l refiner * 'b) * (('m -> 'c) -> 'm * 'd -> 'e) * (('f -> ('f -> 'n) * 'g -> 'n * 'h) * ('o * 'i -> ('o * 'j) * 'k)))
+  (unit -> ((('l, 'z logic) fancy -> 'a) -> State.t -> 'l refiner * 'b) * (('m -> 'c) -> 'm * 'd -> 'e) * (('f -> ('f -> 'n) * 'g -> 'n * 'h) * ('o * 'i -> ('o * 'j) * 'k)))
+
 
 (** {3 Predefined numerals (one to five)} *)
 
 val one :
   unit ->
-  (('a logic -> State.t -> 'b) -> State.t -> 'a refiner * 'b) *
-  (('c -> 'd) -> 'c -> 'd) * 
-  (('e -> ('e -> 'f) -> 'f) * ('g -> 'g))
+  ((('a, 'b logic) fancy -> State.t -> 'c) -> State.t -> 'a refiner * 'c) *
+  (('d -> 'e) -> 'd -> 'e) * (('f -> ('f -> 'g) -> 'g) * ('h -> 'h))
 
 val two :
   unit ->
-  (('b logic -> 'c logic -> State.t -> 'd) -> State.t -> 'b refiner * ('c refiner * 'd)) *
-  (('e -> 'f -> 'g) -> 'e * 'f -> 'g) * 
-  (('h -> ('h -> 'i) * ('h -> 'j) -> 'i * 'j) * ('k * ('l * 'm) -> ('k * 'l) * 'm))
-	    
+  ((('a, 'b logic) fancy -> ('c, 'd logic) fancy -> State.t -> 'e) ->
+   State.t -> 'a refiner * ('c refiner * 'e)) *
+  (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
+  (('i -> ('i -> 'j) * ('i -> 'k) -> 'j * 'k) *
+   ('l * ('m * 'n) -> ('l * 'm) * 'n))
 val three :
   unit ->
-  (('b logic -> 'c logic -> 'd logic -> State.t -> 'e) -> State.t -> 'b refiner * ('c refiner * ('d refiner * 'e))) *
-  (('f -> 'g -> 'h -> 'i) -> 'f * ('g * 'h) -> 'i) *
-  (('j -> ('j -> 'k) * (('j -> 'l) * ('j -> 'm)) -> 'k * ('l * 'm)) * ('n * ('o * ('p * 'q)) -> ('n * ('o * 'p)) * 'q))
-	    
+  ((('a, 'b logic) fancy ->
+    ('c, 'd logic) fancy -> ('e, 'f logic) fancy -> State.t -> 'g) ->
+   State.t -> 'a refiner * ('c refiner * ('e refiner * 'g))) *
+  (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
+  (('l -> ('l -> 'm) * (('l -> 'n) * ('l -> 'o)) -> 'm * ('n * 'o)) *
+   ('p * ('q * ('r * 's)) -> ('p * ('q * 'r)) * 's))
 val four :
   unit ->
-  (('b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'b refiner * ('c refiner * ('d refiner * ('e refiner * 'f)))) *
-  (('g -> 'h -> 'i -> 'j -> 'k) -> 'g * ('h * ('i * 'j)) -> 'k) *
-  (('l -> ('l -> 'm) * (('l -> 'n) * (('l -> 'o) * ('l -> 'p))) -> 'm * ('n * ('o * 'p))) * ('q * ('r * ('s * ('t * 'u))) -> ('q * ('r * ('s * 't))) * 'u))
-	    
+  ((('a, 'b logic) fancy ->
+    ('c, 'd logic) fancy ->
+    ('e, 'f logic) fancy -> ('g, 'h logic) fancy -> State.t -> 'i) ->
+   State.t -> 'a refiner * ('c refiner * ('e refiner * ('g refiner * 'i)))) *
+  (('j -> 'k -> 'l -> 'm -> 'n) -> 'j * ('k * ('l * 'm)) -> 'n) *
+  (('o ->
+    ('o -> 'p) * (('o -> 'q) * (('o -> 'r) * ('o -> 's))) ->
+    'p * ('q * ('r * 's))) *
+   ('t * ('u * ('v * ('w * 'x))) -> ('t * ('u * ('v * 'w))) * 'x))
 val five :
   unit ->
-  (('b logic -> 'c logic -> 'd logic -> 'e logic -> 'f logic -> State.t -> 'g) -> State.t ->	'b refiner * ('c refiner * ('d refiner * ('e refiner * ('f refiner * 'g))))) *
-  (('h -> 'i -> 'j -> 'k -> 'l -> 'm) -> 'h * ('i * ('j * ('k * 'l))) -> 'm) * 
-  (('n -> ('n -> 'o) * (('n -> 'p) * (('n -> 'q) * (('n -> 'r) * ('n -> 's)))) -> 'o * ('p * ('q * ('r * 's)))) * ('t * ('u * ('v * ('w * ('x * 'y)))) -> ('t * ('u * ('v * ('w * 'x)))) * 'y))
+  ((('a, 'b logic) fancy ->
+    ('c, 'd logic) fancy ->
+    ('e, 'f logic) fancy ->
+    ('g, 'h logic) fancy -> ('i, 'j logic) fancy -> State.t -> 'k) ->
+   State.t ->
+   'a refiner *
+   ('c refiner * ('e refiner * ('g refiner * ('i refiner * 'k))))) *
+  (('l -> 'm -> 'n -> 'o -> 'p -> 'q) -> 'l * ('m * ('n * ('o * 'p))) -> 'q) *
+  (('r ->
+    ('r -> 's) * (('r -> 't) * (('r -> 'u) * (('r -> 'v) * ('r -> 'w)))) ->
+    's * ('t * ('u * ('v * 'w)))) *
+   ('x * ('y * ('z * ('a1 * ('b1 * 'c1)))) ->
+    ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1))
 
 (** {3 The same numerals with conventional names} *)
 
 val q :
   unit ->
-  (('a logic -> State.t -> 'b) -> State.t -> 'a refiner * 'b) *
-  (('c -> 'd) -> 'c -> 'd) * 
-  (('e -> ('e -> 'f) -> 'f) * ('g -> 'g))
-
+  ((('a, 'b logic) fancy -> State.t -> 'c) -> State.t -> 'a refiner * 'c) *
+  (('d -> 'e) -> 'd -> 'e) * (('f -> ('f -> 'g) -> 'g) * ('h -> 'h))
 val qr :
   unit ->
-  (('b logic -> 'c logic -> State.t -> 'd) -> State.t -> 'b refiner * ('c refiner * 'd)) *
-  (('e -> 'f -> 'g) -> 'e * 'f -> 'g) * 
-  (('h -> ('h -> 'i) * ('h -> 'j) -> 'i * 'j) * ('k * ('l * 'm) -> ('k * 'l) * 'm))
-	    
+  ((('a, 'b logic) fancy -> ('c, 'd logic) fancy -> State.t -> 'e) ->
+   State.t -> 'a refiner * ('c refiner * 'e)) *
+  (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
+  (('i -> ('i -> 'j) * ('i -> 'k) -> 'j * 'k) *
+   ('l * ('m * 'n) -> ('l * 'm) * 'n))
 val qrs :
   unit ->
-  (('b logic -> 'c logic -> 'd logic -> State.t -> 'e) -> State.t -> 'b refiner * ('c refiner * ('d refiner * 'e))) *
-  (('f -> 'g -> 'h -> 'i) -> 'f * ('g * 'h) -> 'i) *
-  (('j -> ('j -> 'k) * (('j -> 'l) * ('j -> 'm)) -> 'k * ('l * 'm)) * ('n * ('o * ('p * 'q)) -> ('n * ('o * 'p)) * 'q))
-	    
+  ((('a, 'b logic) fancy ->
+    ('c, 'd logic) fancy -> ('e, 'f logic) fancy -> State.t -> 'g) ->
+   State.t -> 'a refiner * ('c refiner * ('e refiner * 'g))) *
+  (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
+  (('l -> ('l -> 'm) * (('l -> 'n) * ('l -> 'o)) -> 'm * ('n * 'o)) *
+   ('p * ('q * ('r * 's)) -> ('p * ('q * 'r)) * 's))
 val qrst :
   unit ->
-  (('b logic -> 'c logic -> 'd logic -> 'e logic -> State.t -> 'f) -> State.t -> 'b refiner * ('c refiner * ('d refiner * ('e refiner * 'f)))) *
-  (('g -> 'h -> 'i -> 'j -> 'k) -> 'g * ('h * ('i * 'j)) -> 'k) *
-  (('l -> ('l -> 'm) * (('l -> 'n) * (('l -> 'o) * ('l -> 'p))) -> 'm * ('n * ('o * 'p))) * ('q * ('r * ('s * ('t * 'u))) -> ('q * ('r * ('s * 't))) * 'u))
-	    
+  ((('a, 'b logic) fancy ->
+    ('c, 'd logic) fancy ->
+    ('e, 'f logic) fancy -> ('g, 'h logic) fancy -> State.t -> 'i) ->
+   State.t -> 'a refiner * ('c refiner * ('e refiner * ('g refiner * 'i)))) *
+  (('j -> 'k -> 'l -> 'm -> 'n) -> 'j * ('k * ('l * 'm)) -> 'n) *
+  (('o ->
+    ('o -> 'p) * (('o -> 'q) * (('o -> 'r) * ('o -> 's))) ->
+    'p * ('q * ('r * 's))) *
+   ('t * ('u * ('v * ('w * 'x))) -> ('t * ('u * ('v * 'w))) * 'x))
 val pqrst :
   unit ->
-  (('b logic -> 'c logic -> 'd logic -> 'e logic -> 'f logic -> State.t -> 'g) -> State.t ->	'b refiner * ('c refiner * ('d refiner * ('e refiner * ('f refiner * 'g))))) *
-  (('h -> 'i -> 'j -> 'k -> 'l -> 'm) -> 'h * ('i * ('j * ('k * 'l))) -> 'm) * 
-  (('n -> ('n -> 'o) * (('n -> 'p) * (('n -> 'q) * (('n -> 'r) * ('n -> 's)))) -> 'o * ('p * ('q * ('r * 's)))) * ('t * ('u * ('v * ('w * ('x * 'y)))) -> ('t * ('u * ('v * ('w * 'x)))) * 'y))
-
+  ((('a, 'b logic) fancy ->
+    ('c, 'd logic) fancy ->
+    ('e, 'f logic) fancy ->
+    ('g, 'h logic) fancy -> ('i, 'j logic) fancy -> State.t -> 'k) ->
+   State.t ->
+   'a refiner *
+   ('c refiner * ('e refiner * ('g refiner * ('i refiner * 'k))))) *
+  (('l -> 'm -> 'n -> 'o -> 'p -> 'q) -> 'l * ('m * ('n * ('o * 'p))) -> 'q) *
+  (('r ->
+    ('r -> 's) * (('r -> 't) * (('r -> 'u) * (('r -> 'v) * ('r -> 'w)))) ->
+    's * ('t * ('u * ('v * 'w)))) *
+   ('x * ('y * ('z * ('a1 * ('b1 * 'c1)))) ->
+    ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1))
