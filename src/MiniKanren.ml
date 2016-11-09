@@ -1,4 +1,4 @@
-(*
+1(*
  * MiniKanren: miniKanren implementation.
  * Copyright (C) 2015-2016
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, 
@@ -83,6 +83,11 @@ module Stream =
 
 let (!!!) = Obj.magic;;
 
+type ('a, 'b) fancy = 'a
+type 'a logic = 'a
+type 'a inner_logic = Var of GT.int GT.list * GT.int * 'a logic GT.list 
+
+(*
 @type 'a logic = Var of GT.int GT.list * GT.int * 'a logic GT.list | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 let logic = {logic with 
@@ -113,23 +118,21 @@ let logic = {logic with
            x
     end
 };;
-
-@type 'a unlogic = [`Var of GT.int * 'a logic GT.list | `Value of 'a] with show, html, eq, compare, foldl, foldr (*, gmap*)
-
-let destruct = function
-| Var (_, i, c) -> `Var (i, c)
-| Value x       -> `Value x
+*)
 
 exception Not_a_value 
 
-let (!!) x = Value x
+let lift x = x
+
+let (!!) x = (*Value*) x
 let inj = (!!)
 
+(*
 let prj_k k = function Value x -> x | Var (_, i, c) -> k i c
 let prj x = prj_k (fun _ -> raise Not_a_value) x
 
 let (!?) = prj
-
+*)
 exception Occurs_check
 
 type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
@@ -433,6 +436,27 @@ let neqo x y t =
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
 @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
+module type T =
+  sig
+    type 'a t
+    val fmap : ('a -> 'b) -> 'a t -> 'b t
+  end
+
+module Fmap (T : T) =
+  struct
+
+    let fmap : ('a, 'b) fancy T.t -> ('a T.t, 'b T.t) fancy = fun x -> x
+
+  end
+
+let lmap : ('a, 'b) fancy -> (('a, 'l) llist as 'l, ('b, 'm) llist as 'm) fancy = fun x -> Cons (x, Nil)
+
+let cons : ('a, 'b logic) fancy -> (('a, 'z) llist as 'z, ('b logic, 'c) llist logic as 'c) fancy -> (('a, 'z) llist, ('b logic, 'c) llist logic) fancy = fun x y ->
+  Cons (x, y)
+
+let nil : (('a, 'z) llist as 'z, ('a logic, 'c) llist logic as 'c) fancy = Nil
+
+(*
 module Bool =
   struct
 
@@ -820,8 +844,9 @@ let rec prj_nat_list l =
   match prj l with
   | Nil -> []
   | Cons (x, xs) -> prj_nat x :: prj_nat_list xs
+*)
 
-let rec refine : State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->  
+let rec refine : State.t -> ('a, 'b logic) fancy -> 'a = fun ((e, s, c) as st) x -> 
   let rec walk' recursive env var subst =
     let var = Subst.walk env var subst in
     match Env.var env var with
@@ -841,7 +866,8 @@ let rec refine : State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->
            !!!var
          | Invalid n -> invalid_arg (Printf.sprintf "Invalid value for reconstruction (%d)" n)
         )
-    | Some i when recursive ->        
+    | Some i when recursive -> invalid_arg "Free variable in refine."
+(*
         (match var with
          | Var (a, i, _) -> 
             let cs = 
@@ -856,6 +882,7 @@ let rec refine : State.t -> 'a logic -> 'a logic = fun ((e, s, c) as st) x ->
 	    in
 	    Var (a, i, cs)
         )
+*)
     | _ -> var
   in
   walk' true e (!!!x) s
@@ -892,16 +919,16 @@ module Uncurry =
     let succ k f (x,y) = k (f x) y
   end
 
-type 'a refiner = State.t Stream.t -> 'a logic Stream.t
+type 'a refiner = State.t Stream.t -> 'a Stream.t
 
-let refiner : 'a logic -> 'a refiner = fun x ans ->
+let refiner : ('a, 'b logic) fancy -> 'a refiner = fun x ans ->
   Stream.map (fun st -> refine st x) ans
 
 module LogicAdder = 
   struct
     let zero f = f
  
-    let succ (prev: 'a -> State.t -> 'b) (f: 'c logic -> 'a) : State.t -> 'c refiner * 'b =
+    let succ (prev: 'a -> State.t -> 'b) (f: ('c, 'z logic) fancy -> 'a) : State.t -> 'c refiner * 'b =
       call_fresh (fun logic st -> (refiner logic, prev (f logic) st))
   end
 
