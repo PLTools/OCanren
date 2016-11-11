@@ -1,6 +1,12 @@
 MKDIR ?= mkdir -vp
 CP    ?= cp
 
+.NOTPARALLEL :
+.PHONY: antiphantom
+antiphantom:
+	eval `opam config env` && $(MAKE) all test009.native && OCAMLRUNPARAM=b ./test009.native
+
+
 OB=ocamlbuild -use-ocamlfind -plugin-tag "package(str)" -classic-display
 ifdef OBV
 OB += -verbose 6
@@ -18,7 +24,7 @@ JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
 .DEFAULT_GOAL: all
 
-all: minikanren_stuff plugin bundle 
+all: minikanren_stuff plugin bundle
 
 minikanren_stuff:
 	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
@@ -33,7 +39,7 @@ clean: clean_tests
 	#$(MAKE) -C regression clean
 
 ######################## Tests related stuff  ##########################
-REGRES_CASES := 000 001 002 003 004 005 006 007 008 009 010 011 012 013 014
+REGRES_CASES := 001 004 005 006 007 009 010 011 013 014 # 000
 
 define TESTRULES
 BYTE_TEST_EXECUTABLES += regression/test$(1).byte
