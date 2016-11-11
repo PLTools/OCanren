@@ -2,7 +2,7 @@ open GT
 open MiniKanren
 open Tester
 
-let rec build_num = 
+let rec build_num =
   function
   | 0                   -> !Nil
   | n when n mod 2 == 0 -> !0 % build_num (n / 2)
@@ -84,7 +84,7 @@ let rec bound_multo q p n m =
       (conde [
         (nullo n) &&& (cdro m z) &&& (bound_multo x y z !Nil);
         (cdro n z) &&& (bound_multo x y z m)
-      ]) 
+      ])
   ]
 
 let rec multo n m p =
@@ -213,7 +213,7 @@ let rec divo n m q r =
           ?& [
             (poso nh);
             (multo ql m qlm);
-            (pluso qlm r qlmr); 
+            (pluso qlm r qlmr);
             (minuso qlmr nl rr);
             (splito rr r !Nil rh);
             (divo nh m qh rh)

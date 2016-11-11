@@ -1,6 +1,12 @@
 MKDIR ?= mkdir -vp
 CP    ?= cp
 
+.NOTPARALLEL :
+.PHONY: antiphantom
+antiphantom:
+	eval `opam config env` && $(MAKE) all test005.native && OCAMLRUNPARAM=b ./test005.native
+
+
 OB=ocamlbuild -use-ocamlfind -plugin-tag "package(str)" -classic-display
 ifdef OBV
 OB += -verbose 6
@@ -18,7 +24,7 @@ JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
 .DEFAULT_GOAL: all
 
-all: minikanren_stuff bundle
+all: minikanren_stuff plugin bundle
 
 minikanren_stuff:
 	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
