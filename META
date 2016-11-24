@@ -6,6 +6,7 @@ archive(native) = "MiniKanren.cmxa"
 
 package "syntax" (
   description="Camlp5 syntax extension"
+  requires="camlp5"
   archive(syntax,preprocessor) = "pa_minikanren.cmo"
   archive(syntax,toploop)      = "pa_minikanren.cmo"
 )
