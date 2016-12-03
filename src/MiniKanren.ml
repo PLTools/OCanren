@@ -21,7 +21,7 @@ module Stream =
 
     type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t
 
-    let from_fun (f: unit -> 'a t) : 'a t = Lazy (Lazy.lazy_from_fun f)
+    let from_fun (f: unit -> 'a t) : 'a t = Lazy (Lazy.from_fun f)
 
     let nil = Nil
 
@@ -64,12 +64,19 @@ module Stream =
     let rec map f = function
     | Nil -> Nil
     | Cons (x, xs) -> Cons (f x, map f xs)
-    | Lazy s -> Lazy (Lazy.lazy_from_fun (fun () -> map f @@ Lazy.force s))
+    | Lazy s -> Lazy (Lazy.from_fun (fun () -> map f @@ Lazy.force s))
 
     let rec iter f = function
     | Nil -> ()
     | Cons (x, xs) -> f x; iter f xs
     | Lazy s -> iter f @@ Lazy.force s
+
+    let rec zip fs gs = match (fs, gs) with
+    | Nil, _ -> Nil
+    | _, Nil -> Nil
+    | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
+    | _, Lazy s -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
+    | Lazy s, _ -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
 
   end
 
