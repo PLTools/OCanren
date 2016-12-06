@@ -73,11 +73,11 @@ module Stream =
 
     let rec zip fs gs = match (fs, gs) with
     | Nil, Nil -> Nil
-    | Nil, _ -> invalid_arg "streams have different lengths"
-    | _, Nil -> invalid_arg "streams have different lengths"
     | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
     | _, Lazy s -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
     | Lazy s, _ -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
+    | Nil, _ -> invalid_arg "streams have different lengths"
+    | _, Nil -> invalid_arg "streams have different lengths"
 
   end
 
