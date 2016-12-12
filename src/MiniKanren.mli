@@ -52,6 +52,9 @@ module Stream :
     (** [iter f s] iterates function [f] over the stream [s] *)
     val iter : ('a -> unit) -> 'a t -> unit
 
+    (** [zip s s'] returns the stream of pairs where first element is taken from [s] and second from [s'];
+        raises Invalid_argument if the two streams have different lengths *)
+    val zip : 'a t -> 'b t -> ('a * 'b) t 
   end
 
 (** {3 States and goals} *)
