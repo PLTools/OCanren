@@ -585,6 +585,7 @@ module Nat =
     let rec leo x y b =
       conde [
         (x === !O) &&& (b === !true);
+        (x =/= !O) &&& (y === !O) &&& (b === !false);
         Fresh.two (fun x' y' ->	
           conde [
             (x === !(S x')) &&& (y === !(S y')) &&& (leo x' y' b)           
