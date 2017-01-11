@@ -508,7 +508,7 @@ let neqo x y t =
 
 
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, gmap(*, html, eq, compare, foldl, foldr *)
-(*@type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap *)
+@type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap;;
 
 module type T = sig
   type 'a t
@@ -611,7 +611,7 @@ module Bool =
     let (||) a b = oro  a b !true
 
   end
-(*
+
 module Nat =
   struct
 
@@ -659,13 +659,13 @@ module Nat =
 
     let rec inj n = ! (GT.gmap(lnat) inj n)
 
-    let prj_k k n =
+    (* let prj_k k n =
       let rec inner n =
         GT.gmap(lnat) inner (prj_k k n)
       in
       inner n
 
-    let prj n = prj_k (fun _ -> raise Not_a_value) n
+    let prj n = prj_k (fun _ -> raise Not_a_value) n *)
 
     let rec addo x y z =
       conde [
@@ -706,11 +706,11 @@ module Nat =
     let (<=) x y = leo x y !true
     let (>=) x y = geo x y !true
 
-    let gto x y b = conde [(x >= y) &&& (x =/= y) &&& (b === !true)]
+    (* let gto x y b = conde [(x >= y) &&& (x =/= y) &&& (b === !true)]
     let lto x y b = gto y x b
 
     let (>) x y = gto x y !true
-    let (<) x y = lto x y !true
+    let (<) x y = lto x y !true *)
 
   end
 
@@ -718,11 +718,11 @@ let rec inj_nat n =
   if n <= 0 then inj O
   else inj (S (inj_nat @@ n-1))
 
-let rec prj_nat n =
+(* let rec prj_nat n =
   match prj n with
   | O   -> 0
-  | S n -> 1 + prj_nat n
-*)
+  | S n -> 1 + prj_nat n *)
+
 
 
 module List = struct

@@ -159,7 +159,7 @@ val nil : (('a, 'z) llist as 'z, ('a logic, 'c) llist logic as 'c) fancy  *)
 
 
 (** Abstract nat type *)
-(* @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap *)
+@type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 (*
 module Bool :
   sig
@@ -219,7 +219,7 @@ module Bool :
     val (&&) : logic -> logic -> goal
 
   end
-
+*)
 module Nat :
   sig
 
@@ -270,10 +270,10 @@ module Nat :
     val inj : ground -> logic
 
     (** Projection with failure continuation *)
-    val prj_k : (int -> logic list -> logic t) -> logic -> ground
+    (* val prj_k : (int -> logic list -> logic t) -> logic -> ground *)
 
     (** Projection with default continuation *)
-    val prj : logic -> ground
+    (* val prj : logic -> ground *)
 
     (** Relational addition *)
     val addo : logic -> logic -> logic -> goal
@@ -288,16 +288,16 @@ module Nat :
     val ( + ) : logic -> logic -> logic -> goal
 
     (** Comparisons *)
-    val leo : logic -> logic -> Bool.logic -> goal
+    (* val leo : logic -> logic -> Bool.logic -> goal
     val geo : logic -> logic -> Bool.logic -> goal
     val gto : logic -> logic -> Bool.logic -> goal
-    val lto : logic -> logic -> Bool.logic -> goal
+    val lto : logic -> logic -> Bool.logic -> goal *)
 
     (** Comparisons as goals *)
-    val (<=) : logic -> logic -> goal
-    val (>=) : logic -> logic -> goal
-    val (>)  : logic -> logic -> goal
-    val (<)  : logic -> logic -> goal
+    (* val (<=) : logic -> logic -> goal
+    val (>=) : logic -> logic -> goal *)
+    (* val (>)  : logic -> logic -> goal
+    val (<)  : logic -> logic -> goal *)
 
   end
 
@@ -305,8 +305,8 @@ module Nat :
 val inj_nat : int -> Nat.logic
 
 (** [prj_nat n] is a deforested synonym for projection *)
-val prj_nat : Nat.logic -> int
-*)
+(* val prj_nat : Nat.logic -> int *)
+
 module List :
   sig
 
