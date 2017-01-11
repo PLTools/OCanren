@@ -1,9 +1,10 @@
 open Printf
 open MiniKanren
 
-let qh   = fun qs       -> ["q", qs]
-let qrh  = fun qs rs    -> ["q", qs; "r", rs]
-let qrsh = fun qs rs ss -> ["q", qs; "r", rs; "s", ss]
+let qh    = fun qs          -> ["q", qs]
+let qrh   = fun qs rs       -> ["q", qs; "r", rs]
+let qrsh  = fun qs rs ss    -> ["q", qs; "r", rs; "s", ss]
+let qrsth = fun qs rs ss ts -> ["q", qs; "r", rs; "s", ss; "t", ts]
 
 let make_title n msg =
   printf "%s, %s answer%s {\n%!"

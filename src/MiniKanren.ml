@@ -129,10 +129,11 @@ let show_fancy: ('a -> string) -> ('a,'b) fancy -> string = fun f x -> f x;;
 
 @type 'a logic = | Var of GT.int GT.list * GT.int * 'a logic GT.list
                  | Value of 'a
-                   with show,gmap;;
+                   with show,gmap,html,eq,compare,foldl,foldr;;
 
 external coerce_fancy: ('a, 'b) fancy -> 'a = "%identity"
-external var_of_fancy: ('a, 'b) fancy -> 'b logic = "%identity"
+external var_of_fancy: ('a, 'b) fancy -> 'a logic = "%identity"
+external cast_fancy:   ('a, 'r) fancy -> 'r = "%identity"
 
 let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x ->
   let rec helper = function
@@ -158,6 +159,11 @@ let logic = {logic with
  plugins =
    object
      method gmap    = logic.plugins#gmap
+     method html    = logic.plugins#html
+     method eq      = logic.plugins#eq
+     method compare = logic.plugins#compare
+     method foldl   = logic.plugins#foldl
+     method foldr   = logic.plugins#foldr
      method show fa x =
        GT.transform(logic)
           (GT.lift fa)
@@ -535,7 +541,7 @@ let cons : ('a, 'b logic) fancy -> (('a, 'z) llist as 'z, ('b logic, 'c) llist l
 
 let nil : (('a, 'z) llist as 'z, ('a logic, 'c) llist logic as 'c) fancy = Nil *)
 
-(*
+
 module Bool =
   struct
 
@@ -605,7 +611,7 @@ module Bool =
     let (||) a b = oro  a b !true
 
   end
-
+(*
 module Nat =
   struct
 
@@ -911,6 +917,13 @@ module List = struct
          ])
       )
       *)
+
+    let nullo q : goal = (q === nil())
+
+    let caro xs h  : goal = call_fresh (fun tl -> xs === (h % tl))
+    let cdro xs tl : goal = call_fresh (fun h  -> xs === (h % tl))
+    let hdo = caro
+    let tlo = cdro
 
     let show : ('a -> string) -> (('a,'b) llist as 'b) -> string = fun f xs ->
       let b = Buffer.create 40 in

@@ -84,23 +84,23 @@ val show_fancy: ('a -> string) -> ('a, 'b) fancy -> string
 val bprintf_fancy: Buffer.t -> ('a -> unit) -> ('a, 'b) fancy -> unit
 (* call it to unsafely coerce fancy value which doesn't hold logic var *)
 val coerce_fancy: ('a, 'r) fancy -> 'a
-
+val cast_fancy:   ('a, 'r) fancy -> 'r
 (** A type of abstract logic values *)
 type 'a logic = | Var of GT.int GT.list * GT.int * 'a logic GT.list
                 | Value of 'a
 
-val var_of_fancy: ('a, 'r) fancy -> 'r logic
+val var_of_fancy: ('a, 'r) fancy -> 'a logic
 
 val bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit
 val show_logic: ('a -> string) -> 'a logic -> string
 val logic :
   (unit,
    < show    : ('a -> string) -> 'a logic -> string;
-     (* html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
+      html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
      eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool;
      compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison;
      foldl   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
-     foldr   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn; *)
+     foldr   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
      gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic
 >) GT.t
 
@@ -399,6 +399,16 @@ module List :
     (** Relational occurrence check (a shortcut) *)
     val membero : 'a logic' logic -> 'a logic' -> goal *)
 
+    val nullo : (('a,'b) llist as 'b, 'c list) fancy -> goal
+    (** Relational head of the list *)
+    val caro  : ((('a,'b) fancy, 'tl) llist as 'tl, 'b list) fancy -> ('a, 'b) fancy -> goal
+    (** Relational tail of the list *)
+    val cdro  : ((('a,'b) fancy, 'tl) llist as 'tl, 'b list) fancy -> ('tl, 'b list) fancy -> goal
+    (** Alias for [caro] *)
+    val hdo  : ((('a,'b) fancy, 'tl) llist as 'tl, 'b list) fancy -> ('a, 'b) fancy -> goal
+    (** Alias for [cdro] *)
+    val tlo   : ((('a,'b) fancy, 'tl) llist as 'tl, 'b list) fancy -> ('tl, 'b list) fancy -> goal
+
     val show : ('a -> string) -> (('a, 'b) llist as 'b,_) fancy -> string
   end
 
@@ -620,18 +630,18 @@ val qr :
   (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
   (('l -> ('l -> 'm) * (('l -> 'n) * ('l -> 'o)) -> 'm * ('n * 'o)) *
    ('p * ('q * ('r * 's)) -> ('p * ('q * 'r)) * 's))
- (* val qrst :
+ val qrst :
   unit ->
-  ((('a, 'b logic) fancy ->
-    ('c, 'd logic) fancy ->
-    ('e, 'f logic) fancy -> ('g, 'h logic) fancy -> State.t -> 'i) ->
-   State.t -> 'a refiner * ('c refiner * ('e refiner * ('g refiner * 'i)))) *
+  ((('a, 'b) fancy ->
+    ('c, 'd) fancy ->
+    ('e, 'f) fancy -> ('g, 'h) fancy -> State.t -> 'i) ->
+   State.t -> ('a, 'b) refiner * (('c, 'd) refiner * (('e, 'f) refiner * (('g, 'h) refiner * 'i)))) *
   (('j -> 'k -> 'l -> 'm -> 'n) -> 'j * ('k * ('l * 'm)) -> 'n) *
   (('o ->
     ('o -> 'p) * (('o -> 'q) * (('o -> 'r) * ('o -> 's))) ->
     'p * ('q * ('r * 's))) *
    ('t * ('u * ('v * ('w * 'x))) -> ('t * ('u * ('v * 'w))) * 'x))
-    *)
+
 (*
 val pqrst :
   unit ->

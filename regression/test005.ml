@@ -13,8 +13,6 @@ let v x = inj @@ lift @@ V x
 let app x y = inj @@ lift @@ App (x,y)
 let abs x y = inj @@ lift @@ Abs (x,y)
 
-(* let (_:int) = abs *)
-
 let show_lam lam =
   let b = Buffer.create 10 in
   let rec helper = function
