@@ -160,7 +160,7 @@ val nil : (('a, 'z) llist as 'z, ('a logic, 'c) llist logic as 'c) fancy  *)
 
 (** Abstract nat type *)
 @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
-(*
+
 module Bool :
   sig
 
@@ -197,29 +197,35 @@ module Bool :
          show    : logic -> string >)
       GT.t
 
+    type boolf = (bool,bool) fancy
+
+    val false_ : boolf
+    val true_  : boolf
+
     (** Sheffer stroke *)
-    val (|^) : logic -> logic -> logic -> goal
+    val (|^) : boolf -> boolf -> boolf -> goal
 
     (** Negation *)
-    val noto' : logic -> logic -> goal
+    val noto' : boolf -> boolf -> goal
 
     (** Negation as a goal *)
-    val noto : logic -> goal
+    val noto : boolf -> goal
 
     (** Disjunction *)
-    val oro : logic -> logic -> logic -> goal
+    val oro : boolf -> boolf -> boolf -> goal
 
     (** Disjunction as a goal *)
-    val (||) : logic -> logic -> goal
+    val (||) : boolf -> boolf -> goal
 
     (** Conjunction *)
-    val ando : logic -> logic -> logic -> goal
+    val ando : boolf -> boolf -> boolf -> goal
 
     (** Conjunction as a goal *)
-    val (&&) : logic -> logic -> goal
+    val (&&) : boolf -> boolf -> goal
 
+    val show_ground : boolf -> string
   end
-*)
+
 module Nat :
   sig
 
@@ -267,7 +273,7 @@ module Nat :
     val to_int : ground -> int
 
     (** [inj n] converts ground nat [n] into logic one *)
-    val inj : ground -> logic
+    val inj : ground -> (ground,ground) fancy
 
     (** Projection with failure continuation *)
     (* val prj_k : (int -> logic list -> logic t) -> logic -> ground *)
@@ -276,16 +282,16 @@ module Nat :
     (* val prj : logic -> ground *)
 
     (** Relational addition *)
-    val addo : logic -> logic -> logic -> goal
+    val addo  : (ground, ground) fancy -> (ground, ground) fancy -> (ground, ground) fancy -> goal
 
     (** Infix syninym for [addo] *)
-    val (+) : logic -> logic -> logic -> goal
+    val ( + ) : (ground, ground) fancy -> (ground, ground) fancy -> (ground, ground) fancy -> goal
 
     (** Relational multiplication *)
-    val mulo : logic -> logic -> logic -> goal
+    val mulo  : (ground, ground) fancy -> (ground, ground) fancy -> (ground, ground) fancy -> goal
 
     (** Infix syninym for [mulo] *)
-    val ( + ) : logic -> logic -> logic -> goal
+    val ( * ) : (ground, ground) fancy -> (ground, ground) fancy -> (ground, ground) fancy -> goal
 
     (** Comparisons *)
     (* val leo : logic -> logic -> Bool.logic -> goal
@@ -299,10 +305,11 @@ module Nat :
     (* val (>)  : logic -> logic -> goal
     val (<)  : logic -> logic -> goal *)
 
+    val show_ground: (ground,ground) fancy -> string
   end
 
 (** [inj_nat n] is a deforested synonym for injection *)
-val inj_nat : int -> Nat.logic
+val inj_nat : int -> (Nat.ground, Nat.ground) fancy
 
 (** [prj_nat n] is a deforested synonym for projection *)
 (* val prj_nat : Nat.logic -> int *)
@@ -368,36 +375,39 @@ module List :
 
     (** List projection with default continuation *)
     val prj : ('a -> 'b) -> 'a logic -> 'b ground
+*)
+    type ('a, 'b) flist = (('a,'b) fancy ground, 'b list) fancy
 
     (** Relational foldr *)
-    val foldro : ('a logic' -> 'b logic' -> 'b logic' -> goal) -> 'b logic' -> 'a logic' logic -> 'b logic' ->  goal
+    val foldro : (('a, 'a2) fancy -> ('acc,'accr) fancy -> ('acc,'accr) fancy -> goal) ->
+                 ('acc,'accr) fancy -> ('a,'a2) flist -> ('acc,'accr) fancy ->  goal
 
     (** Relational map *)
-    val mapo : ('a logic' -> 'b logic' -> goal) -> 'a logic' logic ->'b logic' logic -> goal
+    val mapo : (('a, 'b) fancy -> ('c, 'd) fancy -> goal) -> ('a, 'b) flist -> ('c, 'd) flist -> goal
 
     (** Relational filter *)
-    val filtero : ('a logic' -> Bool.logic -> goal) -> 'a logic' logic ->'a logic' logic -> goal
+    val filtero : (('a, 'b) fancy -> Bool.ground -> goal) -> ('a, 'b) flist -> ('a, 'b) flist -> goal
 
     (** Relational lookup *)
-    val lookupo : ('a logic' -> Bool.logic -> goal) ->  'a logic' logic -> 'a logic' option logic' -> goal
+    val lookupo : (('a, 'b) fancy -> Bool.ground -> goal) ->  ('a, 'b) flist -> ('a option, 'b option) fancy -> goal
 
     (** Boolean list disjunctions *)
-    val anyo : Bool.logic logic -> Bool.logic -> goal
+    val anyo : (bool,bool) flist -> Bool.ground -> goal
 
     (** Boolean list conjunction *)
-    val allo : Bool.logic logic -> Bool.logic -> goal
+    val allo : (bool,bool) flist -> Bool.ground -> goal
 
     (** Relational length *)
-    val lengtho : 'a logic' logic -> Nat.logic -> goal
+    val lengtho : ('a, 'b) flist -> Nat.ground -> goal
 
     (** Relational append *)
-    val appendo : 'a logic' logic -> 'a logic' logic -> 'a logic' logic -> goal
+    val appendo : ('a, 'b) flist -> ('a, 'b) flist  -> ('a, 'b) flist  -> goal
 
     (** Relational reverse *)
-    val reverso : 'a logic' logic -> 'a logic' logic -> goal
+    val reverso : ('a, 'b) flist  -> ('a, 'b) flist  -> goal
 
     (** Relational occurrence check (a shortcut) *)
-    val membero : 'a logic' logic -> 'a logic' -> goal *)
+    val membero : ('a, 'b) flist  -> ('a, 'b) fancy  -> goal
 
     val nullo : (('a,'b) llist as 'b, 'c list) fancy -> goal
     (** Relational head of the list *)
@@ -423,7 +433,7 @@ val inj_list_p : (('a, 'b) fancy * ('c, 'd) fancy) list ->
 (* val prj_list : 'a logic List.logic -> 'a list *)
 
 (** [inj_nat_list l] is a deforsted synonym for injection *)
-(* val inj_nat_list : int list -> Nat.logic List.logic *)
+val inj_nat_list : int list -> (( (Nat.ground, Nat.ground) fancy, 'tl) llist as 'tl, Nat.ground list) fancy
 
 (** [inj_nat_list l] is a deforsted synonym for projection *)
 (* val prj_nat_list : Nat.logic List.logic -> int list *)

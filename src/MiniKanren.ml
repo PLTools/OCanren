@@ -419,11 +419,12 @@ let (===) (x: _ fancy) y (env, subst, constr) =
         with Disequality_violated -> Stream.nil
     end
   with Occurs_check -> Stream.nil
-(*
+
 let (=/=) x y ((env, subst, constr) as st) =
   let normalize_store prefix constr =
-    let subst  = Subst.of_list prefix in
-    let prefix = List.split (List.map (fun (_, x, t) -> (x, t)) prefix) in
+    let prefix = List.split (List.map Subst.(fun (_, {lvar;new_val}) -> (lvar, new_val)) prefix) in
+    (* let subst  = Subst.of_list prefix in
+    let prefix = List.split (List.map (fun (_, x, t) -> (x, t)) prefix) in *)
     let subsumes subst (vs, ts) =
       try
         match Subst.unify env !!!vs !!!ts (Some subst) with
@@ -434,8 +435,8 @@ let (=/=) x y ((env, subst, constr) as st) =
     let rec traverse = function
     | [] -> [subst]
     | (c::cs) as ccs ->
-	if subsumes subst (Subst.split c)
-	then ccs
+        if subsumes subst (Subst.split c)
+        then ccs
         else if subsumes c prefix
              then traverse cs
              else c :: traverse cs
@@ -452,7 +453,7 @@ let (=/=) x y ((env, subst, constr) as st) =
         | _  -> Stream.cons (env, subst, normalize_store prefix constr) Stream.nil
         )
   with Occurs_check -> Stream.cons st Stream.nil
-*)
+
 let conj f g st = Stream.bind (f st) g
 
 let (&&&) = conj
@@ -580,19 +581,22 @@ module Bool =
         end
     }
 
-    let (!) = (!!)
+    type boolf = (bool,bool) fancy
+
+    let false_ : boolf = inj@@lift false
+    let true_  : boolf = inj@@lift true
 
     let (|^) a b c =
       conde [
-        (a === !false) &&& (b === !false) &&& (c === !true);
-        (a === !false) &&& (b === !true)  &&& (c === !true);
-        (a === !true)  &&& (b === !false) &&& (c === !true);
-        (a === !true)  &&& (b === !true)  &&& (c === !false);
+        (a === false_) &&& (b === false_) &&& (c === true_);
+        (a === false_) &&& (b === true_)  &&& (c === true_);
+        (a === true_)  &&& (b === false_) &&& (c === true_);
+        (a === true_)  &&& (b === true_)  &&& (c === false_);
       ]
 
     let noto' a na = (a |^ a) na
 
-    let noto a = noto' a !true
+    let noto a = noto' a true_
 
     let oro a b c =
       Fresh.two (fun aa bb ->
@@ -607,9 +611,10 @@ module Bool =
         ((ab |^ ab) c)
       )
 
-    let (&&) a b = ando a b !true
-    let (||) a b = oro  a b !true
+    let (&&) a b = ando a b true_
+    let (||) a b = oro  a b true_
 
+    let show_ground : boolf -> string = string_of_bool
   end
 
 module Nat =
@@ -657,7 +662,8 @@ module Nat =
 
     let (!) = (!!)
 
-    let rec inj n = ! (GT.gmap(lnat) inj n)
+    let rec inj' n : (_,_) fancy = inj @@ lift (GT.gmap(lnat) inj' n)
+    let inj = inj'
 
     (* let prj_k k n =
       let rec inner n =
@@ -667,12 +673,15 @@ module Nat =
 
     let prj n = prj_k (fun _ -> raise Not_a_value) n *)
 
+    let o = inj@@lift O
+    let s x = inj@@lift (S x)
+
     let rec addo x y z =
       conde [
-        (x === !O) &&& (z === y);
+        (x === o) &&& (z === y);
         Fresh.two (fun x' z' ->
-           (x === !(S x')) &&&
-           (z === !(S z')) &&&
+           (x === (s x')) &&&
+           (z === (s z')) &&&
            (addo x' y z')
         )
       ]
@@ -681,9 +690,9 @@ module Nat =
 
     let rec mulo x y z =
       conde [
-        (x === !O) &&& (z === !O);
+        (x === o) &&& (z === o);
         Fresh.two (fun x' z' ->
-          (x === !(S x')) &&&
+          (x === (s x')) &&&
           (addo y z' z) &&&
           (mulo x' y z')
         )
@@ -693,10 +702,10 @@ module Nat =
 
     let rec leo x y b =
       conde [
-        (x === !O) &&& (b === !true);
+        (x === o) &&& (b === !true);
         Fresh.two (fun x' y' ->
           conde [
-            (x === !(S x')) &&& (y === !(S y')) &&& (leo x' y' b)
+            (x === (s x')) &&& (y === (s y')) &&& (leo x' y' b)
           ]
         )
       ]
@@ -712,6 +721,8 @@ module Nat =
     let (>) x y = gto x y !true
     let (<) x y = lto x y !true *)
 
+    let show_ground: (ground,ground) fancy -> string = GT.show(ground)
+
   end
 
 let rec inj_nat n =
@@ -724,6 +735,8 @@ let rec inj_nat n =
   | S n -> 1 + prj_nat n *)
 
 
+let none () : ('a option,'b) fancy = None
+let some x :  ('a option, 'b option) fancy = inj@@lift (Some x)
 
 module List = struct
 
@@ -793,9 +806,6 @@ module List = struct
         end
     }
 
-
-
-
     type 'a logic  = ('a, 'a logic) t logic'
 
     let logic = {
@@ -823,14 +833,12 @@ module List = struct
         end
     }
 
-    (* let (_:int) = GT.show logic *)
+    type ('a, 'b) flist = (('a, 'b) fancy ground, 'b list) fancy
 
-    (*
     let rec foldro f a xs r =
       conde [
-        (xs === !Nil) &&& (a === r);
-        Fresh.three (
-          fun h t a'->
+        (xs === nil ()) &&& (a === r);
+        Fresh.three (fun h t a'->
             (xs === h % t) &&&
             (f h a' r) &&&
             (foldro f a t a')
@@ -839,7 +847,7 @@ module List = struct
 
     let rec mapo f xs ys =
       conde [
-        (xs === !Nil) &&& (ys === !Nil);
+        (xs === nil ()) &&& (ys === nil ());
         Fresh.two (
           fun z zs ->
             (xs === z % zs) &&&
@@ -855,56 +863,55 @@ module List = struct
     let filtero p xs ys =
       let folder x a a' =
         conde [
-          (p x !true) &&& (x % a === a');
-          (p x !false) &&& (a === a')
+          (p x Bool.true_) &&& (x % a === a');
+          (p x Bool.false_) &&& (a === a')
         ]
       in
-      foldro folder !Nil xs ys
+      foldro folder (nil ()) xs ys
 
     let rec lookupo p xs mx =
       conde [
-        (xs === !Nil) &&& (mx === !None);
-        Fresh.two (
-          fun h t ->
-             (h % t === xs) &&&
-             (conde [
-                (p h !true) &&& (mx === !(Some h));
-                (p h !false) &&& (lookupo p t mx)
-             ])
+        (xs === nil ()) &&& (mx === none ());
+        Fresh.two (fun h t ->
+          (h % t === xs) &&&
+          (conde [
+            (p h Bool.true_) &&& (mx === (some h));
+            (p h Bool.false_) &&& (lookupo p t mx)
+          ])
         )
       ]
 
-    let anyo = foldro Bool.oro !false
+    let anyo = foldro Bool.oro Bool.false_
 
-    let allo = foldro Bool.ando !true
+    let allo = foldro Bool.ando Bool.true_
 
     let rec lengtho l n =
       conde [
-        (l === !Nil) &&& (n === !O);
+        (l === nil ()) &&& (n === Nat.o);
         Fresh.three (fun x xs n' ->
           (l === x % xs)  &&&
-          (n === !(S n')) &&&
+          (n === (Nat.s n')) &&&
           (lengtho xs n')
         )
       ]
 
     let rec appendo a b ab =
       conde [
-        (a === !Nil) &&& (b === ab);
+        (a === nil ()) &&& (b === ab);
         Fresh.three (fun h t ab' ->
-  	  (a === h%t) &&&
-	  (h%ab' === ab) &&&
-	  (appendo t b ab')
+	        (a === h%t) &&&
+          (h%ab' === ab) &&&
+          (appendo t b ab')
         )
       ]
 
     let rec reverso a b =
       conde [
-        (a === !Nil) &&& (b === !Nil);
+        (a === nil ()) &&& (b === nil ());
         Fresh.three (fun h t a' ->
-	  (a === h%t) &&&
-	  (appendo a' !<h b) &&&
-	  (reverso t a')
+          (a === h%t) &&&
+          (appendo a' !<h b) &&&
+          (reverso t a')
         )
       ]
 
@@ -916,7 +923,7 @@ module List = struct
            (x =/= a) &&& (membero xs a)
          ])
       )
-      *)
+
 
     let nullo q : goal = (q === nil())
 
@@ -959,11 +966,11 @@ let inj_list_p xs = inj_list @@ List.map (fun (x,y) -> inj_pair x y) xs
 
 
 
-(*
-let rec inj_nat_list = function
-| []    -> !!Nil
-| x::xs -> inj_nat x % inj_nat_list xs
 
+let rec inj_nat_list = function
+| []    -> nil()
+| x::xs -> inj_nat x % inj_nat_list xs
+(*
 let rec prj_nat_list l =
   match prj l with
   | Nil -> []
