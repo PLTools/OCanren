@@ -197,7 +197,9 @@ module Bool :
          show    : logic -> string >)
       GT.t
 
-    type boolf = (bool,bool) fancy
+    type boolf   = (bool,bool) fancy
+    type groundf = boolf
+    type fancy   = groundf
 
     val false_ : boolf
     val true_  : boolf
@@ -224,6 +226,8 @@ module Bool :
     val (&&) : boolf -> boolf -> goal
 
     val show_ground : boolf -> string
+
+    val inj: bool -> boolf
   end
 
 module Nat :
@@ -281,17 +285,19 @@ module Nat :
     (** Projection with default continuation *)
     (* val prj : logic -> ground *)
 
+    type groundf = (ground, ground) fancy
+
     (** Relational addition *)
-    val addo  : (ground, ground) fancy -> (ground, ground) fancy -> (ground, ground) fancy -> goal
+    val addo  : groundf -> groundf -> groundf -> goal
 
     (** Infix syninym for [addo] *)
-    val ( + ) : (ground, ground) fancy -> (ground, ground) fancy -> (ground, ground) fancy -> goal
+    val ( + ) : groundf -> groundf -> groundf -> goal
 
     (** Relational multiplication *)
-    val mulo  : (ground, ground) fancy -> (ground, ground) fancy -> (ground, ground) fancy -> goal
+    val mulo  : groundf -> groundf -> groundf -> goal
 
     (** Infix syninym for [mulo] *)
-    val ( * ) : (ground, ground) fancy -> (ground, ground) fancy -> (ground, ground) fancy -> goal
+    val ( * ) : groundf -> groundf -> groundf -> goal
 
     (** Comparisons *)
     (* val leo : logic -> logic -> Bool.logic -> goal
@@ -386,19 +392,19 @@ module List :
     val mapo : (('a, 'b) fancy -> ('c, 'd) fancy -> goal) -> ('a, 'b) flist -> ('c, 'd) flist -> goal
 
     (** Relational filter *)
-    val filtero : (('a, 'b) fancy -> Bool.ground -> goal) -> ('a, 'b) flist -> ('a, 'b) flist -> goal
+    val filtero : (('a, 'b) fancy -> Bool.groundf -> goal) -> ('a, 'b) flist -> ('a, 'b) flist -> goal
 
     (** Relational lookup *)
-    val lookupo : (('a, 'b) fancy -> Bool.ground -> goal) ->  ('a, 'b) flist -> ('a option, 'b option) fancy -> goal
+    val lookupo : (('a, 'b) fancy -> Bool.groundf -> goal) ->  ('a, 'b) flist -> ('a option, 'b option) fancy -> goal
 
     (** Boolean list disjunctions *)
-    val anyo : (bool,bool) flist -> Bool.ground -> goal
+    val anyo : (bool,bool) flist -> Bool.groundf -> goal
 
     (** Boolean list conjunction *)
-    val allo : (bool,bool) flist -> Bool.ground -> goal
+    val allo : (bool,bool) flist -> Bool.groundf -> goal
 
     (** Relational length *)
-    val lengtho : ('a, 'b) flist -> Nat.ground -> goal
+    val lengtho : ('a, 'b) flist -> Nat.groundf -> goal
 
     (** Relational append *)
     val appendo : ('a, 'b) flist -> ('a, 'b) flist  -> ('a, 'b) flist  -> goal
@@ -469,13 +475,12 @@ val (===) : ('a, 'c) fancy -> ('a, 'c) fancy -> goal
     [x] and [y] *)
 (* val (=/=) : ('a, 'b logic) fancy -> ('a, 'b logic) fancy -> goal *)
 
-(*
 (** Equality as boolean relation *)
-val eqo : ('a, 'b logic) fancy -> ('a, 'b logic) fancy -> Bool.logic -> goal
+val eqo  : ('a, 'b) fancy -> ('a, 'b) fancy -> Bool.fancy -> goal
 
 (** Disequality as boolean relation *)
-val neqo : ('a, 'b logic) fancy -> ('a, 'b logic) fancy -> Bool.logic -> goal
-*)
+val neqo : ('a, 'b) fancy -> ('a, 'b) fancy -> Bool.fancy -> goal
+
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
 val conj : goal -> goal -> goal
 

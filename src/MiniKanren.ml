@@ -389,7 +389,7 @@ let call_fresh f (env, subst, constr) =
 exception Disequality_violated
 
 let (===) (x: _ fancy) y (env, subst, constr) =
-  (* let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in *)
+   let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in
   (* we should always unify two fancy types *)
 
   try
@@ -495,19 +495,6 @@ module Fresh =
 let success st = Stream.cons st Stream.nil
 let failure _  = Stream.nil;;
 
-(* let eqo x y t =
-  conde [
-    (x === y) &&& (t === inj@@lift true);
-    (x =/= y) &&& (t === inj@@lift false);
-  ]
-
-let neqo x y t =
-  conde [
-    (x =/= y) &&& (t === inj@@lift true);
-    (x === y) &&& (t === inj@@lift false);
-  ];; *)
-
-
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, gmap(*, html, eq, compare, foldl, foldr *)
 @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap;;
 
@@ -582,6 +569,8 @@ module Bool =
     }
 
     type boolf = (bool,bool) fancy
+    type groundf = boolf
+    type fancy   = groundf
 
     let false_ : boolf = inj@@lift false
     let true_  : boolf = inj@@lift true
@@ -615,7 +604,22 @@ module Bool =
     let (||) a b = oro  a b true_
 
     let show_ground : boolf -> string = string_of_bool
+
+    let inj b : boolf = inj@@lift b
   end
+
+let eqo x y t =
+  conde [
+    (x === y) &&& (t === Bool.true_);
+    (x =/= y) &&& (t === Bool.false_);
+  ]
+
+let neqo x y t =
+  conde [
+    (x =/= y) &&& (t === Bool.true_);
+    (x === y) &&& (t === Bool.false_);
+  ];;
+
 
 module Nat =
   struct
@@ -676,7 +680,10 @@ module Nat =
     let o = inj@@lift O
     let s x = inj@@lift (S x)
 
+    type groundf = (ground, ground) fancy
+
     let rec addo x y z =
+      printf "addo: '%s' '%s' '%s'\n%!" (generic_show x) (generic_show y) (generic_show z);
       conde [
         (x === o) &&& (z === y);
         Fresh.two (fun x' z' ->
@@ -689,6 +696,7 @@ module Nat =
     let (+) = addo
 
     let rec mulo x y z =
+      printf "mulo: '%s' '%s' '%s'\n%!" (generic_show x) (generic_show y) (generic_show z);
       conde [
         (x === o) &&& (z === o);
         Fresh.two (fun x' z' ->
@@ -702,7 +710,7 @@ module Nat =
 
     let rec leo x y b =
       conde [
-        (x === o) &&& (b === !true);
+        (x === o) &&& (b === Bool.true_);
         Fresh.two (fun x' y' ->
           conde [
             (x === (s x')) &&& (y === (s y')) &&& (leo x' y' b)
@@ -712,14 +720,14 @@ module Nat =
 
     let geo x y b = leo y x b
 
-    let (<=) x y = leo x y !true
-    let (>=) x y = geo x y !true
+    let (<=) x y = leo x y Bool.true_
+    let (>=) x y = geo x y Bool.false_
 
-    (* let gto x y b = conde [(x >= y) &&& (x =/= y) &&& (b === !true)]
+    let gto x y b = conde [(x >= y) &&& (x =/= y) &&& (b === Bool.true_)]
     let lto x y b = gto y x b
 
-    let (>) x y = gto x y !true
-    let (<) x y = lto x y !true *)
+    let (>) x y = gto x y Bool.true_
+    let (<) x y = lto x y Bool.true_
 
     let show_ground: (ground,ground) fancy -> string = GT.show(ground)
 
