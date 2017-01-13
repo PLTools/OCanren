@@ -277,7 +277,7 @@ module Nat :
     val to_int : ground -> int
 
     (** [inj n] converts ground nat [n] into logic one *)
-    val inj : ground -> (ground,ground) fancy
+    (* val inj : ground -> (ground,ground) fancy *)
 
     (** Projection with failure continuation *)
     (* val prj_k : (int -> logic list -> logic t) -> logic -> ground *)

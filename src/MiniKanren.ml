@@ -389,7 +389,7 @@ let call_fresh f (env, subst, constr) =
 exception Disequality_violated
 
 let (===) (x: _ fancy) y (env, subst, constr) =
-   let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in
+  (* let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in *)
   (* we should always unify two fancy types *)
 
   try
@@ -666,9 +666,6 @@ module Nat =
 
     let (!) = (!!)
 
-    let rec inj' n : (_,_) fancy = inj @@ lift (GT.gmap(lnat) inj' n)
-    let inj = inj'
-
     (* let prj_k k n =
       let rec inner n =
         GT.gmap(lnat) inner (prj_k k n)
@@ -683,7 +680,6 @@ module Nat =
     type groundf = (ground, ground) fancy
 
     let rec addo x y z =
-      printf "addo: '%s' '%s' '%s'\n%!" (generic_show x) (generic_show y) (generic_show z);
       conde [
         (x === o) &&& (z === y);
         Fresh.two (fun x' z' ->
@@ -696,13 +692,13 @@ module Nat =
     let (+) = addo
 
     let rec mulo x y z =
-      printf "mulo: '%s' '%s' '%s'\n%!" (generic_show x) (generic_show y) (generic_show z);
       conde [
-        (x === o) &&& (z === o);
+        ((x === o)) &&&
+          (z === o);
         Fresh.two (fun x' z' ->
-          (x === (s x')) &&&
+          (x === (s x')) &&& (
           (addo y z' z) &&&
-          (mulo x' y z')
+          (mulo x' y z'))
         )
       ]
 
@@ -730,6 +726,9 @@ module Nat =
     let (<) x y = lto x y Bool.true_
 
     let show_ground: (ground,ground) fancy -> string = GT.show(ground)
+
+    (* let rec inj' n : (_,_) fancy = inj @@ lift (GT.gmap(lnat) inj' n)
+    let inj = inj' *)
 
   end
 
