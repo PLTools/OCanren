@@ -2,7 +2,10 @@ open GT
 open MiniKanren
 open Tester
 
-@type t = N | A of t logic with show
+@type 'a gt = N | A of 'a logic with show;;
+type ft = (ft,ft) fancy gt
+type lt = lt logic gt
+
 
 let show_t         = show(logic) (show t)
 let show_int       = show(logic) (show int)
@@ -10,7 +13,7 @@ let show_list      = show(logic) (show list show_int)
 let show_list_list = show(logic) (show list show_list)
 let show_llist     = show(List.logic) (show(logic) (show int))
 
-let _ = 
+let _ =
   run show_t         (-1) q (REPR (fun q -> (fresh(x) (x =/= !(A x)))                                                                 )) qh;
   run show_int       (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))                         )) qh;
   run show_list_list (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1])(z === !1)(![x; y] === q)))) qh;
@@ -73,11 +76,11 @@ let _ =
          (rembero x d res) &&&
          (conde [
              (a === x) &&& (out === res);
-             (out === a % res)   
+             (out === a % res)
           ])
        )
      ]
-   in 
+   in
    run show_llist (-1) q (REPR (fun q -> rembero !1 (!1 % (!2 % (!1 %< !3))) q         )) qh;
    run show_llist (-1) q (REPR (fun q -> rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)))) qh;
 
@@ -89,10 +92,10 @@ let _ =
          (rembero x d res) &&&
          (conde [
              (a === x) &&& (out === res);
-             (a =/= x) &&& (out === a % res)   
+             (a =/= x) &&& (out === a % res)
           ])
        )
      ]
-   in 
+   in
    run show_llist (-1) q (REPR (fun q -> rembero !1 (!1 % (!2 % (!1 %< !3))) q         )) qh;
    run show_llist (-1) q (REPR (fun q -> rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)))) qh
