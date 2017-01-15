@@ -4,7 +4,7 @@ CP    ?= cp
 .NOTPARALLEL :
 .PHONY: antiphantom
 antiphantom:
-	eval `opam config env` && $(MAKE) all test013.native && OCAMLRUNPARAM=b ./test013.native
+	eval `opam config env` && $(MAKE) all test010.native && OCAMLRUNPARAM=b ./test010.native
 
 
 OB=ocamlbuild -use-ocamlfind -plugin-tag "package(str)" -classic-display
