@@ -3,8 +3,12 @@ open MiniKanren
 open Tester
 
 @type 'a gt = N | A of 'a logic with show;;
-type ft = (ft,ft) fancy gt
-type lt = lt logic gt
+type rt = rt gt                        (* autoreified *)
+type ft = (ft gt, rt) fancy (* fancified *)
+type lt = lt gt logic                  (* reified *)
+
+let a x : ft = inj@@lift (A x)
+let n :   ft = inj@@lift N
 
 
 let show_t         = show(logic) (show t)
