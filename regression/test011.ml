@@ -2,24 +2,48 @@ open GT
 open MiniKanren
 open Tester
 
-@type 'a gt = N | A of 'a logic with show;;
+@type 'a gt = N | A of 'a with show;;
 type rt = rt gt                        (* autoreified *)
 type ft = (ft gt, rt) fancy (* fancified *)
 type lt = lt gt logic                  (* reified *)
 
-let a x : ft = inj@@lift (A x)
-let n :   ft = inj@@lift N
+let show_rt x =
+  let rec helper : rt -> string = function
+  | N -> "N"
+  | A x -> "A (" ^ (helper x) ^ ")"
+  in
+  helper x
+(* module N = struct
+  type t1 = ft
+  type t2 = rt
+end
+
+let _f x : int =
+  let module H = FMapALike(struct type t1 = ft type t2 = rt end) in
+  H.wrap (inj@@lift (A x)) *)
+
+module N = struct
+  type 'a t = 'a gt
+  type r = rt
+end
+module NF = FMapALike2(N)
+(* let _f x : int =
+  let in
+  H.wrap (inj@@lift (A x)) *)
+
+let a x : ft = NF.wrap @@ inj@@lift (A x)
+let n :   ft = NF.wrap @@ inj@@lift N
 
 
-let show_t         = show(logic) (show t)
+(* let show_t         = show(logic) (show t)
 let show_int       = show(logic) (show int)
 let show_list      = show(logic) (show list show_int)
 let show_list_list = show(logic) (show list show_list)
-let show_llist     = show(List.logic) (show(logic) (show int))
+let show_llist     = show(List.logic) (show(logic) (show int)) *)
 
 let _ =
-  run show_t         (-1) q (REPR (fun q -> (fresh(x) (x =/= !(A x)))                                                                 )) qh;
-  run show_int       (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))                         )) qh;
+  run_exn show_rt         (-1) q (REPR (fun q -> (fresh(x) (x =/= (a x)))                                                                 )) qh;
+  (* run show_int       (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))                         )) qh;
   run show_list_list (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1])(z === !1)(![x; y] === q)))) qh;
   run show_int       (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1])(z === !0))               )) qh;
   run show_int       (-1) q (REPR (fun q -> (fresh (x y z)(z === !0)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))               )) qh;
@@ -56,8 +80,9 @@ let _ =
   run show_list      (-1) q (REPR (fun q -> (fresh (x y)(x =/= !5)(![x; y] =/= ![!5; !6])(![x; y] === q))                             )) qh;
   run show_list      (-1) q (REPR (fun q -> (fresh (x y)(!5 =/= x)(![x; y] =/= ![!5; !6])(![x; y] === q))                             )) qh;
   run show_list      (-1) q (REPR (fun q -> (fresh (x y)(!5 =/= x)(![y; x] =/= ![!6; !5])(![x; y] === q))                             )) qh;
-  run show_list      (-1) q (REPR (fun x -> (fresh (y z)(x =/= ![y; !2])(x === ![z; !2]))                                             )) (fun xs -> ["x", xs]);
-
+  run show_list      (-1) q (REPR (fun x -> (fresh (y z)(x =/= ![y; !2])(x === ![z; !2]))                                             )) (fun xs -> ["x", xs]); *)
+  ()
+(*
   let rec distincto l =
     conde [
       l === !Nil;
@@ -102,4 +127,4 @@ let _ =
      ]
    in
    run show_llist (-1) q (REPR (fun q -> rembero !1 (!1 % (!2 % (!1 %< !3))) q         )) qh;
-   run show_llist (-1) q (REPR (fun q -> rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)))) qh
+   run show_llist (-1) q (REPR (fun q -> rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)))) qh *)

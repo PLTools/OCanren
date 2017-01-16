@@ -673,3 +673,23 @@ val pqrst :
     's * ('t * ('u * ('v * 'w)))) *
    ('x * ('y * ('z * ('a1 * ('b1 * 'c1)))) ->
     ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1)) *)
+
+
+module type X1 = sig
+type t1
+type t2
+end
+module FMapALike(T: X1) : sig
+  (* type 'a t = 'a T.t
+  type 'a r *)
+  external wrap : (T.t1, T.t1) fancy -> (T.t1, T.t2) fancy = "%identity"
+end
+
+
+module type Y1 = sig
+  type 'a t
+  type r
+end
+module FMapALike2(Y: Y1) : sig
+  external wrap : ('a Y.t, 'a Y.t) fancy -> ('a Y.t, Y.r) fancy = "%identity"
+end
