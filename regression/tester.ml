@@ -48,7 +48,7 @@ let run_exn printer = run_gen
 let runR reifier printerNoFree printerR = run_gen
   (fun name x -> printf "%s=%s; %!" name (printerNoFree x) )
   (fun name isVar obj ->
-    let ans = reifier isVar (fun () -> obj) in
+    let ans = reifier isVar obj in
     printf "%s=%s; %!" name (printerR ans)
     )
 

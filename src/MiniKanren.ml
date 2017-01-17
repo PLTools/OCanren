@@ -445,12 +445,12 @@ let (===) (x: _ fancy) y (env, subst, constr) =
   with Occurs_check -> Stream.nil
 
 let (=/=) x y ((env, subst, constr) as st) =
-  let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in
+  (* let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in *)
   let normalize_store prefix constr =
-    printf "normalize_store prefix = '%s'\n%!" (generic_show prefix);
-    printf "normalize_store constr = '%s'\n%!" (generic_show constr);
+    (* printf "normalize_store prefix = '%s'\n%!" (generic_show prefix);
+    printf "normalize_store constr = '%s'\n%!" (generic_show constr); *)
     let subst  = Subst.of_list prefix in
-    printf "subst = %s\n%!" (Subst.show subst);
+    (* printf "subst = %s\n%!" (Subst.show subst); *)
     let prefix = List.split (List.map Subst.(fun (_, {lvar;new_val}) -> (lvar, new_val)) prefix) in
     (*let prefix = List.split (List.map (fun (_, x, t) -> (x, t)) prefix) in *)
     let subsumes subst (vs, ts) =
@@ -461,7 +461,7 @@ let (=/=) x y ((env, subst, constr) as st) =
       with Occurs_check -> false
     in
     let rec traverse = function
-    | [] -> print_endline "YUI"; [subst]
+    | [] -> [subst]
     | (c::cs) as ccs ->
         if subsumes subst (Subst.split c)
         then ccs
@@ -473,9 +473,9 @@ let (=/=) x y ((env, subst, constr) as st) =
   in
   try
     let prefix, subst' = Subst.unify env x y (Some subst) in
-    printf "prefix = %s\n%!" (generic_show prefix);
+    (* printf "prefix = %s\n%!" (generic_show prefix);
     printf "map fst prefix = %s\n%!" (generic_show @@ List.map fst prefix);
-    printf "map snd prefix = %s\n%!" (generic_show @@ List.map snd prefix);
+    printf "map snd prefix = %s\n%!" (generic_show @@ List.map snd prefix); *)
     match subst' with
     | None -> Stream.cons st Stream.nil
     | Some s ->
@@ -483,7 +483,7 @@ let (=/=) x y ((env, subst, constr) as st) =
         | [] -> Stream.nil
         | _  ->
           let new_constrs = normalize_store prefix constr in
-          printf "new_constrs = %s\n%!" (generic_show @@ new_constrs);
+          (* printf "new_constrs = %s\n%!" (generic_show @@ new_constrs); *)
           Stream.cons (env, subst, new_constrs) Stream.nil
         )
   with Occurs_check -> Stream.cons st Stream.nil
@@ -1059,23 +1059,23 @@ let rec refine : State.t -> ('a, 'c) fancy -> ('a,'c) fancy = fun ((e, s, c) as 
          | Invalid n -> invalid_arg (sprintf "Invalid value for reconstruction (%d)" n)
         )
     | Some i when recursive ->
-        printf "Here i = %d\n%!" i;
+        (* printf "Here i = %d\n%!" i; *)
         (match var with
         | Var (token, i, _) ->
             (* We do not add extra Value here: they will be added on manual reification stage *)
             let cs =
               List.fold_left (fun acc s ->
-                printf "AAA: walk' false env (!!!var) s = '%s'\n%!" (generic_show @@ walk' false env (!!!var) s);
+                (* printf "AAA: walk' false env (!!!var) s = '%s'\n%!" (generic_show @@ walk' false env (!!!var) s); *)
                 match (walk' false env (!!!var) s) with
                 | maybeVar when Some i = Env.var env maybeVar -> acc
                 | t ->
-                  printf "CCC\n%!";
+                  (* printf "CCC\n%!"; *)
                   (!!!(refine st !!!t)) :: acc
                 )
                 []
                 c
             in
-            printf "BBB\n%!";
+            (* printf "BBB\n%!"; *)
             Obj.magic @@ Var (token, i, cs)
         | _ -> failwith "Not reachable"
         )
