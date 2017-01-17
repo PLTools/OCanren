@@ -84,11 +84,13 @@ val show_fancy: ('a -> string) -> ('a, 'b) fancy -> string
 val bprintf_fancy: Buffer.t -> ('a -> unit) -> ('a, 'b) fancy -> unit
 (* call it to unsafely coerce fancy value which doesn't hold logic var *)
 val coerce_fancy: ('a, 'r) fancy -> 'a
-val cast_fancy:   ('a, 'r) fancy -> 'r
+val cast_fancy  : ('a, 'r) fancy -> 'r
+
 (** A type of abstract logic values *)
 type 'a logic = | Var of GT.int GT.list * GT.int * 'a logic GT.list
                 | Value of 'a
 
+val refine_fancy: ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic
 val var_of_fancy: ('a, 'r) fancy -> 'a logic
 
 val bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit

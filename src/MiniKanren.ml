@@ -127,13 +127,36 @@ type ('a, 'c) fancy = 'a;;
 let bprintf_fancy b f x = f x;;
 let show_fancy: ('a -> string) -> ('a,'b) fancy -> string = fun f x -> f x;;
 
-@type 'a logic = | Var of GT.int GT.list * GT.int * 'a logic GT.list
+(* The [token_t] type is use to connect logic variables with environment where they were created *)
+type token_t = GT.int GT.list
+let token_t =
+  let open GT in
+  {
+   gcata = ();
+   plugins =
+     object
+       method gmap    = GT.list.plugins#gmap     (GT.int.plugins#gmap)
+       method html    = GT.list.plugins#html     (GT.int.plugins#html)
+       method eq      = GT.list.plugins#eq       (GT.int.plugins#eq)
+       method compare = GT.list.plugins#compare  (GT.int.plugins#compare)
+       method foldl   = GT.list.plugins#foldl    (GT.int.plugins#foldl)
+       method foldr   = GT.list.plugins#foldr    (GT.int.plugins#foldr)
+       method show    = GT.list.plugins#show     (GT.int.plugins#show)
+    end
+  };;
+
+@type 'a logic = | Var of token_t * GT.int * 'a logic GT.list
                  | Value of 'a
                    with show,gmap,html,eq,compare,foldl,foldr;;
 
 external coerce_fancy: ('a, 'b) fancy -> 'a = "%identity"
 external var_of_fancy: ('a, 'b) fancy -> 'a logic = "%identity"
 external cast_fancy:   ('a, 'r) fancy -> 'r = "%identity"
+
+let refine_fancy : ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic = fun x refiner ->
+  match !!!x with
+  | Var (_token,_i,cs) -> Var (_token,_i, List.map (fun x -> Obj.magic @@ refiner @@ Obj.repr x) cs)
+  | _ -> assert false
 
 let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x ->
   let rec helper = function
@@ -147,10 +170,11 @@ let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x 
 let rec show_logic f = function
 | Value x -> f x
 | Var (_,i,cs) ->
+  printf "here '%s'\n%!" (generic_show cs);
   let c =
     match cs with
     | [] -> ""
-    | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ (show_logic (fun _ -> assert false) l)) cs)
+    | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ (show_logic f l)) cs)
   in
   sprintf "_.%d%s" i c
 
@@ -236,12 +260,12 @@ module Env :
     val is_var : t -> 'a -> bool
   end =
   struct
-    type t = { token : GT.int GT.list;
+    type t = { token : token_t;
                mutable next: int;
                mutable reifiers: Obj.t MultiIntMap.t;
                mutable top_vars: int list }
 
-    let empty () = { token=[0]; next=10; reifiers=MultiIntMap.empty; top_vars=[] }
+    let empty () = { token=[6]; next=10; reifiers=MultiIntMap.empty; top_vars=[] }
 
     let fresh e =
       let v = Var (e.token, e.next, []) in
@@ -293,7 +317,7 @@ module Subst : sig
       (* (M.fold (fun i  s -> s ^ sprintf "%d -> %s; " i (generic_show x)) m "subst {") ^ "}" *)
       let b = Buffer.create 40 in
       Buffer.add_string b "subst {";
-      M.iter (fun i {lvar;_} -> bprintf b "%d -> %s; " i (generic_show lvar)) m;
+      M.iter (fun i {_;new_val} -> bprintf b "%d -> %s; " i (generic_show new_val)) m;
       Buffer.add_string b "}";
       Buffer.contents b
 
@@ -389,7 +413,7 @@ let call_fresh f (env, subst, constr) =
 exception Disequality_violated
 
 let (===) (x: _ fancy) y (env, subst, constr) =
-  (* let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in *)
+  let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in
   (* we should always unify two fancy types *)
 
   try
@@ -421,10 +445,14 @@ let (===) (x: _ fancy) y (env, subst, constr) =
   with Occurs_check -> Stream.nil
 
 let (=/=) x y ((env, subst, constr) as st) =
+  let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in
   let normalize_store prefix constr =
+    printf "normalize_store prefix = '%s'\n%!" (generic_show prefix);
+    printf "normalize_store constr = '%s'\n%!" (generic_show constr);
+    let subst  = Subst.of_list prefix in
+    printf "subst = %s\n%!" (Subst.show subst);
     let prefix = List.split (List.map Subst.(fun (_, {lvar;new_val}) -> (lvar, new_val)) prefix) in
-    (* let subst  = Subst.of_list prefix in
-    let prefix = List.split (List.map (fun (_, x, t) -> (x, t)) prefix) in *)
+    (*let prefix = List.split (List.map (fun (_, x, t) -> (x, t)) prefix) in *)
     let subsumes subst (vs, ts) =
       try
         match Subst.unify env !!!vs !!!ts (Some subst) with
@@ -433,7 +461,7 @@ let (=/=) x y ((env, subst, constr) as st) =
       with Occurs_check -> false
     in
     let rec traverse = function
-    | [] -> [subst]
+    | [] -> print_endline "YUI"; [subst]
     | (c::cs) as ccs ->
         if subsumes subst (Subst.split c)
         then ccs
@@ -445,12 +473,18 @@ let (=/=) x y ((env, subst, constr) as st) =
   in
   try
     let prefix, subst' = Subst.unify env x y (Some subst) in
+    printf "prefix = %s\n%!" (generic_show prefix);
+    printf "map fst prefix = %s\n%!" (generic_show @@ List.map fst prefix);
+    printf "map snd prefix = %s\n%!" (generic_show @@ List.map snd prefix);
     match subst' with
     | None -> Stream.cons st Stream.nil
     | Some s ->
         (match prefix with
         | [] -> Stream.nil
-        | _  -> Stream.cons (env, subst, normalize_store prefix constr) Stream.nil
+        | _  ->
+          let new_constrs = normalize_store prefix constr in
+          printf "new_constrs = %s\n%!" (generic_show @@ new_constrs);
+          Stream.cons (env, subst, new_constrs) Stream.nil
         )
   with Occurs_check -> Stream.cons st Stream.nil
 
@@ -1024,24 +1058,27 @@ let rec refine : State.t -> ('a, 'c) fancy -> ('a,'c) fancy = fun ((e, s, c) as 
            (Obj.magic var)
          | Invalid n -> invalid_arg (sprintf "Invalid value for reconstruction (%d)" n)
         )
-    | Some i when recursive -> var
-      (* invalid_arg "Free variable in refine." *)
-(*
+    | Some i when recursive ->
+        printf "Here i = %d\n%!" i;
         (match var with
-         | Var (a, i, _) ->
+        | Var (token, i, _) ->
+            (* We do not add extra Value here: they will be added on manual reification stage *)
             let cs =
-	      List.fold_left
-		(fun acc s ->
-		   match walk' false env (!!!var) s with
-		   | Var (_, j, _) when i = j -> acc
-		   | t -> (refine st t) :: acc
-		)
-		[]
-		c
-	    in
-	    Var (a, i, cs)
+              List.fold_left (fun acc s ->
+                printf "AAA: walk' false env (!!!var) s = '%s'\n%!" (generic_show @@ walk' false env (!!!var) s);
+                match (walk' false env (!!!var) s) with
+                | maybeVar when Some i = Env.var env maybeVar -> acc
+                | t ->
+                  printf "CCC\n%!";
+                  (!!!(refine st !!!t)) :: acc
+                )
+                []
+                c
+            in
+            printf "BBB\n%!";
+            Obj.magic @@ Var (token, i, cs)
+        | _ -> failwith "Not reachable"
         )
-*)
     | _ -> (Obj.magic var)
   in
   !!!(walk' true e (!!!x) s)

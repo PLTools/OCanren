@@ -26,7 +26,7 @@ let run_gen onOK onFree n num (repr, goal) handler =
         match Stream.retrieve ~n:1 st with
         | [],_ -> raise NoMoreAnswers
         | [Final x],tl ->
-          onOK name ((Obj.magic x) : (_,'r) fancy);
+          onOK name ((Obj.magic x) : 'r);
           (name,tl)
         | [HasFreeVars (f,x)],tl ->
           onFree name f x;
@@ -53,3 +53,7 @@ let runR reifier printerNoFree printerR = run_gen
     )
 
 let (!!!) = Obj.magic
+
+(* let foo (q: (int,int) fancy) =  q === (inj@@lift 1)
+
+let (_:int) = run_exn string_of_int 1 q ("",foo) *)
