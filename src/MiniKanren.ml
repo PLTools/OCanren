@@ -167,16 +167,16 @@ let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x 
   in
   helper x
 
-let rec show_logic f = function
-| Value x -> f x
-| Var (_,i,cs) ->
-  printf "here '%s'\n%!" (generic_show cs);
-  let c =
-    match cs with
-    | [] -> ""
-    | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ (show_logic f l)) cs)
-  in
-  sprintf "_.%d%s" i c
+let rec show_logic f x =
+  match x with
+  | Value x -> f x
+  | Var (_,i,cs) ->
+    let c =
+      match cs with
+      | [] -> ""
+      | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ (show_logic f l)) cs)
+    in
+    sprintf "_.%d%s" i c
 
 let logic = {logic with
  gcata = ();
@@ -192,13 +192,16 @@ let logic = {logic with
        GT.transform(logic)
           (GT.lift fa)
           (object inherit ['a] @logic[show]
-            method c_Var _ s _token i cs = show_logic (fun _ -> assert false) (Var(_token,i,cs))
-              (* let c =
+            method c_Var _ s _token i cs =
+              (* let (_:int) = s.GT.f () in
+                (* I have some issues with callign show_logic there*)
+              show_logic (fun _ -> assert false) (Var(_token,i,cs)) *)
+              let c =
               match cs with
               | [] -> ""
-              | _  -> Printf.sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ s.GT.f () l) cs)
+              | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ s.GT.f () l) cs)
               in
-              Printf.sprintf "_.%d%s" i c *)
+              sprintf "_.%d%s" i c
             method c_Value _ _ x = x.GT.fx ()
            end)
           ()
@@ -413,7 +416,7 @@ let call_fresh f (env, subst, constr) =
 exception Disequality_violated
 
 let (===) (x: _ fancy) y (env, subst, constr) =
-  let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in
+  (* let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in *)
   (* we should always unify two fancy types *)
 
   try
