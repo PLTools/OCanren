@@ -34,15 +34,17 @@ let show_lam lam =
   helper lam;
   Buffer.contents b
 ;;
+
 @type ('a, 'b) gtyp =
   (* primitive *)
   | P of 'a
   | Arr of 'b * 'b with gmap;;
 
 type ftyp = (string f, ftyp f) gtyp
+type rtyp = (string, rtyp) gtyp
 
-let p s : ftyp f = inj @@ lift @@ P s
-let arr x y : ftyp f = inj @@ lift @@ Arr (x,y)
+let p s     : (ftyp,rtyp) fancy = Obj.magic @@ inj @@ lift @@ P s
+let arr x y : (ftyp,rtyp) fancy = Obj.magic @@ inj @@ lift @@ Arr (x,y)
 
 type ltyp  = (string logic, ltyp logic) gtyp
 
@@ -71,7 +73,18 @@ let show_ftyp typ =
   bprintf_fancy b helper typ;
   Buffer.contents b
 
-(* let (_:int) = show_ftyp *)
+let show_rtyp typ =
+  let b = Buffer.create 10 in
+  let rec helper = function
+  | P s -> bprintf b "%s" s
+  | Arr (f,m) ->
+    helper f;
+    bprintf b " -> ";
+    helper m
+  in
+  helper typ;
+  Buffer.contents b
+
 let show_ltyp typ =
   (* printf "show_lyp '%s'\n%!" (generic_show typ); *)
   let b = Buffer.create 10 in
@@ -107,8 +120,6 @@ let rec lookupo a g t =
      ])
   )
 
-(* let (_:int) = lookupo (v@@inj@@lift "x") *)
-
 let infero expr typ =
   let rec infero gamma expr typ =
     conde [
@@ -137,7 +148,7 @@ let show_env : (((string f * ftyp f, int) fancy, 'a) llist as 'a, int) fancy -> 
 
 let show_ltyp: ltyp logic -> string = show_logic show_ltyp
 
-let varX : (string,_) fancy = inj@@lift "x"
+let varX : (string,string) fancy = inj@@lift "x"
 let varY = inj@@lift "y"
 let varF = inj@@lift "f"
 
@@ -146,12 +157,12 @@ let inj_list_p xs = inj_list @@ List.map (fun (x,y) -> inj_pair x y) xs
 let (_:int) = lookupo  varX (inj_list_p [(varX, v varX)]) *)
 
 let _noFreeVars =
-  run_exn show_ftyp    1 q (REPR (fun q -> lookupo varX (inj_list []) q                                     )) qh;
-  run_exn show_ftyp    1 q (REPR (fun q -> lookupo varX (inj_list_p [(varX, v varX)]) q                     )) qh;
-  run_exn show_ftyp    1 q (REPR (fun q -> lookupo varX (inj_list_p [(varY, v varY); (varX, v varX)]) q     )) qh;
+  run_exn show_rtyp    1 q (REPR (fun q -> lookupo varX (inj_list []) q                                     )) qh;
+  run_exn show_rtyp    1 q (REPR (fun q -> lookupo varX (inj_list_p [(varX, v varX)]) q                     )) qh;
+  run_exn show_rtyp    1 q (REPR (fun q -> lookupo varX (inj_list_p [(varY, v varY); (varX, v varX)]) q     )) qh;
 
-  run_exn show_fstring 1 q (REPR (fun q -> lookupo q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varX)   )) qh;
-  run_exn show_fstring 1 q (REPR (fun q -> lookupo q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varY)   )) qh;
+  run_exn show_string 1 q (REPR (fun q -> lookupo q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varX)   )) qh;
+  run_exn show_string 1 q (REPR (fun q -> lookupo q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varY)   )) qh;
   run_exn show_ftyp    1 q (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q)) qh;
   ()
 

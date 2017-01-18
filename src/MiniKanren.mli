@@ -659,22 +659,20 @@ val qr :
     'p * ('q * ('r * 's))) *
    ('t * ('u * ('v * ('w * 'x))) -> ('t * ('u * ('v * 'w))) * 'x))
 
-(*
 val pqrst :
   unit ->
-  ((('a, 'b logic) fancy ->
-    ('c, 'd logic) fancy ->
-    ('e, 'f logic) fancy ->
-    ('g, 'h logic) fancy -> ('i, 'j logic) fancy -> State.t -> 'k) ->
+  ((('a, 'b) fancy ->
+    ('c, 'd) fancy ->
+    ('e, 'f) fancy ->
+    ('g, 'h) fancy -> ('i, 'j) fancy -> State.t -> 'k) ->
    State.t ->
-   'a refiner *
-   ('c refiner * ('e refiner * ('g refiner * ('i refiner * 'k))))) *
+   ('a, 'b) refiner * (('c, 'd) refiner * (('e, 'f) refiner * (('g, 'h) refiner * (('i, 'j) refiner * 'k))))) *
   (('l -> 'm -> 'n -> 'o -> 'p -> 'q) -> 'l * ('m * ('n * ('o * 'p))) -> 'q) *
   (('r ->
     ('r -> 's) * (('r -> 't) * (('r -> 'u) * (('r -> 'v) * ('r -> 'w)))) ->
     's * ('t * ('u * ('v * 'w)))) *
    ('x * ('y * ('z * ('a1 * ('b1 * 'c1)))) ->
-    ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1)) *)
+    ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1))
 
 
 module type X1 = sig
@@ -682,8 +680,6 @@ type t1
 type t2
 end
 module FMapALike(T: X1) : sig
-  (* type 'a t = 'a T.t
-  type 'a r *)
   external wrap : (T.t1, T.t1) fancy -> (T.t1, T.t2) fancy = "%identity"
 end
 

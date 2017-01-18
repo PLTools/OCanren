@@ -1164,8 +1164,6 @@ let run n goalish f =
   let run f = f (State.empty ()) in
   run (adder goalish) |> ApplyLatest.apply app_num |> (currier f)
 
-let (_:(int,int) fancy) = inj@@lift 1
-(* let (_:int) = run one (fun q -> q === inj@@lift 1) *)
 module type X1 = sig
   type t1
   type t2

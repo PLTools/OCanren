@@ -42,8 +42,8 @@ let rec reverso a b =
       )
     ]
 
-let show_int = show_fancy string_of_int
-let show_int_list xs = MiniKanren.List.show show_int xs
+let show_int = string_of_int
+let show_int_list : int list -> string = GT.show(GT.list) show_int
 
 let _ =
   run_exn show_int_list  1  q (REPR (fun q   -> appendo q (ilist [3; 4]) (ilist [1; 2; 3; 4]))) qh;
