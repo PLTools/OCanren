@@ -3,15 +3,20 @@ open MiniKanren
 open Tester
 
 type 'a f = ('a, 'a) fancy
-type lam =
-  | V of string f
-  | App of (lam f) * (lam f)
-  | Abs of (string f) * (lam f)
+type ('varname, 'self) glam =
+  | V of 'varname f
+  | App of 'self * 'self
+  | Abs of 'varname * 'self
   | MetaVar
 
-let v x   : (lam,lam) fancy = inj @@ lift @@ V x
-let app x y = inj @@ lift @@ App (x,y)
-let abs x y = inj @@ lift @@ Abs (x,y)
+type rlam = (string, rlam) glam
+type lam = (string f, (lam,rlam) fancy) glam
+
+module LamHack = FMapALike0(struct type t = lam type r = rlam end)
+
+let v x   : (lam,rlam) fancy = LamHack.wrap @@ inj @@ lift @@ V x
+let app x y = LamHack.wrap @@ inj @@ lift @@ App (x,y)
+let abs x y = LamHack.wrap @@ inj @@ lift @@ Abs (x,y)
 
 let show_lam lam =
   let b = Buffer.create 10 in

@@ -1172,6 +1172,14 @@ module FMapALike(T: X1) = struct
   external wrap : (T.t1, T.t1) fancy -> (T.t1, T.t2) fancy = "%identity"
 end
 
+module type Y0 = sig
+  type t
+  type r
+end
+module FMapALike0(Y: Y0) = struct
+  external wrap : (Y.t, Y.t) fancy -> (Y.t, Y.r) fancy = "%identity"
+end
+
 module type Y1 = sig
   type 'a t
   type r
