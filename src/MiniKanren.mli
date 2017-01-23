@@ -90,6 +90,7 @@ val cast_fancy  : ('a, 'r) fancy -> 'r
 type 'a logic = | Var of GT.int GT.list * GT.int * 'a logic GT.list
                 | Value of 'a
 
+val index_of_var : 'a logic -> int
 val refine_fancy:  ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic
 val refine_fancy2: (_,_) fancy -> (Obj.t -> _) -> _ logic
 val var_of_fancy: ('a, 'r) fancy -> 'a logic

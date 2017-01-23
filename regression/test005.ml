@@ -7,10 +7,30 @@ type ('varname, 'self) glam =
   | V of 'varname
   | App of 'self * 'self
   | Abs of 'varname * 'self
-  | MetaVar
+  (* | MetaVar *)
 
 type lam = (string, lam) glam
 type flam = ((string f, flam) glam, lam) fancy
+type llam = ((string logic, llam) glam) logic
+
+(* reifier for lambdas  *)
+let llam_of_flam isVar f =
+  let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in
+  let rec helper (t: flam) : llam =
+    if cond t then refine_fancy2 t isVar
+    else match coerce_fancy t with
+    | V s -> Value (if cond s then V (refine_fancy2 s isVar) else V (Value (coerce_fancy s)))
+    | App (f,g) ->
+      Value (App ((if cond f then refine_fancy2 f isVar else helper f),
+                  (if cond g then refine_fancy2 g isVar else helper g)))
+    | Abs (n, body) ->
+      Value (App ( Value (if cond n then V (refine_fancy2 n isVar) else V (Value (coerce_fancy n))) ,
+                   (if cond body then refine_fancy2 body isVar else helper body)
+                 )
+            )
+  in
+  helper f
+
 
 module LamHack = FMapALike0(struct
   type t = (string f, flam) glam
@@ -35,7 +55,7 @@ let show_lam lam =
     bprintf b "Abs (%s, " s;
     helper e;
     bprintf b ")"
-  | MetaVar -> bprintf b "_.%d" 0
+  (* | MetaVar -> bprintf b "_.%d" 0 *)
   in
   helper lam;
   Buffer.contents b
@@ -57,12 +77,35 @@ let show_flam lam =
     bprintf b ", ";
     bprintf_fancy b helper e;
     bprintf b ")"
-  | MetaVar -> bprintf b "_.%d" 0
+  (* | MetaVar -> bprintf b "_.%d" 0 *)
   in
   helper lam;
   Buffer.contents b
 ;;
 
+let show_llam lam =
+  let b = Buffer.create 10 in
+  let rec helper = function
+  | V s -> bprintf b "V "; bprintf_logic b (bprintf b "\"%s\"") s
+  | App (f,m) ->
+    bprintf b "App (";
+    bprintf_logic b helper f;
+    bprintf b ", ";
+    bprintf_logic b helper m;
+    bprintf b ")"
+  | Abs (s, e) ->
+    bprintf b "Abs (";
+    bprintf_logic b (bprintf b "%s") s;
+    bprintf b ", ";
+    bprintf_logic b helper e;
+    bprintf b ")"
+  (* | MetaVar -> bprintf b "_.%d" 0 *)
+  in
+  bprintf_logic b helper lam;
+  Buffer.contents b
+;;
+
+let (_:llam -> string) = show_llam;;
 let (_:lam -> string) = show_lam;;
 (************************************************************************************************************)
 @type ('a, 'b) gtyp =
@@ -205,16 +248,35 @@ let _noFreeVars =
   run_exn show_typ    1 q (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q)) qh;
   ()
 
-let (_: flam -> ftyp -> goal) = infero
 let runT n  = runR ltyp_of_ftyp show_typ show_ltyp n
-(* let (_ : ((Obj.t -> bool) -> Obj.t -> _) -> (rtyp -> string) -> (ltyp -> string) -> unit) =
-  fun r g h -> runR r g h 1 q (REPR (fun q -> infero (abs varX (v varX)) q   )) ~h:qh *)
 
-let runL n  = runR ltyp_of_ftyp show_rtyp show_ltyp n
+let runL n  = runR llam_of_flam show_lam show_llam n
 let _withFreeVars =
   (*run  show_env    1 q (REPR (fun q -> lookupo varX q (v varY)                                            )) qh; *)
-  runT 1 q (REPR (fun q -> infero (abs varX (v varX)) q                )) qh;
+  runT     1 q (REPR (fun q -> infero (abs varX (v varX)) q                )) qh;
   runT     1 q (REPR (fun q -> infero (abs varF (abs varX (app (v varF) (v varX)))) q        )) qh;
   runT     1 q (REPR (fun q -> infero (abs varX (abs varF (app (v varF) (v varX)))) q        )) qh;
-  (*run  show_lam    1 q (REPR (fun q -> infero q (arr (p varX) (p varX))                              )) qh; *)
+  runL     1 q (REPR (fun q -> infero q (arr (p varX) (p varX))                              )) qh;
   ()
+
+(* ************************************** **)
+
+(* reifier for lambdas  *)
+(* let lam_of_flam isVar f =
+  let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in
+  let rec helper (t: flam) : llam =
+    if cond t then refine_fancy2 t isVar
+    else match coerce_fancy t with
+    | V v when cond s -> MetaVar (index_of_var v)
+    | V v
+      Value (if cond s then V (refine_fancy2 s isVar) else V (Value (coerce_fancy s)))
+    | App (f,g) ->
+      Value (App ((if cond f then refine_fancy2 f isVar else helper f),
+                  (if cond g then refine_fancy2 g isVar else helper g)))
+    | Abs (n, body) ->
+      Value (App ( Value (if cond n then V (refine_fancy2 n isVar) else V (Value (coerce_fancy n))) ,
+                   (if cond body then refine_fancy2 body isVar else helper body)
+                 )
+            )
+  in
+  helper f *)

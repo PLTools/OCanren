@@ -22,14 +22,14 @@ let run_gen onOK onFree n num (repr, goal) ~h:handler =
     let new_pairs =
       List.map (fun (name,st) ->
         (* TODO: invent retrieve_hd function *)
-        let (_: (_,'r) reification_rez Stream.t) = st in
+        let (_: ('f, 'r) reification_rez Stream.t) = st in
         match Stream.retrieve ~n:1 st with
         | [],_ -> raise NoMoreAnswers
         | [Final x],tl ->
           onOK name ((Obj.magic x) : 'r);
           (name,tl)
         | [HasFreeVars (f,x)],tl ->
-          onFree name f x;
+          onFree name f ((Obj.obj x) : ('f,'r) fancy);
           (name,tl)
         | _ -> assert false
       ) pairs

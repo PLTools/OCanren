@@ -149,6 +149,10 @@ let token_t =
                  | Value of 'a
                    with show,gmap,html,eq,compare,foldl,foldr;;
 
+let index_of_var : 'a logic -> int =  function
+| Var (_,n,_) -> n
+| _ -> failwith "index_of_var can not accept Value _"
+
 external coerce_fancy: ('a, 'b) fancy -> 'a = "%identity"
 external var_of_fancy: ('a, 'b) fancy -> 'a logic = "%identity"
 external cast_fancy:   ('a, 'r) fancy -> 'r = "%identity"
