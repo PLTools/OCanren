@@ -158,6 +158,10 @@ let refine_fancy : ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic = fun x refiner ->
   | Var (_token,_i,cs) -> Var (_token,_i, List.map (fun x -> Obj.magic @@ refiner @@ Obj.repr x) cs)
   | _ -> assert false
 
+let (!!!) = Obj.magic
+
+let refine_fancy2 : ('a,'b) fancy -> (Obj.t -> _) -> _ logic = fun f cond -> !!!(refine_fancy !!!f cond)
+
 let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x ->
   let rec helper = function
   | Value x -> f x

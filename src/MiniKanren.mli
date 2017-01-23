@@ -90,7 +90,8 @@ val cast_fancy  : ('a, 'r) fancy -> 'r
 type 'a logic = | Var of GT.int GT.list * GT.int * 'a logic GT.list
                 | Value of 'a
 
-val refine_fancy: ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic
+val refine_fancy:  ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic
+val refine_fancy2: (_,_) fancy -> (Obj.t -> _) -> _ logic
 val var_of_fancy: ('a, 'r) fancy -> 'a logic
 
 val bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit
@@ -674,7 +675,7 @@ val pqrst :
    ('x * ('y * ('z * ('a1 * ('b1 * 'c1)))) ->
     ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1))
 
-(* 
+(*
 module type X1 = sig
 type t1
 type t2

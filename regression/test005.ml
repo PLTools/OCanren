@@ -4,21 +4,44 @@ open Tester
 
 type 'a f = ('a, 'a) fancy
 type ('varname, 'self) glam =
-  | V of 'varname f
+  | V of 'varname
   | App of 'self * 'self
   | Abs of 'varname * 'self
   | MetaVar
 
-type rlam = (string, rlam) glam
-type lam = (string f, (lam,rlam) fancy) glam
+type lam = (string, lam) glam
+type flam = ((string f, flam) glam, lam) fancy
 
-module LamHack = FMapALike0(struct type t = lam type r = rlam end)
+module LamHack = FMapALike0(struct
+  type t = (string f, flam) glam
+  type r = lam
+end)
 
-let v x   : (lam,rlam) fancy = LamHack.wrap @@ inj @@ lift @@ V x
+let v x   : flam = LamHack.wrap @@ inj @@ lift @@ V x
 let app x y = LamHack.wrap @@ inj @@ lift @@ App (x,y)
 let abs x y = LamHack.wrap @@ inj @@ lift @@ Abs (x,y)
 
 let show_lam lam =
+  let b = Buffer.create 10 in
+  let rec helper = function
+  | V s -> bprintf b "V %s" s
+  | App (f,arg) ->
+    bprintf b "App (";
+    helper f;
+    bprintf b ", ";
+    helper arg;
+    bprintf b ")"
+  | Abs (s, e) ->
+    bprintf b "Abs (%s, " s;
+    helper e;
+    bprintf b ")"
+  | MetaVar -> bprintf b "_.%d" 0
+  in
+  helper lam;
+  Buffer.contents b
+;;
+
+let show_flam lam =
   let b = Buffer.create 10 in
   let rec helper = function
   | V s -> bprintf b "V "; bprintf_fancy b (bprintf b "\"%s\"") s
@@ -40,30 +63,58 @@ let show_lam lam =
   Buffer.contents b
 ;;
 
+let (_:lam -> string) = show_lam;;
+(************************************************************************************************************)
 @type ('a, 'b) gtyp =
   (* primitive *)
   | P of 'a
   | Arr of 'b * 'b with gmap;;
 
-type ftyp = (string f, ftyp f) gtyp
-type rtyp = (string, rtyp) gtyp
+type typ  = (string, typ) gtyp
+type ftyp = ((string f, ftyp) gtyp, typ) fancy
 type ltyp = (string logic, ltyp) gtyp logic
 
-let p s     : (ftyp,rtyp) fancy = Obj.magic @@ inj @@ lift @@ P s
-let arr x y : (ftyp,rtyp) fancy = Obj.magic @@ inj @@ lift @@ Arr (x,y)
+module TypFamilies = FMapALike0(struct
+  type f1 = (string f, ftyp) gtyp
+  type t = f1
+  type r = typ
+end)
+let (_: ((string f, ftyp) gtyp, (string f, ftyp) gtyp) fancy ->
+        ((string f, ftyp) gtyp,                   typ) fancy)
+  = TypFamilies.wrap
+
+(* type intf = (int,int) fancy *)
+(* let (_: ftyp -> ftyp ->ftyp) = fun x y -> inj @@ lift (Arr (x,y)) *)
+
+let p s     : ftyp = TypFamilies.wrap @@ inj @@ lift @@ P s
+let arr x y : ftyp = TypFamilies.wrap @@ inj @@ lift @@ Arr (x,y)
 
 (* reifier for types *)
 let ltyp_of_ftyp isVar f =
-  let cond : 'a -> bool = fun x -> isVar !!!x in
-  let rec helper (t: ftyp f) : ltyp =
-    if cond t then !!!t
+  let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in
+  let rec helper (t: ftyp) : ltyp =
+    if cond t then refine_fancy2 t isVar
     else match coerce_fancy t with
-    | P s -> Value (if cond !!!s then P (var_of_fancy s) else P (Value (coerce_fancy s)))
+    | P s -> Value (if cond s then P (refine_fancy2 s isVar) else P (Value (coerce_fancy s)))
     | Arr (f,g) ->
-      Value (Arr ((if cond f then !!!f else helper f),
-                  (if cond g then !!!g else helper g)))
+      Value (Arr ((if cond f then refine_fancy2 f isVar else helper f),
+                  (if cond g then refine_fancy2 g isVar else helper g)))
   in
-  helper (Obj.obj f)
+  helper f
+
+let (_: (Obj.t -> bool) -> ftyp -> ltyp) = ltyp_of_ftyp
+
+let show_typ typ =
+  let b = Buffer.create 10 in
+  let rec helper = function
+  | P s -> bprintf b "%s" s
+  | Arr (f,m) ->
+    helper f;
+    bprintf b " -> ";
+    helper m
+  in
+  helper typ;
+  Buffer.contents b
 
 let show_ftyp typ =
   (* printf "show_typ '%s'\n%!" (generic_show typ); *)
@@ -76,18 +127,6 @@ let show_ftyp typ =
     bprintf_fancy b helper m
   in
   bprintf_fancy b helper typ;
-  Buffer.contents b
-
-let show_rtyp typ =
-  let b = Buffer.create 10 in
-  let rec helper = function
-  | P s -> bprintf b "%s" s
-  | Arr (f,m) ->
-    helper f;
-    bprintf b " -> ";
-    helper m
-  in
-  helper typ;
   Buffer.contents b
 
 let show_ltyp typ =
@@ -145,12 +184,10 @@ let infero expr typ =
 
 let show_string = fun x -> x
 let show_fstring : (string, string) fancy -> string = show_fancy show_string
-(* let show_ftyp: ftyp -> string = show_fancy*/ show_ftyp *)
 let show_fpair f g = show_fancy (fun (a,b) -> sprintf "(%s,%s)" (f a) (g b))
 
-(* let (_:int) = (show_fpair show_fstring @@ show_ftyp) *)
-let show_env : (((string f * ftyp f, int) fancy, 'a) llist as 'a, int) fancy -> string  =
-  MiniKanren.List.show (show_fpair show_fstring show_ftyp)
+let show_env xs =
+  MiniKanren.List.show (show_fpair show_fstring show_ftyp) xs
 
 let varX : (string,string) fancy = inj@@lift "x"
 let varY = inj@@lift "y"
@@ -165,13 +202,13 @@ let _noFreeVars =
 
   run_exn show_string 1 q (REPR (fun q -> lookupo q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varX)   )) qh;
   run_exn show_string 1 q (REPR (fun q -> lookupo q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varY)   )) qh;
-  run_exn show_rtyp   1 q (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q)) qh;
+  run_exn show_typ    1 q (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q)) qh;
   ()
 
-let (_: (lam,lam) fancy -> (ftyp, rtyp) fancy -> goal) = infero
-let runT n  = runR ltyp_of_ftyp show_rtyp show_ltyp n
-let (_ : ((Obj.t -> bool) -> Obj.t -> _) -> (rtyp -> string) -> (ltyp -> string) -> unit) =
-  fun r g h -> runR r g h 1 q (REPR (fun q -> infero (abs varX (v varX)) q   )) ~h:qh
+let (_: flam -> ftyp -> goal) = infero
+let runT n  = runR ltyp_of_ftyp show_typ show_ltyp n
+(* let (_ : ((Obj.t -> bool) -> Obj.t -> _) -> (rtyp -> string) -> (ltyp -> string) -> unit) =
+  fun r g h -> runR r g h 1 q (REPR (fun q -> infero (abs varX (v varX)) q   )) ~h:qh *)
 
 let runL n  = runR ltyp_of_ftyp show_rtyp show_ltyp n
 let _withFreeVars =
