@@ -92,7 +92,10 @@ type 'a logic = | Var of GT.int GT.list * GT.int * 'a logic GT.list
 
 val index_of_var : 'a logic -> int
 val refine_fancy:  ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic
-val refine_fancy2: (_,_) fancy -> (Obj.t -> _) -> _ logic
+(* val refine_fancy2: (_,_) fancy -> (Obj.t -> _) -> _ logic *)
+
+(* should be applied only on logic variables *)
+val refine_fancy3:  ('a,'b) fancy -> (Obj.t -> bool) -> (('a,_) fancy -> 'c logic) -> 'c logic
 val var_of_fancy: ('a, 'r) fancy -> 'a logic
 
 val bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit

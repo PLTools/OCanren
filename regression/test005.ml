@@ -10,27 +10,35 @@ type ('varname, 'self) glam =
   (* | MetaVar *)
 
 type lam = (string, lam) glam
-type flam = ((string f, flam) glam, lam) fancy
-type llam = ((string logic, llam) glam) logic
+type flam  = ((string f, flam) glam, lam) fancy
+type flam2 =  (string f, (flam, lam) fancy) glam
 
-(* reifier for lambdas  *)
+type llam  = ((string logic, llam) glam) logic
+type llam2 =  (string logic, llam logic) glam
+
+let stringl_of_stringf (isVar: Obj.t -> bool) (x: string f): string logic =
+  let rec helper (x: string) : string =
+    x
+  and helper2 x : string logic =
+    if isVar @@ Obj.repr x
+    then refine_fancy3 x isVar helper2
+    else Value (helper @@ coerce_fancy x)
+  in
+  helper2 x
+
+
 let llam_of_flam isVar f =
   let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in
   let rec helper (t: flam) : llam =
-    if cond t then refine_fancy2 t isVar
-    else match coerce_fancy t with
-    | V s -> Value (if cond s then V (refine_fancy2 s isVar) else V (Value (coerce_fancy s)))
-    | App (f,g) ->
-      Value (App ((if cond f then refine_fancy2 f isVar else helper f),
-                  (if cond g then refine_fancy2 g isVar else helper g)))
-    | Abs (n, body) ->
-      Value (App ( Value (if cond n then V (refine_fancy2 n isVar) else V (Value (coerce_fancy n))) ,
-                   (if cond body then refine_fancy2 body isVar else helper body)
-                 )
-            )
+    if cond t then refine_fancy3 t isVar helper
+    else
+    match coerce_fancy t with
+    | V s when cond s -> Value (V (stringl_of_stringf isVar s))
+    | V s             -> Value (V (Value (coerce_fancy s)) )
+    | App (f,g)       -> Value (App (helper f, helper g) )
+    | Abs (n, body)   -> Value (Abs (stringl_of_stringf isVar n,  helper body))
   in
   helper f
-
 
 module LamHack = FMapALike0(struct
   type t = (string f, flam) glam
@@ -136,12 +144,11 @@ let arr x y : ftyp = TypFamilies.wrap @@ inj @@ lift @@ Arr (x,y)
 let ltyp_of_ftyp isVar f =
   let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in
   let rec helper (t: ftyp) : ltyp =
-    if cond t then refine_fancy2 t isVar
+    if cond t then refine_fancy3 t isVar helper
     else match coerce_fancy t with
-    | P s -> Value (if cond s then P (refine_fancy2 s isVar) else P (Value (coerce_fancy s)))
-    | Arr (f,g) ->
-      Value (Arr ((if cond f then refine_fancy2 f isVar else helper f),
-                  (if cond g then refine_fancy2 g isVar else helper g)))
+    | P s when cond s -> Value (P (refine_fancy3 s isVar (stringl_of_stringf isVar) ))
+    | P s             -> Value (P (Value (coerce_fancy s)) )
+    | Arr (f,g) -> Value (Arr (helper f, helper g))
   in
   helper f
 
