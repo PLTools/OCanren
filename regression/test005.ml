@@ -17,14 +17,12 @@ type llam  = ((string logic, llam) glam) logic
 type llam2 =  (string logic, llam logic) glam
 
 let stringl_of_stringf (isVar: Obj.t -> bool) (x: string f): string logic =
-  let rec helper (x: string) : string =
-    x
-  and helper2 x : string logic =
+  let rec helper x : string logic =
     if isVar @@ Obj.repr x
-    then refine_fancy3 x isVar helper2
-    else Value (helper @@ coerce_fancy x)
+    then refine_fancy3 x isVar helper
+    else Value (coerce_fancy x)
   in
-  helper2 x
+  helper x
 
 
 let llam_of_flam isVar f =

@@ -7,25 +7,20 @@ open Tester
 
 let (!) x = inj@@lift x
 
-(* int logic of int fancy *)
-let rec il_of_int cond x : int logic =
-  if cond !!!x then refine_fancy !!!x (il_of_int cond)
-  else Value (!!!x : int)
-
-let il_of_if cond : Obj.t -> int logic = (il_of_int cond)
+(* reifier for ints *)
+let intl_of_intf = Test010.intl_of_intf
 let show_int = string_of_int
-let show_if : (int,int)fancy -> _ = fun x ->
-  show_fancy string_of_int x
+let show_if : (int,int)fancy -> string = fun x -> show_fancy string_of_int x
 
 let show_il x =
   show_logic string_of_int x
 
-let runInt = runR il_of_if show_int show_il;;
+let runInt = runR intl_of_intf show_int show_il;;
 
 @type 'a gt = N | A of 'a with show;;
 type rt = rt gt             (* autoreified *)
 type ft = (ft gt, rt) fancy (* fancified *)
-type lt = (lt gt) logic     (* reified *)
+type lt = lt gt logic       (* reified *)
 
 let show_rt x =
   let rec helper : rt -> string = function
@@ -35,8 +30,6 @@ let show_rt x =
   helper x
 
 let show_ln (x: lt) : string =
-  printf "gshow of Value 1 '%s'\n%!" (generic_show @@ Value 1);
-  printf "show_ln '%s'\n%!" (generic_show x);
   let rec helper: lt  -> string = function
   | Value N -> "N"
   | Value (A x) -> "A (" ^ (show_logic helper2 x) ^ ")"
@@ -45,8 +38,7 @@ let show_ln (x: lt) : string =
   | N -> "N"
   | A x -> "A (" ^ (helper x) ^ ")"
   in
-  (* show_logic  *)
-    helper x
+  helper x
 
 let lt_of_ft cond x : lt =
   let isVar y = cond !!!y in
@@ -78,20 +70,20 @@ let _ =
   ()
 
 let _ =
-  runInt          (-1) q (REPR (fun q -> (q =/= !1) )         ) qh;
-  runInt          (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))                      )) qh;
-  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1])(z === !0))               )) qh;
-  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(z === !0)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))               )) qh;
-  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(z === !1)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))               )) qh;
+  runInt       (-1) q (REPR (fun q -> (q =/= !1) )         ) qh;
+  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))                   )) qh;
+  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1])(z === !0))         )) qh;
+  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(z === !0)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))         )) qh;
+  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(z === !1)(x =/= y)(x === ![!0; z; !1])(y === ![!0; !1; !1]))         )) qh;
   ()
 
 let _ =
-  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(x === ![!0; z; !1])(y === ![!0; !1; !1])(x =/= y))                         )) qh;
-  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(z === !1)(x === ![!0; z; !1])(y === ![!0; !1; !1])(x =/= y))               )) qh;
+  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(x === ![!0; z; !1])(y === ![!0; !1; !1])(x =/= y))                   )) qh;
+  runInt       (-1) q (REPR (fun q -> (fresh (x y z)(z === !1)(x === ![!0; z; !1])(y === ![!0; !1; !1])(x =/= y))         )) qh;
   ()
 let _ =
-  runInt      (-1) q (REPR (fun q -> (fresh (x y)(![x; !1] =/= ![!2; y])(x === !2))                                            )) qh;
-  runInt      (-1) q (REPR (fun q -> (fresh (x y)(![x; !1] =/= ![!2; y])(y === !1))                                            )) qh;
+  runInt      (-1) q (REPR (fun q -> (fresh (x y)(![x; !1] =/= ![!2; y])(x === !2))                                       )) qh;
+  runInt      (-1) q (REPR (fun q -> (fresh (x y)(![x; !1] =/= ![!2; y])(y === !1))                                       )) qh;
   ()
 ;;
 
@@ -102,17 +94,24 @@ let show_iflist: (int, int) fancy list -> _ = GT.show(GT.list) @@ (Obj.magic @@ 
 
 let ilist_of_ftyp2 isVar x =
   let cond : 'a -> bool = fun x -> isVar !!!x in
-  let rec helper (t: ( (int,int) fancy list as 'l,'l) fancy) : ((int logic, 'l2 logic) llist as 'l2) logic =
+  let rec helper (t: ( (int,int) fancy list as 'l,'l) fancy) : int logic MiniKanren.List.logic =
     (* printf "helper of '%s'\n%!" (generic_show t); *)
     if cond t
-    then refine_fancy !!!t !!!helper
-    else match coerce_fancy !!!t with
+    then refine_fancy3 t isVar helper
+    else helper2 @@ coerce_fancy t
+    (* else match coerce_fancy t with
     | [] -> Value Nil
-    | h :: tl when cond !!!h -> Value (Cons (refine_fancy !!!h !!!(il_of_if cond), helper !!!tl))
-    | h :: tl -> Value (Cons (Value (cast_fancy !!!h), helper !!!tl))
+    | h :: tl when cond !!!h -> Value (Cons (refine_fancy3 h isVar (intl_of_intf isVar), helper !!!tl))
+    | h :: tl -> Value (Cons (Value (coerce_fancy h), helper tl)) *)
+  and helper2 (t: (int,int) fancy list) =
+    match t with
+    | [] -> Value Nil
+    | h :: tl when cond !!!h -> Value (Cons (refine_fancy3 h isVar (intl_of_intf isVar), helper2 tl))
+    | h :: tl -> Value (Cons (Value (coerce_fancy h), helper2 tl))
   in
-  helper (Obj.obj x)
+  helper x
 
+(* let (_:int) = ilist_of_ftyp2 *)
 let runIntList n = runR ilist_of_ftyp2 show_iflist show1 n
 
 let _ =

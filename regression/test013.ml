@@ -1,13 +1,13 @@
 open Printf
-open GT
+(* open GT *)
 open MiniKanren
 open Tester
 
 let show_nat        = Nat.show_ground
-let show_bool       = Bool.show_ground
-let show_nat_list   = show_fancy @@ show(GT.list) (show Nat.ground)
-let show_bool_list  = show_fancy @@ show(GT.list) (show Bool.ground)
-let show_option_nat = show_fancy @@ show(option)  (show Nat.ground)
+let show_bool       = GT.show(GT.bool)
+let show_nat_list   = GT.show(GT.list) (GT.show Nat.ground)
+let show_bool_list  = GT.show(GT.list) (GT.show Bool.ground)
+let show_option_nat = GT.show(GT.option)  (GT.show Nat.ground)
 (* let show_int        = show_fancy @@ string_of_int *)
 (* let show_int_list   = show_fancy @@ show(GT.list) string_of_int *)
 
@@ -75,9 +75,9 @@ let _ =
   run_exn show_option_nat   1    q (REPR (fun q     -> lookupo (eqo ?$1) (nats [0;2;1;3]) q          ))   qh;
   ()
 
-let to_list_lnats isVar f =
-  printf "to_list_lnats of '%s'\n%!" (generic_show @@ f ());
-  let y = Obj.magic @@ f () in
+let to_list_lnats isVar y =
+  (* printf "to_list_lnats of '%s'\n%!" (generic_show y); *)
+
   let cond : 'a -> bool = fun x -> isVar !!!x in
   let rec helper (t: ( (Nat.groundf, 'tl) llist as 'tl, _) MiniKanren.fancy) : Nat.logic list =
     match coerce_fancy t with

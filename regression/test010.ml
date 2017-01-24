@@ -9,7 +9,8 @@ let gxy  x y = (g123 x) &&& (g123 y)
 let gxy' x y = (gxy x y) &&& (x =/= y)
 let gnot5 x  = x =/= !5
 
-let show_int = show_fancy (show int)
+let show_int = GT.(show int)
+(* let show_fint = show_fancy (show int) *)
 
 let _ =
   run_exn show_int    3  q (REPR (fun q   -> g123 q                                                    )) qh;
@@ -27,15 +28,19 @@ let _ =
   run_exn show_int (-1)  q (REPR (fun q   -> (fresh (x y z) (x =/= !4)(y === z)(x === y)(z === !(2+2))))) qh;
   ()
 
-let reifier cond f : int logic =
-  let x = Obj.magic @@ f () in
-  if cond x then !!!(var_of_fancy x)
-  else Value !!!x
 
-let run1 printer = runR reifier printer (show_logic string_of_int)
+let intl_of_intf cond y : int logic =
+  let rec helper y =
+    if cond @@ Obj.repr y
+    then refine_fancy3 y cond helper
+    else Value (coerce_fancy y)
+  in
+  helper y
+
+let runI n = runR intl_of_intf show_int (show_logic string_of_int) n
 
 let _ =
-  run1 show_int (-1)  q (REPR (fun q   -> (q =/= !5)                                                )) qh;
-  run1 show_int (-1)  q (REPR (fun q   -> ((q =/= !3) &&& (q === !3))                               )) qh;
-  run1 show_int (-1)  q (REPR (fun q   -> ((q === !3) &&& (!3 =/= q))                               )) qh;
+  runI (-1)  q (REPR (fun q   -> (q =/= !5)                                                )) qh;
+  runI (-1)  q (REPR (fun q   -> ((q =/= !3) &&& (q === !3))                               )) qh;
+  runI (-1)  q (REPR (fun q   -> ((q === !3) &&& (!3 =/= q))                               )) qh;
   ()

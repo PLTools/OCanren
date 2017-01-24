@@ -319,7 +319,7 @@ let test27 b q r =
   (logo (build_num 68) b q r) &&& (gt1o q)
 
 let show_int      = string_of_int
-let show_int_list = MiniKanren.List.show show_int
+let show_int_list = GT.show(GT.list) show_int
 
 let _ffoo _ =
   run_exn show_int_list (-1)  qr (REPR (fun q r     -> multo q r (build_num 1)                          ))   qrh;
@@ -339,7 +339,7 @@ let ilist_of_ftyp2 isVar f =
     | Cons (h, tl) when cond !!!h -> Value (Cons (var_of_fancy h, helper !!!tl))
     | Cons (h, tl) -> Value (Cons (Value (cast_fancy h), helper !!!tl))
   in
-  helper (Obj.obj @@ f ())
+  helper f
 
 let show1 l  = (GT.show(List.logic) (GT.show(logic) show_int)) l
 let runL printer = runR ilist_of_ftyp2 printer show1

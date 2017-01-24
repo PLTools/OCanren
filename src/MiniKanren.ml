@@ -656,7 +656,7 @@ module Bool =
     let (&&) a b = ando a b true_
     let (||) a b = oro  a b true_
 
-    let show_ground : boolf -> string = string_of_bool
+    let show_ground : ground -> string = string_of_bool
 
     let inj b : boolf = inj@@lift b
   end

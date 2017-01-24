@@ -318,7 +318,7 @@ module Nat :
     (* val (>)  : logic -> logic -> goal
     val (<)  : logic -> logic -> goal *)
 
-    val show_ground: (ground,ground) fancy -> string
+    val show_ground: ground -> string
   end
 
 (** [inj_nat n] is a deforested synonym for injection *)
