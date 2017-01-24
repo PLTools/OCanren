@@ -157,21 +157,23 @@ external coerce_fancy: ('a, 'b) fancy -> 'a = "%identity"
 external var_of_fancy: ('a, 'b) fancy -> 'a logic = "%identity"
 external cast_fancy:   ('a, 'r) fancy -> 'r = "%identity"
 
-let refine_fancy : ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic = fun x refiner ->
+type var_checker = < isVar : 'a . 'a -> bool >
+
+(* let refine_fancy : ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic = fun x refiner ->
   match !!!x with
   | Var (_token,_i,cs) -> Var (_token, _i, List.map (fun x -> Obj.magic @@ refiner @@ Obj.repr x) cs)
-  | _ -> assert false
+  | _ -> assert false *)
 
 let (!!!) = Obj.magic
 
 (* let refine_fancy2 : ('a,'b) fancy -> (Obj.t -> _) -> _ logic = fun f cond -> !!!(refine_fancy !!!f cond) *)
 
 
-let refine_fancy3:  ('a,'b) fancy -> (Obj.t -> bool) -> (('a,'b) fancy -> 'c logic) -> 'c logic = fun x isVar refiner ->
-  if isVar @@ Obj.repr x then
-    match !!!x with
-    | Value _ -> assert false
-    | Var (_token, _i, cs) -> Var (_token, _i, List.map (fun x -> Obj.magic @@ refiner !!!x) cs)
+let refine_fancy3:  ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> 'c logic = fun x c refiner ->
+  if c#isVar x
+  then match !!!x with
+  | Value _ -> assert false
+  | Var (_token, _i, cs) -> Var (_token, _i, List.map (fun x -> Obj.magic @@ refiner !!!x) cs)
   else failwith "Logical var expected"
 
 let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x ->

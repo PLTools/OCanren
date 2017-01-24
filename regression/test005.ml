@@ -16,25 +16,22 @@ type flam2 =  (string f, (flam, lam) fancy) glam
 type llam  = ((string logic, llam) glam) logic
 type llam2 =  (string logic, llam logic) glam
 
-let stringl_of_stringf (isVar: Obj.t -> bool) (x: string f): string logic =
+let stringl_of_stringf (c: var_checker) (x: string f): string logic =
   let rec helper x : string logic =
-    if isVar @@ Obj.repr x
-    then refine_fancy3 x isVar helper
+    if c#isVar x
+    then refine_fancy3 x c helper
     else Value (coerce_fancy x)
   in
   helper x
 
-
-let llam_of_flam isVar f =
-  let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in
+let llam_of_flam (c: var_checker) f =
   let rec helper (t: flam) : llam =
-    if cond t then refine_fancy3 t isVar helper
-    else
-    match coerce_fancy t with
-    | V s when cond s -> Value (V (stringl_of_stringf isVar s))
-    | V s             -> Value (V (Value (coerce_fancy s)) )
-    | App (f,g)       -> Value (App (helper f, helper g) )
-    | Abs (n, body)   -> Value (Abs (stringl_of_stringf isVar n,  helper body))
+    if c#isVar t then refine_fancy3 t c helper
+    else match coerce_fancy t with
+    | V s when c#isVar s -> Value (V (stringl_of_stringf c s))
+    | V s                -> Value (V (Value (coerce_fancy s)) )
+    | App (f,g)          -> Value (App (helper f, helper g))
+    | Abs (n, body)      -> Value (Abs (stringl_of_stringf c n, helper body))
   in
   helper f
 
@@ -124,8 +121,7 @@ type ftyp = ((string f, ftyp) gtyp, typ) fancy
 type ltyp = (string logic, ltyp) gtyp logic
 
 module TypFamilies = FMapALike0(struct
-  type f1 = (string f, ftyp) gtyp
-  type t = f1
+  type t = (string f, ftyp) gtyp
   type r = typ
 end)
 let (_: ((string f, ftyp) gtyp, (string f, ftyp) gtyp) fancy ->
@@ -139,18 +135,18 @@ let p s     : ftyp = TypFamilies.wrap @@ inj @@ lift @@ P s
 let arr x y : ftyp = TypFamilies.wrap @@ inj @@ lift @@ Arr (x,y)
 
 (* reifier for types *)
-let ltyp_of_ftyp isVar f =
-  let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in
+let ltyp_of_ftyp (c: < isVar: 'a . 'a -> bool >) f =
+  (* let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in *)
   let rec helper (t: ftyp) : ltyp =
-    if cond t then refine_fancy3 t isVar helper
+    if c#isVar t then refine_fancy3 t c helper
     else match coerce_fancy t with
-    | P s when cond s -> Value (P (refine_fancy3 s isVar (stringl_of_stringf isVar) ))
-    | P s             -> Value (P (Value (coerce_fancy s)) )
+    | P s when c#isVar s -> Value (P (refine_fancy3 s c (stringl_of_stringf c) ))
+    | P s                -> Value (P (Value (coerce_fancy s)) )
     | Arr (f,g) -> Value (Arr (helper f, helper g))
   in
   helper f
 
-let (_: (Obj.t -> bool) -> ftyp -> ltyp) = ltyp_of_ftyp
+let (_: var_checker -> ftyp -> ltyp) = ltyp_of_ftyp
 
 let show_typ typ =
   let b = Buffer.create 10 in
@@ -190,19 +186,6 @@ let show_ltyp typ =
   bprintf_logic b helper typ;
   Buffer.contents b
 
-
-(*
-let typ_reifier (cond: Obj.t -> bool) (x : typ) : typ =
-  let rec helper x =
-    if cond @@ Obj.repr x then TypeVar 0
-    else match Obj.magic x with
-    | TypeVar n -> TypeVar n
-    | Arr (f,x) -> Arr(helper f, helper x)
-    | P s when cond @@ Obj.repr s -> TypeVar 0
-    | P s -> P s
-  in
-  helper x
-*)
 let rec lookupo a g t =
   Fresh.three (fun a' t' tl ->
     (g === (inj_pair a' t')%tl) &&&
@@ -253,6 +236,7 @@ let _noFreeVars =
   run_exn show_typ    1 q (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q)) qh;
   ()
 
+(* let (_:int) = runR *)
 let runT n  = runR ltyp_of_ftyp show_typ show_ltyp n
 
 let runL n  = runR llam_of_flam show_lam show_llam n
