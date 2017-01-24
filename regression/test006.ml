@@ -1,8 +1,5 @@
-(* open GT *)
 open MiniKanren
 open Tester
-
-(* @type lam = X of string logic | App of lam logic * lam logic | Abs of string logic * lam logic with show *)
 
 open Test005
 
