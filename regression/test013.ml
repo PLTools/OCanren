@@ -75,18 +75,15 @@ let _ =
   run_exn show_option_nat   1    q (REPR (fun q     -> lookupo (eqo ?$1) (nats [0;2;1;3]) q          ))   qh;
   ()
 
-let to_list_lnats isVar y =
-  (* printf "to_list_lnats of '%s'\n%!" (generic_show y); *)
-
-  let cond : 'a -> bool = fun x -> isVar !!!x in
+let to_list_lnats (c: var_checker) y =
   let rec helper (t: ( (Nat.groundf, 'tl) llist as 'tl, _) MiniKanren.fancy) : Nat.logic list =
-    match coerce_fancy t with
+    if c#isVar t then refine_fancy3 t c helper
+    else match coerce_fancy t with
     | Nil -> []
-    | Cons (h, tl) when cond !!!h -> !!!(var_of_fancy h) :: (helper !!!tl)
-    | Cons (h, tl) -> (Value !!!(cast_fancy h)) :: (helper !!!tl)
+    | Cons (h, tl) when c#isVar h -> (refine_fancy3 h c helper) :: (helper !!!tl)
+    | Cons (h, tl) -> (Value (coerce_fancy h)) :: (helper !!!tl)
   in
-  if isVar !!! y then !!!(var_of_fancy y)
-  else Value (helper !!!y)
+  helper y
 
 let show1 n =
   printf "show1 of '%s'\n%!" (generic_show n);

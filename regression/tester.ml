@@ -14,7 +14,7 @@ let make_title n msg =
 
 exception NoMoreAnswers
 
-let run_gen onOK onFree n num (repr, goal) ~h:handler =
+let run_gen onOK (onFree: _ -> var_checker -> _) n num (repr, goal) ~h:handler =
   make_title n repr;
   let rec loop pairs = function
   | 0 -> ()
@@ -29,7 +29,8 @@ let run_gen onOK onFree n num (repr, goal) ~h:handler =
           onOK name ((Obj.magic x) : 'r);
           (name,tl)
         | [HasFreeVars (f,x)],tl ->
-          onFree name f ((Obj.obj x) : ('f,'r) fancy);
+          onFree name (object method isVar: 'a . 'a -> bool = fun x -> f @@ Obj.repr x end)
+            ((Obj.obj x) : ('f,'r) fancy);
           (name,tl)
         | _ -> assert false
       ) pairs
@@ -54,7 +55,3 @@ let runR reifier printerNoFree printerR = run_gen
 
 
 let (!!!) = Obj.magic
-
-(* let foo (q: (int,int) fancy) =  q === (inj@@lift 1)
-
-let (_:int) = run_exn string_of_int 1 q ("",foo) *)

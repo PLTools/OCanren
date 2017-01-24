@@ -29,10 +29,10 @@ let _ =
   ()
 
 
-let intl_of_intf cond y : int logic =
+let intl_of_intf (c: var_checker) y : int logic =
   let rec helper y =
-    if cond @@ Obj.repr y
-    then refine_fancy3 y cond helper
+    if c#isVar y
+    then refine_fancy3 y c helper
     else Value (coerce_fancy y)
   in
   helper y

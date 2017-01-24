@@ -34,18 +34,17 @@ module ExprHack = FMapALike0(struct
   type r = expr
 end)
 (* TODO: maybe add primitive wrapinjlift to the functor application result *)
-let i ()    : fexpr = ExprHack.wrap @@ inj @@ lift I
+let i ()  : fexpr = ExprHack.wrap @@ inj @@ lift I
 let a a b : fexpr = ExprHack.wrap @@ inj @@ lift (A (a,b))
 let m a b : fexpr = ExprHack.wrap @@ inj @@ lift (M (a,b))
 
-let lexpr_of_fexpr isVar f =
-  let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in
+let lexpr_of_fexpr (c: var_checker) f =
   let rec helper (t: fexpr) : lexpr =
-    if cond t then refine_fancy3 t isVar helper
+    if c#isVar t then refine_fancy3 t c helper
     else match coerce_fancy t with
-    | I             -> Value I
-    | A (a,b)       -> Value (A (helper a, helper b) )
-    | M (a,b)       -> Value (M (helper a, helper b) )
+    | I        -> Value I
+    | A (a,b)  -> Value (A (helper a, helper b) )
+    | M (a,b)  -> Value (M (helper a, helper b) )
   in
   helper f
 

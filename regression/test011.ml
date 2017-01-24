@@ -40,15 +40,15 @@ let show_ln (x: lt) : string =
   in
   helper x
 
-let lt_of_ft cond x : lt =
-  let isVar y = cond !!!y in
-  let x = x in
-  let rec helper = function
-  | N -> Value N
-  | A x -> Value (A (helper x))
+let lt_of_ft (c: var_checker) ft : lt =
+  let rec helper x =
+    if c#isVar x
+    then (refine_fancy3 x c helper)
+    else match coerce_fancy x with
+    | N -> Value N
+    | A x -> Value (A (helper x))
   in
-  if isVar x then (refine_fancy !!!x !!!helper)
-  else helper !!!x
+  helper ft
 
 module N = struct
   type 'a t = 'a gt
@@ -92,24 +92,23 @@ let show_ilist = GT.show(GT.list) @@ GT.show(GT.int)
 
 let show_iflist: (int, int) fancy list -> _ = GT.show(GT.list) @@ (Obj.magic @@ (GT.show(GT.int)))
 
-let ilist_of_ftyp2 isVar x =
-  let cond : 'a -> bool = fun x -> isVar !!!x in
+let ilist_of_ftyp2 (c: var_checker) y =
   let rec helper (t: ( (int,int) fancy list as 'l,'l) fancy) : int logic MiniKanren.List.logic =
-    (* printf "helper of '%s'\n%!" (generic_show t); *)
-    if cond t
-    then refine_fancy3 t isVar helper
+    if c#isVar t
+    then refine_fancy3 t c helper
     else helper2 @@ coerce_fancy t
-    (* else match coerce_fancy t with
-    | [] -> Value Nil
-    | h :: tl when cond !!!h -> Value (Cons (refine_fancy3 h isVar (intl_of_intf isVar), helper !!!tl))
-    | h :: tl -> Value (Cons (Value (coerce_fancy h), helper tl)) *)
   and helper2 (t: (int,int) fancy list) =
     match t with
     | [] -> Value Nil
-    | h :: tl when cond !!!h -> Value (Cons (refine_fancy3 h isVar (intl_of_intf isVar), helper2 tl))
-    | h :: tl -> Value (Cons (Value (coerce_fancy h), helper2 tl))
+    (* | h :: tl when c#isVar h -> Value (Cons (refine_fancy3 h c (intl_of_intf isVar), helper2 tl)) *)
+    | h :: tl ->
+      let h2 =
+        if c#isVar h then refine_fancy3 h c (intl_of_intf c)
+        else Value (coerce_fancy h)
+      in
+      Value (Cons (h2, helper2 tl))
   in
-  helper x
+  helper y
 
 (* let (_:int) = ilist_of_ftyp2 *)
 let runIntList n = runR ilist_of_ftyp2 show_iflist show1 n
