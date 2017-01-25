@@ -2,7 +2,8 @@ open MiniKanren
 open Tester
 open Printf
 
-let ilist xs = inj_list @@ List.map (fun (x:int) -> inj@@lift x) xs
+let inj_int n : (int,int) fancy = inj@@lift n
+let ilist xs = inj_list @@ List.map inj_int xs
 let just_a a = a === inj@@lift 5
 
 let a_and_b a =
@@ -44,6 +45,8 @@ let rec reverso a b =
 
 let show_int = string_of_int
 let show_int_list : int list -> string = GT.show(GT.list) show_int
+
+
 
 let _ =
   run_exn show_int_list  1  q (REPR (fun q   -> appendo q (ilist [3; 4]) (ilist [1; 2; 3; 4]))) qh;

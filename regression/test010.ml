@@ -10,7 +10,6 @@ let gxy' x y = (gxy x y) &&& (x =/= y)
 let gnot5 x  = x =/= !5
 
 let show_int = GT.(show int)
-(* let show_fint = show_fancy (show int) *)
 
 let _ =
   run_exn show_int    3  q (REPR (fun q   -> g123 q                                                    )) qh;

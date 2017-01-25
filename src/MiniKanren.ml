@@ -176,13 +176,21 @@ let (!!!) = Obj.magic
 
 (* let refine_fancy2 : ('a,'b) fancy -> (Obj.t -> _) -> _ logic = fun f cond -> !!!(refine_fancy !!!f cond) *)
 
-
-let refine_fancy3:  ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> 'c logic = fun x c refiner ->
+(* helps to refine ('a,'b) fancy to 'c logic *)
+let refine_fancy3: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> 'c logic = fun x c refiner ->
   if c#isVar x
   then match !!!x with
   | Value _ -> assert false
   | Var (_token, _i, cs) -> Var (_token, _i, List.map (fun x -> Obj.magic @@ refiner !!!x) cs)
   else failwith "Logical var expected"
+
+let refine_fancy4: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> ('c logic -> 'd) -> 'd =
+  fun x c refiner wrap ->
+    if c#isVar x
+    then match !!!x with
+    | Value _ -> assert false
+    | Var (_token, _i, cs) -> wrap (Var (_token, _i, List.map (fun x -> Obj.magic @@ refiner !!!x) cs))
+    else failwith "Logical var expected"
 
 let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x ->
   let rec helper = function
@@ -904,6 +912,7 @@ module List = struct
         end
     }
 
+    type ('a, 'b) flist0 = ( (('a,'b) fancy, 'tl)  llist, 'b list) fancy as 'tl
     type ('a, 'b) flist = (('a, 'b) fancy ground, 'b list) fancy
 
     let rec foldro f a xs r =

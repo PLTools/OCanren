@@ -59,12 +59,6 @@ module NF = FMapALike2(N)
 let a x : ft = NF.wrap @@ inj@@lift (A x)
 let n :   ft = NF.wrap @@ inj@@lift N
 
-(*
-let show_frt : (rt,rt) fancy -> string = show_fancy @@ show_rt
-let show_int = string_of_int
-let show_fint : (int,int) fancy -> string = show_fancy @@ string_of_int
-
-let runN printer = runR lt_of_ft printer show_ln;; *)
 let _ =
   runInt          (-1) q (REPR (fun q -> (fresh(x) (x =/= (a x)))         )) qh;
   ()
