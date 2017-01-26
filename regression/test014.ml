@@ -332,10 +332,10 @@ let _ffoo _ =
 (* reifier *)
 let ilist_of_ftyp2 (c: var_checker) f =
   let rec helper (t: (int,int) List.flist) : int logic List.logic =
-    if c#isVar t then refine_fancy3 t c helper
+    if c#isVar t then refine_fancy_var t c helper
     else match coerce_fancy t with
     | Nil -> Value Nil
-    | Cons (h, tl) when c#isVar h -> Value (Cons (refine_fancy3 h c (Test010.intl_of_intf c), helper tl))
+    | Cons (h, tl) when c#isVar h -> Value (Cons (refine_fancy_var h c (Test010.intl_of_intf c), helper tl))
     | Cons (h, tl) -> Value (Cons (Value (coerce_fancy h), helper tl))
   in
   helper f

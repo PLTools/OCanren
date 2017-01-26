@@ -167,30 +167,23 @@ external cast_fancy:   ('a, 'r) fancy -> 'r = "%identity"
 
 type var_checker = < isVar : 'a . 'a -> bool >
 
-(* let refine_fancy : ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic = fun x refiner ->
-  match !!!x with
-  | Var (_token,_i,cs) -> Var (_token, _i, List.map (fun x -> Obj.magic @@ refiner @@ Obj.repr x) cs)
-  | _ -> assert false *)
-
 let (!!!) = Obj.magic
 
-(* let refine_fancy2 : ('a,'b) fancy -> (Obj.t -> _) -> _ logic = fun f cond -> !!!(refine_fancy !!!f cond) *)
-
 (* helps to refine ('a,'b) fancy to 'c logic *)
-let refine_fancy3: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> 'c logic = fun x c refiner ->
+let refine_fancy_var: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> 'c logic = fun x c refiner ->
   if c#isVar x
   then match !!!x with
   | Value _ -> assert false
-  | Var (_token, _i, cs) -> Var (_token, _i, List.map (fun x -> Obj.magic @@ refiner !!!x) cs)
+  | Var (token, i, cs) -> Var (token, i, List.map (fun x -> Obj.magic @@ refiner !!!x) cs)
   else failwith "Logical var expected"
 
-let refine_fancy4: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> ('c logic -> 'd) -> 'd =
+(* let refine_fancy4: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> ('c logic -> 'd) -> 'd =
   fun x c refiner wrap ->
     if c#isVar x
     then match !!!x with
     | Value _ -> assert false
     | Var (_token, _i, cs) -> wrap (Var (_token, _i, List.map (fun x -> Obj.magic @@ refiner !!!x) cs))
-    else failwith "Logical var expected"
+    else failwith "Logical var expected" *)
 
 let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x ->
   let rec helper = function
@@ -566,7 +559,7 @@ module Fresh =
 let success st = Stream.cons st Stream.nil
 let failure _  = Stream.nil;;
 
-@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, gmap(*, html, eq, compare, foldl, foldr *)
+@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr
 @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap;;
 
 module type T = sig
@@ -863,11 +856,11 @@ module List = struct
       GT.gcata = ();
       GT.plugins =
         object(this)
-          (* method html    fa l = GT.html   (llist) fa (this#html    fa) l *)
-          (* method eq      fa l = GT.eq     (llist) fa (this#eq      fa) l
+          method html    fa l = GT.html   (llist) fa (this#html    fa) l
+          method eq      fa l = GT.eq     (llist) fa (this#eq      fa) l
           method compare fa l = GT.compare(llist) fa (this#compare fa) l
           method foldr   fa l = GT.foldr  (llist) fa (this#foldr   fa) l
-          method foldl   fa l = GT.foldl  (llist) fa (this#foldl   fa) l *)
+          method foldl   fa l = GT.foldl  (llist) fa (this#foldl   fa) l
           method gmap    fa l = GT.gmap   (llist) fa (this#gmap    fa) l
           method show    fa l = "[" ^
             let rec inner l =
@@ -891,7 +884,14 @@ module List = struct
       GT.gcata = ();
       GT.plugins =
         object(this)
-          method gmap    fa l   = GT.gmap   (logic') (GT.gmap   (llist) fa (this#gmap    fa)) l
+          method compare fa l = GT.compare (logic') (GT.compare (llist) fa (this#compare fa)) l
+          method gmap    fa l = GT.gmap    (logic') (GT.gmap    (llist) fa (this#gmap    fa)) l
+          method eq      fa l = GT.eq      (logic') (GT.eq      (llist) fa (this#eq      fa)) l
+          method foldl   fa l = GT.foldl   (logic') (GT.foldl   (llist) fa (this#foldl   fa)) l
+          method foldr   fa l = GT.foldr   (logic') (GT.foldr   (llist) fa (this#foldr   fa)) l
+          method html    fa l = GT.html    (logic') (GT.html    (llist) fa (this#html    fa)) l
+
+          (* We override default implementation to show list as semicolon-separated *)
           method show : ('a -> string) -> 'a logic -> GT.string = fun fa l ->
             GT.show(logic')
               (fun l -> "[" ^
@@ -912,7 +912,6 @@ module List = struct
         end
     }
 
-    type ('a, 'b) flist0 = ( (('a,'b) fancy, 'tl)  llist, 'b list) fancy as 'tl
     type ('a, 'b) flist = (('a, 'b) fancy ground, 'b list) fancy
 
     let rec foldro f a xs r =

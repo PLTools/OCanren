@@ -19,14 +19,14 @@ type llam2 =  (string logic, llam logic) glam
 let stringl_of_stringf (c: var_checker) (x: string f): string logic =
   let rec helper x : string logic =
     if c#isVar x
-    then refine_fancy3 x c helper
+    then refine_fancy_var x c helper
     else Value (coerce_fancy x)
   in
   helper x
 
 let llam_of_flam (c: var_checker) f =
   let rec helper (t: flam) : llam =
-    if c#isVar t then refine_fancy3 t c helper
+    if c#isVar t then refine_fancy_var t c helper
     else match coerce_fancy t with
     | V s when c#isVar s -> Value (V (stringl_of_stringf c s))
     | V s                -> Value (V (Value (coerce_fancy s)) )
@@ -138,9 +138,9 @@ let arr x y : ftyp = TypFamilies.wrap @@ inj @@ lift @@ Arr (x,y)
 let ltyp_of_ftyp (c: < isVar: 'a . 'a -> bool >) f =
   (* let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in *)
   let rec helper (t: ftyp) : ltyp =
-    if c#isVar t then refine_fancy3 t c helper
+    if c#isVar t then refine_fancy_var t c helper
     else match coerce_fancy t with
-    | P s when c#isVar s -> Value (P (refine_fancy3 s c (stringl_of_stringf c) ))
+    | P s when c#isVar s -> Value (P (refine_fancy_var s c (stringl_of_stringf c) ))
     | P s                -> Value (P (Value (coerce_fancy s)) )
     | Arr (f,g) -> Value (Arr (helper f, helper g))
   in

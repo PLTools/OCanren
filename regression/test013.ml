@@ -73,7 +73,7 @@ let _ =
 (* refines fancy nats to Nat.logic *)
 let refine_nat_tologic (c: var_checker) n : Nat.logic =
   let rec helper (n: Nat.groundf) =
-    if c#isVar n then refine_fancy3 n c  helper
+    if c#isVar n then refine_fancy_var n c  helper
     else match coerce_fancy n with
     | O -> Value O
     | S n -> Value (S (helper n))
@@ -87,7 +87,7 @@ let refine_nat (c: var_checker) n : [ `Number of int | `Nat of Nat.logic ] =
   let startNat : Nat.logic -> Nat.logic = fun n -> Value (S n) in
 
   let rec helper (makeInt: int -> int) makeNat (n: Nat.groundf) =
-    if c#isVar n then refine_fancy3 n c (refine_nat_tologic c)
+    if c#isVar n then refine_fancy_var n c (refine_nat_tologic c)
     else match coerce_fancy n with
     | S next -> helper (fun old -> Pervasives.(+) (makeInt old) 1) (fun n -> Value (S (makeNat n))) next
     | O -> raise (GotANumber (makeInt 0))
@@ -100,11 +100,11 @@ let refine_nat (c: var_checker) n : [ `Number of int | `Nat of Nat.logic ] =
  * Can be useful for queries like          `lengtho q (of_nat 3)`
  *)
 let to_list_lnats (c: var_checker) y =
-  let rec helper (t: (Nat.groundf lnat, Nat.ground) List.flist0) : [ `Number of int | `Nat of Nat.logic ] list =
+  let rec helper (t: (Nat.groundf lnat, Nat.ground) List.flist) : [ `Number of int | `Nat of Nat.logic ] list =
     if c#isVar t then failwith "This refiner is not supposed to do this"
     else match coerce_fancy t with
     | Nil -> []
-    | Cons (h, tl) when c#isVar h -> (refine_fancy4 h c (refine_nat_tologic c) (fun x -> `Nat x)) :: (helper tl)
+    | Cons (h, tl) when c#isVar h -> `Nat (refine_fancy_var h c (refine_nat_tologic c)) :: (helper tl)
     | Cons (h, tl) -> (refine_nat c h) :: (helper tl)
   in
   helper y

@@ -31,7 +31,7 @@ let _ =
 let intl_of_intf (c: var_checker) y : int logic =
   let rec helper y =
     if c#isVar y
-    then refine_fancy3 y c helper
+    then refine_fancy_var y c helper
     else Value (coerce_fancy y)
   in
   helper y

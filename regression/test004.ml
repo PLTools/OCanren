@@ -45,7 +45,7 @@ let show_natl n = show_nat_gen bprintf_logic n
 
 let nat_reifier (cond: var_checker) (x : natf) : natl =
   let rec helper x =
-    if cond#isVar x then refine_fancy3 x cond helper
+    if cond#isVar x then refine_fancy_var x cond helper
     else match coerce_fancy x with
     | MetaVar n -> failwith "This constructor should not happen"
     | O -> Value O

@@ -40,7 +40,7 @@ let m a b : fexpr = ExprHack.wrap @@ inj @@ lift (M (a,b))
 
 let lexpr_of_fexpr (c: var_checker) f =
   let rec helper (t: fexpr) : lexpr =
-    if c#isVar t then refine_fancy3 t c helper
+    if c#isVar t then refine_fancy_var t c helper
     else match coerce_fancy t with
     | I        -> Value I
     | A (a,b)  -> Value (A (helper a, helper b) )

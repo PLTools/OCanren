@@ -43,7 +43,7 @@ let show_ln (x: lt) : string =
 let lt_of_ft (c: var_checker) ft : lt =
   let rec helper x =
     if c#isVar x
-    then (refine_fancy3 x c helper)
+    then (refine_fancy_var x c helper)
     else match coerce_fancy x with
     | N -> Value N
     | A x -> Value (A (helper x))
@@ -89,15 +89,15 @@ let show_iflist: (int, int) fancy list -> _ = GT.show(GT.list) @@ (Obj.magic @@ 
 let ilist_of_ftyp2 (c: var_checker) y =
   let rec helper (t: ( (int,int) fancy list as 'l,'l) fancy) : int logic MiniKanren.List.logic =
     if c#isVar t
-    then refine_fancy3 t c helper
+    then refine_fancy_var t c helper
     else helper2 @@ coerce_fancy t
   and helper2 (t: (int,int) fancy list) =
     match t with
     | [] -> Value Nil
-    (* | h :: tl when c#isVar h -> Value (Cons (refine_fancy3 h c (intl_of_intf isVar), helper2 tl)) *)
+    (* | h :: tl when c#isVar h -> Value (Cons (refine_fancy_var h c (intl_of_intf isVar), helper2 tl)) *)
     | h :: tl ->
       let h2 =
-        if c#isVar h then refine_fancy3 h c (intl_of_intf c)
+        if c#isVar h then refine_fancy_var h c (intl_of_intf c)
         else Value (coerce_fancy h)
       in
       Value (Cons (h2, helper2 tl))
