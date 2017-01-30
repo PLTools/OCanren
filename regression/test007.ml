@@ -1,3 +1,4 @@
+(* One more lambda-calculus demo, now with kind of pattern matching *)
 open GT
 open MiniKanren
 open Tester

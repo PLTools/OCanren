@@ -40,7 +40,7 @@ let m a b : fexpr = ExprHack.wrap @@ inj @@ lift (M (a,b))
 
 let lexpr_of_fexpr (c: var_checker) f =
   let rec helper (t: fexpr) : lexpr =
-    if c#isVar t then refine_fancy3 t c helper
+    if c#isVar t then refine_fancy t c helper
     else match coerce_fancy t with
     | I        -> Value I
     | A (a,b)  -> Value (A (helper a, helper b) )
@@ -85,15 +85,8 @@ and pTop i i' r = pAdd i i' r
 
 let pExpr i r = fresh (i') (pTop i i' r) (eof i')
 
-(* let show_token  = show(logic) (show token)
-let show_expr   = show(logic) (show expr)
-let show_stream = show(List.logic) (show(logic) (show token)) *)
-
 let runE_exn n = run_exn show_expr n
 let show_stream xs = GT.show(GT.list) show_token xs
-
-let (b000: (token list -> string) -> unit) =
-   fun p -> run_exn p 1 q (REPR (fun q -> pExpr q (m (i())  (i()))                   )) qh
 
 let _ =
   runE_exn   1 q (REPR (fun q -> pExpr (inj_list [id ()]) q                  )) qh;

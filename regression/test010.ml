@@ -1,3 +1,4 @@
+(* Some tests about constraints *)
 open GT
 open MiniKanren
 open Tester
@@ -10,7 +11,6 @@ let gxy' x y = (gxy x y) &&& (x =/= y)
 let gnot5 x  = x =/= !5
 
 let show_int = GT.(show int)
-(* let show_fint = show_fancy (show int) *)
 
 let _ =
   run_exn show_int    3  q (REPR (fun q   -> g123 q                                                    )) qh;
@@ -32,7 +32,7 @@ let _ =
 let intl_of_intf (c: var_checker) y : int logic =
   let rec helper y =
     if c#isVar y
-    then refine_fancy3 y c helper
+    then refine_fancy y c helper
     else Value (coerce_fancy y)
   in
   helper y

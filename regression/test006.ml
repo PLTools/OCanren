@@ -1,3 +1,4 @@
+(* Interpreter for STLC. A la quines example *)
 open MiniKanren
 open Tester
 
@@ -41,7 +42,6 @@ let rec evalo m n =
       (evalo a a')
   ]
 
-(* let show_lam = show logic (show lam) *)
 let a_la_quine q r s =
   ?&
     [ evalo (app q r) s

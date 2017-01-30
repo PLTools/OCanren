@@ -1,3 +1,4 @@
+(* Type inferencer for STLC *)
 open Printf
 open MiniKanren
 open Tester
@@ -7,7 +8,6 @@ type ('varname, 'self) glam =
   | V of 'varname
   | App of 'self * 'self
   | Abs of 'varname * 'self
-  (* | MetaVar *)
 
 type lam = (string, lam) glam
 type flam  = ((string f, flam) glam, lam) fancy
@@ -19,14 +19,14 @@ type llam2 =  (string logic, llam logic) glam
 let stringl_of_stringf (c: var_checker) (x: string f): string logic =
   let rec helper x : string logic =
     if c#isVar x
-    then refine_fancy3 x c helper
+    then refine_fancy x c helper
     else Value (coerce_fancy x)
   in
   helper x
 
 let llam_of_flam (c: var_checker) f =
   let rec helper (t: flam) : llam =
-    if c#isVar t then refine_fancy3 t c helper
+    if c#isVar t then refine_fancy t c helper
     else match coerce_fancy t with
     | V s when c#isVar s -> Value (V (stringl_of_stringf c s))
     | V s                -> Value (V (Value (coerce_fancy s)) )
@@ -108,13 +108,11 @@ let show_llam lam =
   Buffer.contents b
 ;;
 
-let (_:llam -> string) = show_llam;;
-let (_:lam -> string) = show_lam;;
 (************************************************************************************************************)
 @type ('a, 'b) gtyp =
-  (* primitive *)
-  | P of 'a
-  | Arr of 'b * 'b with gmap;;
+  | P of 'a                  (* primitive *)
+  | Arr of 'b * 'b           (* arrow *)
+  with gmap;;
 
 type typ  = (string, typ) gtyp
 type ftyp = ((string f, ftyp) gtyp, typ) fancy
@@ -128,19 +126,15 @@ let (_: ((string f, ftyp) gtyp, (string f, ftyp) gtyp) fancy ->
         ((string f, ftyp) gtyp,                   typ) fancy)
   = TypFamilies.wrap
 
-(* type intf = (int,int) fancy *)
-(* let (_: ftyp -> ftyp ->ftyp) = fun x y -> inj @@ lift (Arr (x,y)) *)
-
 let p s     : ftyp = TypFamilies.wrap @@ inj @@ lift @@ P s
 let arr x y : ftyp = TypFamilies.wrap @@ inj @@ lift @@ Arr (x,y)
 
 (* reifier for types *)
-let ltyp_of_ftyp (c: < isVar: 'a . 'a -> bool >) f =
-  (* let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in *)
+let ltyp_of_ftyp (c: var_checker) f =
   let rec helper (t: ftyp) : ltyp =
-    if c#isVar t then refine_fancy3 t c helper
+    if c#isVar t then refine_fancy t c helper
     else match coerce_fancy t with
-    | P s when c#isVar s -> Value (P (refine_fancy3 s c (stringl_of_stringf c) ))
+    | P s when c#isVar s -> Value (P (refine_fancy s c (stringl_of_stringf c) ))
     | P s                -> Value (P (Value (coerce_fancy s)) )
     | Arr (f,g) -> Value (Arr (helper f, helper g))
   in
@@ -161,7 +155,6 @@ let show_typ typ =
   Buffer.contents b
 
 let show_ftyp typ =
-  (* printf "show_typ '%s'\n%!" (generic_show typ); *)
   let b = Buffer.create 10 in
   let rec helper = function
   | P s -> bprintf_fancy b (bprintf b "%s") s
@@ -174,7 +167,6 @@ let show_ftyp typ =
   Buffer.contents b
 
 let show_ltyp typ =
-  (* printf "show_lyp '%s'\n%!" (generic_show typ); *)
   let b = Buffer.create 10 in
   let rec helper = function
   | P s -> bprintf_logic b (bprintf b "%s") s
@@ -236,7 +228,6 @@ let _noFreeVars =
   run_exn show_typ    1 q (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q)) qh;
   ()
 
-(* let (_:int) = runR *)
 let runT n  = runR ltyp_of_ftyp show_typ show_ltyp n
 
 let runL n  = runR llam_of_flam show_lam show_llam n
@@ -249,23 +240,3 @@ let _withFreeVars =
   ()
 
 (* ************************************** **)
-
-(* reifier for lambdas  *)
-(* let lam_of_flam isVar f =
-  let cond : (_,_) fancy -> bool = fun x -> isVar !!!x in
-  let rec helper (t: flam) : llam =
-    if cond t then refine_fancy2 t isVar
-    else match coerce_fancy t with
-    | V v when cond s -> MetaVar (index_of_var v)
-    | V v
-      Value (if cond s then V (refine_fancy2 s isVar) else V (Value (coerce_fancy s)))
-    | App (f,g) ->
-      Value (App ((if cond f then refine_fancy2 f isVar else helper f),
-                  (if cond g then refine_fancy2 g isVar else helper g)))
-    | Abs (n, body) ->
-      Value (App ( Value (if cond n then V (refine_fancy2 n isVar) else V (Value (coerce_fancy n))) ,
-                   (if cond body then refine_fancy2 body isVar else helper body)
-                 )
-            )
-  in
-  helper f *)

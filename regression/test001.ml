@@ -2,7 +2,8 @@ open MiniKanren
 open Tester
 open Printf
 
-let ilist xs = inj_list @@ List.map (fun (x:int) -> inj@@lift x) xs
+let inj_int n : (int,int) fancy = inj@@lift n
+let ilist xs = inj_list @@ List.map inj_int xs
 let just_a a = a === inj@@lift 5
 
 let a_and_b a =

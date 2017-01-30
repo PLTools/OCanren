@@ -93,11 +93,11 @@ type 'a logic = | Var of GT.int GT.list * GT.int * 'a logic GT.list
 type var_checker = < isVar : 'a . 'a -> bool >
 
 val index_of_var : 'a logic -> int
-(* val refine_fancy:  ('a,'b) fancy -> (Obj.t -> 'c) -> 'a logic *)
 
+val refine_fancy_wrap: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> ('c logic -> 'd) -> 'd
+val refine_fancy: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> 'c logic
 
 (* should be applied only on logic variables *)
-val refine_fancy3: ('a,'b) fancy -> var_checker -> (('a,_) fancy -> 'c logic) -> 'c logic
 val var_of_fancy: ('a, 'r) fancy -> 'a logic
 
 val bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit
@@ -138,7 +138,7 @@ val prj_k : (int -> 'a logic list -> 'a) -> 'a logic -> 'a
 (** {3 Support for some predefined types (lists, nats, bools etc.)} *)
 
 (** Abstract list type *)
-@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, gmap
+@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr;;
 
 
 module type T = sig
@@ -294,7 +294,7 @@ module Nat :
     (** Projection with default continuation *)
     (* val prj : logic -> ground *)
 
-    type groundf = (ground, ground) fancy
+    type groundf = (groundf lnat, ground) fancy
 
     (** Relational addition *)
     val addo  : groundf -> groundf -> groundf -> goal
@@ -324,7 +324,7 @@ module Nat :
   end
 
 (** [inj_nat n] is a deforested synonym for injection *)
-val inj_nat : int -> (Nat.ground, Nat.ground) fancy
+val inj_nat : int -> Nat.groundf
 
 (** [prj_nat n] is a deforested synonym for projection *)
 (* val prj_nat : Nat.logic -> int *)
@@ -348,11 +348,11 @@ module List :
     val ground :
       (unit,
        < gmap    : ('a -> 'b) -> 'a ground -> 'b ground;
-         (* compare : ('a -> 'a -> GT.comparison) -> 'a ground -> 'a ground -> GT.comparison;
+         compare : ('a -> 'a -> GT.comparison) -> 'a ground -> 'a ground -> GT.comparison;
          eq      : ('a -> 'a -> bool) -> 'a ground -> 'a ground -> bool;
          foldl   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
          foldr   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
-         html    : ('a -> HTML.viewer) -> 'a ground -> HTML.viewer; *)
+         html    : ('a -> HTML.viewer) -> 'a ground -> HTML.viewer;
          show    : ('a -> string) -> 'a ground -> string >)
       GT.t
 
@@ -369,14 +369,14 @@ module List :
     (** GT-compatible typeinfo for ['a logic] *)
     val logic :
       (unit,
-       < gmap    : ('a -> 'b) -> (('a, 'c) t logic' as 'c) -> (('b, 'd) t logic' as 'd);
-         (* compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison;
-         eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool;
-         foldr   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
-         foldl   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
-         html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer; *)
-         show    : ('a -> string) -> 'a logic -> GT.string  >)
-      GT.t
+        < gmap    : ('a -> 'b) -> (('a, 'c) t logic' as 'c) -> (('b, 'd) t logic' as 'd);
+          compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison;
+          eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool;
+          foldr   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
+          foldl   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
+          html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
+          show    : ('a -> string) -> 'a logic -> GT.string  >)
+        GT.t
 
     val cons :
              ('a, 'c) fancy ->
@@ -391,7 +391,8 @@ module List :
     (** List projection with default continuation *)
     val prj : ('a -> 'b) -> 'a logic -> 'b ground
 *)
-    type ('a, 'b) flist = (('a,'b) fancy ground, 'b list) fancy
+
+    type ('a, 'b) flist = ( (('a,'b) fancy, 'tl) llist, 'b list) fancy as 'tl
 
     (** Relational foldr *)
     val foldro : (('a, 'a2) fancy -> ('acc,'accr) fancy -> ('acc,'accr) fancy -> goal) ->
@@ -424,51 +425,54 @@ module List :
     (** Relational occurrence check (a shortcut) *)
     val membero : ('a, 'b) flist  -> ('a, 'b) fancy  -> goal
 
-    val nullo : (('a,'b) llist as 'b, 'c list) fancy -> goal
+    val nullo : ('a, 'b) flist -> goal
     (** Relational head of the list *)
-    val caro  : ((('a,'b) fancy, 'tl) llist as 'tl, 'b list) fancy -> ('a, 'b) fancy -> goal
+    val caro  : ('a, 'b) flist -> ('a, 'b) fancy -> goal
     (** Relational tail of the list *)
-    val cdro  : ((('a,'b) fancy, 'tl) llist as 'tl, 'b list) fancy -> ('tl, 'b list) fancy -> goal
+    val cdro  : ('a, 'b) flist -> ('a, 'b) flist -> goal
     (** Alias for [caro] *)
-    val hdo  : ((('a,'b) fancy, 'tl) llist as 'tl, 'b list) fancy -> ('a, 'b) fancy -> goal
+    val hdo  : ('a, 'b) flist -> ('a, 'b) fancy -> goal
     (** Alias for [cdro] *)
-    val tlo   : ((('a,'b) fancy, 'tl) llist as 'tl, 'b list) fancy -> ('tl, 'b list) fancy -> goal
+    val tlo   : ('a, 'b) flist -> ('a, 'b) flist -> goal
 
     val show : ('a -> string) -> (('a, 'b) llist as 'b,_) fancy -> string
   end
 
 (** [inj_list l] is a deforested synonym for injection *)
-val inj_list : ('a,'b) fancy list -> (( ('a,'b) fancy,'c) llist as 'c, 'b list) fancy
+val inj_list : ('a,'b) fancy list -> ('a,'b) List.flist
 
 val inj_pair : ('a, 'b) fancy -> ('c,'d) fancy -> ('a*'c, 'b*'d) fancy
 val inj_list_p : (('a, 'b) fancy * ('c, 'd) fancy) list ->
-         ((('a*'c, 'b*'d) fancy, 'e) llist as 'e, 'e) fancy
+        ('a*'c, 'b*'d) List.flist
+         (* ((('a*'c, 'b*'d) fancy, 'e) llist as 'e, 'e) fancy *)
 
 (** [prj_list] is a deforested synonym for projection *)
 (* val prj_list : 'a logic List.logic -> 'a list *)
 
 (** [inj_nat_list l] is a deforsted synonym for injection *)
-val inj_nat_list : int list -> (( (Nat.ground, Nat.ground) fancy, 'tl) llist as 'tl, Nat.ground list) fancy
+val inj_nat_list : int list -> (Nat.groundf lnat, Nat.ground) List.flist
 
 (** [inj_nat_list l] is a deforsted synonym for projection *)
 (* val prj_nat_list : Nat.logic List.logic -> int list *)
 
 (** Infix synonym for [Cons] *)
-val (%) :   ('a,'c) fancy ->
-          ((('a,'c) fancy,'b) llist as 'b, 'c list) fancy ->
-          ((('a,'c) fancy,'b) llist as 'b, 'c list) fancy
+val (%) :   ('a,'c) fancy -> ('a,'c) List.flist -> ('a,'c) List.flist
+          (* ((('a,'c) fancy,'b) llist as 'b, 'c list) fancy *)
 
 (** [x %< y] is a synonym for [Cons (x, !(Cons (y, !Nil)))] *)
 val (%<) : ('a, 'r) fancy ->
            ('a, 'r) fancy ->
-           ((('a, 'r) fancy, 'b) llist as 'b, 'r list) fancy
+           ('a, 'r) List.flist
+           (* ((('a, 'r) fancy, 'b) llist as 'b, 'r list) fancy *)
 
 (** [!< x] is a synonym for [Cons (x, !Nil)] *)
 val (!<) : ('a, 'r) fancy ->
-           ((('a, 'r) fancy, 'b) llist as 'b, 'r list) fancy
+           ('a, 'r) List.flist
+           (* ((('a, 'r) fancy, 'b) llist as 'b, 'r list) fancy *)
 
 (** [nil] is a synonym for [inj Nil] *)
-val nil : unit -> ((('a, 'r) fancy, 'b) llist as 'b, 'r list) fancy
+val nil : unit -> ('a, 'r) List.flist
+  (* ((('a, 'r) fancy, 'b) llist as 'b, 'r list) fancy *)
 
 (** {2 miniKanren basic primitives} *)
 
