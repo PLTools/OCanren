@@ -19,7 +19,7 @@ NATIVE_TARGETS= $(CMA_TARGETS:.cma=.cmxa) $(CMO_TARGETS:.cmo=.cmx)
 TESTS_ENVIRONMENT=./test.sh
 JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
-.PHONY: all celan clean clean_tests install uninstall tests test regression promote \
+.PHONY: all celan clean clean_tests install uninstall tests test regression promote_all \
 	only-toplevel toplevel minikanren_stuff tester bundle plugin
 
 .DEFAULT_GOAL: all
@@ -46,7 +46,8 @@ BYTE_TEST_EXECUTABLES += regression/test$(1).byte
 NATIVE_TEST_EXECUTABLES += regression/test$(1).native
 TEST_MLS += regression/test$(1).ml
 
-.PHONY: test_$(1) test$(1).native compile_tests_native compile_tests_byte
+.PHONY: test_$(1) test$(1).native compile_tests_native compile_tests_byte \
+	promote$(1)
 
 test$(1).native: regression/test$(1).native
 test$(1).byte:   regression/test$(1).byte
@@ -61,6 +62,11 @@ run_tests: test_$(1)
 test_$(1):
 	@cd regression  && $(TESTS_ENVIRONMENT) ../test$(1).native; \
 	if [ $$$$? -ne 0 ] ; then echo "$(1) FAILED"; else echo "$(1) PASSED"; fi
+
+promote_all: promote_$(1)
+promote_$(1):
+	./test$(1).native > regression/orig/test$(1).log
+
 endef
 $(foreach i,$(REGRES_CASES),$(eval $(call TESTRULES,$(i)) ) )
 
@@ -78,7 +84,8 @@ clean_tests:
 	$(RM) -r _build/regression
 
 promote:
-	$(MAKE) -C regression promote TEST=$(TEST)
+
+
 
 tests: plugin minikanren_stuff compile_tests run_tests
 regression: tests
