@@ -26,13 +26,6 @@ q=3; r=1;
 q=2; r=3; 
 q=3; r=2; 
 }
-fun q -> (=/=) q !5, all answers {
-q=_.10 [=/= 5]; 
-}
-fun q -> (&&&) ((=/=) q !3) ((===) q !3), all answers {
-}
-fun q -> (&&&) ((===) q !3) ((=/=) !3 q), all answers {
-}
 fun q ->
   call_fresh (fun x -> call_fresh (fun y -> conj ((===) x y) ((=/=) x y))), all answers {
 }
@@ -94,4 +87,11 @@ fun q ->
               (fun z ->
                  conj ((=/=) x !4)
                    (conj ((===) y z) (conj ((===) x y) ((===) z !(2 + 2))))))), all answers {
+}
+fun q -> (=/=) q !5, all answers {
+q=_.10 [=/= 5]; 
+}
+fun q -> (&&&) ((=/=) q !3) ((===) q !3), all answers {
+}
+fun q -> (&&&) ((===) q !3) ((=/=) !3 q), all answers {
 }
