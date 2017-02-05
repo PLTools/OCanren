@@ -84,10 +84,10 @@ val show_fancy: ('a -> string) -> ('a, 'b) fancy -> string
 val bprintf_fancy: Buffer.t -> ('a -> unit) -> ('a, 'b) fancy -> unit
 (* call it to unsafely coerce fancy value which doesn't hold logic var *)
 val coerce_fancy: ('a, 'r) fancy -> 'a
-val cast_fancy  : ('a, 'r) fancy -> 'r
+(* val cast_fancy  : ('a, 'r) fancy -> 'r *)
 
 (** A type of abstract logic values *)
-type 'a logic = | Var of GT.int GT.list * GT.int * 'a logic GT.list
+type 'a logic = | Var of int * 'a logic list
                 | Value of 'a
 
 type var_checker = < isVar : 'a . 'a -> bool >
@@ -98,7 +98,7 @@ val refine_fancy_wrap: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logi
 val refine_fancy: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> 'c logic
 
 (* should be applied only on logic variables *)
-val var_of_fancy: ('a, 'r) fancy -> 'a logic
+(* val var_of_fancy: ('a, 'r) fancy -> 'a logic *)
 
 val bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit
 val show_logic: ('a -> string) -> 'a logic -> string
@@ -710,3 +710,5 @@ end
 module FMapALike2(Y: Y1) : sig
   external wrap : ('a Y.t, 'a Y.t) fancy -> ('a Y.t, Y.r) fancy = "%identity"
 end
+
+val intl_of_intf : var_checker -> (int,_) fancy -> int logic

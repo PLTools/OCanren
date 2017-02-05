@@ -8,7 +8,6 @@ open Tester
 let (!) x = inj@@lift x
 
 (* reifier for ints *)
-let intl_of_intf = Test010.intl_of_intf
 let show_int = string_of_int
 let show_if : (int,int)fancy -> string = fun x -> show_fancy string_of_int x
 

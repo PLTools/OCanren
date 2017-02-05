@@ -29,14 +29,6 @@ let _ =
   ()
 
 
-let intl_of_intf (c: var_checker) y : int logic =
-  let rec helper y =
-    if c#isVar y
-    then refine_fancy y c helper
-    else Value (coerce_fancy y)
-  in
-  helper y
-
 let runI n = runR intl_of_intf show_int (show_logic string_of_int) n
 
 let _ =

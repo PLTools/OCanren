@@ -336,7 +336,7 @@ let ilist_of_ftyp2 (c: var_checker) f =
     if c#isVar t then refine_fancy t c helper
     else match coerce_fancy t with
     | Nil -> Value Nil
-    | Cons (h, tl) when c#isVar h -> Value (Cons (refine_fancy h c (Test010.intl_of_intf c), helper tl))
+    | Cons (h, tl) when c#isVar h -> Value (Cons (refine_fancy h c (intl_of_intf c), helper tl))
     | Cons (h, tl) -> Value (Cons (Value (coerce_fancy h), helper tl))
   in
   helper f

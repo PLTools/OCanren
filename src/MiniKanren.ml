@@ -78,7 +78,7 @@ module Stream =
     | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
     | _, Lazy s -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
     | Lazy s, _ -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
-    | Nil, _ -> invalid_arg "streams have different lengths"
+    | Nil, _
     | _, Nil -> invalid_arg "streams have different lengths"
 
   end
@@ -131,13 +131,14 @@ let generic_show x =
   inner x;
   Buffer.contents b
 
+(* miniKanren-related stuff starts here *)
 type ('a, 'c) fancy = 'a;;
 let bprintf_fancy b f x = f x;;
 let show_fancy: ('a -> string) -> ('a,'b) fancy -> string = fun f x -> f x;;
 
 (* The [token_t] type is use to connect logic variables with environment where they were created *)
-type token_t = GT.int GT.list
-let token_t =
+type token_env = GT.int GT.list
+let token_env =
   let open GT in
   {
    gcata = ();
@@ -153,17 +154,30 @@ let token_t =
     end
   };;
 
-@type 'a logic = | Var of token_t * GT.int * 'a logic GT.list
+(* Global token will not be exported outside and will be used to detect the value
+ * was actually created by us *)
+type token_mk = int list
+let global_token: token_mk = [8];;
+
+@type 'a logic = | Var of GT.int * 'a logic GT.list
                  | Value of 'a
                    with show,gmap,html,eq,compare,foldl,foldr;;
 
+type inner_logic =
+| Dump
+| Stupid of bool * string
+| ToIncrement of int list
+| ConstructorIndex of < make: int list >
+| InnerVar of token_mk * token_env * int * Obj.t list (* should be 3 *)
+
+
 let index_of_var : 'a logic -> int =  function
-| Var (_,n,_) -> n
+| Var (n,_) -> n
 | _ -> failwith "index_of_var can not accept Value _"
 
 external coerce_fancy: ('a, 'b) fancy -> 'a = "%identity"
-external var_of_fancy: ('a, 'b) fancy -> 'a logic = "%identity"
-external cast_fancy:   ('a, 'r) fancy -> 'r = "%identity"
+(* external var_of_fancy: ('a, 'b) fancy -> 'a logic = "%identity" *)
+(* external cast_fancy:   ('a, 'r) fancy -> 'r = "%identity" *)
 
 type var_checker = < isVar : 'a . 'a -> bool >
 
@@ -174,8 +188,7 @@ let refine_fancy_wrap: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logi
   fun x c refiner wrap ->
   if c#isVar x
   then match !!!x with
-  | Value _ -> assert false
-  | Var (token, i, cs) -> wrap @@ Var (token, i, List.map (fun x -> Obj.magic @@ refiner !!!x) cs)
+  | InnerVar (_,_, i, cs) -> wrap @@ Var (i, List.map (fun x -> Obj.magic @@ refiner !!!x) cs)
   else failwith "Logical var expected"
 
 let refine_fancy: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) -> 'c logic =
@@ -184,7 +197,7 @@ let refine_fancy: ('a,'b) fancy -> var_checker -> (('a,'b) fancy -> 'c logic) ->
 let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x ->
   let rec helper = function
   | Value x -> f x
-  | Var (_token,i,cs) ->
+  | Var (i,cs) ->
     bprintf b " _.%d" i;
     List.iter (fun x -> bprintf b "=/= "; helper x) cs
   in
@@ -193,7 +206,7 @@ let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x 
 let rec show_logic f x =
   match x with
   | Value x -> f x
-  | Var (_,i,cs) ->
+  | Var (i,cs) ->
     let c =
       match cs with
       | [] -> ""
@@ -215,12 +228,11 @@ let logic = {logic with
        GT.transform(logic)
           (GT.lift fa)
           (object inherit ['a] @logic[show]
-            method c_Var _ s _token i cs =
+            method c_Var _ s i cs =
               (* let (_:int) = s.GT.f () in
                 (* I have some issues with callign show_logic there*)
               show_logic (fun _ -> assert false) (Var(_token,i,cs)) *)
-              let c =
-              match cs with
+              let c = match cs with
               | [] -> ""
               | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ s.GT.f () l) cs)
               in
@@ -286,7 +298,7 @@ module Env :
     val is_var : t -> 'a -> bool
   end =
   struct
-    type t = { token : token_t;
+    type t = { token : token_env;
                mutable next: int;
                mutable reifiers: Obj.t MultiIntMap.t;
                mutable top_vars: int list }
@@ -294,22 +306,29 @@ module Env :
     let empty () = { token=[6]; next=10; reifiers=MultiIntMap.empty; top_vars=[] }
 
     let fresh e =
-      let v = Var (e.token, e.next, []) in
+      let v = InnerVar (global_token, e.token, e.next, []) in
       (!!!v, {e with next=1+e.next})
 
     let var_tag, var_size =
-      let v = Var ([], 0, []) in
+      let v = InnerVar ([], [], 0, []) in
       Obj.tag (!!! v), Obj.size (!!! v)
 
-    let var {token=a;_} x =
+    let var {token=env_token;_} x =
+      let () = printf "Call `var` of '%s'\n" (generic_show x) in
+      (* There we detect if x is a logic variable and then that it belongs to current env *)
       let t = !!! x in
       if Obj.tag  t = var_tag  &&
          Obj.size t = var_size &&
          (let q = Obj.field t 0 in
-          not (Obj.is_int q) && q == (!!!a)
+          (Obj.is_block q) && q == (!!!global_token)
          )
-      then let Var (_, i, _) = !!! x in Some i
+      then (let q = Obj.field t 1 in
+            if (Obj.is_block q) && q == (!!!env_token)
+            then let InnerVar (_,_,i,_) = !!! x in Some i
+            else failwith "You hacked everything and pass logic variables into wrong environment"
+            )
       else None
+
     let is_var env v = None <> var env v
   end
 
@@ -439,7 +458,7 @@ let call_fresh f (env, subst, constr) =
 exception Disequality_violated
 
 let (===) (x: _ fancy) y (env, subst, constr) =
-  (* let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in *)
+  let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in
   (* we should always unify two fancy types *)
 
   try
@@ -1070,6 +1089,7 @@ let has_free_vars is_var x =
 exception WithFreeVars of (Obj.t -> bool) * Obj.t
 
 let rec refine : State.t -> ('a, 'c) fancy -> ('a,'c) fancy = fun ((e, s, c) as st) x ->
+  let () = printf "refine when subs = '%s'\n" (Subst.show s) in
   let rec walk' recursive env var subst =
     (* let () = printf "walk' for var = '%s'\n%!" (generic_show var) in *)
     let var = Subst.walk env var subst in
@@ -1091,24 +1111,20 @@ let rec refine : State.t -> ('a, 'c) fancy -> ('a,'c) fancy = fun ((e, s, c) as 
          | Invalid n -> invalid_arg (sprintf "Invalid value for reconstruction (%d)" n)
         )
     | Some i when recursive ->
-        (* printf "Here i = %d\n%!" i; *)
         (match var with
-        | Var (token, i, _) ->
+        | InnerVar (token1, token2, i, _) ->
             (* We do not add extra Value here: they will be added on manual reification stage *)
             let cs =
               List.fold_left (fun acc s ->
                 (* printf "AAA: walk' false env (!!!var) s = '%s'\n%!" (generic_show @@ walk' false env (!!!var) s); *)
-                match (walk' false env (!!!var) s) with
+                match walk' false env (!!!var) s with
                 | maybeVar when Some i = Env.var env maybeVar -> acc
-                | t ->
-                  (* printf "CCC\n%!"; *)
-                  (!!!(refine st !!!t)) :: acc
+                | t -> (!!!(refine st !!!t)) :: acc
                 )
                 []
                 c
             in
-            (* printf "BBB\n%!"; *)
-            Obj.magic @@ Var (token, i, cs)
+            Obj.magic @@ InnerVar (token1, token2, i, cs)
         | _ -> failwith "Not reachable"
         )
     | _ -> (Obj.magic var)
@@ -1214,3 +1230,12 @@ end
 module FMapALike2(Y: Y1) = struct
   external wrap : ('a Y.t, 'a Y.t) fancy -> ('a Y.t, Y.r) fancy = "%identity"
 end
+
+(* Some manual reifiers *)
+let intl_of_intf (c: var_checker) y : int logic =
+  let rec helper y =
+    if c#isVar y
+    then refine_fancy y c helper
+    else Value (coerce_fancy y)
+  in
+  helper y
