@@ -187,6 +187,7 @@ let rec lookupo a g t =
      ])
   )
 
+
 let infero expr typ =
   let rec infero gamma expr typ =
     conde [

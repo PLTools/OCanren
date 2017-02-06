@@ -41,8 +41,10 @@ let show2 xs = (GT.show List.logic) (GT.show(logic) (GT.show GT.int)) xs
 let runT n = runR ilist_of_ftyp show_int_list show2 n
 let _ =
   runT 1 q (REPR(demo1)) qh;
-  print_endline "second";
-  runT 2 q (REPR(demo2)) qh;
+  let () =
+    try runT 2 q (REPR(demo2)) qh
+    with Failure s -> printf "Failure: \"%s\"\n%!" s
+  in
   ()
 (*
 let _withFree () =

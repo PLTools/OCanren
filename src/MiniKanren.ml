@@ -118,6 +118,7 @@ let generic_show x =
   let rec inner o =
     match wrap o with
     | Invalid n             -> Buffer.add_string b (Printf.sprintf "<invalid %d>" n)
+    | Unboxed s when Obj.(string_tag = (tag @@ repr s)) -> bprintf b "\"%s\"" (!!!s)
     | Unboxed n when !!!n=0 -> Buffer.add_string b "[]"
     | Unboxed n             -> Buffer.add_string b (Printf.sprintf "int<%d>" (!!!n))
     (* | Boxed (t,l,f) when t=0 && l=1 && (match wrap (f 0) with Unboxed i when !!!i >=10 -> true | _ -> false) ->
@@ -137,22 +138,7 @@ let bprintf_fancy b f x = f x;;
 let show_fancy: ('a -> string) -> ('a,'b) fancy -> string = fun f x -> f x;;
 
 (* The [token_t] type is use to connect logic variables with environment where they were created *)
-type token_env = GT.int GT.list
-let token_env =
-  let open GT in
-  {
-   gcata = ();
-   plugins =
-     object
-       method gmap    = GT.list.plugins#gmap     (GT.int.plugins#gmap)
-       method html    = GT.list.plugins#html     (GT.int.plugins#html)
-       method eq      = GT.list.plugins#eq       (GT.int.plugins#eq)
-       method compare = GT.list.plugins#compare  (GT.int.plugins#compare)
-       method foldl   = GT.list.plugins#foldl    (GT.int.plugins#foldl)
-       method foldr   = GT.list.plugins#foldr    (GT.int.plugins#foldr)
-       method show    = GT.list.plugins#show     (GT.int.plugins#show)
-    end
-  };;
+@type token_env = GT.int with show,gmap,html,eq,compare,foldl,foldr;;
 
 (* Global token will not be exported outside and will be used to detect the value
  * was actually created by us *)
@@ -303,18 +289,23 @@ module Env :
                mutable reifiers: Obj.t MultiIntMap.t;
                mutable top_vars: int list }
 
-    let empty () = { token=[6]; next=10; reifiers=MultiIntMap.empty; top_vars=[] }
+
+    let last_token : token_env ref = ref 0
+    let empty () =
+      incr last_token;
+      { token= !last_token; next=10; reifiers=MultiIntMap.empty; top_vars=[] }
 
     let fresh e =
       let v = InnerVar (global_token, e.token, e.next, []) in
       (!!!v, {e with next=1+e.next})
 
     let var_tag, var_size =
-      let v = InnerVar ([], [], 0, []) in
+      let dummy_index = 0 in
+      let dummy_token = 0 in
+      let v = InnerVar (global_token, dummy_token, dummy_index, []) in
       Obj.tag (!!! v), Obj.size (!!! v)
 
     let var {token=env_token;_} x =
-      let () = printf "Call `var` of '%s'\n" (generic_show x) in
       (* There we detect if x is a logic variable and then that it belongs to current env *)
       let t = !!! x in
       if Obj.tag  t = var_tag  &&
@@ -323,13 +314,27 @@ module Env :
           (Obj.is_block q) && q == (!!!global_token)
          )
       then (let q = Obj.field t 1 in
-            if (Obj.is_block q) && q == (!!!env_token)
+            if (Obj.is_int q) && q == (!!!env_token)
             then let InnerVar (_,_,i,_) = !!! x in Some i
             else failwith "You hacked everything and pass logic variables into wrong environment"
             )
       else None
 
     let is_var env v = None <> var env v
+
+    (* Some tests for to check environment self-correctness *)
+    (*
+    let () =
+      let e1 = empty () in
+      let e2 = empty () in
+      assert (e1 != e2);
+      assert (e1.token != e2.token);
+      let (q1,e11) = fresh e1 in
+      assert (is_var e1  q1);
+      assert (is_var e11 q1);
+      assert (is_var e2  q1);
+      ()
+    *)
   end
 
 module Subst : sig
@@ -362,7 +367,7 @@ module Subst : sig
       (* (M.fold (fun i  s -> s ^ sprintf "%d -> %s; " i (generic_show x)) m "subst {") ^ "}" *)
       let b = Buffer.create 40 in
       Buffer.add_string b "subst {";
-      M.iter (fun i {_;new_val} -> bprintf b "%d -> %s; " i (generic_show new_val)) m;
+      M.iter (fun i {new_val} -> bprintf b "%d -> %s; " i (generic_show new_val)) m;
       Buffer.add_string b "}";
       Buffer.contents b
 
@@ -373,6 +378,7 @@ module Subst : sig
     let split s = M.fold (fun _ {lvar;new_val} (xs, ts) -> (lvar::xs, new_val::ts)) s ([], [])
 
     let rec walk : Env.t -> 'a -> t -> 'a = fun env var subst ->
+      (* printf "walk for '%s'\n%!" (generic_show var); *)
       match Env.var env !!!var with
       | None   -> var
       | Some i ->
@@ -410,6 +416,7 @@ module Subst : sig
         | None -> delta, None
         | (Some subst) as s ->
             let x, y = walk env x subst, walk env y subst in
+            (* printf "x= '%s', y= '%s'\n%!" (generic_show x) (generic_show y); *)
             match Env.var env x, Env.var env y with
             | Some xi, Some yi -> if xi = yi then delta, s else extend xi x y delta subst
             | Some xi, _       -> extend xi x y delta subst
@@ -458,7 +465,7 @@ let call_fresh f (env, subst, constr) =
 exception Disequality_violated
 
 let (===) (x: _ fancy) y (env, subst, constr) =
-  let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in
+  (* let () = printf "(===) '%s' and '%s'\n%!" (generic_show x) (generic_show y) in *)
   (* we should always unify two fancy types *)
 
   try
@@ -1089,7 +1096,7 @@ let has_free_vars is_var x =
 exception WithFreeVars of (Obj.t -> bool) * Obj.t
 
 let rec refine : State.t -> ('a, 'c) fancy -> ('a,'c) fancy = fun ((e, s, c) as st) x ->
-  let () = printf "refine when subs = '%s'\n" (Subst.show s) in
+  (* let () = printf "refine when subs = '%s'\n" (Subst.show s) in *)
   let rec walk' recursive env var subst =
     (* let () = printf "walk' for var = '%s'\n%!" (generic_show var) in *)
     let var = Subst.walk env var subst in
