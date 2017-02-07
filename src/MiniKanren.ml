@@ -83,38 +83,39 @@ module Stream =
 
 let (!!!) = Obj.magic;;
 
-@type 'a logic = Var of GT.int GT.list * GT.int * 'a logic GT.list | Value of 'a with show, html, eq, compare, foldl, foldr, gmap
+type 'a logic = 
+  | Var of int list * int * 'a logic list 
+  | Value of 'a
+  [@@deriving visitors { variety = "map"   ; name = "map_logic_t"    }, 
+              visitors { variety = "reduce"; name = "reduce_logic_t" }]
 
-let logic = {logic with 
-  gcata = (); 
-  plugins = 
-    object 
-      method html    = logic.plugins#html
-      method eq      = logic.plugins#eq
-      method compare = logic.plugins#compare
-      method foldr   = logic.plugins#foldr
-      method foldl   = logic.plugins#foldl
-      method gmap    = logic.plugins#gmap    
-      method show fa x = 
-        GT.transform(logic) 
-           (GT.lift fa) 
-           (object inherit ['a] @logic[show]              
-              method c_Var _ s _ i cs = 
-                let c =
-		  match cs with 
-		  | [] -> ""
-                  | _  -> Printf.sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ s.GT.f () l) cs)
-		in
-                Printf.sprintf "_.%d%s" i c
-                
-              method c_Value _ _ x = x.GT.fx ()
-            end) 
-           () 
-           x
-    end
-};;
+let map_logic map x =
+  let v = object
+    inherit [_] map_logic_t
+    method visit_'a env c0 = map c0
+  end
+  in v#visit_logic () x
 
-@type 'a unlogic = [`Var of GT.int * 'a logic GT.list | `Value of 'a] with show, html, eq, compare, foldl, foldr (*, gmap*)
+let rec show_logic show x = 
+  let v = object
+    inherit [_] reduce_logic_t
+    
+    method zero = ""
+    method plus = (^)
+    
+    method visit_Var env c0 i cs = 
+      let s = 
+        match cs with 
+	| [] -> ""
+        | _  -> Printf.sprintf " %s" (List.fold_left (fun a c -> a ^ "=/= " ^ (show_logic show c) ^ ";") "" cs)
+      in
+      Printf.sprintf "_.%d%s" i s
+    
+    method visit_'a  env c0 = show c0
+  end 
+  in v#visit_logic () x
+
+type 'a unlogic = [`Var of int * 'a logic list | `Value of 'a]
 
 let destruct = function
 | Var (_, i, c) -> `Var (i, c)
@@ -188,7 +189,7 @@ module Env :
     val var    : t -> 'a logic -> int option
   end = 
   struct
-    type t = GT.int GT.list * int 
+    type t = int list * int 
 
     let empty () = ([0], 10)
 
@@ -304,7 +305,10 @@ module State =
     type t = Env.t * Subst.t * Subst.t list
     let empty () = (Env.empty (), Subst.empty, [])
     let env   (env, _, _) = env
-    let show  (env, subst, constr) = Printf.sprintf "st {%s, %s}" (Subst.show subst) (GT.show(GT.list) Subst.show constr)
+    let show  (env, subst, constr) = 
+      let subst'  = Subst.show subst in
+      let constr' = List.fold_left (fun a s -> a ^ (Subst.show s) ^ ";") "" constr in
+      Printf.sprintf "st {%s, %s}" subst' ("[" ^ constr' ^ "]")
   end
 
 type goal = State.t -> State.t Stream.t
@@ -430,46 +434,66 @@ let neqo x y t =
     (x === y) &&& (t === !!false);
   ];;
 
-@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
-@type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
+type ('a, 'l) llist = 
+  | Nil 
+  | Cons of 'a * 'l 
+  [@@deriving visitors { variety = "map"   ; name = "map_llist_t"   },
+              visitors { variety = "reduce"; name = "reduce_llist_t" }]
+
+let map_llist fa fl x =
+  let v = object
+    inherit [_] map_llist_t
+    method visit_'a env c0 = fa c0
+    method visit_'l env c0 = fl c0 
+  end
+  in v#visit_llist () x
+
+let show_llist fa fl x =
+  let v = object
+    inherit [_] reduce_llist_t
+    method zero = ""
+    method plus = (^)
+    method visit_'a env c0 = fa c0
+    method visit_'l env c0 = fl c0
+    method visit_Cons env c0 c1 = (fa c0) ^ "; " ^ (fl c1)
+  end
+  in "[" ^ v#visit_llist () x ^ "]"
+
+type 'a lnat = 
+  | O 
+  | S of 'a 
+  [@@deriving visitors { variety = "map"   ; name = "map_lnat_t"    },
+              visitors { variety = "reduce"; name = "reduce_lnat_t" }]
+
+let map_lnat fa x =
+  let v = object
+    inherit [_] map_lnat_t
+    method visit_'a env c0 = fa c0
+  end
+  in v#visit_lnat () x
+
+let show_lnat fa x = 
+  let v = object
+    inherit [_] reduce_lnat_t
+    method zero = ""
+    method plus = (^)
+    method visit_O  env    = "O"
+    method visit_S  env c0 = "S(" ^ (fa c0) ^ ")"
+    method visit_'a env c0 = fa c0
+  end
+  in v#visit_lnat () x
 
 module Bool =
   struct
 
     type 'a logic' = 'a logic 
-    let logic' = logic
 
     type ground = bool
 
-    let ground = {
-      GT.gcata = ();
-      GT.plugins = 
-        object(this) 
-          method html    n   = GT.html   (GT.bool) n
-          method eq      n m = GT.eq     (GT.bool) n m
-          method compare n m = GT.compare(GT.bool) n m
-          method foldr   n   = GT.foldr  (GT.bool) n
-          method foldl   n   = GT.foldl  (GT.bool) n
-          method gmap    n   = GT.gmap   (GT.bool) n
-          method show    n   = GT.show   (GT.bool) n
-        end
-    }
-
     type logic = bool logic'
 
-    let logic = {
-      GT.gcata = ();
-      GT.plugins = 
-        object(this) 
-          method html    n   = GT.html   (logic') (GT.html   (ground)) n
-          method eq      n m = GT.eq     (logic') (GT.eq     (ground)) n m
-          method compare n m = GT.compare(logic') (GT.compare(ground)) n m
-          method foldr   a n = GT.foldr  (logic') (GT.foldr  (ground)) a n
-          method foldl   a n = GT.foldl  (logic') (GT.foldl  (ground)) a n
-          method gmap    n   = GT.gmap   (logic') (GT.gmap   (ground)) n
-          method show    n   = GT.show   (logic') (GT.show   (ground)) n
-        end
-    }
+    let show_ground b = if b then "true" else "false"
+    let show_logic    = show_logic show_ground
 
     let (!) = (!!)
 
@@ -507,52 +531,28 @@ module Nat =
   struct
 
     type 'a logic' = 'a logic
-    let logic' = logic
 
     type 'a t = 'a lnat
 
     type ground = ground t
 
-    let ground = {
-      GT.gcata = ();
-      GT.plugins = 
-        object(this) 
-          method html    n = GT.html   (lnat) this#html    n
-          method eq      n = GT.eq     (lnat) this#eq      n
-          method compare n = GT.compare(lnat) this#compare n
-          method foldr   n = GT.foldr  (lnat) this#foldr   n
-          method foldl   n = GT.foldl  (lnat) this#foldl   n
-          method gmap    n = GT.gmap   (lnat) this#gmap    n
-          method show    n = GT.show   (lnat) this#show    n
-        end
-    }
-
     type logic  = logic t logic'
 
-    let logic = {
-      GT.gcata = ();
-      GT.plugins = 
-        object(this) 
-          method html    n   = GT.html   (logic') (GT.html   (lnat) this#html   ) n
-          method eq      n m = GT.eq     (logic') (GT.eq     (lnat) this#eq     ) n m
-          method compare n m = GT.compare(logic') (GT.compare(lnat) this#compare) n m
-          method foldr   a n = GT.foldr  (logic') (GT.foldr  (lnat) this#foldr  ) a n
-          method foldl   a n = GT.foldl  (logic') (GT.foldl  (lnat) this#foldl  ) a n
-          method gmap    n   = GT.gmap   (logic') (GT.gmap   (lnat) this#gmap   ) n
-          method show    n   = GT.show   (logic') (GT.show   (lnat) this#show   ) n
-        end
-    }
+    let show_logic' = show_logic
+
+    let rec show_ground = fun x -> show_lnat show_ground x
+    let rec show_logic  = fun x -> show_logic' (show_lnat show_logic) x
 
     let rec of_int n = if n <= 0 then O else S (of_int (n-1))
     let rec to_int   = function O -> 0 | S n -> 1 + to_int n
 
     let (!) = (!!)
     
-    let rec inj n = ! (GT.gmap(lnat) inj n)
+    let rec inj n = ! (map_lnat inj n)
 
     let prj_k k n =
       let rec inner n =
-        GT.gmap(lnat) inner (prj_k k n)
+        map_lnat inner (prj_k k n)
       in
       inner n
 
@@ -622,12 +622,15 @@ module List =
 
     type 'a logic' = 'a logic
 
-    let logic' = logic
-
     type ('a, 'l) t = ('a, 'l) llist
 
     type 'a ground = ('a, 'a ground) t
     type 'a logic  = ('a, 'a logic)  t logic'
+
+    let show_logic' = show_logic
+
+    let rec show_ground fa = show_llist fa (show_ground fa)
+    let rec show_logic  fa = show_logic' (show_llist fa (show_logic fa))
 
     let rec of_list = function [] -> Nil | x::xs -> Cons (x, of_list xs)
     let rec to_list = function Nil -> [] | Cons (x, xs) -> x::to_list xs
@@ -638,71 +641,15 @@ module List =
 
     let nil = inj Nil
 
-    let rec inj fa l = !! (GT.gmap(llist) fa (inj fa) l)
+    let rec inj fa l = !! (map_llist fa (inj fa) l)
     
     let prj_k fa k l =
       let rec inner l =
-        GT.gmap(llist) fa inner (prj_k k l)
+        map_llist fa inner (prj_k k l)
       in
       inner l
 
     let prj fa l = prj_k fa (fun _ -> raise Not_a_value) l
-
-    let ground = {
-      GT.gcata = ();
-      GT.plugins = 
-        object(this) 
-          method html    fa l = GT.html   (llist) fa (this#html    fa) l
-          method eq      fa l = GT.eq     (llist) fa (this#eq      fa) l
-          method compare fa l = GT.compare(llist) fa (this#compare fa) l
-          method foldr   fa l = GT.foldr  (llist) fa (this#foldr   fa) l
-          method foldl   fa l = GT.foldl  (llist) fa (this#foldl   fa) l
-          method gmap    fa l = GT.gmap   (llist) fa (this#gmap    fa) l
-          method show    fa l = "[" ^
-	    let rec inner l =
-              (GT.transform(llist) 
-                 (GT.lift fa)
-                 (GT.lift inner)
-                 (object inherit ['a,'a ground] @llist[show]
-                    method c_Nil   _ _      = ""
-                    method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Nil -> "" | _ -> "; " ^ xs.GT.fx ())
-                  end) 
-                 () 
-                 l
-              ) 
-            in inner l ^ "]"
-        end
-    }
-
-    let logic = {
-      GT.gcata = ();
-      GT.plugins = 
-        object(this) 
-          method html    fa l   = GT.html   (logic') (GT.html   (llist) fa (this#html    fa)) l
-          method eq      fa a b = GT.eq     (logic') (GT.eq     (llist) fa (this#eq      fa)) a b
-          method compare fa a b = GT.compare(logic') (GT.compare(llist) fa (this#compare fa)) a b
-          method foldr   fa a l = GT.foldr  (logic') (GT.foldr  (llist) fa (this#foldr   fa)) a l 
-          method foldl   fa a l = GT.foldl  (logic') (GT.foldl  (llist) fa (this#foldl   fa)) a l 
-          method gmap    fa l   = GT.gmap   (logic') (GT.gmap   (llist) fa (this#gmap    fa)) l 
-          method show    fa l = 
-            GT.show(logic')
-              (fun l -> "[" ^            
-                 let rec inner l =
-                   (GT.transform(llist) 
-                      (GT.lift fa)
-                      (GT.lift (GT.show(logic) inner))
-                      (object inherit ['a,'a logic] @llist[show]
-                         method c_Nil   _ _      = ""
-                         method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Value Nil -> "" | _ -> "; " ^ xs.GT.fx ())
-                       end) 
-                      () 
-                      l
-                   ) 
-		 in inner l ^ "]"
-              ) 
-              l
-        end
-    }
 
     let (!) = (!!)
 

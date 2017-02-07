@@ -77,17 +77,9 @@ type goal = State.t -> State.t Stream.t
 (** A type of abstract logic values *)
 type 'a logic
 
-(** A GT-compatible typeinfo for ['a logic] *)
-val logic :
-  (unit, 
-   < show    : ('a -> string) -> 'a logic -> string;    
-     html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
-     eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool;
-     compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison;
-     foldl   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
-     foldr   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
-     gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic 
-   >) GT.t
+val map_logic : ('a -> 'b) -> 'a logic -> 'b logic
+
+val show_logic : ('a -> string) -> 'a logic -> string
 
 (** Injecting values into logics *)
 val (!!) : 'a -> 'a logic
@@ -112,10 +104,10 @@ val prj_k : (int -> 'a logic list -> 'a) -> 'a logic -> 'a
 (** {3 Support for some predefined types (lists, nats, bools etc.)} *)
 
 (** Abstract list type *)
-@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, html, eq, compare, foldl, foldr, gmap
+type ('a, 'l) llist = Nil | Cons of 'a * 'l
 
 (** Abstract nat type *)
-@type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap
+type 'a lnat = O | S of 'a
 
 module Bool :
   sig
@@ -126,32 +118,11 @@ module Bool :
     (** Ground boolean (the regular one) *)
     type ground = bool
 
-    (** GT-compatible typeinfo for [ground] *)
-    val ground :
-      (unit,
-       < compare : ground -> ground -> GT.comparison;
-         eq      : ground -> ground -> bool;
-         foldl   : 'a -> ground -> 'a;
-         foldr   : 'a -> ground -> 'a;
-         gmap    : ground -> ground;
-         html    : ground -> HTML.viewer;
-         show    : ground -> string >)
-      GT.t 
-
     (** Logic boolean *)
     type logic = bool logic'
 
-    (** GT-compatible typeinfo for [logic] *)
-    val logic :
-      (unit,
-       < compare : logic -> logic -> GT.comparison;
-         eq      : logic -> logic -> bool;
-         foldl   : 'a -> logic -> 'a;
-         foldr   : 'a -> logic -> 'a;
-         gmap    : logic -> logic;
-         html    : logic -> HTML.viewer;
-         show    : logic -> string >)
-      GT.t
+    val show_ground : ground -> string
+    val show_logic  : logic  -> string                                 
 
     (** Sheffer stroke *)
     val (|^) : logic -> logic -> logic -> goal
@@ -188,32 +159,11 @@ module Nat :
     (** Ground nat are ismorphic for regular one *)
     type ground = ground t
 
-    (** GT-compatible typeinfo for [ground] *)
-    val ground :
-      (unit,
-       < compare : ground -> ground -> GT.comparison;
-         eq      : ground -> ground -> bool;
-         foldl   : 'a -> ground -> 'a;
-         foldr   : 'a -> ground -> 'a;
-         gmap    : ground -> ground;
-         html    : ground -> HTML.viewer;
-         show    : ground -> string >)
-      GT.t
-
     (** Logic nat *)
     type logic = logic t logic'
 
-    (** GT-compatible typeinfo for [logic] *)
-    val logic :
-      (unit,
-       < compare : logic -> logic -> GT.comparison;
-         eq      : logic -> logic -> bool;
-         foldl   : 'a -> logic -> 'a;
-         foldr   : 'a -> logic -> 'a;
-         gmap    : logic -> logic;
-         html    : logic -> HTML.viewer;
-         show    : logic -> string >)
-      GT.t
+    val show_ground : ground -> string
+    val show_logic  : logic  -> string
 
     (** [of_int n] converts integer [n] into [ground]; negtive
         integers become [O] *)
@@ -278,18 +228,6 @@ module List :
     (** Ground lists (isomorphic to regular ones) *)
     type 'a ground = ('a, 'a ground) t
 
-    (** GT-compatible typeinfo for ['a ground] *)
-    val ground :
-      (unit,
-       < compare : ('a -> 'a -> GT.comparison) -> 'a ground -> 'a ground -> GT.comparison;
-         eq      : ('a -> 'a -> bool) -> 'a ground -> 'a ground -> bool;
-         foldl   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
-         foldr   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
-         gmap    : ('a -> 'b) -> 'a ground -> 'b ground;
-         html    : ('a -> HTML.viewer) -> 'a ground -> HTML.viewer;
-         show    : ('a -> string) -> 'a ground -> string >)
-      GT.t
-
     (** [of_list l] makes ground list from a regular one *)
     val of_list : 'a list -> 'a ground
 
@@ -299,17 +237,8 @@ module List :
     (** Logic lists (with the tails as logic lists) *)
     type 'a logic  = ('a, 'a logic)  t logic'
 
-    (** GT-compatible typeinfo for ['a logic] *)
-    val logic :
-      (unit,
-       < compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison; 
-         eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool; 
-         foldr   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
-         foldl   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b; 
-         gmap    : ('a -> 'b) -> 'a logic -> 'b logic;
-         html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
-         show    : ('a -> string) -> 'a logic -> GT.string >)
-      GT.t 
+    val show_ground : ('a -> string) -> 'a ground -> string
+    val show_logic  : ('a -> string) -> 'a logic  -> string
 
     (** List injection *)
     val inj : ('a -> 'b) -> 'a ground -> 'b logic
