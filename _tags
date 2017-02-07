@@ -4,15 +4,17 @@ true: debug, rectypes
 
 <src/MiniKanren.*>: package(visitors.ppx,visitors.runtime)
 
+# PPX rewriters related stuff
+<ppx/smart_logger*>: package(ppx_tools.metaquot)
+<ppx/pa_minikanren*>: package(ppx_tools.metaquot)
+<ppx/ppx_repr*>: package(ppx_tools.metaquot)
+
 <regression/orig/*>: traverse
-<regression/test*.native> or <regression/test*.byte>: package(str)
-#<regression/test003.ml>: use_pa_minikanren
+<regression/test*.native> or <regression/test*.byte>: package(str,visitors.runtime)
 
+<regression/test*.ml>: ppx(ppx/pa_minikanren_bin.native), ppx(ppx/ppx_repr_bin.native)
 
-<regression/test0*.*>: package(GT,logger.syntax)
-#<regression/test004.ml> or <regression/test009.ml> or <regression/test005.ml> or <regression/test000.ml> : use_pa_minkanren
-#<regression/test004.*>: 
-<regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test011.*> or <regression/test010.*> or <regression/test009.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test003.*>: use_pa_minikanren, package(GT.syntax.all)
+#<regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test011.*> or <regression/test010.*> or <regression/test009.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test003.*>: ppx(ppx/pa_minikanren_bin.native), ppx(ppx/ppx_repr_bin.native)
 
 ####################################################################
 # JSOO toplevel related stuff

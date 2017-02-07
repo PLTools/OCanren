@@ -455,6 +455,7 @@ let show_llist fa fl x =
     method plus = (^)
     method visit_'a env c0 = fa c0
     method visit_'l env c0 = fl c0
+    method visit_Nil env = ""
     method visit_Cons env c0 c1 = (fa c0) ^ "; " ^ (fl c1)
   end
   in "[" ^ v#visit_llist () x ^ "]"
@@ -629,8 +630,8 @@ module List =
 
     let show_logic' = show_logic
 
-    let rec show_ground fa = show_llist fa (show_ground fa)
-    let rec show_logic  fa = show_logic' (show_llist fa (show_logic fa))
+    let rec show_ground fa = fun x -> show_llist fa (show_ground fa) x
+    let rec show_logic  fa = fun x -> show_logic' (show_llist fa (show_logic fa)) x
 
     let rec of_list = function [] -> Nil | x::xs -> Cons (x, of_list xs)
     let rec to_list = function Nil -> [] | Cons (x, xs) -> x::to_list xs

@@ -9,6 +9,7 @@ endif
 CMA_TARGETS=src/MiniKanren.cma
 CMO_TARGETS=#src/tester.cmo
 BYTE_TARGETS=$(CMA_TARGETS) $(CMO_TARGETS)
+PPX_TARGETS=ppx/smart_logger_bin.native ppx/ppx_repr_bin.native ppx/pa_minikanren_bin.native
 NATIVE_TARGETS= $(CMA_TARGETS:.cma=.cmxa) $(CMO_TARGETS:.cmo=.cmx)
 TESTS_ENVIRONMENT=./test.sh
 JSOO_LIB=jsoo_runner/jsoo_runner.cma
@@ -24,6 +25,9 @@ minikanren_stuff:
 	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
 
 plugin:
+	$(OB) $(PPX_TARGETS)
+
+plugin_camlp5:
 	$(OB) camlp5/pa_minikanren.cmo
 
 celan: clean

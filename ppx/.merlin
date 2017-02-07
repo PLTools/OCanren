@@ -1,0 +1,4 @@
+PKG ppx_tools.metaquot
+PKG compilers-libs
+SRC .
+B ../_build/ppx

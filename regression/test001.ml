@@ -45,8 +45,8 @@ let rec reverso a b =
   )
   )))
 
-let show_int      = show(logic) (show int)
-let show_int_list = show(List.logic) show_int
+let show_int      = show_logic string_of_int
+let show_int_list = List.show_logic show_int
 
 let _ =
   run show_int_list  1  q (REPR (fun q   -> appendo q (inj_list [3; 4]) (inj_list [1; 2; 3; 4]))) qh;

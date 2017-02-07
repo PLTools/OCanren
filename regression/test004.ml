@@ -22,7 +22,7 @@ let rec mulo x y z =
       (mulo x' y z')
   ]
 
-let show_nat = show logic (show nat)
+let show_nat = show_logic (show nat)
 
 let _ = 
   run show_nat  1    q  (REPR (fun q   -> addo !O !(S !O) q                    )) qh;
