@@ -1,9 +1,8 @@
-open GT
 open MiniKanren
 open Tester
 
-@type ('var, 'self) alam = X of 'var | App of 'self * 'self | Abs of 'var * 'self with gmap, show
-@type ('var, 'self) atyp = V of 'var | Arr of 'self * 'self with gmap, show
+type ('var, 'self) alam = X of 'var | App of 'self * 'self | Abs of 'var * 'self [@@deriving show { nofullpath = true }]
+type ('var, 'self) atyp = V of 'var | Arr of 'self * 'self [@@deriving show { nofullpath = true }]
 
 (*
 Alas, this kind of definitions not supported yet by GT:
@@ -11,13 +10,13 @@ Alas, this kind of definitions not supported yet by GT:
   @type lam = (string logic, lam logic) alam with show
   @type typ = (string logic, typ logic) atyp with show
 *)
-type lam = (string logic, lam logic) alam
-type typ = (string logic, typ logic) atyp
+type lam = (string logic, lam logic) alam [@@deriving show { nofullpath = true }]
+type typ = (string logic, typ logic) atyp [@@deriving show { nofullpath = true }]
 
-let show_string    = show logic (show string)
-let rec show_typ t = show logic (show atyp show_string show_typ) t
-let rec show_lam l = show logic (show alam show_string show_lam) l
-let show_env       = show(List.logic) (show(logic) (show pair show_string show_typ))
+let show_string = show_logic (fun s -> s)
+let show_typ = show_logic (show_typ)
+let show_lam = show_logic (show_lam)
+let show_env = List.show_logic (show_logic (fun (s, t) -> Printf.sprintf "(%s, %s)" (show_string s) (show_typ t)))
 
 let rec lookupo a g t =
   fresh (a' t' tl) 

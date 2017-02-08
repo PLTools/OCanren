@@ -1,14 +1,13 @@
-open GT
 open MiniKanren
 open Tester
 
-let show_nat        = show(Nat.logic)
-let show_bool       = show(Bool.logic)
-let show_nat_list   = show(List.logic) (show Nat.logic)
-let show_bool_list  = show(List.logic) (show Bool.logic)
-let show_option_nat = show(logic) (show(option) (show (Nat.logic)))
-let show_int        = show(logic) (show(int))
-let show_int_list   = show(List.logic) show_int
+let show_nat        = Nat.show_logic
+let show_bool       = Bool.show_logic
+let show_nat_list   = List.show_logic show_nat
+let show_bool_list  = List.show_logic show_bool
+let show_option_nat = show_logic (fun op -> match op with None -> "None" | Some x -> "Some " ^ show_nat x)
+let show_int        = show_logic string_of_int
+let show_int_list   = List.show_logic show_int
 
 let (?$) = inj_nat
 let nats = inj_nat_list

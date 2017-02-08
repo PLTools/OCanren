@@ -1,8 +1,9 @@
-PKG GT ostap oUnit visitors.ppx visitors.runtime
+PKG GT ostap oUnit visitors.ppx visitors.runtime ppx_deriving.show 
 SRC src src_test
 SRC regression
 SRC plugin
 SRC camlp5
+SRC ppx
 B _build
 B _build/src
 B _build/plugin

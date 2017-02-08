@@ -134,7 +134,7 @@ let rec pamk_e mapper e : expression =
          let (_: string list) = xs in
          let new_body = List.fold_right
                           ~f:(fun ident acc ->
-                              [%expr call_fresh_named [%e str ident]
+                              [%expr call_fresh
                                      (fun [%p pvar ident ] -> [%e acc]) ]
                              )
                           ~init:new_body xs

@@ -81,6 +81,8 @@ val map_logic : ('a -> 'b) -> 'a logic -> 'b logic
 
 val show_logic : ('a -> string) -> 'a logic -> string
 
+val pp_logic : (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a logic -> unit
+
 (** Injecting values into logics *)
 val (!!) : 'a -> 'a logic
 

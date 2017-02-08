@@ -1,14 +1,13 @@
-open GT
 open MiniKanren
 open Tester
 
-@type t = N | A of t logic with show
+type t = N | A of t logic [@@deriving show { nofullpath = true }]
 
-let show_t         = show(logic) (show t)
-let show_int       = show(logic) (show int)
-let show_list      = show(logic) (show list show_int)
-let show_list_list = show(logic) (show list show_list)
-let show_llist     = show(List.logic) (show(logic) (show int))
+let show_t         = show_logic (show)
+let show_int       = [%derive.show: int logic]
+let show_list      = [%derive.show: int logic list logic](* show_logic (fun l -> let inner = List.fold_left (fun a x -> a ^ (show_int  x) ^ "; ") "" l in "[" ^ inner ^ "]") *)
+let show_list_list = [%derive.show: int logic list logic list logic]
+let show_llist     = List.show_logic (show_logic (string_of_int))
 
 let _ = 
   run show_t         (-1) q (REPR (fun q -> (fresh(x) (x =/= !(A x)))                                                                 )) qh;

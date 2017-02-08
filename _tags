@@ -10,9 +10,9 @@ true: debug, rectypes
 <ppx/ppx_repr*>: package(ppx_tools.metaquot)
 
 <regression/orig/*>: traverse
-<regression/test*.native> or <regression/test*.byte>: package(str,visitors.runtime)
+<regression/test*.native> or <regression/test*.byte>: package(str,visitors.runtime,ppx_deriving.runtime)
 
-<regression/test*.ml>: ppx(ppx/pa_minikanren_bin.native), ppx(ppx/ppx_repr_bin.native)
+<regression/test*.ml>: package(ppx_deriving.show), ppx(ppx/pa_minikanren_bin.native), ppx(ppx/ppx_repr_bin.native)
 
 #<regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test011.*> or <regression/test010.*> or <regression/test009.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test003.*>: ppx(ppx/pa_minikanren_bin.native), ppx(ppx/ppx_repr_bin.native)
 

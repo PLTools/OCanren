@@ -1,8 +1,7 @@
-open GT
 open MiniKanren
 open Tester
 
-@type nat = O | S of nat logic with show
+type nat = O | S of nat logic [@@deriving show { nofullpath = true }]
 
 let rec addo x y z =
   conde [
@@ -22,7 +21,7 @@ let rec mulo x y z =
       (mulo x' y z')
   ]
 
-let show_nat = show_logic (show nat)
+let show_nat = show_logic (show_nat)
 
 let _ = 
   run show_nat  1    q  (REPR (fun q   -> addo !O !(S !O) q                    )) qh;

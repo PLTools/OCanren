@@ -1,8 +1,7 @@
-open GT
 open MiniKanren
 open Tester
 
-@type lam = X of string logic | App of lam logic * lam logic | Abs of string logic * lam logic with show
+type lam = X of string logic | App of lam logic * lam logic | Abs of string logic * lam logic [@@deriving show { nofullpath = true }]
 
 let match_lam a var app abs =
   conde [
@@ -42,7 +41,7 @@ let rec evalo m n =
     )
     (fun _ _ -> n === m)
 
-let show_lam = show logic (show lam)
+let show_lam = show_logic (show_lam)
 
 let _ =
   run show_lam 1  q (REPR (fun q   -> substo !(X !"x") !"x" !(X !"y") q                   )) qh;

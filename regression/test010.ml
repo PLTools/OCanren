@@ -1,4 +1,3 @@
-open GT
 open MiniKanren
 open Tester
 
@@ -8,7 +7,7 @@ let gxy  x y = (g123 x) &&& (g123 y)
 let gxy' x y = (gxy x y) &&& (x =/= y)
 let gnot5 x  = x =/= !5
 
-let show_int = show(logic) (show int)
+let show_int = show_logic (string_of_int)
 
 let _ = 
   run show_int    3  q (REPR (fun q   -> g123 q                                                    )) qh;

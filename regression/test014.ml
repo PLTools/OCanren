@@ -1,4 +1,3 @@
-open GT
 open MiniKanren
 open Tester
 
@@ -323,8 +322,8 @@ let test17 n m =
 let test27 b q r =
   (logo (build_num 68) b q r) &&& (gt1o q)
 
-let show_int      = show(logic) (show(int))
-let show_int_list = show(List.logic) show_int
+let show_int      = show_logic (string_of_int)
+let show_int_list = List.show_logic show_int
 
 let qrsth = fun qs rs ss ts -> ["q", qs; "r", rs; "s", ss; "t", ts]
 

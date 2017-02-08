@@ -87,7 +87,8 @@ type 'a logic =
   | Var of int list * int * 'a logic list 
   | Value of 'a
   [@@deriving visitors { variety = "map"   ; name = "map_logic_t"    }, 
-              visitors { variety = "reduce"; name = "reduce_logic_t" }]
+              visitors { variety = "reduce"; name = "reduce_logic_t" },
+              visitors { variety = "iter"  ; name = "iter_logic_t"   }]
 
 let map_logic map x =
   let v = object
@@ -115,6 +116,20 @@ let rec show_logic show x =
   end 
   in v#visit_logic () x
 
+let pp_logic pp_a fmt x = 
+  let v = object (self)
+    inherit [_] iter_logic_t
+    
+    method visit_Var env c0 i cs = 
+      Format.fprintf fmt "_.%d" i;
+      List.iter (fun c -> Format.fprintf fmt "=/= "; 
+                          self#visit_logic () c;
+                          Format.fprintf fmt ";") cs
+    
+    method visit_'a  env c0 = pp_a fmt c0
+  end
+  in v#visit_logic () x 
+      
 type 'a unlogic = [`Var of int * 'a logic list | `Value of 'a]
 
 let destruct = function

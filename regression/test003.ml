@@ -1,4 +1,3 @@
-open GT
 open MiniKanren
 open Tester
 

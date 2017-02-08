@@ -1,9 +1,8 @@
-open GT
 open MiniKanren
 open Tester
 
-@type lam = X of string logic | App of lam logic * lam logic | Abs of string logic * lam logic with show
-@type typ = V of string logic | Arr of typ logic * typ logic  with show
+type lam = X of string logic | App of lam logic * lam logic | Abs of string logic * lam logic [@@deriving show { nofullpath = true }]
+type typ = V of string logic | Arr of typ logic * typ logic [@@deriving show { nofullpath = true }] 
 
 let rec lookupo a g t =
   fresh (a' t' tl) 
@@ -31,10 +30,10 @@ let infero expr typ =
   in
   infero !Nil expr typ      
 
-let show_typ    = show(logic) (show typ)
-let show_lam    = show(logic) (show lam)
-let show_string = show(logic) (show string)
-let show_env    = show(List.logic) (show(logic) (show(pair) show_string show_typ))
+let show_typ    = show_logic (show_typ)
+let show_lam    = show_logic (show_lam)
+let show_string = show_logic (fun s -> s)
+let show_env    = List.show_logic (show_logic (fun (s, t) -> Printf.sprintf "(%s, %s)" (show_string s) (show_typ t)))
 
 let _ =
   run show_typ    1 q (REPR (fun q -> lookupo !"x" (inj_list []) q                                        )) qh;

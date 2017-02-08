@@ -1,9 +1,8 @@
-open GT
 open MiniKanren
 open Tester
 
-@type token = Id | Add | Mul with show
-@type expr  = I | A of expr logic * expr logic | M of expr logic * expr logic with show
+type token = Id | Add | Mul [@@deriving show { nofullpath = true }]
+type expr  = I | A of expr logic * expr logic | M of expr logic * expr logic [@@deriving show { nofullpath = true }]
 
 let sym t i i' =
   fresh (x xs) 
@@ -42,9 +41,11 @@ and pTop i i' r = pAdd i i' r
 
 let pExpr i r = fresh (i') (pTop i i' r) (eof i')
 
-let show_token  = show(logic) (show token)
-let show_expr   = show(logic) (show expr)
-let show_stream = show(List.logic) (show(logic) (show token))
+let show_token' = show_token
+
+let show_token  = show_logic show_token
+let show_expr   = show_logic show_expr
+let show_stream = List.show_logic (show_logic show_token')
 
 let _ =
   run show_expr   1 q (REPR (fun q -> pExpr (inj_list [Id]) q                  )) qh;
