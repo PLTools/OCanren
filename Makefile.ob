@@ -14,8 +14,8 @@ NATIVE_TARGETS= $(CMA_TARGETS:.cma=.cmxa) $(CMO_TARGETS:.cmo=.cmx)
 TESTS_ENVIRONMENT=./test.sh
 JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
-.PHONY: all celan clean clean_tests install uninstall tests test regression promote \
-	only-toplevel toplevel minikanren_stuff tester bundle plugin
+.PHONY: all celan clean clean_tests install uninstall tests test regression promote_all \
+	only-toplevel toplevel minikanren_stuff tester bundle plugin 
 
 .DEFAULT_GOAL: all
 
@@ -59,6 +59,12 @@ run_tests: test_$(1)
 test_$(1):
 	@cd regression  && $(TESTS_ENVIRONMENT) ../test$(1).native; \
 	if [ $$$$? -ne 0 ] ; then echo "$(1) FAILED"; else echo "$(1) PASSED"; fi
+
+promote_all: promote_$(1)
+promite_test$(1): promote_$(1)
+promote_$(1):
+	./test$(1).native > regression/orig/test$(1).log
+
 endef
 $(foreach i,$(REGRES_CASES),$(eval $(call TESTRULES,$(i)) ) )
 
@@ -75,9 +81,6 @@ compile_tests: compile_tests_native
 clean_tests:
 	$(RM) -r _build/regression
 
-promote:
-	$(MAKE) -C regression promote TEST=$(TEST)
-
 tests: plugin minikanren_stuff compile_tests run_tests
 regression: tests
 test: tests
@@ -92,6 +95,7 @@ INSTALL_TARGETS=META \
 	_build/src/MiniKanren.cmxa \
 	$(wildcard _build/src/MiniKanren.[oa]) \
 	$(wildcard _build/camlp5/pa_minikanren.cm[oi]) \
+	$(wildcard _build/ppx/ppa_minikanren_bin.native) \
 #	_build/src/tester.o \
 
 

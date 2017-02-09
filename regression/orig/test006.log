@@ -1,36 +1,38 @@
-fun q -> substo !(X !"x") !"x" !(X !"y") q, 1 answer {
-q=X ("y"); 
+fun q  -> substo (!(X (!"x"))) (!"x") (!(X (!"y"))) q, 1 answer {
+q=(X "y"); 
 }
-fun q -> evalo !(Abs (!"x", !(X !"x"))) q, 1 answer {
-q=Abs ("x", X ("x")); 
+fun q  -> evalo (!(Abs ((!"x"), (!(X (!"x")))))) q, 1 answer {
+q=(Abs ("x", (X "x"))); 
 }
-fun q -> evalo !(Abs (!"x", !(X !"x"))) q, 2 answers {
-q=Abs ("x", X ("x")); 
+fun q  -> evalo (!(Abs ((!"x"), (!(X (!"x")))))) q, 2 answers {
+q=(Abs ("x", (X "x"))); 
 }
-fun q -> evalo !(App (!(Abs (!"x", !(X !"x"))), !(X !"y"))) q, 1 answer {
-q=X ("y"); 
+fun q  -> evalo (!(App ((!(Abs ((!"x"), (!(X (!"x")))))), (!(X (!"y")))))) q, 1 answer {
+q=(X "y"); 
 }
-fun q -> evalo !(App (!(Abs (!"x", !(X !"x"))), q)) !(X !"y"), 1 answer {
-q=X ("y"); 
+fun q  -> evalo (!(App ((!(Abs ((!"x"), (!(X (!"x")))))), q))) (!(X (!"y"))), 1 answer {
+q=(X "y"); 
 }
-fun q -> evalo !(App (!(Abs (!"x", q)), !(X !"y"))) !(X !"y"), 1 answer {
-q=X ("x"); 
+fun q  -> evalo (!(App ((!(Abs ((!"x"), q))), (!(X (!"y")))))) (!(X (!"y"))), 1 answer {
+q=(X "x"); 
 }
-fun q -> evalo !(App (q, !(X !"x"))) !(X !"x"), 1 answer {
-q=Abs (_.20, X (_.20)); 
+fun q  -> evalo (!(App (q, (!(X (!"x")))))) (!(X (!"x"))), 1 answer {
+q=(Abs (_.20, (X _.20))); 
 }
-fun q -> evalo !(App (!(X !"x"), !(X !"x"))) q, 1 answer {
-q=App (X ("x"), X ("x")); 
+fun q  -> evalo (!(App ((!(X (!"x"))), (!(X (!"x")))))) q, 1 answer {
+q=(App ((X "x"), (X "x"))); 
 }
-fun q -> evalo !(X !"x") q, 1 answer {
-q=X ("x"); 
+fun q  -> evalo (!(X (!"x"))) q, 1 answer {
+q=(X "x"); 
 }
-fun q r -> evalo !(App (r, q)) !(X !"x"), 1 answer {
-q=X ("x"); r=Abs (_.21, X (_.21)); 
+fun q  -> fun r  -> evalo (!(App (r, q))) (!(X (!"x"))), 1 answer {
+q=(X "x"); r=(Abs (_.21, (X _.21))); 
 }
-fun q r s ->
-  (&&&) ((&&&) (evalo !(App (q, r)) s) (evalo !(App (r, s)) q))
-    (evalo !(App (s, q)) r), 2 answers {
-q=Abs (_.53, X (_.53)); r=Abs (_.53, X (_.53)); s=Abs (_.53, X (_.53)); 
-q=Abs (_.57, X (_.57)); r=Abs (_.57, Abs (_.57, X (_.57))); s=Abs (_.57, Abs (_.57, X (_.57))); 
+fun q  ->
+  fun r  ->
+    fun s  ->
+      ((evalo (!(App (q, r))) s) &&& (evalo (!(App (r, s))) q)) &&&
+        (evalo (!(App (s, q))) r), 2 answers {
+q=(Abs (_.53, (X _.53))); r=(Abs (_.53, (X _.53))); s=(Abs (_.53, (X _.53))); 
+q=(Abs (_.57, (X _.57))); r=(Abs (_.57, (Abs (_.57, (X _.57))))); s=(Abs (_.57, (Abs (_.57, (X _.57))))); 
 }

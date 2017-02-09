@@ -463,18 +463,6 @@ let map_llist fa fl x =
   end
   in v#visit_llist () x
 
-let show_llist fa fl x =
-  let v = object
-    inherit [_] reduce_llist_t
-    method zero = ""
-    method plus = (^)
-    method visit_'a env c0 = fa c0
-    method visit_'l env c0 = fl c0
-    method visit_Nil env = ""
-    method visit_Cons env c0 c1 = (fa c0) ^ "; " ^ (fl c1)
-  end
-  in "[" ^ v#visit_llist () x ^ "]"
-
 type 'a lnat = 
   | O 
   | S of 'a 
@@ -645,8 +633,31 @@ module List =
 
     let show_logic' = show_logic
 
-    let rec show_ground fa = fun x -> show_llist fa (show_ground fa) x
-    let rec show_logic  fa = fun x -> show_logic' (show_llist fa (show_logic fa)) x
+    (* let rec show_ground fa = fun x -> show_llist fa (show_ground fa) x *)
+
+    let rec show_ground fa x =
+      let v = object (self)
+        inherit [_] reduce_llist_t
+        method zero = ""
+        method plus = (^)
+        method visit_'a env c0 = fa c0
+        method visit_'l env c0 = self#visit_llist () c0
+        method visit_Nil env = ""
+        method visit_Cons env c0 c1 = (fa c0) ^ (match c1 with Nil -> "" | _ -> "; " ^ (self#visit_llist () c1))
+      end
+      in "[" ^ v#visit_llist () x ^ "]"
+
+    let show_logic fa x =
+      let v = object (self)
+        inherit [_] reduce_llist_t
+        method zero = ""
+        method plus = (^)
+        method visit_'a env c0 = fa c0
+        method visit_'l env c0 = show_logic (self#visit_llist ()) c0
+        method visit_Nil env = ""
+        method visit_Cons env c0 c1 = (fa c0) ^ (match c1 with Value Nil -> "" | _ -> "; " ^ (show_logic (self#visit_llist ()) c1))
+      end
+      in "[" ^ (show_logic (v#visit_llist ()) x) ^ "]"
 
     let rec of_list = function [] -> Nil | x::xs -> Cons (x, of_list xs)
     let rec to_list = function Nil -> [] | Cons (x, xs) -> x::to_list xs
