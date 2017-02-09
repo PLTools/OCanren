@@ -1,4 +1,4 @@
-PKG GT ostap oUnit visitors.ppx visitors.runtime ppx_deriving.show 
+PKG visitors.ppx visitors.runtime ppx_deriving.show 
 SRC src src_test
 SRC regression
 SRC plugin

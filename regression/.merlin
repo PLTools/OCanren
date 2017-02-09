@@ -1,0 +1,12 @@
+PKG visitors.ppx visitors.runtime ppx_deriving.show 
+B ../_build/src
+B ../_build/regression
+B ../_build/plugin
+SRC ./
+SRC ../src
+SRC ../plugin
+SRC ../camlp5
+SRC ../ppx
+FLG -ppx ../_build/ppx/pa_minikanren_bin.native 
+FLG -ppx ../_build/ppx/ppx_repr_bin.native 
+FLG -rectypes
