@@ -1,6 +1,6 @@
 version = "0.1"
 description = "ocanren"
-requires = "visitors"
+requires = "visitors.runtime"
 archive(byte) = "MiniKanren.cma"
 archive(native) = "MiniKanren.cmxa"
 
