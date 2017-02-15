@@ -1,37 +1,30 @@
 fun q -> g123 q, 3 answers {
-q=1; 
-q=2; 
-q=3; 
+q=1;
+q=2;
+q=3;
 }
 fun q -> g12 q, 3 answers {
-q=1; 
-q=2; 
+q=1;
+q=2;
 }
 fun q r -> gxy q r, 10 answers {
-q=1; r=1; 
-q=1; r=2; 
-q=1; r=3; 
-q=2; r=1; 
-q=2; r=2; 
-q=3; r=1; 
-q=2; r=3; 
-q=3; r=2; 
-q=3; r=3; 
+q=1; r=1;
+q=1; r=2;
+q=1; r=3;
+q=2; r=1;
+q=2; r=2;
+q=3; r=1;
+q=2; r=3;
+q=3; r=2;
+q=3; r=3;
 }
 fun q r -> gxy' q r, 10 answers {
-q=1; r=2; 
-q=1; r=3; 
-q=2; r=1; 
-q=3; r=1; 
-q=2; r=3; 
-q=3; r=2; 
-}
-fun q -> (=/=) q !5, all answers {
-q=_.10 [=/= 5]; 
-}
-fun q -> (&&&) ((=/=) q !3) ((===) q !3), all answers {
-}
-fun q -> (&&&) ((===) q !3) ((=/=) !3 q), all answers {
+q=1; r=2;
+q=1; r=3;
+q=2; r=1;
+q=3; r=1;
+q=2; r=3;
+q=3; r=2;
 }
 fun q ->
   call_fresh (fun x -> call_fresh (fun y -> conj ((===) x y) ((=/=) x y))), all answers {
@@ -94,4 +87,11 @@ fun q ->
               (fun z ->
                  conj ((=/=) x !4)
                    (conj ((===) y z) (conj ((===) x y) ((===) z !(2 + 2))))))), all answers {
+}
+fun q -> (=/=) q !5, all answers {
+q=_.10 [=/= 5];
+}
+fun q -> (&&&) ((=/=) q !3) ((===) q !3), all answers {
+}
+fun q -> (&&&) ((===) q !3) ((=/=) !3 q), all answers {
 }

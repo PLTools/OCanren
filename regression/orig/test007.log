@@ -1,30 +1,30 @@
-fun q -> substo !(X !"x") !"x" !(X !"y") q, 1 answer {
-q=X ("y"); 
+fun q -> substo (v varX) varX (v varY) q, 1 answer {
+q=V ("y");
 }
-fun q -> evalo !(Abs (!"x", !(X !"x"))) q, 1 answer {
-q=Abs ("x", X ("x")); 
+fun q -> evalo (abs varX (v varX)) q, 2 answers {
+q=Abs ("x", V ("x"));
 }
-fun q -> evalo !(Abs (!"x", !(X !"x"))) q, 2 answers {
-q=Abs ("x", X ("x")); 
+fun q -> evalo (abs varX (v varX)) q, 1 answer {
+q=Abs ("x", V ("x"));
 }
-fun q -> evalo !(App (!(Abs (!"x", !(X !"x"))), !(X !"y"))) q, 1 answer {
-q=X ("y"); 
+fun q -> evalo (app (abs varX (v varX)) (v varY)) q, 1 answer {
+q=V ("y");
 }
-fun q -> evalo !(App (!(Abs (!"x", !(X !"x"))), q)) !(X !"y"), 1 answer {
-q=X ("y"); 
+fun q -> evalo (app (abs varX (v varX)) q) (v varY), 1 answer {
+q=V ("y");
 }
-fun q -> evalo !(App (!(Abs (!"x", q)), !(X !"y"))) !(X !"y"), 1 answer {
-q=X ("x"); 
+fun q -> evalo (app (abs varX q) (v varY)) (v varY), 1 answer {
+q=V ("x");
 }
-fun q -> evalo !(App (q, !(X !"x"))) !(X !"x"), 1 answer {
-q=Abs (_.20, X (_.20)); 
+fun q -> evalo (app (v varX) (v varX)) q, 1 answer {
+q=App (V ("x"), V ("x"));
 }
-fun q -> evalo !(App (!(X !"x"), !(X !"x"))) q, 1 answer {
-q=App (X ("x"), X ("x")); 
+fun q -> evalo (v varX) q, 1 answer {
+q=V ("x");
 }
-fun q -> evalo !(X !"x") q, 1 answer {
-q=X ("x"); 
+fun q -> evalo (app q (v varX)) (v varX), 1 answer {
+q=Abs (_.20, V (_.20));
 }
-fun q r -> evalo !(App (r, q)) !(X !"x"), 1 answer {
-q=X ("x"); r=Abs (_.21, X (_.21)); 
+fun q r -> evalo (app r q) (v varX), 1 answer {
+q=V ("x"); r=Abs (_.21, V (_.21));
 }
