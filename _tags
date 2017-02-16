@@ -1,18 +1,21 @@
-true: debug, rectypes
+true: debug, rectypes, color(always), bin_annot
+true: short_paths
 
 <camlp5/pa_minikanren.*>: syntax(camlp5o), package(camlp5)
 
 <src/MiniKanren.*>: syntax(camlp5o),package(GT,GT.syntax.all)
-
+<src/MiniKanren.mli>: hack_pr_o
 <regression/orig/*>: traverse
 <regression/test*.native> or <regression/test*.byte>: package(str)
+<regression/stlc.*>: syntax(camlp5o), package(GT.syntax.all)
 #<regression/test003.ml>: use_pa_minikanren
 
 
-<regression/test0*.*>: package(GT,GT.syntax.all,logger.syntax), syntax(camlp5o)
+<regression/test0*.*>: package(GT,GT.syntax.all), syntax(camlp5o)
 #<regression/test004.ml> or <regression/test009.ml> or <regression/test005.ml> or <regression/test000.ml> : use_pa_minkanren
-#<regression/test004.*>: 
-<regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test011.*> or <regression/test010.*> or <regression/test009.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test003.*>: use_pa_minikanren, package(GT.syntax.all)
+#<regression/test004.*>:
+<regression/test015*.*> or <regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test010.*> or <regression/test009.*> or <regression/test011.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test001.*> or <regression/test000.*>: syntax(camlp5o), package(logger.syntax)
+<regression/test015*.*> or <regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test011.*> or <regression/test010.*> or <regression/test009.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test003.*>: use_pa_minikanren, package(GT.syntax.all)
 
 ####################################################################
 # JSOO toplevel related stuff

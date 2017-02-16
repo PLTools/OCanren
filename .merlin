@@ -1,4 +1,4 @@
-PKG GT ostap oUnit
+PKG GT
 SRC src src_test
 SRC regression
 SRC plugin
@@ -7,4 +7,5 @@ B _build
 B _build/src
 B _build/plugin
 B _build/regression
-rectypes
+FLG -rectypes
+FLG -short-paths

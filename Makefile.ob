@@ -1,6 +1,8 @@
 MKDIR ?= mkdir -vp
 CP    ?= cp
 
+.NOTPARALLEL :
+
 OB=ocamlbuild -use-ocamlfind -plugin-tag "package(str)" -classic-display
 ifdef OBV
 OB += -verbose 6
@@ -13,12 +15,12 @@ NATIVE_TARGETS= $(CMA_TARGETS:.cma=.cmxa) $(CMO_TARGETS:.cmo=.cmx)
 TESTS_ENVIRONMENT=./test.sh
 JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
-.PHONY: all celan clean clean_tests install uninstall tests test regression promote \
+.PHONY: all celan clean clean_tests install uninstall tests test regression promote_all \
 	only-toplevel toplevel minikanren_stuff tester bundle plugin
 
 .DEFAULT_GOAL: all
 
-all: minikanren_stuff plugin bundle 
+all: minikanren_stuff plugin bundle
 
 minikanren_stuff:
 	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
@@ -33,14 +35,15 @@ clean: clean_tests
 	#$(MAKE) -C regression clean
 
 ######################## Tests related stuff  ##########################
-REGRES_CASES := 000 001 002 003 004 005 006 007 008 009 010 011 012 013 014
+REGRES_CASES := 000 001 004 005 006 007 009 010 011 013 014 015runaway
 
 define TESTRULES
 BYTE_TEST_EXECUTABLES += regression/test$(1).byte
 NATIVE_TEST_EXECUTABLES += regression/test$(1).native
 TEST_MLS += regression/test$(1).ml
 
-.PHONY: test_$(1) test$(1).native compile_tests_native compile_tests_byte
+.PHONY: test_$(1) test$(1).native compile_tests_native compile_tests_byte \
+	promote$(1) promote_test$(1)
 
 test$(1).native: regression/test$(1).native
 test$(1).byte:   regression/test$(1).byte
@@ -55,6 +58,12 @@ run_tests: test_$(1)
 test_$(1):
 	@cd regression  && $(TESTS_ENVIRONMENT) ../test$(1).native; \
 	if [ $$$$? -ne 0 ] ; then echo "$(1) FAILED"; else echo "$(1) PASSED"; fi
+
+promote_all: promote_$(1)
+promite_test$(1): promote_$(1)
+promote_$(1):
+	./test$(1).native > regression/orig/test$(1).log
+
 endef
 $(foreach i,$(REGRES_CASES),$(eval $(call TESTRULES,$(i)) ) )
 
@@ -72,7 +81,8 @@ clean_tests:
 	$(RM) -r _build/regression
 
 promote:
-	$(MAKE) -C regression promote TEST=$(TEST)
+
+
 
 tests: plugin minikanren_stuff compile_tests run_tests
 regression: tests
@@ -83,12 +93,13 @@ INSTALL_TARGETS=META \
 	$(wildcard _build/regression/tester.cmi) \
 	$(wildcard _build/regression/tester.cmo) \
 	$(wildcard _build/regression/tester.cmx) \
+	$(wildcard _build/regression/tester.o) \
 	$(wildcard _build/src/*.cmi) \
+	_build/src/MiniKanren.cmx \
 	_build/src/MiniKanren.cma \
 	_build/src/MiniKanren.cmxa \
 	$(wildcard _build/src/MiniKanren.[oa]) \
 	$(wildcard _build/camlp5/pa_minikanren.cm[oi]) \
-#	_build/src/tester.o \
 
 
 MAYBE_INSTALL_TARGETS=\
