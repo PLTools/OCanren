@@ -1,55 +1,108 @@
-open GT
+(* Type inferencer for STLC *)
+open Printf
 open MiniKanren
 open Tester
+open Stlc
 
-@type lam = X of string logic | App of lam logic * lam logic | Abs of string logic * lam logic with show
-@type typ = V of string logic | Arr of typ logic * typ logic  with show
+(************************************************************************************************************)
+module GTyp = struct
+  module X = struct
+    @type ('a, 'b) t =
+      | P of 'a                  (* primitive *)
+      | Arr of 'b * 'b           (* arrow *)
+      with gmap,show;;
+    let fmap f g = function
+    | P s -> P (f s)
+    | Arr (x, y) -> Arr (g x, g y)
+  end
+
+  include X
+  include Fmap2(X)
+
+  type rtyp = (string, rtyp) t
+  type ltyp = (string logic, ltyp) t logic
+  type ftyp = (rtyp, ltyp) fancy
+
+  let p s     : ftyp = inj @@ distrib @@ P s
+  let arr x y : ftyp = inj @@ distrib @@ Arr (x,y)
+
+  let rec show_rtyp typ = GT.(show t (show string) show_rtyp) typ
+  let rec show_ltyp typ = show_logic GT.(show t (show_logic @@ show string) show_ltyp) typ
+
+end
+
+let rec gtyp_reifier : var_checker -> GTyp.ftyp -> GTyp.ltyp = fun c x ->
+  GTyp.reifier ManualReifiers.string_reifier gtyp_reifier c x
+
+open GLam
+open GTyp
 
 let rec lookupo a g t =
-  fresh (a' t' tl) 
-    (g === !(a', t')%tl)
+  Fresh.three (fun a' t' tl ->
+    (g === (inj_pair a' t')%tl) &&&
     (conde [
       (a' === a) &&& (t' === t);
       lookupo a tl t
-     ])  
+     ])
+  )
 
 let infero expr typ =
   let rec infero gamma expr typ =
     conde [
-      fresh (x)
-        (expr === !(X x))
-        (lookupo x gamma typ);
-      fresh (m n t)    
-        (expr === !(App (m, n))) 
-        (infero gamma m !(Arr (t, typ))) 
-        (infero gamma n t);
-      fresh (x l t t') 
-        (expr === !(Abs (x, l))) 
-        (typ  === !(Arr (t, t')))
-        (infero (!(x, t)%gamma) l t')
+      Fresh.one (fun x ->
+        (expr === v x) &&&
+        (lookupo x gamma typ));
+      Fresh.three (fun m n t ->
+        (expr === app m n) &&&
+        (infero gamma m (arr t typ)) &&&
+        (infero gamma n t));
+      Fresh.four (fun x l t t' ->
+        (expr === abs x l) &&&
+        (typ  === arr t t') &&&
+        (infero ((inj_pair x t)%gamma) l t'))
     ]
   in
-  infero !Nil expr typ      
+  infero (nil()) expr typ
 
-let show_typ    = show(logic) (show typ)
-let show_lam    = show(logic) (show lam)
-let show_string = show(logic) (show string)
-let show_env    = show(List.logic) (show(logic) (show(pair) show_string show_typ))
+let show_string = fun x -> x
+let show_stringl = show_logic show_string
 
-let _ =
-  run show_typ    1 q (REPR (fun q -> lookupo !"x" (inj_list []) q                                        )) qh;
-  run show_typ    1 q (REPR (fun q -> lookupo !"x" (inj_list [!"x", !(V !"x")]) q                         )) qh; 
-  run show_typ    1 q (REPR (fun q -> lookupo !"x" (inj_list [!"y", !(V !"y"); !"x", !(V !"x")]) q        )) qh;
+let inj_list_p xs = inj_list @@ List.map (fun (x,y) -> inj_pair x y) xs
 
-  run show_string 1 q (REPR (fun q -> lookupo q (inj_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"x")   )) qh;
-  run show_string 1 q (REPR (fun q -> lookupo q (inj_list [!"y", !(V !"y"); !"x", !(V !"x")]) !(V !"y")   )) qh;
-  run show_env    1 q (REPR (fun q -> lookupo !"x" q !(V !"y")                                            )) qh;
-  run show_env    5 q (REPR (fun q -> lookupo !"x" q !(V !"y")                                            )) qh; 
-  run show_typ    1 q (REPR (fun q -> infero !(Abs (!"x", !(X !"x"))) q                                   )) qh;
-  run show_typ    1 q (REPR (fun q -> infero !(Abs (!"f", !(Abs (!"x", !(App (!(X !"f"), !(X !"x"))))))) q)) qh;
-  run show_typ    1 q (REPR (fun q -> infero !(Abs (!"x", !(Abs (!"f", !(App (!(X !"f"), !(X !"x"))))))) q)) qh;
-  run show_lam    1 q (REPR (fun q -> infero q !(Arr (!(V !"x"), !(V !"x")))                              )) qh;
-  run show_typ    1 q (REPR (fun q -> infero !(Abs (!"x", !(App (!(X !"x"), !(X !"x")))))                q)) qh
-  
+(* Without free variables *)
+let () =
+  run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list [])  q                                   ));
+  run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varX, v varX)]) q                    ));
+  run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varY, v varY); (varX, v varX)]) q    ));
 
+  run_exn GT.(show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varX)  ));
+  run_exn GT.(show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varY)  ));
 
+  run_exn GTyp.show_rtyp    1 q qh (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q));
+  ()
+
+let show_env_logic = GT.show(List.logic) @@ show_logic GT.(show pair (show_logic (fun s -> s) ) show_llam)
+
+let pair_reifier : var_checker -> (string*rlam, _) fancy -> _ = fun c p ->
+  ManualReifiers.pair_reifier ManualReifiers.string_reifier glam_reifier c p
+
+let env_reifier c xs =
+  List.reifier pair_reifier c xs
+
+let show_env  = GT.(show List.ground @@ show pair show_string  GLam.show_rlam)
+let show_envl = GT.(show List.logic  @@ show_logic (show pair show_stringl GLam.show_llam))
+let runEnv n = runR env_reifier show_env show_envl n
+
+let runT n = runR gtyp_reifier GTyp.show_rtyp GTyp.show_ltyp n
+let runL n = runR glam_reifier GLam.show_rlam GLam.show_llam n
+
+(* Tests with free variables *)
+let () =
+  runEnv   1   q   qh (REPR (fun q -> lookupo varX q (v varY)                                       ));
+  runT     1   q   qh (REPR (fun q -> infero (abs varX (v varX)) q                                  ));
+  runT     1   q   qh (REPR (fun q -> infero (abs varF (abs varX (app (v varF) (v varX)))) q        ));
+  runT     1   q   qh (REPR (fun q -> infero (abs varX (abs varF (app (v varF) (v varX)))) q        ));
+  runL     1   q   qh (REPR (fun q -> infero q (arr (p varX) (p varX))                              ));
+  ()
+
+(* ************************************** **)

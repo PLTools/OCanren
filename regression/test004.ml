@@ -1,66 +1,98 @@
-open GT
+(* Tests for Peano numerals are there. Manual mini-implementation of MiniKanren.Nat module *)
 open MiniKanren
 open Tester
+open Printf
 
-@type nat = O | S of nat logic with show
+module Peano = struct
+  module X = struct
+    @type 'a t = O | S of 'a with show;;
+
+    let fmap f = function O -> O | S x -> S (f x)
+  end
+  include X
+  include Fmap1(X)
+
+  type ground = ground X.t
+  type lnat = lnat t logic
+
+  let o () = inj @@ distrib O
+  let s x  = inj @@ distrib (S x)
+
+  type rt = rt t           (* normal type *)
+  type lt = lt t logic     (* reified *)
+  type ft = (rt, lt) fancy (* fancified *)
+
+  let rec show_ln n = show_logic GT.(show t show_ln) n
+  let rec show_rn n = GT.(show t show_rn) n
+end;;
+
+let rec peano_reifier : var_checker -> (Peano.rt, Peano.lt) fancy -> Peano.lt = fun c x ->
+  Peano.reifier peano_reifier c x
+
+let runN  n = runR peano_reifier Peano.show_rn Peano.show_ln n
+
+let o      = Peano.o ()
+let s prev = Peano.s prev
 
 let rec addo x y z =
   conde [
-    (x === !O) &&& (z === y);
-    fresh (x' z')
-       (x === !(S x'))
-       (z === !(S z'))
-       (addo x' y z')
+    (x === o) &&& (z === y);
+    Fresh.two (fun x' z' ->
+      (x === s x') &&&
+      (z === s z') &&&
+      (addo x' y z')
+    )
   ]
 
 let rec mulo x y z =
   conde [
-    (x === !O) &&& (z === !O);
-    fresh (x' z') 
-      (x === !(S x')) 
-      (addo y z' z)
+    (x === o) &&& (z === o);
+    Fresh.two (fun x' z' ->
+      (x === s x') &&&
+      (addo y z' z) &&&
       (mulo x' y z')
+    )
   ]
 
-let show_nat = show logic (show nat)
+let () =
+  runN  1    q   qh (REPR (fun q   -> addo o (s o) q                   ));
+  runN  1    q   qh (REPR (fun q   -> addo (s o) (s o) q               ));
+  runN  2    q   qh (REPR (fun q   -> addo o (s o) q                   ));
+  runN  2    q   qh (REPR (fun q   -> addo (s o) (s o) q               ));
+  runN  1    q   qh (REPR (fun q   -> addo q (s o) (s o)               ));
+  runN  1    q   qh (REPR (fun q   -> addo (s o) q (s o)               ));
+  runN  2    q   qh (REPR (fun q   -> addo q (s o) (s o)               ));
+  runN  2    q   qh (REPR (fun q   -> addo (s o) q (s o)               ));
+  runN (-1) qr  qrh (REPR (fun q r -> addo q r (s (s (s (s o))))       ));
 
-let _ = 
-  run show_nat  1    q  (REPR (fun q   -> addo !O !(S !O) q                    )) qh;
-  run show_nat  1    q  (REPR (fun q   -> addo !(S !O) !(S !O) q               )) qh;
-  run show_nat  2    q  (REPR (fun q   -> addo !O !(S !O) q                    )) qh;
-  run show_nat  2    q  (REPR (fun q   -> addo !(S !O) !(S !O) q               )) qh;
-  run show_nat  1    q  (REPR (fun q   -> addo q !(S !O) !(S !O)               )) qh;
-  run show_nat  1    q  (REPR (fun q   -> addo !(S !O) q !(S !O)               )) qh;
-  run show_nat  2    q  (REPR (fun q   -> addo q !(S !O) !(S !O)               )) qh;
-  run show_nat  2    q  (REPR (fun q   -> addo !(S !O) q !(S !O)               )) qh;
-  run show_nat (-1) qr  (REPR (fun q r -> addo q r !(S !(S !(S !(S !O))))      )) qrh;
+  runN  1    q   qh (REPR (fun q   -> mulo o (s o) q                   ));
+  runN  1    q   qh (REPR (fun q   -> mulo (s (s o)) (s (s o)) q       ));
+  runN  2    q   qh (REPR (fun q   -> mulo o (s o) q                   ));
+  runN  1    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s o))       ));
+  runN  1    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s (s o)))   ));
+  runN  2    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s o))       ));
+  runN  2    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s (s o)))   ));
 
-  run show_nat  1    q  (REPR (fun q   -> mulo !O !(S !O) q                    )) qh;
-  run show_nat  1    q  (REPR (fun q   -> mulo !(S !(S !O)) !(S !(S !O)) q     )) qh;
-  run show_nat  2    q  (REPR (fun q   -> mulo !O !(S !O) q                    )) qh;
-  run show_nat  1    q  (REPR (fun q   -> mulo q !(S !(S !O)) !(S !(S !O))     )) qh;
-  run show_nat  1    q  (REPR (fun q   -> mulo q !(S !(S !O)) !(S !(S !(S !O))))) qh;
-  run show_nat  2    q  (REPR (fun q   -> mulo q !(S !(S !O)) !(S !(S !O))     )) qh;
-  run show_nat  2    q  (REPR (fun q   -> mulo q !(S !(S !O)) !(S !(S !(S !O))))) qh;
+  runN  1    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s o))      ));
+  runN  1    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s (s o)))  ));
+  runN  2    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s o))      ));
+  runN  2    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s (s o)))  ));
 
-  run show_nat  1    q  (REPR (fun q   -> mulo !(S !(S !O)) q !(S !(S !O))     )) qh;
-  run show_nat  1    q  (REPR (fun q   -> mulo !(S !(S !O)) q !(S !(S !(S !O))))) qh;
-  run show_nat  2    q  (REPR (fun q   -> mulo !(S !(S !O)) q !(S !(S !O)) )    ) qh;
-  run show_nat  2    q  (REPR (fun q   -> mulo !(S !(S !O)) q !(S !(S !(S !O))))) qh;
-  
-  run show_nat  1   qr  (REPR (fun q r -> mulo q !(S !O) r                     )) qrh;
-  run show_nat 10   qr  (REPR (fun q r -> mulo q !(S !O) r                     )) qrh;
+  runN  1   qr  qrh (REPR (fun q r -> mulo q (s o) r                  ));
+  runN 10   qr  qrh (REPR (fun q r -> mulo q (s o) r                  ));
 
-  run show_nat  1   qr  (REPR (fun q r -> mulo !(S !O) q r                     )) qrh;
-  run show_nat 10   qr  (REPR (fun q r -> mulo !(S !O) q r                     )) qrh;
+  runN  1   qr  qrh (REPR (fun q r -> mulo (s o) q r                  ));
+  runN 10   qr  qrh (REPR (fun q r -> mulo (s o) q r                  ));
 
-  run show_nat  1   qr  (REPR (fun q r -> mulo q r !O                          )) qrh;
-  run show_nat  1   qr  (REPR (fun q r -> mulo q r !(S !O)                     )) qrh;
-  
-  run show_nat  1    q  (REPR (fun q   -> mulo !(S !O) !(S !O) q               )) qh;
-  run show_nat  1   qr  (REPR (fun q r -> mulo q r !(S !(S !(S !(S !O))))      )) qrh;
-  run show_nat  3   qr  (REPR (fun q r -> mulo q r !(S !(S !(S !(S !O))))      )) qrh;
+  runN  1   qr  qrh (REPR (fun q r -> mulo q r (s o)                  ));
 
-  run show_nat  3  qrs  (REPR (fun q r s -> mulo q r s                         )) qrsh;
-  run show_nat 10  qrs  (REPR (fun q r s -> mulo q r s                         )) qrsh
+  runN  1    q   qh (REPR (fun q   -> mulo (s o) (s o) q              ));
+  runN  1   qr  qrh (REPR (fun q r -> mulo q r (s (s (s (s o))))      ));
+  runN  3   qr  qrh (REPR (fun q r -> mulo q r (s (s (s (s o))))      ));
+  ()
 
+let () =
+  runN   1   qr  qrh (REPR (fun q r   -> mulo q r o                   ));
+  runN   3  qrs qrsh (REPR (fun p q r -> mulo p q r                   ));
+  runN  10  qrs qrsh (REPR (fun q r s -> mulo q r s                   ));
+  ()

@@ -1,90 +1,71 @@
-1open GT
+(* Testing fancy types for non-rec 'a option type
+ * The type ['a option] was chosen because it is simpliest useful polymorphic type.
+ * Type ('a,'b) result is here too.
+ *)
 open MiniKanren
 open Tester
+open Printf
+open ManualReifiers
 
-let just_a a = a === (5 |> lift |> inj)
-(*
-let a_and_b a =
-  call_fresh (
-    fun b ->
-      conj (a === !7)
-           (disj (b === !6)
-                 (b === !5)
-           )
-  )
+module Option = struct
+  module X = struct
+    type 'a t = 'a option
+    let fmap f o =
+      (* let () = printf "inside fmap of '%s'\n%!" (generic_show o) in *)
+      match o with
+      | Some x -> Some(f x)
+      | None -> None
+  end
+  include X
+  include Fmap1(X)
 
-let a_and_b' b =
-  call_fresh (
-    fun a ->
-      conj (a === !7)
-           (disj (b === !6)
-                 (b === !5)
-           )
-  )
+  let some : ('a,'b) fancy -> ('a option, 'b option logic) fancy = fun x -> inj (distrib (Some x))
+  let none : unit -> (_,_ option logic) fancy = fun () -> inj @@ (distrib None )
+end
 
-let rec fives x =
-  disj (x === !5)       
-       (fun st -> Stream.from_fun (fun () -> fives x st))
+let show_int = GT.(show int)
+let show_int_opt = GT.(show option) show_int
+let show_intl n = show_logic string_of_int n
+let show_intl_optl o = show_logic GT.(show option show_intl) o
 
-let rec appendo a b ab =
-  disj
-    (conj (a === !Nil) (b === ab) )
-    (call_fresh (fun h ->
-      (call_fresh (fun t ->
-        (conj (a === h % t)
-           (call_fresh (fun ab' ->
-              conj (h % ab' === ab)
-                   (appendo t b ab')
-           ))
-      )))
-    ))
-
-let rec reverso a b =
-  disj
-    (conj (a === !Nil) (b === !Nil))
-    (call_fresh (fun h ->
-      (call_fresh (fun t ->
-          (conj (a === h % t)
-                (call_fresh (fun a' ->
-                   conj (appendo a' !< h b)
-                        (reverso t a')
-                ))
-        )
-    )
-    )))
-*)
-(*
-let show_int      = show(logic) (show int)
-let show_int_list = show(List.logic) show_int
-*)
-;;
-
-let rec show_list l = show(llist) (show(int)) show_list l;;
-
-@type 'a test = A of 'a with show
-
-module LTest = Fmap (struct type 'a t = 'a test let fmap f = function A x -> A (f x)  end)
-
-let rec show_test t = show(test) (show(int)) t
+let int_opt_reifier = Option.reifier int_reifier
 
 let _ =
-  MiniKanren.run q 
-    (fun q -> inj (LTest.fmap (A q)) === inj (LTest.fmap (A (inj (lift 5)))))
-    (fun qs -> Printf.printf "%s\n" (show(int) @@ Stream.hd qs))
-(*
-  run show_int_list  1  q (REPR (fun q   -> appendo q (inj_list [3; 4]) (inj_list [1; 2; 3; 4]))) qh;
-  run show_int_list  4 qr (REPR (fun q r -> appendo q (inj_list []) r                          )) qrh;
-  run show_int_list  1  q (REPR (fun q   -> reverso q (inj_list [1; 2; 3; 4])                  )) qh;
-  run show_int_list  1  q (REPR (fun q   -> reverso (inj_list []) (inj_list [])                )) qh;
-  run show_int_list  1  q (REPR (fun q   -> reverso (inj_list [1; 2; 3; 4]) q                  )) qh;
-  run show_int_list  1  q (REPR (fun q   -> reverso q q                                        )) qh;
-  run show_int_list  2  q (REPR (fun q   -> reverso q q                                        )) qh;
-  run show_int_list  3  q (REPR (fun q   -> reverso q q                                        )) qh;
-  run show_int_list 10  q (REPR (fun q   -> reverso q q                                        )) qh;
-  run show_int_list  2  q (REPR (fun q   -> reverso q (inj_list [1])                           )) qh;
-  run show_int_list  1  q (REPR (fun q   -> reverso (inj_list [1]) q                           )) qh;
-  run show_int       1  q (REPR (fun q   -> a_and_b q                                          )) qh;
-  run show_int       2  q (REPR (fun q   -> a_and_b' q                                         )) qh;
-  run show_int      10  q (REPR (fun q   -> fives q                                            )) qh
+  let open Option in
+  run_exn show_int 1 q qh (REPR(fun q -> q === inj@@lift 5 ));
+  runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> q === some @@ inj_int 5 ));
+  runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> q === none() ));
+  runR int_reifier     show_int     show_intl      1 q qh (REPR(fun q -> some q === some @@ inj_int 5 ));
+  runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> call_fresh (fun w -> (q === some w) )));
+  ()
 
-*)
+(* about result *)
+module Result = struct
+  module X = struct
+    @type ('a,'b) t = OK of 'a | Error of 'b with show;;
+
+    let fmap f g = function
+    | OK x -> OK (f x)
+    | Error y -> Error (g y)
+  end
+  include X
+  include Fmap2(X)
+
+  let ok = fun x -> inj @@ distrib @@ OK x
+  let error = fun x -> inj @@ distrib @@ Error x
+end
+
+let show1 = GT.(show Result.t (show int) (show option @@ show int))
+let show1logic =
+  show_logic GT.(show Result.t (show_logic (show int)) (show_logic (show option @@ show_logic (show int))))
+
+let runResult n = runR (Result.reifier int_reifier int_opt_reifier) show1 show1logic n
+
+let _ =
+  run_exn show1 1  q qh (REPR(fun q -> q === Result.ok @@ inj_int 5 ));
+  runResult   (-1) q qh (REPR(fun q -> call_fresh (fun r -> (q === Result.ok r) &&& conde [r===inj_int 5; success]) ));
+  runResult   (-1) q qh (REPR(fun q -> Fresh.two (fun r s -> conde
+                                                                [ (q === Result.ok s) &&& (s =/= inj_int 4)
+                                                                ; (q === Result.error r)
+                                                                ]) ));
+  ()
