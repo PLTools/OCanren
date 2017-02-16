@@ -16,6 +16,7 @@ TESTS_ENVIRONMENT=./test.sh
 JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
 .PHONY: all celan clean clean_tests install uninstall tests test regression promote_all \
+	doc \
 	only-toplevel toplevel minikanren_stuff tester bundle plugin
 
 .DEFAULT_GOAL: all
@@ -137,3 +138,6 @@ install: bundle
 
 uninstall:
 	ocamlfind remove ocanren
+
+doc: all bundle compile_tests
+	$(OB) MiniKanren.docdir/index.html -Is src
