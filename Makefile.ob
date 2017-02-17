@@ -36,7 +36,7 @@ clean: clean_tests
 	#$(MAKE) -C regression clean
 
 ######################## Tests related stuff  ##########################
-REGRES_CASES := 000 001 004 005 006 007 009 010 011 013 014 015runaway
+REGRES_CASES := 000 001 004 005 006 007 009 010 011 013 014 015runaway 016sorto
 
 define TESTRULES
 BYTE_TEST_EXECUTABLES += regression/test$(1).byte

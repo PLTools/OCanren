@@ -932,9 +932,7 @@ module Nat = struct
         (x === o) &&& (b === Bool.true_);
         (x =/= o) &&& (y === o) &&& (b === Bool.false_);
         Fresh.two (fun x' y' ->
-          conde [
-            (x === (s x')) &&& (y === (s y')) &&& (leo x' y' b)
-          ]
+          (x === (s x')) &&& (y === (s y')) &&& (leo x' y' b)
         )
       ]
 
@@ -943,7 +941,14 @@ module Nat = struct
     let (<=) x y = leo x y Bool.true_
     let (>=) x y = geo x y Bool.false_
 
-    let gto x y b = conde [(x >= y) &&& (x =/= y) &&& (b === Bool.true_)]
+    let rec gto x y b = conde
+      [ (x =/= o) &&& (y === o) &&& (b === Bool.true_)
+      ; (x === o) &&& (b === Bool.false_)
+      ; Fresh.two (fun x' y' ->
+          (x === s x') &&& (y === s y') &&& (gto x' y' b)
+        )
+      ]
+
     let lto x y b = gto y x b
 
     let (>) x y = gto x y Bool.true_
