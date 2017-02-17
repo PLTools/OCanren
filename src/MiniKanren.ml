@@ -216,7 +216,7 @@ external inj_int : int -> (int, int logic) fancy = "%identity"
 exception Not_a_value
 exception Occurs_check
 
-module Int = struct type t = int let compare = Pervasives.compare end
+module Int = struct type t = int let compare : int -> int -> int = Pervasives.compare end
 module MultiIntMap : sig
   type key = Int.t
   type 'a t
