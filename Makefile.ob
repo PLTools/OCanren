@@ -9,7 +9,8 @@ OB += -verbose 6
 endif
 
 CMA_TARGETS=src/MiniKanren.cma
-CMO_TARGETS=#src/tester.cmo
+CMO_TARGETS=regression/tester.cmo
+#TESTER_TARGETS=regression/tester.cmo regression/tester.cmx
 BYTE_TARGETS=$(CMA_TARGETS) $(CMO_TARGETS)
 NATIVE_TARGETS= $(CMA_TARGETS:.cma=.cmxa) $(CMO_TARGETS:.cmo=.cmx)
 TESTS_ENVIRONMENT=./test.sh
@@ -131,7 +132,10 @@ rmbundledir:
 $(BUNDLEDIR):
 	@$(MKDIR) $@
 
-bundle: rmbundledir $(BUNDLEDIR) $(MAKE_BUNDLE_TARGETS)
+bundle: rmbundledir $(BUNDLEDIR)
+	$(MAKE) -f Makefile.ob really_make_bundle
+
+really_make_bundle: $(MAKE_BUNDLE_TARGETS)
 
 install: bundle
 	ocamlfind install ocanren $(BUNDLEDIR)/*
