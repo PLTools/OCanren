@@ -1,4 +1,4 @@
-true: debug, rectypes, color(always), bin_annot
+true: debug, rectypes, color(always), bin_annot, keep_asm
 true: short_paths
 
 <samples>: not_hygienic
