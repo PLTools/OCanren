@@ -84,17 +84,14 @@ let (!!!) = Obj.magic
 
 type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
+let is_valid_tag t =
+  let open Obj in
+  not (List.mem t
+    [lazy_tag; closure_tag; object_tag; infix_tag; forward_tag; no_scan_tag;
+     abstract_tag; custom_tag; custom_tag; unaligned_tag; out_of_heap_tag])
+
 let rec wrap (x : Obj.t) =
   Obj.(
-    let is_valid_tag =
-      List.fold_left
-      (fun f t tag -> tag <> t && f tag)
-      (fun _ -> true)
-      [lazy_tag   ; closure_tag  ; object_tag  ; infix_tag ;
-       forward_tag; no_scan_tag  ; abstract_tag; custom_tag;
-       custom_tag  ; unaligned_tag; out_of_heap_tag
-      ]
-    in
     let is_unboxed obj =
       is_int obj ||
       (fun t -> t = string_tag || t = double_tag) (tag obj)
