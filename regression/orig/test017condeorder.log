@@ -1,0 +1,16 @@
+fun q -> (&&&) ((===) q (inj_int 1)) (conde [f1f; f2f; f3f]), all answers {
+f3
+f2
+f1
+}
+fun q -> (&&&) ((===) q (inj_int 1)) (condel [f1f; f2f; f3f]), all answers {
+f1
+f2
+f3
+}
+fun q -> (&&&) ((===) q (inj_int 1)) ((?&) [f1s; f2s; f3s]), all answers {
+f1
+f2
+f3
+q=1;
+}

@@ -121,13 +121,21 @@ val disj : goal -> goal -> goal
 (** [|||] is left-associative infix synonym for [disj] *)
 val (|||) : goal -> goal -> goal
 
-(** [?| [s1; s2; ...; sk]] calculates [s1 ||| s2 ||| ... ||| sk] for a non-empty list of goals *)
+(** [?| [s1; s2; ...; sk]] calculates [s1 ||| s2 ||| ... ||| sk] for a
+    non-empty list of goals. Calculations are performed from right to left. *)
 val (?|) : goal list -> goal
 
 (** [conde] is a synonym for [?|] *)
 val conde : goal list -> goal
 
-(** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a non-empty list of goals *)
+(** [conder] is a synonym for [?|] and [conde] *)
+val conder : goal list -> goal
+
+(** [condel] is the same as (?|) but calculation from left to right *)
+val condel : goal list -> goal
+
+(** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a
+    non-empty list of goals; evaluation from left to right *)
 val (?&) : goal list -> goal
 
 (** {2 Some predefined goals} *)

@@ -511,6 +511,12 @@ let rec (?&) = function
 | h::t -> h &&& ?& t
 
 let conde = (?|)
+let conder = conde
+
+let rec condel = function
+| [h]  -> h
+| h::t -> (condel t) ||| h
+
 
 module Fresh =
   struct
