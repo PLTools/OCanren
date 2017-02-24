@@ -253,17 +253,19 @@ module Env :
   struct
     type t = { token : token_env;
                mutable next: int;
-               mutable reifiers: Obj.t MultiIntMap.t;
+               (* mutable reifiers: Obj.t MultiIntMap.t; *)
               }
 
     let last_token : token_env ref = ref 0
     let empty () =
       incr last_token;
-      { token= !last_token; next=10; reifiers=MultiIntMap.empty }
+      { token= !last_token; next=10 }
 
     let fresh e =
       let v = InnerVar (global_token, e.token, e.next, []) in
-      (!!!v, {e with next=1+e.next})
+      e.next <- 1+e.next;
+      (* printf "new fresh var with index=%d\n" e.next; *)
+      (!!!v, e)
 
     let var_tag, var_size =
       let dummy_index = 0 in
