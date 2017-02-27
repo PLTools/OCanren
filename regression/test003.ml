@@ -14,7 +14,7 @@ let a_and_b' b =
     (a === !7)
     (conde [b === !6; b === !5])
   
-let rec fives x = (x === !5) ||| defer (fives x) 
+let rec fives x = (x === !5) ||| (*defer*) (fives x) 
 
 let rec appendo a b ab =
   conde [

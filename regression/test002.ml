@@ -19,9 +19,10 @@ let a_and_b' b =
   )
 
 let rec fives x =
-  (x === !5) |||
+  (x === !5) ||| (fives x)
+(*
   (fun st -> Stream.from_fun (fun () -> fives x st))
-
+*)
 let rec appendo a b ab =
   ?| [  
   (a === !Nil) &&& (b === ab);

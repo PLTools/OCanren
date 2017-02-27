@@ -307,7 +307,58 @@ module State =
     let show  (env, subst, constr) = Printf.sprintf "st {%s, %s}" (Subst.show subst) (GT.show(GT.list) Subst.show constr)
   end
 
-type goal = State.t -> State.t Stream.t
+module Search =
+  struct
+
+    type t = unit -> result
+    and  result = 
+    | Ok       of State.t * t 
+    | Continue of t
+    | End 
+
+    let rec maps f k () = 
+      match k () with
+      | Ok (s, k)  -> Ok (f s, maps f k)
+      | Continue k -> Continue (maps f k)
+      | End        -> End
+
+    let rec answers s = 
+      match s () with
+      | End        -> Stream.nil
+      | Continue k -> Stream.from_fun (fun () -> answers k)
+      | Ok (s, k)  -> Stream.cons s @@ Stream.from_fun (fun () -> answers k)
+
+    let stop () = End
+
+    let seq (a : 'a -> t) (b : 'a -> t) (s : 'a) =
+      let rec inner ka kb () =
+	match kb () with
+	| Ok (tb, kb) -> Ok (tb, inner kb ka)
+	| Continue kb -> Continue (inner kb ka)
+	| End         -> Continue ka
+      in
+      Continue (
+        let rec outer ka kb () =
+          match ka () with
+          | Ok (ta, ka) -> Continue (outer ka (inner kb (b ta)))
+	  | Continue ka -> Continue (inner (outer ka stop) kb)
+	  | End         -> Continue kb
+        in
+        outer (a s) stop
+      )
+
+    let alt (a : 'a -> t) (b : 'a -> t) (s : 'a) = 
+      let rec inner a b () =
+	match a () with
+	| Ok (ta, ka) -> Ok (ta, inner b ka)
+	| Continue ka -> Continue (inner b ka)
+	| End         -> b ()
+      in
+      Continue (inner (a s) (b s))
+
+  end
+
+type goal = State.t -> Search.t (*State.t Stream.t*)
 
 let call_fresh f (env, subst, constr) =
   let x, env' = Env.fresh env in
@@ -319,7 +370,7 @@ let (===) x y (env, subst, constr) =
   try
     let prefix, subst' = Subst.unify env x y (Some subst) in
     begin match subst' with
-    | None -> Stream.nil
+    | None -> fun () -> Search.End (*Stream.nil*)
     | Some s -> 
         try
           (* TODO: only apply constraints with the relevant vars *)
@@ -339,10 +390,10 @@ let (===) x y (env, subst, constr) =
             []
             constr
 	  in
-          Stream.cons (env, s, constr') Stream.nil
-        with Disequality_violated -> Stream.nil
+          fun () -> Search.Ok ((env, s, constr'), Search.stop) (* Stream.cons (env, s, constr') Stream.nil*)
+        with Disequality_violated -> (*Stream.nil*) fun () -> Search.End
     end
-  with Occurs_check -> Stream.nil
+  with Occurs_check -> fun () -> Search.End (*Stream.nil*)
 
 let (=/=) x y ((env, subst, constr) as st) =
   let normalize_store prefix constr =
@@ -369,19 +420,19 @@ let (=/=) x y ((env, subst, constr) as st) =
   try 
     let prefix, subst' = Subst.unify env x y (Some subst) in
     match subst' with
-    | None -> Stream.cons st Stream.nil
+    | None -> fun () -> Search.Ok (st, Search.stop) (* Stream.cons st Stream.nil *)
     | Some s -> 
         (match prefix with
-        | [] -> Stream.nil
-        | _  -> Stream.cons (env, subst, normalize_store prefix constr) Stream.nil
+        | [] -> fun () -> Search.End (*Stream.nil*)
+        | _  -> fun () -> Search.Ok ((env, subst, normalize_store prefix constr), Search.stop) (*Stream.cons (env, subst, normalize_store prefix constr) Stream.nil*)
         )
-  with Occurs_check -> Stream.cons st Stream.nil
+  with Occurs_check -> fun () -> Search.Ok (st, Search.stop) (*Stream.cons st Stream.nil*)
 
-let conj f g st = Stream.bind (f st) g
+let conj f g st = fun () -> Search.seq f g st (*Stream.bind (f st) g*)
 
 let (&&&) = conj
 
-let disj f g st = Stream.mplus (f st) (g st)
+let disj f g st = fun () -> Search.alt f g st (*Stream.mplus (f st) (g st)*)
 
 let (|||) = disj 
 
@@ -415,8 +466,8 @@ module Fresh =
 
   end
 
-let success st = Stream.cons st Stream.nil
-let failure _  = Stream.nil
+let success st = fun () -> Search.Ok (st, Search.stop) (*Stream.cons st Stream.nil*)
+let failure _  = fun () -> Search.End (*Stream.nil*)
  
 let eqo x y t =
   conde [
@@ -892,10 +943,10 @@ module Uncurry =
     let succ k f (x,y) = k (f x) y
   end
 
-type 'a refiner = State.t Stream.t -> 'a logic Stream.t
+type 'a refiner = (*State.t Stream.t*) Search.t -> 'a logic Stream.t
 
 let refiner : 'a logic -> 'a refiner = fun x ans ->
-  Stream.map (fun st -> refine st x) ans
+  Stream.map (fun st -> refine st x) (Search.answers ans)
 
 module LogicAdder = 
   struct

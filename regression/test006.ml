@@ -57,4 +57,3 @@ let _ =
   run show_lam 1  qr (REPR (fun q r -> evalo !(App (r, q)) !(X !"x")                       )) qrh;
   run show_lam 2 qrs (REPR (fun q r s -> (evalo !(App (q, r)) s) &&& (evalo !(App (r, s)) q) &&& (evalo !(App (s, q)) r))) qrsh
 
-

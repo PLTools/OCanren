@@ -69,8 +69,17 @@ module State :
     val show : t -> string
   end
 
+module Search :
+  sig
+
+    type t
+
+    val answers : t -> State.t Stream.t
+
+  end
+
 (** Goal converts a state into lazy stream of states *)
-type goal = State.t -> State.t Stream.t
+type goal = State.t -> Search.t (* State.t Stream.t *)
 
 (** {3 Logics} *)
 
@@ -391,6 +400,7 @@ val (===) : 'a logic -> 'a logic -> goal
 val (=/=) : 'a logic -> 'a logic -> goal
 
 (** Equality as boolean relation *)
+
 val eqo : 'a logic -> 'a logic -> Bool.logic -> goal
 
 (** Disequality as boolean relation *)
@@ -475,7 +485,7 @@ val run : (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) 
 
 (** Some type to refine a stream of states into the stream of answers (w.r.t. some known
     logic variable *)
-type 'a refiner = State.t Stream.t -> 'a logic Stream.t
+type 'a refiner = Search.t (*State.t Stream.t*) -> 'a logic Stream.t
 
 (** Successor function *)
 val succ :
