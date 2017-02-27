@@ -1,5 +1,5 @@
-fun q -> call_fresh (fun x -> (=/=) x !(A x)), all answers {
-q=_.10; 
+fun q -> (=/=) q !1, all answers {
+q=_.10 [=/= 1];
 }
 fun q ->
   call_fresh
@@ -9,8 +9,9 @@ fun q ->
             call_fresh
               (fun z ->
                  conj ((=/=) x y)
-                   (conj ((===) x ![!0; z; !1]) ((===) y ![!0; !1; !1]))))), all answers {
-q=_.10; 
+                   (conj ((===) x ((!!) [!0; z; !1]))
+                      ((===) y ((!!) [!0; !1; !1])))))), all answers {
+q=_.10;
 }
 fun q ->
   call_fresh
@@ -20,21 +21,9 @@ fun q ->
             call_fresh
               (fun z ->
                  conj ((=/=) x y)
-                   (conj ((===) x ![!0; z; !1])
-                      (conj ((===) y ![!0; !1; !1])
-                         (conj ((===) z !1) ((===) ![x; y] q))))))), all answers {
-}
-fun q ->
-  call_fresh
-    (fun x ->
-       call_fresh
-         (fun y ->
-            call_fresh
-              (fun z ->
-                 conj ((=/=) x y)
-                   (conj ((===) x ![!0; z; !1])
-                      (conj ((===) y ![!0; !1; !1]) ((===) z !0)))))), all answers {
-q=_.10; 
+                   (conj ((===) x ((!!) [!0; z; !1]))
+                      (conj ((===) y ((!!) [!0; !1; !1])) ((===) z !0)))))), all answers {
+q=_.10;
 }
 fun q ->
   call_fresh
@@ -45,20 +34,9 @@ fun q ->
               (fun z ->
                  conj ((===) z !0)
                    (conj ((=/=) x y)
-                      (conj ((===) x ![!0; z; !1])
-                         ((===) y ![!0; !1; !1])))))), all answers {
-q=_.10; 
-}
-fun q ->
-  call_fresh
-    (fun x ->
-       call_fresh
-         (fun y ->
-            call_fresh
-              (fun z ->
-                 conj ((===) x ![!0; z; !1])
-                   (conj ((===) y ![!0; !1; !1]) ((=/=) x y))))), all answers {
-q=_.10; 
+                      (conj ((===) x ((!!) [!0; z; !1]))
+                         ((===) y ((!!) [!0; !1; !1]))))))), all answers {
+q=_.10;
 }
 fun q ->
   call_fresh
@@ -69,8 +47,19 @@ fun q ->
               (fun z ->
                  conj ((===) z !1)
                    (conj ((=/=) x y)
-                      (conj ((===) x ![!0; z; !1])
-                         ((===) y ![!0; !1; !1])))))), all answers {
+                      (conj ((===) x ((!!) [!0; z; !1]))
+                         ((===) y ((!!) [!0; !1; !1]))))))), all answers {
+}
+fun q ->
+  call_fresh
+    (fun x ->
+       call_fresh
+         (fun y ->
+            call_fresh
+              (fun z ->
+                 conj ((===) x ((!!) [!0; z; !1]))
+                   (conj ((===) y ((!!) [!0; !1; !1])) ((=/=) x y))))), all answers {
+q=_.10;
 }
 fun q ->
   call_fresh
@@ -80,67 +69,68 @@ fun q ->
             call_fresh
               (fun z ->
                  conj ((===) z !1)
-                   (conj ((===) x ![!0; z; !1])
-                      (conj ((===) y ![!0; !1; !1]) ((=/=) x y)))))), all answers {
+                   (conj ((===) x ((!!) [!0; z; !1]))
+                      (conj ((===) y ((!!) [!0; !1; !1])) ((=/=) x y)))))), all answers {
 }
 fun q ->
   call_fresh
     (fun x ->
-       call_fresh (fun y -> conj ((=/=) ![x; !1] ![!2; y]) ((===) x !2))), all answers {
-q=_.10; 
+       call_fresh
+         (fun y -> conj ((=/=) ((!!) [x; !1]) ((!!) [!2; y])) ((===) x !2))), all answers {
+q=_.10;
 }
 fun q ->
   call_fresh
     (fun x ->
-       call_fresh (fun y -> conj ((=/=) ![x; !1] ![!2; y]) ((===) y !1))), all answers {
-q=_.10; 
+       call_fresh
+         (fun y -> conj ((=/=) ((!!) [x; !1]) ((!!) [!2; y])) ((===) y !1))), all answers {
+q=_.10;
 }
 fun q ->
   call_fresh
     (fun x ->
        call_fresh
          (fun y ->
-            conj ((=/=) ![x; !1] ![!2; y]) (conj ((===) x !2) ((===) y !1)))), all answers {
-}
-fun q ->
-  call_fresh
-    (fun x ->
-       call_fresh (fun y -> conj ((=/=) ![x; !1] ![!2; y]) ((===) ![x; y] q))), all answers {
-q=[_.11 [=/= 2]; _.12 [=/= 1]]; 
-}
-fun q ->
-  call_fresh
-    (fun x ->
-       call_fresh
-         (fun y ->
-            conj ((=/=) ![x; !1] ![!2; y])
-              (conj ((===) x !2) ((===) ![x; y] q)))), all answers {
-q=[2; _.12 [=/= 1]]; 
+            conj ((=/=) ((!!) [x; !1]) ((!!) [!2; y]))
+              ((===) ((!!) [x; y]) q))), all answers {
+q=[_.11 [=/= 2]; _.12 [=/= 1]];
 }
 fun q ->
   call_fresh
     (fun x ->
        call_fresh
          (fun y ->
-            conj ((=/=) ![x; !1] ![!2; y])
-              (conj ((===) x !2) (conj ((===) y !9) ((===) ![x; y] q))))), all answers {
-q=[2; 9]; 
+            conj ((=/=) ((!!) [x; !1]) ((!!) [!2; y]))
+              (conj ((===) x !2) ((===) ((!!) [x; y]) q)))), all answers {
+q=[2; _.12 [=/= 1]];
+}
+fun q ->
+  call_fresh
+    (fun x ->
+       call_fresh
+         (fun y ->
+            conj ((=/=) ((!!) [x; !1]) ((!!) [!2; y]))
+              (conj ((===) x !2)
+                 (conj ((===) y !9) ((===) ((!!) [x; y]) q))))), all answers {
+q=[2; 9];
 }
 fun q ->
   call_fresh
     (fun a ->
        call_fresh
          (fun d ->
-            conj ((===) ![a; d] q)
-              (conj ((=/=) q ![!5; !6]) (conj ((===) a !5) ((===) d !6))))), all answers {
+            conj ((===) ((!!) [a; d]) q)
+              (conj ((=/=) q ((!!) [!5; !6]))
+                 (conj ((===) a !5) ((===) d !6))))), all answers {
 }
 fun q ->
   call_fresh
     (fun x ->
        call_fresh
          (fun y ->
-            conj ((=/=) ![x; !1] ![!2; y])
-              (conj ((===) x !2) (conj ((===) y !1) ((===) ![x; y] q))))), all answers {
+            conj ((=/=) ((!!) [x; !1]) ((!!) [!2; y]))
+              (conj ((===) x !2)
+                 (conj ((===) y !1) ((===) ((!!) [x; y]) q))))), all answers {
 }
 fun q ->
   call_fresh
@@ -149,8 +139,8 @@ fun q ->
          (fun x ->
             call_fresh
               (fun z ->
-                 conj ((=/=) a ![x; !1])
-                   (conj ((===) a ![z; !1]) ((===) x z))))), all answers {
+                 conj ((=/=) a ((!!) [x; !1]))
+                   (conj ((===) a ((!!) [z; !1])) ((===) x z))))), all answers {
 }
 fun q ->
   call_fresh
@@ -159,13 +149,13 @@ fun q ->
          (fun x ->
             call_fresh
               (fun z ->
-                 conj ((=/=) a ![x; !1])
-                   (conj ((===) a ![z; !1])
-                      (conj ((===) x !5) ((===) ![x; z] q)))))), all answers {
-q=[5; _.13 [=/= 5]]; 
+                 conj ((=/=) a ((!!) [x; !1]))
+                   (conj ((===) a ((!!) [z; !1]))
+                      (conj ((===) x !5) ((===) ((!!) [x; z]) q)))))), all answers {
+q=[5; _.13 [=/= 5]];
 }
 fun q -> (=/=) !3 !4, all answers {
-q=_.10; 
+q=_.10;
 }
 fun q -> (=/=) !3 !3, all answers {
 }
@@ -176,80 +166,79 @@ fun q ->
     (fun a ->
        call_fresh
          (fun d ->
-            conj ((===) ![a; d] q) (conj ((=/=) q ![!5; !6]) ((===) a !5)))), all answers {
-q=[5; _.12 [=/= 6]]; 
+            conj ((===) ((!!) [a; d]) q)
+              (conj ((=/=) q ((!!) [!5; !6])) ((===) a !5)))), all answers {
+q=[5; _.12 [=/= 6]];
 }
 fun q -> call_fresh (fun a -> conj ((===) !3 a) ((=/=) a !4)), all answers {
-q=_.10; 
+q=_.10;
 }
 fun q -> (&&&) ((=/=) !4 q) ((=/=) !3 q), all answers {
-q=_.10 [=/= 3; =/= 4]; 
+q=_.10 [=/= 3; =/= 4];
 }
 fun q -> (&&&) ((=/=) q !5) ((=/=) q !5), all answers {
-q=_.10 [=/= 5]; 
+q=_.10 [=/= 5];
 }
 fun q ->
   let foo x = call_fresh (fun a -> (=/=) x a) in call_fresh (fun a -> foo a), all answers {
-q=_.10; 
+q=_.10;
 }
 fun q ->
   call_fresh
-    (fun x -> call_fresh (fun y -> conj ((===) ![x; y] q) ((=/=) x y))), all answers {
-q=[_.11 [=/= _.12]; _.12]; 
+    (fun x -> call_fresh (fun y -> conj ((===) ((!!) [x; y]) q) ((=/=) x y))), all answers {
+q=[_.11 [=/= _.12]; _.12];
+}
+fun q ->
+  Fresh.two (fun a d -> (?&) [(===) ((!!) [a; d]) q; (=/=) q ((!!) [!5; !6])]), all answers {
+q=[_.11 [=/= 5]; _.12 [=/= 6]];
+}
+fun q ->
+  Fresh.two
+    (fun a d ->
+       (?&) [(===) ((!!) [a; d]) q; (=/=) q ((!!) [!5; !6]); (===) a !3]), all answers {
+q=[3; _.12];
 }
 fun q ->
   call_fresh
-    (fun a ->
-       call_fresh (fun d -> conj ((===) ![a; d] q) ((=/=) q ![!5; !6]))), all answers {
-q=[_.11 [=/= 5]; _.12 [=/= 6]]; 
-}
-fun q ->
-  call_fresh
-    (fun a ->
-       call_fresh
-         (fun d ->
-            conj ((===) ![a; d] q) (conj ((=/=) q ![!5; !6]) ((===) a !3)))), all answers {
-q=[3; _.12]; 
-}
-fun q ->
-  call_fresh
-    (fun x -> call_fresh (fun y -> conj ((===) ![x; y] q) ((=/=) y x))), all answers {
-q=[_.11; _.12 [=/= _.11]]; 
+    (fun x -> call_fresh (fun y -> conj ((===) ((!!) [x; y]) q) ((=/=) y x))), all answers {
+q=[_.11; _.12 [=/= _.11]];
 }
 fun q ->
   call_fresh
     (fun x ->
        call_fresh
-         (fun y -> conj ((===) ![x; y] q) (conj ((=/=) x y) ((=/=) y x)))), all answers {
-q=[_.11 [=/= _.12]; _.12]; 
+         (fun y ->
+            conj ((===) ((!!) [x; y]) q) (conj ((=/=) x y) ((=/=) y x)))), all answers {
+q=[_.11 [=/= _.12]; _.12];
 }
 fun q ->
   call_fresh
     (fun x ->
        call_fresh
-         (fun y -> conj ((===) ![x; y] q) (conj ((=/=) x y) ((=/=) x y)))), all answers {
-q=[_.11 [=/= _.12]; _.12]; 
+         (fun y ->
+            conj ((===) ((!!) [x; y]) q) (conj ((=/=) x y) ((=/=) x y)))), all answers {
+q=[_.11 [=/= _.12]; _.12];
 }
 fun q -> (&&&) ((=/=) q !5) ((=/=) !5 q), all answers {
-q=_.10 [=/= 5]; 
+q=_.10 [=/= 5];
 }
 fun q ->
   call_fresh
     (fun x ->
        call_fresh
          (fun y ->
-            conj ((===) ![x; y] q)
-              (conj ((=/=) ![x; y] ![!5; !6]) ((=/=) x !5)))), all answers {
-q=[_.11 [=/= 5]; _.12]; 
+            conj ((===) ((!!) [x; y]) q)
+              (conj ((=/=) ((!!) [x; y]) ((!!) [!5; !6])) ((=/=) x !5)))), all answers {
+q=[_.11 [=/= 5]; _.12];
 }
 fun q ->
   call_fresh
     (fun x ->
        call_fresh
          (fun y ->
-            conj ((===) ![x; y] q)
-              (conj ((=/=) x !5) ((=/=) ![x; y] ![!5; !6])))), all answers {
-q=[_.11 [=/= 5]; _.12]; 
+            conj ((===) ((!!) [x; y]) q)
+              (conj ((=/=) x !5) ((=/=) ((!!) [x; y]) ((!!) [!5; !6]))))), all answers {
+q=[_.11 [=/= 5]; _.12];
 }
 fun q ->
   call_fresh
@@ -257,8 +246,9 @@ fun q ->
        call_fresh
          (fun y ->
             conj ((=/=) x !5)
-              (conj ((=/=) ![x; y] ![!5; !6]) ((===) ![x; y] q)))), all answers {
-q=[_.11 [=/= 5]; _.12]; 
+              (conj ((=/=) ((!!) [x; y]) ((!!) [!5; !6]))
+                 ((===) ((!!) [x; y]) q)))), all answers {
+q=[_.11 [=/= 5]; _.12];
 }
 fun q ->
   call_fresh
@@ -266,8 +256,9 @@ fun q ->
        call_fresh
          (fun y ->
             conj ((=/=) !5 x)
-              (conj ((=/=) ![x; y] ![!5; !6]) ((===) ![x; y] q)))), all answers {
-q=[_.11 [=/= 5]; _.12]; 
+              (conj ((=/=) ((!!) [x; y]) ((!!) [!5; !6]))
+                 ((===) ((!!) [x; y]) q)))), all answers {
+q=[_.11 [=/= 5]; _.12];
 }
 fun q ->
   call_fresh
@@ -275,29 +266,31 @@ fun q ->
        call_fresh
          (fun y ->
             conj ((=/=) !5 x)
-              (conj ((=/=) ![y; x] ![!6; !5]) ((===) ![x; y] q)))), all answers {
-q=[_.11 [=/= 5]; _.12]; 
+              (conj ((=/=) ((!!) [y; x]) ((!!) [!6; !5]))
+                 ((===) ((!!) [x; y]) q)))), all answers {
+q=[_.11 [=/= 5]; _.12];
 }
 fun x ->
   call_fresh
     (fun y ->
-       call_fresh (fun z -> conj ((=/=) x ![y; !2]) ((===) x ![z; !2]))), all answers {
-x=[_.12 [=/= _.11]; 2]; 
+       call_fresh
+         (fun z -> conj ((=/=) x ((!!) [y; !2])) ((===) x ((!!) [z; !2])))), all answers {
+xs=[_.12 [=/= _.11]; 2];
 }
 fun q -> distincto ((%) !2 ((%<) !3 q)), all answers {
-q=_.23 [=/= 3; =/= 2]; 
+q=_.23 [=/= 3; =/= 2];
+}
+fun q -> remembero !1 ((%) !1 ((%) !2 ((%<) !1 !3))) q, all answers {
+q=[1; 2; 1; 3];
+q=[2; 1; 3];
+q=[1; 2; 3];
+q=[2; 3];
+}
+fun q -> remembero !1 ((%) !1 ((%<) !2 !3)) ((%) !1 ((%<) !2 !3)), all answers {
+q=_.10;
 }
 fun q -> rembero !1 ((%) !1 ((%) !2 ((%<) !1 !3))) q, all answers {
-q=[1; 2; 1; 3]; 
-q=[2; 1; 3]; 
-q=[1; 2; 3]; 
-q=[2; 3]; 
-}
-fun q -> rembero !1 ((%) !1 ((%<) !2 !3)) ((%) !1 ((%<) !2 !3)), all answers {
-q=_.10; 
-}
-fun q -> rembero !1 ((%) !1 ((%) !2 ((%<) !1 !3))) q, all answers {
-q=[2; 3]; 
+q=[2; 3];
 }
 fun q -> rembero !1 ((%) !1 ((%<) !2 !3)) ((%) !1 ((%<) !2 !3)), all answers {
 }

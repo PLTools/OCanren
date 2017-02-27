@@ -1,23 +1,17 @@
-open GT
+(* Relational arithmentics using binary numbers *)
+open Printf
 open MiniKanren
 open Tester
 
-let rec build_num = 
+let rec build_num =
   function
-  | 0                   -> !Nil
-  | n when n mod 2 == 0 -> !0 % build_num (n / 2)
-  | n                   -> !1 % build_num (n / 2)
-
-let nullo q =
-  (q === !Nil)
-
-let cdro p d =
-  fresh (a)
-    ((a % d) === p)
+  | 0                   -> nil()
+  | n when n mod 2 == 0 -> (inj@@lift 0) % build_num (n / 2)
+  | n                   -> (inj@@lift 1) % build_num (n / 2)
 
 let rec appendo l s out =
   conde [
-    (nullo l) &&& (s === out);
+    (List.nullo l) &&& (s === out);
     fresh (a d res)
       ((a % d) === l)
       (appendo d s res)
@@ -32,6 +26,7 @@ let gt1o q =
   fresh (h t tt)
     (q === h % (t % tt))
 
+let (!) = fun x -> inj@@lift x
 let full_addero b x y r c =
   conde [
     (!0 === b) &&& (!0 === x) &&& (!0 === y) &&& (!0 === r) &&& (!0 === c);
@@ -46,10 +41,10 @@ let full_addero b x y r c =
 
 let rec addero d n m r =
   conde [
-    (!0 === d) &&& (!Nil === m) &&& (n === r);
-    (!0 === d) &&& (!Nil === n) &&& (m === r) &&& (poso m);
-    (!1 === d) &&& (!Nil === m) &&& (defer (addero !0 n (!< !1) r));
-    (!1 === d) &&& (!Nil === n) &&& (poso m) &&& (defer (addero !0 m (!< !1) r));
+    (!0 === d) &&& (nil() === m) &&& (n === r);
+    (!0 === d) &&& (nil() === n) &&& (m === r) &&& (poso m);
+    (!1 === d) &&& (nil() === m) &&& (defer (addero !0 n (!< !1) r));
+    (!1 === d) &&& (nil() === n) &&& (poso m) &&& (defer (addero !0 m (!< !1) r));
     ?& [
       ((!< !1) === n);
       ((!< !1) === m);
@@ -77,20 +72,20 @@ let minuso n m k = pluso m k n
 
 let rec bound_multo q p n m =
   conde [
-    (nullo q) &&& (poso p);
+    (List.nullo q) &&& (poso p);
     fresh (x y z)
-      (cdro q x)
-      (cdro p y)
+      (List.tlo q x)
+      (List.tlo p y)
       (conde [
-        (nullo n) &&& (cdro m z) &&& (bound_multo x y z !Nil);
-        (cdro n z) &&& (bound_multo x y z m)
-      ]) 
+        (List.nullo n) &&& (List.cdro m z) &&& (bound_multo x y z @@ nil());
+        (List.cdro n z) &&& (bound_multo x y z m)
+      ])
   ]
 
 let rec multo n m p =
   conde [
-    (!Nil === n) &&& (!Nil === p);
-    (poso n) &&& (!Nil === m) &&& (!Nil === p);
+    (nil() === n) &&& (nil() === p);
+    (poso n) &&& (nil() === m) &&& (nil() === p);
     ((!< !1) === n) &&& (poso m) &&& (m === p);
     (gt1o n) &&& ((!< !1) === m) &&& (n === p);
     fresh (x z)
@@ -114,14 +109,15 @@ let rec multo n m p =
       (odd_multo x n m p)
   ]
 and odd_multo x n m p =
-  fresh (q)
-    (bound_multo q p n m)
-    (multo x m q)
+  Fresh.one (fun q ->
+    (bound_multo q p n m) &&&
+    (multo x m q) &&&
     (pluso (!0 % q) m p)
+  )
 
 let rec eqlo n m =
   conde [
-    (!Nil === n) &&& (!Nil === m);
+    (nil() === n) &&& (nil() === m);
     ((!< !1) === n) &&& ((!< !1) === m);
     fresh (a x b y)
       ((a % x) === n)
@@ -133,7 +129,7 @@ let rec eqlo n m =
 
 let rec ltlo n m =
   conde [
-    (!Nil === n) &&& (poso m);
+    (nil() === n) &&& (poso m);
     ((!< !1) === n) &&& (gt1o m);
     fresh (a x b y)
       ((a % x) === n)
@@ -168,27 +164,27 @@ let leo n m =
 
 let rec splito n r l h =
   conde [
-    (!Nil === n) &&& (!Nil === h) &&& (!Nil === l);
+    (nil() === n) &&& (nil() === h) &&& (nil() === l);
     fresh (b n')
       ((!0 % (b % n')) === n)
-      (!Nil === r)
+      (nil() === r)
       ((b % n') === h)
-      (!Nil === l);
+      (nil() === l);
     fresh (n')
       ((!1 % n') === n)
-      (!Nil === r)
+      (nil() === r)
       (n' === h)
       ((!< !1) === l);
     fresh (b n' a r')
       ((!0 % (b % n')) === n)
       ((a % r') === r)
-      (!Nil === l)
-      (splito (b % n') r' !Nil h);
+      (nil() === l)
+      (splito (b % n') r' (nil()) h);
     fresh (n' a r')
       ((!1 % n') === n)
       ((a % r') === r)
       ((!< !1) === l)
-      (splito n' r' !Nil h);
+      (splito n' r' (nil()) h);
     fresh (b n' a r' l')
       ((b % n') === n)
       ((a % r') === r)
@@ -199,7 +195,7 @@ let rec splito n r l h =
 
 let rec divo n m q r =
   conde [
-    (r === n) &&& (!Nil === q) &&& (lto n m);
+    (r === n) &&& (nil() === q) &&& (lto n m);
     ((!< !1) === q) &&& (eqlo n m) &&& (pluso r m n) &&& (lto r m);
     ?& [
       (ltlo m n);
@@ -209,13 +205,13 @@ let rec divo n m q r =
         (splito n r nl nh)
         (splito q r ql qh)
         (conde [
-          (!Nil === nh) &&& (!Nil === qh) &&& (minuso nl r qlm) &&& (multo ql m qlm);
+          (nil() === nh) &&& (nil() === qh) &&& (minuso nl r qlm) &&& (multo ql m qlm);
           ?& [
             (poso nh);
             (multo ql m qlm);
-            (pluso qlm r qlmr); 
+            (pluso qlm r qlmr);
             (minuso qlmr nl rr);
-            (splito rr r !Nil rh);
+            (splito rr r (nil()) rh);
             (divo nh m qh rh)
           ]
         ])
@@ -224,7 +220,7 @@ let rec divo n m q r =
 
 let rec repeated_mul n q nq =
   conde [
-    (poso n) &&& (!Nil === q) &&& ((!< !1) === nq);
+    (poso n) &&& (nil() === q) &&& ((!< !1) === nq);
     ((!< !1) === q) &&& (n === nq);
     ?& [
       (gt1o q);
@@ -237,7 +233,7 @@ let rec repeated_mul n q nq =
 
 let rec exp2 n b q =
   conde [
-    ((!< !1) === n) &&& (!Nil === q);
+    ((!< !1) === n) &&& (nil() === q);
     ?& [
       (gt1o n);
       ((!< !1) === q);
@@ -261,17 +257,17 @@ let rec exp2 n b q =
 
 let rec logo n b q r =
   conde [
-    ((!< !1) === n) &&& (poso b) &&& (!Nil === q) &&& (!Nil === r);
-    (!Nil === q) &&& (lto n b) &&& (pluso r (!< !1) n);
+    ((!< !1) === n) &&& (poso b) &&& (nil() === q) &&& (nil() === r);
+    (nil() === q) &&& (lto n b) &&& (pluso r (!< !1) n);
     ((!< !1) === q) &&& (gt1o b) &&& (eqlo n b) &&& (pluso r b n);
     ((!< !1) === b) &&& (poso q) &&& (pluso r (!< !1) n);
-    (!Nil === b) &&& (poso q) &&& (r === n);
+    (nil() === b) &&& (poso q) &&& (r === n);
     ?& [
       ((!0 %< !1) === b);
       fresh (a ad dd)
         (poso dd)
         ((a % (ad % dd)) === n)
-        (exp2 n !Nil q)
+        (exp2 n (nil()) q)
         (fresh (s)
           (splito n dd r s)
         )
@@ -284,14 +280,14 @@ let rec logo n b q r =
         ]);
       (ltlo b n);
       fresh (bw1 bw nw nw1 ql1 ql s)
-        (exp2 b !Nil bw1)
+        (exp2 b (nil()) bw1)
         (pluso bw1 (!< !1) bw)
         (ltlo q n)
         (fresh (q1 bwq1)
           (pluso q (!< !1) q1)
           (multo bw q1 bwq1)
           (lto nw1 bwq1)
-          (exp2 n !Nil nw1)
+          (exp2 n (nil()) nw1)
           (pluso nw1 (!< !1) nw)
           (divo nw bw ql1 s)
           (pluso ql (!< !1) ql1)
@@ -315,7 +311,7 @@ let rec logo n b q r =
   ]
 
 let expo b q n =
-  (logo n b q !Nil)
+  (logo n b q @@  nil())
 
 let test17 n m =
   (lelo n m) &&& (multo n (build_num 2) m)
@@ -323,22 +319,26 @@ let test17 n m =
 let test27 b q r =
   (logo (build_num 68) b q r) &&& (gt1o q)
 
-let show_int      = show(logic) (show(int))
-let show_int_list = show(List.logic) show_int
+let show_int_list   = GT.(show List.ground @@ show int)
+let show_intl_llist = GT.(show List.logic @@ show logic @@ show int)
 
-let qrsth = fun qs rs ss ts -> ["q", qs; "r", rs; "s", ss; "t", ts]
+let _ffoo _ =
+  run_exn show_int_list (-1)  qr qrh (REPR (fun q r     -> multo q r (build_num 1)                          ));
+  run_exn show_int_list (-1)   q  qh (REPR (fun q       -> multo (build_num 7) (build_num 63) q             ));
+  run_exn show_int_list (-1)  qr qrh (REPR (fun q r     -> divo (build_num 3) (build_num 2) q r             ));
+  run_exn show_int_list (-1)   q  qh (REPR (fun q       -> logo (build_num 14) (build_num 2) (build_num 3) q));
+  run_exn show_int_list (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ));
+  ()
 
-let _ =
-  run show_int_list  22  qrs (REPR (fun q r s   -> pluso q r s                                      ))  qrsh;
-  run show_int_list (-1)  qr (REPR (fun q r     -> multo q r (build_num 1)                          ))   qrh;
-  run show_int_list (-1)   q (REPR (fun q       -> multo (build_num 7) (build_num 63) q             ))    qh;
-  run show_int_list (-1)  qr (REPR (fun q r     -> divo (build_num 3) (build_num 2) q r             ))   qrh;
-  run show_int_list  34  qrs (REPR (fun q r s   -> multo q r s                                      ))  qrsh;
-  run show_int_list  10   qr (REPR (fun q r     -> test17 q r                                       ))   qrh;
-  run show_int_list  15   qr (REPR (fun q r     -> lelo q r                                         ))   qrh;
-  run show_int_list (-1)   q (REPR (fun q       -> lto q (build_num 5)                              ))    qh;
-  run show_int_list (-1)   q (REPR (fun q       -> lto (build_num 5) q                              ))    qh;
-  run show_int_list   6 qrst (REPR (fun q r s t -> divo q r s t                                     )) qrsth;
-  run show_int_list (-1)   q (REPR (fun q       -> logo (build_num 14) (build_num 2) (build_num 3) q))    qh;
-  (* run show_int_list   5  qrs (REPR (fun q r s   -> test27 q r s                                     ))  qrsh; *)
-  (* run show_int_list (-1)   q (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ))    qh; *)
+let runL n = runR (List.reifier ManualReifiers.int_reifier) show_int_list show_intl_llist n
+
+let _freeVars =
+  runL   22  qrs  qrsh (REPR (fun q r s   -> pluso q r s                                      ));
+  runL   34  qrs  qrsh (REPR (fun q r s   -> multo q r s                                      ));
+  runL   10   qr   qrh (REPR (fun q r     -> test17 q r                                       ));
+  runL   15   qr   qrh (REPR (fun q r     -> lelo q r                                         ));
+  runL  (-1)   q    qh (REPR (fun q       -> lto (build_num 5) q                              ));
+  runL  (-1)   q    qh (REPR (fun q       -> lto q (build_num 5)                              ));
+  runL    6 qrst qrsth (REPR (fun q r s t -> divo q r s t                                     ));
+  runL    5  qrs  qrsh (REPR (fun q r s   -> test27 q r s                                     ));
+  ()

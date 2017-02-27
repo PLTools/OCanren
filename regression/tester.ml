@@ -1,32 +1,52 @@
+open Printf
 open MiniKanren
 
-let empty_reifier _ _ = ""
+let qh    = fun qs          -> ["q", qs]
+let qrh   = fun qs rs       -> ["q", qs; "r", rs]
+let qrsh  = fun qs rs ss    -> ["q", qs; "r", rs; "s", ss]
+let qrsth = fun qs rs ss ts -> ["q", qs; "r", rs; "s", ss; "t", ts]
 
-let run printer n num (repr, goal) handler =
-  Printf.printf "%s, %s answer%s {\n" 
-    repr 
-    (if n = (-1) then "all" else string_of_int n) 
-    (if n <>  1  then "s" else "");  
-  let table = List.map (fun (name, ans) -> name, Stream.take ~n:n ans) (run num goal handler) in
-  let rec show = function
-  | (_, []) :: _    -> ()
-  | table ->
-      let table' = 
-	List.map 
-	  (fun (n, x::xs) -> 
-	    Printf.printf "%s=%s; " n (printer x); 
-	    (n, xs)
-	  ) 
-	  table 
-      in
-      Printf.printf "\n";
-      show table'
+let make_title n msg =
+  printf "%s, %s answer%s {\n%!"
+    msg
+    (if n = (-1) then "all" else string_of_int n)
+    (if n <>  1  then "s" else "")
+
+exception NoMoreAnswers
+
+let run_gen onOK (onFree: _ -> _ -> var_checker -> _) n num handler (repr, goal)  =
+  make_title n repr;
+  let rec loop pairs = function
+  | 0 -> ()
+  | k ->
+    let new_pairs =
+      List.mapi (fun i (name,st) ->
+        (* TODO: invent retrieve_hd function *)
+        match Stream.retrieve ~n:1 st with
+        | [],_ -> raise NoMoreAnswers
+        | [Final x],tl ->
+          onOK i name x;
+          (name,tl)
+        | [HasFreeVars (c,x)],tl ->
+          onFree i name c x;
+          (name,tl)
+        | _ -> assert false
+      ) pairs
+    in
+    printf "\n%!";
+    loop new_pairs (k-1)
   in
-  show table;
-  Printf.printf "}\n%!"
- 
-let qh   = fun qs       -> ["q", qs]
-let qrh  = fun qs rs    -> ["q", qs; "r", rs]
-let qrsh = fun qs rs ss -> ["q", qs; "r", rs; "s", ss]
+  let () = try loop (MiniKanren.run num goal handler) n with NoMoreAnswers -> () in
+  printf "}\n%!"
 
-let (!) = (!!)
+(* Without free vars and reification *)
+let run_exn printer = run_gen
+  (fun i name x -> printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printer x) )
+  (fun _ _ _ -> failwith "Free logic variables in the answer")
+
+let runR reifier printerNoFree printerR = run_gen
+  (fun i name x -> printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printerNoFree x) )
+  (fun i name checker obj ->
+    let ans = reifier checker obj in
+    printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printerR ans)
+    )

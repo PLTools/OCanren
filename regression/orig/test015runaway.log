@@ -1,0 +1,5 @@
+demo1, 1 answer {
+q=_.10;
+}
+demo2, 2 answers {
+Failure: "You hacked everything and pass logic variables into wrong environment"

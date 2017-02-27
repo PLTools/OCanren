@@ -165,8 +165,9 @@ let () = dispatch (function
      (* miniKanren related stuff*)
      (* flag ["ocamldep"; "use_mkshow"] (S [A"-ppopt";A"-I";A"-ppopt";A"plugin"; A"-ppopt";A"mkshow.cmo" ]); *)
      flag ["compile"; "use_pa_minikanren"]
-       (S [ A"-ppopt";A"camlp5/pa_minikanren.cmo" ]);
+       (S [ A"-ppopt";A"camlp5/pa_minikanren.cmo"]);
 
+     flag ["hack_pr_o"; "compile"] (S[A"-ppopt"; A"pr_o.cmo"]); 
      (* flag ["compile"; "link_minikanren"] *)
      (*   (S [ A"-ppopt";A"camlp5/pa_minikanren.cmo" *)
      (*      ; A"-ppopt";A"-L";A"-ppopt";A"plugin" *)
