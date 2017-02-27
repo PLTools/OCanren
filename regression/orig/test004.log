@@ -108,17 +108,17 @@ q=O (); r=_.11;
 fun p q r -> mulo p q r, 3 answers {
 q=O (); r=_.11; s=O ();
 q=S (O ()); r=O (); s=O ();
-q=S (O ()); r=S (O ()); s=S (O ());
+q=S (S (O ())); r=O (); s=O ();
 }
 fun q r s -> mulo q r s, 10 answers {
 q=O (); r=_.11; s=O ();
 q=S (O ()); r=O (); s=O ();
-q=S (O ()); r=S (O ()); s=S (O ());
 q=S (S (O ())); r=O (); s=O ();
+q=S (O ()); r=S (O ()); s=S (O ());
 q=S (S (S (O ()))); r=O (); s=O ();
-q=S (O ()); r=S (S (O ())); s=S (S (O ()));
 q=S (S (S (S (O ())))); r=O (); s=O ();
-q=S (S (O ())); r=S (O ()); s=S (S (O ()));
+q=S (O ()); r=S (S (O ())); s=S (S (O ()));
 q=S (S (S (S (S (O ()))))); r=O (); s=O ();
+q=S (S (O ())); r=S (O ()); s=S (S (O ()));
 q=S (S (S (S (S (S (O ())))))); r=O (); s=O ();
 }
