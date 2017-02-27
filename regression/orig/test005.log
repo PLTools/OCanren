@@ -21,11 +21,11 @@ fun q -> infero (abs varX (v varX)) q, 1 answer {
 q=Arr (_.14, _.14);
 }
 fun q -> infero (abs varF (abs varX (app (v varF) (v varX)))) q, 1 answer {
-q=Arr (Arr (_.21, _.18), Arr (_.21, _.18));
+q=Arr (Arr (_.33, _.22), Arr (_.33, _.22));
 }
 fun q -> infero (abs varX (abs varF (app (v varF) (v varX)))) q, 1 answer {
-q=Arr (_.21, Arr (Arr (_.21, _.18), _.18));
+q=Arr (_.33, Arr (Arr (_.33, _.22), _.22));
 }
 fun q -> infero q (arr (p varX) (p varX)), 1 answer {
-q=Abs (_.15, V (_.15));
+q=Abs (_.40, V (_.40));
 }

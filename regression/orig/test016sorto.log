@@ -1,0 +1,15 @@
+fun q -> leo (inj_nat 1) (inj_nat 2) q, all answers {
+q=true;
+}
+fun q -> leo (inj_nat 2) (inj_nat 1) q, all answers {
+q=false;
+}
+fun q -> gto (inj_nat 1) (inj_nat 2) q, all answers {
+q=false;
+}
+fun q -> gto (inj_nat 2) (inj_nat 1) q, all answers {
+q=true;
+}
+fun q r -> minmaxo (inj_nat 1) (inj_nat 2) q r, all answers {
+q=S (O ()); r=S (S (O ()));
+}
