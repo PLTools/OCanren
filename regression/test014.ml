@@ -1,4 +1,3 @@
-(* Relational arithmentics using binary numbers *)
 open Printf
 open MiniKanren
 open Tester
@@ -26,7 +25,7 @@ let gt1o q =
   fresh (h t tt)
     (q === h % (t % tt))
 
-let (!) = fun x -> inj@@lift x
+let (!) = (!!)
 let full_addero b x y r c =
   conde [
     (!0 === b) &&& (!0 === x) &&& (!0 === y) &&& (!0 === r) &&& (!0 === c);
@@ -327,8 +326,7 @@ let _ffoo _ =
   run_exn show_int_list (-1)   q  qh (REPR (fun q       -> multo (build_num 7) (build_num 63) q             ));
   run_exn show_int_list (-1)  qr qrh (REPR (fun q r     -> divo (build_num 3) (build_num 2) q r             ));
   run_exn show_int_list (-1)   q  qh (REPR (fun q       -> logo (build_num 14) (build_num 2) (build_num 3) q));
-  run_exn show_int_list (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ));
-  ()
+  run_exn show_int_list (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ))
 
 let runL n = runR (List.reify ManualReifiers.int_reifier) show_int_list show_intl_llist n
 
@@ -340,5 +338,4 @@ let _freeVars =
   runL  (-1)   q    qh (REPR (fun q       -> lto (build_num 5) q                              ));
   runL  (-1)   q    qh (REPR (fun q       -> lto q (build_num 5)                              ));
   runL    6 qrst qrsth (REPR (fun q r s t -> divo q r s t                                     ));
-  runL    5  qrs  qrsh (REPR (fun q r s   -> test27 q r s                                     ));
-  ()
+  runL    5  qrs  qrsh (REPR (fun q r s   -> test27 q r s                                     ))

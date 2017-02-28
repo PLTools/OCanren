@@ -1,24 +1,24 @@
-(* Type inferencer for STLC *)
 open Printf
 open GT
 open MiniKanren
 open Tester
 open Stlc
 
-(************************************************************************************************************)
-module GTyp = struct
-  module X = struct
-    @type ('a, 'b) t =
-      | P of 'a                  (* primitive *)
-      | Arr of 'b * 'b           (* arrow *)
-      with gmap,show;;
-    let fmap f g = function
-    | P s -> P (f s)
-    | Arr (x, y) -> Arr (g x, g y)
-  end
+module GTyp = 
+  struct
 
-  include X
-  include Fmap2(X)
+    module T = 
+      struct    
+        @type ('a, 'b) t = 
+	| P   of 'a      (* primitive *)
+        | Arr of 'b * 'b (* arrow *)
+        with gmap, show
+
+       let fmap f g x = gmap(t) f g x
+     end
+
+  include T
+  include Fmap2(T)
 
   type rtyp = (string, rtyp) t
   type ltyp = (string logic, ltyp) t logic
@@ -32,8 +32,7 @@ module GTyp = struct
 
 end
 
-let rec gtyp_reifier : helper -> GTyp.ftyp -> GTyp.ltyp = fun c x ->
-  GTyp.reify ManualReifiers.string_reifier gtyp_reifier c x
+let rec gtyp_reifier c x = GTyp.reify ManualReifiers.string_reifier gtyp_reifier c x
 
 open GLam
 open GTyp
@@ -79,31 +78,25 @@ let () =
   run_exn (show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varX)  ));
   run_exn (show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varY)  ));
 
-  run_exn GTyp.show_rtyp    1 q qh (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q));
-  ()
+  run_exn GTyp.show_rtyp    1 q qh (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q))
 
 let show_env_logic = show(List.logic) @@ show(logic) (show pair (show(logic) (fun s -> s)) show_llam)
 
-let pair_reifier : helper -> (string*rlam, _) injected -> _ = fun c p ->
-  ManualReifiers.pair_reifier ManualReifiers.string_reifier glam_reifier c p
+let pair_reifier c p = ManualReifiers.pair_reifier ManualReifiers.string_reifier glam_reifier c p
 
-let env_reifier c xs =
-  List.reify pair_reifier c xs
+let env_reifier c xs = List.reify pair_reifier c xs
 
 let show_env  = show(List.ground) @@ show pair show_string  GLam.show_rlam
 let show_envl = show(List.logic ) @@ show(logic) (show pair show_stringl GLam.show_llam)
+
 let runEnv n = runR env_reifier show_env show_envl n
 
 let runT n = runR gtyp_reifier GTyp.show_rtyp GTyp.show_ltyp n
 let runL n = runR glam_reifier GLam.show_rlam GLam.show_llam n
 
-(* Tests with free variables *)
 let () =
   runEnv   1   q   qh (REPR (fun q -> lookupo varX q (v varY)                                       ));
   runT     1   q   qh (REPR (fun q -> infero (abs varX (v varX)) q                                  ));
   runT     1   q   qh (REPR (fun q -> infero (abs varF (abs varX (app (v varF) (v varX)))) q        ));
   runT     1   q   qh (REPR (fun q -> infero (abs varX (abs varF (app (v varF) (v varX)))) q        ));
-  runL     1   q   qh (REPR (fun q -> infero q (arr (p varX) (p varX))                              ));
-  ()
-
-(* ************************************** **)
+  runL     1   q   qh (REPR (fun q -> infero q (arr (p varX) (p varX))                              ))

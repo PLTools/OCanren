@@ -2,23 +2,24 @@ open Printf
 open GT
 open MiniKanren
 
-module GLam = struct
-  module X = struct
-    @type ('varname, 'self) t =
-    | V of 'varname
-    | App of 'self * 'self
-    | Abs of 'varname * 'self
-    with show;;
-    let fmap f g = function
-    | V s -> V(f s)
-    | App (x, y) -> App (g x, g y)
-    | Abs (s, t) -> Abs (f s, g t)
-  end
-  include X
-  include Fmap2(X)
+module GLam = 
+  struct
+    module T = 
+      struct
+        @type ('varname, 'self) t =
+        | V of 'varname
+        | App of 'self * 'self
+        | Abs of 'varname * 'self
+        with show, gmap
+
+        let fmap f g x = gmap(t) f g x
+      end
+
+  include T
+  include Fmap2(T)
 
   type rlam = (string, rlam) t
-  type llam  = (string logic, llam) t logic
+  type llam = (string logic, llam) t logic
   type flam = (rlam, llam) injected
 
   let v   s   = inj @@ distrib @@ V s
@@ -29,12 +30,11 @@ module GLam = struct
   let rec show_llam term = show(logic) (show(t) (show(logic) @@ show string)show_llam) term
 end
 
-
 open GLam
 
-let varX : (string, string logic) injected = inj (lift "x")
-let varY = inj@@lift "y"
-let varF = inj@@lift "f"
+let varX = !! "x"
+let varY = !! "y"
+let varF = !! "f"
 
 let rec glam_reifier : helper -> GLam.flam -> GLam.llam = fun c x ->
   GLam.reify ManualReifiers.string_reifier glam_reifier c x

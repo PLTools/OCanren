@@ -86,7 +86,7 @@ val logic :
      foldl   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
      foldr   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
      gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic
->) GT.t
+   >) GT.t
 
 (** [lift x] injects [x] into itself *)
 val lift : 'a -> ('a, 'a) injected
@@ -500,7 +500,7 @@ module Nat :
   end
 
 (** [inj_nat n] is a deforested synonym for injection *)
-val inj_nat : int -> (Nat.ground, Nat.logic) injected
+val inj_nat : int -> Nat.groundi
 
 (** {3 Relational Lists} *)
 module List :
@@ -532,7 +532,7 @@ module List :
          show    : ('a -> string) -> 'a ground -> string >)
       GT.t
 
-    (** [of_list l] makes ground list from a regular one *)
+    (** [of_list l] makes a ground list from a regular one *)
     val of_list : ('a, 'b) injected list -> ('a ground, 'b logic) injected
 
     (** GT-compatible typeinfo for ['a logic] *)
@@ -549,9 +549,6 @@ module List :
 
     (** A synonym for injected list *)
     type ('a,'b) groundi = ('a ground, 'b logic) injected
-
-    (** GT-compatible typeinfo for [groundi] *) 
-    val groundi : (unit, < show : ('a -> string) -> ('a, _) groundi -> GT.string  >) GT.t
 
     (** Reifier *)
     val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic

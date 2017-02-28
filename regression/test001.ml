@@ -1,27 +1,26 @@
-(* Testing the most simple relations here: appendo, reverso, etc. *)
 open MiniKanren
 open Tester
 open Printf
 open GT
 
-let ilist xs = inj_list @@ List.map inj_int xs
-let just_a a = a === inj_int 5
+let ilist xs = inj_list @@ List.map (!!) xs
+let just_a a = a === !!5
 
 let a_and_b a =
   call_fresh (fun b ->
-      (a === inj_int 7) &&&
-      ((b === inj_int 6) ||| (b === inj_int 5))
+      (a === !!7) &&&
+      ((b === !!6) ||| (b === !!5))
   )
 
 let a_and_b' b =
   call_fresh (
     fun a ->
-      (a === inj_int 7) &&&
-      ((b === inj_int 6) ||| (b === inj_int 5))
+      (a === !!7) &&&
+      ((b === !!6) ||| (b === !!5))
   )
 
 let rec fives x =
-  (x === inj_int 5) |||
+  (x === !!5) |||
   (fun st -> Stream.from_fun (fun () -> fives x st))
 
 let rec appendo a b ab =
@@ -44,10 +43,10 @@ let rec reverso a b =
       )
     ]
 
-let show_int = show(int)
+let show_int       = show(int)
 let show_int_list  = (show(List.ground) (show int))
 let show_intl_list = (show(List.logic ) (show(logic) (show int)))
-let runL n = runR (List.reify ManualReifiers.int_reifier) show_int_list show_intl_list n
+let runL n         = runR (List.reify ManualReifiers.int_reifier) show_int_list show_intl_list n
 
 let _ =
   run_exn show_int_list  1  q qh (REPR (fun q   -> appendo q (ilist [3; 4]) (ilist [1; 2; 3; 4])   ));
@@ -55,10 +54,9 @@ let _ =
   run_exn show_int_list  1  q qh (REPR (fun q   -> reverso (ilist [1; 2; 3; 4]) q                  ));
   run_exn show_int_list  2  q qh (REPR (fun q   -> reverso q (ilist [1])                           ));
   run_exn show_int_list  1  q qh (REPR (fun q   -> reverso (ilist [1]) q                           ));
-  run_exn show_int       1  q qh (REPR (fun q   -> a_and_b q                                          ));
-  run_exn show_int       2  q qh (REPR (fun q   -> a_and_b' q                                         ));
-  run_exn show_int      10  q qh (REPR (fun q   -> fives q                                            ));
-  ()
+  run_exn show_int       1  q qh (REPR (fun q   -> a_and_b q                                       ));
+  run_exn show_int       2  q qh (REPR (fun q   -> a_and_b' q                                      ));
+  run_exn show_int      10  q qh (REPR (fun q   -> fives q                                         ))
 
 let _withFree =
   runL          1  q  qh (REPR (fun q   -> reverso (ilist []) (ilist [])                ));
@@ -67,5 +65,5 @@ let _withFree =
   runL          1  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL          2  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL          3  q  qh (REPR (fun q   -> reverso q q                                  ));
-  runL         10  q  qh (REPR (fun q   -> reverso q q                                  ));
-  ()
+  runL         10  q  qh (REPR (fun q   -> reverso q q                                  ))
+  

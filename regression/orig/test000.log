@@ -1,34 +1,34 @@
-fun q -> (===) q (inj_int 5), 1 answer {
+fun q -> (===) q ((!!) 5), 1 answer {
 q=5;
 }
-fun q -> (===) q ((@@) some (inj_int 5)), 1 answer {
+fun q -> (===) q (some ((!!) 5)), 1 answer {
 q=Some (5);
 }
 fun q -> (===) q (none ()), 1 answer {
 q=None;
 }
-fun q -> (===) (some q) ((@@) some (inj_int 5)), 1 answer {
+fun q -> (===) (some q) (some ((!!) 5)), 1 answer {
 q=5;
 }
 fun q -> call_fresh (fun w -> (===) q (some w)), 1 answer {
 q=Some (_.11);
 }
-fun q -> (===) q ((@@) Result.ok (inj_int 5)), 1 answer {
-q=OK (5);
+fun q -> (===) q (Result.ok ((!!) 5)), 1 answer {
+q=Ok (5);
 }
 fun q ->
   call_fresh
     (fun r ->
-       (&&&) ((===) q (Result.ok r)) (conde [(===) r (inj_int 5); success])), all answers {
-q=OK (5);
-q=OK (_.11);
+       (&&&) ((===) q (Result.ok r)) (conde [(===) r ((!!) 5); success])), all answers {
+q=Ok (5);
+q=Ok (_.11);
 }
 fun q ->
   Fresh.two
     (fun r s ->
        conde
-         [(&&&) ((===) q (Result.ok s)) ((=/=) s (inj_int 4));
+         [(&&&) ((===) q (Result.ok s)) ((=/=) s ((!!) 4));
           (===) q (Result.error r)]), all answers {
 q=Error (_.11);
-q=OK (_.12 [=/= 4]);
+q=Ok (_.12 [=/= 4]);
 }

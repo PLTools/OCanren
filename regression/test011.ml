@@ -1,7 +1,3 @@
-(* This is a test suite for a lot of disequality constaints
- * mixed with plain OCaml lists.
- * Also some simple list relations: distincto, remembero, etc.
- *)
 open Printf
 open MiniKanren
 open Tester
@@ -29,16 +25,9 @@ let _ =
   ()
 let _ =
   runIList      (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; !1] =/= !![!2; y])(x === !2))                                       ));
-  runIList      (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; !1] =/= !![!2; y])(y === !1))                                       ));
-  ()
-;;
-
-(* let show_ilist = GT.show(GT.list) @@ GT.show(GT.int) *)
-
-(* let show1 l  = show_logic GT.(show(list) (show(logic) string_of_int)) l *)
+  runIList      (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; !1] =/= !![!2; y])(y === !1))                                       ))
 
 let _ =
-  (* run_exn show_int       (-1) q qh (REPR (fun _ -> (fresh (x y)(![x; !1] =/= ![!2; y])(x === !2)(y === !1))                                  )) qh; *)
   runIList      (-1) q qh (REPR (fun q -> (fresh (x y)
                                                     (!![x; !1] =/= !![!2; y])
                                                     (!![x; y] === q))
@@ -48,12 +37,11 @@ let _ =
   runIList      (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; !1] =/= !![!2; y])(x === !2)(y === !9)(!![x; y] === q))           ));
   runIList      (-1) q qh (REPR (fun q -> (fresh (a d)(!![a; d] === q)(q =/= !![!5; !6])(a === !5)(d === !6))                  ));
   runIList      (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; !1] =/= !![!2; y])(x === !2)(y === !1)(!![x; y] === q))           ));
-  runIList      (-1) q qh (REPR (fun q -> (fresh (a x z)(a =/= !![x; !1])(a === !![z; !1])(x === z))                           ));
-  ()
+  runIList      (-1) q qh (REPR (fun q -> (fresh (a x z)(a =/= !![x; !1])(a === !![z; !1])(x === z))                           ))
 
 let _ =
-  runIList      (-1) q qh (REPR (fun q -> (fresh (a x z)(a =/= !![x; !1])(a === !![z; !1])(x === !5)(!![x; z] === q))         ));
-  ()
+  runIList      (-1) q qh (REPR (fun q -> (fresh (a x z)(a =/= !![x; !1])(a === !![z; !1])(x === !5)(!![x; z] === q))         ))
+
 let _ =
   runInt                (-1) q qh (REPR (fun q -> (!3 =/= !4) ));
   runInt                (-1) q qh (REPR (fun q -> (!3 =/= !3)                                              ));
@@ -73,15 +61,14 @@ let _ =
   runIList            (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; y] === q)(x =/= y)(x =/= y))           ));
   runInt              (-1) q qh (REPR (fun q -> ((q =/= !5) &&& (!5 =/= q))                  ));
 
-  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; y] === q)(!![x; y] =/= !![!5; !6])(x =/= !5))                             ));
+  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; y] === q)(!![x; y] =/= !![!5; !6])(x =/= !5))                 ));
   runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; y] === q)(x =/= !5)(!![x; y] =/= !![!5; !6]))                 ));
   runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(x =/= !5)(!![x; y] =/= !![!5; !6])(!![x; y] === q))                 ));
   runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!5 =/= x)(!![x; y] =/= !![!5; !6])(!![x; y] === q))                 ));
   runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!5 =/= x)(!![y; x] =/= !![!6; !5])(!![x; y] === q))                 ));
 
   let xsh xs = ["xs", xs] in
-  runIList           (-1) q xsh (REPR (fun x -> (fresh (y z)(x =/= !![y; !2])(x === !![z; !2]))                                 ));
-  ()
+  runIList (-1) q xsh (REPR (fun x -> (fresh (y z)(x =/= !![y; !2])(x === !![z; !2]))))
 
 
 let () =
@@ -129,5 +116,4 @@ let () =
      ]
    in
    run_exn show_int_list (-1) q qh (REPR (fun q -> rembero !1 (!1 % (!2 % (!1 %< !3))) q          ));
-   runInt                (-1) q qh (REPR (fun q -> rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)) ));
-   ()
+   runInt                (-1) q qh (REPR (fun q -> rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)) ))

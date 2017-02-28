@@ -1,4 +1,3 @@
-(* Many tests for Nat-, Bool- and List- primitives *)
 open Printf
 open MiniKanren
 open Tester
@@ -13,8 +12,6 @@ let show_option_nat = GT.(show option  (show Nat.ground))
 let (?$) = inj_nat
 let nats = inj_nat_list
 let bools bs = inj_list @@ List.map (!!) bs
-
-let unitf = inj @@ lift ()
 
 let sumo = List.foldro Nat.addo ?$0
 
@@ -38,8 +35,7 @@ let () =
   run_exn show_nat         1    q  qh (REPR (fun q     -> Nat.mulo ?$3 q   ?$6                           ));
   run_exn show_nat         1    q  qh (REPR (fun q     -> Nat.mulo ?$3 ?$0 q                             ));
   run_exn show_nat         1    q  qh (REPR (fun q     -> Nat.mulo q   ?$5 ?$0                           ));
-  run_exn show_nat         3    q  qh (REPR (fun q     -> Nat.mulo q   ?$0 ?$0                           ));
-  ()
+  run_exn show_nat         3    q  qh (REPR (fun q     -> Nat.mulo q   ?$0 ?$0                           )) 
 
 let () =
   run_exn show_nat         1    q  qh (REPR (fun q     -> sumo (nats []) q                               ));
@@ -49,7 +45,7 @@ let () =
 
 let () =
   run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (nats [1;2;3;4]) q                    ));
-  run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (inj_list [unitf; unitf; unitf]) q    ));
+  run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (inj_list [!!(); !!(); !!()]) q    ));
   run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (bools [false; true]) q               ));
   run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (nats [4;3;2;1;0]) q                  ));
   run_exn show_nat_llist   1    q   qh (REPR (fun q     -> List.lengtho q ?$0                                 ));
@@ -59,8 +55,7 @@ let () =
 
   run_exn show_bool        1    q   qh (REPR (fun q     -> List.allo (bools [true;false;true]) q          ));
   run_exn show_bool        1    q   qh (REPR (fun q     -> List.allo (Bool.true_ % (q %< Bool.true_)) Bool.true_  ));
-  run_exn show_bool      (-1) qrs qrsh (REPR (fun q r s -> List.allo (Bool.true_ % (q %< r)) s                    ));
-  ()
+  run_exn show_bool      (-1) qrs qrsh (REPR (fun q r s -> List.allo (Bool.true_ % (q %< r)) s                    ))
 
 let _ =
   run_exn show_nat_llist    1    q  qh (REPR (fun q     -> List.mapo (Nat.addo ?$1) (nats [0;1;2]) q              ));
@@ -74,8 +69,7 @@ let _ =
   run_exn show_bool_llist   1    q  qh (REPR (fun q     -> List.mapo Bool.noto' (bools []) q                    ));
 
   run_exn show_nat_llist  (-1)   q  qh (REPR (fun q     -> List.filtero (eqo ?$2) (nats [0;1;2;3]) q          ));
-  run_exn show_option_nat   1    q  qh (REPR (fun q     -> List.lookupo (eqo ?$1) (nats [0;2;1;3]) q          ));
-  ()
+  run_exn show_option_nat   1    q  qh (REPR (fun q     -> List.lookupo (eqo ?$1) (nats [0;2;1;3]) q          ))
 
 let show_nat_list   = GT.(show List.ground @@ show Nat.ground)
 let show_natl_listl = GT.(show List.logic  @@ show Nat.logic)
@@ -85,5 +79,4 @@ let runL n = runR (List.reify Nat.reify) show_nat_list show_natl_listl n
 
 let _freeVars =
   runN         3   qr qrh (REPR (fun q r   -> Nat.mulo q   r   q             ));
-  runL      (-1)    q  qh (REPR (fun q     -> List.lengtho q ?$3             ));
-  ()
+  runL      (-1)    q  qh (REPR (fun q     -> List.lengtho q ?$3             ))
