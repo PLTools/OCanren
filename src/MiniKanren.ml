@@ -53,7 +53,7 @@ module Stream =
          | Nil           -> gs
          | Cons (hd, tl) -> cons hd (mplus gs tl)
          | Lazy z        -> mplus gs (Lazy.force z)
-      )
+      ) 
 
     let rec bind xs f =
       from_fun (fun () ->
