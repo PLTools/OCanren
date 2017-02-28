@@ -47,7 +47,7 @@ let rec reverso a b =
 let show_int = show(int)
 let show_int_list  = (show(List.ground) (show int))
 let show_intl_list = (show(List.logic ) (show(logic) (show int)))
-let runL n = runR (List.reifier ManualReifiers.int_reifier) show_int_list show_intl_list n
+let runL n = runR (List.reify ManualReifiers.int_reifier) show_int_list show_intl_list n
 
 let _ =
   run_exn show_int_list  1  q qh (REPR (fun q   -> appendo q (ilist [3; 4]) (ilist [1; 2; 3; 4])   ));

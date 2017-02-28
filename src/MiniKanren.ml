@@ -689,23 +689,23 @@ let var_of_injected_exn : helper -> ('a,'b) injected -> (helper -> ('a,'b) injec
 module Fmap1 (T : T1) = struct
   external distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected = "%identity"
 
-  let rec reifier: (helper -> ('a,'b) injected -> 'b) -> helper ->
+  let rec reify: (helper -> ('a,'b) injected -> 'b) -> helper ->
         ('a T.t, 'b T.t logic as 'r) injected -> 'r
     = fun arg_r c x ->
       if c#isVar x
-      then var_of_injected_exn c x (reifier arg_r)
+      then var_of_injected_exn c x (reify arg_r)
       else Value (T.fmap (arg_r c) x)
 end
 
 module Fmap2 (T : T2) = struct
   external distrib : (('a,'b) injected, ('c, 'd) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected = "%identity"
 
-  let rec reifier:
+  let rec reify:
         (helper -> ('a,'b) injected -> 'b) ->
         (helper -> ('c,'d) injected -> 'd) ->
          helper -> (('a,'c) T.t, ('b,'d) T.t logic) injected -> ('b,'d) T.t logic
     = fun r1 r2 c x ->
-      if c#isVar x then var_of_injected_exn c x (reifier r1 r2)
+      if c#isVar x then var_of_injected_exn c x (reify r1 r2)
       else Value (T.fmap (r1 c) (r2 c) x)
 end
 
@@ -713,8 +713,8 @@ module Fmap3 (T : T3) = struct
   type ('a, 'b, 'c) t = ('a, 'b, 'c) T.t
   external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) injected = "%identity"
 
-  let rec reifier r1 r2 r3 (c: helper) x =
-    if c#isVar x then var_of_injected_exn c x (reifier r1 r2 r3)
+  let rec reify r1 r2 r3 (c: helper) x =
+    if c#isVar x then var_of_injected_exn c x (reify r1 r2 r3)
     else Value (T.fmap (r1 c) (r2 c) (r3 c) x)
 end
 
@@ -750,7 +750,7 @@ module ManualReifiers = struct
                         helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
     = fun r1 r2 c p ->
       if c#isVar p then var_of_injected_exn c p (pair_reifier r1 r2)
-      else Pair.reifier r1 r2 c p
+      else Pair.reify r1 r2 c p
 
 end;;
 
@@ -868,9 +868,9 @@ module Nat = struct
     type logic = logic t logic'
     type groundi = (ground, logic) injected
 
-    let rec reifier : helper -> (ground, logic) injected -> logic  = fun c x ->
-      if c#isVar x then var_of_injected_exn c x reifier
-      else F.reifier reifier c x
+    let rec reify : helper -> (ground, logic) injected -> logic  = fun c x ->
+      if c#isVar x then var_of_injected_exn c x reify
+      else F.reify reify c x
 
     let ground = {
       GT.gcata = ();
@@ -989,9 +989,9 @@ module List =
     type 'a ground = ('a, 'a ground) t;;
     type 'a logic  = ('a, 'a logic) t logic'
 
-    let rec reifier : _ -> helper -> (_ ground, 'b logic) injected -> 'b logic = fun arg_r c x ->
-      if c#isVar x then var_of_injected_exn c x (reifier arg_r)
-      else F.reifier arg_r (reifier arg_r) c x
+    let rec reify : _ -> helper -> (_ ground, 'b logic) injected -> 'b logic = fun arg_r c x ->
+      if c#isVar x then var_of_injected_exn c x (reify arg_r)
+      else F.reify arg_r (reify arg_r) c x
 
     let rec of_list = function [] -> nil () | x::xs -> cons x (of_list xs)
 

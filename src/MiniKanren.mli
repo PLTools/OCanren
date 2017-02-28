@@ -312,21 +312,21 @@ module type T3 =
 module Fmap1 (T : T1) : 
   sig
     val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
-    val reifier : (helper -> ('a,'b) injected -> 'b) -> helper -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
+    val reify : (helper -> ('a,'b) injected -> 'b) -> helper -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
   end
 
 module Fmap2 (T : T2) : 
   sig
     val distrib : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
-    val reifier : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> helper -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> helper -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
   end
 
 module Fmap3 (T : T3) : 
   sig
     type ('a, 'b, 'c) t = ('a, 'b, 'c) T.t
     val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) injected
-    val reifier : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
-                 helper -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
+                helper -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
   end
 
 module ManualReifiers : 
@@ -439,7 +439,7 @@ module Nat :
     type logic = logic t logic'
 
     (** Reifier *)
-    val reifier : helper -> (ground, logic) injected -> logic
+    val reify : helper -> (ground, logic) injected -> logic
 
     (** GT-compatible typeinfo for [ground] *)
     val ground :
@@ -554,7 +554,7 @@ module List :
     val groundi : (unit, < show : ('a -> string) -> ('a, _) groundi -> GT.string  >) GT.t
 
     (** Reifier *)
-    val reifier : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
 
     (** Constructor *)
     val cons : ('a, 'b) injected -> ('a, 'b) groundi -> ('a, 'b) groundi

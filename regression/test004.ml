@@ -28,7 +28,7 @@ module Peano = struct
 end;;
 
 let rec peano_reifier : helper -> (Peano.rt, Peano.lt) injected -> Peano.lt = fun c x ->
-  Peano.reifier peano_reifier c x
+  Peano.reify peano_reifier c x
 
 let runN  n = runR peano_reifier Peano.show_rn Peano.show_ln n
 

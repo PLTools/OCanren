@@ -37,4 +37,4 @@ let varY = inj@@lift "y"
 let varF = inj@@lift "f"
 
 let rec glam_reifier : helper -> GLam.flam -> GLam.llam = fun c x ->
-  GLam.reifier ManualReifiers.string_reifier glam_reifier c x
+  GLam.reify ManualReifiers.string_reifier glam_reifier c x

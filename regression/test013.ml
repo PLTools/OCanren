@@ -80,8 +80,8 @@ let _ =
 let show_nat_list   = GT.(show List.ground @@ show Nat.ground)
 let show_natl_listl = GT.(show List.logic  @@ show Nat.logic)
 
-let runN n = runR Nat.reifier show_nat (GT.show(Nat.logic)) n
-let runL n = runR (List.reifier Nat.reifier) show_nat_list show_natl_listl n
+let runN n = runR Nat.reify show_nat (GT.show(Nat.logic)) n
+let runL n = runR (List.reify Nat.reify) show_nat_list show_natl_listl n
 
 let _freeVars =
   runN         3   qr qrh (REPR (fun q r   -> Nat.mulo q   r   q             ));

@@ -29,7 +29,7 @@ let show_int_opt   = show(option) (show(int))
 let show_intl      = show(logic)  (show(int))
 let show_intl_optl = show(logic)  (show(option) (show(logic) (show(int)))) 
 
-let int_opt_reifier = Option.reifier int_reifier
+let int_opt_reifier = Option.reify int_reifier
 
 let _ =
   let open Option in
@@ -60,7 +60,7 @@ let show1 = show(Result.t) (show(int)) (show(option) (show(int)))
 let show1logic =
   show(logic) (show(Result.t) (show(logic) (show int)) (show(logic) (show option @@ show(logic) (show int))))
 
-let runResult n = runR (Result.reifier int_reifier int_opt_reifier) show1 show1logic n
+let runResult n = runR (Result.reify int_reifier int_opt_reifier) show1 show1logic n
 
 let _ =
   run_exn show1 1  q qh (REPR(fun q -> q === Result.ok @@ inj_int 5 ));
