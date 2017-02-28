@@ -1053,20 +1053,20 @@ module List =
         end
     }
 
-    type ('a,'b) flist = ('a ground, 'b logic) injected
+    type ('a,'b) groundi = ('a ground, 'b logic) injected
 
-    let flist =
+    let groundi =
       { GT.gcata = ()
       ; plugins = object
-          method show : ('a -> string) -> ('a,_) flist -> string = fun fa l ->
+          method show : ('a -> string) -> ('a,_) groundi -> string = fun fa l ->
           (* we expect no free variables here *)
           GT.show(ground) fa (Obj.magic l : 'a ground)
         end
       }
 
-    let (%): ('a,'b) injected -> ('a,'b) flist -> ('a,'b) flist = cons
-    let (%<): ('a,'b) injected -> ('a,'b) injected -> ('a,'b) flist = fun x y -> cons x @@ cons y @@ nil ()
-    let (!<) : ('a,'b) injected -> ('a,'b) flist = fun x -> cons x @@ nil ()
+    let (%): ('a,'b) injected -> ('a,'b) groundi -> ('a,'b) groundi = cons
+    let (%<): ('a,'b) injected -> ('a,'b) injected -> ('a,'b) groundi = fun x y -> cons x @@ cons y @@ nil ()
+    let (!<) : ('a,'b) injected -> ('a,'b) groundi = fun x -> cons x @@ nil ()
 
     let rec foldro f a xs r =
       conde [
@@ -1170,7 +1170,7 @@ let (%<) = List.(%<)
 let (!<) = List.(!<)
 let nil  = List.nil
 
-let rec inj_list: ('a, 'b) injected list -> ('a, 'b) List.flist = function
+let rec inj_list: ('a, 'b) injected list -> ('a, 'b) List.groundi = function
 | []    -> nil ()
 | x::xs -> List.cons x (inj_list xs)
 

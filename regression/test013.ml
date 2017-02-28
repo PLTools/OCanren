@@ -12,7 +12,7 @@ let show_option_nat = GT.(show option  (show Nat.ground))
 
 let (?$) = inj_nat
 let nats = inj_nat_list
-let bools bs = inj_list @@ List.map Bool.inj bs
+let bools bs = inj_list @@ List.map (!!) bs
 
 let unitf = inj @@ lift ()
 
