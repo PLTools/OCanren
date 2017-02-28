@@ -54,8 +54,9 @@ module Stream :
 
   end
 
+(*
 val generic_show: 'a -> string
-
+*)
 (** {3 States and goals} *)
 
 (** A state *)
@@ -77,11 +78,14 @@ type goal = State.t -> State.t Stream.t
 type ('a,'b) fancy;;
 
 (** A type of abstract logic values *)
-type 'a logic = | Var of int * 'a logic list
-                | Value of 'a
+@type 'a logic = 
+| Var   of GT.int * 'a logic GT.list
+| Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
+(*
 val bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit
 val show_logic: ('a -> string) -> 'a logic -> string
+*)
 val logic :
   (unit,
    < show    : ('a -> string) -> 'a logic -> string;

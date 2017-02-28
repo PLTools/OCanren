@@ -32,7 +32,7 @@ module Stream =
     let rec is_empty = function
     | Nil    -> true
     | Lazy s -> is_empty @@ Lazy.force s
-    | _ -> false
+    | _      -> false
 
     let rec retrieve ?(n=(-1)) s =
       if n = 0
@@ -64,26 +64,27 @@ module Stream =
      )
 
     let rec map f = function
-    | Nil -> Nil
+    | Nil          -> Nil
     | Cons (x, xs) -> Cons (f x, map f xs)
-    | Lazy s -> Lazy (Lazy.from_fun (fun () -> map f @@ Lazy.force s))
+    | Lazy s       -> Lazy (Lazy.from_fun (fun () -> map f @@ Lazy.force s))
 
     let rec iter f = function
-    | Nil -> ()
+    | Nil          -> ()
     | Cons (x, xs) -> f x; iter f xs
-    | Lazy s -> iter f @@ Lazy.force s
+    | Lazy s       -> iter f @@ Lazy.force s
 
-    let rec zip fs gs = match (fs, gs) with
-    | Nil, Nil -> Nil
-    | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
-    | _, Lazy s -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
-    | Lazy s, _ -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
-    | Nil, _
-    | _, Nil -> invalid_arg "streams have different lengths"
+    let rec zip fs gs = 
+      match (fs, gs) with
+      | Nil         , Nil          -> Nil
+      | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
+      | _           , Lazy s       -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
+      | Lazy s      , _            -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
+      | Nil, _      | _, Nil       -> failwith "MiniKanren.Stream.zip: streams have different lengths"
 
   end
 
-let (!!!) = Obj.magic;;
+let (!!!) = Obj.magic
+
 type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
 let rec wrap (x : Obj.t) =
@@ -117,14 +118,11 @@ let generic_show x =
   let b = Buffer.create 1024 in
   let rec inner o =
     match wrap o with
-    | Invalid n             -> Buffer.add_string b (Printf.sprintf "<invalid %d>" n)
+    | Invalid n                                         -> Buffer.add_string b (Printf.sprintf "<invalid %d>" n)
     | Unboxed s when Obj.(string_tag = (tag @@ repr s)) -> bprintf b "\"%s\"" (!!!s)
-    | Unboxed n when !!!n=0 -> Buffer.add_string b "[]"
-    | Unboxed n             -> Buffer.add_string b (Printf.sprintf "int<%d>" (!!!n))
-    (* | Boxed (t,l,f) when t=0 && l=1 && (match wrap (f 0) with Unboxed i when !!!i >=10 -> true | _ -> false) ->
-       Printf.bprintf b "var%d" (match wrap (f 0) with Unboxed i -> !!!i | _ -> failwith "shit") *)
-
-    | Boxed   (t, l, f) ->
+    | Unboxed n when !!!n = 0                           -> Buffer.add_string b "[]"
+    | Unboxed n                                         -> Buffer.add_string b (Printf.sprintf "int<%d>" (!!!n))
+    | Boxed  (t, l, f) ->
         Buffer.add_string b (Printf.sprintf "boxed %d <" t);
         for i = 0 to l - 1 do (inner (f i); if i<l-1 then Buffer.add_string b " ") done;
         Buffer.add_string b ">"
@@ -132,12 +130,14 @@ let generic_show x =
   inner x;
   Buffer.contents b
 ;;
-@type 'a logic = | Var of GT.int * 'a logic GT.list
-                 | Value of 'a
-                   with show,gmap,html,eq,compare,foldl,foldr;;
+
+@type 'a logic = 
+| Var   of GT.int * 'a logic GT.list 
+| Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
 (* miniKanren-related stuff starts here *)
-type ('a, 'b) fancy = 'a;;
+
+type ('a, 'b) fancy = 'a
 
 external lift: 'a -> ('a, 'a) fancy = "%identity"
 external inj: ('a, 'b) fancy -> ('a, 'b logic) fancy = "%identity"
@@ -165,6 +165,7 @@ let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x 
   in
   helper x
 
+(*
 let rec show_logic f x =
   match x with
   | Value x -> f x
@@ -175,7 +176,7 @@ let rec show_logic f x =
       | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ (show_logic f l)) cs)
       in
       sprintf "_.%d%s" i c
-
+*)
 
 let logic = {logic with
  gcata = ();

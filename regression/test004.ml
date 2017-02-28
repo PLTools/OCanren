@@ -2,6 +2,7 @@
 open MiniKanren
 open Tester
 open Printf
+open GT
 
 module Peano = struct
   module X = struct
@@ -22,8 +23,8 @@ module Peano = struct
   type lt = lt t logic     (* reified *)
   type ft = (rt, lt) fancy (* fancified *)
 
-  let rec show_ln n = show_logic GT.(show t show_ln) n
-  let rec show_rn n = GT.(show t show_rn) n
+  let rec show_ln n = show(logic) (show(t) show_ln) n
+  let rec show_rn n = show(t) show_rn n
 end;;
 
 let rec peano_reifier : var_checker -> (Peano.rt, Peano.lt) fancy -> Peano.lt = fun c x ->

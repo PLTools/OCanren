@@ -1,4 +1,4 @@
-fun q -> (===) q ((@@) inj (lift 5)), 1 answer {
+fun q -> (===) q (inj_int 5), 1 answer {
 q=5;
 }
 fun q -> (===) q ((@@) some (inj_int 5)), 1 answer {

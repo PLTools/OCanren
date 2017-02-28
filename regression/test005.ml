@@ -1,5 +1,6 @@
 (* Type inferencer for STLC *)
 open Printf
+open GT
 open MiniKanren
 open Tester
 open Stlc
@@ -26,8 +27,8 @@ module GTyp = struct
   let p s     : ftyp = inj @@ distrib @@ P s
   let arr x y : ftyp = inj @@ distrib @@ Arr (x,y)
 
-  let rec show_rtyp typ = GT.(show t (show string) show_rtyp) typ
-  let rec show_ltyp typ = show_logic GT.(show t (show_logic @@ show string) show_ltyp) typ
+  let rec show_rtyp typ = show(t) (show string) show_rtyp typ
+  let rec show_ltyp typ = show(logic) (show(t) (show(logic) @@ show string) show_ltyp) typ
 
 end
 
@@ -64,8 +65,8 @@ let infero expr typ =
   in
   infero (nil()) expr typ
 
-let show_string = fun x -> x
-let show_stringl = show_logic show_string
+let show_string  = show(string)
+let show_stringl = show(logic) (show(string))
 
 let inj_list_p xs = inj_list @@ List.map (fun (x,y) -> inj_pair x y) xs
 
@@ -75,13 +76,13 @@ let () =
   run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varX, v varX)]) q                    ));
   run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varY, v varY); (varX, v varX)]) q    ));
 
-  run_exn GT.(show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varX)  ));
-  run_exn GT.(show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varY)  ));
+  run_exn (show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varX)  ));
+  run_exn (show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varY)  ));
 
   run_exn GTyp.show_rtyp    1 q qh (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q));
   ()
 
-let show_env_logic = GT.show(List.logic) @@ show_logic GT.(show pair (show_logic (fun s -> s) ) show_llam)
+let show_env_logic = show(List.logic) @@ show(logic) (show pair (show(logic) (fun s -> s)) show_llam)
 
 let pair_reifier : var_checker -> (string*rlam, _) fancy -> _ = fun c p ->
   ManualReifiers.pair_reifier ManualReifiers.string_reifier glam_reifier c p
@@ -89,8 +90,8 @@ let pair_reifier : var_checker -> (string*rlam, _) fancy -> _ = fun c p ->
 let env_reifier c xs =
   List.reifier pair_reifier c xs
 
-let show_env  = GT.(show List.ground @@ show pair show_string  GLam.show_rlam)
-let show_envl = GT.(show List.logic  @@ show_logic (show pair show_stringl GLam.show_llam))
+let show_env  = show(List.ground) @@ show pair show_string  GLam.show_rlam
+let show_envl = show(List.logic ) @@ show(logic) (show pair show_stringl GLam.show_llam)
 let runEnv n = runR env_reifier show_env show_envl n
 
 let runT n = runR gtyp_reifier GTyp.show_rtyp GTyp.show_ltyp n

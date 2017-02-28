@@ -1,3 +1,4 @@
+open GT
 open MiniKanren
 open Tester
 open Printf
@@ -23,9 +24,9 @@ let demo2 q =
 let intlist_reifier c xs =
   List.reifier ManualReifiers.int_reifier c xs
 
-let show_int = string_of_int
-let show_int_list = GT.show(List.ground) show_int
-let show2 xs = GT.(show List.logic @@ show_logic show_int) xs
+let show_int = show(int)
+let show_int_list = show(List.ground) show_int
+let show2 xs = show(List.logic) (show(logic) show_int) xs
 
 let runT n = runR intlist_reifier show_int_list show2 n
 let () =

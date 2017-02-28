@@ -6,6 +6,7 @@ open MiniKanren
 open Tester
 open Printf
 open ManualReifiers
+open GT
 
 module Option = struct
   module X = struct
@@ -23,16 +24,16 @@ module Option = struct
   let none : unit -> (_,_ option logic) fancy = fun () -> inj @@ (distrib None )
 end
 
-let show_int = GT.(show int)
-let show_int_opt = GT.(show option) show_int
-let show_intl n = show_logic string_of_int n
-let show_intl_optl o = show_logic GT.(show option show_intl) o
+let show_int       = show(int)
+let show_int_opt   = show(option) (show(int))
+let show_intl      = show(logic)  (show(int))
+let show_intl_optl = show(logic)  (show(option) (show(logic) (show(int)))) 
 
 let int_opt_reifier = Option.reifier int_reifier
 
 let _ =
   let open Option in
-  run_exn show_int 1 q qh (REPR(fun q -> q === inj@@lift 5 ));
+  run_exn show_int 1 q qh (REPR(fun q -> q === inj_int 5));
   runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> q === some @@ inj_int 5 ));
   runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> q === none() ));
   runR int_reifier     show_int     show_intl      1 q qh (REPR(fun q -> some q === some @@ inj_int 5 ));
@@ -55,9 +56,9 @@ module Result = struct
   let error = fun x -> inj @@ distrib @@ Error x
 end
 
-let show1 = GT.(show Result.t (show int) (show option @@ show int))
+let show1 = show(Result.t) (show(int)) (show(option) (show(int)))
 let show1logic =
-  show_logic GT.(show Result.t (show_logic (show int)) (show_logic (show option @@ show_logic (show int))))
+  show(logic) (show(Result.t) (show(logic) (show int)) (show(logic) (show option @@ show(logic) (show int))))
 
 let runResult n = runR (Result.reifier int_reifier int_opt_reifier) show1 show1logic n
 
@@ -69,3 +70,5 @@ let _ =
                                                                 ; (q === Result.error r)
                                                                 ]) ));
   ()
+
+

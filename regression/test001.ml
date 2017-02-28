@@ -2,25 +2,26 @@
 open MiniKanren
 open Tester
 open Printf
+open GT
 
 let ilist xs = inj_list @@ List.map inj_int xs
-let just_a a = a === inj@@lift 5
+let just_a a = a === inj_int 5
 
 let a_and_b a =
   call_fresh (fun b ->
-      (a === inj@@lift 7) &&&
-      ((b === inj@@lift 6) ||| (b === inj@@lift 5))
+      (a === inj_int 7) &&&
+      ((b === inj_int 6) ||| (b === inj_int 5))
   )
 
 let a_and_b' b =
   call_fresh (
     fun a ->
-      (a === inj@@lift 7) &&&
-      ((b === inj@@lift 6) ||| (b === inj@@lift 5))
+      (a === inj_int 7) &&&
+      ((b === inj_int 6) ||| (b === inj_int 5))
   )
 
 let rec fives x =
-  (x === inj@@lift 5) |||
+  (x === inj_int 5) |||
   (fun st -> Stream.from_fun (fun () -> fives x st))
 
 let rec appendo a b ab =
@@ -42,22 +43,10 @@ let rec reverso a b =
           ))
       )
     ]
-(* 
-module Glist = struct
-  module X = struct
-    type ('a, 'b) t = ('a, 'b) llist
-    let fmap f g = function
-    | Nil -> Nil
-    | Cons (x,xs) -> Cons (f x, g xs)
-  end
 
-  include X
-  include Fmap2(X)
-end *)
-
-let show_int = GT.(show int)
-let show_int_list  = GT.(show List.ground (show int))
-let show_intl_list = GT.(show List.logic (show_logic (show int)))
+let show_int = show(int)
+let show_int_list  = (show(List.ground) (show int))
+let show_intl_list = (show(List.logic ) (show(logic) (show int)))
 let runL n = runR (List.reifier ManualReifiers.int_reifier) show_int_list show_intl_list n
 
 let _ =

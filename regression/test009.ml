@@ -1,9 +1,10 @@
 open Printf
+open GT
 open MiniKanren
 open Tester
 
 @type token = Id | Add | Mul with show;;
-let show_token = GT.show(token)
+let show_token = show(token)
 
 let id  ()  = inj@@lift Id
 let add ()  = inj@@lift Add
@@ -25,8 +26,8 @@ module GExpr = struct
   type lexpr = lexpr t logic
   type fexpr = (expr, lexpr) fancy
 
-  let rec show_expr  e = GT.(show X.t show_expr) e
-  let rec show_lexpr e = show_logic GT.(show X.t show_lexpr) e
+  let rec show_expr  e = show X.t show_expr e
+  let rec show_lexpr e = show(logic) (show X.t show_lexpr) e
 
 end
 
@@ -34,36 +35,6 @@ open GExpr
 let i ()  : fexpr = inj @@ distrib  I
 let a a b : fexpr = inj @@ distrib @@ A (a,b)
 let m a b : fexpr = inj @@ distrib @@ M (a,b)
-
-(* let expr = {
-  GT.gcata = ();
-  GT.plugins =
-    object(self)
-      (* It's expected a more simpler way to do this to be exists but I can't figure out it at the moment *)
-      method show    = function
-      | I -> "I ()"
-      | A (a,b) -> sprintf "A (%s, %s)" (self#show a) (self#show b)
-      | M (a,b) -> sprintf "M (%s, %s)" (self#show a) (self#show b)
-  end
-} *)
-
-(* let show_expr e = GT.show(expr) e
-let rec show_fexpr e = show_fancy show_expr e
-let rec show_lexpr e = show_logic GT.(show(gexpr) show_lexpr) e *)
-
-
-(* let lexpr_of_fexpr (c: var_checker) e =
-  let rec helper (t: expr) : lexpr =
-    if c#isVar t then refine_fancy (injlift t) c helper
-    else match t with
-    | I        -> Value I
-    | A (a,b)  -> Value (A (helper a, helper b) )
-    | M (a,b)  -> Value (M (helper a, helper b) )
-    (* TODO: We don't check that pair itself is a fancy value. Can this be possible? *)
-  in
-  if c#isVar e then refine_fancy e c helper
-  else helper (coerce_fancy e) *)
-
 
 let sym t i i' =
   fresh (x xs)
@@ -103,7 +74,7 @@ and pTop i i' r = pAdd i i' r
 let pExpr i r = fresh (i') (pTop i i' r) (eof i')
 
 let runE_exn n = run_exn show_expr n
-let show_stream xs = GT.show(List.ground) show_token xs
+let show_stream xs = show(List.ground) show_token xs
 
 let _ =
   runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_list [id ()]) q                              ));

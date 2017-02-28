@@ -1,5 +1,6 @@
 open Printf
-open MiniKanren;;
+open GT
+open MiniKanren
 
 module GLam = struct
   module X = struct
@@ -24,14 +25,14 @@ module GLam = struct
   let app x y = inj @@ distrib @@ App (x,y)
   let abs x y = inj @@ distrib @@ Abs (x,y)
 
-  let rec show_rlam term = GT.(show t (show string) show_rlam) term
-  let rec show_llam term = show_logic GT.(show t (show logic @@ show string) show_llam) term
+  let rec show_rlam term = show(t) (show(string)) show_rlam term
+  let rec show_llam term = show(logic) (show(t) (show(logic) @@ show string)show_llam) term
 end
-;;
+
 
 open GLam
 
-let varX : (string, string logic) fancy = inj@@lift "x"
+let varX : (string, string logic) fancy = inj (lift "x")
 let varY = inj@@lift "y"
 let varF = inj@@lift "f"
 

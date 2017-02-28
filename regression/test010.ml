@@ -10,8 +10,8 @@ let gxy  x y = (g123 x) &&& (g123 y)
 let gxy' x y = (gxy x y) &&& (x =/= y)
 let gnot5 x  = x =/= !5
 
-let show_int = GT.(show int)
-let show_fint = GT.(show int)
+let show_int = show(int)
+let show_fint = show(int)
 
 let _ =
   run_exn show_fint    3    q   qh (REPR (fun q   -> g123 q                                                    ));
@@ -29,7 +29,7 @@ let _ =
   run_exn show_fint (-1)    q   qh (REPR (fun q   -> (fresh (x y z) (x =/= !4)(y === z)(x === y)(z === !(2+2)))));
   ()
 
-let runI n = runR ManualReifiers.int_reifier show_int (show_logic show_int) n
+let runI n = runR ManualReifiers.int_reifier show_int (show(logic) show_int) n
 
 let _ =
   runI (-1)  q qh (REPR (fun q   -> (q =/= !5)                                                ));
