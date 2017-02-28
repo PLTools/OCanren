@@ -54,9 +54,6 @@ module Stream :
 
   end
 
-(*
-val generic_show: 'a -> string
-*)
 (** {3 States and goals} *)
 
 (** A state *)
@@ -73,19 +70,16 @@ module State :
 type goal = State.t -> State.t Stream.t
 
 (** {3 Logics} *)
-(** Type [('a, 'b) fancy] is a fence between logic values and normal values.
+
+(** Type [('a, 'b) injected] is a fence between logic values and normal values.
  *)
-type ('a,'b) fancy;;
+type ('a,'b) injected
 
 (** A type of abstract logic values *)
 @type 'a logic = 
 | Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
-(*
-val bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit
-val show_logic: ('a -> string) -> 'a logic -> string
-*)
 val logic :
   (unit,
    < show    : ('a -> string) -> 'a logic -> string;
@@ -97,25 +91,25 @@ val logic :
      gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic
 >) GT.t
 
-val lift : 'a -> ('a, 'a) fancy
-val inj : ('a, 'b) fancy -> ('a, 'b logic) fancy;;
+val lift : 'a -> ('a, 'a) injected
+val inj  : ('a, 'b) injected -> ('a, 'b logic) injected
 
 (** A synonym for [inj] *)
-val (!!) : ('a, 'b) fancy -> ('a, 'b) fancy;;
+val (!!) : ('a, 'b) injected -> ('a, 'b) injected
 
 (** {2 miniKanren basic primitives} *)
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the
     parameter *)
-val call_fresh : (('a, 'b) fancy -> State.t -> 'r) -> State.t -> 'r
+val call_fresh : (('a, 'b) injected -> State.t -> 'r) -> State.t -> 'r
 
 (** [x === y] creates a goal, which performs a unifications of
     [x] and [y] *)
-val (===) : ('a, 'b) fancy -> ('a, 'b) fancy -> goal
+val (===) : ('a, 'b) injected -> ('a, 'b) injected -> goal
 
 (** [x =/= y] creates a goal, which introduces a disequality constraint for
     [x] and [y] *)
-val (=/=) : ('a, 'b) fancy -> ('a, 'b) fancy -> goal
+val (=/=) : ('a, 'b) injected -> ('a, 'b) injected -> goal
 
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
 val conj : goal -> goal -> goal
@@ -151,34 +145,26 @@ val failure : goal
 (** {2 Combinators to produce fresh variables} *)
 module Fresh :
   sig
-
     (** [succ num f] increments the number of free logic variables in
         a goal; can be used to get rid of ``fresh'' syntax extension *)
-    val succ : ('a -> State.t -> 'b) -> ((_,_) fancy -> 'a) -> State.t -> 'b
+    val succ : ('a -> State.t -> 'b) -> ((_, _) injected -> 'a) -> State.t -> 'b
 
     (** Zero logic parameters *)
     val zero : 'a -> 'a
 
     (** {3 One to five logic parameter(s)} *)
-
-    val one   : (_ fancy -> State.t -> 'r) -> State.t -> 'r
-    val two   : (_ fancy -> _ fancy -> State.t -> 'r) -> State.t -> 'r
-
-    val three : (_ fancy -> _ fancy -> _ fancy -> State.t -> 'r) -> State.t -> 'r
-    val four  : (_ fancy -> _ fancy -> _ fancy -> _ fancy ->
-                State.t -> 'r) -> State.t -> 'r
-    val five  : (_ fancy -> _ fancy -> _ fancy -> _ fancy ->
-                 _ fancy -> State.t -> 'r) -> State.t -> 'r
+    val one   : (_ injected ->                                                         State.t -> 'r) -> State.t -> 'r
+    val two   : (_ injected -> _ injected ->                                           State.t -> 'r) -> State.t -> 'r
+    val three : (_ injected -> _ injected -> _ injected ->                             State.t -> 'r) -> State.t -> 'r
+    val four  : (_ injected -> _ injected -> _ injected -> _ injected ->               State.t -> 'r) -> State.t -> 'r
+    val five  : (_ injected -> _ injected -> _ injected -> _ injected -> _ injected -> State.t -> 'r) -> State.t -> 'r
 
     (** {3 One to five logic parameter(s), conventional names} *)
-
-    val q     : (_ fancy -> State.t -> 'r) -> State.t -> 'r
-    val qr    : (_ fancy -> _ fancy -> State.t -> 'r) -> State.t -> 'r
-
-    val qrs   : (_ fancy -> _ fancy -> _ fancy -> State.t -> 'r) -> State.t -> 'r
-    val qrst  : (_ fancy -> _ fancy -> _ fancy -> _ fancy -> State.t -> 'r) -> State.t -> 'r
-    val pqrst : (_ fancy -> _ fancy -> _ fancy -> _ fancy -> _ fancy -> State.t -> 'r) -> State.t -> 'r
-
+    val q     : (_ injected ->                                                         State.t -> 'r) -> State.t -> 'r
+    val qr    : (_ injected -> _ injected ->                                           State.t -> 'r) -> State.t -> 'r
+    val qrs   : (_ injected -> _ injected -> _ injected ->                             State.t -> 'r) -> State.t -> 'r
+    val qrst  : (_ injected -> _ injected -> _ injected -> _ injected ->               State.t -> 'r) -> State.t -> 'r
+    val pqrst : (_ injected -> _ injected -> _ injected -> _ injected -> _ injected -> State.t -> 'r) -> State.t -> 'r
   end
 
 (** {2 Top-level running primitives} *)
@@ -196,19 +182,14 @@ module Fresh :
     - [run two        (fun q r -> q === !5 ||| r === !6) (fun qs rs -> ]{i here [qs], [rs] --- streams of all values, associated with the variable [q] and [r], respectively}[)]
     - [run (succ one) (fun q r -> q === !5 ||| r === !6) (fun qs rs -> ]{i the same as the above}[)]
  *)
-val run :
-  (unit ->
-   ('a -> State.t -> 'c) * ('d -> 'e -> 'f) *
-   (('g -> 'h -> 'e) * ('c -> 'h * 'g))) ->
-  'a -> 'd -> 'f
+val run : (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
 
 type var_checker
-type ('a, 'b) reification_rez = Final of 'a | HasFreeVars of var_checker * ('a, 'b) fancy
+type ('a, 'b) reification_rez = Final of 'a | HasFreeVars of var_checker * ('a, 'b) injected
 
 (** Some type to refine a stream of states into the stream of answers (w.r.t. some known
     logic variable *)
 type ('a, 'b) refiner = State.t Stream.t -> ('a, 'b) reification_rez Stream.t
-
 
 (** Successor function *)
 val succ :
@@ -220,23 +201,20 @@ val succ :
     (('n -> 'c) -> 'n * 'd -> 'e) *
     (('f -> ('f -> 'o) * 'g -> 'o * 'h) * ('p * 'i -> ('p * 'j) * 'k))
 
-
-
 (** {3 Predefined numerals (one to five)} *)
-
 val one : unit ->
-  ((('a,'c) fancy -> State.t -> 'b) -> State.t -> ('a, 'c) refiner * 'b) *
+  ((('a,'c) injected -> State.t -> 'b) -> State.t -> ('a, 'c) refiner * 'b) *
   (('d -> 'e) -> 'd -> 'e) * (('f -> ('f -> 'g) -> 'g) * ('h -> 'h))
 
 val two : unit ->
-  ((('a, 'd) fancy -> ('b, 'e) fancy -> State.t -> 'c) ->
+  ((('a, 'd) injected -> ('b, 'e) injected -> State.t -> 'c) ->
    State.t -> ('a, 'd) refiner * (('b, 'e) refiner * 'c)) *
   (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
   (('i -> ('i -> 'j) * ('i -> 'k) -> 'j * 'k) *
    ('l * ('m * 'n) -> ('l * 'm) * 'n))
 
 val three : unit ->
-  (( ('a,'e) fancy -> ('b, 'f) fancy -> ('c, 'g) fancy -> State.t -> 'd) ->
+  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> State.t -> 'd) ->
    State.t ->
    ('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) *
   (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
@@ -244,7 +222,7 @@ val three : unit ->
    ('p * ('q * ('r * 's)) -> ('p * ('q * 'r)) * 's))
 
 val four : unit ->
-  ((('a, 'f) fancy -> ('b, 'g) fancy -> ('c, 'h) fancy -> ('d, 'i) fancy -> State.t -> 'e) ->
+  ((('a, 'f) injected -> ('b, 'g) injected -> ('c, 'h) injected -> ('d, 'i) injected -> State.t -> 'e) ->
    State.t ->
    ('a, 'f) refiner *
    (('b, 'g) refiner * (('c, 'h) refiner * (('d, 'i) refiner * 'e)))) *
@@ -255,7 +233,7 @@ val four : unit ->
    ('t * ('u * ('v * ('w * 'x))) -> ('t * ('u * ('v * 'w))) * 'x))
 
 val five : unit ->
-  ((('a, 'g) fancy -> ('b, 'h) fancy -> ('c, 'i) fancy -> ('d, 'j)  fancy -> ('e, 'k) fancy -> State.t -> 'f) ->
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> State.t -> 'f) ->
    State.t ->
    ('a, 'g) refiner *
    (('b, 'h) refiner *
@@ -270,20 +248,19 @@ val five : unit ->
     ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1))
 
 (** {3 The same numerals with conventional names} *)
-
 val q : unit ->
-  ((('a,'c) fancy -> State.t -> 'b) -> State.t -> ('a, 'c) refiner * 'b) *
+  ((('a,'c) injected -> State.t -> 'b) -> State.t -> ('a, 'c) refiner * 'b) *
   (('d -> 'e) -> 'd -> 'e) * (('f -> ('f -> 'g) -> 'g) * ('h -> 'h))
 
 val qr : unit ->
-  ((('a, 'd) fancy -> ('b, 'e) fancy -> State.t -> 'c) ->
+  ((('a, 'd) injected -> ('b, 'e) injected -> State.t -> 'c) ->
    State.t -> ('a, 'd) refiner * (('b, 'e) refiner * 'c)) *
   (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
   (('i -> ('i -> 'j) * ('i -> 'k) -> 'j * 'k) *
    ('l * ('m * 'n) -> ('l * 'm) * 'n))
 
 val qrs : unit ->
-  (( ('a,'e) fancy -> ('b, 'f) fancy -> ('c, 'g) fancy -> State.t -> 'd) ->
+  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> State.t -> 'd) ->
    State.t ->
    ('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) *
   (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
@@ -291,7 +268,7 @@ val qrs : unit ->
    ('p * ('q * ('r * 's)) -> ('p * ('q * 'r)) * 's))
 
 val qrst : unit ->
-  ((('a, 'f) fancy -> ('b, 'g) fancy -> ('c, 'h) fancy -> ('d, 'i) fancy -> State.t -> 'e) ->
+  ((('a, 'f) injected -> ('b, 'g) injected -> ('c, 'h) injected -> ('d, 'i) injected -> State.t -> 'e) ->
    State.t ->
    ('a, 'f) refiner *
    (('b, 'g) refiner * (('c, 'h) refiner * (('d, 'i) refiner * 'e)))) *
@@ -302,7 +279,7 @@ val qrst : unit ->
    ('t * ('u * ('v * ('w * 'x))) -> ('t * ('u * ('v * 'w))) * 'x))
 
 val pqrst : unit ->
-  ((('a, 'g) fancy -> ('b, 'h) fancy -> ('c, 'i) fancy -> ('d, 'j)  fancy -> ('e, 'k) fancy -> State.t -> 'f) ->
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> State.t -> 'f) ->
    State.t ->
    ('a, 'g) refiner *
    (('b, 'h) refiner *
@@ -316,9 +293,7 @@ val pqrst : unit ->
    ('x * ('y * ('z * ('a1 * ('b1 * 'c1)))) ->
     ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1))
 
-
 (** {2 Building reifiers compositionally } *)
-
 module type T1 = sig
   type 'a t
   val fmap : ('a -> 'b) -> 'a t -> 'b t
@@ -333,38 +308,38 @@ module type T3 = sig
 end
 
 module Fmap1 (T : T1) : sig
-  val distrib : ('a,'b) fancy T.t -> ('a T.t, 'b T.t) fancy
+  val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
 
   val reifier:
-    (var_checker -> ('a,'b) fancy -> 'b) ->
-    var_checker -> ('a T.t, 'b T.t logic as 'r) fancy -> 'r
+    (var_checker -> ('a,'b) injected -> 'b) ->
+    var_checker -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
 end
 module Fmap2 (T : T2) : sig
-  val distrib   : (('a,'c) fancy, ('b,'d) fancy) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) fancy
+  val distrib   : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
 
   val reifier:
-    (var_checker -> ('a, 'b) fancy -> 'b) ->
-    (var_checker -> ('c, 'd) fancy -> 'd) ->
-    var_checker -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) fancy -> 'r
+    (var_checker -> ('a, 'b) injected -> 'b) ->
+    (var_checker -> ('c, 'd) injected -> 'd) ->
+    var_checker -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
 
 end
 module Fmap3 (T : T3) : sig
   type ('a, 'b, 'c) t = ('a, 'b, 'c) T.t
-  val distrib : (('a,'b) fancy, ('c, 'd) fancy, ('e, 'f) fancy) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) fancy
+  val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) injected
 
   val reifier:
-    (var_checker -> ('a, 'b) fancy -> 'b) ->
-    (var_checker -> ('c, 'd) fancy -> 'd) ->
-    (var_checker -> ('e, 'f) fancy -> 'f) ->
-    var_checker -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) fancy -> 'r
+    (var_checker -> ('a, 'b) injected -> 'b) ->
+    (var_checker -> ('c, 'd) injected -> 'd) ->
+    (var_checker -> ('e, 'f) injected -> 'f) ->
+    var_checker -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
 end
 
 module ManualReifiers : sig
-  val int_reifier: var_checker -> (int, int logic) fancy -> int logic
-  val string_reifier: var_checker -> (string, string logic) fancy -> string logic
-  val pair_reifier: (var_checker -> ('a,'b) fancy -> 'b) ->
-                    (var_checker -> ('c,'d) fancy -> 'd) ->
-                    var_checker -> ('a * 'c, ('b * 'd) logic as 'r) fancy -> 'r
+  val int_reifier: var_checker -> (int, int logic) injected -> int logic
+  val string_reifier: var_checker -> (string, string logic) injected -> string logic
+  val pair_reifier: (var_checker -> ('a,'b) injected -> 'b) ->
+                    (var_checker -> ('c,'d) injected -> 'd) ->
+                    var_checker -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
 end
 
 (** {2 Standart relational library } *)
@@ -372,15 +347,18 @@ end
 (** {3 Support for some predefined types (lists, nats, bools etc.)} *)
 
 (** Abstract list type *)
-@type ('a, 'l) llist = Nil | Cons of 'a * 'l with show,gmap,html,eq,compare,foldl,foldr;;
+@type ('a, 'l) llist = 
+| Nil 
+| Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr
 
 (** Abstract nat type *)
-@type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap;;
+@type 'a lnat = 
+| O 
+| S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 (** {3 Library itself } *)
-
-module Bool : sig
-
+module Bool : 
+  sig
     (** Type synonym to prevent toplevel [logic] from being hidden *)
     type 'a logic' = 'a logic
 
@@ -414,7 +392,7 @@ module Bool : sig
          show    : logic -> string >)
       GT.t
 
-    type groundf   = (ground, logic) fancy
+    type groundf = (ground, logic) injected
 
     val false_ : groundf
     val true_  : groundf
@@ -440,20 +418,18 @@ module Bool : sig
     (** Conjunction as a goal *)
     val (&&) : groundf -> groundf -> goal
 
-    val show_ground  : bool  -> string
-
+    (** Injection *)
     val inj: bool -> groundf
   end
 
 (** Equality as boolean relation *)
-val eqo  : ('a, 'b) fancy -> ('a, 'b) fancy -> Bool.groundf -> goal
+val eqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundf -> goal
 
 (** Disequality as boolean relation *)
-val neqo : ('a, 'b) fancy -> ('a, 'b) fancy -> Bool.groundf -> goal
+val neqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundf -> goal
 
-
-module Nat : sig
-
+module Nat : 
+  sig
     (** Type synonym to prevent toplevel [logic] from being hidden *)
     type 'a logic' = 'a logic
 
@@ -466,7 +442,7 @@ module Nat : sig
     (** Logic nat *)
     type logic = logic t logic'
 
-    val reifier : var_checker -> (ground, logic) fancy -> logic
+    val reifier : var_checker -> (ground, logic) injected -> logic
 
     (** GT-compatible typeinfo for [ground] *)
     val ground :
@@ -500,7 +476,7 @@ module Nat : sig
     val to_int : ground -> int
 
     (** [inj n] converts ground nat [n] into logic one *)
-    (* val inj : ground -> (ground,ground) fancy *)
+    (* val inj : ground -> (ground,ground) injected *)
 
     (** Projection with failure continuation *)
     (* val prj_k : (int -> logic list -> logic t) -> logic -> ground *)
@@ -508,7 +484,7 @@ module Nat : sig
     (** Projection with default continuation *)
     (* val prj : logic -> ground *)
 
-    type groundf = (ground, logic) fancy
+    type groundf = (ground, logic) injected
 
     (** Relational addition *)
     val addo  : groundf -> groundf -> groundf -> goal
@@ -533,14 +509,10 @@ module Nat : sig
     val (>=) : groundf -> groundf -> goal
     val (>)  : groundf -> groundf -> goal
     val (<)  : groundf -> groundf -> goal
-
-    val show_ground:  ground -> string
-    (* val show_groundf: groundf -> string *)
   end
 
 (** [inj_nat n] is a deforested synonym for injection *)
-val inj_nat : int -> (Nat.ground, Nat.logic) fancy
-
+val inj_nat : int -> (Nat.ground, Nat.logic) injected
 
 module List :
   sig
@@ -573,7 +545,7 @@ module List :
       GT.t
 
     (** [of_list l] makes ground list from a regular one *)
-    val of_list : ('a, 'b) fancy list -> ('a ground, 'b logic) fancy
+    val of_list : ('a, 'b) injected list -> ('a ground, 'b logic) injected
 
     (** GT-compatible typeinfo for ['a logic] *)
     val logic :
@@ -587,16 +559,16 @@ module List :
           show    : ('a -> string) -> 'a logic -> GT.string  >)
         GT.t
 
-    type ('a,'b) flist = ('a ground, 'b logic) fancy
+    type ('a,'b) flist = ('a ground, 'b logic) injected
 
     val flist :
       (unit,
         < show    : ('a -> string) -> ('a,_) flist -> GT.string  >)
         GT.t
 
-    val reifier: (var_checker -> ('a, 'b) fancy -> 'b) -> var_checker -> ('a ground, 'b logic) fancy -> 'b logic
+    val reifier: (var_checker -> ('a, 'b) injected -> 'b) -> var_checker -> ('a ground, 'b logic) injected -> 'b logic
 
-    val cons : ('a, 'b) fancy -> ('a,'b) flist -> ('a,'b) flist
+    val cons : ('a, 'b) injected -> ('a,'b) flist -> ('a,'b) flist
 (*
     (** List injection *)
     val inj : ('a -> 'b) -> 'a ground -> 'b logic
@@ -610,17 +582,17 @@ module List :
 
 
     (** Relational foldr *)
-    val foldro : (('a, 'b) fancy -> ('acc, 'acc2) fancy -> ('acc, 'acc2) fancy -> goal) ->
-                 ('acc, 'acc2) fancy -> ('a, 'b) flist -> ('acc, 'acc2) fancy -> goal
+    val foldro : (('a, 'b) injected -> ('acc, 'acc2) injected -> ('acc, 'acc2) injected -> goal) ->
+                 ('acc, 'acc2) injected -> ('a, 'b) flist -> ('acc, 'acc2) injected -> goal
 
     (** Relational map *)
-    val mapo : (('a, 'b) fancy -> ('q, 'w) fancy -> goal) -> ('a, 'b) flist -> ('q, 'w) flist -> goal
+    val mapo : (('a, 'b) injected -> ('q, 'w) injected -> goal) -> ('a, 'b) flist -> ('q, 'w) flist -> goal
 
     (** Relational filter *)
-    val filtero : (('a, 'b) fancy -> Bool.groundf -> goal) -> ('a, 'b) flist -> ('a, 'b) flist -> goal
+    val filtero : (('a, 'b) injected -> Bool.groundf -> goal) -> ('a, 'b) flist -> ('a, 'b) flist -> goal
 
     (** Relational lookup *)
-    val lookupo : (('a, 'b) fancy -> Bool.groundf -> goal) -> ('a, 'b) flist -> ('a option, 'b option logic) fancy -> goal
+    val lookupo : (('a, 'b) injected -> Bool.groundf -> goal) -> ('a, 'b) flist -> ('a option, 'b option logic) injected -> goal
 
     (** Boolean list disjunctions *)
     val anyo : (Bool.ground, Bool.logic) flist -> Bool.groundf -> goal
@@ -629,7 +601,7 @@ module List :
     val allo : (Bool.ground, Bool.logic) flist -> Bool.groundf -> goal
 
     (** Relational length *)
-    val lengtho : (_,_) flist -> Nat.groundf -> goal
+    val lengtho : (_, _) flist -> Nat.groundf -> goal
 
     (** Relational append *)
     val appendo : ('a, 'b) flist -> ('a, 'b) flist  -> ('a, 'b) flist -> goal
@@ -638,16 +610,16 @@ module List :
     val reverso : ('a, 'b) flist -> ('a, 'b) flist -> goal
 
     (** Relational occurrence check (a shortcut) *)
-    val membero : ('a, 'b) flist  -> ('a, 'b) fancy  -> goal
+    val membero : ('a, 'b) flist  -> ('a, 'b) injected  -> goal
 
     (** Relational check for empty list *)
     val nullo : _ flist -> goal
 
     (** Relational head of the list *)
-    val caro  : ('a, 'b) flist -> ('a, 'b) fancy -> goal
+    val caro  : ('a, 'b) flist -> ('a, 'b) injected -> goal
 
     (** Alias for [caro] *)
-    val hdo   : ('a, 'b) flist -> ('a, 'b) fancy -> goal
+    val hdo   : ('a, 'b) flist -> ('a, 'b) injected -> goal
 
     (** Relational tail of the list *)
     val cdro  : ('a, 'b) flist -> ('a, 'b) flist -> goal
@@ -659,23 +631,23 @@ module List :
   end
 
 (** [inj_list l] is a deforested synonym for injection *)
-val inj_list : ('a, 'b) fancy list -> ('a, 'b) List.flist
+val inj_list : ('a, 'b) injected list -> ('a, 'b) List.flist
 
-val inj_pair   : ('a, 'b) fancy -> ('c, 'd) fancy -> ('a * 'c, ('b * 'd) logic) fancy
-val inj_list_p : (('a, 'b) fancy * ('c, 'd) fancy) list -> ('a * 'c, ('b * 'd) logic) List.flist
-val inj_int    : int -> (int, int logic) fancy
+val inj_pair   : ('a, 'b) injected -> ('c, 'd) injected -> ('a * 'c, ('b * 'd) logic) injected
+val inj_list_p : (('a, 'b) injected * ('c, 'd) injected) list -> ('a * 'c, ('b * 'd) logic) List.flist
+val inj_int    : int -> (int, int logic) injected
 
 (** [inj_nat_list l] is a deforsted synonym for injection *)
 val inj_nat_list : int list -> (Nat.ground, Nat.logic) List.flist
 
 (** Infix synonym for [Cons] *)
-val (%) : ('a, 'b) fancy -> ('a,'b) List.flist -> ('a,'b) List.flist
+val (%) : ('a, 'b) injected -> ('a,'b) List.flist -> ('a,'b) List.flist
 
 (** [x %< y] is a synonym for [Cons (x, !(Cons (y, !Nil)))] *)
-val (%<) : ('a, 'b) fancy -> ('a, 'b) fancy -> ('a, 'b) List.flist
+val (%<) : ('a, 'b) injected -> ('a, 'b) injected -> ('a, 'b) List.flist
 
 (** [!< x] is a synonym for [Cons (x, !Nil)] *)
-val (!<) : ('a, 'b) fancy -> ('a, 'b) List.flist
+val (!<) : ('a, 'b) injected -> ('a, 'b) List.flist
 
 (** [nil] is a synonym for [inj Nil] *)
-val nil : unit -> (_,_) List.flist
+val nil : unit -> (_, _) List.flist

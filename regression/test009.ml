@@ -24,7 +24,7 @@ module GExpr = struct
 
   type  expr = expr t
   type lexpr = lexpr t logic
-  type fexpr = (expr, lexpr) fancy
+  type fexpr = (expr, lexpr) injected
 
   let rec show_expr  e = show X.t show_expr e
   let rec show_lexpr e = show(logic) (show X.t show_lexpr) e

@@ -3,12 +3,12 @@ open Printf
 open MiniKanren
 open Tester
 
-let show_nat        = Nat.show_ground
-let show_bool       = Bool.show_ground
+let show_nat        = GT.show(Nat.ground)
+let show_bool       = GT.show(Bool.ground)
 
-let show_nat_llist  = GT.show(List.ground) Nat.show_ground
-let show_bool_llist = GT.show(List.ground) (Bool.show_ground)
-let show_option_nat = GT.(show option  Nat.show_ground)
+let show_nat_llist  = GT.show(List.ground) (GT.show(Nat.ground))
+let show_bool_llist = GT.show(List.ground) (GT.show(Bool.ground))
+let show_option_nat = GT.(show option  (show Nat.ground))
 
 let (?$) = inj_nat
 let nats = inj_nat_list

@@ -20,8 +20,8 @@ module Option = struct
   include X
   include Fmap1(X)
 
-  let some : ('a,'b) fancy -> ('a option, 'b option logic) fancy = fun x -> inj (distrib (Some x))
-  let none : unit -> (_,_ option logic) fancy = fun () -> inj @@ (distrib None )
+  let some : ('a,'b) injected -> ('a option, 'b option logic) injected = fun x -> inj (distrib (Some x))
+  let none : unit -> (_,_ option logic) injected = fun () -> inj @@ (distrib None )
 end
 
 let show_int       = show(int)

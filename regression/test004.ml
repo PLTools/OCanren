@@ -21,13 +21,13 @@ module Peano = struct
 
   type rt = rt t           (* normal type *)
   type lt = lt t logic     (* reified *)
-  type ft = (rt, lt) fancy (* fancified *)
+  type ft = (rt, lt) injected (* fancified *)
 
   let rec show_ln n = show(logic) (show(t) show_ln) n
   let rec show_rn n = show(t) show_rn n
 end;;
 
-let rec peano_reifier : var_checker -> (Peano.rt, Peano.lt) fancy -> Peano.lt = fun c x ->
+let rec peano_reifier : var_checker -> (Peano.rt, Peano.lt) injected -> Peano.lt = fun c x ->
   Peano.reifier peano_reifier c x
 
 let runN  n = runR peano_reifier Peano.show_rn Peano.show_ln n

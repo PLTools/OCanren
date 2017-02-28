@@ -137,10 +137,10 @@ let generic_show x =
 
 (* miniKanren-related stuff starts here *)
 
-type ('a, 'b) fancy = 'a
+type ('a, 'b) injected = 'a
 
-external lift: 'a -> ('a, 'a) fancy = "%identity"
-external inj: ('a, 'b) fancy -> ('a, 'b logic) fancy = "%identity"
+external lift: 'a -> ('a, 'a) injected = "%identity"
+external inj: ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
 ;;
 
 (* The [token_t] type is use to connect logic variables with environment where they were created *)
@@ -209,10 +209,10 @@ let logic = {logic with
 
 let (!!) = inj
 
-let inj_pair : ('a, 'c) fancy -> ('b,'d) fancy -> ('a * 'b, ('c*'d) logic) fancy =
+let inj_pair : ('a, 'c) injected -> ('b,'d) injected -> ('a * 'b, ('c*'d) logic) injected =
   fun x y -> (x,y)
 
-external inj_int : int -> (int, int logic) fancy = "%identity"
+external inj_int : int -> (int, int logic) injected = "%identity"
 
 exception Not_a_value
 exception Occurs_check
@@ -428,8 +428,8 @@ let call_fresh f (env, subst, constr)  =
 
 exception Disequality_violated
 
-let (===) (x: _ fancy) y (env, subst, constr) =
-  (* we should always unify two fancy types *)
+let (===) (x: _ injected) y (env, subst, constr) =
+  (* we should always unify two injected types *)
 
   try
     let prefix, subst' = Subst.unify env x y (Some subst) in
@@ -552,7 +552,7 @@ let has_free_vars is_var x =
 
 exception WithFreeVars of (Obj.t -> bool) * Obj.t
 
-let rec refine : State.t -> ('a,'b) fancy -> ('a,'b) fancy = fun ((e, s, c) as st) x ->
+let rec refine : State.t -> ('a,'b) injected -> ('a,'b) injected = fun ((e, s, c) as st) x ->
   let rec walk' recursive env var subst =
     let var = Subst.walk env var subst in
     match Env.var env var with
@@ -624,10 +624,10 @@ module Uncurry =
   end
 
 type var_checker = < isVar : 'a . 'a -> bool >
-type ('a, 'b) reification_rez = Final of 'a | HasFreeVars of var_checker * ('a, 'b) fancy
+type ('a, 'b) reification_rez = Final of 'a | HasFreeVars of var_checker * ('a, 'b) injected
 type ('a, 'b) refiner = State.t Stream.t -> ('a, 'b) reification_rez Stream.t
 
-let refiner : ('a,'b) fancy -> ('a,'b) refiner = fun x ->
+let refiner : ('a,'b) injected -> ('a,'b) refiner = fun x ->
   Stream.map (fun ((e,_,_) as st) ->
     let ans = refine st !!!x in
     if has_free_vars (Env.is_var e) (Obj.repr ans)
@@ -681,40 +681,40 @@ module type T3 = sig
   val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
 end
 
-let var_of_fancy_exn : var_checker -> ('a,'b) fancy -> (var_checker -> ('a,'b) fancy -> 'b) -> 'b = fun c x r ->
+let var_of_injected_exn : var_checker -> ('a,'b) injected -> (var_checker -> ('a,'b) injected -> 'b) -> 'b = fun c x r ->
   if c#isVar x
   then let InnerVar (_,_,n,cstr) = !!!x in !!!(Var (n, List.map (!!!(r c)) !!!cstr))
-  else failwith "Bad argument of var_of_fancy: it should be logic variable"
+  else failwith "Bad argument of var_of_injected: it should be logic variable"
 
 module Fmap1 (T : T1) = struct
-  external distrib : ('a,'b) fancy T.t -> ('a T.t, 'b T.t) fancy = "%identity"
+  external distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected = "%identity"
 
-  let rec reifier: (var_checker -> ('a,'b) fancy -> 'b) -> var_checker ->
-        ('a T.t, 'b T.t logic as 'r) fancy -> 'r
+  let rec reifier: (var_checker -> ('a,'b) injected -> 'b) -> var_checker ->
+        ('a T.t, 'b T.t logic as 'r) injected -> 'r
     = fun arg_r c x ->
       if c#isVar x
-      then var_of_fancy_exn c x (reifier arg_r)
+      then var_of_injected_exn c x (reifier arg_r)
       else Value (T.fmap (arg_r c) x)
 end
 
 module Fmap2 (T : T2) = struct
-  external distrib : (('a,'b) fancy, ('c, 'd) fancy) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) fancy = "%identity"
+  external distrib : (('a,'b) injected, ('c, 'd) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected = "%identity"
 
   let rec reifier:
-        (var_checker -> ('a,'b) fancy -> 'b) ->
-        (var_checker -> ('c,'d) fancy -> 'd) ->
-         var_checker -> (('a,'c) T.t, ('b,'d) T.t logic) fancy -> ('b,'d) T.t logic
+        (var_checker -> ('a,'b) injected -> 'b) ->
+        (var_checker -> ('c,'d) injected -> 'd) ->
+         var_checker -> (('a,'c) T.t, ('b,'d) T.t logic) injected -> ('b,'d) T.t logic
     = fun r1 r2 c x ->
-      if c#isVar x then var_of_fancy_exn c x (reifier r1 r2)
+      if c#isVar x then var_of_injected_exn c x (reifier r1 r2)
       else Value (T.fmap (r1 c) (r2 c) x)
 end
 
 module Fmap3 (T : T3) = struct
   type ('a, 'b, 'c) t = ('a, 'b, 'c) T.t
-  external distrib : (('a,'b) fancy, ('c, 'd) fancy, ('e, 'f) fancy) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) fancy = "%identity"
+  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) injected = "%identity"
 
   let rec reifier r1 r2 r3 (c: var_checker) x =
-    if c#isVar x then var_of_fancy_exn c x (reifier r1 r2 r3)
+    if c#isVar x then var_of_injected_exn c x (reifier r1 r2 r3)
     else Value (T.fmap (r1 c) (r2 c) (r3 c) x)
 end
 
@@ -727,29 +727,29 @@ module Pair = struct
 end
 
 module ManualReifiers = struct
-  let rec simple_reifier: var_checker -> ('a, 'a logic) fancy -> 'a logic = fun c n ->
+  let rec simple_reifier: var_checker -> ('a, 'a logic) injected -> 'a logic = fun c n ->
     if c#isVar n
-    then var_of_fancy_exn c n simple_reifier
+    then var_of_injected_exn c n simple_reifier
     else Value n
 
-  let bool_reifier : var_checker -> (bool, bool logic) fancy -> bool logic =
+  let bool_reifier : var_checker -> (bool, bool logic) injected -> bool logic =
     simple_reifier
 
-  let rec int_reifier: var_checker -> (int, int logic) fancy -> int logic = fun c n ->
+  let rec int_reifier: var_checker -> (int, int logic) injected -> int logic = fun c n ->
     if c#isVar n
-    then var_of_fancy_exn c n int_reifier
+    then var_of_injected_exn c n int_reifier
     else Value n
 
-  let rec string_reifier: var_checker -> (string, string logic) fancy -> string logic = fun c x ->
+  let rec string_reifier: var_checker -> (string, string logic) injected -> string logic = fun c x ->
     if c#isVar x
-    then var_of_fancy_exn c x string_reifier
+    then var_of_injected_exn c x string_reifier
     else Value x
 
-  let rec pair_reifier: (var_checker -> ('a,'b) fancy -> 'b) ->
-                        (var_checker -> ('c,'d) fancy -> 'd) ->
-                        var_checker -> ('a * 'c, ('b * 'd) logic as 'r) fancy -> 'r
+  let rec pair_reifier: (var_checker -> ('a,'b) injected -> 'b) ->
+                        (var_checker -> ('c,'d) injected -> 'd) ->
+                        var_checker -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
     = fun r1 r2 c p ->
-      if c#isVar p then var_of_fancy_exn c p (pair_reifier r1 r2)
+      if c#isVar p then var_of_injected_exn c p (pair_reifier r1 r2)
       else Pair.reifier r1 r2 c p
 
 end;;
@@ -799,9 +799,9 @@ module Bool =
         end
     }
 
-    type boolf = (bool, bool logic') fancy
+    type boolf = (bool, bool logic') injected
     type groundf = boolf
-    type fancy   = groundf
+    type injected   = groundf
 
     let false_ : boolf = inj@@lift false
     let true_  : boolf = inj@@lift true
@@ -866,10 +866,10 @@ module Nat = struct
 
     type ground = ground t
     type logic = logic t logic'
-    type groundf = (ground, logic) fancy
+    type groundf = (ground, logic) injected
 
-    let rec reifier : var_checker -> (ground, logic) fancy -> logic  = fun c x ->
-      if c#isVar x then var_of_fancy_exn c x reifier
+    let rec reifier : var_checker -> (ground, logic) injected -> logic  = fun c x ->
+      if c#isVar x then var_of_injected_exn c x reifier
       else F.reifier reifier c x
 
     let ground = {
@@ -989,8 +989,8 @@ module List =
     type 'a ground = ('a, 'a ground) t;;
     type 'a logic  = ('a, 'a logic) t logic'
 
-    let rec reifier : _ -> var_checker -> (_ ground, 'b logic) fancy -> 'b logic = fun arg_r c x ->
-      if c#isVar x then var_of_fancy_exn c x (reifier arg_r)
+    let rec reifier : _ -> var_checker -> (_ ground, 'b logic) injected -> 'b logic = fun arg_r c x ->
+      if c#isVar x then var_of_injected_exn c x (reifier arg_r)
       else F.reifier arg_r (reifier arg_r) c x
 
     let rec of_list = function [] -> nil () | x::xs -> cons x (of_list xs)
@@ -1053,7 +1053,7 @@ module List =
         end
     }
 
-    type ('a,'b) flist = ('a ground, 'b logic) fancy
+    type ('a,'b) flist = ('a ground, 'b logic) injected
 
     let flist =
       { GT.gcata = ()
@@ -1064,9 +1064,9 @@ module List =
         end
       }
 
-    let (%): ('a,'b) fancy -> ('a,'b) flist -> ('a,'b) flist = cons
-    let (%<): ('a,'b) fancy -> ('a,'b) fancy -> ('a,'b) flist = fun x y -> cons x @@ cons y @@ nil ()
-    let (!<) : ('a,'b) fancy -> ('a,'b) flist = fun x -> cons x @@ nil ()
+    let (%): ('a,'b) injected -> ('a,'b) flist -> ('a,'b) flist = cons
+    let (%<): ('a,'b) injected -> ('a,'b) injected -> ('a,'b) flist = fun x y -> cons x @@ cons y @@ nil ()
+    let (!<) : ('a,'b) injected -> ('a,'b) flist = fun x -> cons x @@ nil ()
 
     let rec foldro f a xs r =
       conde [
@@ -1170,7 +1170,7 @@ let (%<) = List.(%<)
 let (!<) = List.(!<)
 let nil  = List.nil
 
-let rec inj_list: ('a, 'b) fancy list -> ('a, 'b) List.flist = function
+let rec inj_list: ('a, 'b) injected list -> ('a, 'b) List.flist = function
 | []    -> nil ()
 | x::xs -> List.cons x (inj_list xs)
 

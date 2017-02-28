@@ -19,7 +19,7 @@ module GLam = struct
 
   type rlam = (string, rlam) t
   type llam  = (string logic, llam) t logic
-  type flam = (rlam, llam) fancy
+  type flam = (rlam, llam) injected
 
   let v   s   = inj @@ distrib @@ V s
   let app x y = inj @@ distrib @@ App (x,y)
@@ -32,7 +32,7 @@ end
 
 open GLam
 
-let varX : (string, string logic) fancy = inj (lift "x")
+let varX : (string, string logic) injected = inj (lift "x")
 let varY = inj@@lift "y"
 let varF = inj@@lift "f"
 

@@ -22,7 +22,7 @@ module GTyp = struct
 
   type rtyp = (string, rtyp) t
   type ltyp = (string logic, ltyp) t logic
-  type ftyp = (rtyp, ltyp) fancy
+  type ftyp = (rtyp, ltyp) injected
 
   let p s     : ftyp = inj @@ distrib @@ P s
   let arr x y : ftyp = inj @@ distrib @@ Arr (x,y)
@@ -84,7 +84,7 @@ let () =
 
 let show_env_logic = show(List.logic) @@ show(logic) (show pair (show(logic) (fun s -> s)) show_llam)
 
-let pair_reifier : var_checker -> (string*rlam, _) fancy -> _ = fun c p ->
+let pair_reifier : var_checker -> (string*rlam, _) injected -> _ = fun c p ->
   ManualReifiers.pair_reifier ManualReifiers.string_reifier glam_reifier c p
 
 let env_reifier c xs =

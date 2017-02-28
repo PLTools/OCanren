@@ -5,7 +5,7 @@ open Printf
 
 let ilist xs = inj_list @@ List.map inj_int xs
 
-let runaway_cell: (int List.ground, int logic List.logic) fancy ref = ref (Obj.magic ())
+let runaway_cell: (int List.ground, int logic List.logic) injected ref = ref (Obj.magic ())
 
 let demo1 q =
   call_fresh (fun r ->
