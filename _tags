@@ -1,6 +1,7 @@
 true: debug, rectypes, color(always), bin_annot
 true: short_paths
 
+<samples>: not_hygienic
 <camlp5/pa_minikanren.*>: syntax(camlp5o), package(camlp5)
 
 <src/MiniKanren.*>: syntax(camlp5o),package(GT,GT.syntax.all)
