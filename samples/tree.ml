@@ -1,76 +1,107 @@
 (*
  * Tree: binary search tree.
  * Copyright (C) 2016
- * Dmitri Boulytchev, 
+ * Dmitri Boulytchev, Dmitrii Kosarev
  * St.Petersburg State University, JetBrains Research
- * 
+ *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
  * License version 2, as published by the Free Software Foundation.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * 
+ *
  * See the GNU Library General Public License version 2 for more details
  * (enclosed in the file COPYING).
  *)
 
+open Printf
 open GT
 open MiniKanren
 
-(* Abstracted type for the tree *)
-@type ('a, 'self) tree = Nil | Node of 'a * 'self * 'self with gmap, show
+module Tree = struct
+  module X = struct
+  (* Abstracted type for the tree *)
+  @type ('a, 'self) t = Nil | Node of 'a * 'self * 'self with gmap,show;;
 
-(* A shortcut for "ground" tree we're going to work with in "functional" code *)
-type gtree = (int, gtree) tree
+  let fmap f g = function
+  | Nil -> Nil
+  | Node (a,b,c) -> Node (f a, g b, g c)
+  end
+  include X
+  include Fmap2(X)
 
-(* Logic counterpart *)
-type ltree = (Nat.logic, ltree) tree logic
+  type inttree = (int, inttree) X.t
+  (* A shortcut for "ground" tree we're going to work with in "functional" code *)
+  type rtree = (Nat.ground, rtree) X.t
 
-(* Printing ground tree function *)
-let rec show_tree t = show(tree) (show(int)) show_tree t
+  (* Logic counterpart *)
+  type ltree = (Nat.logic, ltree) X.t logic
 
-(* Injection *)
-let rec inj_tree : gtree -> ltree = fun t ->
-  !! (gmap(tree) inj_nat inj_tree t)
+  type ftree = (rtree, ltree) injected
 
-(* Projection *)
-let rec prj_tree : ltree -> gtree = fun t ->
-  gmap(tree) prj_nat prj_tree (prj t)
+  let nil        : ftree = inj @@ distrib @@ X.Nil
+  let node a b c : ftree = inj @@ distrib @@ X.Node (a,b,c)
+
+  (* Printing tree with ints inside *)
+  let rec show_inttree t = GT.(show X.t (show int) show_inttree) t
+  (* Printing tree with Peano numbers inside *)
+  let rec show_rtree t = GT.(show X.t (show Nat.ground) show_rtree) t
+  (* Printing logical tree *)
+  let rec show_ltree t = GT.(show logic @@ show X.t (show Nat.logic) show_ltree) t
+
+  (* Injection *)
+  let rec inj_tree : inttree -> ftree = fun tree ->
+     inj @@ distrib @@ GT.(gmap t inj_nat inj_tree tree)
+
+  (* Projection *)
+  let rec prj_tree : rtree -> inttree =
+    fun x -> GT.(gmap t) Nat.to_int prj_tree x
+
+end
+
+open Tree
 
 (* Relational insert into a search tree *)
 let rec inserto a t t' = conde [
-  (t === !!Nil) &&& (t' === !!(Node (a, !!Nil, !!Nil)));
+  (t === nil) &&& (t' === node a nil nil);
   fresh (x l r l')
-    (t === !!(Node (x, l, r)))
+    (t === node x l r)
     Nat.(conde [
       (t' === t) &&& (a === x);
-      (t' === !!(Node (x, l', r ))) &&& (a < x) &&& (inserto a l l');
-      (t' === !!(Node (x, l , l'))) &&& (a > x) &&& (inserto a r l')
+      (t' === (node x l' r  )) &&& (a < x) &&& (inserto a l l');
+      (t' === (node x l  l' )) &&& (a > x) &&& (inserto a r l')
     ])
 ]
 
 (* Top-level wrapper for insertion --- takes and returns non-logic data *)
-let insert a t =
+let insert : int -> inttree -> inttree = fun a t ->
   run q (fun q  -> inserto (inj_nat a) (inj_tree t) q)
-        (fun qs -> prj_tree @@ Stream.hd qs)
+        (fun qs -> match Stream.hd qs with
+          | Final x -> prj_tree x
+          | HasFreeVars _ -> assert false
+          )
 
 (* Top-level wrapper for "inverse" insertion --- returns an integer, which
    has to be inserted to convert t into t' *)
 let insert' t t' =
   run q (fun q  -> inserto q (inj_tree t) (inj_tree t'))
-        (fun qs -> prj_nat @@ Stream.hd qs)  
+        (fun qs ->
+          match Stream.hd qs with
+          | Final nat -> Nat.to_int nat
+          | HasFreeVars _ -> assert false
+          )
 
 (* Entry point *)
 let _ =
   let insert_list l =
-    let rec inner t = function 
+    let rec inner t = function
     | []    -> t
-    | x::xs -> 
-       let t' = insert x t in
-       Printf.printf "Inserting %d into %s makes %s\n%!" x (show_tree t) (show_tree t');
-       inner t' xs
+    | x::xs ->
+      let t' = insert x t in
+      printf "Inserting %d into %s makes %s\n%!" x (show_inttree t) (show_inttree t');
+      inner t' xs
     in
     inner Nil l
   in
