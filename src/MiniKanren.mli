@@ -72,7 +72,7 @@ type goal = State.t -> State.t Stream.t
 type ('a, 'b) injected
 
 (** A type of abstract logic values *)
-@type 'a logic = 
+@type 'a logic =
 | Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
@@ -181,9 +181,9 @@ val run : (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) 
 type helper
 
 (** Reification result *)
-type ('a, 'b) reification_rez = 
-| Final       of 'a 
-| HasFreeVars of helper * ('a, 'b) injected
+type ('a, 'b) reification_rez =
+| Final       of 'a
+| HasFreeVars of ((helper -> ('a, 'b) injected -> 'b) -> 'b)
 
 (** A type to refine a stream of states into the stream of answers (w.r.t. some known logic variable *)
 type ('a, 'b) refiner = State.t Stream.t -> ('a, 'b) reification_rez Stream.t
@@ -291,37 +291,37 @@ val pqrst : unit ->
     ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1))
 
 (** {2 Building reifiers compositionally } *)
-module type T1 = 
+module type T1 =
   sig
     type 'a t
     val fmap : ('a -> 'b) -> 'a t -> 'b t
   end
 
-module type T2 = 
+module type T2 =
   sig
    type ('a, 'b) t
    val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
   end
 
-module type T3 = 
+module type T3 =
   sig
     type ('a, 'b, 'c) t
     val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
   end
 
-module Fmap1 (T : T1) : 
+module Fmap1 (T : T1) :
   sig
     val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
     val reify : (helper -> ('a,'b) injected -> 'b) -> helper -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
   end
 
-module Fmap2 (T : T2) : 
+module Fmap2 (T : T2) :
   sig
     val distrib : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
     val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> helper -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
   end
 
-module Fmap3 (T : T3) : 
+module Fmap3 (T : T3) :
   sig
     type ('a, 'b, 'c) t = ('a, 'b, 'c) T.t
     val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) injected
@@ -329,7 +329,7 @@ module Fmap3 (T : T3) :
                 helper -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
   end
 
-module ManualReifiers : 
+module ManualReifiers :
   sig
     val int_reifier: helper -> (int, int logic) injected -> int logic
     val string_reifier: helper -> (string, string logic) injected -> string logic
@@ -343,17 +343,17 @@ module ManualReifiers :
 (** {3 Predefined types (lists, nats, bools etc.)} *)
 
 (** Abstract list type *)
-@type ('a, 'l) llist = 
-| Nil 
+@type ('a, 'l) llist =
+| Nil
 | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr
 
 (** Abstract nat type *)
-@type 'a lnat = 
-| O 
+@type 'a lnat =
+| O
 | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 (** {3 Relations on booleans} *)
-module Bool : 
+module Bool :
   sig
     (** Type synonym to prevent toplevel [logic] from being hidden *)
     type 'a logic' = 'a logic
@@ -424,7 +424,7 @@ val eqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundi -> goal
 val neqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundi -> goal
 
 (** {3 Relations on nats} *)
-module Nat : 
+module Nat :
   sig
     (** Type synonym to prevent toplevel [logic] from being hidden *)
     type 'a logic' = 'a logic
