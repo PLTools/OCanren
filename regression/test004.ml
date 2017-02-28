@@ -27,7 +27,7 @@ module Peano = struct
   let rec show_rn n = show(t) show_rn n
 end;;
 
-let rec peano_reifier : var_checker -> (Peano.rt, Peano.lt) injected -> Peano.lt = fun c x ->
+let rec peano_reifier : helper -> (Peano.rt, Peano.lt) injected -> Peano.lt = fun c x ->
   Peano.reifier peano_reifier c x
 
 let runN  n = runR peano_reifier Peano.show_rn Peano.show_ln n

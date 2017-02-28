@@ -21,11 +21,9 @@
 (** {2 Basic modules and types} *)
 
 (** {3 Lazy streams} *)
-
 module Stream :
   sig
-
-    (** A type of the stream *)
+    (** Stream type *)
     type 'a t
 
     (** Emptiness test *)
@@ -51,7 +49,6 @@ module Stream :
 
     (** [iter f s] iterates function [f] over the stream [s] *)
     val iter : ('a -> unit) -> 'a t -> unit
-
   end
 
 (** {3 States and goals} *)
@@ -66,12 +63,12 @@ module State :
     val show : t -> string
   end
 
-(** Goal converts a state into lazy stream of states *)
+(** Goal converts a state into a lazy stream of states *)
 type goal = State.t -> State.t Stream.t
 
-(** {3 Logics} *)
+(** {3 Logical values and injections} *)
 
-(**  The type [('a, 'b) injected] describes an injection of type ['a] into ['b] *)
+(**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
 type ('a, 'b) injected
 
 (** A type of abstract logic values *)
@@ -79,6 +76,7 @@ type ('a, 'b) injected
 | Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
+(** GT-compatible typeinfo for logics *)
 val logic :
   (unit,
    < show    : ('a -> string) -> 'a logic -> string;
@@ -105,12 +103,10 @@ val (!!) : ('a, 'b) injected -> ('a, 'b logic) injected
     parameter *)
 val call_fresh : (('a, 'b) injected -> State.t -> 'r) -> State.t -> 'r
 
-(** [x === y] creates a goal, which performs a unifications of
-    [x] and [y] *)
+(** [x === y] creates a goal, which performs a unifications of [x] and [y] *)
 val (===) : ('a, 'b) injected -> ('a, 'b) injected -> goal
 
-(** [x =/= y] creates a goal, which introduces a disequality constraint for
-    [x] and [y] *)
+(** [x =/= y] creates a goal, which introduces a disequality constraint for [x] and [y] *)
 val (=/=) : ('a, 'b) injected -> ('a, 'b) injected -> goal
 
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
@@ -125,15 +121,13 @@ val disj : goal -> goal -> goal
 (** [|||] is left-associative infix synonym for [disj] *)
 val (|||) : goal -> goal -> goal
 
-(** [?| [s1; s2; ...; sk]] calculates [s1 ||| s2 ||| ... ||| sk] for a
-    non-empty list of goals *)
+(** [?| [s1; s2; ...; sk]] calculates [s1 ||| s2 ||| ... ||| sk] for a non-empty list of goals *)
 val (?|) : goal list -> goal
 
 (** [conde] is a synonym for [?|] *)
 val conde : goal list -> goal
 
-(** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a
-    non-empty list of goals *)
+(** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a non-empty list of goals *)
 val (?&) : goal list -> goal
 
 (** {2 Some predefined goals} *)
@@ -186,8 +180,8 @@ module Fresh :
  *)
 val run : (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
 
-type var_checker
-type ('a, 'b) reification_rez = Final of 'a | HasFreeVars of var_checker * ('a, 'b) injected
+type helper
+type ('a, 'b) reification_rez = Final of 'a | HasFreeVars of helper * ('a, 'b) injected
 
 (** Some type to refine a stream of states into the stream of answers (w.r.t. some known
     logic variable *)
@@ -313,16 +307,16 @@ module Fmap1 (T : T1) : sig
   val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
 
   val reifier:
-    (var_checker -> ('a,'b) injected -> 'b) ->
-    var_checker -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
+    (helper -> ('a,'b) injected -> 'b) ->
+    helper -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
 end
 module Fmap2 (T : T2) : sig
   val distrib   : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
 
   val reifier:
-    (var_checker -> ('a, 'b) injected -> 'b) ->
-    (var_checker -> ('c, 'd) injected -> 'd) ->
-    var_checker -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
+    (helper -> ('a, 'b) injected -> 'b) ->
+    (helper -> ('c, 'd) injected -> 'd) ->
+    helper -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
 
 end
 module Fmap3 (T : T3) : sig
@@ -330,18 +324,18 @@ module Fmap3 (T : T3) : sig
   val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) injected
 
   val reifier:
-    (var_checker -> ('a, 'b) injected -> 'b) ->
-    (var_checker -> ('c, 'd) injected -> 'd) ->
-    (var_checker -> ('e, 'f) injected -> 'f) ->
-    var_checker -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
+    (helper -> ('a, 'b) injected -> 'b) ->
+    (helper -> ('c, 'd) injected -> 'd) ->
+    (helper -> ('e, 'f) injected -> 'f) ->
+    helper -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
 end
 
 module ManualReifiers : sig
-  val int_reifier: var_checker -> (int, int logic) injected -> int logic
-  val string_reifier: var_checker -> (string, string logic) injected -> string logic
-  val pair_reifier: (var_checker -> ('a,'b) injected -> 'b) ->
-                    (var_checker -> ('c,'d) injected -> 'd) ->
-                    var_checker -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
+  val int_reifier: helper -> (int, int logic) injected -> int logic
+  val string_reifier: helper -> (string, string logic) injected -> string logic
+  val pair_reifier: (helper -> ('a,'b) injected -> 'b) ->
+                    (helper -> ('c,'d) injected -> 'd) ->
+                    helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
 end
 
 (** {2 Standart relational library } *)
@@ -444,7 +438,7 @@ module Nat :
     (** Logic nat *)
     type logic = logic t logic'
 
-    val reifier : var_checker -> (ground, logic) injected -> logic
+    val reifier : helper -> (ground, logic) injected -> logic
 
     (** GT-compatible typeinfo for [ground] *)
     val ground :
@@ -476,15 +470,6 @@ module Nat :
 
     (** [to_int g] converts ground [n] into integer *)
     val to_int : ground -> int
-
-    (** [inj n] converts ground nat [n] into logic one *)
-    (* val inj : ground -> (ground,ground) injected *)
-
-    (** Projection with failure continuation *)
-    (* val prj_k : (int -> logic list -> logic t) -> logic -> ground *)
-
-    (** Projection with default continuation *)
-    (* val prj : logic -> ground *)
 
     type groundi = (ground, logic) injected
 
@@ -568,20 +553,9 @@ module List :
         < show    : ('a -> string) -> ('a,_) flist -> GT.string  >)
         GT.t
 
-    val reifier: (var_checker -> ('a, 'b) injected -> 'b) -> var_checker -> ('a ground, 'b logic) injected -> 'b logic
+    val reifier : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
 
     val cons : ('a, 'b) injected -> ('a,'b) flist -> ('a,'b) flist
-(*
-    (** List injection *)
-    val inj : ('a -> 'b) -> 'a ground -> 'b logic
-
-    (** List projection with failure continuation *)
-    val prj_k : ('a -> 'b) -> (int -> 'a logic list -> ('a, 'a logic) t) ->  'a logic -> 'b ground
-
-    (** List projection with default continuation *)
-    val prj : ('a -> 'b) -> 'a logic -> 'b ground
-*)
-
 
     (** Relational foldr *)
     val foldro : (('a, 'b) injected -> ('acc, 'acc2) injected -> ('acc, 'acc2) injected -> goal) ->
@@ -628,8 +602,6 @@ module List :
 
     (** Alias for [cdro] *)
     val tlo   : ('a, 'b) flist -> ('a, 'b) flist -> goal
-
-    (* val show : ('a -> string) -> ('a,_) flist -> string *)
   end
 
 (** [inj_list l] is a deforested synonym for injection *)

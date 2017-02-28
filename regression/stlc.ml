@@ -36,5 +36,5 @@ let varX : (string, string logic) injected = inj (lift "x")
 let varY = inj@@lift "y"
 let varF = inj@@lift "f"
 
-let rec glam_reifier : var_checker -> GLam.flam -> GLam.llam = fun c x ->
+let rec glam_reifier : helper -> GLam.flam -> GLam.llam = fun c x ->
   GLam.reifier ManualReifiers.string_reifier glam_reifier c x

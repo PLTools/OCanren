@@ -32,7 +32,7 @@ module GTyp = struct
 
 end
 
-let rec gtyp_reifier : var_checker -> GTyp.ftyp -> GTyp.ltyp = fun c x ->
+let rec gtyp_reifier : helper -> GTyp.ftyp -> GTyp.ltyp = fun c x ->
   GTyp.reifier ManualReifiers.string_reifier gtyp_reifier c x
 
 open GLam
@@ -84,7 +84,7 @@ let () =
 
 let show_env_logic = show(List.logic) @@ show(logic) (show pair (show(logic) (fun s -> s)) show_llam)
 
-let pair_reifier : var_checker -> (string*rlam, _) injected -> _ = fun c p ->
+let pair_reifier : helper -> (string*rlam, _) injected -> _ = fun c p ->
   ManualReifiers.pair_reifier ManualReifiers.string_reifier glam_reifier c p
 
 let env_reifier c xs =

@@ -14,7 +14,7 @@ let make_title n msg =
 
 exception NoMoreAnswers
 
-let run_gen onOK (onFree: _ -> _ -> var_checker -> _) n num handler (repr, goal)  =
+let run_gen onOK (onFree: _ -> _ -> helper -> _) n num handler (repr, goal)  =
   make_title n repr;
   let rec loop pairs = function
   | 0 -> ()
