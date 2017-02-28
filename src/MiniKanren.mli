@@ -71,9 +71,8 @@ type goal = State.t -> State.t Stream.t
 
 (** {3 Logics} *)
 
-(** Type [('a, 'b) injected] is a fence between logic values and normal values.
- *)
-type ('a,'b) injected
+(**  The type [('a, 'b) injected] describes an injection of type ['a] into ['b] *)
+type ('a, 'b) injected
 
 (** A type of abstract logic values *)
 @type 'a logic = 
@@ -91,11 +90,14 @@ val logic :
      gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic
 >) GT.t
 
+(** [lift x] injects [x] into itself *)
 val lift : 'a -> ('a, 'a) injected
-val inj  : ('a, 'b) injected -> ('a, 'b logic) injected
+
+(** [inj x] injects [x] into logical [x] *)
+val inj : ('a, 'b) injected -> ('a, 'b logic) injected
 
 (** A synonym for [inj] *)
-val (!!) : ('a, 'b) injected -> ('a, 'b) injected
+val (!!) : ('a, 'b) injected -> ('a, 'b logic) injected
 
 (** {2 miniKanren basic primitives} *)
 
@@ -392,41 +394,41 @@ module Bool :
          show    : logic -> string >)
       GT.t
 
-    type groundf = (ground, logic) injected
+    type groundi = (ground, logic) injected
 
-    val false_ : groundf
-    val true_  : groundf
+    val false_ : groundi
+    val true_  : groundi
 
     (** Sheffer stroke *)
-    val (|^) : groundf -> groundf -> groundf -> goal
+    val (|^) : groundi -> groundi -> groundi -> goal
 
     (** Negation *)
-    val noto' : groundf -> groundf -> goal
+    val noto' : groundi -> groundi -> goal
 
     (** Negation as a goal *)
-    val noto : groundf -> goal
+    val noto : groundi -> goal
 
     (** Disjunction *)
-    val oro : groundf -> groundf -> groundf -> goal
+    val oro : groundi -> groundi -> groundi -> goal
 
     (** Disjunction as a goal *)
-    val (||) : groundf -> groundf -> goal
+    val (||) : groundi -> groundi -> goal
 
     (** Conjunction *)
-    val ando : groundf -> groundf -> groundf -> goal
+    val ando : groundi -> groundi -> groundi -> goal
 
     (** Conjunction as a goal *)
-    val (&&) : groundf -> groundf -> goal
+    val (&&) : groundi -> groundi -> goal
 
     (** Injection *)
-    val inj: bool -> groundf
+    val inj: bool -> groundi
   end
 
 (** Equality as boolean relation *)
-val eqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundf -> goal
+val eqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundi -> goal
 
 (** Disequality as boolean relation *)
-val neqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundf -> goal
+val neqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundi -> goal
 
 module Nat : 
   sig
@@ -484,31 +486,31 @@ module Nat :
     (** Projection with default continuation *)
     (* val prj : logic -> ground *)
 
-    type groundf = (ground, logic) injected
+    type groundi = (ground, logic) injected
 
     (** Relational addition *)
-    val addo  : groundf -> groundf -> groundf -> goal
+    val addo  : groundi -> groundi -> groundi -> goal
 
     (** Infix syninym for [addo] *)
-    val ( + ) : groundf -> groundf -> groundf -> goal
+    val ( + ) : groundi -> groundi -> groundi -> goal
 
     (** Relational multiplication *)
-    val mulo  : groundf -> groundf -> groundf -> goal
+    val mulo  : groundi -> groundi -> groundi -> goal
 
     (** Infix syninym for [mulo] *)
-    val ( * ) : groundf -> groundf -> groundf -> goal
+    val ( * ) : groundi -> groundi -> groundi -> goal
 
     (** Comparisons *)
-    val leo : groundf -> groundf -> Bool.groundf -> goal
-    val geo : groundf -> groundf -> Bool.groundf -> goal
-    val gto : groundf -> groundf -> Bool.groundf -> goal
-    val lto : groundf -> groundf -> Bool.groundf -> goal
+    val leo : groundi -> groundi -> Bool.groundi -> goal
+    val geo : groundi -> groundi -> Bool.groundi -> goal
+    val gto : groundi -> groundi -> Bool.groundi -> goal
+    val lto : groundi -> groundi -> Bool.groundi -> goal
 
     (** Comparisons as goals *)
-    val (<=) : groundf -> groundf -> goal
-    val (>=) : groundf -> groundf -> goal
-    val (>)  : groundf -> groundf -> goal
-    val (<)  : groundf -> groundf -> goal
+    val (<=) : groundi -> groundi -> goal
+    val (>=) : groundi -> groundi -> goal
+    val (>)  : groundi -> groundi -> goal
+    val (<)  : groundi -> groundi -> goal
   end
 
 (** [inj_nat n] is a deforested synonym for injection *)
@@ -589,19 +591,19 @@ module List :
     val mapo : (('a, 'b) injected -> ('q, 'w) injected -> goal) -> ('a, 'b) flist -> ('q, 'w) flist -> goal
 
     (** Relational filter *)
-    val filtero : (('a, 'b) injected -> Bool.groundf -> goal) -> ('a, 'b) flist -> ('a, 'b) flist -> goal
+    val filtero : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) flist -> ('a, 'b) flist -> goal
 
     (** Relational lookup *)
-    val lookupo : (('a, 'b) injected -> Bool.groundf -> goal) -> ('a, 'b) flist -> ('a option, 'b option logic) injected -> goal
+    val lookupo : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) flist -> ('a option, 'b option logic) injected -> goal
 
     (** Boolean list disjunctions *)
-    val anyo : (Bool.ground, Bool.logic) flist -> Bool.groundf -> goal
+    val anyo : (Bool.ground, Bool.logic) flist -> Bool.groundi -> goal
 
     (** Boolean list conjunction *)
-    val allo : (Bool.ground, Bool.logic) flist -> Bool.groundf -> goal
+    val allo : (Bool.ground, Bool.logic) flist -> Bool.groundi -> goal
 
     (** Relational length *)
-    val lengtho : (_, _) flist -> Nat.groundf -> goal
+    val lengtho : (_, _) flist -> Nat.groundi -> goal
 
     (** Relational append *)
     val appendo : ('a, 'b) flist -> ('a, 'b) flist  -> ('a, 'b) flist -> goal

@@ -800,8 +800,8 @@ module Bool =
     }
 
     type boolf = (bool, bool logic') injected
-    type groundf = boolf
-    type injected   = groundf
+    type groundi = boolf
+    type injected   = groundi
 
     let false_ : boolf = inj@@lift false
     let true_  : boolf = inj@@lift true
@@ -866,7 +866,7 @@ module Nat = struct
 
     type ground = ground t
     type logic = logic t logic'
-    type groundf = (ground, logic) injected
+    type groundi = (ground, logic) injected
 
     let rec reifier : var_checker -> (ground, logic) injected -> logic  = fun c x ->
       if c#isVar x then var_of_injected_exn c x reifier
