@@ -94,8 +94,8 @@ val lift : 'a -> ('a, 'a) injected
 (** [inj x] injects [x] into logical [x] *)
 val inj : ('a, 'b) injected -> ('a, 'b logic) injected
 
-(** A synonym for [inj] *)
-val (!!) : ('a, 'b) injected -> ('a, 'b logic) injected
+(** A synonym for [inj @@ lift] (for non-parametric types) *)
+val (!!) : 'a -> ('a, 'a logic) injected
 
 (** {2 miniKanren basic primitives} *)
 

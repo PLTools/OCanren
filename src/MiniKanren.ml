@@ -207,7 +207,7 @@ let logic = {logic with
    end
 };;
 
-let (!!) = inj
+let (!!) x = inj (lift x)
 
 let inj_pair : ('a, 'c) injected -> ('b,'d) injected -> ('a * 'b, ('c*'d) logic) injected =
   fun x y -> (x,y)
