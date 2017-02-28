@@ -14,7 +14,7 @@ let make_title n msg =
 
 exception NoMoreAnswers
 
-let run_gen onOK (onFree: _ -> _ -> helper -> _) n num handler (repr, goal)  =
+let run_gen onOK onFree n num handler (repr, goal) =
   make_title n repr;
   let rec loop pairs = function
   | 0 -> ()
@@ -27,8 +27,8 @@ let run_gen onOK (onFree: _ -> _ -> helper -> _) n num handler (repr, goal)  =
         | [Final x],tl ->
           onOK i name x;
           (name,tl)
-        | [HasFreeVars (c,x)],tl ->
-          onFree i name c x;
+        | [HasFreeVars func],tl ->
+          onFree i name func;
           (name,tl)
         | _ -> assert false
       ) pairs
@@ -46,7 +46,7 @@ let run_exn printer = run_gen
 
 let runR reifier printerNoFree printerR = run_gen
   (fun i name x -> printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printerNoFree x) )
-  (fun i name checker obj ->
-    let ans = reifier checker obj in
+  (fun i name func ->
+    let ans = func reifier in
     printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printerR ans)
     )

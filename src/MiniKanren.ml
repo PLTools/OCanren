@@ -53,7 +53,7 @@ module Stream =
          | Nil           -> gs
          | Cons (hd, tl) -> cons hd (mplus gs tl)
          | Lazy z        -> mplus gs (Lazy.force z)
-      ) 
+      )
 
     let rec bind xs f =
       from_fun (fun () ->
@@ -73,7 +73,7 @@ module Stream =
     | Cons (x, xs) -> f x; iter f xs
     | Lazy s       -> iter f @@ Lazy.force s
 
-    let rec zip fs gs = 
+    let rec zip fs gs =
       match (fs, gs) with
       | Nil         , Nil          -> Nil
       | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
@@ -131,8 +131,8 @@ let generic_show x =
   Buffer.contents b
 ;;
 
-@type 'a logic = 
-| Var   of GT.int * 'a logic GT.list 
+@type 'a logic =
+| Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
 (* miniKanren-related stuff starts here *)
@@ -624,7 +624,10 @@ module Uncurry =
   end
 
 type helper = < isVar : 'a . 'a -> bool >
-type ('a, 'b) reification_rez = Final of 'a | HasFreeVars of helper * ('a, 'b) injected
+type ('a, 'b) reification_rez =
+| Final of 'a
+| HasFreeVars of ((helper -> ('a, 'b) injected -> 'b) -> 'b)
+
 type ('a, 'b) refiner = State.t Stream.t -> ('a, 'b) reification_rez Stream.t
 
 let refiner : ('a,'b) injected -> ('a,'b) refiner = fun x ->
@@ -633,7 +636,7 @@ let refiner : ('a,'b) injected -> ('a,'b) refiner = fun x ->
     if has_free_vars (Env.is_var e) (Obj.repr ans)
     then
       let c: helper = !!!(object method isVar x = Env.is_var e (Obj.repr x) end) in
-      HasFreeVars (c, !!!ans)
+      HasFreeVars (fun r -> r c !!!ans)
     else Final !!!ans
   )
 
