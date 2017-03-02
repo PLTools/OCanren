@@ -11,6 +11,7 @@
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{hyperref}
+\usepackage{xspace}
 
 \lstdefinelanguage{ocaml}{
 keywords={fresh, let, begin, end, in, match, type, and, fun, function, try, with, when, class, 
@@ -42,7 +43,7 @@ language=ocaml
 
 \sloppy
 
-\newcommand{\miniKanren}{\texttt{miniKanren}}
+\newcommand{\miniKanren}{\texttt{miniKanren}\xspace}
 
 \title{Typed Embedding of a Relational Language in OCaml}
 \author{Dmitry Kosarev
@@ -59,7 +60,7 @@ Dmitry Boulytchev
 \maketitle
 
 \begin{abstract}
-We present an implementation of the relational programming language miniKanren as a set 
+We present an implementation of the relational programming language \miniKanren as a set 
 of combinators and syntax extension for OCaml. The key feature of our approach is 
 \emph{polymorphic unification}, which can be used to unify data structures of almost 
 arbitrary types. In addition we provide a useful generic programming pattern to 
@@ -68,6 +69,7 @@ the problem of relational and functional code integration.
 \end{abstract}
 
 \input{introduction}
+\input{goals}
 \input{polymorphic-unification}
 \input{injection}
 \input{refinement}
