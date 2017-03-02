@@ -1,0 +1,73 @@
+\section{Logic Variables and Injection}
+\label{logics}
+
+Unification, considered in Section~\ref{polyuni}, works for values of type \lstinline[mathescape=true]{$\alpha$ logic}. 
+Any value of this type can be seen as either value of type $\alpha$, or logical variable of type $\alpha$. The type 
+itself is made abstract, but its values can be uncovered after refinement (see Section~\ref{refinement}).
+
+Free variables solely can be created using ``\lstinline{fresh}'' construct of miniKanren. Note,  
+since the unification is implemented in untyped manner, we can not use simple pattern matching to
+distinguish logical variables from other logical values. Special attention was paid to implement
+variable recognition in constant time.
+
+Apart from variables, other logical values can be obtained by injection; conversely, sometimes
+logical value can be projected to a regular one. We supply two functions\footnote{``\lstinline{inj}'' and ``\lstinline{prj}'' in concrete syntax.}
+for these purposes
+
+\begin{lstlisting}[mathescape=true]
+   val ($\uparrow$) : $\alpha$ -> $\;\;\alpha$ logic
+   val ($\downarrow$) : $\alpha$ logic -> $\;\;\alpha$
+\end{lstlisting}
+
+As expected, injection is total, while projection is partial. Using these functions and type-specific
+``\lstinline{map}'', which can be derived automatically using a number of existing frameworks for
+generic programming, one can easily provide injection and projection for user-defined datatypes. We
+consider user-defined list type as an example:
+
+\begin{lstlisting}[mathescape=true]
+   type ($\alpha$, $\beta$) list = Nil | Cons of $\alpha$ * $\beta$
+   
+   type $\alpha$ glist = ($\alpha$, $\alpha$ glist) list
+   type $\alpha$ llist = ($\alpha$ logic, $\alpha$ llist) list logic
+
+   let rec inj_list l = $\uparrow$(map$_{\mbox{\texttt{list}}}$ ($\uparrow$) inj_list l) 
+   let rec prj_list l = map$_{\mbox{\texttt{list}}}$ ($\downarrow$) prj_list ($\downarrow$ l)
+\end{lstlisting}
+
+Here ``\lstinline{list}'' is a custom type for lists; note, that it is made more
+polymorphic, than usual~--- we abstracted it from itself and made it non-recursive 
+(pragmatically speaking, it is desirable to make a type fully abstract, thus logic variables 
+can be placed in arbitrary positions).
+
+Then we provided two specialized versions~--- ``\lstinline{glist}'' (``ground'' list), which 
+corresponds to regular, non-logic lists, and ``\lstinline{llist}'' (``logical'' list), which
+corresponds to logical lists with logical elements. Using a single type-specific function
+\lstinline[mathescape=true]{map$_{\mbox{\texttt{list}}}$}, we easily provided injection 
+(of type {\lstinline[mathescape=true]{$\alpha$ glist -> $\;\;\alpha$ llist}}) and
+projection (of type {\lstinline[mathescape=true]{$\alpha$ llist -> $\;\;\alpha$ glist}}).
+
+In context of these definitions, now we can implement relational list concatenation, 
+which is one of first-step examples of miniKanren programming:
+
+\begin{lstlisting}[mathescape=true]
+   let rec append$^o$ x y xy =
+     conde [
+       (x === $\uparrow$ Nil) &&& (xy === y);
+       fresh (h t ty)
+         (x  === $\uparrow$(Cons (h, t))
+         (xy === $\uparrow$(Cons (h, ty))
+         (append$^o$ t y ty)
+     ]
+\end{lstlisting}
+
+Note, in the definition of \lstinline[mathescape=true]{append$^o$} we
+used only default injection (``$\uparrow$''). Customized version most likely would 
+appear in some top-level goal, for example:
+
+\begin{lstlisting}[mathescape=true]
+   (fun q -> append$^o$ (inj_list [1; 2; 3]) 
+                    (inj_list [4; 5; 6]) 
+                    q
+   )
+\end{lstlisting}
+

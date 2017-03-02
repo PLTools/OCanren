@@ -1,0 +1,76 @@
+\section{Refinement and Top-Level Primitives}
+\label{refinement}
+
+The result of a relational program is a stream of substitutions, each of which represents
+a certain answer. As a rule, a substitution binds many intermediate logical variables, 
+created by ``\lstinline{fresh}'' in the course of execution. A meaningful answer has to be
+\emph{refined}.
+
+In our implementation refinement is represented by the following function:
+
+\begin{lstlisting}[mathescape=true]
+   val refine : subst -> $\alpha$ logic -> $\;\;\alpha$ logic
+\end{lstlisting}
+
+This function takes a substitution and a logical value and recursively substitutes
+all logical variables in that value w.r.t. the substitution until no occurrences of 
+bound variables are left. Since in our implementation the type of substitution is
+not polymorphic, \lstinline{refine} is also implemented in an unsafe manner. However,
+it is easy to see, that \lstinline{refine} does not produce ill-typed terms. Indeed,
+all original types of variables are preserved in a substitution due to invariant
+3 from Section~\ref{polyuni}. Unification does not change unified terms, so all terms, 
+bound in a substitution, are well-typed. Hence, \lstinline{refine} always substitutes
+some subterm in a well-typed term with another term of the same type, which preserves
+well-typedness.
+
+In addition to performing substitutions, \lstinline{refine} also \emph{reifies} 
+disequality constrains. Reification attaches to each free variable in a refined
+term a list of \emph{refined} terms, describing disequality constraint for that
+free variable. Note, disequality can be established only for equally typed
+terms, which justifies type-safety of reification. Note also, additional care has 
+to be taken to avoid infinite looping, since refinement and reification are
+mutually recursive, and refinement of a variable can be potentially invoked from 
+itself due to a chain of disequality constraints.
+
+After refinement, the content of a logical value can be inspected via the following 
+function:
+
+\begin{lstlisting}[mathescape=true]
+   val destruct : $\alpha$ logic -> 
+     [`Var of int * $\alpha$ logic list | `Value of $\alpha$]
+\end{lstlisting}
+
+Constructor \lstinline{`Var} corresponds to a free variable with unique
+integer identifier and a list of terms, representing all disequality constraints
+for this variable. These terms are refined as well.
+
+We did not make \lstinline{refine} accessible for an end-user; instead we provided
+a set of top-level combinators, which should be used to surround relational code
+and perform refinement in a transparent manner. Note, from pragmatic
+standpoint only variables, supplied as arguments for the top-level goal, have
+to be refined (the original miniKanren implementation follows the same convention).
+
+The toplevel primitive in our implementation is \lstinline{run}, which takes three
+arguments. The exact type of \lstinline{run} is rather complex and non-instructive, 
+so we better describe the typical form of its application:
+
+\begin{lstlisting}[mathescape=true]
+   run $\overline{n}$ (fun $l_1\dots l_n$ -> $\;\;G$) (fun $a_1\dots a_n$ -> $\;\;H$)
+\end{lstlisting}
+
+Here $\overline{n}$ stands for \emph{numeral}, which describes the number of
+parameters for two other arguments of \lstinline{run}, \mbox{$l_1\dots l_n$}~---
+free logical variables, $G$~--- a goal (which can make use of \mbox{$l_1\dots l_n$}), 
+\mbox{$a_1\dots a_n$}~--- refined answers for \mbox{$l_1\dots l_n$}, respectively, and, 
+finally, $H$~--- a \emph{handler} (which can make use of \mbox{$a_1\dots a_n$}). The types of 
+\mbox{$l_1\dots l_n$} are inferred from $G$, and the types of \mbox{$a_1\dots a_n$} are
+inferred from types of \mbox{$l_1\dots l_n$}: if $l_i$ has type \lstinline[mathescape=true]{$t$ logic}, then
+$a_i$ has type \lstinline[mathescape=true]{$t$ logic stream}. In other words, user-defined handler
+takes streams of refined answers for all variables, supplied to the top-level goal. All streams $a_i$ contains
+coherent elements, so they all have the same length and $n$-th elements of all streams correspond 
+to the $n$-th answer, produced by the goal $G$.
+
+There are a few predefined numerals for one, two, etc. arguments (called, by tradition, 
+\lstinline{q}, \lstinline{qr}, \lstinline{qrs} etc.), and a successor function, which 
+can be applied to existing numeral to increment the number of expected arguments. The
+technique, used to implement them, generally follows~\cite{Unparsing, DoWeNeed}.

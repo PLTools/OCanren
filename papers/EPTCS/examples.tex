@@ -1,0 +1,99 @@
+\section{An Example}
+\label{example}
+
+Here we present an example of relational specification, written with the aid of our library. 
+For this example we take list sorting; specifically, we present sorting for lists of
+natural numbers in Peano form since our library already contains built-in
+support for them. However our example can be easily extended for arbitrary (but
+linearly ordered) types.
+
+List sorting can be implemented in miniKanren in a variety of ways~--- 
+virtually any existing algorithm can be rewritten relationally. We, however, 
+try to be as much declarative as possible to demonstrate the
+advantages of relational approach. From this standpoint, we can
+claim, that sorted version of empty list is empty list, and sorted version
+of non-empty list is its smallest element, concatenated with sorted
+version of list, containing all its remaining elements.
+
+The following snippet literally implements this definition:
+
+\begin{lstlisting}[mathescape=true]
+   let rec sort$^o$ x y = conde [
+       (x === $\uparrow$Nil) &&& (y === $\uparrow$Nil);
+       fresh (s xs xs')
+         (y === $\uparrow$(Cons (s, xs')))
+         (sort$^o$ xs xs')       
+         (smallest$^o$ x s xs)
+   ]
+\end{lstlisting}
+
+The meaning of the expression
+
+\begin{lstlisting}[mathescape=true]
+   smallest$^o$ x s xs
+\end{lstlisting}
+
+is
+
+\begin{quotation}
+\noindent ``\lstinline{s}'' is the smallest element of a (non-empty) list ``\lstinline{x}'', and 
+``\lstinline{xs}'' is the list of all its remaining elements.
+\end{quotation}
+
+Now, \lstinline[mathescape=true]{smallest$^o$} can be implemented
+using case analysis (note, that ``\lstinline{l}'' here is a non-empty 
+list):
+
+\begin{lstlisting}[mathescape=true]
+   let rec smallest$^o$ l s l' = conde [       
+       (l === $\uparrow$(Cons (s, $\uparrow$Nil))) &&& (l' === $\uparrow$Nil);
+       fresh (h t s' t' max)
+         (l' === $\uparrow$(Cons(max,t')))
+         (l === $\uparrow$(Cons(h,t)))
+         (minmax$^o$ h s' s max)
+         (smallest$^o$ t s' t')
+   ] 
+\end{lstlisting}
+
+Finally, we implement relational minimum-maximum calculation
+primitive:
+
+\begin{lstlisting}[mathescape=true]
+   let minmax$^o$ a b min max = conde [
+      (min === a) &&& (max === b) &&& (le$^o$ a b);
+      (max === a) &&& (min === b) &&& (gt$^o$ a b)]
+\end{lstlisting}
+
+Here ``\lstinline[mathescape=true]{le$^o$}'' and ``\lstinline[mathescape=true]{gt$^o$}'' are
+built-in comparison goals for natural numbers in Peano form.
+
+Having relational \lstinline[mathescape=true]{sort$^o$}, we can implement 
+sorting for regular integer lists:
+
+\begin{lstlisting}[mathescape=true]
+   let sort l =
+     run q (sorto @@ inj_nat_list l)
+           (fun qs -> prj_nat_list @@ Stream.hd qs)
+\end{lstlisting}
+
+Here \lstinline{Stream.hd} is a function, which takes a head from a 
+lazy stream of answers. 
+
+It is interesting, that since \lstinline[mathescape=true]{sort$^o$} is
+relational, it can be used to calculate the list of all \emph{permutations}
+for a given list. Indeed, each permutation, being sorted, results in the same list. 
+So, the problem of finding all permutations can be relationally reformulated into 
+the problem of finding all lists, which are converted by sorting into the given one:
+
+\begin{lstlisting}[mathescape=true]
+let perm l = map prj_nat_list @@
+  run q (fun q -> fresh (r)
+                    (sort$^o$ (inj_nat_list l) r) 
+                    (sort$^o$ q r)
+        )
+        (Stream.take ~n:(fact @@ length l))
+\end{lstlisting}
+
+Note, for sorting original list we used exactly the same primitive. Note also, 
+we requested exactly \lstinline{fact @@ length l} answers; requesting more
+would result in infinite search for non-existing answers. This concludes our example.

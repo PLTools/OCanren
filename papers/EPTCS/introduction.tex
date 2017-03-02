@@ -1,0 +1,86 @@
+\section{Introduction}
+\label{intro}
+
+Relational programming~\cite{TRS} is an attractive technique, based on the idea 
+of constructing programs as relations.  As a result, relational programs can be
+``queried'' in various ``directions'', making it possible, for example, to simulate
+reversed execution. Apart from being interesting from purely theoretical standpoint, 
+this approach may have a practical value: some problems look much simpler, 
+if they are considered as queries to some relational specification. There is a 
+number of appealing examples, confirming this observation: a type checker 
+for simply typed lambda calculus (and, at the same time, type inferencer and solver 
+for the inhabitation problem), an interpreter (capable of generating ``quines''~--- 
+programs, producing themselves as a result)~\cite{Untagged}, list sorting (capable of 
+producing all permutations), etc. 
+
+Many logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
+or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}} to some extent
+can be considered as relational. We have chosen miniKanren\footnote{\url{http://minikanren.org}} 
+as model language, because it was specifically designed as relational DSL, embedded in Scheme/Racket. 
+Being rather a minimalistic language, which can be implemented with just a few data structures and
+combinators, miniKanren found its way in dozens of host languages, including Haskell, 
+Standard ML, and OCaml.
+
+TODO: motivation. Why OCaml?
+
+There is, however, a predictable glitch in implementing miniKanren for a strongly typed language. 
+Designed in a metaprogramming-friendly and dynamically typed realm of Scheme/Racket, original 
+miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
+ML or Haskell. In particular, one of capstone constructs of miniKanren~--- unification~--- has to work for 
+different data structures, which may have types, different beyond parametricity.
+
+There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
+provide unification for some concrete type, rich enough to represent any reasonable data structures.
+Some Haskell miniKanren libraries\footnote{\url{https://github.com/JaimieMurdock/HK}, \url{https://github.com/rntz/ukanren}}
+as well as previous OCaml implementation\footnote{\url{https://github.com/lightyang/minikanren-ocaml}} take this approach. 
+As a result, the original implementation can be retold with all its elegance; the relational specifications, however,
+become weakly typed. Another approach is to utilize \emph{ad hoc} polymorphism and provide type-specific
+unification for each ``interesting'' type; Molog\footnote{\url{https://github.com/acfoltzer/Molog}} and 
+MiniKanrenT\footnote{\url{https://github.com/jvranish/MiniKanrenT}}, both for Haskell, can be mentioned as examples.
+While preserving strong typing, this approach requires a lot of ``boilerplate'' code to be written, so some
+automation, for example, using Template Haskell\footnote{\url{https://wiki.haskell.org/Template_Haskell}},
+is desirable. There is, actually, another potential approach, but we do not know, if anybody tried
+it: to implement unification for generic representation of types as sum-of-products and fixpoints of 
+functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types, for which representation
+is provided. We assume that implementing representation would require less boilerplate code to be written.
+
+As follows from this exposition, typed embedding of miniKanren in OCaml can be done with
+a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a 
+number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
+for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power with Haskell 
+type classes, and despite sometimes object-oriented layer of the language can be used to mimic
+desirable behavior, the result as a rule is far from satisfactory. Existing proposals (for example, 
+module implicits~\cite{Implicits}) require patching the compiler, which we tend to avoid.
+
+We present an implementation of a set of relational combinators in OCaml, which, technically speaking, 
+corresponds to $\mu$Kanren~\cite{MicroKanren} with disequality constraints~\cite{CKanren}; syntax extension 
+for ``\lstinline{fresh}'' construct is added as well. The contribution of our work is as follows:
+
+\begin{enumerate}
+\item Our implementation is based on \emph{polymorphic unification}, which, like polymorphic comparison,
+can be used for almost arbitrary types. The implementation of polymorphic unification uses unsafe features and
+relies on intrinsic knowledge of runtime representation of values; we show, however, that this does not
+compromise type safety. Practically, we applied purely \emph{ad hoc} approach since the features, 
+which would provide less \emph{ad hoc} solution, are not yet integrated into the mainstream language.
+
+\item We describe a uniform and scalable pattern for using types for relational programming, which
+helps in converting typed data to- and from relational domain. With this pattern, only one
+generic feature (``\lstinline{map/morphism/Functor}'') is needed, and thus virtually any generic 
+framework for OCaml can be used. Despite being rather a pragmatic observation, this pattern, as we
+believe, would lead to  more regular and easy to maintain relational specifications.
+
+\item We provide a simplified way to integrate relational and functional code. Our approach utilizes
+well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementation and makes it
+possible to hide the refinement of answers phase from an end-user.
+\end{enumerate}
+
+The rest of the paper is organized as follows: in the next section we discuss polymorphic
+unification, and show, that standard unification with triangular substitution respects
+typing. Then we present our approach to handle user-defined types by injecting them 
+into logic domain. The next section describes top-level primitives and addresses the problem of
+relational and functional code integration. Then, we present a complete example of relational
+specification, written with the aid of our library. The final section concludes.
+
+We expect from reader some familiarity with basic concepts behind original miniKanren 
+implementation as well as principles of relational programming.
+
