@@ -18,7 +18,7 @@ bound variables are left. Since in our implementation the type of substitution i
 not polymorphic, \lstinline{refine} is also implemented in an unsafe manner. However,
 it is easy to see, that \lstinline{refine} does not produce ill-typed terms. Indeed,
 all original types of variables are preserved in a substitution due to invariant
-3 from Section~\ref{polyuni}. Unification does not change unified terms, so all terms, 
+3 from Section~\ref{sec:unification}. Unification does not change unified terms, so all terms, 
 bound in a substitution, are well-typed. Hence, \lstinline{refine} always substitutes
 some subterm in a well-typed term with another term of the same type, which preserves
 well-typedness.

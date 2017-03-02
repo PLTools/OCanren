@@ -1,5 +1,5 @@
 \section{Polymorphic Unification}
-\label{polyuni}
+\label{sec:unification}
 
 We consider it rather natural to employ polymorphic unification in the language, already equipped 
 with polymorphic comparison~--- a convenient, but somewhat disputable\footnote{See, for example, 
@@ -17,7 +17,7 @@ it has to be carefully developed and tested.
 
 An important difference between polymorphic comparison and unification is that the former only inspects its operands, 
 while the results of unification are recorded in a substitution (a mapping from logical variables to terms), which 
-later is used to refine answers and reify  constraints. So, generally speaking, we have to show that no ill-typed 
+later is used to refine answers and reify constraints. So, generally speaking, we have to show, that no ill-typed 
 terms are constructed as a result. Overall, this property seems to be maintained vaciously, since the very 
 nature of (syntactic) unification is to detect, whether some thing can be considered equal. Nevertheless there are
 different type systems and different unification implementations; in addition \emph{equal things} can be
@@ -118,64 +118,26 @@ applications of \lstinline{unify}; note, that, again, all these calls are perfor
 types, starting from a substitution, posessing the property of interest. A simple induction on the
 chain length completes the proof.
 
-\begin{comment}
-Type annotations, included in the snippet above, can be justified by the following 
-reasonings\footnote{We omit verbal description of unification algorithm; 
-the details can be found in~\cite{MicroKanren}.}:
+So, type attributes are inessential~--- they are never analyzed and never restrict the pattern matching; hence, 
+they can be erased completely. We can notice now, that for the representation of terms we can use OCaml's
+native runtime representation. It can not be done, however, using regular OCaml~--- we have to utilize
+low-level unsafe interface \lstinline{Obj}. Not also, that the correctness of implementation is based on
+the following convention about logical variables: the representation of a logical variable $x^\tau$ must
+correspond to a representation of some value of type $\tau$. 
 
-\begin{enumerate}
-\item Line 2: the type of \mbox{$(s\;\;x^\tau)$} is $\tau$ due to invariant 2; hence, 
-the type of \lstinline{walk} result coincides with the type of its second argument (technically,
-an induction on the number of recursive invocations of \lstinline{walk} is needed).
+We call our implementation \emph{polymorphic}, since at the top level it is defined as
 
-\item Line 9: the substitution is left unchanged, hence all invariants are preserved.
+\begin{lstlisting}
+   val unify : $\alpha$ -> $\alpha$ -> subst option -> subst option
+\end{lstlisting} 
 
-\item Line 10 (and, symmetrically, line 11): first, note, that \mbox{$(s\;\;x_1)$} is undefined
-(otherwise \lstinline{walk} would not return $x_1$). Then, $x_1$ and $t_2^\prime$ have the
-same type, which justifies the preservation of invariant 2. Finally, either \mbox{$x_1=t_1$}
-(and, then, $\tau$ is the type of $x_1$, assigned by the compiler), or $x_1$ is retrieved
-from $s$ with type $\tau$~--- both cases justify invariants 1 and 3. The same applies to 
-the pair $t_2^\prime$ and $t_2$.
-
-\item The previous paragraph justifies the base case for inductive proof on the number of
-recursive invocations of \lstinline{unify}.
-\end{enumerate}
-\end{comment}
-
-Note, the type of substitution is not polymorphic, which means, 
-that the compiler completely loses the track of types for values, stored in a substitution. These types are recovered later 
-during the refinement of answers.
+Note, that the type of substitution is not polymorphic, which means, that the compiler completely loses the track 
+of types for values, stored in a substitution. These types are recovered later during the refinement of answers phase.
 Outside unification the compiler maintains typing, which means, that all terms, subterms, and variables agree in their types 
-in all contexts. However, as our implementation resorts to unsafe features, we have to manually repeat this work for 
-unification code.
+in all contexts. 
+
+Function \lstinline{unify} is not directly accessible at the user level; it is used to implement both unification 
+(``\lstinline{===}'') and disequality (``\lstinline{=/=}'') goals, which are typed in more elaborated way 
+(see Section~\ref{sec:injection}). The implementation generally follows~\cite{CKanren}.
 
 
-%The relevent part of OCaml type system can be reduced to this formulation as follows: in OCaml any value is 
-%attributed by a (potentially) polymorphic type at compile-time. Since at runtime there are no polymorphic values, the runtime 
-%type of any value is an instantiation of a compile-time type by some runtime-types.
-
-Function \lstinline{unify} is not directly accessible at the user level; it used
-to implement both unification (``\lstinline{===}'') and disequality (``\lstinline{=/=}'') 
-goals. The implementation generally follows~\cite{CKanren}.
-
-
-\begin{comment}
-
-We argue, that the following three invariants are maintained for any substitution $s$, involved in the unification:
-
-\begin{enumerate}
-\item if \mbox{$t_1^{\_}[x^{\tau}]$} and \mbox{$t_2^{\_}[x^{\rho}]$}~--- two arbitrary terms (in particular, 
-$t_1^{\_}$ and $t_2^{\_}$ may be the same), bound in $s$ and containing occurrences of variable $x$, 
-then $\rho=\tau$ (different occurrences of the same variable in $s$ are attributed with the same type);
-
-\item if \mbox{$(s\;\;x^\tau)$} is defined, then \mbox{$(s\;\;x^\tau) = t^\tau$} (a substitution always
-binds a variable to a term of the same type);
-
-\item each variable in $s$ preserves its type, assigned by the compiler (from the first two invariants 
-it follows, that this type is unique; note also, that all variables are created and have their types assigned outside 
-unification, in a type-safe world).
-\end{enumerate}
-
-The initial (empty) substitution trivially fulfills these invariants; hence, it is sufficient
-to show, that they are preserved by unification.
-\end{comment}
