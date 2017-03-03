@@ -1,49 +1,6 @@
 \section{Refinement and Top-Level Primitives}
 \label{refinement}
 
-The result of a relational program is a stream of substitutions, each of which represents
-a certain answer. As a rule, a substitution binds many intermediate logical variables, 
-created by ``\lstinline{fresh}'' in the course of execution. A meaningful answer has to be
-\emph{refined}.
-
-In our implementation refinement is represented by the following function:
-
-\begin{lstlisting}[mathescape=true]
-   val refine : subst -> $\alpha$ logic -> $\;\;\alpha$ logic
-\end{lstlisting}
-
-This function takes a substitution and a logical value and recursively substitutes
-all logical variables in that value w.r.t. the substitution until no occurrences of 
-bound variables are left. Since in our implementation the type of substitution is
-not polymorphic, \lstinline{refine} is also implemented in an unsafe manner. However,
-it is easy to see, that \lstinline{refine} does not produce ill-typed terms. Indeed,
-all original types of variables are preserved in a substitution due to invariant
-3 from Section~\ref{sec:unification}. Unification does not change unified terms, so all terms, 
-bound in a substitution, are well-typed. Hence, \lstinline{refine} always substitutes
-some subterm in a well-typed term with another term of the same type, which preserves
-well-typedness.
-
-In addition to performing substitutions, \lstinline{refine} also \emph{reifies} 
-disequality constrains. Reification attaches to each free variable in a refined
-term a list of \emph{refined} terms, describing disequality constraint for that
-free variable. Note, disequality can be established only for equally typed
-terms, which justifies type-safety of reification. Note also, additional care has 
-to be taken to avoid infinite looping, since refinement and reification are
-mutually recursive, and refinement of a variable can be potentially invoked from 
-itself due to a chain of disequality constraints.
-
-After refinement, the content of a logical value can be inspected via the following 
-function:
-
-\begin{lstlisting}[mathescape=true]
-   val destruct : $\alpha$ logic -> 
-     [`Var of int * $\alpha$ logic list | `Value of $\alpha$]
-\end{lstlisting}
-
-Constructor \lstinline{`Var} corresponds to a free variable with unique
-integer identifier and a list of terms, representing all disequality constraints
-for this variable. These terms are refined as well.
-
 We did not make \lstinline{refine} accessible for an end-user; instead we provided
 a set of top-level combinators, which should be used to surround relational code
 and perform refinement in a transparent manner. Note, from pragmatic

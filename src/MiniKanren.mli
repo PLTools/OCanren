@@ -101,13 +101,13 @@ val (!!) : 'a -> ('a, 'a logic) injected
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the
     parameter *)
-val call_fresh : (('a, 'b) injected -> State.t -> 'r) -> State.t -> 'r
+val call_fresh : (('a, 'b logic) injected -> State.t -> 'r) -> State.t -> 'r
 
 (** [x === y] creates a goal, which performs a unifications of [x] and [y] *)
-val (===) : ('a, 'b) injected -> ('a, 'b) injected -> goal
+val (===) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
 (** [x =/= y] creates a goal, which introduces a disequality constraint for [x] and [y] *)
-val (=/=) : ('a, 'b) injected -> ('a, 'b) injected -> goal
+val (=/=) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
 val conj : goal -> goal -> goal
@@ -418,10 +418,10 @@ module Bool :
   end
 
 (** Equality as boolean relation *)
-val eqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundi -> goal
+val eqo : ('a, 'b logic) injected -> ('a, 'b logic) injected -> Bool.groundi -> goal
 
 (** Disequality as boolean relation *)
-val neqo : ('a, 'b) injected -> ('a, 'b) injected -> Bool.groundi -> goal
+val neqo : ('a, 'b logic) injected -> ('a, 'b logic) injected -> Bool.groundi -> goal
 
 (** {3 Relations on nats} *)
 module Nat :
@@ -554,7 +554,7 @@ module List :
     val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
 
     (** Constructor *)
-    val cons : ('a, 'b) injected -> ('a, 'b) groundi -> ('a, 'b) groundi
+    val cons : ('a, 'b logic) injected -> ('a, 'b) groundi -> ('a, 'b) groundi
 
     (** Relational foldr *)
     val foldro : (('a, 'b) injected -> ('acc, 'acc2) injected -> ('acc, 'acc2) injected -> goal) ->
@@ -585,7 +585,7 @@ module List :
     val reverso : ('a, 'b) groundi -> ('a, 'b) groundi -> goal
 
     (** Relational occurrence check (a shortcut) *)
-    val membero : ('a, 'b) groundi  -> ('a, 'b) injected  -> goal
+    val membero : ('a, 'b) groundi  -> ('a, 'b logic) injected  -> goal
 
     (** Relational check for empty list *)
     val nullo : _ groundi -> goal

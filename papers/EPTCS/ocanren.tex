@@ -18,26 +18,23 @@ keywords={fresh, let, begin, end, in, match, type, and, fun, function, try, with
 object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit, 
 new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual},
 sensitive=true,
-%basicstyle=\small,
 commentstyle=\small\itshape\ttfamily,
 keywordstyle=\ttfamily\underbar,
 identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,
 fontadjust=true,
-literate={->}{{$\to\;\;$}}3 {===}{{$\equiv$}}3 {=/=}{{$\not\equiv$}}3,
+literate={->}{{$\to\;\;$}}3 {===}{{$\equiv$}}3 {=/=}{{$\not\equiv$}}3 {|>}{{$\triangleright$}}3,
 morecomment=[s]{(*}{*)}
 }
 
 \lstset{
-%basicstyle=\small,
 mathescape=true,
 identifierstyle=\ttfamily,
 keywordstyle=\bfseries,
 commentstyle=\scriptsize\rmfamily,
 basewidth={0.5em,0.5em},
 fontadjust=true,
-%escapechar=~,
 language=ocaml
 }
 
@@ -132,6 +129,9 @@ Handbook of Automated Reasoning. Elsevier and MIT Press, 2001.
 \bibitem{triangular}
 David C Bender, Lindsey Kuper, William E Byrd, Daniel P Friedman. 
 Efficient Representations for Triangular Substitutions: a Comparison in miniKanren. Indiana University, 2009.
+
+\bibitem{HKinded}
+Jeremy Yallop, Leo White. Lightweight Higher-Kinded Polymorphism. FLOPS 2014.
 
 \end{thebibliography}
 

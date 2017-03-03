@@ -38,7 +38,7 @@ variable, \lstinline{subst} is a map-like structure and \lstinline{constraints} 
 case environment contains some extra information to make it possible to identify variables in constant time.
 
 The next cornerstone is the \emph{goal} type, which is considered as a transformer of a state into 
-lazy stream of state:
+lazy stream of states:
 
 \begin{lstlisting}
    type goal = state -> state stream
@@ -77,4 +77,24 @@ In the implementation of \miniKanren both these goals are implemented using unif
 is true for us as well. However, due to a drastic difference in host languages the implementation of
 efficient polymorphic unification itself leads to a number of tricks with typing and data representation,
 non-existing in the original version.
+
+Described conbinators allow to \emph{construct} goals. To \emph{run} a goal, the following
+primitive is used:
+
+\begin{lstlisting}
+   val run : goal -> state stream
+\end{lstlisting}
+
+This primitive creates an initial state and applies a goal to it. The states in the return stream describe
+various solutions for the goal. As the stream is constructed lazily, taking elements one by one makes
+the search progress. 
+
+To discover concrete answers, the state has to be queried for its contents. As a rule, a few variables
+are \emph{refined} in a state, i.e. their bindings in corresponding substitution are retrieved. For a free
+variables in addition their disequality constraints have to be \emph{reified} (e.g. represented as a list of
+``forbidden'' terms). As forbidden terms can in turn contain free variables, the constraint reification
+process is recursive.
+
+In our case refinement and reification are subtle parts, since, as we will see shortly, they can not be
+implemented in a type-safe part of the language. 
 

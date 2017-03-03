@@ -101,7 +101,7 @@ at the top level unification always applied to some terms of the same type, and 
 substitution can only be acquired from the empty one by a sequence of unifications.
 
 We are going to show, that under these assumption all type attributes are superfluous~--- they
-do not affect the execution of \lstinline{unify} and can be removed. Note, that the only place, where we
+do not affect the execution of \lstinline{unify} and can be removed. Note, the only place, where we
 were incapable of providing an explicit type attribute, was in the line 4, where the result of
 substitution application was returned. However, we can prove by induction, that any substitution 
 respects the following property: if a substitution $s$ is defined for a variable $x^\tau$,
@@ -123,7 +123,8 @@ they can be erased completely. We can notice now, that for the representation of
 native runtime representation. It can not be done, however, using regular OCaml~--- we have to utilize
 low-level unsafe interface \lstinline{Obj}. Not also, that the correctness of implementation is based on
 the following convention about logical variables: the representation of a logical variable $x^\tau$ must
-correspond to a representation of some value of type $\tau$. 
+correspond to a representation of some value of type $\tau$. This, in turn, makes it somewhat problematic
+to detect a variable occurrence in a term. We postpone the discussion of this subject until Section~\ref{sec:injection}.
 
 We call our implementation \emph{polymorphic}, since at the top level it is defined as
 
@@ -131,13 +132,10 @@ We call our implementation \emph{polymorphic}, since at the top level it is defi
    val unify : $\alpha$ -> $\alpha$ -> subst option -> subst option
 \end{lstlisting} 
 
-Note, that the type of substitution is not polymorphic, which means, that the compiler completely loses the track 
+Note, the type of substitution is not polymorphic, which means, that the compiler completely loses the track 
 of types for values, stored in a substitution. These types are recovered later during the refinement of answers phase.
 Outside unification the compiler maintains typing, which means, that all terms, subterms, and variables agree in their types 
 in all contexts. 
 
-Function \lstinline{unify} is not directly accessible at the user level; it is used to implement both unification 
-(``\lstinline{===}'') and disequality (``\lstinline{=/=}'') goals, which are typed in more elaborated way 
-(see Section~\ref{sec:injection}). The implementation generally follows~\cite{CKanren}.
 
 
