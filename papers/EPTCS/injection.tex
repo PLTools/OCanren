@@ -283,6 +283,16 @@ stage, which we can now properly type:
 We can implement refinement in a generic manner, adding extra functionality to the corresponding functor; we
 omit the details here.
 
+With the new implementation, the types for ``basic'' goal constructors have to be adjusted:
+
+\begin{lstlisting}
+   val (===) : $\{\alpha,\;[\beta]\}$ -> $\{\alpha,\;[\beta]\}$ -> goal
+   val (=/=) : $\{\alpha,\;[\beta]\}$ -> $\{\alpha,\;[\beta]\}$ -> goal
+\end{lstlisting}
+
+As always, we require both arguments of unification and disequalify constraint to be of the same type; in addition
+we require the ``injected'' part of the type to be logic.
+
 Note, we implemented bookeeping in a completely type-safe manner, not making use of any unsafe features; in addition
 we preserved polymorphism and type inference. Consider an example:
 
