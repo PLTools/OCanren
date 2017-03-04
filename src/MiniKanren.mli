@@ -64,7 +64,7 @@ module State :
   end
 
 (** Goal converts a state into a lazy stream of states *)
-type goal = State.t -> State.t Stream.t
+type goal
 
 (** {3 Logical values and injections} *)
 
@@ -101,7 +101,7 @@ val (!!) : 'a -> ('a, 'a logic) injected
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the
     parameter *)
-val call_fresh : (('a, 'b logic) injected -> State.t -> 'r) -> State.t -> 'r
+val call_fresh : (('a, 'b) injected -> goal) -> goal
 
 (** [x === y] creates a goal, which performs a unifications of [x] and [y] *)
 val (===) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
@@ -149,18 +149,18 @@ module Fresh :
     val zero : 'a -> 'a
 
     (** {3 One to five logic parameter(s)} *)
-    val one   : (_ injected ->                                                         State.t -> 'r) -> State.t -> 'r
-    val two   : (_ injected -> _ injected ->                                           State.t -> 'r) -> State.t -> 'r
-    val three : (_ injected -> _ injected -> _ injected ->                             State.t -> 'r) -> State.t -> 'r
-    val four  : (_ injected -> _ injected -> _ injected -> _ injected ->               State.t -> 'r) -> State.t -> 'r
-    val five  : (_ injected -> _ injected -> _ injected -> _ injected -> _ injected -> State.t -> 'r) -> State.t -> 'r
+    val one   : (_ injected ->                                                         goal) -> goal
+    val two   : (_ injected -> _ injected ->                                           goal) -> goal
+    val three : (_ injected -> _ injected -> _ injected ->                             goal) -> goal
+    val four  : (_ injected -> _ injected -> _ injected -> _ injected ->               goal) -> goal
+    val five  : (_ injected -> _ injected -> _ injected -> _ injected -> _ injected -> goal) -> goal
 
     (** {3 One to five logic parameter(s), conventional names} *)
-    val q     : (_ injected ->                                                         State.t -> 'r) -> State.t -> 'r
-    val qr    : (_ injected -> _ injected ->                                           State.t -> 'r) -> State.t -> 'r
-    val qrs   : (_ injected -> _ injected -> _ injected ->                             State.t -> 'r) -> State.t -> 'r
-    val qrst  : (_ injected -> _ injected -> _ injected -> _ injected ->               State.t -> 'r) -> State.t -> 'r
-    val pqrst : (_ injected -> _ injected -> _ injected -> _ injected -> _ injected -> State.t -> 'r) -> State.t -> 'r
+    val q     : (_ injected ->                                                         goal) -> goal
+    val qr    : (_ injected -> _ injected ->                                           goal) -> goal
+    val qrs   : (_ injected -> _ injected -> _ injected ->                             goal) -> goal
+    val qrst  : (_ injected -> _ injected -> _ injected -> _ injected ->               goal) -> goal
+    val pqrst : (_ injected -> _ injected -> _ injected -> _ injected -> _ injected -> goal) -> goal
   end
 
 (** {2 Top-level running primitives} *)
@@ -177,6 +177,8 @@ module Fresh :
  *)
 val run : (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
 
+val make_defer: (unit -> goal) -> goal
+
 (** Reification helper *)
 type helper
 
@@ -186,37 +188,49 @@ type ('a, 'b) reification_rez =
 | HasFreeVars of ((helper -> ('a, 'b) injected -> 'b) -> 'b)
 
 (** A type to refine a stream of states into the stream of answers (w.r.t. some known logic variable *)
-type ('a, 'b) refiner = State.t Stream.t -> ('a, 'b) reification_rez Stream.t
+type ('a, 'b) refiner
 
 (** Successor function *)
 val succ :
-    (unit ->
-     ('a -> State.t -> 'b) * ('c -> 'd -> 'e) *
-     (('f -> 'g -> 'h) * ('i -> 'j * 'k))) ->
-    unit ->
-    (('l -> 'a) -> State.t -> ('l, 'm) refiner * 'b) *
-    (('n -> 'c) -> 'n * 'd -> 'e) *
-    (('f -> ('f -> 'o) * 'g -> 'o * 'h) * ('p * 'i -> ('p * 'j) * 'k))
+  (unit ->
+   ('a -> State.t -> 'b) * ('c -> 'd -> 'e) *
+   ((State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j))) ->
+  unit ->
+  (('k -> 'a) -> State.t -> ('k, 'l) refiner * 'b) *
+  (('m -> 'c) -> 'm * 'd -> 'e) *
+  ((State.t Stream.t ->
+    ('n, 'o) refiner * 'f -> ('n, 'o) reification_rez Stream.t * 'g) *
+   ('p * 'h -> ('p * 'i) * 'j))
 
 (** {3 Predefined numerals (one to five)} *)
 val one : unit ->
   ((('a,'c) injected -> State.t -> 'b) -> State.t -> ('a, 'c) refiner * 'b) *
-  (('d -> 'e) -> 'd -> 'e) * (('f -> ('f -> 'g) -> 'g) * ('h -> 'h))
+  (('d -> 'e) -> 'd -> 'e) *
+  ((State.t Stream.t ->
+    ('f, 'g) refiner -> ('f, 'g) reification_rez Stream.t) *
+    ('h -> 'h))
 
 val two : unit ->
-  ((('a, 'd) injected -> ('b, 'e) injected -> State.t -> 'c) ->
-   State.t -> ('a, 'd) refiner * (('b, 'e) refiner * 'c)) *
-  (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
-  (('i -> ('i -> 'j) * ('i -> 'k) -> 'j * 'k) *
-   ('l * ('m * 'n) -> ('l * 'm) * 'n))
+  ((('a,'d) injected -> ('b,'e) injected -> State.t -> 'c) ->
+    State.t -> ('a, 'd) refiner * (('b, 'e) refiner * 'c)) *
+    (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
+    ((State.t Stream.t ->
+      ('i, 'j) refiner * ('k, 'l) refiner ->
+      ('i, 'j) reification_rez Stream.t *
+      ('k, 'l) reification_rez Stream.t) *
+     ('m * ('n * 'o) -> ('m * 'n) * 'o))
 
 val three : unit ->
   (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> State.t -> 'd) ->
    State.t ->
-   ('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) *
-  (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
-  (('l -> ('l -> 'm) * (('l -> 'n) * ('l -> 'o)) -> 'm * ('n * 'o)) *
-   ('p * ('q * ('r * 's)) -> ('p * ('q * 'r)) * 's))
+    ('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) *
+   (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
+   ((State.t Stream.t ->
+     ('l, 'm) refiner * (('n, 'o) refiner * ('p, 'q) refiner) ->
+     ('l, 'm) reification_rez Stream.t *
+     (('n, 'o) reification_rez Stream.t *
+      ('p, 'q) reification_rez Stream.t)) *
+    ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
 
 val four : unit ->
   ((('a, 'f) injected -> ('b, 'g) injected -> ('c, 'h) injected -> ('d, 'i) injected -> State.t -> 'e) ->
@@ -224,10 +238,15 @@ val four : unit ->
    ('a, 'f) refiner *
    (('b, 'g) refiner * (('c, 'h) refiner * (('d, 'i) refiner * 'e)))) *
   (('j -> 'k -> 'l -> 'm -> 'n) -> 'j * ('k * ('l * 'm)) -> 'n) *
-  (('o ->
-    ('o -> 'p) * (('o -> 'q) * (('o -> 'r) * ('o -> 's))) ->
-    'p * ('q * ('r * 's))) *
-   ('t * ('u * ('v * ('w * 'x))) -> ('t * ('u * ('v * 'w))) * 'x))
+  ((State.t Stream.t ->
+    ('o, 'p) refiner *
+    (('q, 'r) refiner * (('s, 't) refiner * ('u, 'v) refiner)) ->
+    ('o, 'p) reification_rez Stream.t *
+    (('q, 'r) reification_rez Stream.t *
+     (('s, 't) reification_rez Stream.t *
+      ('u, 'v) reification_rez Stream.t))) *
+   ('w * ('x * ('y * ('z * 'a1))) -> ('w * ('x * ('y * 'z))) * 'a1))
+
 
 val five : unit ->
   ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> State.t -> 'f) ->
@@ -237,45 +256,49 @@ val five : unit ->
     (('c, 'i) refiner * (('d, 'j) refiner * (('e, 'k) refiner * 'f))))) *
   (('l -> 'm -> 'n -> 'o -> 'p -> 'q) ->
    'l * ('m * ('n * ('o * 'p))) -> 'q) *
-  (('r ->
-    ('r -> 's) *
-    (('r -> 't) * (('r -> 'u) * (('r -> 'v) * ('r -> 'w)))) ->
-    's * ('t * ('u * ('v * 'w)))) *
-   ('x * ('y * ('z * ('a1 * ('b1 * 'c1)))) ->
-    ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1))
+   ((State.t Stream.t ->
+     ('r, 's) refiner *
+     (('t, 'u) refiner *
+      (('v, 'w) refiner * (('x, 'y) refiner * ('z, 'a1) refiner))) ->
+     ('r, 's) reification_rez Stream.t *
+     (('t, 'u) reification_rez Stream.t *
+      (('v, 'w) reification_rez Stream.t *
+       (('x, 'y) reification_rez Stream.t *
+        ('z, 'a1) reification_rez Stream.t)))) *
+    ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) ->
+     ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1))
 
 (** {3 The same numerals with conventional names} *)
 val q : unit ->
-  ((('a,'c) injected -> State.t -> 'b) -> State.t -> ('a, 'c) refiner * 'b) *
-  (('d -> 'e) -> 'd -> 'e) * (('f -> ('f -> 'g) -> 'g) * ('h -> 'h))
+  ((('a,'c) injected -> goal) -> State.t -> ('a, 'c) refiner * 'b) *
+  (('d -> 'e) -> 'd -> 'e) *
+  ((State.t Stream.t ->
+    ('f, 'g) refiner -> ('f, 'g) reification_rez Stream.t) *
+    ('h -> 'h))
 
 val qr : unit ->
-  ((('a, 'd) injected -> ('b, 'e) injected -> State.t -> 'c) ->
-   State.t -> ('a, 'd) refiner * (('b, 'e) refiner * 'c)) *
-  (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
-  (('i -> ('i -> 'j) * ('i -> 'k) -> 'j * 'k) *
-   ('l * ('m * 'n) -> ('l * 'm) * 'n))
+  ((('a,'d) injected -> ('b,'e) injected -> goal) ->
+    State.t -> ('a, 'd) refiner * (('b, 'e) refiner * 'c)) *
+    (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
+    ((State.t Stream.t ->
+      ('i, 'j) refiner * ('k, 'l) refiner ->
+      ('i, 'j) reification_rez Stream.t *
+      ('k, 'l) reification_rez Stream.t) *
+     ('m * ('n * 'o) -> ('m * 'n) * 'o))
 
 val qrs : unit ->
-  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> State.t -> 'd) ->
+  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> goal) ->
    State.t ->
-   ('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) *
-  (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
-  (('l -> ('l -> 'm) * (('l -> 'n) * ('l -> 'o)) -> 'm * ('n * 'o)) *
-   ('p * ('q * ('r * 's)) -> ('p * ('q * 'r)) * 's))
+    ('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) *
+   (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
+   ((State.t Stream.t ->
+     ('l, 'm) refiner * (('n, 'o) refiner * ('p, 'q) refiner) ->
+     ('l, 'm) reification_rez Stream.t *
+     (('n, 'o) reification_rez Stream.t *
+      ('p, 'q) reification_rez Stream.t)) *
+    ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
 
 val qrst : unit ->
-  ((('a, 'f) injected -> ('b, 'g) injected -> ('c, 'h) injected -> ('d, 'i) injected -> State.t -> 'e) ->
-   State.t ->
-   ('a, 'f) refiner *
-   (('b, 'g) refiner * (('c, 'h) refiner * (('d, 'i) refiner * 'e)))) *
-  (('j -> 'k -> 'l -> 'm -> 'n) -> 'j * ('k * ('l * 'm)) -> 'n) *
-  (('o ->
-    ('o -> 'p) * (('o -> 'q) * (('o -> 'r) * ('o -> 's))) ->
-    'p * ('q * ('r * 's))) *
-   ('t * ('u * ('v * ('w * 'x))) -> ('t * ('u * ('v * 'w))) * 'x))
-
-val pqrst : unit ->
   ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> State.t -> 'f) ->
    State.t ->
    ('a, 'g) refiner *
@@ -283,12 +306,17 @@ val pqrst : unit ->
     (('c, 'i) refiner * (('d, 'j) refiner * (('e, 'k) refiner * 'f))))) *
   (('l -> 'm -> 'n -> 'o -> 'p -> 'q) ->
    'l * ('m * ('n * ('o * 'p))) -> 'q) *
-  (('r ->
-    ('r -> 's) *
-    (('r -> 't) * (('r -> 'u) * (('r -> 'v) * ('r -> 'w)))) ->
-    's * ('t * ('u * ('v * 'w)))) *
-   ('x * ('y * ('z * ('a1 * ('b1 * 'c1)))) ->
-    ('x * ('y * ('z * ('a1 * 'b1)))) * 'c1))
+   ((State.t Stream.t ->
+     ('r, 's) refiner *
+     (('t, 'u) refiner *
+      (('v, 'w) refiner * (('x, 'y) refiner * ('z, 'a1) refiner))) ->
+     ('r, 's) reification_rez Stream.t *
+     (('t, 'u) reification_rez Stream.t *
+      (('v, 'w) reification_rez Stream.t *
+       (('x, 'y) reification_rez Stream.t *
+        ('z, 'a1) reification_rez Stream.t)))) *
+    ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) ->
+     ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1))
 
 (** {2 Building reifiers compositionally } *)
 module type T1 =
