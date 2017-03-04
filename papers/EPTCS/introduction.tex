@@ -74,11 +74,12 @@ well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementati
 possible to hide the refinement of the answers phase from an end-user.
 \end{enumerate}
 
-The rest of the paper is organized as follows: in the next section we discuss polymorphic
+The rest of the paper is organized as follows: in the next section \ref{sec:goals} we establish some basic
+notes about miniKanren. In the section \ref{sec:unification} we discuss polymorphic
 unification, and show, that standard unification with triangular substitution respects
 typing. Then we present our approach to handle user-defined types by injecting them 
-into logic domain. The next section describes top-level primitives and addresses the problem of
-relational and functional code integration. Then, we present a complete example of relational
+into logic domain \ref{sec:injection}. The section \ref{refinement} describes top-level primitives and addresses the problem of
+relational and functional code integration. Then, we present a complete example \ref{example} of relational
 specification, written with the aid of our library. The final section concludes.
 
 We expect from reader some familiarity with basic concepts behind original miniKanren 
