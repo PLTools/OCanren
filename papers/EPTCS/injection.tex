@@ -19,7 +19,7 @@ implementation.
 \subsection{Tagged Logical Values}
 
 The first natural solution is to restrict the unification to logic values only. We introduce the following polymorphic
-type $[\alpha]$\footnote{In concrete syntax $\alpha\;\;$\lstinline{logic}}, which corresponds to a type, injected into
+type $[\alpha]$\footnote{In concrete syntax it is $\alpha\;\;$\lstinline{logic}}, which corresponds to a type, injected into
 logic domain:
 
 \begin{lstlisting}
@@ -44,7 +44,7 @@ Both unification and disequality constraint would still use the same polymorphic
 however, is restricted to logical types only.
 
 Apart from variables, other logical values can be obtained by injection; conversely, sometimes logical value can be projected to 
-a regular one. We supply two basic functions\footnote{``\lstinline{inj}'' and ``\lstinline{prj}'' in concrete syntax.}
+a regular one. We supply two basic functions\footnote{``In concrete syntax the are \lstinline{inj}'' and ``\lstinline{prj}''.}
 for these purposes
 
 \begin{lstlisting}[mathescape=true]
@@ -143,7 +143,9 @@ After refinement, the content of a logical value can be inspected via the follow
 Constructor \lstinline{`Var} corresponds to a free variable with unique integer identifier and a list of terms, 
 representing all disequality constraints for this variable. These terms are refined as well.
 
-\subsection{Untagged Logical Values and Type Bookeeping}
+\subsection{Untagged Logical Values and Type Bookkeeping}
+
+% Возможно везде надо две k но я не уверен. Слова с одним k я в инете не нашел
 
 The solution, presented in the previous subsection, suffers from the following defficiency: in order to perform unification,
 we inject terms into logic domain, making them as twice as large. As a result, this implementation loses the original one in 
@@ -197,13 +199,13 @@ where $\beta$ is the result of tagging $\alpha$.
 These considerations can be boiled down to the following concrete implementation. 
 
 First, we roll back to the initial definition of $[\alpha]$~--- it will play role of our ``tagged'' type.
-We introduce a new, two-parametric type\footnote{In concrete syntax $(\alpha,\;\beta)\;$\lstinline{injected}.}
+We introduce a new, two-parametric type\footnote{In concrete syntax it is $(\alpha,\;\beta)\;$\lstinline{injected}.}
 
 \begin{lstlisting}
    type $\{\alpha,\;\beta\}$ = $\alpha$
 \end{lstlisting}
 
-Of course, this type is kept abstract at the end-user level. Informally speaking, type $\{\alpha,\;\beta\}$ designates the
+Of course, this type is being kept abstract at the end-user level. Informally speaking, type $\{\alpha,\;\beta\}$ designates the
 injection of untagged type $\alpha$ into tagged type $\beta$; the value itself is kept in the untagged form, but
 tagged type can be used during the refinement stage as a constraint, which would allow to refine untagged
 representation only in a feasible tagged one.
