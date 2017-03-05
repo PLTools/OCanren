@@ -12,7 +12,8 @@ of any unsafe features. The examples, given below, illustrate the usage of all t
 \subsection{List Concatenation and Reversing}
 
 List concatenation and reversing are usually the first relational programs considered, and we do not wish
-to deviate from this tradition. In our case, their implementations look rather familiar:
+to deviate from this tradition. We've already considered the implementation of \lstinline{append$^o$} in
+original \miniKanren in Section~\ref{sec:demo}. In our case, the implementation looks familiar:
 
 \begin{lstlisting}
    let rec append$^o$ a b ab =

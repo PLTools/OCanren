@@ -293,6 +293,6 @@ and, then, we add the refiner to the output signature in all \lstinline{FMap}-li
 \end{lstlisting}
 
 Note, since now \lstinline{refine} is type-specific and, hence, constructed at the user-level, we refrain from passing 
-it a state (otherwise it would be a user's responsibility to refine variables only in appropriate states). 
-Instead, we wrap all state-specific functionality in abstract \lstinline{helper} data type, which encapsulates
-all functionality, needed for \lstinline{refine} to work properly.
+it a state (which is inaccessible on the user level). Instead, we wrap all state-specific functionality in 
+abstract \lstinline{helper} data type, which encapsulates all state-dependent functionality, needed for \lstinline{refine} 
+to work properly.
