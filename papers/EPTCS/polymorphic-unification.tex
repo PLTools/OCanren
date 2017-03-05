@@ -97,7 +97,7 @@ The following snippet presents the implementation:
 We remind, that all superscripts correspond to type attributes, which we consider here as 
 parts of values being manipulated. For example, line 1 means, that we apply \lstinline{unify}
 to terms $t_1$ and $t_2$, and expect their types to be equal $\tau$. We assume, that 
-at the top level unification always applied to some terms of the same type, and that arbitrary
+at the top level unification always applied to some terms of the same type, and that any
 substitution can only be acquired from the empty one by a sequence of unifications.
 
 We are going to show, that under these assumption all type attributes are superfluous~--- they
@@ -118,10 +118,10 @@ applications of \lstinline{unify}; note, that, again, all these calls are perfor
 types, starting from a substitution, posessing the property of interest. A simple induction on the
 chain length completes the proof.
 
-So, type attributes are inessential~--- they are never analyzed and never restrict the pattern matching; hence, 
+So, type attributes are inessential~--- they are never analyzed and never restrict pattern matching; hence, 
 they can be erased completely. We can notice now, that for the representation of terms we can use OCaml's
 native runtime representation. It can not be done, however, using regular OCaml~--- we have to utilize
-low-level unsafe interface \lstinline{Obj}. Not also, that the correctness of implementation is based on
+low-level unsafe interface \lstinline{Obj}. Note also, the correctness of implementation is based on
 the following convention about logical variables: the representation of a logical variable $x^\tau$ must
 correspond to a representation of some value of type $\tau$. This, in turn, makes it somewhat problematic
 to detect a variable occurrence in a term. We postpone the discussion of this subject until Section~\ref{sec:injection}.
@@ -132,7 +132,7 @@ We call our implementation \emph{polymorphic}, since at the top level it is defi
    val unify : $\alpha$ -> $\alpha$ -> subst option -> subst option
 \end{lstlisting} 
 
-Note, the type of substitution is not polymorphic, which means, that the compiler completely loses the track 
+The type of substitution is not polymorphic, which means, that the compiler completely loses the track 
 of types for values, stored in a substitution. These types are recovered later during the refinement of answers phase.
 Outside unification the compiler maintains typing, which means, that all terms, subterms, and variables agree in their types 
 in all contexts. 

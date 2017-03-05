@@ -16,7 +16,7 @@
 \lstdefinelanguage{ocaml}{
 keywords={fresh, let, begin, end, in, match, type, and, fun, function, try, with, when, class, 
 object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit, 
-new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual},
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include},
 sensitive=true,
 commentstyle=\small\itshape\ttfamily,
 keywordstyle=\ttfamily\underbar,
@@ -59,10 +59,10 @@ Dmitry Boulytchev
 \begin{abstract}
 We present an implementation of the relational programming language \miniKanren as a set 
 of combinators and syntax extension for OCaml. The key feature of our approach is 
-\emph{polymorphic unification}, which can be used to unify data structures of almost 
-arbitrary types. In addition we provide a useful generic programming pattern to 
-systematically develop relational specifications in a typed manner, and address 
-the problem of relational and functional code integration.
+\emph{polymorphic unification}, which can be used to unify data structures of arbitrary types. 
+In addition we provide a useful generic programming pattern to systematically develop relational 
+specifications in a typed manner, and address the problem of relational and functional code 
+integration.
 \end{abstract}
 
 \input{introduction}
@@ -71,6 +71,7 @@ the problem of relational and functional code integration.
 \input{injection}
 \input{refinement}
 \input{examples}
+\input{evaluation}
 \input{conclusion}
 
 \begin{thebibliography}{99}
@@ -133,7 +134,12 @@ Efficient Representations for Triangular Substitutions: a Comparison in miniKanr
 \bibitem{HKinded}
 Jeremy Yallop, Leo White. Lightweight Higher-Kinded Polymorphism. FLOPS 2014.
 
-\end{thebibliography}
+\bibitem{Lambda}
+Henk Barendregt. Lambda Calculi with Types, Handbook of Logic in Computer Science (Vol.~2), 1992.
 
+\bibitem{WillThesis}
+William E. Byrd. Relational Programming in miniKanren: Techniques, Applications, and Implementations. PhD Thesis,
+Indiana University, Bloomington, IN, September 30, 2009.
+\end{thebibliography}
 \end{document}
 

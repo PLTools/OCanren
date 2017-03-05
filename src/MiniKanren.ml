@@ -165,19 +165,6 @@ let rec bprintf_logic: Buffer.t -> ('a -> unit) -> 'a logic -> unit = fun b f x 
   in
   helper x
 
-(*
-let rec show_logic f x =
-  match x with
-  | Value x -> f x
-  | Var (i,cs) ->
-    let c =
-      match cs with
-      | [] -> ""
-      | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ (show_logic f l)) cs)
-      in
-      sprintf "_.%d%s" i c
-*)
-
 let logic = {logic with
  gcata = ();
  plugins =
@@ -624,6 +611,7 @@ module Uncurry =
   end
 
 type helper = < isVar : 'a . 'a -> bool >
+
 type ('a, 'b) reification_rez =
 | Final of 'a
 | HasFreeVars of ((helper -> ('a, 'b) injected -> 'b) -> 'b)

@@ -1,11 +1,11 @@
 \section{Refinement and Top-Level Primitives}
 \label{refinement}
 
-We did not make \lstinline{refine} accessible for an end-user; instead we provided
+We do not make final search states accessible for an end-user; instead we provide
 a set of top-level combinators, which should be used to surround relational code
 and perform refinement in a transparent manner. Note, from pragmatic
 standpoint only variables, supplied as arguments for the top-level goal, have
-to be refined (the original miniKanren implementation follows the same convention).
+to be refined (the original \miniKanren implementation follows the same convention).
 
 The toplevel primitive in our implementation is \lstinline{run}, which takes three
 arguments. The exact type of \lstinline{run} is rather complex and non-instructive, 
@@ -19,15 +19,41 @@ Here $\overline{n}$ stands for \emph{numeral}, which describes the number of
 parameters for two other arguments of \lstinline{run}, \mbox{$l_1\dots l_n$}~---
 free logical variables, $G$~--- a goal (which can make use of \mbox{$l_1\dots l_n$}), 
 \mbox{$a_1\dots a_n$}~--- refined answers for \mbox{$l_1\dots l_n$}, respectively, and, 
-finally, $H$~--- a \emph{handler} (which can make use of \mbox{$a_1\dots a_n$}). The types of 
-\mbox{$l_1\dots l_n$} are inferred from $G$, and the types of \mbox{$a_1\dots a_n$} are
-inferred from types of \mbox{$l_1\dots l_n$}: if $l_i$ has type \lstinline[mathescape=true]{$t$ logic}, then
-$a_i$ has type \lstinline[mathescape=true]{$t$ logic stream}. In other words, user-defined handler
-takes streams of refined answers for all variables, supplied to the top-level goal. All streams $a_i$ contains
-coherent elements, so they all have the same length and $n$-th elements of all streams correspond 
-to the $n$-th answer, produced by the goal $G$.
+finally, $H$~--- a \emph{handler} (which can make use of \mbox{$a_1\dots a_n$}). 
+
+The types of \mbox{$l_1\dots l_n$} are inferred from $G$ and always have a form
+
+\begin{lstlisting}
+   $\{\alpha,\;[\beta]\}$
+\end{lstlisting}
+
+since the types of variables can be constrained only in unification or disequality constraints.
+
+The types of \mbox{$a_1\dots a_n$} are inferred from types of \mbox{$l_1\dots l_n$} and
+have the form
+
+\begin{lstlisting}
+   $(\alpha,\;\beta)$ refined stream
+\end{lstlisting}
+
+where the type \lstinline{refined}, in turn, is
+
+\begin{lstlisting}
+   type ($\alpha$, $\beta$) refined = $<\;$prj : $\alpha$; refine : (helper -> $\{\alpha,\;\beta\}$ -> $\beta$) -> $\beta>$
+\end{lstlisting}
+
+Two methods of this type can be used to perform two different styles of refinement: first, a value without
+free variables can be returned as is (method \lstinline{prj} does this: it checks, that in the value of
+interest no free variables occur, and raises an exception otherwise). If the value contains free
+variables, it has to be properly injected into the logic domain~--- this is what \lstinline{refine} stands
+for. It takes as an argument a type-specific tagging function, constructed using generic
+primitives, described in the previous section.
+
+In other words, user-defined handler takes streams of refined answers for all variables, supplied to the top-level 
+goal. All streams $a_i$ contains coherent elements, so they all have the same length and $n$-th elements of all 
+streams correspond to the $n$-th answer, produced by the goal $G$.
 
 There are a few predefined numerals for one, two, etc. arguments (called, by tradition, 
 \lstinline{q}, \lstinline{qr}, \lstinline{qrs} etc.), and a successor function, which 
 can be applied to existing numeral to increment the number of expected arguments. The
-technique, used to implement them, generally follows~\cite{Unparsing, DoWeNeed}.
+implementation technique generally follows~\cite{Unparsing, DoWeNeed}.
