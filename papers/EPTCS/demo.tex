@@ -1,0 +1,71 @@
+\section{miniKanren~--- a Short Presentation}
+\label{sec:demo}
+
+In this section we briefly describe \miniKanren in its original form, using a canonical example. \miniKanren enriches 
+a host language (Scheme/Racket) with three domain-specific constructs to build \emph{goals}:
+
+\begin{itemize}
+\item Syntactic unification~\cite{Unification} in the form \lstinline[language=scheme]{(== $t_1$ $t_2$)}, where $t_1$, $t_2$~---
+some \emph{terms}; unification establishes a syntactic basis for all other goals. If there is a unifier for
+two given terms, the goal is considered satisfied, the unifier is kept as a partial solution, and the execution
+of current branch continues. Otherwise the current branch backtracks.
+
+\item Conditional construct in the form 
+
+\begin{lstlisting}[language=scheme]
+   (conde
+      [$g^1_1\;\;g^1_2\;\;\dots\;\;g^1_{k_1}$]
+      [$g^2_1\;\;g^2_2\;\;\dots\;\;g^2_{k_2}$]
+      $\ldots$
+      [$g^n_1\;\;g^n_2\;\;\dots\;\;g^n_{k_n}$]
+   )
+\end{lstlisting}
+
+where $g^i_j$~--- some goals. This goal considers each collection of subgoals, surrounded by square brackets, as
+implicit conjunction (so \lstinline[language=scheme]{[$g^i_1\;\;g^i_2\;\;\dots\;\;g^i_{k_i}$]} is considered as a 
+conjunction of all $g^i_j$) and tries to satisfy each of them independently~--- in other words, operates on them
+as a disjunction.
+
+\item Free variable introduction construct in the form
+
+\begin{lstlisting}[language=scheme]
+   (fresh ($x_1\;\;x_2\;\;\dots\;\;x_k$)
+     $g_1$
+     $g_2$
+     $\ldots$
+     $g_n$
+   )
+\end{lstlisting}
+
+where $g_i$~--- some goals. This form introduced free variables $x_1\;\;x_2\;\;\dots\;\;x_k$ and
+tries to satisfy the conjunction of all subgoals $g_1\;\;g_2\;\;\dots\;\;g_n$ (these subgoals allegedly contain
+introduced free variables).
+\end{itemize}
+
+The results of search are combined into a stream, which can be queried for answers; the language paradigm itself
+can be described as ``lighweight logic programming''\footnote{An in-depth comparison of \miniKanren and Prolog can be found
+here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
+ 
+As an example we consider a list concatenation function; by a well-established tradition, the names 
+of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$}: 
+
+\begin{lstlisting}[mathescape=true,language=scheme,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+   (define (append$^o$ xs ys xys) 
+      (conde 
+         [(== '() xs) (== ys xys)]
+         [(fresh (h t tys)
+            (== `(,h . ,t) xs)
+            (== `(,h . ,tys) xys)
+            (append$^o$ t ys tys))]))
+\end{lstlisting}
+
+We interpret the relation ``\lstinline{append$^o$ xs ys xys}'' as ``the concatenation of \lstinline{xs} and \lstinline{ys} 
+equals \lstinline{xys}''. 
+
+Indeed, if the list \lstinline{xs} is empty, then (regardless the content of \lstinline{ys}) in order for the relation to hold 
+the value for \lstinline{xys} should by equal to that of \lstinline{ys}~--- hence line 3. 
+
+Otherwise, \lstinline{xs} can be decomposed into the head \lstinline{h} and the tail \lstinline{t}~--- so we need some free variables. We also
+need additional variable \lstinline{tys} to designate the list, being in relation \lstinline{append$^o$} with \lstinline{t} and \lstinline{ys}.
+Trivial relational reasonings complete the implementation (lines 5-7).
+
