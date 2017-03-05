@@ -19,7 +19,7 @@ backtracking lazy stream monad:
 Monadic primitives describe the shape of the search, and their implementations may 
 vary in concrete \miniKanren versions.
 
-An essential component of the implementation is a bundle of the following types
+An essential component of the implementation is a bundle of the following types:
 
 \begin{lstlisting}
    type env         = $\dots$
@@ -29,13 +29,15 @@ An essential component of the implementation is a bundle of the following types
    type state = env * subst * constraints
 \end{lstlisting}
 
+% Следующее предложение может на три разбить?
+
 Type \lstinline{state} describes a point in a lazily constructed search tree: type \lstinline{env} corresponds 
 to an \emph{environment}, which contains some supplementary information (in particular, environment is needed to
 correctly allocate fresh variables), type \lstinline{subst} describes a substitution, which keeps current bindings 
 for some logical variables, and, finally, type \lstinline{constraints} represents disequality constraints, 
 which have to be respected. In a simplest case \lstinline{env} is just a counter for the number of next free
 variable, \lstinline{subst} is a map-like structure and \lstinline{constraints} is a list of substitutions. In our
-case environment contains some extra information to make it possible to identify variables in constant time.
+case environment contains some extra information to make it possible to identify variables in a constant time.
 
 The next cornerstone is the \emph{goal} type, which is considered as a transformer of a state into 
 lazy stream of states:
@@ -60,8 +62,8 @@ Conjunction \lstinline{&&&} combines the results of its argument goals using \ls
 disjunction \lstinline{|||} concatenates the results using \lstinline{mplus}, abstraction
 primitive \lstinline{call_fresh} takes an abstracted goal and applies it to a freshly created
 variable. Type $v$ in latest case designated the type for a fresh variable, which we leave
-abstract for now. These conbinators serves as bricks for implementation of conventional 
-\miniKanren constructions and syntax extensions (\lstinline{conde}, \lstinline{fresh} etc.)
+abstract for now. These combinators serve as bricks for implementation of conventional 
+\miniKanren constructions and syntax extensions (\lstinline{conde}, \lstinline{fresh}, etc.)
 
 Finally, there are two primitive goal constructors:
 
@@ -78,7 +80,7 @@ is true for us as well. However, due to a drastic difference in host languages t
 efficient polymorphic unification itself leads to a number of tricks with typing and data representation,
 non-existing in the original version.
 
-Described conbinators allow to \emph{construct} goals. To \emph{run} a goal, the following
+Described combinators allow to \emph{construct} goals. To \emph{run} a goal, the following
 primitive is used:
 
 \begin{lstlisting}
