@@ -139,7 +139,7 @@ After refinement, the content of a logical value can be inspected via the follow
 Constructor \lstinline{`Var} corresponds to a free variable with unique integer identifier and a list of terms, 
 representing all disequality constraints for this variable. These terms are refined as well.
 
-\subsection{Tagless Logical Values and Type Bookeeping}
+\subsection{Tagless Logical Values and Type Bookkeeping}
 
 The solution, presented in the previous subsection, suffers from the following defficiency: in order to perform unification,
 we inject terms into logic domain, making them as twice as large. As a result, this implementation loses the original one in 
@@ -214,7 +214,7 @@ We introduce the following primivites for the type $\{\alpha,\;\beta\}$:
    let inj  x = x
 \end{lstlisting}
 
-The function \lstinline{lift} puts a value into the ``bookeeping injection'' domain for the first time, while
+The function \lstinline{lift} puts a value into the ``bookkeeping injection'' domain for the first time, while
 \lstinline{inj} plays the role of injection itself. Their composition is analogous to what was 
 called ``$\uparrow_\forall$'' in the previous implementation:
 
@@ -263,7 +263,7 @@ Given the functor(s) of described shape, we can use it in the following manner:
 \end{lstlisting}
 
 In other words, we can in a very systematic manner define \emph{logic representatives} for all constructors
-of types of interest. These representatives can be used in the relational code, providing a well-bookept
+of types of interest. These representatives can be used in the relational code, providing a well-bookkept
 typing~--- for each logical type we would be able to reconstruct its original, tagless preimage. 
 
 With the new implementation, the types for ``basic'' goal constructors have to be adjusted:
