@@ -35,7 +35,7 @@ correctly allocate fresh variables), type \lstinline{subst} describes a substitu
 for some logical variables, and, finally, type \lstinline{constraints} represents disequality constraints, 
 which have to be respected. In a simplest case \lstinline{env} is just a counter for the number of next free
 variable, \lstinline{subst} is a map-like structure and \lstinline{constraints} is a list of substitutions. In our
-case environment contains some extra information to make it possible to identify variables in constant time.
+case environment contains some extra information to make it possible to identify variables in a constant time.
 
 The next cornerstone element is the \emph{goal} type, which is considered as a transformer of a state into 
 lazy stream of states:
@@ -78,7 +78,7 @@ is true for us as well. However, due to a drastic difference in host languages t
 efficient polymorphic unification itself leads to a number of tricks with typing and data representation,
 non-existing in the original version.
 
-Described conbinators allow to \emph{construct} goals. To \emph{run} a goal, the following
+Described combinators allow to \emph{construct} goals. To \emph{run} a goal, the following
 primitive is used:
 
 \begin{lstlisting}

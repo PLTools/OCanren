@@ -23,7 +23,7 @@ combinators, miniKanren found its way in dozens of host languages, including Sca
 There is a predictable glitch in implementing miniKanren for a strongly typed language. 
 Designed in a metaprogramming-friendly and dynamically typed realm of Scheme/Racket, original 
 miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
-ML or Haskell. In particular, one of capstone constructs of miniKanren~--- unification~--- has to work for 
+ML or Haskell. In particular, one of the capstone constructs of miniKanren~--- unification~--- has to work for 
 different data structures, which may have types, different beyond parametricity.
 
 There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
@@ -68,13 +68,14 @@ believe, would lead to  more regular and easy to maintain relational specificati
 
 \item We provide a simplified way to integrate relational and functional code. Our approach utilizes
 well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementation and makes it
-possible to hide the refinement of answers phase from an end-user.
+possible to hide the refinement of the answers phase from an end-user.
 \end{enumerate}
 
-The rest of the paper is organized as follows: in the Section~\ref{sec:unification} we discuss polymorphic
+The rest of the paper is organized as follows: in the next section \ref{sec:goals} we establish some basic
+notes about miniKanren. In the section \ref{sec:unification} we discuss polymorphic
 unification, and show, that standard unification with triangular substitution respects
 typing. Then we present our approach to handle user-defined types by injecting them 
-into logic domain. The next section describes top-level primitives and addresses the problem of
-relational and functional code integration. Then, we present a complete example of relational
+into logic domain \ref{sec:injection}. The section \ref{refinement} describes top-level primitives and addresses the problem of
+relational and functional code integration. Then, we present a complete example \ref{example} of relational
 specification, written with the aid of our library. The final section concludes.
 
