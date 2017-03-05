@@ -1,2 +1,47 @@
-\section{Evaluation}
+\section{Performance Evaluation}
 \label{sec:evaluation}
+
+One of our initial goals was to evaluate, what performance impact would choosing
+OCaml as a host language make. In addition we spent some efforts in order to implement \miniKanren in
+efficient, tagless manner, and, of course, the outcome of this decision also has to be evaluated. 
+Since our library generally follows $\mu$Kanren\footnote{https://github.com/jasonhemann/microKanren}, we've chosen it as a reference implementation.
+In addition, we took \texttt{faster-miniKanren}\footnote{https://github.com/webyrd/faster-miniKanren}~--- more elaborated 
+implementation with a little different search~--- since it implements disequality constraints. 
+
+For the set of benchmarks we took the following problems:
+
+\begin{itemize}
+\item \textbf{expo}~--- exponentation $3^5(=243)$ for integers in binary form is calculated relationally;
+\item \textbf{logo}~--- the inverse problem $log_3243(=5)$;
+\item \textbf{sorto}~--- sorting a list of Peano numbers (shown as example in Section~\ref{sec:examples});
+\item \textbf{quines, twines, trines}~--- self/co-evaluating program construction problems from~\cite{Untagged}.
+\end{itemize}
+
+Since the last bundle of benchmarks uses disequality constraints (and, hence, $\mu$Kanren is ruled out) we
+split all benchmarks into two sets. 
+
+The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU @ 4.00GHz processor and 32GB of memory.
+For OCanren \mbox{\texttt{ocaml-4.04.0+frame_pointer+flambda}} was used, for other implementations~--- Chez~Scheme~9.4.1. 
+All benchmarks were run in natively compiled mode ten times, then average user time was taken. The results of evaluation
+are shown on figures~\ref{eval:first} and~\ref{eval:second}.
+
+The first conclusion, which is rather easy to derive from the results, is that ``taglessless'' indeed matters. Our initial
+implementation did not show essential speedup in comparison with $\mu$Kanren (and was even \emph{slower} on the logarithm 
+benchmark). The situation was improved drastically, however, when we switched to a tagless version.
+
+Yet, in comparison with \texttt{faster-miniKanren} our implementation is still lagging behind. We did not discover yet the
+reasons, and saved this problem for future research.
+
+\begin{figure}[t]
+\centering
+\includegraphics{graph1.pdf}
+\caption{The First Set of Benchmarks}
+\label{eval:first}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics{graph2.pdf}
+\caption{The Second Set of Benchmarks}
+\label{eval:second}
+\end{figure}
