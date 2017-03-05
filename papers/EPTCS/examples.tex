@@ -1,5 +1,5 @@
 \section{Examples}
-\label{examples}
+\label{sec:examples}
 
 In this section we present some examples of relational specification, written with the aid of our library. 
 Besides \miniKanren combinators itself, our implementation contains two syntax extensions~--- one
@@ -200,7 +200,9 @@ Now we have to repeat the work for the type of simple types:
 Note, the ``relational'' part is trivial, stereotyped and short (and could even be generated 
 using more advanced framework).
 
-Now for the relational type inferencer itself:
+The relational type inferencer itself rather repeats the original implementation. The only
+difference (besides the syntactic one) is that instead of data constructors we use their logic 
+counterparts:
 
 \begin{lstlisting}
    let rec lookup$^o$ a g t =
@@ -229,3 +231,4 @@ Now for the relational type inferencer itself:
      in
      infer$^o$ (nil()) expr typ
 \end{lstlisting}
+
