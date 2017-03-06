@@ -299,24 +299,19 @@ val qrs : unit ->
     ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
 
 val qrst : unit ->
-  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> State.t -> 'f) ->
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> goal) ->
    State.t ->
-   ('a, 'g) refiner *
-   (('b, 'h) refiner *
-    (('c, 'i) refiner * (('d, 'j) refiner * (('e, 'k) refiner * 'f))))) *
-  (('l -> 'm -> 'n -> 'o -> 'p -> 'q) ->
-   'l * ('m * ('n * ('o * 'p))) -> 'q) *
+    ('a, 'g) refiner * (('b, 'h) refiner * (('c, 'i) refiner * (('d, 'j) refiner * 'f)))) *
+  (('l -> 'm -> 'n -> 'o -> 'q) ->
+    'l * ('m * ('n * 'o)) -> 'q) *
    ((State.t Stream.t ->
-     ('r, 's) refiner *
-     (('t, 'u) refiner *
-      (('v, 'w) refiner * (('x, 'y) refiner * ('z, 'a1) refiner))) ->
+     ('r, 's) refiner * (('t, 'u) refiner * (('v, 'w) refiner * ('x, 'y) refiner)) ->
      ('r, 's) reification_rez Stream.t *
      (('t, 'u) reification_rez Stream.t *
       (('v, 'w) reification_rez Stream.t *
-       (('x, 'y) reification_rez Stream.t *
-        ('z, 'a1) reification_rez Stream.t)))) *
-    ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) ->
-     ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1))
+       (('x, 'y) reification_rez Stream.t)))) *
+    ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) ->
+     ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1))
 
 (** {2 Building reifiers compositionally } *)
 module type T1 =
