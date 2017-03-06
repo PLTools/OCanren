@@ -46,7 +46,7 @@ The results of search are combined into a stream, which can be queried for answe
 can be described as ``lighweight logic programming''\footnote{An in-depth comparison of \miniKanren and Prolog can be found
 here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
  
-As an example we consider a list concatenation function; by a well-established tradition, the names 
+As an example we consider list concatenation function; by a well-established tradition, the names 
 of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$}: 
 
 \begin{lstlisting}[mathescape=true,language=scheme,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt]
@@ -60,9 +60,7 @@ of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$
 \end{lstlisting}
 
 We interpret the relation ``\lstinline{append$^o$ xs ys xys}'' as ``the concatenation of \lstinline{xs} and \lstinline{ys} 
-equals \lstinline{xys}''. 
-
-Indeed, if the list \lstinline{xs} is empty, then (regardless the content of \lstinline{ys}) in order for the relation to hold 
+equals \lstinline{xys}''. Indeed, if the list \lstinline{xs} is empty, then (regardless the content of \lstinline{ys}) in order for the relation to hold 
 the value for \lstinline{xys} should by equal to that of \lstinline{ys}~--- hence line 3. 
 
 Otherwise, \lstinline{xs} can be decomposed into the head \lstinline{h} and the tail \lstinline{t}~--- so we need some free variables. We also

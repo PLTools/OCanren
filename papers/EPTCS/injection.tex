@@ -193,7 +193,7 @@ where $\beta$ is the result of tagging $\alpha$.
 These considerations can be boiled down to the following concrete implementation. 
 
 First, we roll back to the initial definition of $[\alpha]$~--- it will play role of our ``tagged'' type.
-We introduce a new, two-parametric type\footnote{In concrete syntax it is $(\alpha,\;\beta)\;$\lstinline{injected}.}
+We introduce a new, two-parametric type\footnote{In concrete syntax called ``$(\alpha,\;\beta)\;$\lstinline{injected}''.}
 
 \begin{lstlisting}
    type $\{\alpha,\;\beta\}$ = $\alpha$
@@ -276,7 +276,7 @@ With the new implementation, the types for ``basic'' goal constructors have to b
 As always, we require both arguments of unification and disequalify constraint to be of the same type; in addition
 we require the ``injected'' part of the type to be logic.
 
-During the refinement stage the bindings for ``integersting'' variables, reconstructed using the final
+During the refinement stage the bindings for ``interesting'' variables, reconstructed using the final
 substitution, have to be properly tagged. This process as well is implemented in a datatype-generic manner:
 fisrt, we have refiners for primitive types:
 
