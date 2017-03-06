@@ -587,11 +587,38 @@ module ExtractDeepest =
       ((a, foo), base)
   end
 
+
+type helper = < isVar : 'a . 'a -> bool >
+type ('a, 'b) reification_rez =
+| Final of 'a
+| HasFreeVars of ((helper -> ('a, 'b) injected -> 'b) -> 'b)
+
+module R : sig
+  type ('a, 'b) refiner
+
+  val refiner :  ('a,'b) injected -> ('a,'b) refiner
+
+  val apply_refiner : State.t Stream.t -> ('a, 'b) refiner -> ('a, 'b) reification_rez Stream.t
+end = struct
+  type ('a, 'b) refiner = State.t Stream.t -> ('a, 'b) reification_rez Stream.t
+  let apply_refiner = fun st r -> r st
+
+  let refiner : ('a,'b) injected -> ('a,'b) refiner = fun x ->
+    Stream.map (fun ((e,_,_) as st) ->
+      let ans = refine st !!!x in
+      if has_free_vars (Env.is_var e) (Obj.repr ans)
+      then
+        let c: helper = !!!(object method isVar x = Env.is_var e (Obj.repr x) end) in
+        HasFreeVars (fun r -> r c !!!ans)
+      else Final !!!ans
+    )
+end
+
 module ApplyTuple =
   struct
-    let one arg x = x arg
+    let one arg r = R.apply_refiner arg r
 
-    let succ prev = fun arg (x, y) -> (x arg, prev arg y)
+    let succ prev = fun arg (r, y) -> (R.apply_refiner arg r, prev arg y)
   end
 
 module ApplyLatest =
@@ -610,30 +637,19 @@ module Uncurry =
     let succ k f (x,y) = k (f x) y
   end
 
-type helper = < isVar : 'a . 'a -> bool >
+type ('a, 'b) refiner = ('a, 'b) R.refiner
+let refiner = R.refiner
 
-type ('a, 'b) reification_rez =
-| Final of 'a
-| HasFreeVars of ((helper -> ('a, 'b) injected -> 'b) -> 'b)
-
-type ('a, 'b) refiner = State.t Stream.t -> ('a, 'b) reification_rez Stream.t
-
-let refiner : ('a,'b) injected -> ('a,'b) refiner = fun x ->
-  Stream.map (fun ((e,_,_) as st) ->
-    let ans = refine st !!!x in
-    if has_free_vars (Env.is_var e) (Obj.repr ans)
-    then
-      let c: helper = !!!(object method isVar x = Env.is_var e (Obj.repr x) end) in
-      HasFreeVars (fun r -> r c !!!ans)
-    else Final !!!ans
-  )
-
-module LogicAdder =
-  struct
+module LogicAdder :
+  sig
+    val zero : 'a -> 'a
+    val succ: ('a -> State.t -> 'd) ->
+         ('e -> 'a) -> State.t -> ('e, 'f) R.refiner * 'd
+  end = struct
     let zero f = f
 
     let succ prev f =
-      call_fresh (fun logic st -> (refiner logic, prev (f logic) st))
+      call_fresh (fun logic st -> (R.refiner logic, prev (f logic) st))
   end
 
 let one () = (fun x -> LogicAdder.(succ zero) x), (@@), ApplyLatest.two
@@ -642,21 +658,26 @@ let succ n () =
   let adder, currier, app = n () in
   (LogicAdder.succ adder, Uncurry.succ currier, ApplyLatest.succ app)
 
+let succ = !!!succ
+let one = !!!one
 let two   () = succ one   ()
 let three () = succ two   ()
 let four  () = succ three ()
 let five  () = succ four  ()
 
-let q     = one
-let qr    = two
-let qrs   = three
-let qrst  = four
-let pqrst = five
+let q     = !!!one
+let qr    = !!!two
+let qrs   = !!!three
+let qrst  = !!!four
+let pqrst = !!!five
 
 let run n goalish f =
   let adder, currier, app_num = n () in
   let run f = f (State.empty ()) in
   run (adder goalish) |> ApplyLatest.apply app_num |> (currier f)
+
+let make_defer : (unit -> goal) -> goal = fun g ->
+  fun st -> Stream.from_fun (fun () -> g () st)
 
 (* ************************************************************************** *)
 module type T1 = sig

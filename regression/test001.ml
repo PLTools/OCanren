@@ -21,7 +21,7 @@ let a_and_b' b =
 
 let rec fives x =
   (x === !!5) |||
-  (fun st -> Stream.from_fun (fun () -> fives x st))
+  make_defer (fun () -> fives x)
 
 let rec appendo a b ab =
   ((a === nil ()) &&& (b === ab)) |||
@@ -66,4 +66,3 @@ let _withFree =
   runL          2  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL          3  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL         10  q  qh (REPR (fun q   -> reverso q q                                  ))
-  
