@@ -247,7 +247,6 @@ val four : unit ->
       ('u, 'v) reification_rez Stream.t))) *
    ('w * ('x * ('y * ('z * 'a1))) -> ('w * ('x * ('y * 'z))) * 'a1))
 
-
 val five : unit ->
   ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> State.t -> 'f) ->
    State.t ->
@@ -299,7 +298,7 @@ val qrs : unit ->
     ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
 
 val qrst : unit ->
-  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> State.t -> 'f) ->
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> goal) ->
    State.t ->
    ('a, 'g) refiner *
    (('b, 'h) refiner *

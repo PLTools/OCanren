@@ -589,6 +589,7 @@ module ExtractDeepest =
 
 
 type helper = < isVar : 'a . 'a -> bool >
+
 type ('a, 'b) reification_rez =
 | Final of 'a
 | HasFreeVars of ((helper -> ('a, 'b) injected -> 'b) -> 'b)
@@ -1166,7 +1167,6 @@ module List =
           (x =/= a) &&& (membero xs a)
         ])
       )
-
 
     let nullo q : goal = (q === nil())
 
