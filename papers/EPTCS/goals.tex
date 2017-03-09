@@ -13,7 +13,7 @@ backtracking lazy stream monad:
    type $\alpha$ stream
 
    val mplus : $\alpha$ stream -> $\alpha$ stream -> $\alpha$ stream
-   val bind  : $\alpha$ stream -> ($\alpha$ -> $\beta$ stream) -> $\alpha$ stream
+   val bind  : $\alpha$ stream -> ($\alpha$ -> $\beta$ stream) -> $\beta$ stream
 \end{lstlisting}
 
 Monadic primitives describe the shape of the search, and their implementations may
@@ -33,7 +33,7 @@ Type \lstinline{state} describes a point in a lazily constructed search tree: ty
 to an \emph{environment}, which contains some supplementary information (in particular, environment is needed to
 correctly allocate fresh variables), type \lstinline{subst} describes a substitution, which keeps current bindings
 for some logical variables, and, finally, type \lstinline{constraints} represents disequality constraints,
-which have to be respected. In a simplest case \lstinline{env} is just a counter for the number of next free
+which have to be respected. In a simplest case \lstinline{env} is just a counter for the number of the next free
 variable, \lstinline{subst} is a map-like structure and \lstinline{constraints} is a list of substitutions. In our
 case environment contains some extra information to make it possible to identify variables in a constant time.
 
@@ -61,7 +61,7 @@ Conjunction ``\lstinline{&&&}'' combines the results of its argument goals using
 disjunction ``\lstinline{|||}'' concatenates the results using \lstinline{mplus}, abstraction
 primitive \lstinline{call_fresh} takes an abstracted goal and applies it to a freshly created
 variable. Type $v$ in the latest case designates the type for a fresh variable, which we leave
-abstract for now. These conbinators serve as bricks for implementation of conventional
+abstract for now. These combinators serve as bricks for implementation of conventional
 \miniKanren constructions and syntax extensions (\lstinline{conde}, \lstinline{fresh} etc.)
 
 Finally, there are two primitive goal constructors:

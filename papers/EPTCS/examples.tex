@@ -5,7 +5,7 @@ In this section we present some examples of relational specification, written wi
 Besides \miniKanren combinators itself, our implementation contains two syntax extensions~--- one
 for \lstinline{fresh} construct and another for \emph{inverse-$\eta$-delay}~\cite{MicroKanren}, which is 
 necessary sometimes to delay recursive calls in order to prevent infinite looping. In addition we included a 
-small relational library of data strctures like lists, numbers, booleans etc. This library is written 
+small relational library of data strictures like lists, numbers, booleans etc. This library is written 
 completely on the user level using techniques, described in Section~\ref{sec:injection} with no utilization 
 of any unsafe features. The examples, given below, illustrate the usage of all these elements as well.
 
@@ -120,8 +120,8 @@ Having relational \lstinline{sort$^o$}, we can implement sorting for regular int
 \end{lstlisting}
 
 Here \lstinline{Stream.hd} is a function, which takes a head from a lazy stream of answers, 
-\lstinline{inj_nat_list}~--- injection from regular integer lists into logical lists of logical Pean numbers, 
-\lstinline{from_nat_list}~--- projection from lists of Peano numbers to lists of inetegers.
+\lstinline{inj_nat_list}~--- injection from regular integer lists into logical lists of logical Peano numbers, 
+\lstinline{from_nat_list}~--- projection from lists of Peano numbers to lists of integers.
 
 It is interesting, that since \lstinline{sort$^o$} is
 relational, it can be used to calculate the list of all \emph{permutations}

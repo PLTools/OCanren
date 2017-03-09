@@ -15,20 +15,20 @@ producing all permutations), etc.
 
 Many logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
 or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}} to some extent
-can be considered as relational. We have chosen miniKanren\footnote{\url{http://minikanren.org}} 
+can be considered as relational. We have chosen \miniKanren\footnote{\url{http://minikanren.org}} 
 as model language, because it was specifically designed as relational DSL, embedded in Scheme/Racket. 
 Being rather a minimalistic language, which can be implemented with just a few data structures and
-combinators, miniKanren found its way in dozens of host languages, including Scala, Haskell and Standard ML.
+combinators, \miniKanren found its way in dozens of host languages, including Scala, Haskell and Standard ML.
 
-There is a predictable glitch in implementing miniKanren for a strongly typed language. 
+There is a predictable glitch in implementing \miniKanren for a strongly typed language. 
 Designed in a metaprogramming-friendly and dynamically typed realm of Scheme/Racket, original 
-miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
-ML or Haskell. In particular, one of the capstone constructs of miniKanren~--- unification~--- has to work for 
+\miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
+ML or Haskell. In particular, one of the capstone constructs of \miniKanren~--- unification~--- has to work for 
 different data structures, which may have types, different beyond parametricity.
 
 There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
 provide unification for some concrete type, rich enough to represent any reasonable data structures.
-Some Haskell miniKanren libraries\footnote{\url{https://github.com/JaimieMurdock/HK}, \url{https://github.com/rntz/ukanren}}
+Some Haskell \miniKanren libraries\footnote{\url{https://github.com/JaimieMurdock/HK}, \url{https://github.com/rntz/ukanren}}
 as well as previous OCaml implementation\footnote{\url{https://github.com/lightyang/minikanren-ocaml}} take this approach. 
 As a result, the original implementation can be retold with all its elegance; the relational specifications, however,
 become weakly typed. Another approach is to utilize \emph{ad hoc} polymorphism and provide type-specific
@@ -41,7 +41,7 @@ it: to implement unification for generic representation of types as sum-of-produ
 functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types, for which representation
 is provided. We assume that implementing representation would require less boilerplate code to be written.
 
-As follows from this exposition, typed embedding of miniKanren in OCaml can be done with
+As follows from this exposition, typed embedding of \miniKanren in OCaml can be done with
 a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a 
 number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
 for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power with Haskell 
@@ -74,7 +74,7 @@ possible to hide the refinement of the answers phase from an end-user.
 
 The rest of the paper is organized as follows: in the next section we briefly introduce \miniKanren in
 its original form to establish some notions; we do not intend to describe the language in its full bloom (interested readers can
-refer to~\cite{TRS}). In Section~\ref{sec:goals} we describe some basic constructs behind miniKanren implementation, this time 
+refer to~\cite{TRS}). In Section~\ref{sec:goals} we describe some basic constructs behind \miniKanren implementation, this time 
 in OCaml. In Section \ref{sec:unification} we discuss polymorphic unification, and show, that unification with 
 triangular substitution respects typing. Then we present our approach to handle user-defined types by injecting them 
 into logic domain; we consider a simple approach and more elaborated and efficient tagless variant (see Section~\ref{sec:injection}). 
