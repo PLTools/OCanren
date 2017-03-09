@@ -64,7 +64,8 @@ module State :
   end
 
 (** Goal converts a state into a lazy stream of states *)
-type goal
+type 'a goal' 
+type goal = State.t Stream.t goal'
 
 (** {3 Logical values and injections} *)
 
@@ -175,7 +176,7 @@ module Fresh :
     - [run two        (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i here [qs], [rs] --- streams of all values, associated with the variable [q] and [r], respectively}[)]
     - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
  *)
-val run : (unit -> ('a -> State.t -> 'c) * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
+val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
 
 val make_defer: (unit -> goal) -> goal
 
@@ -192,6 +193,24 @@ type ('a, 'b) refiner
 
 (** Successor function *)
 val succ :
+           (unit ->
+            ('a -> 'b goal') * ('c -> 'd -> 'e) *
+            ((State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j))) ->
+           unit ->
+           ((('k, 'l) injected -> 'a) -> (('k, 'l) refiner * 'b) goal') *
+           (('m -> 'c) -> 'm * 'd -> 'e) *
+           ((State.t Stream.t ->
+             ('n, 'o) refiner * 'f -> ('n, 'o) reification_rez Stream.t * 'g) *
+            ('p * 'h -> ('p * 'i) * 'j))
+
+(*
+val succ :
+  (unit -> ('a -> 'b goal') * ('c -> 'd -> 'e) * ((State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j))) ->
+   unit -> 
+      (('k -> 'a) -> (('k, 'l) refiner * 'b) goal') * (('m -> 'c) -> 'm * 'd -> 'e) * ((State.t Stream.t -> ('n, 'o) refiner * 'f -> ('n, 'o) reification_rez Stream.t * 'g) *
+      ('p * 'h -> ('p * 'i) * 'j))
+*)
+(*
   (unit ->
    ('a -> State.t -> 'b) * ('c -> 'd -> 'e) *
    ((State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j))) ->
@@ -201,6 +220,7 @@ val succ :
   ((State.t Stream.t ->
     ('n, 'o) refiner * 'f -> ('n, 'o) reification_rez Stream.t * 'g) *
    ('p * 'h -> ('p * 'i) * 'j))
+*)
 
 (** {3 Predefined numerals (one to five)} *)
 val one : unit ->
@@ -269,15 +289,15 @@ val five : unit ->
 
 (** {3 The same numerals with conventional names} *)
 val q : unit ->
-  ((('a,'c) injected -> goal) -> State.t -> ('a, 'c) refiner * 'b) *
+  ((('a,'c) injected -> 'b goal') -> (('a, 'c) refiner * 'b) goal') *
   (('d -> 'e) -> 'd -> 'e) *
   ((State.t Stream.t ->
     ('f, 'g) refiner -> ('f, 'g) reification_rez Stream.t) *
     ('h -> 'h))
 
 val qr : unit ->
-  ((('a,'d) injected -> ('b,'e) injected -> goal) ->
-    State.t -> ('a, 'd) refiner * (('b, 'e) refiner * 'c)) *
+  ((('a,'d) injected -> ('b,'e) injected -> 'c goal') ->
+    (('a, 'd) refiner * (('b, 'e) refiner * 'c)) goal') *
     (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
     ((State.t Stream.t ->
       ('i, 'j) refiner * ('k, 'l) refiner ->
@@ -286,9 +306,8 @@ val qr : unit ->
      ('m * ('n * 'o) -> ('m * 'n) * 'o))
 
 val qrs : unit ->
-  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> goal) ->
-   State.t ->
-    ('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) *
+  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> 'd goal') ->
+    (('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) goal') *
    (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
    ((State.t Stream.t ->
      ('l, 'm) refiner * (('n, 'o) refiner * ('p, 'q) refiner) ->
@@ -298,9 +317,8 @@ val qrs : unit ->
     ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
 
 val qrst : unit ->
-  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> goal) ->
-   State.t ->
-    ('a, 'g) refiner * (('b, 'h) refiner * (('c, 'i) refiner * (('d, 'j) refiner * 'f)))) *
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> 'f goal') ->
+    (('a, 'g) refiner * (('b, 'h) refiner * (('c, 'i) refiner * (('d, 'j) refiner * 'f)))) goal') *
   (('l -> 'm -> 'n -> 'o -> 'q) ->
     'l * ('m * ('n * 'o)) -> 'q) *
    ((State.t Stream.t ->
@@ -646,3 +664,4 @@ val (!<) : ('a, 'b) injected -> ('a, 'b) List.groundi
 
 (** [nil] is a synonym for [inj Nil] *)
 val nil : unit -> (_, _) List.groundi
+

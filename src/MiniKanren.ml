@@ -136,7 +136,6 @@ let generic_show x =
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
 (* miniKanren-related stuff starts here *)
-
 type ('a, 'b) injected = 'a
 
 external lift: 'a -> ('a, 'a) injected = "%identity"
@@ -196,8 +195,8 @@ let logic = {logic with
 
 let (!!) x = inj (lift x)
 
-let inj_pair : ('a, 'c) injected -> ('b,'d) injected -> ('a * 'b, ('c*'d) logic) injected =
-  fun x y -> (x,y)
+let inj_pair : ('a, 'c) injected -> ('b,'d) injected -> ('a * 'b, ('c * 'd) logic) injected =
+  fun x y -> (x, y)
 
 external inj_int : int -> (int, int logic) injected = "%identity"
 
@@ -407,7 +406,8 @@ module State =
     let show  (env, subst, constr) = sprintf "st {%s, %s}" (Subst.show subst) (GT.show(GT.list) Subst.show constr)
   end
 
-type goal = State.t -> State.t Stream.t
+type 'a goal' = State.t -> 'a
+type goal = State.t Stream.t goal'
 
 let call_fresh f (env, subst, constr)  =
   let x, env' = Env.fresh env in
@@ -644,8 +644,7 @@ let refiner = R.refiner
 module LogicAdder :
   sig
     val zero : 'a -> 'a
-    val succ: ('a -> State.t -> 'd) ->
-         ('e -> 'a) -> State.t -> ('e, 'f) R.refiner * 'd
+    val succ: ('a -> State.t -> 'd) -> (('e, 'f) injected -> 'a) -> State.t -> ('e, 'f) R.refiner * 'd
   end = struct
     let zero f = f
 
@@ -659,18 +658,18 @@ let succ n () =
   let adder, currier, app = n () in
   (LogicAdder.succ adder, Uncurry.succ currier, ApplyLatest.succ app)
 
-let succ = !!!succ
-let one = !!!one
+let succ = (*!!!*)succ
+let one = (*!!!*)one
 let two   () = succ one   ()
 let three () = succ two   ()
 let four  () = succ three ()
 let five  () = succ four  ()
 
-let q     = !!!one
-let qr    = !!!two
-let qrs   = !!!three
-let qrst  = !!!four
-let pqrst = !!!five
+let q     = (*!!!*)one
+let qr    = (*!!!*)two
+let qrs   = (*!!!*)three
+let qrst  = (*!!!*)four
+let pqrst = (*!!!*)five
 
 let run n goalish f =
   let adder, currier, app_num = n () in
@@ -707,7 +706,7 @@ module Fmap1 (T : T1) = struct
     = fun arg_r c x ->
       if c#isVar x
       then var_of_injected_exn c x (reify arg_r)
-      else Value (T.fmap (arg_r c) x)
+      else Value (T.fmap (arg_r c)  x)
 end
 
 module Fmap2 (T : T2) = struct
@@ -719,7 +718,7 @@ module Fmap2 (T : T2) = struct
          helper -> (('a,'c) T.t, ('b,'d) T.t logic) injected -> ('b,'d) T.t logic
     = fun r1 r2 c x ->
       if c#isVar x then var_of_injected_exn c x (reify r1 r2)
-      else Value (T.fmap (r1 c) (r2 c) x)
+      else Value (T.fmap (r1 c) (r2 c)  x)
 end
 
 module Fmap3 (T : T3) = struct
@@ -728,7 +727,7 @@ module Fmap3 (T : T3) = struct
 
   let rec reify r1 r2 r3 (c: helper) x =
     if c#isVar x then var_of_injected_exn c x (reify r1 r2 r3)
-    else Value (T.fmap (r1 c) (r2 c) (r3 c) x)
+    else Value (T.fmap (r1 c) (r2 c) (r3 c)  x)
 end
 
 module Pair = struct
@@ -743,7 +742,7 @@ module ManualReifiers = struct
   let rec simple_reifier: helper -> ('a, 'a logic) injected -> 'a logic = fun c n ->
     if c#isVar n
     then var_of_injected_exn c n simple_reifier
-    else Value n
+    else Value  n
 
   let bool_reifier : helper -> (bool, bool logic) injected -> bool logic =
     simple_reifier
@@ -756,7 +755,7 @@ module ManualReifiers = struct
   let rec string_reifier: helper -> (string, string logic) injected -> string logic = fun c x ->
     if c#isVar x
     then var_of_injected_exn c x string_reifier
-    else Value x
+    else Value  x
 
   let rec pair_reifier: (helper -> ('a,'b) injected -> 'b) ->
                         (helper -> ('c,'d) injected -> 'd) ->
@@ -974,8 +973,8 @@ module Nat = struct
 end
 
 let rec inj_nat n =
-  if n <= 0 then inj O
-  else inj (S (inj_nat @@ n-1))
+  if n <= 0 then inj  O
+  else inj  (S (inj_nat @@ n-1))
 
 module List =
   struct
@@ -1191,3 +1190,4 @@ let inj_list_p xs = inj_list @@ List.map (fun (x,y) -> inj_pair x y) xs
 let rec inj_nat_list = function
 | []    -> nil()
 | x::xs -> inj_nat x % inj_nat_list xs
+

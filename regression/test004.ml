@@ -88,7 +88,7 @@ let () =
   runN  1   qr  qrh (REPR (fun q r -> mulo (s o) q r                  ));
   runN 10   qr  qrh (REPR (fun q r -> mulo (s o) q r                  ));
 
-  runN  1   qr  qrh (REPR (fun q r -> mulo q r (s o)                  ));
+  runN  1   (succ q) (*qr*)  qrh (REPR (fun q r -> mulo q r (s o)                  ));
 
   runN  1    q   qh (REPR (fun q   -> mulo (s o) (s o) q              ));
   runN  1   qr  qrh (REPR (fun q r -> mulo q r (s (s (s (s o))))      ));

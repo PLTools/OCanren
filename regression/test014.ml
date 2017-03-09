@@ -337,5 +337,5 @@ let _freeVars =
   runL   15   qr   qrh (REPR (fun q r     -> lelo q r                                         ));
   runL  (-1)   q    qh (REPR (fun q       -> lto (build_num 5) q                              ));
   runL  (-1)   q    qh (REPR (fun q       -> lto q (build_num 5)                              ));
-  runL    6 qrst qrsth (REPR (fun q r s t -> divo q r s t                                     ));
+  runL    6 (succ qrs) qrsth (REPR (fun q r s t -> divo q r s t                                     ));
   runL    5  qrs  qrsh (REPR (fun q r s   -> test27 q r s                                     ))
