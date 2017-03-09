@@ -232,15 +232,15 @@ val succ :
 (** {3 Predefined numerals (one to five)} *)
 
 val one : unit ->
-  ((('a,'c) injected -> State.t -> 'b) -> State.t -> ('a, 'c) refiner * 'b) *
+  ((('a,'c) injected -> 'b goal') -> (('a, 'c) refiner * 'b) goal') *
   (('d -> 'e) -> 'd -> 'e) *
   ((State.t Stream.t ->
     ('f, 'g) refiner -> ('f, 'g) reification_rez Stream.t) *
     ('h -> 'h))
 
 val two : unit ->
-  ((('a,'d) injected -> ('b,'e) injected -> State.t -> 'c) ->
-    State.t -> ('a, 'd) refiner * (('b, 'e) refiner * 'c)) *
+  ((('a,'d) injected -> ('b,'e) injected -> 'c goal') ->
+    (('a, 'd) refiner * (('b, 'e) refiner * 'c)) goal') *
     (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
     ((State.t Stream.t ->
       ('i, 'j) refiner * ('k, 'l) refiner ->
@@ -249,9 +249,8 @@ val two : unit ->
      ('m * ('n * 'o) -> ('m * 'n) * 'o))
 
 val three : unit ->
-  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> State.t -> 'd) ->
-   State.t ->
-    ('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) *
+  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> 'd goal') ->
+    (('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) goal') *
    (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
    ((State.t Stream.t ->
      ('l, 'm) refiner * (('n, 'o) refiner * ('p, 'q) refiner) ->
@@ -261,26 +260,24 @@ val three : unit ->
     ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
 
 val four : unit ->
-  ((('a, 'f) injected -> ('b, 'g) injected -> ('c, 'h) injected -> ('d, 'i) injected -> State.t -> 'e) ->
-   State.t ->
-   ('a, 'f) refiner *
-   (('b, 'g) refiner * (('c, 'h) refiner * (('d, 'i) refiner * 'e)))) *
-  (('j -> 'k -> 'l -> 'm -> 'n) -> 'j * ('k * ('l * 'm)) -> 'n) *
-  ((State.t Stream.t ->
-    ('o, 'p) refiner *
-    (('q, 'r) refiner * (('s, 't) refiner * ('u, 'v) refiner)) ->
-    ('o, 'p) reification_rez Stream.t *
-    (('q, 'r) reification_rez Stream.t *
-     (('s, 't) reification_rez Stream.t *
-      ('u, 'v) reification_rez Stream.t))) *
-   ('w * ('x * ('y * ('z * 'a1))) -> ('w * ('x * ('y * 'z))) * 'a1))
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> 'f goal') ->
+    (('a, 'g) refiner * (('b, 'h) refiner * (('c, 'i) refiner * (('d, 'j) refiner * 'f)))) goal') *
+  (('l -> 'm -> 'n -> 'o -> 'q) ->
+    'l * ('m * ('n * 'o)) -> 'q) *
+   ((State.t Stream.t ->
+     ('r, 's) refiner * (('t, 'u) refiner * (('v, 'w) refiner * ('x, 'y) refiner)) ->
+     ('r, 's) reification_rez Stream.t *
+     (('t, 'u) reification_rez Stream.t *
+      (('v, 'w) reification_rez Stream.t *
+       (('x, 'y) reification_rez Stream.t)))) *
+    ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) ->
+     ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1))
 
 val five : unit ->
-  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> State.t -> 'f) ->
-   State.t ->
-   ('a, 'g) refiner *
-   (('b, 'h) refiner *
-    (('c, 'i) refiner * (('d, 'j) refiner * (('e, 'k) refiner * 'f))))) *
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> 'f goal') ->
+   (('a, 'g) refiner *
+    (('b, 'h) refiner *
+     (('c, 'i) refiner * (('d, 'j) refiner * (('e, 'k) refiner * 'f))))) goal') *
   (('l -> 'm -> 'n -> 'o -> 'p -> 'q) ->
    'l * ('m * ('n * ('o * 'p))) -> 'q) *
    ((State.t Stream.t ->
