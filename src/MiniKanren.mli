@@ -144,7 +144,7 @@ module Fresh :
   sig
     (** [succ num f] increments the number of free logic variables in
         a goal; can be used to get rid of ``fresh'' syntax extension *)
-    val succ : ('a -> State.t -> 'b) -> ((_, _) injected -> 'a) -> State.t -> 'b
+    val succ : ('a -> 'b goal') -> ((_, _) injected -> 'a) -> 'b goal'
 
     (** Zero logic parameters *)
     val zero : 'a -> 'a
