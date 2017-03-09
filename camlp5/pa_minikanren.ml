@@ -3,15 +3,15 @@
  * miniKanren constructs.
  * Copyright (C) 2015
  * Dmitri Boulytchev, St.Petersburg State University
- * 
+ *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
  * License version 2, as published by the Free Software Foundation.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * 
+ *
  * See the GNU Library General Public License version 2 for more details
  * (enclosed in the file COPYING).
  *)
@@ -38,22 +38,22 @@ open Pcaml
 open Printf
 
 EXTEND
-  GLOBAL: expr; 
+  GLOBAL: expr;
 
   expr: LEVEL "expr1" [
     [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
-      let rec fold f = function 
+      let rec fold f = function
       | [h]  -> h
       | h::t -> f h (fold f t)
       in
       let body = fold (fun l r -> <:expr< conj $l$ $r$ >>) clauses in
-      List.fold_right (fun x e -> 
-        let p = <:patt< $lid:x$ >> in 
+      List.fold_right (fun x e ->
+        let p = <:patt< $lid:x$ >> in
         <:expr< call_fresh (fun $p$ -> $e$) >>
       ) vars body
     ] |
     [ "defer"; subj=expr LEVEL "." ->
-      <:expr< (fun __st__ -> MiniKanren.Stream.from_fun (fun () -> $subj$ __st__)) >>
+      <:expr< delay (fun () -> $subj$) >>
     ]
   ];
 

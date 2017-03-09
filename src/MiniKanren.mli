@@ -64,7 +64,7 @@ module State :
   end
 
 (** Goal converts a state into a lazy stream of states *)
-type 'a goal' 
+type 'a goal'
 type goal = State.t Stream.t goal'
 
 (** {3 Logical values and injections} *)
@@ -178,7 +178,14 @@ module Fresh :
  *)
 val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
 
-val make_defer: (unit -> goal) -> goal
+(**
+  The primitive [delay] helps to construct recursive goals that depend on themselves. For example,
+  we can't write [let fives q = (q===!!5) ||| (fives q)] because generation of this goal leads to
+  infinite reciursion. The right way to implement this is [let fives q = (q===!!5) ||| delay (fun () -> fives q)]
+
+  See also syntax extension which simplifies the syntax.
+*)
+val delay: (unit -> goal) -> goal
 
 (** Reification helper *)
 type helper
@@ -206,7 +213,7 @@ val succ :
 (*
 val succ :
   (unit -> ('a -> 'b goal') * ('c -> 'd -> 'e) * ((State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j))) ->
-   unit -> 
+   unit ->
       (('k -> 'a) -> (('k, 'l) refiner * 'b) goal') * (('m -> 'c) -> 'm * 'd -> 'e) * ((State.t Stream.t -> ('n, 'o) refiner * 'f -> ('n, 'o) reification_rez Stream.t * 'g) *
       ('p * 'h -> ('p * 'i) * 'j))
 *)
@@ -664,4 +671,3 @@ val (!<) : ('a, 'b) injected -> ('a, 'b) List.groundi
 
 (** [nil] is a synonym for [inj Nil] *)
 val nil : unit -> (_, _) List.groundi
-

@@ -21,7 +21,7 @@ let a_and_b' b =
 
 let rec fives x =
   (x === !!5) |||
-  make_defer (fun () -> fives x)
+  defer (fives x)
 
 let rec appendo a b ab =
   ((a === nil ()) &&& (b === ab)) |||
