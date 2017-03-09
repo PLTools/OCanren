@@ -33,8 +33,7 @@ plugin:
 celan: clean
 
 clean: clean_tests
-	$(RM) -r _build *.log  *.native *.byte
-	#$(MAKE) -C regression clean
+	$(RM) -r _build *.log  *.native *.byte *.docdir
 
 ######################## Tests related stuff  ##########################
 REGRES_CASES := 000 001 004 005 006 007 009 010 011 013 014 015runaway 016sorto
@@ -133,7 +132,7 @@ $(BUNDLEDIR):
 	@$(MKDIR) $@
 
 bundle: rmbundledir $(BUNDLEDIR)
-	$(MAKE) -f Makefile.ob really_make_bundle
+	$(MAKE) really_make_bundle
 
 really_make_bundle: $(MAKE_BUNDLE_TARGETS)
 
