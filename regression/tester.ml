@@ -1,12 +1,14 @@
+(** {1 Useful functions to test running relational queries } *)
+
 open Printf
 open MiniKanren
+
+(** {3 Helper functions to provide names for top-level variables } *)
 
 let qh    = fun qs          -> ["q", qs]
 let qrh   = fun qs rs       -> ["q", qs; "r", rs]
 let qrsh  = fun qs rs ss    -> ["q", qs; "r", rs; "s", ss]
 let qrsth = fun qs rs ss ts -> ["q", qs; "r", rs; "s", ss; "t", ts]
-
-let r x = succ q x
 
 let make_title n msg =
   printf "%s, %s answer%s {\n%!"
@@ -26,11 +28,10 @@ let run_gen onOK onFree n num handler (repr, goal) =
         (* TODO: invent retrieve_hd function *)
         match Stream.retrieve ~n:1 st with
         | [],_ -> raise NoMoreAnswers
-        | [Final x],tl ->
-          onOK i name x;
-          (name,tl)
-        | [HasFreeVars func],tl ->
-          onFree i name func;
+        | [rr],tl ->
+          if rr#has_free
+          then onFree i name (fun r -> rr#as_logic r ~inj:(fun _ -> assert false))
+          else onOK i name rr#as_plain_exn;
           (name,tl)
         | _ -> assert false
       ) pairs
@@ -41,11 +42,19 @@ let run_gen onOK onFree n num handler (repr, goal) =
   let () = try loop (MiniKanren.run num goal handler) n with NoMoreAnswers -> () in
   printf "}\n%!"
 
-(* Without free vars and reification *)
+(**
+  [run_exn printer n name_helper goal] prints answers supposing there are no free variables there
+  (i.e. reification is not required)
+*)
 let run_exn printer = run_gen
   (fun i name x -> printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printer x) )
   (fun _ _ _ -> failwith "Free logic variables in the answer")
 
+(**
+  [runR reifier print_plain print_injected n name_helper goal] prints answers both with free varibles and
+  without them. In the first cases it uses [print_plain] as printer fuction. In the latter case it does
+  reification using [reifier] and prints the result wit [print_ibjected]
+*)
 let runR reifier printerNoFree printerR = run_gen
   (fun i name x -> printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printerNoFree x) )
   (fun i name func ->

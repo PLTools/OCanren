@@ -590,29 +590,37 @@ module ExtractDeepest =
 
 type helper = < isVar : 'a . 'a -> bool >
 
-type ('a, 'b) reification_rez =
-| Final of 'a
-| HasFreeVars of ((helper -> ('a, 'b) injected -> 'b) -> 'b)
+exception HasFreeVariables
+
+(* TODO: rename reification_rez to good name *)
+class type ['a,'b] reification_rez = object
+  method has_free: bool
+  method as_plain_exn: 'a
+  method as_logic: (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
+end
+
+let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) reification_rez = fun x st ->
+  let ans = refine st x in
+  let has_free = has_free_vars (Env.is_var @@ State.env st) (Obj.repr ans) in
+  let c: helper = !!!(object method isVar x = Env.is_var (State.env st) (Obj.repr x) end) in
+  object(self)
+    method has_free = has_free
+    method as_plain_exn = if self#has_free then raise HasFreeVariables else !!!ans
+    method as_logic refiner ~inj =
+      if self#has_free then refiner c ans else inj ans
+  end
 
 module R : sig
   type ('a, 'b) refiner
 
-  val refiner :  ('a,'b) injected -> ('a,'b) refiner
+  val refiner :  ('a, 'b) injected -> ('a, 'b) refiner
 
   val apply_refiner : State.t Stream.t -> ('a, 'b) refiner -> ('a, 'b) reification_rez Stream.t
 end = struct
   type ('a, 'b) refiner = State.t Stream.t -> ('a, 'b) reification_rez Stream.t
-  let apply_refiner = fun st r -> r st
 
-  let refiner : ('a,'b) injected -> ('a,'b) refiner = fun x ->
-    Stream.map (fun ((e,_,_) as st) ->
-      let ans = refine st !!!x in
-      if has_free_vars (Env.is_var e) (Obj.repr ans)
-      then
-        let c: helper = !!!(object method isVar x = Env.is_var e (Obj.repr x) end) in
-        HasFreeVars (fun r -> r c !!!ans)
-      else Final !!!ans
-    )
+  let refiner : ('a,'b) injected -> ('a,'b) refiner = fun x -> Stream.map (make_rr x)
+  let apply_refiner = fun st r -> r st
 end
 
 module ApplyTuple =

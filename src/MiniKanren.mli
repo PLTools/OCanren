@@ -95,7 +95,7 @@ val lift : 'a -> ('a, 'a) injected
 (** [inj x] injects [x] into logical [x] *)
 val inj : ('a, 'b) injected -> ('a, 'b logic) injected
 
-(** A synonym for [inj @@ lift] (for non-parametric types) *)
+(** A synonym for [fun x -> inj @@ lift x] (for non-parametric types) *)
 val (!!) : 'a -> ('a, 'a logic) injected
 
 (** {2 miniKanren basic primitives} *)
@@ -104,7 +104,7 @@ val (!!) : 'a -> ('a, 'a logic) injected
     parameter *)
 val call_fresh : (('a, 'b) injected -> goal) -> goal
 
-(** [x === y] creates a goal, which performs a unifications of [x] and [y] *)
+(** [x === y] creates a goal, which performs a unification of [x] and [y] *)
 val (===) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
 (** [x =/= y] creates a goal, which introduces a disequality constraint for [x] and [y] *)
@@ -190,10 +190,29 @@ val delay: (unit -> goal) -> goal
 (** Reification helper *)
 type helper
 
+(**
+  The exception is raised when we try to extract plain term from the answer but only terms with free
+  variables are possible.
+*)
+exception HasFreeVariables
+
 (** Reification result *)
-type ('a, 'b) reification_rez =
-| Final       of 'a
-| HasFreeVars of ((helper -> ('a, 'b) injected -> 'b) -> 'b)
+class type ['a,'b] reification_rez = object
+  (** Returns [true] if the term has any free logic variable inside *)
+  method has_free: bool
+
+  (**
+    Get the answer as plain term. Raises exception [HasFreeVariables] when only terms with free variables
+    are available.
+  *)
+  method as_plain_exn: 'a
+
+  (**
+    Get the answer as non-flat value. If the actual answer is a flat value it will be injected using
+    the function provided.
+   *)
+  method as_logic: (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
+end
 
 (** A type to refine a stream of states into the stream of answers (w.r.t. some known logic variable *)
 type ('a, 'b) refiner
@@ -210,26 +229,8 @@ val succ :
              ('n, 'o) refiner * 'f -> ('n, 'o) reification_rez Stream.t * 'g) *
             ('p * 'h -> ('p * 'i) * 'j))
 
-(*
-val succ :
-  (unit -> ('a -> 'b goal') * ('c -> 'd -> 'e) * ((State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j))) ->
-   unit ->
-      (('k -> 'a) -> (('k, 'l) refiner * 'b) goal') * (('m -> 'c) -> 'm * 'd -> 'e) * ((State.t Stream.t -> ('n, 'o) refiner * 'f -> ('n, 'o) reification_rez Stream.t * 'g) *
-      ('p * 'h -> ('p * 'i) * 'j))
-*)
-(*
-  (unit ->
-   ('a -> State.t -> 'b) * ('c -> 'd -> 'e) *
-   ((State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j))) ->
-  unit ->
-  (('k -> 'a) -> State.t -> ('k, 'l) refiner * 'b) *
-  (('m -> 'c) -> 'm * 'd -> 'e) *
-  ((State.t Stream.t ->
-    ('n, 'o) refiner * 'f -> ('n, 'o) reification_rez Stream.t * 'g) *
-   ('p * 'h -> ('p * 'i) * 'j))
-*)
-
 (** {3 Predefined numerals (one to five)} *)
+
 val one : unit ->
   ((('a,'c) injected -> State.t -> 'b) -> State.t -> ('a, 'c) refiner * 'b) *
   (('d -> 'e) -> 'd -> 'e) *
