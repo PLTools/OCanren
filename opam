@@ -1,18 +1,18 @@
 opam-version: "1.2"
 
 authors: [ "https://github.com/dboulytchev" "https://github.com/Kakadu" ]
-name: "miniKanren-typed"
+name: "ocanren"
 version: "0.0.1"
 maintainer: "kakadu.hafanana@gmail.com"
 homepage:    "https://github.com/dboulytchev/ocanren"
 bug-reports: "https://github.com/dboulytchev/ocanren/issues"
 dev-repo:    "https://github.com/dboulytchev/ocanren.git"
 
-build: [make "-f" "Makefile.ob"]
-build-test: [make "-f" "Makefile.ob" "test"]
+build: [make]
+build-test: [make "test"]
 
-install: [make "-f" "Makefile.ob" "PREFIX=%{prefix}%" "install"]
-remove:  [make "-f" "Makefile.ob" "PREFIX=%{prefix}%" "uninstall"]
+install: [make "PREFIX=%{prefix}%" "install"]
+remove:  [make "PREFIX=%{prefix}%" "uninstall"]
 
 depends: [
   "ocamlfind" {build}
@@ -20,4 +20,3 @@ depends: [
   "logger"
   "GT"
 ]
-
