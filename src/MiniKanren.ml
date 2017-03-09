@@ -676,7 +676,7 @@ let run n goalish f =
   let run f = f (State.empty ()) in
   run (adder goalish) |> ApplyLatest.apply app_num |> (currier f)
 
-let make_defer : (unit -> goal) -> goal = fun g ->
+let delay : (unit -> goal) -> goal = fun g ->
   fun st -> Stream.from_fun (fun () -> g () st)
 
 (* ************************************************************************** *)
@@ -1190,4 +1190,3 @@ let inj_list_p xs = inj_list @@ List.map (fun (x,y) -> inj_pair x y) xs
 let rec inj_nat_list = function
 | []    -> nil()
 | x::xs -> inj_nat x % inj_nat_list xs
-
