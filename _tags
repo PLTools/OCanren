@@ -16,7 +16,7 @@ true: short_paths
 #<regression/test004.ml> or <regression/test009.ml> or <regression/test005.ml> or <regression/test000.ml> : use_pa_minkanren
 
 <regression/test*.ml> : syntax(camlp5o), package(logger.syntax)
-<regression/test*.ml> : use_pa_minikanren, package(GT.syntax.all)
+<regression/test0*.ml> : use_pa_minikanren, package(GT.syntax.all)
 
 ####################################################################
 # JSOO toplevel related stuff
