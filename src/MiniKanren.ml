@@ -700,6 +700,18 @@ module type T3 = sig
   type ('a, 'b, 'c) t
   val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
 end
+module type T4 = sig
+  type ('a, 'b, 'c, 'd) t
+  val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
+end
+module type T5 = sig
+  type ('a, 'b, 'c, 'd, 'e) t
+  val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
+end
+module type T6 = sig
+  type ('a, 'b, 'c, 'd, 'e, 'f) t
+  val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
+end
 
 let var_of_injected_exn : helper -> ('a,'b) injected -> (helper -> ('a,'b) injected -> 'b) -> 'b = fun c x r ->
   if c#isVar x
@@ -714,7 +726,7 @@ module Fmap1 (T : T1) = struct
     = fun arg_r c x ->
       if c#isVar x
       then var_of_injected_exn c x (reify arg_r)
-      else Value (T.fmap (arg_r c)  x)
+      else Value (T.fmap (arg_r c) x)
 end
 
 module Fmap2 (T : T2) = struct
@@ -726,16 +738,46 @@ module Fmap2 (T : T2) = struct
          helper -> (('a,'c) T.t, ('b,'d) T.t logic) injected -> ('b,'d) T.t logic
     = fun r1 r2 c x ->
       if c#isVar x then var_of_injected_exn c x (reify r1 r2)
-      else Value (T.fmap (r1 c) (r2 c)  x)
+      else Value (T.fmap (r1 c) (r2 c) x)
 end
 
 module Fmap3 (T : T3) = struct
   type ('a, 'b, 'c) t = ('a, 'b, 'c) T.t
-  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) injected = "%identity"
+  external distrib : (('a, 'b) injected, ('c, 'd) injected, ('e, 'f) injected) t -> (('a, 'c, 'e) t, ('b, 'd, 'f) t) injected = "%identity"
 
   let rec reify r1 r2 r3 (c: helper) x =
     if c#isVar x then var_of_injected_exn c x (reify r1 r2 r3)
-    else Value (T.fmap (r1 c) (r2 c) (r3 c)  x)
+    else Value (T.fmap (r1 c) (r2 c) (r3 c) x)
+end
+
+module Fmap4 (T : T4) = struct
+  type ('a, 'b, 'c, 'd) t = ('a, 'b, 'c, 'd) T.t
+  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) t ->
+                     (('a, 'c, 'e, 'g) t, ('b, 'd, 'f, 'h) t) injected = "%identity"
+
+  let rec reify r1 r2 r3 r4 (c: helper) x =
+    if c#isVar x then var_of_injected_exn c x (reify r1 r2 r3 r4)
+    else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) x)
+end
+
+module Fmap5 (T : T5) = struct
+  type ('a, 'b, 'c, 'd, 'e) t = ('a, 'b, 'c, 'd, 'e) T.t
+  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) t ->
+                     (('a, 'c, 'e, 'g, 'i) t, ('b, 'd, 'f, 'h, 'j) t) injected = "%identity"
+
+  let rec reify r1 r2 r3 r4 r5 (c: helper) x =
+    if c#isVar x then var_of_injected_exn c x (reify r1 r2 r3 r4 r5)
+    else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) x)
+end
+
+module Fmap6 (T : T6) = struct
+  type ('a, 'b, 'c, 'd, 'e, 'f) t = ('a, 'b, 'c, 'd, 'e, 'f) T.t
+  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) t ->
+                     (('a, 'c, 'e, 'g, 'i, 'k) t, ('b, 'd, 'f, 'h, 'j, 'l) t) injected = "%identity"
+
+  let rec reify r1 r2 r3 r4 r5 r6 (c: helper) x =
+    if c#isVar x then var_of_injected_exn c x (reify r1 r2 r3 r4 r5 r6)
+    else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) (r6 c) x)
 end
 
 module Pair = struct
