@@ -29,9 +29,9 @@ let run_gen onOK onFree n num handler (repr, goal) =
         match Stream.retrieve ~n:1 st with
         | [],_ -> raise NoMoreAnswers
         | [rr],tl ->
-          if rr#has_free
-          then onFree i name (fun r -> rr#as_logic r ~inj:(fun _ -> assert false))
-          else onOK i name rr#as_plain_exn;
+          if rr#is_open
+          then onFree i name (fun r -> rr#refine r ~inj:(fun _ -> assert false))
+          else onOK i name rr#prj;
           (name,tl)
         | _ -> assert false
       ) pairs
