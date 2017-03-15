@@ -15,7 +15,7 @@ true: short_paths
 <regression/test0*.*>: package(GT,GT.syntax.all), syntax(camlp5o)
 #<regression/test004.ml> or <regression/test009.ml> or <regression/test005.ml> or <regression/test000.ml> : use_pa_minkanren
 #<regression/test004.*>:
-<regression/test016*.*> or <regression/test015*.*> or <regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test010.*> or <regression/test009.*> or <regression/test011.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test001.*> or <regression/test000.*>: syntax(camlp5o), package(logger.syntax)
+<regression/test017*> or <regression/test016*.*> or <regression/test015*.*> or <regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test010.*> or <regression/test009.*> or <regression/test011.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test001.*> or <regression/test000.*>: syntax(camlp5o), package(logger.syntax)
 <regression/test015*.*> or <regression/test014.*> or <regression/test013.*> or <regression/test012.*> or <regression/test011.*> or <regression/test010.*> or <regression/test009.*> or <regression/test007.*> or <regression/test006.*> or <regression/test005.*> or <regression/test004.*> or <regression/test003.*>: use_pa_minikanren, package(GT.syntax.all)
 
 ####################################################################

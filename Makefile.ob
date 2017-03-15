@@ -37,7 +37,8 @@ clean: clean_tests
 	#$(MAKE) -C regression clean
 
 ######################## Tests related stuff  ##########################
-REGRES_CASES := 000 001 004 005 006 007 009 010 011 013 014 015runaway 016sorto
+REGRES_CASES := 000 001 004 005 006 007 009 010 011 013 014 015runaway 016sorto \
+	017condeorder
 
 define TESTRULES
 BYTE_TEST_EXECUTABLES += regression/test$(1).byte
@@ -92,10 +93,10 @@ test: tests
 
 ######################## Installation related stuff ##########################
 INSTALL_TARGETS=META \
-	$(wildcard _build/regression/tester.cmi) \
-	$(wildcard _build/regression/tester.cmo) \
-	$(wildcard _build/regression/tester.cmx) \
-	$(wildcard _build/regression/tester.o) \
+	_build/regression/tester.cmi \
+	_build/regression/tester.cmo \
+	_build/regression/tester.cmx \
+	_build/regression/tester.o \
 	$(wildcard _build/src/*.cmi) \
 	_build/src/MiniKanren.cmx \
 	_build/src/MiniKanren.cma \
@@ -136,6 +137,7 @@ bundle: rmbundledir $(BUNDLEDIR)
 	$(MAKE) -f Makefile.ob really_make_bundle
 
 really_make_bundle: $(MAKE_BUNDLE_TARGETS)
+	$(MAKE) $(MAKE_BUNDLE_TARGETS)
 
 install: bundle
 	ocamlfind install ocanren $(BUNDLEDIR)/*
