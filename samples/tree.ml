@@ -78,20 +78,13 @@ let rec inserto a t t' = conde [
 (* Top-level wrapper for insertion --- takes and returns non-logic data *)
 let insert : int -> inttree -> inttree = fun a t ->
   run q (fun q  -> inserto (inj_nat a) (inj_tree t) q)
-        (fun qs -> match Stream.hd qs with
-          | Final x -> prj_tree x
-          | HasFreeVars _ -> assert false
-          )
+        (fun qs -> prj_tree (Stream.hd qs)#prj)
 
 (* Top-level wrapper for "inverse" insertion --- returns an integer, which
    has to be inserted to convert t into t' *)
 let insert' t t' =
   run q (fun q  -> inserto q (inj_tree t) (inj_tree t'))
-        (fun qs ->
-          match Stream.hd qs with
-          | Final nat -> Nat.to_int nat
-          | HasFreeVars _ -> assert false
-          )
+        (fun qs -> Nat.prj_ground (Stream.hd qs)#prj)
 
 (* Entry point *)
 let _ =

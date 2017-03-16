@@ -955,6 +955,10 @@ module Nat = struct
 
     let rec of_int n = if n <= 0 then O else S (of_int (n-1))
     let rec to_int   = function O -> 0 | S n -> 1 + to_int n
+    let prj_ground   = to_int
+
+    let rec inj_ground: ground -> logic = fun n ->
+      Value (GT.(gmap lnat) inj_ground n)
 
     let o = inj@@lift O
     let s x = inj@@lift (S x)
@@ -1010,11 +1014,12 @@ module Nat = struct
     let (>) x y = gto x y Bool.true_
     let (<) x y = lto x y Bool.true_
 
-    let show_ground:  ground  -> string = GT.show(ground)
-end
+    let show_ground: ground -> string = GT.show(ground)
+
+  end
 
 let rec inj_nat n =
-  if n <= 0 then inj  O
+  if n <= 0 then inj O
   else inj  (S (inj_nat @@ n-1))
 
 module List =
@@ -1105,6 +1110,13 @@ module List =
               l
         end
     }
+
+    let rec inj_ground : ('a -> 'b) -> 'a ground -> 'b logic = fun f xs ->
+      Value (GT.(gmap llist) f (inj_ground f) xs)
+
+    let rec prj_ground : ('a -> 'b) -> 'a ground -> 'b list = fun f -> function
+    | Nil -> []
+    | Cons (x,xs) -> (f x)::(prj_ground f xs)
 
     type ('a,'b) groundi = ('a ground, 'b logic) injected
 
