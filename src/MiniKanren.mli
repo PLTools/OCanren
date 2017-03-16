@@ -563,6 +563,12 @@ module Nat :
     (** [to_int g] converts ground [n] into integer *)
     val to_int : ground -> int
 
+    (** Inject flat ground nat to logic nat *)
+    val inj_ground: ground -> logic
+
+    (** Project ground Peano number to plain int *)
+    val prj_ground : ground -> int
+
     (** A type synonym for injected nat *)
     type groundi = (ground, logic) injected
 
@@ -639,6 +645,12 @@ module List :
           show    : ('a -> string) -> 'a logic -> GT.string  >)
         GT.t
 
+    (** Inject plain ground list to logic list *)
+    val inj_ground : ('a -> 'b) -> 'a ground -> 'b logic
+
+    (** Project ground lists to normal OCaml lists *)
+    val prj_ground : ('a -> 'b) -> 'a ground -> 'b list
+
     (** A synonym for injected list *)
     type ('a,'b) groundi = ('a ground, 'b logic) injected
 
@@ -693,6 +705,7 @@ module List :
 
     (** Alias for [cdro] *)
     val tlo   : ('a, 'b) groundi -> ('a, 'b) groundi -> goal
+
   end
 
 (** [inj_list l] is a deforested synonym for injection *)
