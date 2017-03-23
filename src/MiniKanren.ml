@@ -192,6 +192,10 @@ let (!!) x = inj (lift x)
 let inj_pair : ('a, 'c) injected -> ('b,'d) injected -> ('a * 'b, ('c * 'd) logic) injected =
   fun x y -> (x, y)
 
+let inj_triple : ('a, 'd) injected -> ('b,'e) injected -> ('c,'f) injected
+                 -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected =
+  fun x y z -> (x, y, z)
+
 external inj_int : int -> (int, int logic) injected = "%identity"
 
 exception Not_a_value
@@ -1051,8 +1055,6 @@ module List =
       if c#isVar x then var_of_injected_exn c x (reify arg_r)
       else F.reify arg_r (reify arg_r) c x
 
-    let rec of_list = function [] -> nil () | x::xs -> cons x (of_list xs)
-
     let ground = {
       GT.gcata = ();
       GT.plugins =
@@ -1128,6 +1130,12 @@ module List =
           GT.show(ground) fa (Obj.magic l : 'a ground)
         end
       }
+
+    let rec of_list = function [] -> Nil | x::xs -> Cons (x, (of_list xs))
+
+    let inj' = inj
+
+    let rec inj fa x = inj' @@ F.distrib @@ X.fmap (fa) (inj fa) x
 
     let (%): ('a,'b) injected -> ('a,'b) groundi -> ('a,'b) groundi = cons
     let (%<): ('a,'b) injected -> ('a,'b) injected -> ('a,'b) groundi = fun x y -> cons x @@ cons y @@ nil ()

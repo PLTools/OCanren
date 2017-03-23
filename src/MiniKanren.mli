@@ -49,6 +49,8 @@ module Stream :
 
     (** [iter f s] iterates function [f] over the stream [s] *)
     val iter : ('a -> unit) -> 'a t -> unit
+
+    val zip : 'a t -> 'b t -> ('a * 'b) t
   end
 
 (** {3 States and goals} *)
@@ -572,6 +574,9 @@ module Nat :
     (** A type synonym for injected nat *)
     type groundi = (ground, logic) injected
 
+    val o : groundi
+    val s : groundi -> groundi
+
     (** Relational addition *)
     val addo  : groundi -> groundi -> groundi -> goal
 
@@ -630,9 +635,6 @@ module List :
          show    : ('a -> string) -> 'a ground -> string >)
       GT.t
 
-    (** [of_list l] makes a ground list from a regular one *)
-    val of_list : ('a, 'b) injected list -> ('a ground, 'b logic) injected
-
     (** GT-compatible typeinfo for ['a logic] *)
     val logic :
       (unit,
@@ -645,14 +647,21 @@ module List :
           show    : ('a -> string) -> 'a logic -> GT.string  >)
         GT.t
 
+    (** A synonym for injected list *)
+    type ('a,'b) groundi = ('a ground, 'b logic) injected
+
     (** Inject plain ground list to logic list *)
     val inj_ground : ('a -> 'b) -> 'a ground -> 'b logic
 
     (** Project ground lists to normal OCaml lists *)
     val prj_ground : ('a -> 'b) -> 'a ground -> 'b list
 
-    (** A synonym for injected list *)
-    type ('a,'b) groundi = ('a ground, 'b logic) injected
+    val of_list : 'a list -> 'a ground
+
+    val inj : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
+
+    (** [of_list l] makes a ground list from a regular one *)
+    (* val of_list : ('a, 'b) injected list -> ('a ground, 'b logic) injected *)
 
     (** Reifier *)
     val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
@@ -689,7 +698,7 @@ module List :
     val reverso : ('a, 'b) groundi -> ('a, 'b) groundi -> goal
 
     (** Relational occurrence check (a shortcut) *)
-    val membero : ('a, 'b) groundi  -> ('a, 'b logic) injected  -> goal
+    val membero : ('a, 'b) groundi  -> ('a, 'b) injected  -> goal
 
     (** Relational check for empty list *)
     val nullo : _ groundi -> goal
@@ -712,6 +721,7 @@ module List :
 val inj_list : ('a, 'b) injected list -> ('a, 'b) List.groundi
 
 val inj_pair   : ('a, 'b) injected -> ('c, 'd) injected -> ('a * 'c, ('b * 'd) logic) injected
+val inj_triple : ('a, 'd) injected -> ('b,'e) injected -> ('c,'f) injected -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected
 val inj_list_p : (('a, 'b) injected * ('c, 'd) injected) list -> ('a * 'c, ('b * 'd) logic) List.groundi
 val inj_int    : int -> (int, int logic) injected
 
