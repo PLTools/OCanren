@@ -393,7 +393,7 @@ module Fmap3 (T : T3) :
                 helper -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
   end
 
-  module Fmap4 (T : T4) :
+module Fmap4 (T : T4) :
   sig
     val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
                        (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected
@@ -403,7 +403,7 @@ module Fmap3 (T : T3) :
                 helper -> (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t logic as 'r) injected -> 'r
   end
 
-  module Fmap5 (T : T5) :
+module Fmap5 (T : T5) :
   sig
     val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
                        (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected
@@ -413,7 +413,7 @@ module Fmap3 (T : T3) :
                 helper -> (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t logic as 'r) injected -> 'r
   end
 
-  module Fmap6 (T : T6) :
+module Fmap6 (T : T6) :
   sig
     val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) T.t ->
                        (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected
@@ -562,20 +562,17 @@ module Nat :
     (** [of_int n] converts integer [n] into [ground]; negative integers become [O] *)
     val of_int : int -> ground
 
-    (** [to_int g] converts ground [n] into integer *)
+    (** [to_int g] converts ground [g] into integer *)
     val to_int : ground -> int
 
     (** Inject flat ground nat to logic nat *)
-    val inj_ground: ground -> logic
-
-    (** Project ground Peano number to plain int *)
-    val prj_ground : ground -> int
+    val to_logic: ground -> logic
 
     (** A type synonym for injected nat *)
     type groundi = (ground, logic) injected
 
-    val o : groundi
-    val s : groundi -> groundi
+    val zero : groundi
+    val succ : groundi -> groundi
 
     (** Relational addition *)
     val addo  : groundi -> groundi -> groundi -> goal
@@ -650,18 +647,14 @@ module List :
     (** A synonym for injected list *)
     type ('a,'b) groundi = ('a ground, 'b logic) injected
 
-    (** Inject plain ground list to logic list *)
-    val inj_ground : ('a -> 'b) -> 'a ground -> 'b logic
-
-    (** Project ground lists to normal OCaml lists *)
-    val prj_ground : ('a -> 'b) -> 'a ground -> 'b list
-
+    (** [of_list l] converts regular OCaml list [l] into isomorphic OCanren [ground] list *)
     val of_list : 'a list -> 'a ground
 
-    val inj : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
+    (** [to_list g] converts OCanren list [g] into iregular OCaml list *)
+    val to_list : 'a ground -> 'a list
 
-    (** [of_list l] makes a ground list from a regular one *)
-    (* val of_list : ('a, 'b) injected list -> ('a ground, 'b logic) injected *)
+    (** Inject plain ground list to logic list *)
+    val to_logic : ('a -> 'b) -> 'a ground -> 'b logic
 
     (** Reifier *)
     val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
@@ -717,13 +710,11 @@ module List :
 
   end
 
-(** [inj_list l] is a deforested synonym for injection *)
-val inj_list : ('a, 'b) injected list -> ('a, 'b) List.groundi
+(** [inj_list inj_a l] is a deforested synonym for injection *)
+val inj_list : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
 
 val inj_pair   : ('a, 'b) injected -> ('c, 'd) injected -> ('a * 'c, ('b * 'd) logic) injected
-val inj_triple : ('a, 'd) injected -> ('b,'e) injected -> ('c,'f) injected -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected
-val inj_list_p : (('a, 'b) injected * ('c, 'd) injected) list -> ('a * 'c, ('b * 'd) logic) List.groundi
-val inj_int    : int -> (int, int logic) injected
+val inj_triple : ('a, 'd) injected -> ('b, 'e) injected -> ('c,'f) injected -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected
 
 (** [inj_nat_list l] is a deforsted synonym for injection *)
 val inj_nat_list : int list -> (Nat.ground, Nat.logic) List.groundi
