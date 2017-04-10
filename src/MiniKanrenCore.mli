@@ -65,7 +65,7 @@ module State :
   end
 
 (** Goal converts a state into a lazy stream of states *)
-type 'a goal'
+type 'a goal' = State.t -> 'a
 type goal = State.t Stream.internal goal'
 
 (** {3 Logic values} *)
@@ -337,7 +337,44 @@ val qrst : unit ->
    (('t, 'u) reified Stream.t *
     (('v, 'w) reified Stream.t *
      (('x, 'y) reified Stream.t)))) *
-   ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) -> ('b1 * ('c1 * ('d1 * 'e1))) * 'f1)
+   ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) -> ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1)
+
+module Tabling :
+  sig
+    val succ : (unit ->
+                (('a -> 'b) -> 'c) * ('d -> 'e -> 'f) * ('h -> 'i * 'j)) ->
+               unit ->
+               (('k * 'a -> 'b) -> 'k -> 'c) *
+               (('m -> 'd) -> 'm * 'e -> 'f) *
+               ('p * 'h -> ('p * 'i) * 'j)
+
+    val one : unit ->
+      (('a * 'b -> 'c) -> 'a -> 'b -> 'c) *
+      (('d -> 'e) -> 'd -> 'e) *
+      ('h -> 'h)
+
+    val two : unit ->
+      (('a * ('b * 'c) -> 'd) -> 'a -> 'b -> 'c -> 'd) *
+      (('e -> 'f -> 'g) -> 'e * 'f -> 'g) *
+      ('m * ('n * 'o) -> ('m * 'n) * 'o)
+
+    val three : unit ->
+      (('a * ('b * ('c * 'd)) -> 'e) -> 'a -> 'b -> 'c -> 'd -> 'e) *
+      (('f -> 'g -> 'h -> 'i) -> 'f * ('g * 'h) -> 'i) *
+      ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u)
+
+    val four : unit ->
+      (('a * ('b * ('c * ('d * 'e))) -> 'f) -> 'a -> 'b -> 'c -> 'd -> 'e -> 'f) *
+      (('g -> 'h -> 'i -> 'j -> 'k) -> 'g * ('h * ('i * 'j)) -> 'k) *
+      ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) -> ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1)
+
+    val five : unit ->
+      (('a * ('b * ('c * ('d * ('e * 'f)))) -> 'g) -> 'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'g) *
+      (('h -> 'i -> 'j -> 'k -> 'l -> 'm) -> 'h * ('i * ('j * ('k * 'l))) -> 'm) *
+      ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) -> ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1)
+
+    val tabled : (unit -> (('a -> State.t Stream.internal) -> 'b) * ('c -> 'd -> goal) * ('a -> 'd * State.t)) -> 'c -> 'b
+  end
 
 (** {2 Building reifiers for a custom type compositionally} *)
 module type T1 =

@@ -111,10 +111,24 @@ let rec wrap x =
       else Invalid t
     )
 
+let copy handler x =
+  match wrap x with
+  | Unboxed _ -> x
+  | Boxed (tag, sx, fx) ->
+    let copy = Obj.dup x in
+    let sf =
+      if tag = Obj.double_array_tag
+      then !!!Obj.set_double_field
+      else Obj.set_field
+    in
+    for i = 0 to sx-1 do
+      sf copy i @@ !!!(handler !!!(fx i))
+    done;
+    copy
+  | Invalid n -> failwith (sprintf "OCanren fatal (copy): invalid value (%d)" n)
 
 module Stream =
   struct
-
     module Internal =
       struct
         type 'a t =
@@ -122,13 +136,19 @@ module Stream =
           | Thunk  of 'a thunk
           | Single of 'a
           | Choice of 'a * ('a t)
-        and 'a thunk = unit -> 'a t
+          | Waiting of 'a suspended list
+        and 'a thunk =
+          unit -> 'a t
+        and 'a suspended =
+          {check: unit -> bool; thunk: 'a thunk}
 
         let nil        = Nil
         let single x   = Single x
         let choice a f = Choice (a, f)
         let inc    f   = Thunk f
         let from_fun   = inc
+
+        let waiting ~check ~thunk = Waiting [{check; thunk}]
 
         let rec is_empty = function
         | Nil      -> true
@@ -145,6 +165,36 @@ module Stream =
           | Thunk   _      -> inc (fun () -> mplus (force gs) fs)
           | Single  a      -> choice a gs
           | Choice (a, hs) -> choice a (from_fun @@ fun () -> mplus (force gs) hs)
+          | Waiting ss    ->
+            let gs = force gs in
+            (* handling waiting streams is tricky *)
+            match unwrap_suspended ss, gs with
+            (* if [fs] has no ready streams and [gs] is also a waiting stream then we merge them  *)
+            | Waiting ss, Waiting ss' -> Waiting (ss @ ss')
+            (* if [fs] has no ready streams but [gs] is not a waiting stream then we swap them,
+               pushing waiting stream to the back of the new stream *)
+            | Waiting ss, _           -> mplus gs @@ from_fun (fun () -> fs)
+            (* if [fs] has ready streams then [fs'] contains some lazy stream that is ready to produce new answers *)
+            | fs', _ -> mplus fs' gs
+
+        and unwrap_suspended ss =
+            let rec find_ready prefix = function
+              | ({check; thunk} as s)::ss ->
+                if check ()
+                then Some (from_fun thunk), (List.rev prefix) @ ss
+                else find_ready (s::prefix) ss
+              | [] -> None, List.rev prefix
+            in
+            match find_ready [] ss with
+              | Some s, [] -> s
+              | Some s, ss -> mplus (force s) @@ Waiting ss
+              | None , ss  -> Waiting ss
+
+        let map_suspended f ss =
+          let update_thunk {thunk=z} as s =
+            {s with thunk = fun () -> f @@ z ()}
+          in
+          List.map update_thunk ss
 
         let rec bind xs g =
           match xs with
@@ -152,6 +202,10 @@ module Stream =
           | Thunk   f     -> inc (fun () -> bind (f ()) g)
           | Single  c     -> g c
           | Choice (c, f) -> mplus (g c) (from_fun (fun () -> bind (force f) g))
+          | Waiting ss    ->
+            match unwrap_suspended ss with
+            | Waiting ss -> Waiting (map_suspended (fun s -> bind s g) ss)
+            | xs'        -> bind xs' g
 
         let rec of_list = function
           | []    -> Nil
@@ -159,10 +213,21 @@ module Stream =
           | x::xs -> Choice (x, of_list xs)
 
         let rec map f = function
-          | Nil             -> Nil
-          | Single x        -> Single (f x)
-          | Choice (x, xs)  -> Choice (f x, map f xs)
-          | Thunk thunk -> from_fun (fun () -> map f @@ thunk ())
+        | Nil             -> Nil
+        | Single x        -> Single (f x)
+        | Choice (x, xs)  -> Choice (f x, map f xs)
+        | Thunk thunk     -> from_fun (fun () -> map f @@ thunk ())
+        | Waiting ss      -> Waiting (map_suspended (map f) ss)
+
+        let rec fold f acc = function
+        | Nil             -> Lazy.force acc
+        | Single x        -> f x acc
+        | Choice (x, xs)  -> f x @@ Lazy.from_fun (fun () -> fold f acc xs)
+        | Thunk thunk     -> fold f acc @@ thunk ()
+        | Waiting ss      ->
+          match unwrap_suspended ss with
+          | Waiting ss -> Lazy.force acc
+          | xs'        -> fold f acc xs'
       end
 
     type 'a internal = 'a Internal.t
@@ -179,6 +244,10 @@ module Stream =
     | Internal.Thunk f -> from_fun (fun () -> of_mkstream @@ f ())
     | Internal.Single a -> Cons (a, Nil)
     | Internal.Choice (a, f) -> Cons (a, from_fun (fun () -> of_mkstream @@ Internal.force f))
+    | Internal.Waiting ss   ->
+      match Internal.unwrap_suspended ss with
+      | Internal.Waiting ss -> Nil
+      | s'         -> of_mkstream s'
 
     let rec is_empty = function
     | Nil    -> true
@@ -189,9 +258,9 @@ module Stream =
       if n = 0
       then [], s
       else match s with
-          | Nil          -> [], s
-          | Cons (x, xs) -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
-          | Lazy  z      -> retrieve ~n (Lazy.force z)
+      | Nil          -> [], s
+      | Cons (x, xs) -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
+      | Lazy  z      -> retrieve ~n (Lazy.force z)
 
     let take ?(n=(-1)) s = fst @@ retrieve ~n s
 
@@ -256,9 +325,13 @@ module Var =
     type scope  = int
     type anchor = int list
 
+    let tabling_env = -1
+
     let unused_index = -1
 
     let non_local_scope = -6
+
+    let tabling_scope = -7
 
     let new_scope =
       let scope = ref 0 in
@@ -284,11 +357,20 @@ module Var =
       scope;
     }
 
+    let equal x y =
+      assert (x.env = y.env);
+      x.index = y.index
+
     let compare x y =
       assert (x.env = y.env);
       x.index - y.index
 
+    let hash x = Hashtbl.hash x.index
+
   end
+
+module VarSet = Set.Make(Var)
+module VarTbl = Hashtbl.Make(Var)
 
 type ('a, 'b) injected = 'a
 
@@ -418,14 +500,13 @@ let (!!) x = inj (lift x)
 module M = Map.Make (struct type t = int let compare = (-) end)
 module Int = struct type t = int let compare = (-) end
 
-module VarSet = Set.Make(Var)
-
 module Env :
   sig
     type t
 
     val empty     : unit -> t
-    val fresh     : (*?name:string -> *)scope:Var.scope -> t -> 'a
+    val create    : anchor:Var.env -> t
+    val fresh     : (*?name:string ->*) scope:Var.scope -> t -> 'a * t
     val var       : t -> 'a -> int option
     val is_var    : t -> 'a -> bool
     val free_vars : t -> 'a -> VarSet.t
@@ -435,10 +516,13 @@ module Env :
     type t = {anchor : Var.env; mutable next : int}
 
     let last_anchor = ref 11
+    let first_var = 10
 
     let empty () =
       incr last_anchor;
-      {anchor = !last_anchor; next = 10}
+      {anchor = !last_anchor; next = first_var}
+
+    let create ~anchor = {anchor; next = first_var}
 
     let fresh (*?name *) ~scope e =
       let v = !!!(Var.make ~env:e.anchor ~scope e.next) in
@@ -459,7 +543,7 @@ module Env :
          (let token = (!!!x : Var.t).Var.anchor in (Obj.is_block !!!token) && token == !!!Var.global_anchor)
       then
         let q = (!!!x : Var.t).Var.env in
-        if (Obj.is_int !!!q) && q == env.anchor
+        if (Obj.is_int !!!q) && q == !!!env.anchor
         then Some (!!!x : Var.t).index
         else failwith "OCanren fatal (Env.var): wrong environment"
       else None
@@ -502,17 +586,33 @@ module Subst :
 
     val walk  : Env.t -> t -> 'a -> 'a
 
-    val deepwalk : ?walk_ctrs:(Var.t -> 'a list) -> Env.t -> t -> 'a -> 'a
+    (* [project env subst x] - performs a deepwalk of term [x],
+     *   replacing every variable to relevant binding in [subst];
+     *   i.e. it obtains a value of term [x] in [subst] *)
+    val project : Env.t -> t -> 'a -> 'a
 
+    (* [refresh ?mapping ~scope dst_env src_env subst x] - takes a term [x],
+     *   projects [subst] into it
+     *   and replaces all stayed free variables
+     *   into fresh variables in destination environment [dst_env].
+     *   Returns a modified term along with a mapping from variables in [src_env] into [dst_env].
+     *   Takes an optional argumet [mapping], in case it is passed a variable from [src_env]
+     *   first is looked up in [mapping] and only if it is not present there
+     *   fresh variable from [dst_env] is allocated.
+     *)
+    val refresh : ?mapping : Var.t VarTbl.t -> scope:Var.scope -> Env.t -> Env.t -> t -> 'a -> Var.t VarTbl.t * 'a
+
+    (* [is_bound x subst] - checks whether [x] is bound by [subst] *)
     val is_bound : Var.t -> t -> bool
 
+    (* [free_vars env subst x] - returns all free-variables of term [x] *)
     val free_vars : Env.t -> t -> 'a -> VarSet.t
 
     (* [unify env x y scope subst] returns None if two terms are not unifiable.
      *   Otherwise it returns a pair of prefix and new substituion.
      *   Prefix is a list of pairs (var, term) that were added to the original substituion.
      *)
-    val unify   : Env.t -> 'a -> 'a -> scope:Var.scope -> t -> (content list * t) option
+    val unify : scope:Var.scope -> Env.t -> t -> 'a -> 'a -> (content list * t) option
 
     (* [merge env s1 s2] merges two substituions *)
     val merge : Env.t -> t -> t -> t option
@@ -544,43 +644,29 @@ module Subst :
             with Not_found -> t
       else t
 
-    let deepwalk ?(walk_ctrs = fun _ -> []) env subst x =
-      let rec helper forbidden t =
-        let var = walk env subst t in
-        match Env.var env var with
-        | None ->
-          begin match wrap (Obj.repr var) with
-          | Unboxed _ -> Obj.repr var
-          | Boxed (tag, sx, fx) ->
-            let copy = Obj.dup (Obj.repr var) in
-            let sf =
-              if tag = Obj.double_array_tag
-              then !!!Obj.set_double_field
-              else Obj.set_field
-            in
-            for i = 0 to sx-1 do
-              sf copy i @@ helper forbidden (!!!(fx i))
-            done;
-            copy
-          | Invalid n -> failwith (sprintf "OCanren fatal (Subst.deepwalk): invalid value (%d)" n)
-          end
-        | Some n when List.mem n forbidden -> Obj.repr var
-        | Some n ->
-            let cs =
-              walk_ctrs !!!var |>
-              List.filter (fun t ->
-                match Env.var env t with
-                | Some i  -> not (List.mem i forbidden)
-                | None    -> true
-              ) |>
-              List.map (fun t -> !!!(helper (n::forbidden) t))
-            in
-            Obj.repr {!!!var with Var.constraints = cs}
+    let rec project env subst x =
+      let var = walk env subst x in
+      match Env.var env var with
+      | None    -> !!!(copy (project env subst) @@ Obj.repr var)
+      | Some n  -> var
+
+    let refresh ?(mapping = VarTbl.create 31) ~scope dst_env src_env subst x =
+      let rec helper t =
+        match Env.var src_env t with
+        | None    -> copy helper (Obj.repr t)
+        | Some n  ->
+          let var = (!!!t : Var.t) in
+          try
+            Obj.repr @@ VarTbl.find mapping var
+          with Not_found ->
+            let new_var, _ = Env.fresh ~scope dst_env in
+            VarTbl.add mapping var !!!new_var;
+            Obj.repr @@ new_var
       in
-      !!!(helper [] x)
+      (mapping, !!!(helper @@ project src_env subst x))
 
     let free_vars env subst x =
-      Env.free_vars env @@ deepwalk env subst x
+      Env.free_vars env @@ project env subst x
 
     let is_bound var subst = M.mem var.Var.index subst
 
@@ -601,7 +687,7 @@ module Subst :
             in
             inner 0
 
-    let unify env x y ~scope main_subst =
+    let unify ~scope env main_subst x y =
 
       (* The idea is to do the unification and collect the unification prefix during the process.
          It is safe to modify variables on the go. There are two cases:
@@ -662,7 +748,7 @@ module Subst :
 
       let merge env subst1 subst2 = M.fold (fun _ {var; term} -> function
         | Some s  -> begin
-          match unify env !!!var term ~scope:Var.non_local_scope s with
+          match unify ~scope:Var.non_local_scope env s !!!var term with
           | Some (_, s') -> Some s'
           | None         -> None
           end
@@ -671,7 +757,7 @@ module Subst :
 
       let is_subsumed env subst =
         M.for_all (fun _ {var; term} ->
-          match unify env !!!var term ~scope:Var.non_local_scope subst with
+          match unify ~scope:Var.non_local_scope env subst !!!var term with
           | None          -> false
           | Some ([], _)  -> true
           | Some (_ , _)  -> false
@@ -684,7 +770,14 @@ exception Disequality_fulfilled
 
 module Disequality :
   sig
+    (* Efficient representation for storing and updating disequalities during search *)
     type t
+
+    (* Simple representation of disequalities as a formula in Conjunctive Normal Form *)
+    type cnf
+
+    (* Simple representation of disequalities as a formula in Disjunctive Normal Form *)
+    type dnf
 
     val empty  : t
 
@@ -698,12 +791,35 @@ module Disequality :
      *)
     val of_conj : Env.t -> Subst.content list -> t
 
+    (* [to_cnf env subst diseq] - refines disequality in [subst] and returns
+     *   new disequality in cnf representation
+     *)
+    val to_cnf : Env.t -> Subst.t -> t -> cnf
+
+    (* [of_cnf env diseq] - builds efficient representation of disequalities from cnf representation *)
+    val of_cnf : Env.t -> cnf -> t
+
+    (* [normalize diseq] - normalizes disequalities in cnf representation,
+     *   i.e. sorts them such that equal disequalities can be compared by simple equivalence check.
+     *   Note that additional measures should be performed in order to do alpha-equivalence check of disequalities.
+     *)
+    val normalize : cnf -> cnf
+
+    (* [cnf_to_dnf diseq] - converts disequalities in cnf representation to dnf representation *)
+    val cnf_to_dnf : cnf -> dnf
+
+    (* [of_dnf env diseq] - converts disequalities in dnf representation into a list of
+     *   disequalities in efficient representation.
+     *   Semantically the result list is a list of disequalities bound by disjunction.
+     *)
+    val of_dnf : Env.t -> dnf -> t list
+
     (* [check ~prefix env subst diseq] - checks that disequality is not violated in refined substitution.
      *   [prefix] is a substitution prefix, i.e. new bindings obtained during unification.
      *   This function may rebuild internal representation of constraints and thus it returns new object.
      *   Raises [Disequality_violated].
      *)
-    val check  : prefix:Subst.content list -> Env.t -> Subst.t -> t -> t
+    val check : prefix:Subst.content list -> Env.t -> Subst.t -> t -> t
 
     (* [extend ~prefix env diseq] - extends disequality with new bindings.
      *   New bindings are interpreted as formula in DNF.
@@ -711,22 +827,24 @@ module Disequality :
      *)
     val extend : prefix:Subst.content list -> Env.t -> t -> t
 
-    (* [project env subst diseq x] projects [diseq] to free-variables, mentioned in [fv],
-     *   i.e. it extracts only those constraints that mention at least one variable from FV(x)
-     *)
-    val project : Env.t -> Subst.t -> t -> 'a -> t
-
-    (* [normalize env subst diseq x] projects [diseq] to free-variables, mentioned in [fv], and then normalizes them.
-     *   Normalization produces a list of disequality constraints stores of the form [(x =/= 5) /\ (y =/= 6)],
-      *  i.e. it is a conjunction of individual disequalities.
-     *)
-    val normalize : Env.t -> Subst.t -> t -> 'a -> t list
-
     (* [merge env diseq1 diseq2] - merges two disequality stores *)
     val merge : Env.t -> t -> t -> t
 
-
     val reify : Env.t -> Subst.t -> t -> Var.t -> 'a list
+
+    (* [project env subst diseq fv] - projects [diseq] into the set of free-variables [fv],
+     *   i.e. it extracts only those constraints that mention at least one variable from [fv]
+     *)
+    val project : Env.t -> Subst.t -> cnf -> VarSet.t -> cnf
+
+    (* [refresh ?mapping ~scope dst_env src_env subst diseq fv] - takes a disequality store [diseq]
+     *   and replaces all free variables into fresh variables in destination environment.
+     *   Returns a modified disequality store along with a mapping from variables in [src_env] into [dst_env].
+     *   Takes an optional argumet [mapping], in case it is passed a variable from [src_env]
+     *   first is looked up in [mapping] and only if it is not present there
+     *   fresh variable from [dst_env] is allocated.
+     *)
+    val refresh : ?mapping: Var.t VarTbl.t -> scope:Var.scope -> Env.t -> Env.t -> Subst.t -> cnf -> Var.t VarTbl.t * cnf
   end =
   struct
     (* Disequality constraints are represented as formula in CNF
@@ -797,7 +915,7 @@ module Disequality :
 
         let refine' env subst =
         let open Subst in fun { var; term } ->
-          match unify env !!!var term Var.non_local_scope subst with
+          match unify ~scope:Var.non_local_scope env subst !!!var term with
           | None                  -> Fulfiled
           | Some ([], _)          -> Violated
           | Some (prefix, subst)  -> Refined (prefix, subst)
@@ -863,6 +981,10 @@ module Disequality :
       end
 
     type t = Index.t
+
+    type cnf = Subst.content list list
+
+    type dnf = Subst.content list list
 
     let empty = Index.empty
 
@@ -955,8 +1077,49 @@ module Disequality :
             (delta, delta_subst, s)::acc
       ) [] t
 
-    let project' env subst t x =
-      let cs = refine env subst t |> List.map (fun delta,_,_ -> delta) in
+    let to_cnf env subst t =
+      refine env subst t |> List.map (fun delta,_,_ -> delta)
+
+    let of_cnf env cs =
+      ListLabels.fold_left cs ~init:empty ~f:(
+        fun acc disj -> extend ~prefix:disj env acc
+      )
+
+    let normalize cnf =
+      let compare_bindings =
+        let open Subst in fun {var=v1; term=t1} {var=v2; term=t2} ->
+        if Var.equal v1 v2 then
+          compare t1 t2
+        else
+          Var.compare v1 v2
+      in
+      let compare_disj ds1 ds2 =
+        let rec helper ds1 ds2 =
+          match ds1, ds2 with
+          | [], [] -> 0
+          | (d1::ds1), (d2::ds2) ->
+            let res = compare_bindings d1 d2 in
+            if res <> 0 then res else helper ds1 ds2
+        in
+        let l1, l2 = List.length ds1, List.length ds2 in
+        let res = compare l1 l2 in
+        if res <> 0 then res else helper ds1 ds2
+      in
+      let sort_disj = List.sort compare_bindings in
+      List.sort compare_disj @@ List.map sort_disj cnf
+
+    let cnf_to_dnf =
+      ListLabels.fold_left ~init:[[]]
+        ~f:(fun acc disj ->
+          ListLabels.map acc ~f:(fun conj ->
+            let disj = List.filter (fun x -> not @@ List.exists ((=) x) conj) disj in
+            List.map (fun x -> x::conj) disj
+          ) |> List.concat
+        )
+
+    let of_dnf env = List.map (of_conj env)
+
+    let project env subst cs fv =
       (* fixpoint-like computation of disequalities relevant to variables in [fv] *)
       let rec helper fv =
         let open Subst in
@@ -965,7 +1128,13 @@ module Disequality :
           (match Env.var env term with Some _ -> VarSet.mem (!!!term) fv | None -> false)
         in
         (* filter irrelevant binding in each disjunction *)
-        let cs' = List.map (List.filter (is_relevant fv)) cs in
+        let cs' = ListLabels.fold_left cs ~init:[]
+          ~f:(fun acc disj ->
+            match List.filter (is_relevant fv) disj with
+            | []   -> acc
+            | disj -> disj::acc
+          )
+        in
         (* obtain a set of free variables from terms mentioned in disequalities *)
         let fv' = ListLabels.fold_left cs' ~init:fv ~f:(fun acc disj ->
           ListLabels.fold_left disj ~init:acc ~f:(fun acc {var; term} ->
@@ -976,23 +1145,23 @@ module Disequality :
         then cs'
         else helper fv'
       in
-      helper @@ Subst.free_vars env subst x
+      helper fv
 
-    let project env subst t x =
-      project' env subst t x |>
-      (* build constraints back from list representation *)
-      ListLabels.fold_left ~init:empty ~f:(fun acc disj -> extend ~prefix:disj env acc)
-
-    let normalize env subst t x =
-      project' env subst t x |>
-      ListLabels.fold_left ~init:[[]]
-        ~f:(fun acc disj ->
-          ListLabels.map acc ~f:(fun conj ->
-            let disj = List.filter (fun x -> not @@ List.exists ((=) x) conj) disj in
-            List.map (fun x -> x::conj) disj
-          ) |> List.concat
-        ) |>
-      List.map (of_conj env)
+    let refresh ?(mapping = VarTbl.create 31) ~scope dst_env src_env subst cs =
+      let refresh_binding =
+        let open Subst in fun {var; term} ->
+        let new_var =
+          try
+            VarTbl.find mapping var
+          with Not_found ->
+            let new_var, _ = Env.fresh ~scope dst_env in
+            VarTbl.add mapping var new_var;
+            new_var
+        in
+        {var = new_var; term = snd @@ Subst.refresh ~mapping ~scope dst_env src_env subst term}
+      in
+      let cs' = List.map (List.map refresh_binding) cs in
+      (mapping, cs')
 end
 
 module State =
@@ -1023,6 +1192,28 @@ module State =
 
     let incr_scope st = {st with scope = Var.new_scope ()}
 
+    let unify x y ({env; subst; ctrs; scope} as st) =
+      LOG[perf] (Log.unify#enter);
+      let result =
+        match Subst.unify ~scope env subst x y with
+        | None -> None
+        | Some (prefix, s) ->
+          try
+            let ctrs' = Disequality.check ~prefix env s ctrs in
+            Some {st with subst=s; ctrs=ctrs'}
+          with Disequality_violated -> None
+      in
+      LOG[perf] (Log.unify#leave);
+      result
+
+    let disunify x y ({env; subst; ctrs; scope} as st) =
+      match Subst.unify ~scope:Var.non_local_scope env subst x y with
+      | None         -> Some st
+      | Some ([], _) -> None
+      | Some (prefix, _) ->
+          let ctrs' = Disequality.extend ~prefix env ctrs in
+          Some {st with ctrs=ctrs'}
+
     let merge
       {env=env1; subst=subst1; ctrs=ctrs1; scope=scope1}
       {env=env2; subst=subst2; ctrs=ctrs2; scope=scope2} =
@@ -1036,16 +1227,36 @@ module State =
         }
 
     let project ({env; subst; ctrs} as st) x =
-      {st with ctrs = Disequality.project env subst ctrs x}
+      let cs = Disequality.to_cnf env subst ctrs in
+      let cs = Disequality.project env subst cs @@ Subst.free_vars env subst x in
+      {st with ctrs = Disequality.of_cnf env cs}
 
-    let normalize ({env; subst; ctrs} as st) x =
-      match Disequality.normalize env subst ctrs x with
-      | []    -> [{st with ctrs=Disequality.empty}]
-      | ctrss ->
-        List.map (fun ctrs -> {env; subst; ctrs; scope = Var.new_scope ()}) ctrss
+    let normalize ({env; subst; ctrs; scope} as st) x =
+      let cs = Disequality.to_cnf env subst ctrs in
+      let cs = Disequality.project env subst cs @@ Subst.free_vars env subst x in
+      match Disequality.of_dnf env @@ Disequality.cnf_to_dnf cs with
+      | [] -> [{st with ctrs=Disequality.empty}]
+      | cs -> List.map (fun ctrs -> {env; subst; ctrs; scope}) cs
 
     let reify {env; subst; ctrs} x =
-      Subst.deepwalk ~walk_ctrs:(Disequality.reify env subst ctrs) env subst x
+      let rec helper forbidden t =
+        let var = Subst.walk env subst t in
+        match Env.var env var with
+        | None -> copy (helper forbidden) (Obj.repr var)
+        | Some n when List.mem n forbidden -> Obj.repr var
+        | Some n ->
+            let cs =
+              Disequality.reify env subst ctrs !!!var |>
+              List.filter (fun t ->
+                match Env.var env t with
+                | Some i  -> not (List.mem i forbidden)
+                | None    -> true
+              ) |>
+              List.map (fun t -> !!!(helper (n::forbidden) t))
+            in
+            Obj.repr {!!!var with Var.constraints = cs}
+      in
+      !!!(helper [] x)
 
   end
 
@@ -1060,29 +1271,15 @@ let call_fresh f =
   let x = Env.fresh ~scope env in
   f x st
 
-let (===) (x: _ injected) y =
-  let open State in fun ({env; subst; ctrs; scope} as st) ->
-  LOG[perf] (Log.unify#enter);
-  let result =
-    match Subst.unify env x y scope subst with
-    | None -> Stream.Internal.nil
-    | Some (prefix, s) ->
-      try
-        let ctrs' = Disequality.check ~prefix env s ctrs in
-        Stream.Internal.single {st with subst=s; ctrs=ctrs'}
-      with Disequality_violated -> Stream.Internal.nil
-  in
-  LOG[perf] (Log.unify#leave);
-  result
+let (===) x y st =
+  match State.unify x y st with
+  | None   -> Stream.Internal.nil
+  | Some s -> Stream.Internal.single s
 
-let (=/=) x y =
-  let open State in fun ({env; subst; ctrs; scope} as st) ->
-  match Subst.unify env x y Var.non_local_scope subst with
-  | None         -> Stream.Internal.single st
-  | Some ([], _) -> Stream.Internal.nil
-  | Some (prefix, _) ->
-      let ctrs' = Disequality.extend ~prefix env ctrs in
-      Stream.Internal.single {st with ctrs=ctrs'}
+let (=/=) x y st =
+  match State.disunify x y st with
+  | None   -> Stream.Internal.nil
+  | Some s -> Stream.Internal.single s
 
 let delay g st = Stream.Internal.from_fun (fun () -> g () st)
 
@@ -1195,8 +1392,15 @@ module ApplyTuple =
     let succ prev = fun arg (r, y) -> (R.apply_reifier arg r, prev arg y)
   end
 
+module Curry =
+  struct
+    let one = (@@)
+    let succ k f x = k (fun tup -> f (x, tup))
+  end
+
 module Uncurry =
   struct
+    let one = (@@)
     let succ k f (x,y) = k (f x) y
   end
 
@@ -1213,7 +1417,7 @@ let succ n () =
   let adder, currier, app, ext = n () in
   (LogicAdder.succ adder, Uncurry.succ currier, ApplyTuple.succ app, ExtractDeepest.succ ext)
 
-let one   () = (fun x -> LogicAdder.(succ zero) x), (@@), ApplyTuple.one, ExtractDeepest.ext2
+let one   () = (fun x -> LogicAdder.(succ zero) x), Uncurry.one, ApplyTuple.one, ExtractDeepest.ext2
 let two   () = succ one   ()
 let three () = succ two   ()
 let four  () = succ three ()
@@ -1244,6 +1448,180 @@ let run n goalish f =
   );
   result
 
+(** ************************************************************************* *)
+(** Tabling primitives                                                        *)
+
+module Table :
+  sig
+    (* Type of `answer` term.
+     * Answer term is a term where all free variables are renamed to 0 ... n.
+     *)
+    type answer
+
+    (* Type of table.
+     * Table is a map from answer term to the set of answer terms,
+     * i.e. answer -> [answer]
+     *)
+    type t
+
+    val create   : unit -> t
+    val abstract : 'a -> State.t -> answer
+
+    val master : t -> answer -> 'a -> goal -> goal
+    val slave  : t -> answer -> 'a -> goal
+  end = struct
+    type answer = Env.t * Obj.t * Disequality.cnf
+
+    module Cache :
+      sig
+        type t
+
+        val create    : unit -> t
+
+        val add       : t -> answer -> unit
+        val contains  : t -> answer -> bool
+        val consume   : t -> 'a -> goal
+      end =
+      struct
+        type t = answer list ref
+
+        let create () = ref []
+
+        let add cache answ =
+          cache := List.cons answ !cache
+
+        let contains cache (_, answ, diseq) =
+          ListLabels.exists !cache
+            ~f:(fun (_, answ', diseq') ->
+              (* all variables in both terms are renamed to 0 ... n (and constraints are sorted),
+               * because of that simple equivalence test is enough.
+               * TODO: maybe we need [is_more_general answ' answ] test here
+               * TODO: maybe there is more clever way to compare disequalities
+               *)
+               (answ = answ') && (diseq = diseq')
+            )
+
+        let consume cache args =
+          let open State in fun {env; subst; scope} as st ->
+          let st = State.incr_scope st in
+          let scope = State.scope st in
+          (* [helper iter seen] consumes answer terms from cache one by one
+           *   until [iter] (i.e. current pointer into cache list) is not equal to [seen]
+           *   (i.e. to the head of seen part of the cache list)
+           *)
+          let rec helper iter seen =
+            if iter == seen then
+              (* update `seen` - pointer to already seen part of cache *)
+              let seen = !cache in
+              (* delayed check that current head of cache is not equal to head of seen part *)
+              let check () = seen != !cache  in
+              (* delayed thunk starts to consume unseen part of cache  *)
+              let thunk () = helper !cache seen in
+              Stream.Internal.waiting ~check ~thunk
+            else
+              (* consume one answer term from cache *)
+              let answ_env, answ_term, answ_ctrs = List.hd iter in
+              let tail = List.tl iter in
+              (* `lift` answer term to current environment *)
+              let mapping, answ_term = Subst.refresh ~scope env answ_env Subst.empty answ_term in
+              match State.unify (Obj.repr args) answ_term st with
+                | Some ({subst=subst'; ctrs=ctrs'} as st') ->
+                  begin
+                  (* `lift` answer constraints to current environment *)
+                  let _, answ_ctrs = Disequality.refresh ~mapping ~scope env answ_env Subst.empty answ_ctrs in
+                  let answ_ctrs = Disequality.of_cnf env answ_ctrs in
+                  try
+                    (* check answ_ctrs against external substitution *)
+                    let ctrs = Disequality.check ~prefix:(Subst.split subst) env subst' answ_ctrs in
+                    let f = Stream.Internal.from_fun @@ fun () -> helper tail seen in
+                    Stream.Internal.choice {st' with ctrs = Disequality.merge env ctrs' ctrs} f
+                  with Disequality_violated -> helper tail seen
+                  end
+                | None -> helper tail seen
+          in
+          helper !cache []
+
+      end
+
+    type t = (Obj.t, Cache.t) Hashtbl.t
+
+    let create () = Hashtbl.create 1031
+
+    let empty_diseq =
+      Disequality.to_cnf (Env.create ~anchor:Var.tabling_env) Subst.empty Disequality.empty
+
+    let abstract args =
+      let open State in fun {env; subst} ->
+      let tenv = Env.create ~anchor:Var.tabling_env in
+      (tenv, Obj.repr @@ snd @@ Subst.refresh ~scope:Var.tabling_scope tenv env subst args, empty_diseq)
+
+    let extract_ctrs mapping answ_env env subst ctrs args =
+      let fv = Subst.free_vars env subst args in
+      let cs = Disequality.project env subst (Disequality.to_cnf env subst ctrs) fv in
+      Disequality.normalize @@ snd @@ Disequality.refresh ~mapping ~scope:Var.tabling_scope answ_env env subst cs
+
+    let extract_answer args =
+      let open State in fun {env; subst; ctrs} ->
+      let answ_env = Env.create ~anchor:Var.tabling_env in
+      let mapping, answ_term = Subst.refresh ~scope:Var.tabling_scope answ_env env subst args in
+      let answ_ctrs = extract_ctrs mapping answ_env env subst ctrs args in
+      (answ_env, Obj.repr answ_term, answ_ctrs)
+
+    let master tbl (_, k, _) args g =
+      (* create new cache entry in table *)
+      let cache = Cache.create () in
+      Hashtbl.add tbl k cache;
+      let open State in fun ({env; subst; ctrs} as st) ->
+      (* This `fake` goal checks whether cache already contains new answer.
+       * If not then this new answer is added to the cache.
+       *)
+      let hook ({env=env'; subst=subst'; ctrs=ctrs'} as st') =
+        let answ = extract_answer args st' in
+        if not (Cache.contains cache answ) then begin
+          Cache.add cache answ;
+          try
+            (* TODO: we only need to check diff, i.e. [subst' \ subst] *)
+            let ctrs = Disequality.check ~prefix:(Subst.split subst') env subst' ctrs in
+            success {st' with ctrs = Disequality.merge env ctrs ctrs'}
+          with Disequality_violated -> failure ()
+        end
+        else failure ()
+      in
+      (g &&& hook) {st with ctrs = Disequality.empty}
+
+    let slave tbl (_, k, _) args =
+      let open State in fun ({env} as st) ->
+      let cache = Hashtbl.find tbl k in
+      Cache.consume cache args st
+  end
+
+module Tabling =
+  struct
+    let succ n () =
+      let currier, uncurrier, ext = n () in
+      (Curry.succ currier, Uncurry.succ uncurrier, ExtractDeepest.succ ext)
+
+    let one () = (Curry.(succ one), Uncurry.one, ExtractDeepest.ext2)
+
+    let two   () = succ one ()
+    let three () = succ two ()
+    let four  () = succ three ()
+    let five  () = succ four ()
+
+    let tabled n g =
+      let tbl = Table.create () in
+      let currier, uncurrier, ext = n () in
+      currier (
+        fun tup ->
+          let x, st = ext tup in
+          let args = Table.abstract x st in
+          try
+            Table.slave tbl args x st
+          with Not_found ->
+            Table.master tbl args x (uncurrier g x) st
+      )
+end
+
 (* Tracing/debugging stuff *)
 
 (* module State
@@ -1252,7 +1630,6 @@ let run n goalish f =
       sprintf "st {%s, %s} scope=%d" (Subst.show subst) (Constraints.show ~env constr) scp
 *)
 
-
 (* module Subst
     let show m =
       let b = Buffer.create 40 in
@@ -1260,6 +1637,41 @@ let run n goalish f =
       M.iter (fun i {new_val} -> bprintf b "  %d -> %s;\n" i (generic_show new_val)) m;
       Buffer.add_string b "}";
       Buffer.contents b
+=======
+
+
+let unify ?p (x: _ injected) y =
+  Trace.(trace two @@ unif ?p) x y (
+    let open State in fun {env; subst; ctrs; scope} as st ->
+    match Subst.unify env x y scope subst with
+    | None -> failure ~reason:"Unification failed" st
+    | Some (prefix, s) ->
+        try
+          let ctrs' = Constraints.check ~prefix env s ctrs in
+          success {st with subst=s; ctrs=ctrs'}
+        with Disequality_violated ->
+          failure ~reason:"Disequality constraints violated" st
+  )
+
+let (===) x y = unify x y
+
+let diseq ?p x y =
+  Trace.(trace two @@ diseq ?p) x y (
+    let open State in fun {env; subst; ctrs; scope} as st ->
+    (* For disequalities we unify in non-local scope to prevent defiling *)
+    match Subst.unify env x y non_local_scope subst with
+    | None -> success st
+    | Some ([],_) -> failure ~reason:"Constraint cannot be fulfilled" st
+    | Some (prefix,_) ->
+        let ctrs' = Constraints.extend ~prefix env ctrs in
+        success {st with ctrs=ctrs'}
+  )
+
+let (=/=) x y = diseq x y
+
+let delay : (unit -> goal) -> goal = fun g ->
+  fun st -> MKStream.from_fun (fun () -> g () st)
+>>>>>>> 81053c4... WIP: tabling
 
     let pretty_show is_var m =
       let b = Buffer.create 40 in
