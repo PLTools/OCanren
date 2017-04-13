@@ -96,7 +96,7 @@ as follows:
 \item in environment, we additionally keep some unique boxed value~--- \emph{anchor}~--- created by \lstinline{run} at the moment of initial
 state generation; the anchor is inherited unchanged in all derived environments during the search session;
 \item in each variable we additionally save the anchor, inherited from the environment, in which the variable was created;
-\item inside a unification, in order to check, if we deal with a variable, we test the conduction of the following properties:
+\item inside a unification, in order to check, if we deal with a variable, we test the conjunction of the following properties:
 
   \begin{enumerate}
     \item the scrutinee is boxed; 

@@ -41,9 +41,9 @@ All benchmarks were ran in natively compiled mode ten times, then average user t
 are shown on Figures~\ref{eval:first} and~\ref{eval:second}. The whole evaluation repository with scripts and detailed
 description is accessible from \lstinline{gitHub}\footnote{https://github.com/Kakadu/ocanren-perf}.
 
-The first conclusion, which is rather easy to derive from the results, is that ``taglessless'' indeed matters. Our initial
+The first conclusion, which is rather easy to derive from the results, is that ``taglessness'' indeed matters. Our initial
 implementation did not show essential speedup in comparison with $\mu$Kanren (and was even \emph{slower} on the logarithm
-and permutations benchmarks). The situation was improved drastically, however, when we switched to a tagless version.
+and permutations benchmarks). The situation was improved drastically, however, when we switched to the tagless version.
 
 Yet, in comparison with \texttt{faster-miniKanren} our implementation is still lagging behind. We did not discover the exact
 reasons yet, but presume, that the difference in search plays an important role here.
