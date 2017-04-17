@@ -963,6 +963,10 @@ module Nat = struct
     let rec to_logic: ground -> logic = fun n ->
       Value (GT.(gmap lnat) to_logic n)
 
+    let inj' = inj
+
+    let rec inj n = inj' @@ F.distrib @@ X.fmap inj n
+
     let o = inj@@lift O
     let s x = inj@@lift (S x)
 
@@ -1126,6 +1130,10 @@ module List =
     let rec to_logic : ('a -> 'b) -> 'a ground -> 'b logic = fun f xs ->
       Value (GT.(gmap llist) f (to_logic f) xs)
 
+    let inj' = inj
+
+    let rec inj fa x = inj' @@ F.distrib @@ X.fmap (fa) (inj fa) x
+
     type ('a,'b) groundi = ('a ground, 'b logic) injected
 
     let groundi =
@@ -1136,10 +1144,6 @@ module List =
           GT.show(ground) fa (Obj.magic l : 'a ground)
         end
       }
-
-    let inj' = inj
-
-    let rec inj fa x = inj' @@ F.distrib @@ X.fmap (fa) (inj fa) x
 
     let (%): ('a,'b) injected -> ('a,'b) groundi -> ('a,'b) groundi = cons
     let (%<): ('a,'b) injected -> ('a,'b) injected -> ('a,'b) groundi = fun x y -> cons x @@ cons y @@ nil ()
