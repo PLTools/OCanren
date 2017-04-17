@@ -963,12 +963,12 @@ module Nat = struct
     let rec to_logic: ground -> logic = fun n ->
       Value (GT.(gmap lnat) to_logic n)
 
+    let o = inj@@lift O
+    let s x = inj@@lift (S x)
+
     let inj' = inj
 
     let rec inj n = inj' @@ F.distrib @@ X.fmap inj n
-
-    let o = inj@@lift O
-    let s x = inj@@lift (S x)
 
     let zero = o
     let succ = s
