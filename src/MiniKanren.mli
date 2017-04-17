@@ -203,6 +203,14 @@ val delay: (unit -> goal) -> goal
 (** Reification helper *)
 type helper
 
+val project1: msg:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> goal
+val project2: msg:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
+val project3: msg:string -> (helper -> ('a, 'b) injected -> string) ->
+    ('a, 'b) injected -> ('a, 'b) injected -> ('a, 'b) injected -> goal
+
+(* Like (===) but with tracing *)
+val unitrace: (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
+
 (**
   The exception is raised when we try to extract plain term from the answer but only terms with free
   variables are possible.
