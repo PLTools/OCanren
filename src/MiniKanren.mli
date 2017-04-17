@@ -559,17 +559,20 @@ module Nat :
          show    : logic -> string >)
       GT.t
 
+    (** A type synonym for injected nat *)
+    type groundi = (ground, logic) injected
+
     (** [of_int n] converts integer [n] into [ground]; negative integers become [O] *)
     val of_int : int -> ground
 
     (** [to_int g] converts ground [g] into integer *)
     val to_int : ground -> int
 
-    (** Inject flat ground nat to logic nat *)
-    val to_logic: ground -> logic
+    (** Make logic nat from ground one *)
+    val to_logic : ground -> logic
 
-    (** A type synonym for injected nat *)
-    type groundi = (ground, logic) injected
+    (** Make injected nat from ground one *)
+    val inj : ground -> groundi
 
     val zero : groundi
     val succ : groundi -> groundi
@@ -655,6 +658,9 @@ module List :
 
     (** Make logic list from ground one *)
     val to_logic : ('a -> 'b) -> 'a ground -> 'b logic
+
+    (** Make injected list from ground one *)
+    val inj : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
 
     (** Reifier *)
     val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
