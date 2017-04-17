@@ -959,13 +959,15 @@ module Nat = struct
 
     let rec of_int n = if n <= 0 then O else S (of_int (n-1))
     let rec to_int   = function O -> 0 | S n -> 1 + to_int n
-    let prj_ground   = to_int
 
-    let rec inj_ground: ground -> logic = fun n ->
-      Value (GT.(gmap lnat) inj_ground n)
+    let rec to_logic: ground -> logic = fun n ->
+      Value (GT.(gmap lnat) to_logic n)
 
     let o = inj@@lift O
     let s x = inj@@lift (S x)
+
+    let zero = o
+    let succ = s
 
     let rec addo x y z =
       conde [
@@ -1113,12 +1115,16 @@ module List =
         end
     }
 
-    let rec inj_ground : ('a -> 'b) -> 'a ground -> 'b logic = fun f xs ->
-      Value (GT.(gmap llist) f (inj_ground f) xs)
+    let rec of_list : ('a -> 'b) -> 'a list -> 'b ground = fun f -> function
+    | []    -> Nil
+    | x::xs -> Cons (f x, of_list f xs)
 
-    let rec prj_ground : ('a -> 'b) -> 'a ground -> 'b list = fun f -> function
+    let rec to_list : ('a -> 'b) -> 'a ground -> 'b list = fun f -> function
     | Nil -> []
-    | Cons (x,xs) -> (f x)::(prj_ground f xs)
+    | Cons (x,xs) -> (f x)::(to_list f xs)
+
+    let rec to_logic : ('a -> 'b) -> 'a ground -> 'b logic = fun f xs ->
+      Value (GT.(gmap llist) f (to_logic f) xs)
 
     type ('a,'b) groundi = ('a ground, 'b logic) injected
 
@@ -1130,8 +1136,6 @@ module List =
           GT.show(ground) fa (Obj.magic l : 'a ground)
         end
       }
-
-    let rec of_list = function [] -> Nil | x::xs -> Cons (x, (of_list xs))
 
     let inj' = inj
 
@@ -1242,12 +1246,15 @@ let (%<) = List.(%<)
 let (!<) = List.(!<)
 let nil  = List.nil
 
-let rec inj_list: ('a, 'b) injected list -> ('a, 'b) List.groundi = function
-| []    -> nil ()
-| x::xs -> List.cons x (inj_list xs)
+let rec inj_list: ('a -> (('a, 'b) injected)) -> 'a list -> ('a, 'b) List.groundi =
+  fun f -> function
+  | []    -> nil ()
+  | x::xs -> List.cons (f x) (inj_list f xs)
 
-let inj_list_p xs = inj_list @@ List.map (fun (x,y) -> inj_pair x y) xs
+let rec inj_listi: ('a, 'b) injected list -> ('a, 'b) List.groundi = function
+  | []    -> nil ()
+  | x::xs -> List.cons x (inj_listi xs)
 
 let rec inj_nat_list = function
-| []    -> nil()
-| x::xs -> inj_nat x % inj_nat_list xs
+  | []    -> nil ()
+  | x::xs -> inj_nat x % inj_nat_list xs

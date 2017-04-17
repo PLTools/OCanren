@@ -4,12 +4,12 @@ open MiniKanren
 open Tester
 open Stlc
 
-module GTyp = 
+module GTyp =
   struct
 
-    module T = 
-      struct    
-        @type ('a, 'b) t = 
+    module T =
+      struct
+        @type ('a, 'b) t =
 	| P   of 'a      (* primitive *)
         | Arr of 'b * 'b (* arrow *)
         with gmap, show
@@ -67,11 +67,11 @@ let infero expr typ =
 let show_string  = show(string)
 let show_stringl = show(logic) (show(string))
 
-let inj_list_p xs = inj_list @@ List.map (fun (x,y) -> inj_pair x y) xs
+let inj_list_p xs = inj_listi @@ List.map (fun (x,y) -> inj_pair x y) xs
 
 (* Without free variables *)
 let () =
-  run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list [])  q                                   ));
+  run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [])  q                                   ));
   run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varX, v varX)]) q                    ));
   run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varY, v varY); (varX, v varX)]) q    ));
 

@@ -648,12 +648,12 @@ module List :
     type ('a,'b) groundi = ('a ground, 'b logic) injected
 
     (** [of_list l] converts regular OCaml list [l] into isomorphic OCanren [ground] list *)
-    val of_list : 'a list -> 'a ground
+    val of_list : ('a -> 'b) -> 'a list -> 'b ground
 
-    (** [to_list g] converts OCanren list [g] into iregular OCaml list *)
-    val to_list : 'a ground -> 'a list
+    (** [to_list g] converts OCanren list [g] into regular OCaml list *)
+    val to_list : ('a -> 'b) -> 'a ground -> 'b list
 
-    (** Inject plain ground list to logic list *)
+    (** Make logic list from ground one *)
     val to_logic : ('a -> 'b) -> 'a ground -> 'b logic
 
     (** Reifier *)
@@ -711,7 +711,9 @@ module List :
   end
 
 (** [inj_list inj_a l] is a deforested synonym for injection *)
-val inj_list : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
+val inj_list : ('a -> ('a, 'b) injected) -> 'a list -> ('a, 'b) List.groundi
+
+val inj_listi : ('a, 'b) injected list -> ('a, 'b) List.groundi
 
 val inj_pair   : ('a, 'b) injected -> ('c, 'd) injected -> ('a * 'c, ('b * 'd) logic) injected
 val inj_triple : ('a, 'd) injected -> ('b, 'e) injected -> ('c,'f) injected -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected

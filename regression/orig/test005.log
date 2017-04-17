@@ -1,4 +1,4 @@
-fun q -> lookupo varX (inj_list []) q, 1 answer {
+fun q -> lookupo varX (inj_list_p []) q, 1 answer {
 }
 fun q -> lookupo varX (inj_list_p [varX, v varX]) q, 1 answer {
 q=V ("x");

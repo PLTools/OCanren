@@ -74,7 +74,7 @@ q=S (S (O ()));
 fun q -> List.lengtho (nats [1; 2; 3; 4]) q, 1 answer {
 q=S (S (S (S (O ()))));
 }
-fun q -> List.lengtho (inj_list [(!!) (); (!!) (); (!!) ()]) q, 1 answer {
+fun q -> List.lengtho (inj_list (!!) [(); (); ()]) q, 1 answer {
 q=S (S (S (O ())));
 }
 fun q -> List.lengtho (bools [false; true]) q, 1 answer {

@@ -2,8 +2,8 @@ open Printf
 open MiniKanren
 open Tester
 
-let (!) = inj_int
-let (!!) = inj_list
+let (!) = (!!)
+let (!!) = inj_listi
 
 let show_int_list   = GT.(show List.ground @@ show int)
 let show_intl_llist = GT.(show List.logic @@ show logic @@ show int)

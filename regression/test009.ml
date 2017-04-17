@@ -7,10 +7,10 @@ open Tester
 
 let show_token = show(token)
 
-module GExpr = 
+module GExpr =
   struct
 
-    module T = 
+    module T =
       struct
         @type 'self t  = I | A of 'self * 'self | M of 'self * 'self with show, gmap
 
@@ -76,11 +76,11 @@ let runE_exn n = run_exn show_expr n
 let show_stream xs = show(List.ground) show_token xs
 
 let _ =
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_list [!!Id]) q                              ));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_list [!!Id; !!Mul; !!Id]) q               ));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_list [!!Id; !!Mul; !!Id; !!Mul; !!Id]) q));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_list [!!Id; !!Mul; !!Id; !!Add; !!Id]) q));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_list [!!Id; !!Add; !!Id; !!Mul; !!Id]) q));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_list [!!Id; !!Add; !!Id; !!Add; !!Id]) q));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id]) q                              ));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Mul; !!Id]) q               ));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Mul; !!Id; !!Mul; !!Id]) q));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Mul; !!Id; !!Add; !!Id]) q));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Add; !!Id; !!Mul; !!Id]) q));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Add; !!Id; !!Add; !!Id]) q));
   run_exn show_stream 1   q   qh (REPR (fun q -> pExpr q (m (i ()) (i ()))                   ));
   ()
