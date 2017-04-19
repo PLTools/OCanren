@@ -65,7 +65,7 @@ let _ =
                 printf "%s\n%!"  @@ (if rr#is_open
                 then
                   GT.(show List.logic (show Nat.logic)) @@
-                    rr#refine (List.reify Nat.reify) ~inj:(List.inj_ground Nat.inj_ground)
+                    rr#refine (List.reify Nat.reify) ~inj:(List.to_logic Nat.to_logic)
                 else
                   GT.(show List.ground (show Nat.ground) rr#prj)
                 )
@@ -74,7 +74,7 @@ let _ =
 
 (* Making regular sorting from relational one *)
 let sort l =
-  List.prj_ground Nat.prj_ground @@
+  List.to_list Nat.to_int @@
   run q (sorto @@ inj_nat_list l)
         (fun qs -> Stream.hd qs |> (fun rr -> rr#prj))
 
@@ -84,7 +84,7 @@ let rec fact = function 0 -> 1 | n -> n * fact (n-1)
 
 (* Making permutations from relational sorting *)
 let perm l =
-  List.map (List.prj_ground Nat.prj_ground) @@
+  List.map (List.to_list Nat.to_int) @@
   run q (fun q -> sorto q @@ inj_nat_list (List.sort Pervasives.compare l))
         (fun qs ->
           qs |> Stream.take ~n:(fact @@ List.length l) |>
@@ -92,7 +92,7 @@ let perm l =
 
 (* More hardcore version: no standard sorting required *)
 let perm' l =
-  List.map (List.prj_ground Nat.prj_ground) @@
+  List.map (List.to_list Nat.to_int) @@
   run q (fun q -> fresh (r) (sorto (inj_nat_list l) r) (sorto q r))
         (fun qs ->
           qs |> Stream.take ~n:(fact @@ List.length l)
