@@ -166,8 +166,7 @@ $$
 $$
 
 $$
-\trule{\typed{\Gamma}{x}{\forall\bar{\alpha}.t}}
-      {\typed{\Gamma}{x}{t[\bar{\alpha}\gets\bar{t^\prime}]}}
+\typed{\Gamma,x:\forall\bar{\alpha}.t}{x}{t[\bar{\alpha}\gets\bar{t^\prime}]}
 \ruleno{Var$_T$}
 $$
 
@@ -202,6 +201,79 @@ $$
 $$
 \caption{Typing rules for the source language}
 \label{functional_typing}
+\end{figure}
+
+\setarrow{\to}
+\newcommand{\step}[2]{\trans{\inbr{#1}}{}{\inbr{#2}}}
+
+\begin{figure}
+\centering
+Values:
+$$
+\mathcal V = \lstinline|True|\mid\lstinline|False|\mid C^n(v_1,\dots,v_n)\mid\lambda x.e
+$$
+Contexts:
+$$
+\mathcal C = \Box\mid\Box\;e\mid v\;\Box\mid\lstinline|let $x$ = $\Box$ in $e$|\mid\lstinline|match $\;\Box\;$ with $\{p_i$->$e_i\}$|\mid C^n(v_1,\dots,v_{k-1},\Box,e_{k+1},\dots,e_n)\mid\Box=e\mid v=\Box 
+$$
+$$
+C[e]\mbox{~--- a context $C$ with an expression $e$ plugged into a hole}
+$$
+Stack of contexts:
+$$
+\mathcal S=\epsilon\mid\mathcal C : \mathcal S
+$$
+Transitions:
+$$
+\step{C:\mathcal S,\, v}{\mathcal S,\, C[v]}
+$$
+$$
+\step{\mathcal S,\,e_1=e_2}{\Box=e_2:\mathcal S,\,e_1}
+$$
+$$
+\step{\mathcal S,\,v=e}{v=\Box:\mathcal S,\,e}
+$$
+$$
+\step{C:\mathcal S,\,v=v}{\mathcal S,\,C[True]}
+$$
+$$
+\step{C:\mathcal S,\,v_1=v_2}{\mathcal S,\,C[False]},\;v_1\ne v_2
+$$
+$$
+\step{\mathcal S,\, f\;e}{\Box\;e:\mathcal S,\, f}
+$$
+$$
+\step{\mathcal S,\, (\lambda x.e_1)\;e_2}{(\lambda x.e_1)\;\Box:\mathcal S,\, e_2}
+$$
+$$
+\step{\mathcal S,\, (\lambda x.e)\;v}{\mathcal S,\, e[x\gets v]}
+$$
+$$
+\step{\mathcal S,\, (\mu f\lambda x.e_1)\;e_2}{(\mu f\lambda x.e_1)\;\Box:\mathcal S,\, e_2}
+$$
+$$
+\step{\mathcal S,\, (\mu f\lambda x.e)\;v}{\mathcal S,\, e[f\gets\mu f\lambda x.e,\, x\gets v]}
+$$
+$$
+\step{\mathcal S,\, C^n(v_1,\dots,v_{k-1},e_k,\dots,e_n)}{C^n(v_1,\dots,v_{k-1},\Box,\dots,e_n):\mathcal S,\, e_k}
+$$
+$$
+\step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;e_1\;$ in $\;e_2$|}{\lstinline|let $\;x\;$ = $\;\Box\;$ in $\;e_2$|:\mathcal S,\, e_1}
+$$
+$$
+\step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;v\;$ in $\;e$|}{\mathcal S,\,e[x\gets v]}
+$$
+$$
+\step{\mathcal S,\, \lstinline|let rec $\;f\;$ = $\;\lambda x.e_1\;$ in $\;e_2$|}{\mathcal S,\, e_2[f\gets\mu f\lambda x.e_1]}
+$$
+$$
+\step{\mathcal S,\,\lstinline|match $\;e\;$ with $\;\{p_i$->$e_i\}$|}{\lstinline|match $\;\Box\;$ with $\;\{p_i$->$e_i\}$|:\mathcal S,\, e}
+$$
+$$
+\step{\mathcal S,\,\lstinline|match $\;C_k^{n_k}(v_1,\dots,v_{n_k})\;$ with $\;\{C_i^{n_i}(x^i_1,\dots,x^i_{n_i})$->$e_i\}$|}{\mathcal S,\,e_k[x^k_1\gets v_1,\dots,x^k_{n_k}\gets v_n]}
+$$
+\caption{Semantics of the source language}
+\label{functional_semantics}
 \end{figure}
 
 \begin{thebibliography}{99}
