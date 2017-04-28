@@ -9,6 +9,7 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{url}
+%\usepackage{multirow}
 
 \sloppy
 
@@ -24,12 +25,13 @@
 \newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
 \newcommand{\inbr}[1]{\left<{#1}\right>}
 \newcommand{\highlight}[1]{\color{red}{#1}}
-\newcommand{\ruleno}[1]{\eqno[\textsc{#1}]}
+\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
 \newcommand{\inmath}[1]{\mbox{$#1$}}
 \newcommand{\lfp}[1]{fix_{#1}}
 \newcommand{\gfp}[1]{Fix_{#1}}
 \newcommand{\vsep}{\vspace{-2mm}}
 \newcommand{\supp}[1]{\scriptsize{#1}}
+\newcommand{\G}{\mathfrak G}
 
 \lstdefinelanguage{ocanren}{
 keywords={fresh, let, in, match, with, when, class,
@@ -107,7 +109,7 @@ Some abstract
 
 \begin{figure}
 \centering
-Supplementary syntax categories:
+{\bf Supplementary syntax categories:}
 $$
 \begin{array}{rcll}
   \mathcal C &=&\lstinline|True|,\,\lstinline|False|,\,C^n,\dots                &\mbox{\supp(constructors with arity)}\\
@@ -115,13 +117,13 @@ $$
   \mathcal P &=&C^n\,(x_1,\,\dots,\,x_n)                                         &\mbox{\supp(shallow patterns)}
 \end{array}
 $$
-Expressions:
+{\bf Expressions:}
 $$
 \begin{array}{rcll}
   \mathcal E &=&x                                                               &\mbox{\supp(variable occurrence)}\\
              & &\lambda x.e                                                     &\mbox{\supp(abstraction)}\\
              & &e_1\;e_2                                                        &\mbox{\supp(application)}\\ 
-             & &C^n\,e_1\ldots e_n                                              &\mbox{\supp(constructor application)}\\
+             & &C^n(e_1,\dots, e_n)                                             &\mbox{\supp(constructor application)}\\
              & &\lstinline|let $x$ = $e_1$ in $e_2$|                            &\mbox{\supp(let-binding)}\\
              & &\lstinline|let rec $f$ = $\lambda x.e_1$ in $e_2$|              &\mbox{\supp(recursive let-binding)}\\
              & &e_1\,=\,e_2                                                     &\mbox{\supp(equality test)}\\
@@ -137,68 +139,70 @@ $$
 
 \begin{figure}
 \centering
-Types:
+{\bf Types:}
 $$
 \begin{array}{rcll}
-  \mathcal X &=&\alpha, \beta, \dots                                           &\mbox{\supp{(type variables)}}\\
+  \mathcal X &=&\alpha, \beta, \dots                                            &\mbox{\supp{(type variables)}}\\
   \mathcal D &=&T^n,...                                                         &\mbox{\supp{(datatype constructors)}}\\
   \mathcal T &=&\lstinline|bool|\mid\alpha\mid T^n(t_1,\dots,t_n)\mid t_1\to t_2 &\mbox{\supp{(types)}}\\
-  \mathcal S &=&\forall\bar{\alpha}.t                                          &\mbox{\supp{(type schemas)}}
+  \mathcal S &=&\forall\bar{\alpha}.t                                           &\mbox{\supp{(type schemas)}}
 \end{array}
 $$
-Typing rules:
-
+{\bf Typing rules:}
+\begin{tabular}{p{7cm}p{7cm}}
 $$
 \typed{\Gamma}{\lstinline|True|,\;\lstinline|False|}{\lstinline|bool|}
 \ruleno{Bool$_T$}
-$$
-
+$$ 
+&
 $$
 \trule{\typed{\Gamma}{e_1}{t}\;\;\;\;\typed{\Gamma}{e_2}{t}}
       {\typed{\Gamma}{e_1=e_2}{\lstinline|bool|}}
 \ruleno{Eq$_T$}
 $$
-
+\\
 $$
 \trule{\typed{\Gamma}{e_i}{t^C_i}}
       {\typed{\Gamma}{C^n(e_1,\dots,e_n)}{t^C}}
 \ruleno{Constr$_T$}
 $$
-
+&
 $$
 \typed{\Gamma,x:\forall\bar{\alpha}.t}{x}{t[\bar{\alpha}\gets\bar{t^\prime}]}
 \ruleno{Var$_T$}
 $$
-
+\\
 $$
 \trule{\typed{\Gamma}{f}{t_1\to t_2}\;\;\;\;\typed{\Gamma}{e}{t_1}}
       {\typed{\Gamma}{f\;e}{t_2}}
 \ruleno{App$_T$}
 $$
-
+&
 $$
 \trule{\typed{\Gamma,\,x:t_1}{f}{t_2}}
       {\typed{\Gamma}{\lambda x.f}{t_1\to t_2}}
 \ruleno{Abs$_T$}
 $$
-
+\\
+\multicolumn{2}{p{14cm}}{
 $$
 \trule{\typed{\Gamma}{e_1}{t_1}\;\;\;\;\typed{\Gamma,x:\forall\bar{\alpha}.t_1}{e_2}{t}}
       {\typed{\Gamma}{\lstinline|let $\;x\;$ = $\;e_1\;$ in $\;e_2$|}{t}},\;\bar{\alpha}=FV(t_1)\setminus FV(\Gamma)
 \ruleno{Let$_T$}
-$$
-
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
 \trule{\typed{\Gamma,f:t_1}{\lambda x.e_1}{t_1}\;\;\;\;\typed{\Gamma,f:\forall\bar{\alpha}.t_1}{e_2}{t}}
       {\typed{\Gamma}{\lstinline|let rec $\;f\;$ = $\;\lambda x.e_1\;$ in $\;e_2$|}{t}},\;\bar{\alpha}=FV(t_1)\setminus FV(\Gamma)
 \ruleno{LetRec$_T$}
-$$
-
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
 \trule{\typed{\Gamma}{e}{t^C}\;\;\;\;\typed{\Gamma,x^i_1:t^{C_i}_1,\dots,x^i_{k_i}:t^{C_i}_{k_i}}{e_i}{t}}
       {\typed{\Gamma}{\lstinline|match $\;e\;$ with $\;\{C_i^{k_i}(x^i_1,\dots,x^i_{k_i})$ -> $e_i\}$|}{t}}
 \ruleno{Match$_T$}
-$$
+$$}
+\end{tabular}
 \caption{Typing rules for the source language}
 \label{functional_typing}
 \end{figure}
@@ -208,73 +212,238 @@ $$
 
 \begin{figure}
 \centering
-Values:
+{\bf Values:}
 $$
-\mathcal V = \lstinline|True|\mid\lstinline|False|\mid C^n(v_1,\dots,v_n)\mid\lambda x.e
+\mathcal V = \lstinline|True|\mid\lstinline|False|\mid C^n(v_1,\dots,v_n)\mid\lambda x.e\mid\mu f\lambda x.e
 $$
-Contexts:
+{\bf Contexts:}
 $$
-\mathcal C = \Box\mid\Box\;e\mid v\;\Box\mid\lstinline|let $x$ = $\Box$ in $e$|\mid\lstinline|match $\;\Box\;$ with $\{p_i$->$e_i\}$|\mid C^n(v_1,\dots,v_{k-1},\Box,e_{k+1},\dots,e_n)\mid\Box=e\mid v=\Box 
+\mathcal C = \Box\;e\mid v\;\Box\mid\lstinline|let $x$ = $\Box$ in $e$|\mid\lstinline|match $\;\Box\;$ with $\{p_i$->$e_i\}$|\mid C^n(\bar{v},\Box,\bar{e})\mid\Box=e\mid v=\Box 
 $$
 $$
-C[e]\mbox{~--- a context $C$ with an expression $e$ plugged into a hole}
+C[e]\mbox{\supp{~--- a context $C$ with an expression $e$ plugged into a hole}}
 $$
-Stack of contexts:
+{\bf Stack of contexts:}
 $$
 \mathcal S=\epsilon\mid\mathcal C : \mathcal S
 $$
-Transitions:
+{\bf States:}
 $$
-\step{C:\mathcal S,\, v}{\mathcal S,\, C[v]}
+\inbr{\mathcal S, e}\mbox{\supp{(stack of contexts, expression)}};\;\inbr{\epsilon,e}\mbox{\supp{(initial state)}};\;\inbr{\epsilon,v}\mbox{\supp{(final state)}}
 $$
+{\bf Transitions:}
+\vskip2mm
+\bgroup
+\def\arraystretch{0}
+\begin{tabular}{p{7cm}p{7cm}}
+\multicolumn{2}{p{14cm}}{
 $$
-\step{\mathcal S,\,e_1=e_2}{\Box=e_2:\mathcal S,\,e_1}
+\step{C:\mathcal S,\, v}{\mathcal S,\, C[v]}\ruleno{Value}
+$$}\\
 $$
+\step{\mathcal S,\, f\;e}{\Box\;e:\mathcal S,\, f}\ruleno{AppL}
+$$&
 $$
-\step{\mathcal S,\,v=e}{v=\Box:\mathcal S,\,e}
+\step{\mathcal S,\, v\;e_2}{v\;\Box:\mathcal S,\, e_2}\ruleno{AppR}
+$$\\
 $$
+\step{\mathcal S,\,e_1=e_2}{\Box=e_2:\mathcal S,\,e_1}\ruleno{EqL}
+$$&
 $$
-\step{C:\mathcal S,\,v=v}{\mathcal S,\,C[True]}
+\step{\mathcal S,\,v=e}{v=\Box:\mathcal S,\,e}\ruleno{EqR}
+$$\\
+\multicolumn{2}{p{14cm}}{
 $$
+\step{C:\mathcal S,\,v=v}{\mathcal S,\,C[\lstinline|True|]}\ruleno{EqTrue}
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
-\step{C:\mathcal S,\,v_1=v_2}{\mathcal S,\,C[False]},\;v_1\ne v_2
+\step{C:\mathcal S,\,v_1=v_2}{\mathcal S,\,C[\lstinline|False|]},\;v_1\ne v_2\ruleno{EqFalse}
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
+\step{\mathcal S,\, (\lambda x.e)\;v}{\mathcal S,\, e[x\gets v]}\ruleno{Beta}
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
-\step{\mathcal S,\, f\;e}{\Box\;e:\mathcal S,\, f}
+\step{\mathcal S,\, (\mu f\lambda x.e)\;v}{\mathcal S,\, e[f\gets\mu f\lambda x.e,\, x\gets v]}\ruleno{Mu}
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
+\step{\mathcal S,\, C^n(v_1,\dots,v_{k-1},e_k,\dots,e_n)}{C^n(v_1,\dots,v_{k-1},\Box,\dots,e_n):\mathcal S,\, e_k}\ruleno{Constr}
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
-\step{\mathcal S,\, (\lambda x.e_1)\;e_2}{(\lambda x.e_1)\;\Box:\mathcal S,\, e_2}
+\step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;e_1\;$ in $\;e_2$|}{\lstinline|let $\;x\;$ = $\;\Box\;$ in $\;e_2$|:\mathcal S,\, e_1}\ruleno{Let}
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
+\step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;v\;$ in $\;e$|}{\mathcal S,\,e[x\gets v]}\ruleno{LetVal}
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
-\step{\mathcal S,\, (\lambda x.e)\;v}{\mathcal S,\, e[x\gets v]}
+\step{\mathcal S,\, \lstinline|let rec $\;f\;$ = $\;\lambda x.e_1\;$ in $\;e_2$|}{\mathcal S,\, e_2[f\gets\mu f\lambda x.e_1]}\ruleno{LetRec}
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
+\step{\mathcal S,\,\lstinline|match $\;e\;$ with $\;\{p_i$->$e_i\}$|}{\lstinline|match $\;\Box\;$ with $\;\{p_i$->$e_i\}$|:\mathcal S,\, e}\ruleno{Match}
+$$}\\
+\multicolumn{2}{p{14cm}}{
 $$
-\step{\mathcal S,\, (\mu f\lambda x.e_1)\;e_2}{(\mu f\lambda x.e_1)\;\Box:\mathcal S,\, e_2}
-$$
-$$
-\step{\mathcal S,\, (\mu f\lambda x.e)\;v}{\mathcal S,\, e[f\gets\mu f\lambda x.e,\, x\gets v]}
-$$
-$$
-\step{\mathcal S,\, C^n(v_1,\dots,v_{k-1},e_k,\dots,e_n)}{C^n(v_1,\dots,v_{k-1},\Box,\dots,e_n):\mathcal S,\, e_k}
-$$
-$$
-\step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;e_1\;$ in $\;e_2$|}{\lstinline|let $\;x\;$ = $\;\Box\;$ in $\;e_2$|:\mathcal S,\, e_1}
-$$
-$$
-\step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;v\;$ in $\;e$|}{\mathcal S,\,e[x\gets v]}
-$$
-$$
-\step{\mathcal S,\, \lstinline|let rec $\;f\;$ = $\;\lambda x.e_1\;$ in $\;e_2$|}{\mathcal S,\, e_2[f\gets\mu f\lambda x.e_1]}
-$$
-$$
-\step{\mathcal S,\,\lstinline|match $\;e\;$ with $\;\{p_i$->$e_i\}$|}{\lstinline|match $\;\Box\;$ with $\;\{p_i$->$e_i\}$|:\mathcal S,\, e}
-$$
-$$
-\step{\mathcal S,\,\lstinline|match $\;C_k^{n_k}(v_1,\dots,v_{n_k})\;$ with $\;\{C_i^{n_i}(x^i_1,\dots,x^i_{n_i})$->$e_i\}$|}{\mathcal S,\,e_k[x^k_1\gets v_1,\dots,x^k_{n_k}\gets v_n]}
-$$
-\caption{Semantics of the source language}
+\step{\mathcal S,\,\lstinline|match $\;C_k^{n_k}(v_1,\dots,v_{n_k})\;$ with $\;\{C_i^{n_i}(x^i_1,\dots,x^i_{n_i})\to e_i\}$|}{\mathcal S,\,e_k[x^k_j\gets v_j]}\ruleno{MatchVal}
+$$}
+\end{tabular}
+\egroup
+\caption{Semantics for the source language}
 \label{functional_semantics}
 \end{figure}
+
+\begin{figure}
+\centering
+$$
+\begin{array}{rcll}
+  \mathcal E &\mathrel{{+}{=}}&\lstinline|fresh ($x$) $\;e$| &\mbox{\supp{(fresh logical variable binder)}}\\
+             &                &e_1\equiv e_2                 &\mbox{\supp{(unification)}}                   \\
+             &                &e_1\not\equiv e_2             &\mbox{\supp{(disequality constraint)}}        \\
+             &                &e_1\vee e_2                   &\mbox{\supp{(disjunction)}}                   \\
+             &                &e_1\wedge e_2                 &\mbox{\supp{(conjunction)}}
+\end{array}
+$$
+\caption{Syntax of the relational DSL}
+\label{relational_syntax}
+\end{figure}
+
+\setarrow{:}
+\begin{figure}
+\centering
+{\bf Types:}
+$$
+\begin{array}{rcll}
+ \mathcal L &=               & \uparrow \alpha \mid\;\uparrow\lstinline|bool|\mid\;\uparrow T^n(l_1,\dots,l_n)&\mbox{\supp{(type of logical terms)}}\\
+ \mathcal T &\mathrel{{+}{=}}& \G                                                                            &\mbox{\supp{(type of logical goals)}}
+\end{array}
+$$
+{\bf Typing rules:}
+\begin{tabular}{p{7cm}p{7cm}}
+\multicolumn{2}{p{14cm}}{
+$$
+\trule{\typed{\Gamma,x:l}{e}{\G}}
+      {\typed{\Gamma}{\lstinline|fresh ($x$) $\;e$|}{\G}}
+\ruleno{Fresh$_T$}
+$$}\\
+$$
+\trule{\typed{\Gamma}{e_1}{l}\;\;\;\;\typed{\Gamma}{e_2}{l}}
+      {\typed{\Gamma}{e_1\equiv e_2}{\G}}
+\ruleno{Unify$_T$}
+$$&
+$$
+\trule{\typed{\Gamma}{e_1}{l}\;\;\;\;\typed{\Gamma}{e_2}{l}}
+      {\typed{\Gamma}{e_1\not\equiv e_2}{\G}}
+\ruleno{Disequality$_T$}
+$$\\
+$$
+\trule{\typed{\Gamma}{e_1}{l}\;\;\;\;\typed{\Gamma}{e_2}{l}}
+      {\typed{\Gamma}{e_1\wedge e_2}{\G}}
+\ruleno{Conjunction$_T$}
+$$&
+$$
+\trule{\typed{\Gamma}{e_1}{l}\;\;\;\;\typed{\Gamma}{e_2}{l}}
+      {\typed{\Gamma}{e_1\vee e_2}{\G}}
+\ruleno{Disjunction$_T$}
+$$
+\end{tabular}
+\caption{Typing rules for the relational DSL}
+\label{relational_typing}
+\end{figure}
+
+\setarrow{\to}
+\begin{figure}
+\centering
+{\bf Semantic variables:}
+\begin{gather*}
+\mathcal S = \mathfrak s_1, \mathfrak s_2, \dots\\
+\Sigma, \Sigma^\prime\dots \subset 2^{\mathcal S}\;\mbox{\supp{(sets of allocated semantics variables)}}\\
+\inbr{\Sigma^\prime, \mathfrak s}\gets\lstinline|new|\;\Sigma\;\mbox{\supp{(allocation of a new semantic variable)}}
+\end{gather*}
+{\bf Values:}
+$$
+\mathcal V \mathrel{{+}{=}} \lstinline|success|\mid\lstinline|failure|\mid\mathfrak s
+$$
+{\bf Contexts:}
+$$
+\mathcal C \mathrel{{+}{=}}\Box\equiv e\mid v\equiv\Box\mid\Box\not\equiv e\mid v\not\equiv\Box
+$$
+{\bf States:}
+\begin{gather*}
+\inbr{\Sigma,\mathcal S,e,\sigma}\mbox{\supp{(set of allocated semantic variables, stack of contexts, expression, logical state)}};\;\inbr{\emptyset,\epsilon,e,}\mbox{\supp{(initial state)}};\;\inbr{\epsilon,v}\mbox{\supp{(final state)}}
+\end{gather*}
+{\bf Transitions:}
+\vskip2mm
+\bgroup
+\def\arraystretch{0}
+\begin{tabular}{p{7cm}p{7cm}}
+\multicolumn{2}{p{14cm}}{
+$$
+\step{C:\mathcal S,\, v}{\mathcal S,\, C[v]}\ruleno{Value}
+$$}\\
+$$
+\step{\mathcal S,\, f\;e}{\Box\;e:\mathcal S,\, f}\ruleno{AppL}
+$$&
+$$
+\step{\mathcal S,\, v\;e_2}{v\;\Box:\mathcal S,\, e_2}\ruleno{AppR}
+$$\\
+$$
+\step{\mathcal S,\,e_1=e_2}{\Box=e_2:\mathcal S,\,e_1}\ruleno{EqL}
+$$&
+$$
+\step{\mathcal S,\,v=e}{v=\Box:\mathcal S,\,e}\ruleno{EqR}
+$$\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{C:\mathcal S,\,v=v}{\mathcal S,\,C[\lstinline|True|]}\ruleno{EqTrue}
+$$}\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{C:\mathcal S,\,v_1=v_2}{\mathcal S,\,C[\lstinline|False|]},\;v_1\ne v_2\ruleno{EqFalse}
+$$}\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\, (\lambda x.e)\;v}{\mathcal S,\, e[x\gets v]}\ruleno{Beta}
+$$}\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\, (\mu f\lambda x.e)\;v}{\mathcal S,\, e[f\gets\mu f\lambda x.e,\, x\gets v]}\ruleno{Mu}
+$$}\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\, C^n(v_1,\dots,v_{k-1},e_k,\dots,e_n)}{C^n(v_1,\dots,v_{k-1},\Box,\dots,e_n):\mathcal S,\, e_k}\ruleno{Constr}
+$$}\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;e_1\;$ in $\;e_2$|}{\lstinline|let $\;x\;$ = $\;\Box\;$ in $\;e_2$|:\mathcal S,\, e_1}\ruleno{Let}
+$$}\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;v\;$ in $\;e$|}{\mathcal S,\,e[x\gets v]}\ruleno{LetVal}
+$$}\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\, \lstinline|let rec $\;f\;$ = $\;\lambda x.e_1\;$ in $\;e_2$|}{\mathcal S,\, e_2[f\gets\mu f\lambda x.e_1]}\ruleno{LetRec}
+$$}\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\,\lstinline|match $\;e\;$ with $\;\{p_i$->$e_i\}$|}{\lstinline|match $\;\Box\;$ with $\;\{p_i$->$e_i\}$|:\mathcal S,\, e}\ruleno{Match}
+$$}\\
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\,\lstinline|match $\;C_k^{n_k}(v_1,\dots,v_{n_k})\;$ with $\;\{C_i^{n_i}(x^i_1,\dots,x^i_{n_i})\to e_i\}$|}{\mathcal S,\,e_k[x^k_j\gets v_j]}\ruleno{MatchVal}
+$$}
+\end{tabular}
+\egroup
+\caption{Semantics for the relational DSL}
+\label{relational_semantics}
+\end{figure}
+
 
 \begin{thebibliography}{99}
 \bibitem{TRS}
