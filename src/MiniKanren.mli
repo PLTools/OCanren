@@ -425,8 +425,14 @@ module Fmap6 (T : T6) :
 
 module ManualReifiers :
   sig
+    val simple_reifier: helper -> ('a, 'a logic) injected -> 'a logic
+
+    val bool_reifier : helper -> (bool, bool logic) injected -> bool logic
+
     val int_reifier: helper -> (int, int logic) injected -> int logic
+
     val string_reifier: helper -> (string, string logic) injected -> string logic
+
     val pair_reifier: (helper -> ('a,'b) injected -> 'b) ->
                     (helper -> ('c,'d) injected -> 'd) ->
                     helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
