@@ -1,0 +1,28 @@
+\section{Relational Programming in \miniKanren}
+\label{ocanren}
+
+In the context of this paper we will use a certain concrete implementation of \cd{miniKanren}~--- a shallow DSL for Objective 
+Caml\footnote{https://github.com/dboulytchev/ocanren}, called \ocanren~\cite{ocanren}. \ocanren corresponds to \miniKanren with
+disequality constraints~\cite{CKanren}, and (modulo types) repeats the original implementation. Here we describe the external view 
+on \ocanren, giving only intuitive meaning of its constructs; the formal semantics will be presented in section~\ref{relational_extension}.
+
+The central notion of \miniKanren is \emph{goal}; in \ocanren a goal can be arbitrary expression of reserved type $\G$\footnote{In concrete syntax: \lstinline|goal|.}.
+There are only five syntactic forms of goals (here $g, g_1, g_2$ denote arbitrary goals):
+
+\begin{itemize}
+  \item conjunction: $g_1\wedge g_2$ (in concrete syntax \lstinline|$g_1\;$ &&& $\;g_2$|);
+  \item disjunction: $g_1\vee g_2$ (in concrete syntax \lstinline!$g_1\;$ ||| $\;g_2$!);
+  \item fresh variable introduction: $\lstinline|fresh ($x$) $\;g$|$;
+  \item unification: $t_1\;\equiv\;t_2$ (in concrete syntax $t_1\; \mbox{\cd{===}} \;t_2$);
+  \item disequality constrains: $t_1\;\not\equiv\;t_2$ (in concrete syntax $t_1\; \mbox{\cd{=/=}} \;t_2$).
+\end{itemize}
+
+Two last forms constitute a basis for goal construction; here $t_1$ and $t_2$ are \emph{terms}. In \ocanren a term is
+arbitrary expression of polymorphic \emph{logic type} $\uparrow\!\alpha$ (in concrete syntax \lstinline|$\alpha\;$logic|\footnote{In actual 
+implementation the terms have more complex two-parametric type, which encodes tagging, needed to be performed when the results of
+relational program are returned into functional word; these details, however, are irrelevant to the objectives of the paper, and we stick with the 
+simplified version.}).
+
+\begin{lstlisting}
+type $\alpha$ list = Nil | Cons of $\alpha$ * $\alpha$ list
+\end{lstlisting}
