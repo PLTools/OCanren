@@ -12,7 +12,7 @@ its way in dozens of host languages, including Scala, Haskell and Standard ML. T
 combining functional and logic features; in addition \miniKanren possesses some quite appealing features (complete search, purity, 
 declarativity, etc).
 
-With relational approach, it becomes possible to give a simple and elegant solution for the problems, otherwise
+With relational approach, it becomes possible to give simple and elegant solutions for the problems, otherwise
 considered as tricky, tough, tedious, or boring. For example, relational interpreters can be used to derive
 \emph{quines}~--- programs, which reduce to itself, as well as \emph{twines} or \emph{trines} (a pairs or triples of
 programs, reducing to each other)~\cite{Untagged}; a straightforward relational description of
@@ -27,7 +27,7 @@ function under conversion can in turn be functions.
 
 We present a generalized form of relational conversion, which can be applied to high-order terms as well. It turns out, however, that
 in order to perform the conversion the term has to be properly typed. In the paper we study the relational conversion for a small ML-like 
-language (essentialy, a certain subset of OCaml), equipped with Hindley-Milner type system with let-polymorphism~\cite{Types}. 
+language (essentialy, a certain subset of Objective Caml), equipped with Hindley-Milner type system with let-polymorphism~\cite{Types}. 
 We start from retelling the syntax, typing rules and operational semantics, and then extend the source language with conventional set of 
 relational constructs. This set corresponds to the existing typed embedding of \miniKanren into OCaml~\cite{ocanren}. We then present typing rules and 
 develop operational semantics for this relational extension; to our knowledge this is the first attempt to specify formal semantics for

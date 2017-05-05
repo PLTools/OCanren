@@ -49,7 +49,7 @@ identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,
 fontadjust=true,
-literate={->}{{$\to\;\;$}}3 {===}{{$\equiv$}}3 {=/=}{{$\not\equiv$}}3 {|>}{{$\triangleright$}}3,
+literate={->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2 {^}{{$\uparrow$}}1,
 morecomment=[s]{(*}{*)}
 }
 
@@ -82,7 +82,7 @@ language=ocanren
 
 \mainmatter
 
-\title{Relational Conversion for Typed High-Order Programs}
+\title{Relational Conversion for Typed High-Order Functions}
 
 \author{
   Petr Lozov\inst{1} \and Andrei Vyatkin\inst{2} \and Dmitry Boulytchev\inst{3}
@@ -608,9 +608,9 @@ Proceedings of the 2012 Workshop on Scheme and Functional Programming (Scheme '1
 Jeremy Gibbons. Datatype-generic Programming //
 Proceedings of the 2006 International Conference on Datatype-generic Programming.
 
-%\bibitem{Deriving}
-%Jeremy Yallop.
-%Practical Generic Programming in OCaml // Proceedings of 2007 Workshop on ML.
+\bibitem{Deriving}
+Jeremy Yallop.
+Practical Generic Programming in OCaml // Proceedings of 2007 Workshop on ML.
 
 %\bibitem{InstantGenerics}
 %Manuel M. T. Chakravarty, Gabriel C. Ditu, Roman Leshchinskiy.
@@ -648,6 +648,9 @@ Benjamin Pierce. Types and Programming Languages. MIT Press, 2002.
 
 \bibitem{Felleisen}
 Andrew Wright, Matthias Felleisen. A Syntactic Approach to Type Soundness // Information and Computation, Vol.~115, No.~1, 1994.
+
+\bibitem{cardelli}
+Luca Cardelli, Peter Wegner. On Understanding Types, Data Abstraction, and Polymorphism // ACM Computing Surveys, Vol.~17, No.~4, 1985.
 \end{thebibliography}
 
 \end{document}

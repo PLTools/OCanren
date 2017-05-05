@@ -3,26 +3,165 @@
 
 In the context of this paper we will use a certain concrete implementation of \cd{miniKanren}~--- a shallow DSL for Objective 
 Caml\footnote{https://github.com/dboulytchev/ocanren}, called \ocanren~\cite{ocanren}. \ocanren corresponds to \miniKanren with
-disequality constraints~\cite{CKanren}, and (modulo types) repeats the original implementation. Here we describe the external view 
+disequality constraints~\cite{CKanren}, and (modulo types) follows the original implementation. Here we describe the external view 
 on \ocanren, giving only intuitive meaning of its constructs; the formal semantics will be presented in section~\ref{relational_extension}.
+We also use a simplified syntax, which is different from the concrete syntax of the actual implementation, but assumed to
+be easier to read.
 
-The central notion of \miniKanren is \emph{goal}; in \ocanren a goal can be arbitrary expression of reserved type $\G$\footnote{In concrete syntax: \lstinline|goal|.}.
-There are only five syntactic forms of goals (here $g, g_1, g_2$ denote arbitrary goals):
+The central notion of \miniKanren is \emph{goal}; in \ocanren a goal can be arbitrary expression of reserved goal type, which we denote $\G$.
+There are only five syntactic forms of goals (below $g, g_1, g_2$ denote arbitrary goals):
 
 \begin{itemize}
-  \item conjunction: $g_1\wedge g_2$ (in concrete syntax \lstinline|$g_1\;$ &&& $\;g_2$|);
-  \item disjunction: $g_1\vee g_2$ (in concrete syntax \lstinline!$g_1\;$ ||| $\;g_2$!);
+  \item conjunction: $g_1\wedge g_2$;
+  \item disjunction: $g_1\vee g_2$;
   \item fresh variable introduction: $\lstinline|fresh ($x$) $\;g$|$;
-  \item unification: $t_1\;\equiv\;t_2$ (in concrete syntax $t_1\; \mbox{\cd{===}} \;t_2$);
-  \item disequality constrains: $t_1\;\not\equiv\;t_2$ (in concrete syntax $t_1\; \mbox{\cd{=/=}} \;t_2$).
+  \item unification: $t_1\;\equiv\;t_2$;
+  \item disequality constraint: $t_1\;\not\equiv\;t_2$.
 \end{itemize}
 
 Two last forms constitute a basis for goal construction; here $t_1$ and $t_2$ are \emph{terms}. In \ocanren a term is
-arbitrary expression of polymorphic \emph{logic type} $\uparrow\!\alpha$ (in concrete syntax \lstinline|$\alpha\;$logic|\footnote{In actual 
+arbitrary expression of polymorphic \emph{logic type}\footnote{In actual 
 implementation the terms have more complex two-parametric type, which encodes tagging, needed to be performed when the results of
 relational program are returned into functional word; these details, however, are irrelevant to the objectives of the paper, and we stick with the 
-simplified version.}).
+simplified version.} $\uparrow\!\alpha$. The simplest expression of logic type is a variable, bound in \lstinline|fresh|. Another examples are primitive values, \emph{injected} 
+into the logic domain with a built-in primitive ``$\uparrow$'', such as $\uparrow\!3$ (of type \lstinline|$\uparrow$int|) or \lstinline|$\uparrow$True| 
+(of type \lstinline|$\uparrow$bool|). With these simplest forms some relational programs can already be written:
 
 \begin{lstlisting}
-type $\alpha$ list = Nil | Cons of $\alpha$ * $\alpha$ list
+   val is_zero : ^int -> ^bool -> $\G$
+   let is_zero n b = 
+     (n === ^0 /\ b === ^True) \/
+     (n =/= ^0 /\ b === ^False)
 \end{lstlisting}
+
+Function \lstinline|is_zero| implements a binary relation between integers and booleans; when called with specific arguments, it
+returns a goal, which can be executed or combined with another goals. In former case, a stream of \emph{answers} is returned. 
+An element of the stream contains the description of certain constraints for logical variables, which have to be respected in
+order for the relation to hold. 
+
+For example, running the goal 
+
+\begin{lstlisting}
+   iz_zero ^0 ^True
+\end{lstlisting}
+
+\noindent returns a stream \lstinline|[()]| with one ``empty'' element since no additional constraints are discovered. 
+Running 
+
+\begin{lstlisting}
+   iz_zero q ^True
+\end{lstlisting}
+
+\noindent (where \lstinline|q| is a fresh logical variable) returns a stream \lstinline|[q=0]|, which represents the single
+answer. Goal
+
+\begin{lstlisting}
+   iz_zero q ^False
+\end{lstlisting}
+
+\noindent provides a stream \lstinline|[q=_.0 (=/= 0)]|, which can be interpreted as ``\lstinline|q| can be arbitrary
+integer as long as it is different from zero''. 
+Finally, the goal
+
+\begin{lstlisting}
+   iz_zero q p
+\end{lstlisting}
+
+\noindent returns a stream with two elements \lstinline|[(q=0, p=True); (q=_.0 (=/= 0), p=False)]|, which represents all possible
+pairs in the relation.
+
+As more interesting example consider the following definition\footnote{From now on we will maintain the relational naming convention
+by adding ``$^o$'' to the end of every relational definition name.}:
+
+\begin{lstlisting}
+   val eq$^o$ : ^$\alpha$ -> ^$\alpha$ -> ^bool -> $\G$
+   let eq$^o$ x y b = (x ===  y /\ b === ^True) \/ (x =/= y /\ b === ^False)
+\end{lstlisting}
+
+The interesting part here is polymorphism: both \lstinline|eq$^o$ ^3 q ^True| and \lstinline|eq$^o$ ^False q ^True| would work, 
+giving as results streams \lstinline|[q=3]| and \lstinline|[q=False]| respectively. However, in the case of relational definition
+the polymorphism is implicitly \emph{bound}~\cite{cardelli}: despite the type, the application \lstinline|eq$^o$ ($\lambda$x.x) ($\lambda$y.y) q|
+would result in a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well, as it
+deals only with first-order syntactic unification~\cite{Unification}. The lack of direct support for bounded polymorphism in Objective Caml
+makes relational specifications in \ocanren somewhat weakly typed, so we express the requirement to unify only non-functional types in the form 
+of convention. A bit later we formulate this requirement in more precise form.
+
+A values of user-defined types have to be injected into the logic domain as well. Since we want to be 
+able to put a logical variable in arbitrary position inside a data structure, it is desirable to keep type definitions
+\emph{fully polymorphic}. In other words, instead of the following (very common) definition for, say, lists
+
+\begin{lstlisting}
+   type $\alpha$ list = Nil | Cons of $\alpha$ * $\alpha$ list
+\end{lstlisting}
+
+\noindent we suggest to use more abstract fully polymorphic type
+
+\begin{lstlisting}
+   type ($\alpha$, $\beta$) alist = Nil | Cons of $\alpha$ * $\beta$
+\end{lstlisting}
+
+This form of definition can be used to acquire both the original type
+
+\begin{lstlisting}
+   type $\alpha$ list = ($\alpha$, $\alpha$ list) alist
+\end{lstlisting}
+
+\noindent and its logical counterpart
+
+\begin{lstlisting}
+   type $\alpha$ llist = ^((^$\alpha$, $\alpha$ llist) alist)
+\end{lstlisting}
+
+Then, the conversion between these two can be expressed using datatype-generic~\cite{DGP} function
+\lstinline|fmap|, which can be derived using existing frameworks~\cite{Deriving}:
+
+\begin{lstlisting}
+   val ($\uparrow_{\mbox{\cd{list}}}$) : $\alpha$ list -> $\alpha$ llist
+   let rec ($\uparrow_{\mbox{\cd{list}}}$) l = ^(fmap$_{\mbox{\cd{llist}}}$ (^) ($\uparrow_{\mbox{\cd{list}}}$) l)
+\end{lstlisting}
+
+We consider fully polymorphic types to be a very attractive pattern since they allow to import/export
+data structures to/from logic domain in a systematic manner. Moreover, with fully polymorphic types the non-functional
+unification convention can be expressed in more straightforward form: we assume, that polymorphic types never
+instantiated for functional types (or types, which instantiated for functional types, etc.)
+
+Finally, we describe the unnesting technique, used for relational conversion of first-order functions. As an example we take
+list concatenation:
+
+\begin{lstlisting}
+   let rec append x y =
+     match x with
+     | Nil -> y
+     | Cons (h, t) -> Cons (h, append t y)
+\end{lstlisting}
+
+The unnesting technique introduces a new name for each nested function call; in our case there is only one nested call, namely,
+the recursive call to \lstinline|append| itself, so the unnested function looks like
+
+\begin{lstlisting}
+   let rec append x y =
+     match x with 
+     | Nil -> y
+     | Cons (h, t) -> 
+       let ty = append t y in
+       h :: ty
+\end{lstlisting}
+
+Now the conversion is straightforward. Note, that pattern-matching construct is transformed into a disjunction, and new names, 
+introduced in via bindings in patterns and unnestings, are transformed into \lstinline|fresh| variables:
+
+\begin{lstlisting}
+   let rec append$^o$ x y xy =
+     (t === ^Nil /\ xy === y) \/
+     (fresh (h t ty)
+        (x  === ^Cons (h, t)) /\
+        (xy === ^Cons (h, ty)) /\
+        (append$^o$ t y ty)
+     )
+\end{lstlisting}
+
+
+
+
+
+
