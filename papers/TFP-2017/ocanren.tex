@@ -5,7 +5,7 @@ In the context of this paper we will use a certain concrete implementation of \c
 Caml\footnote{https://github.com/dboulytchev/ocanren}, called \ocanren~\cite{ocanren}. \ocanren corresponds to \miniKanren with
 disequality constraints~\cite{CKanren}, and (modulo types) follows the original implementation. Here we describe the external view 
 on \ocanren, giving only intuitive meaning of its constructs; the formal semantics will be presented in section~\ref{relational_extension}.
-We also use a simplified syntax, which is different from the concrete syntax of the actual implementation, but assumed to
+We also use a simplified syntax, which is different from the concrete syntax in actual implementation, but assumed to
 be easier to read.
 
 The central notion of \miniKanren is \emph{goal}; in \ocanren a goal can be arbitrary expression of reserved goal type, which we denote $\G$.
@@ -22,7 +22,7 @@ There are only five syntactic forms of goals (below $g, g_1, g_2$ denote arbitra
 Two last forms constitute a basis for goal construction; here $t_1$ and $t_2$ are \emph{terms}. In \ocanren a term is
 arbitrary expression of polymorphic \emph{logic type}\footnote{In actual 
 implementation the terms have more complex two-parametric type, which encodes tagging, needed to be performed when the results of
-relational program are returned into functional word; these details, however, are irrelevant to the objectives of the paper, and we stick with the 
+relational program are returned into the functional word; these details, however, are irrelevant to the objectives of the paper, and we stick with the 
 simplified version.} $\uparrow\!\alpha$. The simplest expression of logic type is a variable, bound in \lstinline|fresh|. Another examples are primitive values, \emph{injected} 
 into the logic domain with a built-in primitive ``$\uparrow$'', such as $\uparrow\!3$ (of type \lstinline|$\uparrow$int|) or \lstinline|$\uparrow$True| 
 (of type \lstinline|$\uparrow$bool|). With these simplest forms some relational programs can already be written:
@@ -86,7 +86,7 @@ deals only with first-order syntactic unification~\cite{Unification}. The lack o
 makes relational specifications in \ocanren somewhat weakly typed, so we express the requirement to unify only non-functional types in the form 
 of convention. A bit later we formulate this requirement in more precise form.
 
-A values of user-defined types have to be injected into the logic domain as well. Since we want to be 
+Values of user-defined types have to be injected into the logic domain as well. Since we want to be 
 able to put a logical variable in arbitrary position inside a data structure, it is desirable to keep type definitions
 \emph{fully polymorphic}. In other words, instead of the following (very common) definition for, say, lists
 
@@ -147,7 +147,7 @@ the recursive call to \lstinline|append| itself, so the unnested function looks 
        h :: ty
 \end{lstlisting}
 
-Now the conversion is straightforward. Note, that pattern-matching construct is transformed into a disjunction, and new names, 
+Now the conversion is straightforward: the pattern-matching construct is transformed into a disjunction, and new names, 
 introduced in via bindings in patterns and unnestings, are transformed into \lstinline|fresh| variables:
 
 \begin{lstlisting}
@@ -159,6 +159,35 @@ introduced in via bindings in patterns and unnestings, are transformed into \lst
         (append$^o$ t y ty)
      )
 \end{lstlisting}
+
+Now, consider the following very natural definition of the function, which builds a composition for the
+list of functions:
+
+\begin{lstlisting}
+   let rec compose l =
+     let ($\circ$) f g = $\lambda$x.f (g x) in
+     match l with
+     | Nil         -> id
+     | Cons (h, t) -> h $\circ$ compose t
+\end{lstlisting}
+
+This definition can not be converted to the relational form directly by unnesting, since lambda is used as a result. 
+In order to apply unnesting the definition has to be converted into $\eta$-long form:
+
+\begin{lstlisting}
+   let rec compose l x =
+     let ($\circ$) f g x = f (g x) in  
+     match l with
+     | Nil         -> id x
+     | Cons (h, t) -> h (compose t x)
+\end{lstlisting}
+
+This transformation, however, ruins the flavor of functional programming; it would be very unreasonable to encourage this
+style of programming in order for relational conversion to work.
+
+In our approach $\eta$-expansion is blended with the conversion algorithm and performed on-demend invisible for the end-user.
+
+
 
 
 

@@ -22,12 +22,11 @@ relational list sorting can be used to generate all permutations~\cite{ocanren},
 On the other hand, writing relational specification can sometimes be a tricky and error-prone task. Fortunately, many 
 specifications can be written systematically by ``generalizing'' a certain functional program. From the very beginning 
 the conversion from functional to relational form was considered as an element of relational programming thesaurus~\cite{TRS}. However,
-the traditional approach~--- \emph{unnesting}~--- works only for first-order programs, where none of the arguments of
-function under conversion can in turn be functions.
+the traditional approach~--- \emph{unnesting}~--- was formulated for untyped case and worked only for specifically written
+programs.
 
-We present a generalized form of relational conversion, which can be applied to high-order terms as well. It turns out, however, that
-in order to perform the conversion the term has to be properly typed. In the paper we study the relational conversion for a small ML-like 
-language (essentialy, a certain subset of Objective Caml), equipped with Hindley-Milner type system with let-polymorphism~\cite{Types}. 
+We present a generalized form of relational conversion, which can be applied to typed terms in general form. We study the relational conversion 
+for a small ML-like language (essentialy, a certain subset of Objective Caml), equipped with Hindley-Milner type system with let-polymorphism~\cite{Types}. 
 We start from retelling the syntax, typing rules and operational semantics, and then extend the source language with conventional set of 
 relational constructs. This set corresponds to the existing typed embedding of \miniKanren into OCaml~\cite{ocanren}. We then present typing rules and 
 develop operational semantics for this relational extension; to our knowledge this is the first attempt to specify formal semantics for
@@ -36,7 +35,7 @@ semantics. We establish two type-related restrictions in order for the conversio
 
 \begin{itemize}
 \item all used-defined types in the source program have to be fully-polymorphic (i.e. all parameters of all their constructors must be type variables).
-\item the polymorphism in the relational extension is considered as implicitly bounded~--- we allow type parameters to be instantiated only
+\item polymorphism in the relational extension is considered as implicitly bounded~--- we allow type parameters to be instantiated only
 by ground types (i.e. non-function types or types, parameterized only by ground types).
 \end{itemize}
 
