@@ -160,32 +160,12 @@ introduced in via bindings in patterns and unnestings, are transformed into \lst
      )
 \end{lstlisting}
 
-Now, consider the following very natural definition of the function, which builds a composition for the
-list of functions:
-
-\begin{lstlisting}
-   let rec compose l =
-     let ($\circ$) f g = $\lambda$x.f (g x) in
-     match l with
-     | Nil         -> id
-     | Cons (h, t) -> h $\circ$ compose t
-\end{lstlisting}
-
-This definition can not be converted to the relational form directly by unnesting, since lambda is used as a result. 
-In order to apply unnesting the definition has to be converted into $\eta$-long form:
-
-\begin{lstlisting}
-   let rec compose l x =
-     let ($\circ$) f g x = f (g x) in  
-     match l with
-     | Nil         -> id x
-     | Cons (h, t) -> h (compose t x)
-\end{lstlisting}
-
-This transformation, however, ruins the flavor of functional programming; it would be very unreasonable to encourage this
-style of programming in order for relational conversion to work.
-
-In our approach $\eta$-expansion is blended with the conversion algorithm and performed on-demand invisibly for the end-user.
+However, not every definition can be converted to the relational form directly by unnesting, since lambda abstraction
+can be used as a result. In order to apply unnesting all definitions has to be transformed into $\eta$-long form. In
+untyped case, however, it can not be done automatically. Shifting this work into an end-user, however, would ruin 
+the flavor of functional programming; it would be very unreasonable to encourage this style of programming in order 
+for relational conversion to work. In our approach $\eta$-expansion is blended with the conversion algorithm and 
+performed on-demand invisibly for the end-user.
 
 
 
