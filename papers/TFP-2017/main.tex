@@ -11,6 +11,7 @@
 \usepackage{url}
 \usepackage{stmaryrd}
 \usepackage{xspace}
+\usepackage{comment}
 
 \sloppy
 
@@ -49,7 +50,7 @@ identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,
 fontadjust=true,
-literate={->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2 {^}{{$\uparrow$}}1,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2 {^}{{$\uparrow$}}1,
 morecomment=[s]{(*}{*)}
 }
 
@@ -82,7 +83,8 @@ language=ocanren
 
 \mainmatter
 
-\title{Typed Relational Conversion}
+\title{Typed Relational Conversion\\
+(extended abstract)}
 
 \author{
   Petr Lozov\inst{1} \and Andrei Vyatkin\inst{2} \and Dmitry Boulytchev\inst{3}
@@ -117,7 +119,10 @@ evaluate it for a number of realistic examples.
 
 \input{introduction.tex}
 \input{ocanren.tex}
+\input{evaluation.tex}
+\input{conclusion.tex}
 
+\begin{comment}
 \section{The Source Language}
 
 \begin{figure}
@@ -310,20 +315,6 @@ $$}
 \caption{Semantics for the source language}
 \label{functional_semantics}
 \end{figure}
-
-\section{Relational Extension}
-\label{relational_extension}
-
-\section{Relational Conversion}
-
-\section{Conversion Correctness}
-
-
-\section{Evaluation}
-
-
-\section{Conclusion}
-
 
 \begin{figure}
 \centering
@@ -571,7 +562,7 @@ $$}
 \egroup
 \caption{Relational conversion rules}
 \end{figure}
-
+\end{comment}
 
 \begin{thebibliography}{99}
 \bibitem{TRS}

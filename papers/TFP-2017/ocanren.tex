@@ -4,7 +4,7 @@
 In the context of this paper we will use a certain concrete implementation of \cd{miniKanren}~--- a shallow DSL for Objective 
 Caml\footnote{https://github.com/dboulytchev/ocanren}, called \ocanren~\cite{ocanren}. \ocanren corresponds to \miniKanren with
 disequality constraints~\cite{CKanren}, and (modulo types) follows the original implementation. Here we describe the external view 
-on \ocanren, giving only intuitive meaning of its constructs; the formal semantics will be presented in section~\ref{relational_extension}.
+on \ocanren, giving only intuitive meaning of its constructs; the formal semantics will be presented in the full version of the paper. %section~\ref{relational_extension}.
 We also use a simplified syntax, which is different from the concrete syntax in actual implementation, but assumed to
 be easier to read.
 
@@ -185,7 +185,7 @@ In order to apply unnesting the definition has to be converted into $\eta$-long 
 This transformation, however, ruins the flavor of functional programming; it would be very unreasonable to encourage this
 style of programming in order for relational conversion to work.
 
-In our approach $\eta$-expansion is blended with the conversion algorithm and performed on-demend invisible for the end-user.
+In our approach $\eta$-expansion is blended with the conversion algorithm and performed on-demand invisibly for the end-user.
 
 
 

@@ -1,0 +1,332 @@
+\section{Implementation and evaluation}
+\label{evaluation}
+
+We implemented the relational conversion for the subset of Objective Caml language, using the infrastructure of the 
+original compiler\footnote{\url{http://github.com/ocaml/ocaml}}. We rewrite the original abstract syntax tree with
+the types, inferred by the compiler, into relational form, using the set of combinators from \ocanren. 
+
+Our preliminary evaluation has shown, that our convertor generates a lot of abstractions, most of which can be inlined.
+So we additionally implemented an optimization pass, which performs inlining where possible. This optimization
+greatly improves the performance of the converted program.
+
+As the first example of the conversion we consider a plain implementation of the \lstinline|map| function for lists:
+
+\begin{lstlisting}
+   let rec map = fun f.fun l.
+     match l with
+     | Nil          -> Nil
+     | Cons (x, xs) -> Cons (f x, map f xs)
+\end{lstlisting}
+
+It's relational counterpart without optimizations is shown below:
+
+\begin{lstlisting}
+   let rec map = funf.funl.funq.
+     fresh (q$_1$) ((l q$_1$) /\
+       (((q$_1$ ===  ^Nil) /\ ((fun q$_2$. q$_2$ ===   ^Nil) q)) \/
+       (fresh (q$_3$ q$_4$)
+         (q$_1$ ===  ^Cons (q$_3$, q$_4$)) /\
+         (fun x.fun xs. (fun q$_5$.
+           (fresh (q$_6$ q$_7$) 
+             (f x q$_6$) /\
+             (map f xs q$_7$) /\
+             (q$_5$ ===  ^Cons (q$_6$, q$_7$)))) q
+         ) ((===) q$_3$) ((===) q$_4$))))
+\end{lstlisting}
+
+After inlining we get the following final relational form:
+
+\begin{lstlisting}
+   let rec map = fun f.fun l.fun q.
+     fresh (q$_1$) ((l q$_1$) /\
+       (((q$_1$ ===  ^Nil) /\ (q ===  ^Nil)) \/
+       (fresh (q$_3$ q$_4$)
+         (q$_1$ ===  ^Cons (q$_3$, q$_4$))
+           (fresh (q$_6$ q$_7$)
+             (f ((===) q$_3$) q$_6$) \/
+             (map f ((===) q$_4$) q$_7$) \/
+             (q === ^Cons (q$_6$, q$_7$))))))
+\end{lstlisting}
+
+In the next subsections we consider more elaborated and interesting examples.
+
+\subsection{High-order Lambda Interpreter}
+
+The construction of this interpreter was inspired by Felleisen-style semantic description~\cite{Felleisen}, when the rule for finding a redex
+inside a lambda term is expressed by mean of a context. Our interpreter takes as a first argument a function, which decomposes the term, passed
+as a second argument, into the redex and the context. Thus, various reduction orders can be expressed by changing only decomposition function.
+
+We represent terms in the De Bruijn notation, thus the types for terms, contexts and the result of decomposition look like as follows:
+
+\begin{lstlisting}
+   type ('nat, 'lambda) lambda = 
+   | Index of 'nat
+   | Abst  of 'lambda
+   | App   of 'lambda * 'lambda
+  
+   type ('lambda, 'context) context = 
+   | Hole
+   | AppL  of 'context * 'lambda
+   | AppR  of 'lambda * 'context
+   | AbstH of 'context
+
+   type ('lambda, 'context) split = 
+   | Nothing 
+   | Beta of 'context * 'lambda * 'lambda
+\end{lstlisting}
+
+We also implemented three reduction strategies~--- call-by-name, call-by-value and normal order and converted 
+the interpreter into the relational form. Our relational interpreter now allows, first, to reduce lambda terms
+
+\begin{lstlisting}
+   eval normal_order (=== (^App^(Abst^(Index ^Z), ^Index ^(S ^Z)))) q ==> [q=Index (S Z)]
+\end{lstlisting}
+
+and, second, to generate from a normal form a set of terms, which can be reduced to this normal form, using specified
+reduction order:
+
+\begin{lstlisting}
+   eval normal_order (=== q) ^(Index ^Z) ==>              
+   [
+    q=Index Z; 
+    q=App (Abst (Index Z), Index Z); 
+    q=App (Abst (Index (S Z)), _.18); 
+    q=App (Abst (Index Z), App (Abst (Index Z), Index Z)); 
+    q=App (Abst (Index Z), App (Abst (Index (S Z), _.45)); 
+    ...
+   ]
+\end{lstlisting}
+
+\subsection{Syntactic Unification}
+
+Syntactic unification~\cite{Unification} for two terms finds a substitution, which transforms these terms into equal. We 
+suppose, that a term can be either a variable, or an application of a constructor to some terms, hence the following definition:
+
+\begin{lstlisting}
+   type ('var, 'const, 'terms) term = 
+   | Var  of 'var
+   | Cnst of 'const * 'terms
+\end{lstlisting}
+
+In our implementation we perform a unification in the context of some initial substitution; as the unification can fail, it
+returns optional substitution. We represents a substitution with a type \lstinline|subst|, which is simply an associative
+list. 
+
+Relational unification allows, first, to perform regular unification:
+
+\begin{lstlisting}
+   unify (=== Var "x") (=== ^(Cnst (^"A", (=== [])))) [] q ==> 
+   [q=Some [("x", Cnst ("A", []))]]
+\end{lstlisting}
+
+then, to generate one or both terms, which unification results in a given substitution:
+
+\begin{lstlisting}
+   unify (=== q) (=== ^(Cnst (^"A", []))) (=== []) ^(Some [(^"z", ^(Cnst (^"A", [])))])) ==> 
+   [q=Var "z"]
+\end{lstlisting}
+
+and, finally, to calculate a pair of terms, which transform one substitution to another:
+
+\begin{lstlisting}
+   unify (=== q) (=== r) (=== []) ^(Some ^[(^"z", ^(Cnst (^"A", ^[])))]) ==> 
+   [
+    (q=Var "x"               , r=Cnst ("A", []));
+    (q=Cnst ("A", [])        , r=Var "x");
+    (q=Cnst (_.32, [Var "x"]), r=Cnst (_.32, [Cnst ("A", [])]))
+   ]
+\end{lstlisting}
+
+\begin{comment}
+\subsection{Вывод типов Хиндли-Милнера}
+
+Данный алгоритм по лямбда-терму вычисляет наиболее общий тип этого терма.
+
+Для описания используемой системы типов были написаны алгебраические типы $lambda\_type$ и $gen\_type$. Первый тип определяет две типовые контстанты $TInt$ и $TBool$, типовые именовынные переменные, а также объединение пары типов $a$ и $b$ в функциональный тип $a \rightarrow b$. Тип $gen\_type$ является полиморфным замыканием типа по списку имен типовых переменных.
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+type ('var, 'lambda_type) lambda_type =
+ | TInt
+ | TBool
+ | TVar of 'var
+ | TFun of 'lambda_type * 'lambda_type
+
+type ('list, 'lambda_type) gen_type =
+ | Gen of 'list * 'lambda_type
+\end{lstlisting}
+
+Синтаксис языка (типы $literal$ и $lambda$) состоит из констат, переменных, применения, абстакции и конструкции $let$. 
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+type literal =
+ | LInt of int
+ | LBool of bool
+
+type ('var, 'literal, 'lambda) lambda =
+ | Var  of 'var
+ | Lit  of 'literal
+ | App  of 'lambda * 'lambda
+ | Abst of 'var * 'lambda
+ | Let  of 'var * 'lambda * 'lambda
+\end{lstlisting}
+
+Итоговая функция $type\_inference$ имеет следующий тип:
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+type lambda_type$_0$ = (num, lambda_type$_0$) lambda_type
+type lambda$_0$ = (list, literal, lambda$_0$) lambda
+
+type_inference ::
+  'a ->('a ->'a) ->'b lambda$_0$ ->'a lambda_type$_0$ option
+\end{lstlisting}
+Данная функция абстрагируется от типа имен типовых переменных с помощью первого и второго аргумента, а именно имени первой свободной типовой переменной, а также функции-генеретора следующей свободной переменной по предыдущей.
+
+Например, если в качестве имен типовых переменных использовать числа Пеано, получим:
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+let nat_type_inference term = type_inference Z (fun n -> S n) term
+\end{lstlisting}
+
+Полученное с помощью реляционного преобразования отношение можо использовать для
+\begin{itemize}
+\item вычисления типа терма;
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+run (q) 1 (nat_type_inference (=== Abst ("x", Var "x")) q)
+
+==> {
+q=Just (TFun (TVar Z, TVar Z)); 
+}
+\end{lstlisting}
+\item проверки населенности типа с помощью генерации термов, которые имеют данный тип.
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+run (q) 5 (nat_type_inference ((===) q) (Just TBool))
+
+==> {}
+q=Lit (LBool _.24); 
+q=Let (_.18, Lit (LInt _.32), Lit (LBool _.80)); 
+q=Let (_.18, Lit (LBool _.32), Lit (LBool _.80)); 
+q=Let (_.89, Lit (LBool _.32), Var _.89); 
+q=Let (_.18, Abst (_.26, Lit LInt (_.48)), Lit (LBool _.149)); 
+}
+\end{lstlisting}
+\end{itemize}
+
+Полученное отношение также абстрагировано от типа имен типовых переменных.
+
+\subsection{Интерпретатор пожмножества языка Scheme}
+Входным языком данного call-by-value интерпретатора является нетипизированное лямда-исчисление, дополненное конструктором списков и оператором цитирования. Оператор цитирования возвращает входной терм, не изменяя его.
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+type 'var ident = 
+  | Lambda 
+  | Quote 
+  | List 
+  | Var of 'var
+
+type ('terms, 'ident) term = 
+  | Ident of 'ident 
+  | Seq of 'terms
+\end{lstlisting}
+
+Результатом выполнения входной программы является либо вычисленное значение, либо замыкание функции.
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+type ('term, 'ident, 'env) result = 
+  | Val of 'term 
+  | Closure of 'ident * 'term * 'env
+\end{lstlisting}
+
+Итоговый функциональный интерпретатор $eval$ имеет представленную ниже сингатуру.
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+type term$_0$ = (term$_0$ list, string ident) term
+type env = (string * term$_0$) list
+type result$_0$ = (term$_0$, string ident, env) result
+
+eval :: term$_0$ ->env ->result$_0$
+\end{lstlisting}
+
+Реляционная форма данного интерпретатора помимо интерпретирования входной программы позволяет находидить квайны произвольного порядка. Например, для вычисления квайна первого порядка достаточно запросить запросить программу, результатом вычисления которой в пустом окружении является она сама.
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+run (q) 1 (eval (=== q) (===[]) (Val q))
+
+==> {
+q=Seq [
+  Seq [Ident Lambda; Seq [Ident (_.253 [=/= List; =/= Quote])]; 
+    Seq [Ident List; Ident (_.253 [=/= List; =/= Quote]); 
+      Seq [Ident List; Seq [Ident Quote; Ident Quote];
+        Ident (_.253 [=/= List; =/= Quote])]]];
+    Seq [Ident Quote; 
+      Seq [Ident Lambda; Seq [Ident (_.253 [=/= List; =/= Quote])]; 
+        Seq [Ident List; Ident (_.253 [=/= List; =/= Quote]); 
+          Seq [Ident List; Seq [Ident Quote; Ident Quote]; 
+          Ident (_.253 [=/= List; =/= Quote])]]]]];
+}
+\end{lstlisting}
+Если полученный результат представить в синтаксисе Scheme и подставить вместо семантической переменной $(\_.253)$ переменную $x$, получим
+\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
+((lambda(x) (list x (list (quote quote) x)))
+ (lambda(x) (list x (list (quote quote) x))))
+\end{lstlisting}
+
+Полученная программа является квайном, что было проверено с помощью функциональной программы.
+
+\section{Обозримый пример 1}
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Функция map},captionpos=b]
+  let rec map = funf.funl.
+    match l with
+    | Nil          -> Nil
+    | Cons (x, xs) -> Cons (f x, map f xs)
+\end{lstlisting}
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Отношение map},captionpos=b]
+  let rec map = funf.funl.funq.
+    fresh (q$_1$) ((l q$_1$) &&&
+      (((q$_1$ === Nil) &&& ((funq$_2$.q$_2$ === Nil) q)) |||
+      (fresh (q$_3$ q$_4$)
+        (q$_1$ === Cons (q$_3$, q$_4$)) &&&
+        (funx.funxs.(funq$_5$.
+          (fresh(q$_6$ q$_7$) 
+            (f x q$_6$) &&&
+            (map f xs q$_7$) &&&
+            (q$_5$ === Cons(q$_6$, q$_7$)))) q
+        ) ((===) q$_3$) ((===) q$_4$))))
+\end{lstlisting}
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Отношение map после бета-редукций},captionpos=b]
+  let rec map = funf.funl.funq.z
+    fresh (q$_1$) ((l q$_1$) &&&
+      (((q$_1$ === Nil) &&& (q === Nil)) |||
+      (fresh (q$_3$ q$_4$)
+        (q$_1$ === Cons (q$_3$, q$_4$))
+          (fresh(q$_6$ q$_7$)
+            (f ((===) q$_3$) q$_6$) &&&
+            (map f ((===) q$_4$) q$_7$) &&&
+            (q === Cons(q$_6$, q$_7$))))))
+\end{lstlisting}
+
+\section{Обозримый пример 2}
+Здесь не описаны функции $index\_subst$ и $hole\_subst$.
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Функция eval},captionpos=b]
+  let rec eval =funbeta_finder.funterm.
+    match beta_finder term with
+    | Beta (hole, body, arg) -> 
+      let new_body = index_subst body Z arg in
+      let new_term = hole_subst hole new_body in
+      eval beta_finder new_term
+    | Nothing -> term  
+\end{lstlisting}
+
+\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Отношение eval после бета-редукций},captionpos=b]
+  let rec eval=funbeta_finder.funterm.funq.
+    fresh (q$_1$) ((term q$_1$) &&&
+      (fresh (q$_2$ q$_3$ q$_4$) 
+        (q$_1$ === Beta (q$_2$, q$_3$, q$_4$)) &&&
+        (let new_body = index_subst ((===)q$_3$) ((===)Z) ((===)q$_4$) in
+         let new_term = hole_subst ((===)q$_2$) new_body in
+         eval funbeta_finder new_term)) |||
+      (q$_1$ === Nothing) &&& (term q))
+  
+\end{lstlisting}
+\end{comment}
