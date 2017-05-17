@@ -434,8 +434,13 @@ module ManualReifiers :
     val string_reifier: helper -> (string, string logic) injected -> string logic
 
     val pair_reifier: (helper -> ('a,'b) injected -> 'b) ->
-                    (helper -> ('c,'d) injected -> 'd) ->
-                    helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
+                      (helper -> ('c,'d) injected -> 'd) ->
+                      helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
+
+    val triple_reifier : (helper -> ('a,'b) injected -> 'b) ->
+                         (helper -> ('c,'d) injected -> 'd) ->
+                         (helper -> ('e,'f) injected -> 'f) ->
+                         helper -> ('a * 'c * 'e, ('b * 'd * 'f) logic as 'r) injected -> 'r
  end
 
 (** {2 Standart relational library } *)
