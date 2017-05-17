@@ -783,6 +783,14 @@ module Pair = struct
   include Fmap2(X)
 end
 
+module Triple = struct
+  module X = struct
+    type ('a,'b,'c) t = 'a * 'b * 'c
+    let fmap f g h (x,y,z) = (f x, g y, h z)
+  end
+  include Fmap3(X)
+end
+
 module ManualReifiers = struct
   let rec simple_reifier: helper -> ('a, 'a logic) injected -> 'a logic = fun c n ->
     if c#isVar n
@@ -808,6 +816,14 @@ module ManualReifiers = struct
     = fun r1 r2 c p ->
       if c#isVar p then var_of_injected_exn c p (pair_reifier r1 r2)
       else Pair.reify r1 r2 c p
+
+  let rec triple_reifier : (helper -> ('a,'b) injected -> 'b) ->
+                           (helper -> ('c,'d) injected -> 'd) ->
+                           (helper -> ('e,'f) injected -> 'f) ->
+                           helper -> ('a * 'c * 'e, ('b * 'd * 'f) logic as 'r) injected -> 'r
+    = fun r1 r2 r3 c p ->
+      if c#isVar p then var_of_injected_exn c p (triple_reifier r1 r2 r3)
+      else Triple.reify r1 r2 r3 c p
 
 end;;
 
