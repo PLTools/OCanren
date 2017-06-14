@@ -45,10 +45,11 @@ let rec fold f = function
 EXTEND
   GLOBAL: expr;
 
+  (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
     [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
       let listed_clauses = List.fold_right
-        (fun x acc -> <:expr< (MiniKanren.OldList.cons $x$ $acc$) >>)
+        (fun x acc -> <:expr< (List.cons $x$ $acc$) >>)
         clauses <:expr< [] >>
       in
       let __herr0 = String.concat " " vars in
