@@ -157,7 +157,12 @@ let rec pamk_e ?(need_st=false) mapper e : expression =
       in
       pamk_e ~need_st mapper ans
   | Pexp_apply (e1,(_,alist)::otherargs) when is_conde e1 ->
+
       let clauses : expression list = parse_to_list alist.pexp_desc in
+      [%expr
+        conde [%e Ast_convenience.list @@ List.map (fun e -> pamk_e mapper e) clauses ]
+      ]
+      (*
       let ans =
       [%expr
         mylog (fun () -> printfn " creating inc in conde");
@@ -167,12 +172,9 @@ let rec pamk_e ?(need_st=false) mapper e : expression =
           [%e
           match clauses with
           | [] -> failwith "conde with no clauses is a nonsense"
-          (* | [b] ->
-            (* failwith "conde with a single clause appear very rarely" *)
-            pamk_e ~need_st mapper b *)
           | clauses ->
-            let wrap need_st =
-              list_fold_right0 clauses
+            let need_st = true in
+            list_fold_right0 clauses
                 ~initer:(pamk_e ~need_st mapper)
                 ~f:(fun x acc ->
                   [%expr
@@ -182,8 +184,6 @@ let rec pamk_e ?(need_st=false) mapper e : expression =
                         [%e acc]))
                   ]
                 )
-            in
-            wrap true
           ]
         )
       ]
@@ -193,7 +193,7 @@ let rec pamk_e ?(need_st=false) mapper e : expression =
       in
       if otherargs <> []
       then Exp.apply ans otherargs
-      else ans
+      else ans *)
   | Pexp_apply (e1,[args]) when is_fresh e1 ->
       (* bad syntax -- no body*)
      e

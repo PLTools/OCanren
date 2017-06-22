@@ -1465,10 +1465,28 @@ let rec bind_star2 : MKStream.t -> goal list -> MKStream.t = fun s -> function
 
 let bind_star_simple s = bind_star2 s []
 
-let conde xs : goal = fun st ->
+let list_fold ~f ~initer xs =
+  match xs with
+  | [] -> failwith "bad argument"
+  | start::xs -> ListLabels.fold_left ~init:(initer start) ~f xs
+
+let list_fold_right0 ~f ~initer xs =
+  let rec helper = function
+  | [] -> failwith "bad_argument"
+  | x::xs -> list_fold ~initer ~f:(fun acc x -> f x acc) (x::xs)
+  in
+  helper (List.rev xs)
+
+let conde: goal list -> goal = fun xs st ->
   let st = State.incr_scope st in
-  MKStream.inc (fun () ->
-    my_mplus_star xs st)
+  list_fold_right0 ~initer:(fun x -> x)
+    xs
+    ~f:(fun g acc ->
+        begin
+          fun st -> MKStream.mplus (g st) @@ MKStream.inc (fun () -> acc st)
+        end
+      )
+  |> (fun g -> MKStream.inc (fun ()  -> g st))
 
 module Fresh =
   struct
