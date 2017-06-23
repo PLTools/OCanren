@@ -603,6 +603,9 @@ module Nat :
     val zero : groundi
     val succ : groundi -> groundi
 
+    val o : groundi
+    val s : groundi -> groundi
+
     (** Relational addition *)
     val addo  : groundi -> groundi -> groundi -> goal
 
