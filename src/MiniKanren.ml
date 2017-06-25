@@ -1393,7 +1393,7 @@ let report_counters () =
 
 let (===) ?loc (x: _ injected) y (env, subst, constr, scope) =
   (* we should always unify two injected types *)
-  incr unif_counter;
+  (* incr unif_counter; *)
 (*
   mylog (fun () ->
             printfn "unify";
