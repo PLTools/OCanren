@@ -232,6 +232,33 @@ end = struct
   let replace: key -> 'a list -> 'a t -> 'a t = M.add
 end
 
+let pretty_generic_show ?(maxdepth= 99999) is_var x =
+  let x = Obj.repr x in
+  let b = Buffer.create 1024 in
+  let rec inner depth term =
+    if depth > maxdepth then Buffer.add_string b "..." else
+    if is_var !!!term then begin
+      let var = (!!!term : inner_logic) in
+      match var.subst with
+      | Some term ->
+          bprintf b "{ _.%d with subst=" var.index;
+          inner (depth+1) term;
+          bprintf b " }"
+      | None -> bprintf b "_.%d" var.index
+    end else match wrap term with
+      | Invalid n                                         -> bprintf b "<invalid %d>" n
+      | Unboxed s when Obj.(string_tag = (tag @@ repr s)) -> bprintf b "\"%s\"" (!!!s)
+      | Unboxed n when !!!n = 0                           -> Buffer.add_string b "[]"
+      | Unboxed n                                         -> bprintf b  "int<%d>" (!!!n)
+      | Boxed  (t, l, f) ->
+        Buffer.add_string b (Printf.sprintf "boxed %d <" t);
+        for i = 0 to l - 1 do (inner (depth+1) (f i); if i<l-1 then Buffer.add_string b " ") done;
+        Buffer.add_string b ">"
+  in
+  inner 0 x;
+  Buffer.contents b
+;;
+
 module Env :
   sig
     type t
@@ -312,8 +339,13 @@ module Subst :
     val walk    : Env.t -> 'a -> t -> 'a
     val unify   : Env.t -> 'a -> 'a -> t option -> (int * content) list * t option
     val show    : t -> string
-  end =
-  struct
+    val pretty_show : ('a -> bool) -> t -> string
+  end = struct
+
+    (* module InnerLogicKey = struct
+      type t = inner_logic
+      let compare : t -> t -> int = (compare: int -> int -> int)
+    end *)
     module M = Map.Make (Int)
 
     (* map from var indicies to tuples of (actual vars, value) *)
@@ -325,9 +357,16 @@ module Subst :
 
     let show m =
       let b = Buffer.create 40 in
-      Buffer.add_string b "subst {";
-      M.iter (fun i {new_val} -> bprintf b "%d -> %s; " i (generic_show new_val)) m;
+      Buffer.add_string b "subst {\n";
+      M.iter (fun i {new_val} -> bprintf b "  %d -> %s;\n" i (generic_show new_val)) m;
       Buffer.add_string b "}";
+      Buffer.contents b
+
+    let pretty_show is_var m =
+      let b = Buffer.create 40 in
+      bprintf b "subst {\n";
+      M.iter (fun i {new_val} -> bprintf b "  %d -> %s;\n" i (pretty_generic_show is_var new_val)) m;
+      bprintf b "}";
       Buffer.contents b
 
     let empty = M.empty
