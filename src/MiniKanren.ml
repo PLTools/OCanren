@@ -187,6 +187,15 @@ let logic = {logic with
    end
 };;
 
+exception Not_a_value
+exception Occurs_check
+
+let to_logic x = Value x
+
+let from_logic = function
+  | Value x    -> x
+  | Var (_, _) -> raise Not_a_value
+
 let (!!) x = inj (lift x)
 
 let inj_pair : ('a, 'c) injected -> ('b,'d) injected -> ('a * 'b, ('c * 'd) logic) injected =
@@ -197,9 +206,6 @@ let inj_triple : ('a, 'd) injected -> ('b,'e) injected -> ('c,'f) injected
   fun x y z -> (x, y, z)
 
 external inj_int : int -> (int, int logic) injected = "%identity"
-
-exception Not_a_value
-exception Occurs_check
 
 module Int = struct type t = int let compare : int -> int -> int = Pervasives.compare end
 module MultiIntMap : sig
@@ -605,6 +611,10 @@ let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) refined = fun x st ->
       if self#is_open then refiner c ans else inj ans
   end
 
+let prj : ('a, 'b) injected -> 'a = fun x ->
+  let rr = make_rr x @@ State.empty () in
+  rr#prj
+
 module R : sig
   type ('a, 'b) refiner
 
@@ -976,8 +986,11 @@ module Nat = struct
     let rec of_int n = if n <= 0 then O else S (of_int (n-1))
     let rec to_int   = function O -> 0 | S n -> 1 + to_int n
 
-    let rec to_logic: ground -> logic = fun n ->
-      Value (GT.(gmap lnat) to_logic n)
+    let rec to_logic n = Value (GT.(gmap lnat) to_logic n)
+
+    let from_logic' = from_logic
+
+    let rec from_logic x = GT.gmap(lnat) (from_logic) @@ from_logic' x
 
     let o = inj@@lift O
     let s x = inj@@lift (S x)
@@ -1143,8 +1156,11 @@ module List =
     | Nil -> []
     | Cons (x,xs) -> (f x)::(to_list f xs)
 
-    let rec to_logic : ('a -> 'b) -> 'a ground -> 'b logic = fun f xs ->
-      Value (GT.(gmap llist) f (to_logic f) xs)
+    let rec to_logic f xs = Value (GT.(gmap llist) f (to_logic f) xs)
+
+    let from_logic' = from_logic
+
+    let rec from_logic fa x = GT.gmap(llist) fa (from_logic fa) @@ from_logic' x
 
     let inj' = inj
 
