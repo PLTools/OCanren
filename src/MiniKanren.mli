@@ -100,6 +100,17 @@ val inj : ('a, 'b) injected -> ('a, 'b logic) injected
 (** A synonym for [fun x -> inj @@ lift x] (for non-parametric types) *)
 val (!!) : 'a -> ('a, 'a logic) injected
 
+(** [prj x] returns plain value from injected representation.
+    Raises exception [Not_a_value] if [x] contains logic variables. *)
+val prj : ('a, 'b) injected -> 'a
+
+(** [to_logic x] makes logic value from plain one *)
+val to_logic : 'a -> 'a logic
+
+(** [from_logic x] makes plain value from logic one.
+    Raises exception [Not_a_value] if [x] contains logic variables. *)
+val from_logic : 'a logic -> 'a
+
 (** {2 miniKanren basic primitives} *)
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the
@@ -579,8 +590,12 @@ module Nat :
     (** [to_int g] converts ground [g] into integer *)
     val to_int : ground -> int
 
-    (** Make logic nat from ground one *)
+    (** [to_logic x] makes logic nat from ground one *)
     val to_logic : ground -> logic
+
+    (** [from_logic x] makes ground nat from logic one.
+        Raises exception [Not_a_value] if [x] contains logic variables.*)
+    val from_logic : logic -> ground
 
     (** Make injected nat from ground one *)
     val inj : ground -> groundi
@@ -667,8 +682,12 @@ module List :
     (** [to_list g] converts OCanren list [g] into regular OCaml list *)
     val to_list : ('a -> 'b) -> 'a ground -> 'b list
 
-    (** Make logic list from ground one *)
+    (** [to_logic x] makes logic list from ground one *)
     val to_logic : ('a -> 'b) -> 'a ground -> 'b logic
+
+    (** [from_logic x] makes ground list from logic one.
+        Raises exception [Not_a_value] if [x] contains logic variables.*)
+    val from_logic : ('b -> 'a) -> 'b logic -> 'a ground
 
     (** Make injected list from ground one *)
     val inj : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
