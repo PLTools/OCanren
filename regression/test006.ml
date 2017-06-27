@@ -30,6 +30,8 @@ let rec evalo m n =
       (n === m);
     fresh (f a f' a')
       (m === app f a)
+      (evalo f f')
+      (evalo a a')
       (conde [
          fresh (x l l')
            (f' === abs x l)
@@ -38,8 +40,7 @@ let rec evalo m n =
          fresh (p q) (f' === app p q) (n === app f' a');
          fresh (x) (f' === v x) (n === app f' a')
        ])
-      (evalo f f')
-      (evalo a a')
+
   ]
 
 let a_la_quine q r s =
