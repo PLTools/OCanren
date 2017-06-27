@@ -21,7 +21,6 @@
 val generic_show: ?maxdepth:int -> 'a -> string
 
 val printfn : ('a, unit, string, unit) format4 -> 'a
-val mylog : (unit -> unit) -> unit
 
 (** {1 Implementation of miniKanren primitives} *)
 

@@ -75,22 +75,6 @@ let list_filter_map ~f xs =
   in
   helper [] xs
 
-module OldList = List
-
-
-let (log_enabled, use_svv) =
-  let ans = ref false in
-  let use_svv = ref true in
-  Arg.parse
-    [ ("-v",   Arg.Unit (fun () -> ans := true), "verbose mode")
-    ; ("-svv", Arg.Unit (fun () -> use_svv := true), "use set-var-val optimization")
-    ; ("-nosvv", Arg.Unit (fun () -> use_svv := false), "disable set-var-val optimization")
-    ]
-    (fun s -> printfn "anon argument '%s'" s)
-    "usage msg";
-  (!ans, !use_svv)
-
-let mylog f = if log_enabled then f () else ignore (fun () -> f ())
 
 (* miniKanren-like streams, the most unsafe implementation *)
 module MKStream =
@@ -109,18 +93,8 @@ module MKStream =
     let nil : t = !!!false
     let is_nil s = (s = !!!false)
 
-    let cur_inc = ref 0
-
     let inc (f: unit -> t) : t =
-      mylog (fun () -> printf "    thunk created ");
-      incr cur_inc;
-      let n = !cur_inc in
-      let result = fun () ->
-        let () = mylog @@ fun () -> printfn "    forcing thunk %d" n in
-        f ()
-      in
-      mylog (fun () -> printfn "%d" n);
-      Obj.repr result
+      Obj.repr f
 
     let from_fun = inc
 
@@ -132,11 +106,7 @@ module MKStream =
 
     let choice a f =
       assert (closure_tag = tag@@repr f);
-      let ans = Obj.repr @@ Obj.magic (a,f) in
-      (* let () = mylog (fun () -> printfn "    created choice for value"
-                  (2 * (Obj.magic f)) )
-      in *)
-      ans
+      Obj.repr @@ Obj.magic (a,f)
 
     let case_inf xs ~f1 ~f2 ~f3 ~f4 : Obj.t =
       if is_int xs then f1 ()
@@ -146,13 +116,10 @@ module MKStream =
         then f2 (!!!xs: unit -> Obj.t)
         else if tag = 1 then f3 (field (repr xs) 0)
         else
-          (* let () = printfn "\t%s" @@ generic_show xs in *)
-          let () = assert (0 = tag) in
-          let () = assert (2 = size (repr xs)) in
+          (* let () = assert (0 = tag) in
+          let () = assert (2 = size (repr xs)) in *)
           f4 (field (repr xs) 0) (!!!(field (repr xs) 1): unit -> Obj.t)
       (* [@@inline ] *)
-
-
 
     let step gs =
       assert (closure_tag = tag @@ repr gs);
@@ -162,47 +129,35 @@ module MKStream =
       assert (closure_tag = tag @@ repr gs);
       case_inf cinf
         ~f1:(fun () ->
-              mylog (fun () -> printfn " mplus: 1st case");
               step gs)
         ~f2:(fun f ->
-              mylog (fun () -> printfn " mplus: 2nd case");
               inc begin fun () ->
-                mylog (fun () -> printfn " forcing thunk created by 2nd case of mplus");
                 let r = step gs in
                 mplus r !!!f
               end)
         ~f3:(fun c ->
-              mylog (fun () -> printfn " mplus: 3rd case");
               choice c gs
           )
         ~f4:(fun c ff ->
-              mylog (fun () -> printfn " mplus: 4th case ");
-              (* choice a (inc @@ fun () -> mplus gs @@ f ()) *)
               choice c (inc @@ fun () -> mplus (step gs) !!!ff)
           )
 
     let rec bind cinf g =
       case_inf cinf
         ~f1:(fun () ->
-                mylog (fun () -> printfn " bind: 1st case");
                 nil)
         ~f2:(fun f ->
-              mylog (fun () -> printfn " bind: 2nd case");
               (* delay here because miniKanren has it *)
               inc begin fun () ->
-                mylog (fun () -> printfn " forcing thunk created by 2nd case of bind: %d" (2 * (Obj.magic f)) );
                 let r = f () in
                 bind r g
               end)
         ~f3:(fun c ->
-              mylog (fun () -> printfn " bind: 3rd case");
-              (!!! g c) )
+              (!!!g c) )
         ~f4:(fun c f ->
-              mylog (fun () -> printfn " bind: 4th case");
               let arg1 = !!!g c in
               mplus arg1 @@
                     inc begin fun () ->
-                      mylog (fun () -> printfn " force thunk created by 5th case of bind: %d" (2 * (Obj.magic f)) );
                       bind (step f) g
                     end
           )
@@ -223,9 +178,7 @@ module Stream =
         !!!MKStream.case_inf !!!xs
           ~f1:(fun () -> !!!Nil)
           ~f2:(fun f  ->
-              (* printfn "f = %s, is_int=%b" (generic_show f) (Obj.is_int !!!f); *)
               !!! (from_fun (fun () ->
-                (* printfn "f () = %s" (generic_show @@ f ()); *)
                 helper @@ f ())) )
           ~f3:(fun a -> !!!(cons a Nil) )
           ~f4:(fun a f -> !!!(cons a @@ from_fun (fun () -> helper @@ f ())) )
@@ -282,10 +235,9 @@ module Stream =
       | Nil, _      | _, Nil       -> failwith "MiniKanren.Stream.zip: streams have different lengths"
 
   end
+;;
 
-
-let (!!!) = Obj.magic;;
-
+(* ************************************************ *)
 @type 'a logic =
 | Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
@@ -331,7 +283,7 @@ let logic = {logic with
 (* miniKanren-related stuff starts here *)
 
 (* The [token_t] type is use to connect logic variables with environment where they were created *)
-@type token_env = GT.int (* with show,gmap,html,eq,compare,foldl,foldr *);;
+@type token_env = GT.int;;
 
 (* Scope there are just ints but in faster-MK they use reference equality *)
 type scope_t = int
@@ -348,7 +300,8 @@ let global_token: token_mk = [-8];;
 
 type inner_logic =
   { token_mk: token_mk; token_env: token_env; index: int
-  ; mutable subst: Obj.t option; scope: scope_t (* set-var-val! stuff *)
+  (* set-var-val! stuff *)
+  ; mutable subst: Obj.t option; scope: scope_t
   (* in the substitution we will store pair the same as in subst *)
   ; constraints: Obj.t list
   }
@@ -677,7 +630,7 @@ module Subst :
     val split   : t -> inner_logic list * Obj.t list
     val walk    : Env.t -> 'a -> t -> 'a
 
-    (* [merge_a_prefix ~scope p s] unions prefix [p] and substitution [s].
+    (* [merge_a_prefix_unsafe ~scope p s] unions prefix [p] and substitution [s].
       Very naive approach: no any walking or occurs_check is performed *)
     val merge_a_prefix_unsafe : scope:scope_t -> content list  -> t -> t
     (* Safe version of [merge_a_prefix_unsafe]. it can fail *)
@@ -739,7 +692,7 @@ module Subst :
       in
       helper term
 
-    let walk_by_func env var lookupf =
+    (* let walk_by_func env var lookupf =
       let rec helper var =
         match Env.var env !!!var with
         | None -> var
@@ -767,7 +720,7 @@ module Subst :
               in
               inner 0
       in
-      helper term
+      helper term *)
 
     let rec occurs env xi term subst =
       let y = walk env term subst in
@@ -788,19 +741,14 @@ module Subst :
 
     let merge_a_prefix_unsafe ~scope prefix subst =
       ListLabels.fold_left prefix ~init:subst ~f:(fun acc cnt ->
-        if use_svv && scope_eq scope cnt.lvar.scope
+        if scope_eq scope cnt.lvar.scope
         then  let () = subst_inner_term cnt.lvar cnt.new_val in
-              (* let () = printfn "in-place substitution to var %d" cnt.lvar.index in *)
-              (* M.add cnt.lvar.index cnt acc *)
               acc
         else M.add cnt.lvar.index cnt acc
       )
 
     let unify env x y ~scope main_subst =
       (* The idea is to do unification and collect unification prefix during the process.
-        WRONG:
-         Since set-var-val optimisation appeared it is not safe to modify substitution on the go.
-         We will collect new substitutions in the prefix and commit them in the end
         RIGHT:
           It is safe to modify variables on the go. Beause two cases:
           * if we do unification just after conde, then the scope is already incremented and nothing goes into
@@ -814,14 +762,13 @@ module Subst :
         else
           let cnt = make_content x term in
           assert (Env.var env x <> Env.var env term);
-          (* It's safe to do destructive substitution here. See comment on the top*)
+          (* It's safe to do destructive substitution here. See comment on the top *)
           let sub2 = merge_a_prefix_unsafe ~scope [cnt] sub1 in
           Some (cnt :: prefix, sub2)
       in
       let rec helper x y : (content list * t) option -> _ = function
         | None -> None
         | Some ((delta, subs) as pair) as acc ->
-            (* let finder = make_walk_func subs in *)
             let x = walk env x subs in
             let y = walk env y subs in
             match Env.var env x, Env.var env y with
@@ -850,13 +797,7 @@ module Subst :
                  | _ -> None
                 )
       in
-      try
-        match helper !!!x !!!y (Some ([], main_subst)) with
-        | None  -> None
-        | Some (prefix, new_subst) ->
-            (* there we should commit changes in prefix to a substitution *)
-            (* let new_subst = merge_a_prefix_unsafe ~scope prefix main_subst in *)
-            Some (prefix, new_subst)
+      try helper !!!x !!!y (Some ([], main_subst))
       with Occurs_check -> None
 
     let merge_a_prefix env ~scope prefix subst =
@@ -872,12 +813,10 @@ module Subst :
   end
 
 let rec refine : Env.t -> Subst.t -> _ -> Obj.t -> Obj.t = fun env subst do_diseq x ->
-  (* printfn "refining %s" (generic_show ~maxdepth:10 x); *)
   let rec walk' forbidden term =
     let var = Subst.walk env term subst in
     match Env.var env var with
     | None ->
-        (* printfn " nota var but %s" (generic_show ~maxdepth:3 var); *)
         (match wrap (Obj.repr var) with
           | Unboxed _ -> Obj.repr var
           | Boxed (t, s, f) ->
@@ -896,14 +835,11 @@ let rec refine : Env.t -> Subst.t -> _ -> Obj.t -> Obj.t = fun env subst do_dise
         )
     | Some n when List.mem n forbidden -> var
     | Some n ->
-        (* (match !!!var with
-        | InnerVar (token1, token2, i, _) -> *)
           (* assert (i=n); *)
           let cs : _ list = do_diseq !!!var in
           let cs = List.filter (fun x -> match Env.var env x with Some n -> not (List.mem n forbidden) | None -> true) cs in
           let cs = List.map (walk' ((!!!var : inner_logic).index :: forbidden)) cs in
           Obj.repr {!!!var with constraints = cs}
-
   in
   walk' [] x
 
@@ -932,8 +868,6 @@ struct
   module M = struct
     include Map.Make(Int)
     (* and this should be a multimap *)
-
-    (* type 'a t = 'a list M.t *)
 
     let empty : single_constraint list t = empty
     let find_exn : key -> 'a list t -> 'a list = find
@@ -1021,12 +955,7 @@ struct
     | Violated
 
   let check ~prefix env (subst: Subst.t) (c_store: t) : t =
-    (* printfn "Constraints.check with prefix %s" (show_single ~env prefix);
-    printfn "store is:\n%s" (show ~env c_store); *)
-
     let revisit_constraint c : revisiting_result =
-      (* printfn "revisiting single constraint";
-      printfn "  %s" (show_single ~env c); *)
       let rec helper = function
       | [] -> Violated
       | h::tl ->
@@ -1160,6 +1089,7 @@ struct
       dest
     ) (rem_subsumed_opt ~env ~subst term maybe_swap cs)
 end
+
 (*
 module DefaultConstraints : CONSTRAINTS =
 struct
@@ -1260,12 +1190,6 @@ let report_counters () =
 let (===) ?loc (x: _ injected) y (env, subst, constr, scope) =
   (* we should always unify two injected types *)
   (* incr unif_counter; *)
-(*
-  mylog (fun () ->
-            printfn "unify";
-            printfn "\t%s" (generic_show ~maxdepth:10 x);
-            printfn "\t%s" (generic_show ~maxdepth:10 y);
-  ); *)
 
   match Subst.unify env x y scope subst with
   | None -> MKStream.nil
@@ -1295,10 +1219,7 @@ let (&&&) = conj
 
 let disj f g st =
   let open MKStream in
-  mplus (f st)
-    (MKStream.from_fun (fun () ->
-      (* printfn " force inc from mplus*"; *)
-      g st))
+  mplus (f st) (MKStream.from_fun (fun () -> g st))
 
 let (|||) = disj
 
@@ -1308,11 +1229,6 @@ let rec (?|) = function
 | [h]   -> h
 | h::tl -> h ||| (?| tl)
 
-let rec my_mplus_star xs st = match xs with
-| []    -> failwith "wrong argument of my_mplus_star|"
-| [h]   -> h st
-| h::tl -> disj h (my_mplus_star tl) st
-
 (* "bind*" *)
 let rec (?&) = function
 | []   -> failwith "wrong argument of ?&"
@@ -1320,14 +1236,6 @@ let rec (?&) = function
 | x::y::tl -> ?& ((x &&& y)::tl)
 
 let bind_star = (?&)
-
-let rec bind_star2 : MKStream.t -> goal list -> MKStream.t = fun s -> function
-| [] -> s
-| x::xs ->
-    (* printfn "2nd case of bind* 2"; *)
-    bind_star2 (MKStream.bind s x) xs
-
-let bind_star_simple s = bind_star2 s []
 
 let list_fold ~f ~initer xs =
   match xs with
@@ -1345,10 +1253,8 @@ let conde: goal list -> goal = fun xs st ->
   let st = State.incr_scope st in
   list_fold_right0 ~initer:(fun x -> x)
     xs
-    ~f:(fun g acc ->
-        begin
-          fun st -> MKStream.mplus (g st) @@ MKStream.inc (fun () -> acc st)
-        end
+    ~f:(fun g acc st ->
+          MKStream.mplus (g st) @@ MKStream.inc (fun () -> acc st)
       )
   |> (fun g -> MKStream.inc (fun ()  -> g st))
 
@@ -1389,8 +1295,6 @@ let has_free_vars is_var x =
   in
   try walk x; false
   with FreeVarFound -> true
-
-exception WithFreeVars of (Obj.t -> bool) * Obj.t
 
 module ExtractDeepest =
   struct
@@ -2000,3 +1904,5 @@ let rec inj_listi: ('a, 'b) injected list -> ('a, 'b) List.groundi = function
 let rec inj_nat_list = function
   | []    -> nil ()
   | x::xs -> inj_nat x % inj_nat_list xs
+
+let report_counters () = ()
