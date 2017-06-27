@@ -37,10 +37,12 @@
 open Pcaml
 open Printf
 
-let rec fold f = function
+let rec fold_right1 f = function
 | [h]  -> h
-| h::t -> f h (fold f t)
+| h::t -> f h (fold_right1 f t)
 ;;
+
+let rec fold_left1 f xs = List.fold_left f (List.hd xs) (List.tl xs)
 
 EXTEND
   GLOBAL: expr;
@@ -49,20 +51,12 @@ EXTEND
   expr: LEVEL "expr1" [
     [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
       let body =
-        let listed_clauses = List.fold_right
-          (fun x acc -> <:expr< conj ($x$) ( $acc$ ) >>)
-          clauses <:expr< [] >>
-        in
-        let body = <:expr< bind_star $listed_clauses$ >> in
-        <:expr< delay (fun () -> $body$) >>
-      in
-      (* let body =
-        let conjunctions = fold
-          (fun acc x -> <:expr< conj ($x$) ($acc$) >>)
+        let conjunctions = fold_left1
+          (fun acc x -> <:expr< conj ($acc$) ($x$) >>)
           clauses
         in
         <:expr< delay (fun () -> $conjunctions$) >>
-      in *)
+      in
       let ans =
         let rec loop = function
         | a::b::c::tl ->
