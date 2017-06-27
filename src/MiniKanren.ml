@@ -18,69 +18,9 @@
 
 open Printf
 
-module Stream =
-  struct
-
-    type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t
-
-    let from_fun (f: unit -> 'a t) : 'a t = Lazy (Lazy.from_fun f)
-
-    let nil = Nil
-
-    let cons h t = Cons (h, t)
-
-    let rec is_empty = function
-    | Nil    -> true
-    | Lazy s -> is_empty @@ Lazy.force s
-    | _      -> false
-
-    let rec retrieve ?(n=(-1)) s =
-      if n = 0
-      then [], s
-      else match s with
-          | Nil          -> [], s
-          | Cons (x, xs) -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
-          | Lazy  z      -> retrieve ~n (Lazy.force z)
-
-    let take ?(n=(-1)) s = fst @@ retrieve ~n s
-
-    let hd s = List.hd @@ take ~n:1 s
-    let tl s = snd @@ retrieve ~n:1 s
-
-    let rec mplus fs gs =
-      match fs with
-      | Nil           -> gs
-      | Cons (hd, tl) -> cons hd @@ from_fun (fun () -> mplus gs tl)
-      | Lazy z        -> from_fun (fun () -> mplus gs (Lazy.force z) )
-
-    let rec bind xs f =
-      match xs with
-      | Cons (x, xs) -> from_fun (fun () -> mplus (f x) (bind xs f))
-      | Nil          -> nil
-      | Lazy z       -> from_fun (fun () -> bind (Lazy.force z) f)
-
-
-    let rec map f = function
-    | Nil          -> Nil
-    | Cons (x, xs) -> Cons (f x, map f xs)
-    | Lazy s       -> Lazy (Lazy.from_fun (fun () -> map f @@ Lazy.force s))
-
-    let rec iter f = function
-    | Nil          -> ()
-    | Cons (x, xs) -> f x; iter f xs
-    | Lazy s       -> iter f @@ Lazy.force s
-
-    let rec zip fs gs =
-      match (fs, gs) with
-      | Nil         , Nil          -> Nil
-      | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
-      | _           , Lazy s       -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
-      | Lazy s      , _            -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
-      | Nil, _      | _, Nil       -> failwith "MiniKanren.Stream.zip: streams have different lengths"
-
-  end
-
+let printfn fmt = kprintf (printf "%s\n%!") fmt
 let (!!!) = Obj.magic
+
 
 type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
@@ -124,6 +64,326 @@ let generic_show x =
   inner x;
   Buffer.contents b
 ;;
+
+module OldList = List
+
+let log_enabled =
+  let ans = ref false in
+  Arg.parse
+    [("-v", Unit (fun () -> ans := true), "verbose mode")]
+    (fun s -> printfn "anon argument '%s'" s)
+    "usage msg";
+  !ans
+
+let mylog f = if log_enabled then f () else ignore (fun () -> f ())
+
+(*
+(* miniKanren-like stream, more generator than a stream *)
+module MKStream =
+  struct
+
+    type 'a t = Nil
+              | Thunk of (unit -> 'a t)
+              | Single of 'a
+              | Compoz of 'a * (unit -> 'a t)
+
+    let cur_inc = ref 0
+
+    let from_fun (f: unit -> 'a t) : 'a t =
+      (* printf "    Thunk created: "; *)
+      (* incr cur_inc;
+      let n = !cur_inc in *)
+      let result = fun () ->
+        (* let () = printfn "    forcing thunk: %d" n in *)
+        f ()
+      in
+      (* printfn "%d" n; *)
+      Thunk result
+
+    let inc = from_fun
+
+    (* let inc2 (thunk: unit -> 'a -> 'b t) : 'a -> 'b t =
+      fun st -> inc (fun () -> thunk () st)
+    let inc3 (thunk: 'a -> unit -> 'b t) : 'a -> 'b t =
+      fun st -> inc (thunk st) *)
+
+    let nil = Nil
+
+    let single x = Single x
+
+    let rec is_empty = function
+    | Nil      -> true
+    | Thunk f  -> is_empty @@ f ()
+    | Single _
+    | Compoz _ -> false
+
+    let choice a f =
+      (* printfn "    created Choice %d" (2 * (Obj.magic f)); *)
+      Compoz (a, f)
+
+    let force = function
+    | Nil -> Nil
+    | Thunk f ->
+        (* printfn "      forcing thunk %d" (2 * (Obj.magic f)); *)
+        f ()
+    | Single a -> Single a
+    | Compoz (a,f) -> assert false
+
+    let rec mplus fs gs =
+      match fs with
+      | Nil           ->
+          (* printfn " mplus: 1st case"; *)
+          force gs
+      | Thunk f       ->
+          (* The we force 2nd argument and left 1st one for later
+            ... because fasterMK does that
+          *)
+          (* printfn " mplus: 2nd case"; *)
+          (* Thunk (fun () -> let r = force gs in mplus r fs) *)
+          from_fun (fun () ->
+            (* printfn " forcing thunk created by 2nd case of mplus"; *)
+            let r = force gs in
+            mplus r fs
+          )
+      | Single a      ->
+          (* printfn " mplus: 3rd case"; *)
+          choice a (fun () -> gs)
+      | Compoz (a, f) ->
+          (* printfn " mplus: 4th case "; *)
+          choice a (fun () -> mplus gs @@ f ())
+
+    let rec mplus_star : 'a t list -> 'a t = function
+    | [] -> failwith "wrong argument"
+    | [h] -> h
+    | h::tl -> mplus h (from_fun (fun () -> mplus_star tl))
+
+    let show = function
+    | Nil -> "Nil"
+    | Thunk f -> sprintf "Thunk: %d" (2 * (Obj.magic f))
+    | _ -> "wtf"
+
+    let rec bind xs g =
+      match xs with
+      | Nil ->
+            (* printfn " bind: 1std case"; *)
+            Nil
+      | Thunk f ->
+          (* printfn " bind: 2nd case"; *)
+          (* delay here because miniKanren has it *)
+          from_fun (fun () ->
+            (* printfn " forcing thunk created by 2nd case of bind: %d" (2 * (Obj.magic f)); *)
+            let r = f () in
+            bind r g)
+      | Single c ->
+          (* printfn " bind: 3rd case"; *)
+          g c
+      | Compoz (c, f) ->
+          (* printfn " bind: 4th case"; *)
+          let arg1 = g c in
+          mplus arg1 (from_fun (fun () ->
+            (* printfn " force thunk created by 5th case of bind: %d" (2 * (Obj.magic f)); *)
+            let r = f () in
+            (* printfn " r is %s" (show r); *)
+            bind r g
+          ))
+
+  end
+*)
+
+(* miniKanren-like stream, most unsafe implementation *)
+module MKStream =
+  struct
+    open Obj
+    (*
+      Very unsafe implementation of streams
+      * false -- an empty list
+      * closure -- delayed list
+      * block with tag 1 -- single value
+      * (x,closure)   -- a value and continuation (pair has tag 0)
+    *)
+
+    type t = Obj.t
+
+    let nil : t = !!!false
+    let is_nil s = (s = !!!false)
+
+    let cur_inc = ref 0
+
+    let inc (f: unit -> t) : t =
+      mylog (fun () -> printf "    thunk created ");
+      incr cur_inc;
+      let n = !cur_inc in
+      let result = fun () ->
+        let () = mylog @@ fun () -> printfn "    forcing thunk %d" n in
+        f ()
+      in
+      mylog (fun () -> printfn "%d" n);
+      Obj.repr result
+
+    let from_fun = inc
+
+    type wtf = Dummy of int*string | Single of Obj.t
+    let () = assert (Obj.tag @@ repr (Single !!![]) = 1)
+
+    let single : 'a -> t = fun x ->
+      (* mylog (fun () -> printfn "Single called"); *)
+      Obj.repr @@ Obj.magic (Single !!!x)
+
+    let choice a f =
+      assert (closure_tag = tag@@repr f);
+      let ans = Obj.repr @@ Obj.magic (a,f) in
+      (* let () = mylog (fun () -> printfn "    created choice for value"
+                  (2 * (Obj.magic f)) )
+      in *)
+      ans
+
+    let case_inf xs ~f1 ~f2 ~f3 ~f4 : Obj.t =
+      if is_int xs then f1 ()
+      else
+        let tag = Obj.tag (repr xs) in
+        if tag = Obj.closure_tag
+        then f2 (!!!xs: unit -> Obj.t)
+        else if tag = 1 then f3 (field (repr xs) 0)
+        else
+          (* let () = printfn "\t%s" @@ generic_show xs in *)
+          let () = assert (0 = tag) in
+          let () = assert (2 = size (repr xs)) in
+          f4 (field (repr xs) 0) (!!!(field (repr xs) 1): unit -> Obj.t)
+      (* [@@inline ] *)
+
+
+
+    let step gs =
+      assert (closure_tag = tag @@ repr gs);
+      !!!gs ()
+
+    let rec mplus : t -> t -> t  = fun cinf (gs: t) ->
+      assert (closure_tag = tag @@ repr gs);
+      case_inf cinf
+        ~f1:(fun () ->
+              mylog (fun () -> printfn " mplus: 1st case");
+              step gs)
+        ~f2:(fun f ->
+              mylog (fun () -> printfn " mplus: 2nd case");
+              inc begin fun () ->
+                mylog (fun () -> printfn " forcing thunk created by 2nd case of mplus");
+                let r = step gs in
+                mplus r !!!f
+              end)
+        ~f3:(fun c ->
+              mylog (fun () -> printfn " mplus: 3rd case");
+              choice c gs
+          )
+        ~f4:(fun c ff ->
+              mylog (fun () -> printfn " mplus: 4th case ");
+              (* choice a (inc @@ fun () -> mplus gs @@ f ()) *)
+              choice c (inc @@ fun () -> mplus (step gs) !!!ff)
+          )
+
+    let rec bind cinf g =
+      case_inf cinf
+        ~f1:(fun () ->
+                mylog (fun () -> printfn " bind: 1st case");
+                nil)
+        ~f2:(fun f ->
+              mylog (fun () -> printfn " bind: 2nd case");
+              (* delay here because miniKanren has it *)
+              inc begin fun () ->
+                mylog (fun () -> printfn " forcing thunk created by 2nd case of bind: %d" (2 * (Obj.magic f)) );
+                let r = f () in
+                bind r g
+              end)
+        ~f3:(fun c ->
+              mylog (fun () -> printfn " bind: 3rd case");
+              (!!! g c) )
+        ~f4:(fun c f ->
+              mylog (fun () -> printfn " bind: 4th case");
+              let arg1 = !!!g c in
+              mplus arg1 @@
+                    inc begin fun () ->
+                      mylog (fun () -> printfn " force thunk created by 5th case of bind: %d" (2 * (Obj.magic f)) );
+                      bind (step f) g
+                    end
+          )
+  end
+
+module Stream =
+  struct
+    type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t
+
+    let from_fun (f: unit -> 'a t) : 'a t = Lazy (Lazy.from_fun f)
+
+    let nil = Nil
+
+    let cons h t = Cons (h, t)
+
+    let rec of_mkstream : MKStream.t -> 'a t = fun xs ->
+      let rec helper xs =
+        !!!MKStream.case_inf !!!xs
+          ~f1:(fun () -> !!!Nil)
+          ~f2:(fun f  ->
+              (* printfn "f = %s, is_int=%b" (generic_show f) (Obj.is_int !!!f); *)
+              !!! (from_fun (fun () ->
+                (* printfn "f () = %s" (generic_show @@ f ()); *)
+                helper @@ f ())) )
+          ~f3:(fun a -> !!!(cons a Nil) )
+          ~f4:(fun a f -> !!!(cons a @@ from_fun (fun () -> helper @@ f ())) )
+      in
+      !!!(helper !!!xs)
+
+    let rec is_empty = function
+    | Nil    -> true
+    | Lazy s -> is_empty @@ Lazy.force s
+    | _      -> false
+
+    let rec retrieve ?(n=(-1)) s =
+      if n = 0
+      then [], s
+      else match s with
+          | Nil          -> [], s
+          | Cons (x, xs) -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
+          | Lazy  z      -> retrieve ~n (Lazy.force z)
+
+    let take ?(n=(-1)) s = fst @@ retrieve ~n s
+
+    let hd s = List.hd @@ take ~n:1 s
+    let tl s = snd @@ retrieve ~n:1 s
+
+    (* let rec mplus fs gs =
+      match fs with
+      | Nil           -> gs
+      | Cons (hd, tl) -> cons hd @@ from_fun (fun () -> mplus gs tl)
+      | Lazy z        -> from_fun (fun () -> mplus gs (Lazy.force z) )
+
+    let rec bind xs f =
+      match xs with
+      | Cons (x, xs) -> from_fun (fun () -> mplus (f x) (bind xs f))
+      | Nil          -> nil
+      | Lazy z       -> from_fun (fun () -> bind (Lazy.force z) f) *)
+
+
+    let rec map f = function
+    | Nil          -> Nil
+    | Cons (x, xs) -> Cons (f x, map f xs)
+    | Lazy s       -> Lazy (Lazy.from_fun (fun () -> map f @@ Lazy.force s))
+
+    let rec iter f = function
+    | Nil          -> ()
+    | Cons (x, xs) -> f x; iter f xs
+    | Lazy s       -> iter f @@ Lazy.force s
+
+    let rec zip fs gs =
+      match (fs, gs) with
+      | Nil         , Nil          -> Nil
+      | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
+      | _           , Lazy s       -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
+      | Lazy s      , _            -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
+      | Nil, _      | _, Nil       -> failwith "MiniKanren.Stream.zip: streams have different lengths"
+
+  end
+
+
+let (!!!) = Obj.magic;;
 
 @type 'a logic =
 | Var   of GT.int * 'a logic GT.list
@@ -264,7 +524,7 @@ module Env :
     type t
 
     val empty  : unit -> t
-    val fresh  : t -> 'a * t
+    val fresh  : ?name:string -> t -> 'a * t
     val var    : t -> 'a -> int option
     val is_var : t -> 'a -> bool
   end =
@@ -279,10 +539,12 @@ module Env :
       incr last_token;
       { token= !last_token; next=10 }
 
-    let fresh e =
+    let fresh ?name e =
       let v = InnerVar (global_token, e.token, e.next, []) in
+      (* printf "new fresh var %swith index=%d\n"
+        (match name with None -> "" | Some n -> sprintf "'%s' " n)
+        e.next; *)
       e.next <- 1+e.next;
-      (* printf "new fresh var with index=%d\n" e.next; *)
       (!!!v, e)
 
     let var_tag, var_size =
@@ -447,24 +709,51 @@ module State =
     let empty () = (Env.empty (), Subst.empty, [])
     let env   (env, _, _) = env
     let show  (env, subst, constr) = sprintf "st {%s, %s}" (Subst.show subst) (GT.show(GT.list) Subst.show constr)
+    let new_var (env,_,_) =
+      let (x,_) = Env.fresh env in
+      let InnerVar (_,_,i,_) = x in
+      (x,i)
+
   end
 
 type 'a goal' = State.t -> 'a
-type goal = State.t Stream.t goal'
+type goal = MKStream.t goal'
 
-let call_fresh f (env, subst, constr)  =
+let call_fresh f = fun (env, subst, constr) ->
   let x, env' = Env.fresh env in
+  f x (env', subst, constr)
+
+let call_fresh_named name f = fun (env, subst, constr) ->
+  let x, env' = Env.fresh ~name env in
   f x (env', subst, constr)
 
 exception Disequality_violated
 
-let (===) (x: _ injected) y (env, subst, constr) =
-  (* we should always unify two injected types *)
+let unif_counter = ref 0
+let logged_unif_counter = ref 0
+let diseq_counter = ref 0
+let logged_diseq_counter = ref 0
 
+let report_counters () =
+  printfn "total  unifications: %d" !unif_counter;
+  printfn "logged unifications: %d" !logged_unif_counter;
+  printfn "total diseq calls : %d" !diseq_counter;
+  printfn "logged diseq calls : %d" !logged_diseq_counter
+
+
+
+let (===) ?loc (x: _ injected) y (env, subst, constr) =
+  (* we should always unify two injected types *)
+  (* mylog (fun () ->
+            printfn "unify";
+            printfn "\t%s" (generic_show x);
+            printfn "\t%s" (generic_show y);
+  ); *)
+  (* incr unif_counter; *)
   try
     let prefix, subst' = Subst.unify env x y (Some subst) in
     begin match subst' with
-    | None -> Stream.nil
+    | None -> MKStream.nil
     | Some s ->
         try
           (* TODO: only apply constraints with the relevant vars *)
@@ -483,13 +772,14 @@ let (===) (x: _ injected) y (env, subst, constr) =
             )
             []
             constr
-            in
-          Stream.cons (env, s, constr') Stream.nil
-        with Disequality_violated -> Stream.nil
+          in
+          MKStream.single (env, s, constr')
+        with Disequality_violated -> MKStream.nil
     end
-  with Occurs_check -> Stream.nil
+  with Occurs_check -> MKStream.nil
 
 let (=/=) x y ((env, subst, constr) as st) =
+  (* incr diseq_counter; *)
   let normalize_store prefix constr =
     let subst  = Subst.of_list prefix in
     let prefix = List.split (List.map Subst.(fun (_, {lvar;new_val}) -> (lvar, new_val)) prefix) in
@@ -514,33 +804,70 @@ let (=/=) x y ((env, subst, constr) as st) =
   try
     let prefix, subst' = Subst.unify env x y (Some subst) in
     match subst' with
-    | None -> Stream.cons st Stream.nil
+    | None -> MKStream.single st
     | Some s ->
         (match prefix with
-        | [] -> Stream.nil
+        | [] -> MKStream.nil
         | _  ->
           let new_constrs = normalize_store prefix constr in
-          Stream.cons (env, subst, new_constrs) Stream.nil
+          MKStream.single (env, subst, new_constrs)
         )
-  with Occurs_check -> Stream.cons st Stream.nil
+  with Occurs_check -> MKStream.single st
 
-let conj f g st = Stream.bind (f st) g
+let delay : (unit -> goal) -> goal = fun g ->
+  fun st -> MKStream.from_fun (fun () -> g () st)
+
+(* let delay2 : (unit -> goal) -> goal = MKStream.inc2 *)
+
+let delay_goal : goal -> goal = fun g st -> MKStream.from_fun (fun () -> g st)
+let inc = delay_goal
+
+
+let conj f g st = MKStream.bind (f st) g
 
 let (&&&) = conj
 
-let disj f g st = Stream.mplus (f st) (g st)
+let disj f g st =
+  let open MKStream in
+  mplus (f st)
+    (MKStream.from_fun (fun () ->
+      (* printfn " force inc from mplus*"; *)
+      g st))
 
 let (|||) = disj
 
+(* mplus_star *)
 let rec (?|) = function
-| [h]  -> h
-| h::t -> h ||| ?| t
+| []    -> failwith "wrong argument of ?|"
+| [h]   -> h
+| h::tl -> h ||| (?| tl)
 
+let rec my_mplus_star xs st = match xs with
+| []    -> failwith "wrong argument of my_mplus_star|"
+| [h]   -> h st
+| h::tl -> disj h (my_mplus_star tl) st
+
+(* "bind*" *)
 let rec (?&) = function
+| []   -> failwith "wrong argument of ?&"
 | [h]  -> h
-| h::t -> h &&& ?& t
+| x::y::tl -> ?& ((x &&& y)::tl)
 
-let conde = (?|)
+let bind_star = (?&)
+
+let rec bind_star2 : MKStream.t -> goal list -> MKStream.t = fun s -> function
+| [] -> s
+| x::xs ->
+    (* printfn "2nd case of bind* 2"; *)
+    bind_star2 (MKStream.bind s x) xs
+
+let bind_star_simple s = bind_star2 s []
+
+let conde xs : goal = fun st ->
+  (* printfn " creaded inc in conde"; *)
+  MKStream.inc (fun () ->
+    (* printfn " force a conde"; *)
+    my_mplus_star xs st)
 
 module Fresh =
   struct
@@ -562,8 +889,8 @@ module Fresh =
 
   end
 
-let success st = Stream.cons st Stream.nil
-let failure _  = Stream.nil;;
+let success st = MKStream.single st
+let failure _  = MKStream.nil
 
 exception FreeVarFound
 let has_free_vars is_var x =
@@ -682,7 +1009,7 @@ module ApplyLatest =
 
     let apply (appf, extf) tup =
       let x, base = extf tup in
-      appf base x
+      appf (Stream.of_mkstream base) x
 
     let succ (appf, extf) = (ApplyTuple.succ appf, ExtractDeepest.succ extf)
   end
@@ -730,8 +1057,9 @@ let run n goalish f =
   let run f = f (State.empty ()) in
   run (adder goalish) |> ApplyLatest.apply app_num |> (currier f)
 
-let delay : (unit -> goal) -> goal = fun g ->
-  fun st -> Stream.from_fun (fun () -> g () st)
+let trace msg g = fun state ->
+  printf "%s: %s\n%!" msg (State.show state);
+  g state
 
 let project1 ~msg : (helper -> 'b -> string) -> ('a, 'b) injected -> goal = fun shower q st ->
   printf "%s %s\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ refine st q);
@@ -749,9 +1077,23 @@ let project3 ~msg : (helper -> 'b -> string) -> (('a, 'b) injected as 'v) -> 'v 
     (shower (helper_of_state st) @@ Obj.magic @@ refine st s);
   success st
 
-let unitrace shower x y = fun st ->
-  printf "unify '%s' and '%s'\n%!" (shower (helper_of_state st) x) (shower (helper_of_state st) y);
-  (x === y) st
+let unitrace ?loc shower x y = fun st ->
+  incr logged_unif_counter;
+  printf "%d: unify '%s' and '%s'" !logged_unif_counter (shower (helper_of_state st) x) (shower (helper_of_state st) y);
+  (match loc with Some l -> printf " on %s" l | None -> ());
+  let ans = (x === y) st in
+  if MKStream.is_nil ans then printfn "  -"
+  else  printfn "  +";
+  ans
+
+let diseqtrace shower x y = fun st ->
+  incr logged_diseq_counter;
+  printf "%d: (=/=) '%s' and '%s'\n%!" !logged_diseq_counter
+    (shower (helper_of_state st) x)
+    (shower (helper_of_state st) y);
+  (x =/= y) st
+
+
 
 (* ************************************************************************** *)
 module type T1 = sig
@@ -897,7 +1239,154 @@ module ManualReifiers = struct
       else Triple.reify r1 r2 r3 c p
 
 end;;
+(*
+let () =
+  let (===) = unitrace (fun h t -> GT.(show logic @@ show int)
+    @@ ManualReifiers.int_reifier h t) in
+  let goal1 exp st =
+    MKStream.mplus
+      (call_fresh_named "t" (fun t st ->
+        MKStream.inc (fun () ->
+          ?& [ exp === !!0
+             ; exp === !!1 ] st )) st)
+      (Thunk (fun () ->
+        (* printfn "herr"; *)
+        MKStream.mplus
+          (call_fresh_named "es" (fun t st ->
+            MKStream.inc (fun () -> (exp=== !!2) st)) st)
+          (Thunk (fun () ->
+           call_fresh_named "zz" (fun t st ->
+             MKStream.inc (fun () -> (exp=== !!3) st)) st))
+      ))
+  in
+  (* let goal2 exp st =
+    disj
+      (call_fresh_named "t" (fun _t  ->
+        MKStream.inc2 (fun () -> exp === !!1 )) )
+      (disj
+          (call_fresh_named "es" (fun _t ->
+            MKStream.inc2 (fun () -> exp === !!2  )) )
+          (call_fresh_named "zz" (fun _t ->
+            MKStream.inc2 (fun () -> exp === !!3 )) )
+      ) st
+  in *)
+  let goal2 exp =
+    conde
+      [ call_fresh_named "t" (fun _t  ->
+          MKStream.inc2 (fun () ->
+          ?&  [ exp === !!0
+              ; exp === !!1
+              ])
+        )
+      ; call_fresh_named "es" (fun _t ->
+            MKStream.inc2 (fun () -> exp === !!2 ))
+      ; call_fresh_named "zz" (fun _t ->
+            MKStream.inc2 (fun () -> exp === !!3 ))
+      ]
+  in
 
+  run q goal1 (fun qs -> Stream.take ~n:2 qs
+      |> List.map (fun rr -> rr#prj) |> List.iter (printfn "%d"));
+  print_newline ();
+  run q goal2 (fun qs -> Stream.take ~n:2 qs
+      |> List.map (fun rr -> rr#prj) |> List.iter (printfn "%d"));
+  ()
+;;
+*)
+
+(*
+let ____ () =
+  let (===) = unitrace (fun h t -> GT.(show logic @@ show int)
+    @@ ManualReifiers.int_reifier h t) in
+
+  let goal1 exp =
+    conde [ call_fresh_named "t1" (fun t1 ->
+              MKStream.inc2 @@ fun () ->
+              ?&  [ (exp === !!0) ]
+              )
+          ; call_fresh_named "t2" (fun t2 ->
+              MKStream.inc2 @@ fun () ->
+              ?&  [ (exp === !!3) ]
+              )
+          ; call_fresh_named "t3" (fun t3 ->
+              MKStream.inc2 @@ fun () ->
+              ?&  [ (exp === !!6) ]
+              )
+          ]
+  in
+  run q goal1 (fun qs -> Stream.take ~n:(-1) qs
+    |> List.map (fun rr -> rr#prj) |> List.iter (printfn "%d") );
+  ()
+;;
+
+let __ () =
+  let (===) = unitrace (fun h t -> GT.(show logic @@ show int)
+    @@ ManualReifiers.int_reifier h t) in
+
+  (* let rec evalo m =
+    printfn " applying evalo to m";
+    call_fresh_named "f2" (fun f2 ->
+      let () = printfn "create inc in fresh ==== (f2)" in
+      delay2 @@ fun () ->
+        printfn "inc in fresh forced: (f2)";
+        (fun st ->
+          MKStream.bind
+            ( printfn " creaded inc in conde";
+              MKStream.inc2 (fun () ->
+                printfn " force a conde";
+                fun st ->
+                MKStream.mplus
+                  (call_fresh_named "x" (fun _x ->
+                      printfn "create inc in fresh ==== (x)";
+                      MKStream.inc2 @@ fun () ->
+                        printfn "inc in fresh forced: (x)" ;
+                        (f2 === !!1)
+                    ) st)
+                  (Thunk (fun () ->
+                    printfn " force inc from mplus*";
+                    call_fresh_named "p" (fun _p ->
+                        printfn "create inc in fresh ==== (p)";
+                        MKStream.inc2 @@ fun () ->
+                          printfn "inc in fresh forced: (p)" ;
+                          (f2 === !!2)
+                      ) st))
+              ) st
+            )
+            (evalo !!4 )
+        )
+    )
+  in *)
+  let rec evalo m =
+    printfn " applying evalo to m";
+    call_fresh_named "f2" (fun f2 ->
+      let () = printfn "create inc in fresh ==== (f2)" in
+      delay2 @@ fun () ->
+        printfn "inc in fresh forced: (f2)" ;
+        ?&
+      [ conde
+          [ call_fresh_named "x" (fun _x ->
+              printfn "create inc in fresh ==== (x)";
+              delay2 @@ fun () ->
+                printfn "inc in fresh forced: (x)" ;
+                (f2 === !!1)
+            )
+          ; call_fresh_named "p" (fun _p ->
+              printfn "create inc in fresh ==== (p)";
+              delay2 @@ fun () ->
+                printfn "inc in fresh forced: (p)" ;
+                (f2 === !!2)
+            )
+          ]
+      ; (evalo !!4 )
+      ]
+    )
+  in
+  run q evalo (fun qs -> Stream.take ~n:1 qs
+    |> List.map (fun rr -> rr#prj) |> List.iter (printfn "%d") );
+  ()
+;;
+*)
+let () = ();;
 (* ***************************** a la relational StdLib here ***************  *)
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr;;
 @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap;;
