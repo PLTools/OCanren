@@ -65,6 +65,15 @@ let generic_show x =
   Buffer.contents b
 ;;
 
+let list_filter_map ~f xs =
+  let rec helper acc = function
+  | [] -> List.rev acc
+  | x::xs -> begin
+      match f x with None -> helper acc xs | Some y -> helper (y::acc) xs
+    end
+  in
+  helper [] xs
+
 module OldList = List
 
 let log_enabled =
@@ -703,17 +712,281 @@ module Subst :
 
   end
 
+let rec refine : Env.t -> Subst.t -> _ -> Obj.t -> Obj.t = fun env subst do_diseq x ->
+  let rec walk' forbidden term =
+    let var = Subst.walk env term subst in
+    match Env.var env var with
+    | None ->
+        (match wrap (Obj.repr var) with
+          | Unboxed _ -> Obj.repr var
+          | Boxed (t, s, f) ->
+            let copy = Obj.dup (Obj.repr var) in (* not a shallow copy *)
+            let sf =
+              if t = Obj.double_array_tag
+              then !!! Obj.set_double_field
+              else Obj.set_field
+            in
+
+            for i = 0 to s-1 do
+              sf copy i @@ walk' forbidden (!!!(f i))
+            done;
+            copy
+          | Invalid n -> invalid_arg (sprintf "Invalid value for reconstruction (%d)" n)
+        )
+    | Some n when List.mem n forbidden -> var
+    | Some n ->
+        (match !!!var with
+        | InnerVar (token1, token2, i, _) ->
+          (* assert (i=n); *)
+          let cs : _ list = do_diseq !!!var in
+          let cs = List.filter (fun x -> match Env.var env x with Some n -> not (List.mem n forbidden) | None -> true) cs in
+          let cs = List.map (walk' (i::forbidden)) cs in
+          Obj.repr @@ InnerVar (token1, token2, i, cs)
+        )
+  in
+  walk' [] x
+
+exception Disequality_violated
+
+module type CONSTRAINTS = sig
+  type t
+  val empty: t
+  val show: t -> string
+
+  (** [refine env c x] refines [x] and maybe changes constraints [c].
+   *  It returns a list of term that [x] should not be equal
+   *)
+  val refine: Env.t -> Subst.t -> t -> Obj.t -> Obj.t list
+
+  val extend : prefix:(int * Subst.content) list -> Env.t -> t -> t
+
+  val check  : prefix:(int * Subst.content) list -> Env.t -> Subst.t option -> t -> t
+end
+
+module FastConstraints : CONSTRAINTS =
+struct
+  (* We store constraints as associative lists where first element of pair is a variable index *)
+  type single_constraint = (int * Subst.content) list
+  type t = single_constraint list
+
+  let empty = []
+  let bprintf_single b cs =
+    let rec helper = function
+    | [] -> ()
+    | (n,x) :: tl ->
+          bprintf b "%d -> %s;" n (generic_show x.Subst.new_val);
+          helper tl
+    in
+    helper cs
+
+  let show_single c =
+    let b = Buffer.create 40 in
+    bprintf b " ( ";
+    let () = bprintf_single b c in
+    bprintf b " ) ";
+    Buffer.contents b
+
+  let show cstore =
+    let b = Buffer.create 40 in
+    let rec helper = function
+    | [] -> ()
+    | h::tl ->  bprintf_single b h;  helper tl
+    in
+    helper cstore;
+    Buffer.contents b
+
+  let split_and_unify ~prefix env subst =
+    (* There we can save on memory allocations if we will
+      do incremental unification of the list *)
+    let open Subst in
+    let vs,ts = List.split @@
+      List.map (fun (_, {lvar;new_val}) -> (lvar, new_val)) prefix
+    in
+    try  Subst.unify env !!!vs !!!ts subst
+    with Occurs_check -> [],None
+
+  let is_subsumed env d d2 =
+    let rec helper = function
+    | [] -> false
+    | h::tl -> begin
+        let (_,s) = split_and_unify ~prefix:d env (Some Subst.empty) in
+        match split_and_unify ~prefix:h env s with
+        | __, None -> helper tl
+        | [], Some _ -> true
+        | pref, maybeS ->
+            helper tl
+      end
+    in
+    helper d2
+
+  let rem_subsumed env cs =
+    let rec helper d acc =
+      match d with
+      | [] -> acc
+      | h::tl when is_subsumed env h tl || is_subsumed env h acc ->
+          helper tl acc
+      | h:: tl -> helper tl (h::acc)
+    in
+    helper cs []
+
+  exception ReallyNotEqual
+  let simplify_single_constraint ~env ~subst maybe_swap cs =
+    (* We need this to simplify answer in that case:
+     *   subst: [ q -> (a,b); ]
+     *   constr: [ (a=/=5) || (b=/=6) ]
+     *   extend subst with (a === 3)
+     *   ask to refine: q
+     *   expected answer: q = (3, b)
+     *   without simplification: q = (3, b {{ =/= 6}})
+     **)
+    let rec helper acc = function
+    | [] -> List.rev acc
+    | (_n,cont)::tl -> begin
+        match Subst.(unify env cont.lvar cont.new_val (Some subst)) with
+        | _,None -> raise ReallyNotEqual
+        | [],Some _ -> (* terms will be disequal by some other reason *)
+                        helper acc tl
+        | prefix,Some _ -> (* this constraint worth printing *)
+                            helper ((maybe_swap (_n,cont)) :: acc) tl
+      end
+    in
+    try helper [] cs
+    with ReallyNotEqual -> []
+
+  let refine: Env.t -> Subst.t -> t -> Obj.t -> Obj.t list = fun env base_subst cs term ->
+    let maybe_swap =
+      match Env.var env term with
+      | None   -> (fun p -> p)
+      | Some n -> (fun ((_,cnt) as p) ->
+                    if cnt.Subst.new_val = term then (n, { lvar = term; new_val = cnt.Subst.lvar})
+                    else p)
+    in
+    list_filter_map ~f:(fun prefix ->
+      (* For every constraint we need to simplify using current substitution because previously
+         we checked only head of the constraint *)
+      let prefix = simplify_single_constraint ~env ~subst:base_subst maybe_swap prefix in
+      let cs_sub = Subst.of_list prefix in
+      let dest = Subst.walk env !!!term cs_sub in
+      if dest == term then None
+      else Some dest
+    ) (rem_subsumed env cs)
+
+  let interacts_with ~prefix (c: single_constraint) =
+    let (n,_) = List.hd c in
+    try let m,dest = List.find (fun (m,_) -> m=n) prefix in
+        Some dest
+    with Not_found -> None
+
+  let check ~prefix env (subst: Subst.t option) (c_store: t) =
+    let rec apply_subst = function
+    | [] -> []
+    | (_n,cnt)::tl -> begin
+        match Subst.unify env cnt.Subst.lvar cnt.Subst.new_val subst with
+        | __, None   -> raise ReallyNotEqual
+        | [], Some _ -> raise Disequality_violated
+        | pr, Some _ -> pr @ tl
+      end
+    in
+
+    let rec loop acc = function
+      | []      -> List.rev acc
+      | [] :: _ -> raise Disequality_violated
+      | ((ch::ctl) as c) :: cothers -> begin
+          match interacts_with ~prefix c with
+          | None -> loop (c::acc) cothers
+          | Some dest -> begin
+              match Subst.(unify env (c |> List.hd |> snd).new_val dest.new_val) subst with
+              |  _, None -> (* non-unifiable, we can forget a constraint *)
+                  loop acc cothers
+              | [], Some _ ->
+                  (* a part of constraint is violated but two terms can still be distinct *)
+                  let revisited_constraints =
+                    try (apply_subst ctl) :: cothers
+                    with ReallyNotEqual -> cothers
+                  in
+                  loop acc revisited_constraints
+              | prefix, Some _ ->
+                  (* we need to update constraint with new information *)
+                  loop ((prefix @ c) :: acc) cothers
+          end
+        end
+    in
+    loop [] c_store
+
+  let extend ~prefix _env cs = prefix :: cs
+end
+
+module DefaultConstraints : CONSTRAINTS =
+struct
+  type t = Subst.t list
+
+  let empty = []
+  let show c = GT.show(GT.list) Subst.show c
+
+  let normalize_store ~prefix env constr =
+    (* This implementation ignores first list of prefix which contains variable indicies *)
+    let subst  = Subst.of_list prefix in
+    let open Subst in
+    let prefix = List.split @@ List.map (fun (_, {lvar;new_val}) -> (lvar, new_val)) prefix in
+    (* There we can save on memory allocations if we will
+       do incremental unification of the list *)
+    let subsumes subst (vs, ts) =
+      try
+        match Subst.unify env !!!vs !!!ts (Some subst) with
+        | [], Some _ -> true
+        | _ -> false
+      with Occurs_check -> false
+    in
+    let rec traverse = function
+    | [] -> [subst]
+    | (c::cs) as ccs ->
+        if subsumes subst (Subst.split c)
+        then ccs
+        else if subsumes c prefix
+             then traverse cs
+             else c :: traverse cs
+    in
+    traverse constr
+
+  let extend ~prefix env cs : t = normalize_store ~prefix env cs
+
+  let refine env subs cs term =
+    list_filter_map cs ~f:(fun cs_sub ->
+      let dest = Subst.walk env !!!term cs_sub in
+      if dest == term then None else Some dest
+    )
+
+  let check ~prefix env subst' cstr =
+    (* TODO: only apply constraints with the relevant vars *)
+    ListLabels.fold_left cstr ~init:[] ~f:(fun css' cs_sub ->
+      (* TODO: here is room for optimization memory usage *)
+      let x,t = Subst.split cs_sub in
+      try
+        let p, s' = Subst.unify env (!!!x) (!!!t) subst' in
+        match s' with
+        | None -> css'
+        | Some _ ->
+            match p with
+            | [] -> raise Disequality_violated
+            | _  -> (Subst.of_list p)::css'
+      with Occurs_check -> css'
+    )
+end
+
+(* module Constraints = DefaultConstraints *)
+module Constraints = FastConstraints
+
 module State =
   struct
-    type t = Env.t * Subst.t * Subst.t list
-    let empty () = (Env.empty (), Subst.empty, [])
+    type t = Env.t * Subst.t * Constraints.t
+    let empty () = (Env.empty (), Subst.empty, Constraints.empty)
     let env   (env, _, _) = env
-    let show  (env, subst, constr) = sprintf "st {%s, %s}" (Subst.show subst) (GT.show(GT.list) Subst.show constr)
+
+    let show  (env, subst, constr) = sprintf "st {%s, %s}" (Subst.show subst) (Constraints.show constr)
     let new_var (env,_,_) =
       let (x,_) = Env.fresh env in
       let InnerVar (_,_,i,_) = x in
       (x,i)
-
   end
 
 type 'a goal' = State.t -> 'a
@@ -726,8 +999,6 @@ let call_fresh f = fun (env, subst, constr) ->
 let call_fresh_named name f = fun (env, subst, constr) ->
   let x, env' = Env.fresh ~name env in
   f x (env', subst, constr)
-
-exception Disequality_violated
 
 let unif_counter = ref 0
 let logged_unif_counter = ref 0
@@ -754,53 +1025,16 @@ let (===) ?loc (x: _ injected) y (env, subst, constr) =
     let prefix, subst' = Subst.unify env x y (Some subst) in
     begin match subst' with
     | None -> MKStream.nil
-    | Some s ->
+    | (Some s) as subst ->
         try
-          (* TODO: only apply constraints with the relevant vars *)
-          let constr' =
-            List.fold_left (fun css' cs ->
-              let x,t = Subst.split cs in
-              try
-                let p, s' = Subst.unify env (!!!x) (!!!t) subst' in
-                match s' with
-                | None -> css'
-                | Some _ ->
-                    match p with
-                    | [] -> raise Disequality_violated
-                    | _  -> (Subst.of_list p)::css'
-              with Occurs_check -> css'
-            )
-            []
-            constr
-          in
+          let constr' = Constraints.check ~prefix env subst constr in
           MKStream.single (env, s, constr')
         with Disequality_violated -> MKStream.nil
+
     end
   with Occurs_check -> MKStream.nil
 
-let (=/=) x y ((env, subst, constr) as st) =
-  (* incr diseq_counter; *)
-  let normalize_store prefix constr =
-    let subst  = Subst.of_list prefix in
-    let prefix = List.split (List.map Subst.(fun (_, {lvar;new_val}) -> (lvar, new_val)) prefix) in
-    let subsumes subst (vs, ts) =
-      try
-        match Subst.unify env !!!vs !!!ts (Some subst) with
-        | [], Some _ -> true
-        | _ -> false
-      with Occurs_check -> false
-    in
-    let rec traverse = function
-    | [] -> [subst]
-    | (c::cs) as ccs ->
-        if subsumes subst (Subst.split c)
-        then ccs
-        else if subsumes c prefix
-             then traverse cs
-             else c :: traverse cs
-    in
-    traverse constr
-  in
+let (=/=) x y ((env, subst, constrs) as st) =
   try
     let prefix, subst' = Subst.unify env x y (Some subst) in
     match subst' with
@@ -809,7 +1043,7 @@ let (=/=) x y ((env, subst, constr) as st) =
         (match prefix with
         | [] -> MKStream.nil
         | _  ->
-          let new_constrs = normalize_store prefix constr in
+          let new_constrs = Constraints.extend ~prefix env constrs in
           MKStream.single (env, subst, new_constrs)
         )
   with Occurs_check -> MKStream.single st
@@ -909,45 +1143,6 @@ let has_free_vars is_var x =
 
 exception WithFreeVars of (Obj.t -> bool) * Obj.t
 
-let rec refine : State.t -> ('a,'b) injected -> ('a,'b) injected = fun ((e, s, c) as st) x ->
-  let rec walk' recursive env var subst =
-    let var = Subst.walk env var subst in
-    match Env.var env var with
-    | None ->
-        (match wrap (Obj.repr var) with
-         | Unboxed _ -> !!!var
-         | Boxed (t, s, f) ->
-            let var = Obj.dup (Obj.repr var) in
-            let sf =
-              if t = Obj.double_array_tag
-              then !!! Obj.set_double_field
-              else Obj.set_field
-            in
-            for i = 0 to s - 1 do
-              sf var i (!!!(walk' true env (!!!(f i)) subst))
-           done;
-           !!!var
-         | Invalid n -> invalid_arg (sprintf "Invalid value for reconstruction (%d)" n)
-        )
-    | Some i when recursive ->
-        (match var with
-        | InnerVar (token1, token2, i, _) ->
-            (* We do not add extra Value here: they will be added on manual reification stage *)
-            let cs =
-              List.fold_left (fun acc s ->
-                match walk' false env (!!!var) s with
-                | maybeVar when Some i = Env.var env maybeVar -> acc
-                | t -> (!!!(refine st !!!t)) :: acc
-                )
-                []
-                c
-            in
-            Obj.magic @@ InnerVar (token1, token2, i, cs)
-        )
-    | _ -> var
-  in
-  !!!(walk' true e (!!!x) s)
-
 module ExtractDeepest =
   struct
     let ext2 x = x
@@ -956,7 +1151,6 @@ module ExtractDeepest =
       let foo, base = prev z in
       ((a, foo), base)
   end
-
 
 type helper = < isVar : 'a . 'a -> bool >
 let helper_of_state st : helper =
@@ -968,10 +1162,11 @@ class type ['a,'b] refined = object
   method refine: (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
 end
 
-let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) refined = fun x st ->
-  let ans = refine st x in
-  let is_open = has_free_vars (Env.is_var @@ State.env st) (Obj.repr ans) in
+let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) refined = fun x ((env, s, cs) as st) ->
+  let ans = !!!(refine env s (Constraints.refine env s cs) (Obj.repr x)) in
+  let is_open = has_free_vars (Env.is_var env) (Obj.repr ans) in
   let c: helper = helper_of_state st in
+
   object(self)
     method is_open = is_open
     method prj = if self#is_open then raise Not_a_value else !!!ans
@@ -1033,24 +1228,22 @@ module LogicAdder :
       call_fresh (fun logic st -> (R.refiner logic, prev (f logic) st))
   end
 
-let one () = (fun x -> LogicAdder.(succ zero) x), (@@), ApplyLatest.two
 
 let succ n () =
   let adder, currier, app = n () in
   (LogicAdder.succ adder, Uncurry.succ currier, ApplyLatest.succ app)
 
-let succ = (*!!!*)succ
-let one = (*!!!*)one
+let one   () = (fun x -> LogicAdder.(succ zero) x), (@@), ApplyLatest.two
 let two   () = succ one   ()
 let three () = succ two   ()
 let four  () = succ three ()
 let five  () = succ four  ()
 
-let q     = (*!!!*)one
-let qr    = (*!!!*)two
-let qrs   = (*!!!*)three
-let qrst  = (*!!!*)four
-let pqrst = (*!!!*)five
+let q     = one
+let qr    = two
+let qrs   = three
+let qrst  = four
+let pqrst = five
 
 let run n goalish f =
   let adder, currier, app_num = n () in
@@ -1061,20 +1254,22 @@ let trace msg g = fun state ->
   printf "%s: %s\n%!" msg (State.show state);
   g state
 
+let refine_with_state (env,subs,cs) term = refine env subs (Constraints.refine env subs cs) (Obj.repr term)
+
 let project1 ~msg : (helper -> 'b -> string) -> ('a, 'b) injected -> goal = fun shower q st ->
-  printf "%s %s\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ refine st q);
+  printf "%s %s\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st q);
   success st
 
 let project2 ~msg : (helper -> 'b -> string) -> (('a, 'b) injected as 'v) -> 'v -> goal = fun shower q r st ->
-  printf "%s '%s' and '%s'\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ refine st q)
-                                    (shower (helper_of_state st) @@ Obj.magic @@ refine st r);
+  printf "%s '%s' and '%s'\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st q)
+                                    (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st r);
   success st
 
 let project3 ~msg : (helper -> 'b -> string) -> (('a, 'b) injected as 'v) -> 'v -> 'v -> goal = fun shower q r s st ->
   printf "%s '%s' and '%s' and '%s'\n%!" msg
-    (shower (helper_of_state st) @@ Obj.magic @@ refine st q)
-    (shower (helper_of_state st) @@ Obj.magic @@ refine st r)
-    (shower (helper_of_state st) @@ Obj.magic @@ refine st s);
+    (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st q)
+    (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st r)
+    (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st s);
   success st
 
 let unitrace ?loc shower x y = fun st ->
@@ -1123,7 +1318,7 @@ end
 
 let var_of_injected_exn : helper -> ('a,'b) injected -> (helper -> ('a,'b) injected -> 'b) -> 'b = fun c x r ->
   if c#isVar x
-  then let InnerVar (_,_,n,cstr) = !!!x in !!!(Var (n, List.map (!!!(r c)) !!!cstr))
+  then let InnerVar (_,_,n,cstr) = !!!x in !!!(Var (n, List.map (!!!(r c)) cstr))
   else failwith "Bad argument of var_of_injected: it should be logic variable"
 
 module Fmap1 (T : T1) = struct
