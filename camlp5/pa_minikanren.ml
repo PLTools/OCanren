@@ -48,34 +48,44 @@ EXTEND
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
     [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
-      let listed_clauses = List.fold_right
-        (fun x acc -> <:expr< (List.cons $x$ $acc$) >>)
-        clauses <:expr< [] >>
+      let body =
+        let listed_clauses = List.fold_right
+          (fun x acc -> <:expr< conj ($x$) ( $acc$ ) >>)
+          clauses <:expr< [] >>
+        in
+        let body = <:expr< bind_star $listed_clauses$ >> in
+        <:expr< delay (fun () -> $body$) >>
       in
-      let __herr0 = String.concat " " vars in
-
-      let body = <:expr< bind_star $listed_clauses$ >> in
-      let body = <:expr<
-(*        let () = Printf.printf "create inc in fresh ==== (%s)\n%!"
-                    $str:__herr0$ in *)
-        delay (fun () ->
-      (*    let () = Printf.printf "inc in fresh forced: (%s)\n%!"
-                    $str:__herr0$ in *)
-          $body$) >>
-      in
+      (* let body =
+        let conjunctions = fold
+          (fun acc x -> <:expr< conj ($x$) ($acc$) >>)
+          clauses
+        in
+        <:expr< delay (fun () -> $conjunctions$) >>
+      in *)
       let ans =
-        List.fold_right (fun x e ->
+        let rec loop = function
+        | a::b::c::tl ->
+            let pa = <:patt< $lid:a$ >> in
+            let pb = <:patt< $lid:b$ >> in
+            let pc = <:patt< $lid:c$ >> in
+            <:expr< MiniKanren.Fresh.three (fun $pa$ $pb$ $pc$ -> $loop tl$) >>
+        | a::b::tl ->
+            let rez = loop tl in
+            let pa = <:patt< $lid:a$ >> in
+            let pb = <:patt< $lid:b$ >> in
+            <:expr< MiniKanren.Fresh.two (fun $pa$ $pb$ -> $rez$) >>
+        | a::[] ->
+            let pa = <:patt< $lid:a$ >> in
+            <:expr< MiniKanren.Fresh.one (fun $pa$ -> $body$) >>
+        | []    -> body
+        in
+        loop vars
+        (* List.fold_right (fun x e ->
           let p = <:patt< $lid:x$ >> in
           <:expr< call_fresh (fun $p$ -> $e$) >>
-        ) (List.rev vars) body
+        ) (List.rev vars) body *)
       in
-      (* let rec ans = <:expr<
-        let () = Printf.printf "create inc in fresh ====== (%s)\n%!"
-          $str:__herr0$ in
-        delay (fun () -> $body$) (* it is inc *)
-      >>
-
-      in *)
       ans
     ] |
     [ "defer"; subj=expr LEVEL "." ->
