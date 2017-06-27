@@ -86,7 +86,7 @@ module State :
     (** Printing helper *)
     val show : t -> string
 
-    val new_var : t -> ('a, 'b) injected * int
+    val new_var : scope:int -> t -> ('a, 'b) injected * int
   end
 
 (** Goal converts a state into a lazy stream of states *)
@@ -399,6 +399,15 @@ val qrst : unit ->
        (('x, 'y) refined Stream.t)))) *
     ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) ->
      ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1))
+
+
+val project1: msg:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> goal
+(* val project2: msg:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
+val project3: msg:string -> (helper -> ('a, 'b) injected -> string) ->
+   ('a, 'b) injected -> ('a, 'b) injected -> ('a, 'b) injected -> goal *)
+
+(* Like (===) but with tracing *)
+val unitrace: (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
 
 (** {2 Building reifiers compositionally } *)
 module type T1 =
