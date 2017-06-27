@@ -93,7 +93,7 @@ module State :
   end
 
 (** Goal converts a state into a lazy stream of states *)
-type 'a goal' = State.t -> 'a
+type 'a goal'
 type goal = MKStream.t goal'
 
 (** {3 Logical values and injections} *)
@@ -142,8 +142,6 @@ val from_logic : 'a logic -> 'a
     parameter *)
 val call_fresh : (('a, 'b) injected -> goal) -> goal
 
-val call_fresh_named : string -> (('a, 'b) injected -> goal) -> goal
-
 val report_counters : unit -> unit
 
 (** [x === y] creates a goal, which performs a unification of [x] and [y] *)
@@ -170,17 +168,10 @@ val (?|) : goal list -> goal
 (** [conde] is a synonym for [?|] *)
 val conde : goal list -> goal
 
-(* val my_mplus_star: goal list -> State.t -> MKStream.t *)
-
 (** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a non-empty list of goals *)
 val (?&) : goal list -> goal
 
 val bind_star : goal list -> goal
-
-(* val bind_star2 : State.t MKStream.t -> goal list -> State.t MKStream.t *)
-
-(* val bind_star_simple : State.t MKStream.t -> State.t MKStream.t *)
-
 
 (** {2 Some predefined goals} *)
 
@@ -239,9 +230,6 @@ val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) *
   See also syntax extension which simplifies the syntax.
 *)
 val delay  : (unit -> goal) -> goal
-(* val delay2 : (unit -> goal) -> goal *)
-
-val delay_goal: goal -> goal
 
 val trace: string -> goal -> goal
 

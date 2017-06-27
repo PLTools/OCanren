@@ -92,120 +92,7 @@ let (log_enabled, use_svv) =
 
 let mylog f = if log_enabled then f () else ignore (fun () -> f ())
 
-(*
-(* miniKanren-like stream, more generator than a stream *)
-module MKStream =
-  struct
-
-    type 'a t = Nil
-              | Thunk of (unit -> 'a t)
-              | Single of 'a
-              | Compoz of 'a * (unit -> 'a t)
-
-    let cur_inc = ref 0
-
-    let from_fun (f: unit -> 'a t) : 'a t =
-      (* printf "    Thunk created: "; *)
-      (* incr cur_inc;
-      let n = !cur_inc in *)
-      let result = fun () ->
-        (* let () = printfn "    forcing thunk: %d" n in *)
-        f ()
-      in
-      (* printfn "%d" n; *)
-      Thunk result
-
-    let inc = from_fun
-
-    (* let inc2 (thunk: unit -> 'a -> 'b t) : 'a -> 'b t =
-      fun st -> inc (fun () -> thunk () st)
-    let inc3 (thunk: 'a -> unit -> 'b t) : 'a -> 'b t =
-      fun st -> inc (thunk st) *)
-
-    let nil = Nil
-
-    let single x = Single x
-
-    let rec is_empty = function
-    | Nil      -> true
-    | Thunk f  -> is_empty @@ f ()
-    | Single _
-    | Compoz _ -> false
-
-    let choice a f =
-      (* printfn "    created Choice %d" (2 * (Obj.magic f)); *)
-      Compoz (a, f)
-
-    let force = function
-    | Nil -> Nil
-    | Thunk f ->
-        (* printfn "      forcing thunk %d" (2 * (Obj.magic f)); *)
-        f ()
-    | Single a -> Single a
-    | Compoz (a,f) -> assert false
-
-    let rec mplus fs gs =
-      match fs with
-      | Nil           ->
-          (* printfn " mplus: 1st case"; *)
-          force gs
-      | Thunk f       ->
-          (* The we force 2nd argument and left 1st one for later
-            ... because fasterMK does that
-          *)
-          (* printfn " mplus: 2nd case"; *)
-          (* Thunk (fun () -> let r = force gs in mplus r fs) *)
-          from_fun (fun () ->
-            (* printfn " forcing thunk created by 2nd case of mplus"; *)
-            let r = force gs in
-            mplus r fs
-          )
-      | Single a      ->
-          (* printfn " mplus: 3rd case"; *)
-          choice a (fun () -> gs)
-      | Compoz (a, f) ->
-          (* printfn " mplus: 4th case "; *)
-          choice a (fun () -> mplus gs @@ f ())
-
-    let rec mplus_star : 'a t list -> 'a t = function
-    | [] -> failwith "wrong argument"
-    | [h] -> h
-    | h::tl -> mplus h (from_fun (fun () -> mplus_star tl))
-
-    let show = function
-    | Nil -> "Nil"
-    | Thunk f -> sprintf "Thunk: %d" (2 * (Obj.magic f))
-    | _ -> "wtf"
-
-    let rec bind xs g =
-      match xs with
-      | Nil ->
-            (* printfn " bind: 1std case"; *)
-            Nil
-      | Thunk f ->
-          (* printfn " bind: 2nd case"; *)
-          (* delay here because miniKanren has it *)
-          from_fun (fun () ->
-            (* printfn " forcing thunk created by 2nd case of bind: %d" (2 * (Obj.magic f)); *)
-            let r = f () in
-            bind r g)
-      | Single c ->
-          (* printfn " bind: 3rd case"; *)
-          g c
-      | Compoz (c, f) ->
-          (* printfn " bind: 4th case"; *)
-          let arg1 = g c in
-          mplus arg1 (from_fun (fun () ->
-            (* printfn " force thunk created by 5th case of bind: %d" (2 * (Obj.magic f)); *)
-            let r = f () in
-            (* printfn " r is %s" (show r); *)
-            bind r g
-          ))
-
-  end
-*)
-
-(* miniKanren-like stream, most unsafe implementation *)
+(* miniKanren-like streams, the most unsafe implementation *)
 module MKStream =
   struct
     open Obj
@@ -241,7 +128,6 @@ module MKStream =
     let () = assert (Obj.tag @@ repr (Single !!![]) = 1)
 
     let single : 'a -> t = fun x ->
-      (* mylog (fun () -> printfn "Single called"); *)
       Obj.repr @@ Obj.magic (Single !!!x)
 
     let choice a f =
@@ -710,7 +596,7 @@ module Env :
 
     val empty  : unit -> t
     val fresh  : ?name:string -> scope:scope_t -> t -> 'a * t
-    val var    : (*?verbose:bool ->*) t -> 'a -> int option
+    val var    : t -> 'a -> int option
     val is_var : t -> 'a -> bool
   end =
   struct
@@ -725,9 +611,6 @@ module Env :
 
     let fresh ?name ~scope e =
       let v = !!!(make_inner_logic ~envt:e.token ~scope e.next) in
-      (* printf "new fresh var %swith index=%d\n"
-        (match name with None -> "" | Some n -> sprintf "'%s' " n)
-        e.next; *)
       e.next <- 1+e.next;
       (!!!v, e)
 
@@ -738,9 +621,7 @@ module Env :
       let v = make_inner_logic ~envt ~scope index in
       Obj.tag (!!! v), Obj.size (!!! v)
 
-    let var (* ?(verbose=false) *) env x =
-      (* if verbose then
-        printfn " checking for var a%! '%s'" (generic_show ~maxdepth:10 x); *)
+    let var env x =
       (* There we detect if x is a logic variable and then that it belongs to current env *)
       let t = !!! x in
       if Obj.tag  t = var_tag  &&
@@ -749,22 +630,11 @@ module Env :
           (Obj.is_block !!!token) && token == (!!!global_token)
          )
       then (let q = (!!!x : inner_logic).token_env in
-            (* if verbose then
-              printfn "%s %d" __FILE__ __LINE__; *)
-            (* let () = printfn " Obj.is_int%! '%s' = %b" (generic_show q) (Obj.is_int q) in
-            let () = printfn " env_token is %!'%s'" (generic_show env_token) in
-            let () = printfn " q == (!!!env_token) = %!'%b'" (q == (!!!env_token)) in *)
             if (Obj.is_int !!!q) && q == (!!!env.token)
             then Some (!!!x : inner_logic).index
             else failwith "You hacked everything and pass logic variables into wrong environment"
             )
       else None
-
-    (* let var ?(verbose=false) env x =
-      let ans = var ~verbose env x in
-      if verbose then
-        printfn "  is says %s" (match ans with Some n -> sprintf "yes %d" n | None  -> "no");
-      ans *)
 
     let is_var env v = None <> var env v
 
@@ -1376,10 +1246,6 @@ let call_fresh f : State.t -> _ = fun (env, subst, constr, scope) ->
   let x, env' = Env.fresh ~scope env in
   f x (env', subst, constr, scope)
 
-let call_fresh_named name f = fun (env, subst, constr, scope) ->
-  let x, env' = Env.fresh ~name ~scope env in
-  f x (env', subst, constr, scope)
-
 let unif_counter = ref 0
 let logged_unif_counter = ref 0
 let diseq_counter = ref 0
@@ -1421,9 +1287,7 @@ let (=/=) x y ((env, subst, constrs, scope) as st) =
 let delay : (unit -> goal) -> goal = fun g ->
   fun st -> MKStream.from_fun (fun () -> g () st)
 
-let delay_goal : goal -> goal = fun g st -> MKStream.from_fun (fun () -> g st)
-let inc = delay_goal
-
+let inc : goal -> goal = fun g st -> MKStream.from_fun (fun () -> g st)
 
 let conj f g st = MKStream.bind (f st) g
 
