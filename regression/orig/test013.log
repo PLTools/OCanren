@@ -99,8 +99,8 @@ fun q -> List.allo ((%) Bool.true_ ((%<) q Bool.true_)) Bool.true_, 1 answer {
 q=true;
 }
 fun q r s -> List.allo ((%) Bool.true_ ((%<) q r)) s, all answers {
-q=false; r=false; s=false;
 q=true; r=true; s=true;
+q=false; r=false; s=false;
 q=false; r=true; s=false;
 q=true; r=false; s=false;
 }

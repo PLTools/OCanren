@@ -12,10 +12,10 @@ q=1; r=1;
 q=1; r=2;
 q=2; r=1;
 q=1; r=3;
-q=2; r=2;
 q=3; r=1;
-q=2; r=3;
+q=2; r=2;
 q=3; r=2;
+q=2; r=3;
 q=3; r=3;
 }
 fun q r -> gxy' q r, 10 answers {
@@ -23,70 +23,117 @@ q=1; r=2;
 q=2; r=1;
 q=1; r=3;
 q=3; r=1;
-q=2; r=3;
 q=3; r=2;
-}
-fun q ->
-  call_fresh (fun x -> call_fresh (fun y -> conj ((===) x y) ((=/=) x y))), all answers {
-}
-fun q ->
-  call_fresh (fun x -> call_fresh (fun y -> conj ((=/=) x y) ((===) x y))), all answers {
+q=2; r=3;
 }
 fun q ->
   call_fresh
-    (fun x ->
+    (fun y ->
        call_fresh
-         (fun y -> conj ((=/=) x y) (conj ((===) !3 x) ((===) !3 y)))), all answers {
+         (fun x ->
+            delay
+              (fun () ->
+                 bind_star
+                   (List.cons ((===) x y) (List.cons ((=/=) x y) []))))), all answers {
 }
 fun q ->
   call_fresh
-    (fun x ->
+    (fun y ->
        call_fresh
-         (fun y -> conj ((===) !3 x) (conj ((=/=) x x) ((===) !3 y)))), all answers {
+         (fun x ->
+            delay
+              (fun () ->
+                 bind_star
+                   (List.cons ((=/=) x y) (List.cons ((===) x y) []))))), all answers {
 }
 fun q ->
   call_fresh
-    (fun x ->
+    (fun y ->
        call_fresh
-         (fun y -> conj ((===) !3 x) (conj ((===) !3 y) ((=/=) x y)))), all answers {
+         (fun x ->
+            delay
+              (fun () ->
+                 bind_star
+                   (List.cons ((=/=) x y)
+                      (List.cons ((===) !3 x) (List.cons ((===) !3 y) [])))))), all answers {
 }
 fun q ->
   call_fresh
-    (fun x ->
+    (fun y ->
        call_fresh
-         (fun y -> conj ((===) !3 x) (conj ((===) !3 y) ((=/=) y x)))), all answers {
+         (fun x ->
+            delay
+              (fun () ->
+                 bind_star
+                   (List.cons ((===) !3 x)
+                      (List.cons ((=/=) x x) (List.cons ((===) !3 y) [])))))), all answers {
 }
 fun q ->
   call_fresh
-    (fun x ->
+    (fun y ->
+       call_fresh
+         (fun x ->
+            delay
+              (fun () ->
+                 bind_star
+                   (List.cons ((===) !3 x)
+                      (List.cons ((===) !3 y) (List.cons ((=/=) x y) [])))))), all answers {
+}
+fun q ->
+  call_fresh
+    (fun y ->
+       call_fresh
+         (fun x ->
+            delay
+              (fun () ->
+                 bind_star
+                   (List.cons ((===) !3 x)
+                      (List.cons ((===) !3 y) (List.cons ((=/=) y x) [])))))), all answers {
+}
+fun q ->
+  call_fresh
+    (fun z ->
        call_fresh
          (fun y ->
             call_fresh
-              (fun z ->
-                 conj ((===) x y)
-                   (conj ((===) y z)
-                      (conj ((=/=) x !4) ((===) z !(2 + 2))))))), all answers {
+              (fun x ->
+                 delay
+                   (fun () ->
+                      bind_star
+                        (List.cons ((===) x y)
+                           (List.cons ((===) y z)
+                              (List.cons ((=/=) x !4)
+                                 (List.cons ((===) z !(2 + 2)) [])))))))), all answers {
 }
 fun q ->
   call_fresh
-    (fun x ->
+    (fun z ->
        call_fresh
          (fun y ->
             call_fresh
-              (fun z ->
-                 conj ((===) x y)
-                   (conj ((===) y z)
-                      (conj ((===) z !(2 + 2)) ((=/=) x !4)))))), all answers {
+              (fun x ->
+                 delay
+                   (fun () ->
+                      bind_star
+                        (List.cons ((===) x y)
+                           (List.cons ((===) y z)
+                              (List.cons ((===) z !(2 + 2))
+                                 (List.cons ((=/=) x !4) [])))))))), all answers {
 }
 fun q ->
   call_fresh
-    (fun x ->
+    (fun z ->
        call_fresh
          (fun y ->
             call_fresh
-              (fun z ->
-                 conj ((=/=) x !4)
-                   (conj ((===) y z) (conj ((===) x y) ((===) z !(2 + 2))))))), all answers {
+              (fun x ->
+                 delay
+                   (fun () ->
+                      bind_star
+                        (List.cons ((=/=) x !4)
+                           (List.cons ((===) y z)
+                              (List.cons ((===) x y)
+                                 (List.cons ((===) z !(2 + 2)) [])))))))), all answers {
 }
 fun q -> (=/=) q !5, all answers {
 q=_.10 [=/= 5];
