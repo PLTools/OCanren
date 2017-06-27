@@ -29,6 +29,6 @@ fun q ->
        conde
          [(&&&) ((===) q (Result.ok s)) ((=/=) s ((!!) 4));
           (===) q (Result.error r)]), all answers {
-q=Error (_.11);
 q=Ok (_.12 [=/= 4]);
+q=Error (_.11);
 }

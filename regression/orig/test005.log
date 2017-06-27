@@ -18,14 +18,14 @@ fun q -> lookupo varX q (v varY), 1 answer {
 q=[("x", V ("y")); _.13];
 }
 fun q -> infero (abs varX (v varX)) q, 1 answer {
-q=Arr (_.14, _.14);
+q=Arr (_.18, _.18);
 }
 fun q -> infero (abs varF (abs varX (app (v varF) (v varX)))) q, 1 answer {
-q=Arr (Arr (_.33, _.22), Arr (_.33, _.22));
+q=Arr (Arr (_.30, _.26), Arr (_.30, _.26));
 }
 fun q -> infero (abs varX (abs varF (app (v varF) (v varX)))) q, 1 answer {
-q=Arr (_.33, Arr (Arr (_.33, _.22), _.22));
+q=Arr (_.30, Arr (Arr (_.30, _.26), _.26));
 }
 fun q -> infero q (arr (p varX) (p varX)), 1 answer {
-q=Abs (_.40, V (_.40));
+q=Abs (_.29, V (_.29));
 }
