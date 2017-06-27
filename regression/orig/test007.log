@@ -23,8 +23,8 @@ fun q -> evalo (v varX) q, 1 answer {
 q=V ("x");
 }
 fun q -> evalo (app q (v varX)) (v varX), 1 answer {
-q=Abs (_.40, V (_.40));
+q=Abs (_.39, V (_.39));
 }
 fun q r -> evalo (app r q) (v varX), 1 answer {
-q=V ("x"); r=Abs (_.41, V (_.41));
+q=V ("x"); r=Abs (_.40, V (_.40));
 }
