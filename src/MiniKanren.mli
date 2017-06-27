@@ -16,11 +16,30 @@
  * (enclosed in the file COPYING).
  *)
 
+module OldList : (module type of List)
+
+val printfn : ('a, unit, string, unit) format4 -> 'a
+val mylog : (unit -> unit) -> unit
+
 (** {1 Implementation of miniKanren primitives} *)
 
 (** {2 Basic modules and types} *)
 
 (** {3 Lazy streams} *)
+module MKStream :
+  sig
+    (** Stream type *)
+    type t
+
+    val inc: (unit -> t) -> t
+    (* val inc2: (unit -> 'a -> 'b t) -> 'a -> 'b t
+    val inc3: ('a -> unit -> 'b t) -> 'a -> 'b t *)
+    val mplus : t -> t -> t
+    (* val mplus_star : 'a t list -> 'a t *)
+
+    val bind: t -> ('a ->  t) -> t
+  end
+
 module Stream :
   sig
     (** Stream type *)
@@ -55,6 +74,9 @@ module Stream :
 
 (** {3 States and goals} *)
 
+(**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
+type ('a, 'b) injected
+
 (** A state *)
 module State :
   sig
@@ -63,16 +85,16 @@ module State :
 
     (** Printing helper *)
     val show : t -> string
+
+    val new_var : t -> ('a, 'b) injected * int
   end
 
 (** Goal converts a state into a lazy stream of states *)
-type 'a goal'
-type goal = State.t Stream.t goal'
+type 'a goal' = State.t -> 'a
+type goal = MKStream.t goal'
 
 (** {3 Logical values and injections} *)
 
-(**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
-type ('a, 'b) injected
 
 (** A type of abstract logic values *)
 @type 'a logic =
@@ -117,8 +139,12 @@ val from_logic : 'a logic -> 'a
     parameter *)
 val call_fresh : (('a, 'b) injected -> goal) -> goal
 
+val call_fresh_named : string -> (('a, 'b) injected -> goal) -> goal
+
+val report_counters : unit -> unit
+
 (** [x === y] creates a goal, which performs a unification of [x] and [y] *)
-val (===) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
+val (===) : ?loc:string -> ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
 (** [x =/= y] creates a goal, which introduces a disequality constraint for [x] and [y] *)
 val (=/=) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
@@ -141,8 +167,17 @@ val (?|) : goal list -> goal
 (** [conde] is a synonym for [?|] *)
 val conde : goal list -> goal
 
+(* val my_mplus_star: goal list -> State.t -> MKStream.t *)
+
 (** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a non-empty list of goals *)
 val (?&) : goal list -> goal
+
+val bind_star : goal list -> goal
+
+(* val bind_star2 : State.t MKStream.t -> goal list -> State.t MKStream.t *)
+
+(* val bind_star_simple : State.t MKStream.t -> State.t MKStream.t *)
+
 
 (** {2 Some predefined goals} *)
 
@@ -189,7 +224,9 @@ module Fresh :
     - [run two        (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i here [qs], [rs] --- streams of all values, associated with the variable [q] and [r], respectively}[)]
     - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
  *)
-val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
+val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) *
+                      (('g Stream.t -> 'h -> 'e) * ('c -> 'h * MKStream.t))) ->
+          'a -> 'd -> 'f
 
 (**
   The primitive [delay] helps to construct recursive goals that depend on themselves. For example,
@@ -198,7 +235,12 @@ val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c
 
   See also syntax extension which simplifies the syntax.
 *)
-val delay: (unit -> goal) -> goal
+val delay  : (unit -> goal) -> goal
+(* val delay2 : (unit -> goal) -> goal *)
+
+val delay_goal: goal -> goal
+
+val trace: string -> goal -> goal
 
 (** Reification helper *)
 type helper
@@ -209,7 +251,9 @@ val project3: msg:string -> (helper -> ('a, 'b) injected -> string) ->
     ('a, 'b) injected -> ('a, 'b) injected -> ('a, 'b) injected -> goal
 
 (* Like (===) but with tracing *)
-val unitrace: (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
+val unitrace: ?loc:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
+
+val diseqtrace: (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
 
 (**
   The exception is raised when we try to extract plain term from the answer but only terms with free
