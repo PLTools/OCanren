@@ -9,38 +9,37 @@ let just_a a = a === !!5
 let a_and_b a =
   call_fresh (fun b ->
       (a === !!7) &&&
-      ((b === !!6) ||| (b === !!5))
+      conde [ (b === !!6); (b === !!5) ]
   )
 
 let a_and_b' b =
-  call_fresh (
-    fun a ->
+  call_fresh (fun a ->
       (a === !!7) &&&
-      ((b === !!6) ||| (b === !!5))
+      conde [ (b === !!6); (b === !!5) ]
   )
 
 let rec fives x =
-  (x === !!5) |||
-  defer (fives x)
+  conde
+    [ (x === !!5)
+    ; defer (fives x)
+    ]
 
 let rec appendo a b ab =
-  ((a === nil ()) &&& (b === ab)) |||
-  Fresh.two (fun h t ->
-      (a === h%t) &&&
-      Fresh.one (fun ab' ->
-          (h%ab' === ab) &&& (appendo t b ab')
-      )
-    )
+  conde
+    [ ((a === nil ()) &&& (b === ab))
+    ; fresh (h t ab')
+        (a === h%t)
+        (h%ab' === ab)
+        (appendo t b ab')
+    ]
 
 let rec reverso a b =
   conde
     [ ((a === nil ()) &&& (b === nil ()))
-    ; Fresh.two (fun h t ->
-          (a === h%t) &&&
-          (Fresh.one (fun a' ->
-              (appendo a' !<h b) &&& (reverso t a')
-          ))
-      )
+    ; fresh (h t a')
+        (a === h%t)
+        (appendo a' !<h b)
+        (reverso t a')
     ]
 
 let show_int       = show(int)

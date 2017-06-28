@@ -17,7 +17,7 @@ TESTS_ENVIRONMENT=./test.sh
 JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
 .PHONY: all celan clean clean_tests install uninstall tests test regression promote_all \
-	doc \
+	ppx doc \
 	only-toplevel toplevel minikanren_stuff tester bundle plugin
 
 .DEFAULT_GOAL: all
@@ -26,6 +26,11 @@ all: minikanren_stuff plugin bundle
 
 minikanren_stuff:
 	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
+
+ppx:
+	$(OB) -Is src ppx/ppx_repr_bin.cmxa ppx/pa_minikanren_bin.cmxa \
+	  ppx/ppx_ocanren_all.cma ppx/ppx_ocanren_all.cmxa ppx/ppx_ocanren_all.cmxs \
+		ppx/ppx_ocanren_all.native
 
 plugin:
 	$(OB) camlp5/pa_minikanren.cmo
@@ -99,6 +104,10 @@ INSTALL_TARGETS=META \
 	_build/src/MiniKanren.cmx \
 	_build/src/MiniKanren.cma \
 	_build/src/MiniKanren.cmxa \
+	$(wildcard _build/ppx/ppx_ocanren_all.cma) \
+	$(wildcard _build/ppx/ppx_ocanren_all.cmxa) \
+	$(wildcard _build/ppx/ppx_ocanren_all.cmxs) \
+	$(wildcard _build/ppx/ppx_ocanren_all.native) \
 	$(wildcard _build/src/MiniKanren.[oa]) \
 	$(wildcard _build/camlp5/pa_minikanren.cm[oi]) \
 
@@ -133,6 +142,7 @@ $(BUNDLEDIR):
 
 bundle: rmbundledir $(BUNDLEDIR)
 	$(MAKE) really_make_bundle
+	#cp _build/ppx/ppx_ocanren_all $(BUNDLEDIR)/
 
 really_make_bundle: $(MAKE_BUNDLE_TARGETS)
 

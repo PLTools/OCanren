@@ -16,11 +16,31 @@
  * (enclosed in the file COPYING).
  *)
 
+(* module OldList : (module type of List) *)
+
+val generic_show: ?maxdepth:int -> 'a -> string
+
+val printfn : ('a, unit, string, unit) format4 -> 'a
+
 (** {1 Implementation of miniKanren primitives} *)
 
 (** {2 Basic modules and types} *)
 
 (** {3 Lazy streams} *)
+module MKStream :
+  sig
+    (** Stream type *)
+    type t
+
+    val inc: (unit -> t) -> t
+    (* val inc2: (unit -> 'a -> 'b t) -> 'a -> 'b t
+    val inc3: ('a -> unit -> 'b t) -> 'a -> 'b t *)
+    val mplus : t -> t -> t
+    (* val mplus_star : 'a t list -> 'a t *)
+
+    val bind: t -> ('a ->  t) -> t
+  end
+
 module Stream :
   sig
     (** Stream type *)
@@ -55,6 +75,9 @@ module Stream :
 
 (** {3 States and goals} *)
 
+(**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
+type ('a, 'b) injected
+
 (** A state *)
 module State :
   sig
@@ -62,17 +85,18 @@ module State :
     type t
 
     (** Printing helper *)
-    val show : t -> string
+    (* val show : t -> string *)
+
+    val new_var : t -> ('a, 'b) injected * int
+    val incr_scope : t -> t
   end
 
 (** Goal converts a state into a lazy stream of states *)
 type 'a goal'
-type goal = State.t Stream.t goal'
+type goal = MKStream.t goal'
 
 (** {3 Logical values and injections} *)
 
-(**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
-type ('a, 'b) injected
 
 (** A type of abstract logic values *)
 @type 'a logic =
@@ -100,14 +124,27 @@ val inj : ('a, 'b) injected -> ('a, 'b logic) injected
 (** A synonym for [fun x -> inj @@ lift x] (for non-parametric types) *)
 val (!!) : 'a -> ('a, 'a logic) injected
 
+(** [prj x] returns plain value from injected representation.
+    Raises exception [Not_a_value] if [x] contains logic variables. *)
+val prj : ('a, 'b) injected -> 'a
+
+(** [to_logic x] makes logic value from plain one *)
+val to_logic : 'a -> 'a logic
+
+(** [from_logic x] makes plain value from logic one.
+    Raises exception [Not_a_value] if [x] contains logic variables. *)
+val from_logic : 'a logic -> 'a
+
 (** {2 miniKanren basic primitives} *)
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the
     parameter *)
 val call_fresh : (('a, 'b) injected -> goal) -> goal
 
+val report_counters : unit -> unit
+
 (** [x === y] creates a goal, which performs a unification of [x] and [y] *)
-val (===) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
+val (===) : ?loc:string -> ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
 (** [x =/= y] creates a goal, which introduces a disequality constraint for [x] and [y] *)
 val (=/=) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
@@ -132,6 +169,8 @@ val conde : goal list -> goal
 
 (** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a non-empty list of goals *)
 val (?&) : goal list -> goal
+
+val bind_star : goal list -> goal
 
 (** {2 Some predefined goals} *)
 
@@ -178,7 +217,9 @@ module Fresh :
     - [run two        (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i here [qs], [rs] --- streams of all values, associated with the variable [q] and [r], respectively}[)]
     - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
  *)
-val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c -> 'h * 'g))) -> 'a -> 'd -> 'f
+val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) *
+                      (('g Stream.t -> 'h -> 'e) * ('c -> 'h * MKStream.t))) ->
+          'a -> 'd -> 'f
 
 (**
   The primitive [delay] helps to construct recursive goals that depend on themselves. For example,
@@ -187,10 +228,22 @@ val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) * (('g -> 'h -> 'e) * ('c
 
   See also syntax extension which simplifies the syntax.
 *)
-val delay: (unit -> goal) -> goal
+val delay  : (unit -> goal) -> goal
+
+val trace: string -> goal -> goal
 
 (** Reification helper *)
 type helper
+
+val project1: msg:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> goal
+val project2: msg:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
+val project3: msg:string -> (helper -> ('a, 'b) injected -> string) ->
+    ('a, 'b) injected -> ('a, 'b) injected -> ('a, 'b) injected -> goal
+
+(* Like (===) but with tracing *)
+val unitrace: ?loc:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
+
+val diseqtrace: (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
 
 (**
   The exception is raised when we try to extract plain term from the answer but only terms with free
@@ -425,11 +478,22 @@ module Fmap6 (T : T6) :
 
 module ManualReifiers :
   sig
+    val simple_reifier: helper -> ('a, 'a logic) injected -> 'a logic
+
+    val bool_reifier : helper -> (bool, bool logic) injected -> bool logic
+
     val int_reifier: helper -> (int, int logic) injected -> int logic
+
     val string_reifier: helper -> (string, string logic) injected -> string logic
+
     val pair_reifier: (helper -> ('a,'b) injected -> 'b) ->
-                    (helper -> ('c,'d) injected -> 'd) ->
-                    helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
+                      (helper -> ('c,'d) injected -> 'd) ->
+                      helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
+
+    val triple_reifier : (helper -> ('a,'b) injected -> 'b) ->
+                         (helper -> ('c,'d) injected -> 'd) ->
+                         (helper -> ('e,'f) injected -> 'f) ->
+                         helper -> ('a * 'c * 'e, ('b * 'd * 'f) logic as 'r) injected -> 'r
  end
 
 (** {2 Standart relational library } *)
@@ -568,14 +632,21 @@ module Nat :
     (** [to_int g] converts ground [g] into integer *)
     val to_int : ground -> int
 
-    (** Make logic nat from ground one *)
+    (** [to_logic x] makes logic nat from ground one *)
     val to_logic : ground -> logic
+
+    (** [from_logic x] makes ground nat from logic one.
+        Raises exception [Not_a_value] if [x] contains logic variables.*)
+    val from_logic : logic -> ground
 
     (** Make injected nat from ground one *)
     val inj : ground -> groundi
 
     val zero : groundi
     val succ : groundi -> groundi
+
+    val o : groundi
+    val s : groundi -> groundi
 
     (** Relational addition *)
     val addo  : groundi -> groundi -> groundi -> goal
@@ -656,8 +727,12 @@ module List :
     (** [to_list g] converts OCanren list [g] into regular OCaml list *)
     val to_list : ('a -> 'b) -> 'a ground -> 'b list
 
-    (** Make logic list from ground one *)
+    (** [to_logic x] makes logic list from ground one *)
     val to_logic : ('a -> 'b) -> 'a ground -> 'b logic
+
+    (** [from_logic x] makes ground list from logic one.
+        Raises exception [Not_a_value] if [x] contains logic variables.*)
+    val from_logic : ('b -> 'a) -> 'b logic -> 'a ground
 
     (** Make injected list from ground one *)
     val inj : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
@@ -666,7 +741,7 @@ module List :
     val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
 
     (** Constructor *)
-    val cons : ('a, 'b logic) injected -> ('a, 'b) groundi -> ('a, 'b) groundi
+    val conso : ('a, 'b logic) injected -> ('a, 'b) groundi -> ('a, 'b) groundi
 
     (** Relational foldr *)
     val foldro : (('a, 'b) injected -> ('acc, 'acc2) injected -> ('acc, 'acc2) injected -> goal) ->

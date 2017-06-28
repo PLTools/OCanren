@@ -4,6 +4,24 @@ requires = "GT"
 archive(byte) = "MiniKanren.cma"
 archive(native) = "MiniKanren.cmxa"
 
+package "ppx" (
+  description = "PPX syntax extensionon top of ppx_deriving"
+  #requires(-ppx_driver) = "ppx_deriving"
+  ppx = "./ppx_ocanren_all.native --as-ppx"
+  #requires(ppx_driver) = "ppx_deriving.api"
+  archive(ppx_driver, byte) = "ppx_ocanren_all.cma"
+  archive(ppx_driver, native) = "ppx_ocanren_all.cmxa"
+  exists_if = "ppx_ocanren_all.cmxs"
+)
+package "repr" (
+  description = ""
+  requires(-ppx_driver) = "ppx_deriving"
+  ppxopt(-ppx_driver,-custom_ppx) = "ppx_deriving,-deriving-plugin,./ppx_ocanren_all.cma"
+  requires(ppx_driver) = "ppx_deriving.api"
+  #archive(ppx_driver, byte) = "ppx_ocanren_all.cma"
+  #archive(ppx_driver, native) = "ppx_ocanren_all.cmxa"
+  exists_if = "ppx_ocanren_all.cmxs"
+)
 package "syntax" (
   description="Camlp5 syntax extension"
   requires="camlp5"

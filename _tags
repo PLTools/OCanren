@@ -1,19 +1,18 @@
 true: debug, rectypes, color(always), bin_annot, keep_asm
 true: short_paths
 
+<ppx/*>: package(ppx_tools_versioned,ppx_tools_versioned.metaquot_405,ppx_deriving.std)
+<ppx/*>: package(ocaml-migrate-parsetree ocaml-migrate-parsetree ppx_tools_versioned.metaquot_405)
+
 <samples>: not_hygienic
 <camlp5/pa_minikanren.*>: syntax(camlp5o), package(camlp5)
 
 <src/MiniKanren.*>: syntax(camlp5o),package(GT,GT.syntax.all)
-<src/MiniKanren.mli>: hack_pr_o
 <regression/orig/*>: traverse
 <regression/test*.native> or <regression/test*.byte>: package(str)
 <regression/stlc.*>: syntax(camlp5o), package(GT.syntax.all)
-#<regression/test003.ml>: use_pa_minikanren
-
 
 <regression/test0*.*>: package(GT,GT.syntax.all), syntax(camlp5o)
-#<regression/test004.ml> or <regression/test009.ml> or <regression/test005.ml> or <regression/test000.ml> : use_pa_minkanren
 
 <regression/test*.ml> : syntax(camlp5o), package(logger.syntax)
 <regression/test0*.ml> : use_pa_minikanren, package(GT.syntax.all)

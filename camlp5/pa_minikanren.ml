@@ -37,20 +37,50 @@
 open Pcaml
 open Printf
 
+let rec fold_right1 f = function
+| [h]  -> h
+| h::t -> f h (fold_right1 f t)
+;;
+
+let rec fold_left1 f xs = List.fold_left f (List.hd xs) (List.tl xs)
+
 EXTEND
   GLOBAL: expr;
 
+  (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
     [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
-      let rec fold f = function
-      | [h]  -> h
-      | h::t -> f h (fold f t)
+      let body =
+        let conjunctions = fold_left1
+          (fun acc x -> <:expr< conj ($acc$) ($x$) >>)
+          clauses
+        in
+        <:expr< delay (fun () -> $conjunctions$) >>
       in
-      let body = fold (fun l r -> <:expr< conj $l$ $r$ >>) clauses in
-      List.fold_right (fun x e ->
-        let p = <:patt< $lid:x$ >> in
-        <:expr< call_fresh (fun $p$ -> $e$) >>
-      ) vars body
+      let ans =
+        let rec loop = function
+        | a::b::c::tl ->
+            let pa = <:patt< $lid:a$ >> in
+            let pb = <:patt< $lid:b$ >> in
+            let pc = <:patt< $lid:c$ >> in
+            <:expr< MiniKanren.Fresh.three (fun $pa$ $pb$ $pc$ -> $loop tl$) >>
+        | a::b::tl ->
+            let rez = loop tl in
+            let pa = <:patt< $lid:a$ >> in
+            let pb = <:patt< $lid:b$ >> in
+            <:expr< MiniKanren.Fresh.two (fun $pa$ $pb$ -> $rez$) >>
+        | a::[] ->
+            let pa = <:patt< $lid:a$ >> in
+            <:expr< MiniKanren.Fresh.one (fun $pa$ -> $body$) >>
+        | []    -> body
+        in
+        loop vars
+        (* List.fold_right (fun x e ->
+          let p = <:patt< $lid:x$ >> in
+          <:expr< call_fresh (fun $p$ -> $e$) >>
+        ) (List.rev vars) body *)
+      in
+      ans
     ] |
     [ "defer"; subj=expr LEVEL "." ->
       <:expr< delay (fun () -> $subj$) >>
