@@ -32,7 +32,7 @@ module GTyp =
 
 end
 
-let rec gtyp_reifier c x = GTyp.reify ManualReifiers.string_reifier gtyp_reifier c x
+let rec gtyp_reifier c x = GTyp.reify ManualReifiers.string gtyp_reifier c x
 
 open GLam
 open GTyp
@@ -82,12 +82,12 @@ let () =
 
 let show_env_logic = show(List.logic) @@ show(logic) (show pair (show(logic) (fun s -> s)) show_llam)
 
-let pair_reifier c p = ManualReifiers.pair_reifier ManualReifiers.string_reifier glam_reifier c p
+let pair c p = ManualReifiers.pair ManualReifiers.string glam_reifier c p
 
-let env_reifier c xs = List.reify pair_reifier c xs
+let env_reifier c xs = List.reify pair c xs
 
-let show_env  = show(List.ground) @@ show pair show_string  GLam.show_rlam
-let show_envl = show(List.logic ) @@ show(logic) (show pair show_stringl GLam.show_llam)
+let show_env  = show(List.ground) @@ GT.(show pair) show_string  GLam.show_rlam
+let show_envl = show(List.logic ) @@ show(logic) GT.(show pair show_stringl GLam.show_llam)
 
 let runEnv n = runR env_reifier show_env show_envl n
 
