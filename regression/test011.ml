@@ -8,8 +8,8 @@ let (!!) = inj_listi
 let show_int_list   = GT.(show List.ground @@ show int)
 let show_intl_llist = GT.(show List.logic @@ show logic @@ show int)
 
-let runInt n = runR ManualReifiers.int_reifier GT.(show int) GT.(show logic @@ show int) n
-let runIList n = runR (List.reify ManualReifiers.int_reifier) show_int_list show_intl_llist n
+let runInt n = runR ManualReifiers.int GT.(show int) GT.(show logic @@ show int) n
+let runIList n = runR (List.reify ManualReifiers.int) show_int_list show_intl_llist n
 
 let _ =
   runInt       (-1) q qh (REPR (fun q -> (q =/= !1)       ));
