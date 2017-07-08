@@ -11,14 +11,14 @@ most efficient implementation. On the other hand, all pitfalls of polymorphic co
 well; in particular, polymorphic unification loops for cyclic data structures and does not work for functional 
 values. Since we generally do not expect any reasonable outcome in these cases, the only remaining problem is that
 the compiler is incapable of providing any assistance in identifying and avoiding them. Another drawback is that 
-the implementation of polymorphic unification relies on runtime representation of values and have to be fixed 
-every time the representation changes.  Finally, as it is written in unsafe manner using \lstinline{Obj} interface, 
+the implementation of polymorphic unification relies on the runtime representation of values and has to be fixed 
+every time the representation changes.  Finally, as it is written in unsafe manner using the \lstinline{Obj} interface, 
 it has to be carefully developed and tested.
 
 An important difference between polymorphic comparison and unification is that the former only inspects its operands, 
 while the results of unification are recorded in a substitution (a mapping from logical variables to terms), which 
 later is used to refine answers and reify constraints. So, generally speaking, we have to show that no ill-typed 
-terms are constructed as a result. Overall, this property seems to be maintained vaciously, since the very 
+terms are constructed as a result. Overall, this property seems to be maintained vacuously, since the very 
 nature of (syntactic) unification is to detect, whether some thing can be considered equal. Nevertheless there are
 different type systems and different unification implementations; in addition \emph{equal things} can be
 \emph{differently typed}, so we provide here a correctness justification for a well-defined abstract case, and will 
@@ -41,7 +41,7 @@ t^\tau=x^\tau\mid C_k^{\tau_1\times\tau_2\times\dots\times\tau_k\to\tau}(t^{\tau
 $$
 
 For simplicity from now on we abbreviate the notation $C_k^{\tau_1\times\tau_2\times\dots\times\tau_k\to\tau}(t^{\tau_1},\,t^{\tau_2},\,\dots,\,t^{\tau_k})$ into 
-$C_k^\tau(t^{\tau_1},\,t^{\tau_2},\,\dots,\,t^{\tau_k})$, keeping in mind that for any concrete constructor and for all its occurrencies 
+$C_k^\tau(t^{\tau_1},\,t^{\tau_2},\,\dots,\,t^{\tau_k})$, keeping in mind that for any concrete constructor and for all its occurrences 
 in arbitrary terms all its subterms in corresponding positions agree in types. 
 
 \begin{comment}

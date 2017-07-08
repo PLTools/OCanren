@@ -2,7 +2,7 @@
 \label{sec:examples}
 
 In this section we present some examples of relational specification, written with the aid of our library. 
-Besides \miniKanren combinators itself, our implementation contains two syntax extensions~--- one
+Besides \miniKanren combinators themselves, our implementation contains two syntax extensions~--- one
 for \lstinline{fresh} construct and another for \emph{inverse-$\eta$-delay}~\cite{MicroKanren}, which is 
 necessary sometimes to delay recursive calls in order to prevent infinite looping. In addition we included a 
 small relational library of data strictures like lists, numbers, booleans etc. This library is written 
@@ -16,12 +16,12 @@ to deviate from this tradition. We've already considered the implementation of \
 original \miniKanren in Section~\ref{sec:demo}. In our case, the implementation looks familiar:
 
 \begin{lstlisting}
-   let rec append$^o$ a b ab =
-     (a === nil ()) &&& (b === ab) |||
+   let rec append$^o$ x y xy =
+     (x === nil ()) &&& (y === xy) |||
      (fresh (h t)
-       (a === h % t) &&&
-       (fresh (ab')
-         (h % ab' === ab) &&& (append$^o$ t b ab') 
+       (x === h % t) &&&
+       (fresh (ty)
+         (h % ty === xy) &&& (append$^o$ t y ty) 
        )
      )
 
@@ -198,7 +198,7 @@ Now we have to repeat the work for the type of simple types:
      end
 \end{lstlisting}
 
-Note, the ``relational'' part is trivial, stereotyped and short (and could even be generated 
+Note, the ``relational'' part is trivial, boilerplate and short (and could even be generated 
 using more advanced framework).
 
 The relational type inferencer itself rather repeats the original implementation. The only

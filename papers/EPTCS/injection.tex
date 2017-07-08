@@ -26,7 +26,7 @@ logic domain:
    type $[\alpha]$ = Var of int | Value of $\alpha$
 \end{lstlisting}
 
-Note, this type cannot be disclosed to a end-user, since the only possible way to create a logic variable should 
+Note, this type cannot be disclosed to an end user, since the only possible way to create a logic variable should 
 still be by using the ``\lstinline{fresh}'' construct.
 
 Informally speaking, any value of type $[\alpha]$ is either a value of type $\alpha$, or a free
@@ -93,7 +93,7 @@ variables by their tags only and, thus, cannot simply use pattern matching. In o
 as follows:
 
 \begin{itemize}
-\item in environment, we additionally keep some unique boxed value~--- \emph{anchor}~--- created by \lstinline{run} at the moment of initial
+\item in the environment, we additionally keep some unique boxed value~--- \emph{anchor}~--- created by \lstinline{run} at the moment of initial
 state generation; the anchor is inherited unchanged in all derived environments during the search session;
 \item in each variable we additionally save the anchor, inherited from the environment, in which the variable was created;
 \item inside a unification, in order to check, if we deal with a variable, we test the conjunction of the following properties:
@@ -106,7 +106,7 @@ state generation; the anchor is inherited unchanged in all derived environments 
 \end{itemize}
 
 Taking into account, that the state type is abstract at the user level, we guarantee, that only those variables, which were
-created during current run session would pass the test, since the pointer to anchor is unique among all pointers to a boxed values 
+created during current run session would pass the test, since the pointer to the anchor is unique among all pointers to the boxed values 
 and could not be disclosed elsewhere but in the variable creation primitive.
 
 The only thing to describe now is the implementation of the refinement stage. The refinement is represented by the following 
@@ -123,8 +123,8 @@ does not produce ill-typed terms. Indeed, all original types of variables are pr
 change unified terms, so all terms, bound in a substitution, are well-typed. Hence, \lstinline{refine} always substitutes
 some subterm in a well-typed term with another term of the same type, which preserves well-typedness.
 
-In addition to performing substitutions, \lstinline{refine} also reifies disequality constrains. Reification 
-attaches to each free variable in a refined term a list of \emph{refined} terms, describing the disequality constraints for that
+In addition to performing substitutions, \lstinline{refine} also reifies disequality constraints. Reification 
+attaches to each free variable in a refined term a list of refined terms, describing the disequality constraints for that
 free variable. Note, disequality can be established only for equally-typed terms, which justifies type-safety of reification. 
 Note also, additional care has to be taken to avoid infinite looping, since refinement and reification are
 mutually recursive, and refinement of a variable can be potentially invoked from itself due to a chain of disequality 
@@ -273,7 +273,7 @@ With the new implementation, the types for ``basic'' goal constructors have to b
    val (=/=) : $\{\alpha,\;[\beta]\}$ -> $\{\alpha,\;[\beta]\}$ -> goal
 \end{lstlisting}
 
-As always, we require both arguments of unification and disequalify constraint to be of the same type; in addition
+As always, we require both arguments of unification and disequality constraint to be of the same type; in addition
 we require the ``injected'' part of the type to be logic.
 
 During the refinement stage the bindings for ``interesting'' variables, reconstructed using the final
