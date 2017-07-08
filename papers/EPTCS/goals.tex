@@ -5,7 +5,7 @@ This section describes a top-level framework for our implementation. Even though
 nothing more than a reiteration of the original implementation~\cite{MicroKanren, CKanren}
 in OCaml, we still need some notions to be properly established.
 
-\miniKanren is organized as a set of combinators, designated to describe a search for
+\miniKanren is organized as a set of combinators, designed to describe a search for
 the solution of a certain \emph{goal}. The search itself is implemented using a
 backtracking lazy stream monad:
 
@@ -33,9 +33,9 @@ Type \lstinline{state} describes a point in a lazily constructed search tree: ty
 to an \emph{environment}, which contains some supplementary information (in particular, an environment is needed to
 correctly allocate fresh variables), type \lstinline{subst} describes a substitution, which keeps current bindings
 for some logical variables, and, finally, type \lstinline{constraints} represents disequality constraints,
-which have to be respected. In a simplest case \lstinline{env} is just a counter for the number of the next free
+which have to be respected. In the simplest case \lstinline{env} is just a counter for the number of the next free
 variable, \lstinline{subst} is a map-like structure and \lstinline{constraints} is a list of substitutions. In our
-case environment contains some extra information to make it possible to identify variables in a constant time.
+case the environment contains some extra information to make it possible to identify variables in constant time.
 
 The next cornerstone element is the \emph{goal} type, which is considered as a transformer of a state into
 lazy stream of states:
@@ -48,7 +48,7 @@ In terms of search, a goal nondeterministically performs one step of the search:
 node in a search tree it produces its immediate descendants. On the user level type \lstinline{goal}
 is abstract, and states are completely hidden.
 
-Next to last, there is a number of predefined combinators:
+Next to last, there are a number of predefined combinators:
 
 \begin{lstlisting}
    val (&&&)      : goal -> goal -> goal
@@ -61,7 +61,7 @@ Conjunction ``\lstinline{&&&}'' combines the results of its argument goals using
 disjunction ``\lstinline{|||}'' concatenates the results using \lstinline{mplus}, abstraction
 primitive \lstinline{call_fresh} takes an abstracted goal and applies it to a freshly created
 variable. Type $v$ in the latest case designates the type for a fresh variable, which we leave
-abstract for now. These combinators serve as bricks for implementation of conventional
+abstract for now. These combinators serve as bricks for the implementation of conventional
 \miniKanren constructions and syntax extensions (\lstinline{conde}, \lstinline{fresh} etc.)
 
 Finally, there are two primitive goal constructors:
@@ -71,15 +71,15 @@ Finally, there are two primitive goal constructors:
    val (=/=) : $t$ -> $t$ -> goal
 \end{lstlisting}
 
-The first one is unification, while the other~--- disequality constraint. Here we, again, left
+The first one is unification, while the other is the disequality constraint. Here, we again left
 the type of terms $t$ abstract; it will be instantiated later.
 
-In the implementation of \miniKanren both these goals are implemented using unification~\cite{CKanren}; this
+In the implementation of \miniKanren both of these goals are implemented using unification~\cite{CKanren}; this
 is true for us as well. However, due to a drastic difference in host languages the implementation of
-efficient polymorphic unification itself leads to a number of tricks with typing and data representation,
-non-existing in the original version.
+efficient polymorphic unification itself leads to a number of tricks with typing and data representation
+absent in the original version.
 
-The described combinators allow to \emph{construct} goals. To \emph{run} a goal, the following
+The described combinators allow us to \emph{construct} goals. To \emph{run} a goal, the following
 primitive is used:
 
 \begin{lstlisting}
@@ -91,7 +91,7 @@ various solutions for the goal. As the stream is constructed lazily, taking elem
 the search progress.
 
 To discover concrete answers, the state has to be queried for its contents. As a rule, a few variables
-are \emph{refined} in a state, i.e. their bindings in corresponding substitution are retrieved. For free
+are \emph{refined} in a state, i.e. their bindings in the corresponding substitution are retrieved. For free
 variables in addition their disequality constraints have to be \emph{reified} (e.g. represented as a list of
 ``forbidden'' terms). As forbidden terms can in turn contain free variables, the constraint reification
 process is recursive.

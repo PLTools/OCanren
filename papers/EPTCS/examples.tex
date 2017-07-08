@@ -1,13 +1,13 @@
 \section{Examples}
 \label{sec:examples}
 
-In this section we present some examples of relational specification, written with the aid of our library. 
+In this section we present some examples of relational specification, written with the aid of our library.
 Besides \miniKanren combinators themselves, our implementation contains two syntax extensions~--- one
-for \lstinline{fresh} construct and another for \emph{inverse-$\eta$-delay}~\cite{MicroKanren}, which is 
-necessary sometimes to delay recursive calls in order to prevent infinite looping. In addition we included a 
-small relational library of data strictures like lists, numbers, booleans etc. This library is written 
-completely on the user level using techniques, described in Section~\ref{sec:injection} with no utilization 
-of any unsafe features. The examples, given below, illustrate the usage of all these elements as well.
+for \lstinline{fresh} construct and another for \emph{inverse-$\eta$-delay}~\cite{MicroKanren}, which is
+necessary sometimes to delay recursive calls in order to prevent infinite looping. In addition we included a
+small relational library of data structures like lists, numbers, booleans etc. This library is written
+completely on the user level using techniques described in Section~\ref{sec:injection} with no utilization
+of any unsafe features. The examples given below illustrate the usage of all these elements as well.
 
 \subsection{List Concatenation and Reversing}
 
@@ -21,7 +21,7 @@ original \miniKanren in Section~\ref{sec:demo}. In our case, the implementation 
      (fresh (h t)
        (x === h % t) &&&
        (fresh (ty)
-         (h % ty === xy) &&& (append$^o$ t y ty) 
+         (h % ty === xy) &&& (append$^o$ t y ty)
        )
      )
 
@@ -37,7 +37,7 @@ original \miniKanren in Section~\ref{sec:demo}. In our case, the implementation 
      ]
 \end{lstlisting}
 
-Here we make use of our implementation of relational lists, which provides a convenient shortcuts for
+Here we make use of our implementation of relational lists, which provides convenient shortcuts for
 standard functional primitives:
 
 \begin{itemize}
@@ -48,30 +48,30 @@ standard functional primitives:
 
 In our implementation the basic \miniKanren primitive ``\lstinline{conde}'' is implemented as a
 disjunction of a list of goals, not as a built-in syntax construct. We also make use of explicit
-conjunction and disjunction infix operators instead of nested bracketed structures, which, we
+conjunction and disjunction infix operators instead of nested bracketed structures which, we
 believe, would look too foreign here.
 
 \subsection{Relational Sorting and Permutations}
 
-For the next example we take list sorting; specifically, we present a sorting for lists of natural numbers 
-in Peano form since our library already contains built-in support for them. However our example can be 
+For the next example we take list sorting; specifically, we present a sorting for lists of natural numbers
+in Peano form since our library already contains built-in support for them. However our example can be
 easily extended for arbitrary (but linearly ordered) types.
 
-List sorting can be implemented in \miniKanren in a variety of ways~--- virtually any existing algorithm can 
-be rewritten relationally. We, however, try to be as much declarative as possible to demonstrate the
-advantages of relational approach. From this standpoint, we can claim, that sorted version of an empty list is an 
-empty list, and sorted version of non-empty list is its smallest element, concatenated with sorted
-version of list, containing all its remaining elements.
+List sorting can be implemented in \miniKanren in a variety of ways~--- virtually any existing algorithm can
+be rewritten relationally. We, however, try to be as declarative as possible to demonstrate the
+advantages of the relational approach. From this standpoint, we can claim that the sorted version of an empty list is an
+empty list, and the sorted version of a non-empty list is its smallest element, concatenated with a sorted
+version of the list containing all its remaining elements.
 
 The following snippet literally implements this definition:
 
 \begin{lstlisting}
-   let rec sort$^o$ x y = 
+   let rec sort$^o$ x y =
      conde [
        (x === nil ()) &&& (y === nil ());
        fresh (s xs xs')
          (y === s % xs'))
-         (sort$^o$ xs xs')       
+         (sort$^o$ xs xs')
          (smallest$^o$ x s xs)
      ]
 \end{lstlisting}
@@ -82,27 +82,27 @@ The meaning of the expression
    smallest$^o$ x s xs
 \end{lstlisting}
 
-is  ``\lstinline{s}'' is the smallest element of a (non-empty) list ``\lstinline{x}'', and ``\lstinline{xs}'' is the 
-list of all its remaining elements. Now, \lstinline{smallest$^o$} can be implemented using case analysis (note, 
+is  ``\lstinline{s}'' is the smallest element of a (non-empty) list ``\lstinline{x}'', and ``\lstinline{xs}'' is the
+list of all its remaining elements. Now, \lstinline{smallest$^o$} can be implemented using case analysis (note,
 ``\lstinline{l}'' here is a non-empty list):
 
 \begin{lstlisting}
-   let rec smallest$^o$ l s l' = 
-     conde [       
+   let rec smallest$^o$ l s l' =
+     conde [
        (l === s % nil ()) &&& (l' === nil ());
        fresh (h t s' t' max)
          (l' === max % t')
          (l === h % t)
          (minmax$^o$ h s' s max)
          (smallest$^o$ t s' t')
-     ] 
+     ]
 \end{lstlisting}
 
-Finally, we implement relational minimum-maximum calculation
+Finally, we implement a relational minimum-maximum calculation
 primitive:
 
 \begin{lstlisting}
-   let minmax$^o$ a b min max = 
+   let minmax$^o$ a b min max =
      conde [
        (min === a) &&& (max === b) &&& (le$^o$ a b);
        (max === a) &&& (min === b) &&& (gt$^o$ a b)
@@ -119,43 +119,43 @@ Having relational \lstinline{sort$^o$}, we can implement sorting for regular int
            (fun qs -> from_nat_list @@ (Stream.hd qs)#prj)
 \end{lstlisting}
 
-Here \lstinline{Stream.hd} is a function, which takes a head from a lazy stream of answers, 
-\lstinline{inj_nat_list}~--- injection from regular integer lists into logical lists of logical Peano numbers, 
+Here \lstinline{Stream.hd} is a function which takes a head from a lazy stream of answers,
+\lstinline{inj_nat_list}~--- injection from regular integer lists into logical lists of logical Peano numbers,
 \lstinline{from_nat_list}~--- projection from lists of Peano numbers to lists of integers.
 
 It is interesting, that since \lstinline{sort$^o$} is
 relational, it can be used to calculate the list of all \emph{permutations}
-for a given list. Indeed, each permutation, being sorted, results in the same list. 
-So, the problem of finding all permutations can be relationally reformulated into 
+for a given list. Indeed, each permutation, being sorted, results in the same list.
+So, the problem of finding all permutations can be relationally reformulated into
 the problem of finding all lists, which are converted by sorting into the given one:
 
 \begin{lstlisting}
 let perm l = map (fun a -> a#prj |> from_nat_list) @@
   run q (fun q -> fresh (r)
-                    (sort$^o$ (inj_nat_list l) r) 
+                    (sort$^o$ (inj_nat_list l) r)
                     (sort$^o$ q r)
         )
         (Stream.take ~n:(fact @@ length l))
 \end{lstlisting}
 
-Note, for sorting original list we used exactly the same primitive. Note also, 
+Note, for sorting the original list we used exactly the same primitive. Note also,
 we requested exactly \lstinline{fact @@ length l} answers; requesting more
-would result in infinite search for non-existing answers. 
+would result in an infinite search for non-existing answers.
 
 \subsection{Type Inference for STLC}
 
-Our final example is a type inferencer for Simply Typed Lambda Calculus~\cite{Lambda}. The problem and 
-solution themselves are rather a textbook example again~\cite{TRS, WillThesis}; however, with this example
-we show once again the utilization of generic programming technique we described in Section~\ref{sec:injection}.
-As a supplementary generic programming library here we used object-oriented generic transformers\footnote{https://github.com/dboulytchev/GT}; 
+Our final example is a type inferencer for Simply Typed Lambda Calculus~\cite{Lambda}. The problem and
+solution themselves are rather textbook examples again~\cite{TRS, WillThesis}; however, with this example
+we show once again the utilization of generic programming techniques we described in Section~\ref{sec:injection}.
+As a supplementary generic programming library here we used object-oriented generic transformers\footnote{https://github.com/dboulytchev/GT};
 we presume, however, that any other framework could equally be used.
 
 We first describe the type of lambda terms and their logic representatives:
 
 \begin{lstlisting}
-   module Term = 
+   module Term =
      struct
-       module T = 
+       module T =
          struct
            @type ('varname, 'self) t =
            | V   of 'varname
@@ -178,13 +178,13 @@ We first describe the type of lambda terms and their logic representatives:
 Now we have to repeat the work for the type of simple types:
 
 \begin{lstlisting}
-   module Type = 
+   module Type =
      struct
-       module T = 
-         struct    
-           @type ('a, 'b) t = 
-           | P   of 'a    
-           | Arr of 'b * 'b 
+       module T =
+         struct
+           @type ('a, 'b) t =
+           | P   of 'a
+           | Arr of 'b * 'b
            with gmap
 
           let fmap f g x = gmap(t) f g x
@@ -198,11 +198,11 @@ Now we have to repeat the work for the type of simple types:
      end
 \end{lstlisting}
 
-Note, the ``relational'' part is trivial, boilerplate and short (and could even be generated 
+Note, the ``relational'' part is trivial, boilerplate and short (and could even be generated
 using more advanced framework).
 
-The relational type inferencer itself rather repeats the original implementation. The only
-difference (besides the syntactic one) is that instead of data constructors we use their logic 
+The relational type inferencer itself rather resembles the original implementation. The only
+difference (besides the syntax) is that instead of data constructors we use their logic
 counterparts:
 
 \begin{lstlisting}
@@ -232,4 +232,3 @@ counterparts:
      in
      infer$^o$ (nil()) expr typ
 \end{lstlisting}
-

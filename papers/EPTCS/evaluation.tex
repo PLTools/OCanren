@@ -16,16 +16,16 @@
 
 One of our initial goals was to evaluate, what performance impact would choosing
 OCaml as a host language make. In addition we spent some efforts in order to implement \miniKanren in
-efficient, tagless manner, and, of course, the outcome of this decision also has to be measured.
+an efficient, tagless manner, and, of course, the outcome of this decision also has to be measured.
 Since our library generally follows $\mu$Kanren\footnote{https://github.com/jasonhemann/microKanren}, we've chosen it as a reference implementation.
-In addition, we took \texttt{faster-miniKanren}\footnote{https://github.com/webyrd/faster-miniKanren}~--- more elaborated
-implementation with a little different search~--- since it implements disequality constraints.
+In addition, we took \texttt{faster-miniKanren}\footnote{https://github.com/webyrd/faster-miniKanren}~--- a more elaborate
+implementation with a slightly different search~--- since it implements disequality constraints.
 
 For the set of benchmarks we took the following problems:
 
 \begin{itemize}
 \item \textbf{sorto, permo}~--- sorting and permutation for lists of Peano numbers (shown as example in Section~\ref{sec:examples}).
-The concrete tests sorting of list \lstinline{[3; 2; 1; 0]} and take all permutations of list \lstinline{[0; 1; 2; 3; 4; 5; 6; 7]}.
+The concrete tests are the sorting of the list \lstinline{[3; 2; 1; 0]} and taking all permutations of the list \lstinline{[0; 1; 2; 3; 4; 5; 6; 7]}.
 \item \textbf{expo, logo}~--- exponentation and logarithm for integers in binary form. The concrete tests relationally compute
 $3^5$ (which in 243) and $log_3 243$ (which is, conversely, 5).
 \item \textbf{quines, twines, trines}~--- self/co-evaluating program construction problems from~\cite{Untagged}. The
@@ -39,9 +39,9 @@ The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU 
 For OCanren \mbox{\texttt{ocaml-4.04.0+frame_pointer+flambda}} was used, for other implementations~--- Chez~Scheme~9.4.1.
 All benchmarks were ran in natively compiled mode ten times, then average user time was taken. The results of evaluation
 are shown on Figures~\ref{eval:first} and~\ref{eval:second}. The whole evaluation repository with scripts and detailed
-description is accessible from \lstinline{gitHub}\footnote{https://github.com/Kakadu/ocanren-perf}.
+description is accessible from \lstinline{GitHub}\footnote{https://github.com/Kakadu/ocanren-perf}.
 
-The first conclusion, which is rather easy to derive from the results, is that ``taglessness'' indeed matters. Our initial
+The first conclusion, which is rather easy to derive from the results, is that the tagless approach indeed matters. Our initial
 implementation did not show essential speedup in comparison with $\mu$Kanren (and was even \emph{slower} on the logarithm
 and permutations benchmarks). The situation was improved drastically, however, when we switched to the tagless version.
 
