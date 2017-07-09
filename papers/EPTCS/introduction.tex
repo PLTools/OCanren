@@ -36,12 +36,12 @@ unification for each ``interesting'' type; Molog\footnote{\url{https://github.co
 MiniKanrenT\footnote{\url{https://github.com/jvranish/MiniKanrenT}}, both for Haskell, can be mentioned as examples.
 While preserving strong typing, this approach requires a lot of ``boilerplate'' code to be written, so some
 automation, for example, using Template Haskell\footnote{\url{https://wiki.haskell.org/Template_Haskell}},
-is desirable. There is, actually, another potential approach, but we do not know, if anybody has tried
-it: to implement unification for generic representation of types as sum-of-products and fixpoints of 
-functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types, for which a representation
-is provided. We assume that implementing a representation would require less boilerplate code to be written.
+is desirable. There is, actually, another potential approach, but we do not know if anybody has tried
+it: to implement unification for a generic representation of types as sum-of-products and fixpoints of 
+functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types for which a representation
+is provided. We assume that implementing this representation would require less boilerplate code to be written.
 
-As follows from this exposition, typed embedding of \miniKanren in OCaml can be done with
+As follows from this exposition, a typed embedding of \miniKanren in OCaml can be done with
 a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a 
 number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
 for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power to Haskell 
@@ -57,14 +57,14 @@ constraints~\cite{CKanren}. The contribution of our work is as follows:
 \begin{enumerate}
 \item Our implementation is based on \emph{polymorphic unification}, which, like polymorphic comparison,
 can be used for arbitrary types. The implementation of polymorphic unification uses unsafe features and
-relies on intrinsic knowledge of runtime representation of values; we show, however, that this does not
-compromise type safety. Practically, we apply a purely \emph{ad hoc} approach since the features, 
-which would provide less \emph{ad hoc} solution, are not yet well integrated into the language.
+relies on intrinsic knowledge of the runtime representation of values; we show, however, that this does not
+compromise type safety. Practically, we apply a purely \emph{ad hoc} approach since the features 
+which would provide a less \emph{ad hoc} solution are not yet well integrated into the language.
 
 \item We describe a uniform and scalable pattern for using types for relational programming, which
 helps in converting typed data to and from the relational domain. With this pattern, only one
 generic feature (``\lstinline{map/morphism/Functor}'') is needed, and thus virtually any generic 
-framework for OCaml can be used. Despite being rather a pragmatic observation, this pattern, as we
+framework for OCaml can be used. Despite being rather a pragmatic observation, this pattern, we
 believe, would lead to a more regular and easy way to maintain relational specifications.
 
 \item We provide a simplified way to integrate relational and functional code. Our approach utilizes
@@ -75,11 +75,11 @@ possible to hide the refinement of the answers phase from an end user.
 The rest of the paper is organized as follows: in the next section we briefly introduce \miniKanren in
 its original form to establish some notions; we do not intend to describe the language in its full bloom (interested readers can
 refer to~\cite{TRS}). In Section~\ref{sec:goals} we describe some basic constructs behind a \miniKanren implementation, this time 
-in OCaml. In Section \ref{sec:unification} we discuss polymorphic unification, and show, that unification with 
+in OCaml. In Section \ref{sec:unification} we discuss polymorphic unification, and show that unification with 
 triangular substitution respects typing. Then we present our approach to handle user-defined types by injecting them 
-into logic domain; we consider a simple approach and more elaborated and efficient tagless variant (see Section~\ref{sec:injection}). 
+into the logic domain; we consider a simple approach and more elaborate and efficient tagless variant (see Section~\ref{sec:injection}). 
 Section~\ref{refinement} describes top-level primitives and addresses the problem of relational and functional code integration. 
 Then, in Section~\ref{sec:examples} we present a set of relational examples, written with the aid of our 
-library. Section~\ref{sec:evaluation} contains the results of performance evaluation and comparison of our implementation 
+library. Section~\ref{sec:evaluation} contains the results of a performance evaluation and a comparison of our implementations 
 with two different implementations for Scheme. The final section concludes.
 
