@@ -220,8 +220,10 @@ run * (fun q -> revers$^o$ q [1; 2; 3]) $\leadsto$ {q=[3; 2; 1]}
 
 \noindent converges with the single answer. The reason of this effect is that the calculation of conjunction is in fact non-commutative: the calculation 
 of the first goal is performed in isolation, without any information about the results of the second goal, and then received information is transferred to the 
-calculation of the second goal. Thus, when the first goal diverges and the second fails, the conjunction \emph{may} diverge\footnote{It does not, however, 
-\emph{always} diverge due to the interleaving; the actual behavior depends on the program.}. 
+calculation of the second goal. Thus, when the first goal diverges and the second fails, the conjunction will diverge.
+
+%\footnote{It does not, however, 
+%\emph{always} diverge due to the interleaving; the actual behavior depends on the program.}. 
 
 Our optimization is based on the idea of testing the current state of the search process for divergence, rolling back to some previously taken conjunction
 (if the divergence was detected), and trying to swap the subgoals of that conjunction. For non-termination test we use the following consideration: if, during
