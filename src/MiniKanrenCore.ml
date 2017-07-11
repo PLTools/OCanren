@@ -21,7 +21,6 @@ open Printf
 let printfn fmt = kprintf (printf "%s\n%!") fmt
 let (!!!) = Obj.magic
 
-
 type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
 
 let is_valid_tag t =
@@ -75,92 +74,56 @@ let list_filter_map ~f xs =
   in
   helper [] xs
 
-
-(* miniKanren-like streams, the most unsafe implementation *)
 module MKStream =
   struct
-    open Obj
-    (*
-      Very unsafe implementation of streams
-      * false -- an empty list
-      * closure -- delayed list
-      * block with tag 1 -- single value
-      * (x,closure)   -- a value and continuation (pair has tag 0)
-    *)
 
-    type t = Obj.t
+    type 'a t = Nil
+              | Thunk  of 'a thunk
+              | Single of 'a
+              | Choice of 'a * ('a t)
+    and 'a thunk = unit -> 'a t
 
-    let nil : t = !!!false
-    let is_nil s = (s = !!!false)
+    let nil = Nil
 
-    let inc (f: unit -> t) : t =
-      Obj.repr f
+    let single x = Single x
+
+    let choice a f = Choice (a, f)
+
+    let inc f = Thunk f
 
     let from_fun = inc
 
-    type wtf = Dummy of int*string | Single of Obj.t
-    let () = assert (Obj.tag @@ repr (Single !!![]) = 1)
+    let rec is_empty = function
+    | Nil      -> true
+    | Thunk f  -> is_empty @@ f ()
+    | Single _
+    | Choice _ -> false
 
-    let single : 'a -> t = fun x ->
-      Obj.repr @@ Obj.magic (Single !!!x)
+    let force = function
+    | Thunk f -> f ()
+    | fs      -> fs
 
-    let choice a f =
-      assert (closure_tag = tag@@repr f);
-      Obj.repr @@ Obj.magic (a,f)
+    let rec mplus fs gs =
+      match fs with
+      | Nil ->
+          force gs
+      | Thunk _ ->
+          inc (fun () -> mplus (force gs) fs)
+      | Single a ->
+          choice a gs
+      | Choice (a, hs) ->
+          choice a (from_fun @@ fun () -> mplus (force gs) hs)
 
-    let case_inf xs ~f1 ~f2 ~f3 ~f4 : Obj.t =
-      if is_int xs then f1 ()
-      else
-        let tag = Obj.tag (repr xs) in
-        if tag = Obj.closure_tag
-        then f2 (!!!xs: unit -> Obj.t)
-        else if tag = 1 then f3 (field (repr xs) 0)
-        else
-          (* let () = assert (0 = tag) in
-          let () = assert (2 = size (repr xs)) in *)
-          f4 (field (repr xs) 0) (!!!(field (repr xs) 1): unit -> Obj.t)
-      (* [@@inline ] *)
-
-    let step gs =
-      assert (closure_tag = tag @@ repr gs);
-      !!!gs ()
-
-    let rec mplus : t -> t -> t  = fun cinf (gs: t) ->
-      assert (closure_tag = tag @@ repr gs);
-      case_inf cinf
-        ~f1:(fun () ->
-              step gs)
-        ~f2:(fun f ->
-              inc begin fun () ->
-                let r = step gs in
-                mplus r !!!f
-              end)
-        ~f3:(fun c ->
-              choice c gs
-          )
-        ~f4:(fun c ff ->
-              choice c (inc @@ fun () -> mplus (step gs) !!!ff)
-          )
-
-    let rec bind cinf g =
-      case_inf cinf
-        ~f1:(fun () ->
-                nil)
-        ~f2:(fun f ->
-              (* delay here because miniKanren has it *)
-              inc begin fun () ->
-                let r = f () in
-                bind r g
-              end)
-        ~f3:(fun c ->
-              (!!!g c) )
-        ~f4:(fun c f ->
-              let arg1 = !!!g c in
-              mplus arg1 @@
-                    inc begin fun () ->
-                      bind (step f) g
-                    end
-          )
+    let rec bind xs g =
+      match xs with
+      | Nil ->
+          Nil
+      | Thunk f ->
+          inc (fun () -> bind (f ()) g)
+      | Single c ->
+          g c
+      | Choice (c, f) ->
+          mplus (g c) (from_fun (fun () -> bind (force f) g))
   end
 
 module Stream =
@@ -173,17 +136,11 @@ module Stream =
 
     let cons h t = Cons (h, t)
 
-    let rec of_mkstream : MKStream.t -> 'a t = fun xs ->
-      let rec helper xs =
-        !!!MKStream.case_inf !!!xs
-          ~f1:(fun () -> !!!Nil)
-          ~f2:(fun f  ->
-              !!! (from_fun (fun () ->
-                helper @@ f ())) )
-          ~f3:(fun a -> !!!(cons a Nil) )
-          ~f4:(fun a f -> !!!(cons a @@ from_fun (fun () -> helper @@ f ())) )
-      in
-      !!!(helper !!!xs)
+    let rec of_mkstream = function
+    | MKStream.Nil -> Nil
+    | MKStream.Thunk f -> from_fun (fun () -> of_mkstream @@ f ())
+    | MKStream.Single a -> Cons (a, Nil)
+    | MKStream.Choice (a, f) -> Cons (a, from_fun (fun () -> of_mkstream @@ MKStream.force f))
 
     let rec is_empty = function
     | Nil    -> true
@@ -202,19 +159,6 @@ module Stream =
 
     let hd s = List.hd @@ take ~n:1 s
     let tl s = snd @@ retrieve ~n:1 s
-
-    (* let rec mplus fs gs =
-      match fs with
-      | Nil           -> gs
-      | Cons (hd, tl) -> cons hd @@ from_fun (fun () -> mplus gs tl)
-      | Lazy z        -> from_fun (fun () -> mplus gs (Lazy.force z) )
-
-    let rec bind xs f =
-      match xs with
-      | Cons (x, xs) -> from_fun (fun () -> mplus (f x) (bind xs f))
-      | Nil          -> nil
-      | Lazy z       -> from_fun (fun () -> bind (Lazy.force z) f) *)
-
 
     let rec map f = function
     | Nil          -> Nil
@@ -424,11 +368,6 @@ let rec simple_reifier: helper -> ('a, 'a logic) injected -> 'a logic = fun c n 
   else Value n
 
 (** Importand part about reification and injected values finishes*)
-
-
-
-
-
 
 exception Not_a_value
 exception Occurs_check
@@ -1124,7 +1063,7 @@ module State =
   end
 
 type 'a goal' = State.t -> 'a
-type goal = MKStream.t goal'
+type goal = State.t MKStream.t goal'
 
 let call_fresh f : State.t -> _ = fun (env, subst, constr, scope) ->
   let x, env' = Env.fresh ~scope env in

@@ -16,8 +16,6 @@
  * (enclosed in the file COPYING).
  *)
 
-(* module OldList : (module type of List) *)
-
 val generic_show: ?maxdepth:int -> 'a -> string
 
 val printfn : ('a, unit, string, unit) format4 -> 'a
@@ -30,15 +28,13 @@ val printfn : ('a, unit, string, unit) format4 -> 'a
 module MKStream :
   sig
     (** Stream type *)
-    type t
+    type 'a t
 
-    val inc: (unit -> t) -> t
-    (* val inc2: (unit -> 'a -> 'b t) -> 'a -> 'b t
-    val inc3: ('a -> unit -> 'b t) -> 'a -> 'b t *)
-    val mplus : t -> t -> t
-    (* val mplus_star : 'a t list -> 'a t *)
+    val inc: (unit -> 'a t) -> 'a t
 
-    val bind: t -> ('a ->  t) -> t
+    val mplus : 'a t -> 'a t -> 'a t
+
+    val bind: 'a t -> ('a ->  'a t) -> 'a t
   end
 
 module Stream :
@@ -93,7 +89,7 @@ module State :
 
 (** Goal converts a state into a lazy stream of states *)
 type 'a goal'
-type goal = MKStream.t goal'
+type goal = State.t MKStream.t goal'
 
 (** {3 Logical values and injections} *)
 
@@ -218,7 +214,7 @@ module Fresh :
     - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
  *)
 val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) *
-                      (('g Stream.t -> 'h -> 'e) * ('c -> 'h * MKStream.t))) ->
+                      (('g Stream.t -> 'h -> 'e) * ('c -> 'h * 'g MKStream.t))) ->
           'a -> 'd -> 'f
 
 (**

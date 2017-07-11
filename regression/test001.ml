@@ -65,4 +65,3 @@ let _withFree =
   runL          2  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL          3  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL         10  q  qh (REPR (fun q   -> reverso q q                                  ))
-  
