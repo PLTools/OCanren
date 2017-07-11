@@ -254,8 +254,9 @@ $$\Delta\vdash\sigma\xRightarrow{g}S\Rightarrow\Delta\vdash\sigma\xRightarrow{g}
 We implemented our optimization as a prototype, based on \ocanren, but using a deep embedding, and evaluated it on a number of benchmarks:
 basic relations for lists, including concatenation and reversing; list sorting and, at the same time, permutations generator;
 multiplication of Peano numbers; simple binary arithmetic, including addition, multiplication, division and comparisons. 
-For all these problems we use simple relations, which are refutationally complete with optimized search, regardless of the order of goals. At the same time, 
-for all problems (except for list concatenation), the naive implementations are known not to be refutationally complete with non-optimized search.
+For all these problems we used simple relations, which turned out to be refutationally complete with the optimized search, regardless the order of the goals. 
+At the same time, these implementations (except for the list concatenation) are known to be not refutationally complete with 
+non-optimized search.
 
 \begin{thebibliography}{99}
 \bibitem{TRS}
