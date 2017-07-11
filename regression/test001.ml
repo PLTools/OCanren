@@ -39,7 +39,7 @@ let rec reverso a b =
     ; fresh (h t a')
         (a === h%t)
         (appendo a' !<h b)
-        (reverso t a')
+        (defer (reverso t a'))
     ]
 
 let show_int       = show(int)
@@ -65,3 +65,4 @@ let _withFree =
   runL          2  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL          3  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL         10  q  qh (REPR (fun q   -> reverso q q                                  ))
+  

@@ -5,12 +5,22 @@
 \usepackage{listings}
 \usepackage{indentfirst}
 \usepackage{verbatim}
-\usepackage{amsmath, amssymb}
+\usepackage{amsmath}
+
+\usepackage{mathtools}
+\usepackage{multirow}
+
 \usepackage{graphicx}
 \usepackage{color}
 \usepackage{url}
 \usepackage{xspace}
-%\usepackage[belowskip=-15pt,aboveskip=0pt]{caption}
+\usepackage[belowskip=-15pt,aboveskip=0pt]{caption}
+%\usepackage{times}
+
+%\setlength{\abovecaptionskip}{1ex}
+%\setlength{\belowcaptionskip}{1ex}
+%\setlength{\floatsep}{1ex}
+%\setlength{\textfloatsep}{1ex}
 
 \definecolor{light-gray}{gray}{0.90}
 \newcommand{\graybox}[1]{\colorbox{light-gray}{\texttt{#1}}}
@@ -18,20 +28,18 @@
 \newcommand{\ocanren}{\texttt{OCanren}\xspace}
 \newcommand{\ocaml}{\texttt{OCaml}\xspace}
 
-\lstdefinelanguage{ocaml}{
-keywords={let, begin, end, in, match, type, and, fun, 
-function, try, with, class, object, method, of, rec, repeat, until,
-while, not, do, done, as, val, inherit, module, sig, @type, struct, 
-if, then, else, open, virtual, new, fresh},
+\lstdefinelanguage{ocanren}{
+keywords={fresh, let, in, match, with, when, class, type,
+object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure},
 sensitive=true,
-basicstyle=\small,
-commentstyle=\scriptsize\rmfamily,
-keywordstyle=\ttfamily\bfseries,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\ttfamily\underbar,
 identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,
 fontadjust=true,
-literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\&\&\&}{{$\wedge$}}2 {|||}{{$\vee$}}2 {^}{{$\uparrow$}}1,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2 {^}{{$\uparrow$}}1,
 morecomment=[s]{(*}{*)}
 }
 
@@ -43,8 +51,7 @@ keywordstyle=\bfseries,
 commentstyle=\scriptsize\rmfamily,
 basewidth={0.5em,0.5em},
 fontadjust=true,
-escapechar=!,
-language=ocaml
+language=ocanren
 }
 
 \sloppy
@@ -92,23 +99,23 @@ Category: undergraduate
 \maketitle
 
 %\begin{multicols}{2}
-\section{Introduction}
+%\section{Introduction}
 
-Relational programming is a technique, based on describing programs not as functions, but 
-as relations, without distinguishing between the arguments and the result values. This technique makes it 
-possible to ``query'' programs in various ways, for example, execute them ``backwards'', finding
+Relational programming is a technique, based on the idea of describing programs not as functions, but 
+as relations, without distinguishing between the arguments and the result value. This technique makes it 
+possible to ``query'' programs in various ways, for example, to execute them ``backwards'', finding
 all sets of arguments for a given result. This behavior can be simulated using a number of
 logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
 or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}}. 
 There is also a family of embedded DSLs, specifically designed for writing declarative relational
-programs, which originates from the language, called \miniKanren~\cite{TRS}. \miniKanren is a minimalistic 
+programs, which originates from \miniKanren~\cite{TRS}. \miniKanren is a minimalistic 
 declarative language initially developed for Scheme/Racket. The smallest implementation of \miniKanren 
 is reported to comprise of only 40 LOC~\cite{MicroKanren, 2016}; there are also more elaborate versions, including
-\miniKanren with constaints~\cite{CKanren, CKanren1}, user-assisted search~\cite{Guided}, nominal unification~\cite{AlphaKanren},
+\miniKanren with constraints~\cite{CKanren, CKanren1}, user-assisted search~\cite{Guided}, nominal unification~\cite{AlphaKanren},
 etc. Due to its simplicity \miniKanren was implemented for more than 50 other languages, such as
 Haskell, Go, Smalltalk, and OCaml.
 
-\miniKanren has proven to be a useful tool to elegantly solve various problems, otherwise considered as non-trivial~\cite{WillThesis};
+\miniKanren has proven to be a useful tool to provide elegant solutions for various problems, otherwise considered as non-trivial~\cite{WillThesis};
 one of the main applications of \miniKanren for now lies is the area of \emph{relational interpreters}~--- the interpreters, which (for a given language)
 are capable of providing programs, delivering specified results~\cite{Untagged}.
 
@@ -116,69 +123,137 @@ Despite being quite simple and easy to use by the design, in implementation \min
 uses complete interleaving search~\cite{Search}. This search is guaranteed to find all existing solutions; however, it can diverge, when no 
 solution exists. In reality this amounts to a divergence in a number of important cases~--- for example, when the program is asked to 
 return \emph{all} existing solutions, or when the number of requested solutions exceeds the number of existing ones. Often, for a 
-concrete query it is possible to refactor the specification to avoid the divergence, but this means, that the specification has to be adjusted for every 
+concrete query, it is possible to refactor the specification to avoid the divergence, but this means, that the specification has to be adjusted for every 
 execution ``direction'' of interest, which to some extent compromises the idea of fully declarative relational programming. 
 
 The specifications, which do not diverge even when no solutions exist, are called \emph{refutationally complete}~\cite{WillThesis}. Writing 
-refutationally complete relational specifications nowadays requires the knowledge of \miniKanren implementation intrinsics, and not always
-possible by the undecidability of the fundamental computability problems. However, by developing a more advanced search it is possible
+refutationally complete relational specifications nowadays requires the knowledge of \miniKanren implementation intrinsics, and is not always
+possible due to the undecidability of the fundamental computability problems. However, by developing a more advanced search it is possible
 to make more specifications refutationally complete.
 
 In this work we present an optimization technique, which is based on a certain non-termination test. Our optimization is \emph{online} (performed during the
-search), \emph{non-intrusive} (does not introduce new constructs or require any changes in existing specifications), and \emph{conservative} 
-(applied only when the divergence is detected). We prove, that for queries, which return a finite number of answers, our optimization is non-degrading. 
+search), \emph{non-intrusive} (does not introduce new constructs and does not require any changes to be made to the existing specifications), and \emph{conservative} 
+(applied only when the divergence is detected). We prove, that for the queries, which return a finite number of answers, our optimization is non-degrading. 
 We also demonstrate the application of the optimization for a number of interesting and important problems.
 
+%\section{Problem}
 
+\begin{figure*}
+\centering
+\begin{tabular}{p{8cm}p{8cm}}
+\begin{lstlisting}
+   let rec append$^o$ x y xy =
+     (x === [] /\ y === xy) \/
+     (fresh (h t)
+       (x === h :: t) /\
+       (fresh (ty)
+         (h :: ty === xy) /\ (append$^o$ t y ty)
+       )
+     )
+\end{lstlisting} &
+\begin{lstlisting}
+   let rec revers$^o$ a b =     
+     (a === [] /\ b === []) \/
+     (fresh (h t)
+       (a === h :: t) /\
+       (fresh (a')
+         (append$^o$ a' [h] b) /\ (revers$^o$ t a')
+       )
+     )
+\end{lstlisting}
+\end{tabular}
+\caption{Relational List Concatenation and Reverse}
+\label{example}
+\end{figure*}
 
 \begin{comment}
-\section{Background and Related Works}
+\begin{figure*}
+\centering
+\begin{tabular}{|l|c|c|c|}
+    \hline
+    Query & List lenght & Unoptimized search & Optimized search \\
+    \hline
+    \multirow{5}{*}{Sorting}
+        & 3  & 3                   & 11     \\ \cline{2-4}
+        & 4  & 183               & 48     \\ \cline{2-4}
+        & 5  & $> 300000$  & 107   \\ \cline{2-4}
+        & 10 & $> 300000$ & 1399 \\ \cline{2-4}
+        & 15 & $> 300000$ & 9226 \\ \hline
+    \multirow{4}{*}{Permutations generation}
+        & 2   & 3                  & 3       \\ \cline{2-4}
+        & 3   & 18                & 11     \\ \cline{2-4}
+        & 4   & $> 300000$ & 81     \\ \cline{2-4}
+        & 6   & $> 300000$ & 1193 \\ \hline
+\end{tabular}
+\end{figure*}
+\end{comment}
 
-The problem of converting functional programs into relational form was addressed in preceding works on 
-miniKanren~\cite{TRS,WillThesis}. According to the approach, proposed there, an $n$-argument function 
-is converted into $n+1$ relation, where the $n+1$-th argument corresponds to the former 
-function's result. This technique, however, can deal only with first-order programs. 
+In this work we use an implementation of \miniKanren for OCaml, called \ocanren~\cite{Ocanren}. A relational specification in \ocanren is written with the aid of
+a few simple combinators and syntax extensions, which are designated to build \emph{goals}. A goal is a function, which can be run to produce a (lazy) stream of
+\emph{answers}; each answer contains the bindings for some free variables of the goal. The set of combinators contains conjunction (``$\wedge$'') and disjunction
+(``$\vee$'') of goals, fresh variable introduction, and unification (``$\equiv$'') of two terms. Other important constructs, such as function definitions and calls, are 
+reused from the substrate language. An example of two conventional introductory relational definitions~--- list concatenation and reverse~--- is shown on 
+Fig.~\ref{example}\footnote{Here we use a simplified syntax; the concrete syntax of \ocanren is a little bit different and requires additional comments and 
+descriptions to be supplied}.
 
-We argue, that in high-order case the conversion can not be performed for untyped terms, 
-and develop an approach for typed case.
+Given these definitions, we may perform some queries:
 
-\section{Approach and Current Results}
+\begin{lstlisting}
+run 1 (fun q -> append$^o$ [1; 2] [3] q) $\leadsto$ {q=[1; 2; 3]}
+run 1 (fun q -> append$^o$ q [3] [1; 2; 3]) $\leadsto$ {q=[1; 2]}
+run 1 (fun q -> revers$^o$ [1; 2; 3] q) $\leadsto$ {q=[3; 2; 1]}
+run 1 (fun q -> revers$^o$ q [1; 2; 3]) $\leadsto$ {q=[3; 2; 1]}
+\end{lstlisting}
 
-Our approach is pretty much type-driven. We start from simply typed case (STLC~\cite{Barendregt} 
-plus data constructors, pattern matching and primitive types) and enrich it with relational 
-constructs and typing rules for them. 
+Here in each query we requested only one answer; as we can see, all queries returned meaningful results. However, for the following query
 
-Then we present a type conversion function $\left[\bullet\right]$, which for each type provides 
-its relational counterpart. For example,
+\begin{lstlisting}
+run * (fun q -> revers$^o$ [1; 2; 3] q)
+\end{lstlisting}
+
+\noindent the program diverges; here we requested \emph{all} answers, and, although one answer exists, \ocanren failed to ``convince'' itself, 
+that this answer is unique. However, the following query
+
+\begin{lstlisting}
+run * (fun q -> revers$^o$ q [1; 2; 3]) $\leadsto$ {q=[3; 2; 1]}
+\end{lstlisting}
+
+\noindent converges with the single answer. The reason of this effect is that the calculation of conjunction is in fact non-commutative: the calculation 
+of the first goal is performed in isolation, without any information about the results of the second goal, and then received information is transferred to the 
+calculation of the second goal. Thus, when the first goal diverges and the second fails, the conjunction \emph{may} diverge\footnote{It does not, however, 
+\emph{always} diverge due to the interleaving; the actual behavior depends on the program.}. 
+
+Our optimization is based on the idea of testing the current state of the search process for divergence, rolling back to some previously taken conjunction
+(if the divergence was detected), and trying to swap the subgoals of that conjunction. For non-termination test we use the following consideration: if, during
+the search, we arrived at a recursive function call with \emph{more general} arguments, than the enclosing one, then this call will diverge. In order to substantiate
+this idea formally, we developed a simple big-step operational semantics of \miniKanren, which describes only the behavior of queries with finite number of answers.
+This semantics introduces a relation $\Delta\vdash\sigma\xRightarrow{g} S$, where $\Delta$ is a set of function definitions, $\sigma$~--- current substitution, 
+$g$~--- a goal, and $S$~--- a finite stream of answers. Using this semantics, we have proven, that if during the derivation of some branch we arrived at the 
+following configuration
 
 $$
-\begin{array}{rcl}
-\left[\inmath{int}\right]                   & = & \inmath{int} \to \goal \\
-\left[\inmath{string}\to\inmath{int}\right] & = & (\inmath{string} \to \goal) \to (\inmath{int} \to \goal)
+\begin{array}{c}
+  \Delta\vdash\sigma_2\xRightarrow{f(x_1,\dots,x_n)}\\
+  \ldots\\
+  \Delta\vdash\sigma_1\xRightarrow{f(y_1,\dots,y_n)} 
 \end{array}
 $$
 
-\noindent where $\goal$ (\emph{goal type}) stands for the unique type for closed purely relational expressions. In other words,
-we convert primitive values into unary relations and functions into high-order relations.
+\noindent and there is some substitution $\tau$, such that $y_i\sigma_1=(x_i\sigma_2)\tau$, then there is no $S$, such that $\Delta\vdash\sigma_2\xRightarrow{f(x_1,\dots,x_n)} S$.
 
-We present then structural conversion rules for terms, which project them into the purely relational
-subset, and prove, that for a typed source program we always get a typed relational specification, thus
-justifying the static soundness. There is some difficulty in justifying dynamic correctness, however, as
-miniKanren currently does not have formally described semantics. We argue, that our approach provides 
-extension for known first-order case, and demonstrate its feasibility in high-order case by the number
-of examples, this justifying the correctness in an \emph{ad hoc} manner.
+Each time we encounter a divergence, we roll back to the nearest conjunction, which was not yet reordered, reorder it and repeat the search. The semantics of optimized search 
+can be described by a relation $\Delta\vdash\sigma\xRightarrow{g}_{opt} S$ (with the similar meaning of the constituents), and we have proven the following claim: for arbitrary
+$\Delta$, $\sigma$, $g$ and $S$ 
 
-\section{Ongoing and Future Work}
+$$\Delta\vdash\sigma\xRightarrow{g}S\Rightarrow\Delta\vdash\sigma\xRightarrow{g}_{opt} S$$
 
-We are working now on the extension of our approach for polymorphic case; it seems, that now not 
-every program can be given a relational counterpart, so the first step is to restrict the type system to
-type only the ``useful'' subset. After completing the ``pen-and-paper'' work we are going to implement the
-convertor and apply it to obtain some useful relational specifications (the primary goals are, of course, 
-some interpreters and miniKanren with constraints~\cite{CKanren}). Verifying the proofs in a proof assistant 
-like Coq is also considered as an option.
+\noindent which means, that our optimization preserves the refutational completeness.
 
-Another direction of the research would be to develop a native type systems for relational programming.
-\end{comment}
+We implemented our optimization as a prototype, based on \ocanren, but using a deep embedding, and evaluated it on a number of benchmarks:
+basic relations for lists, including concatenation and reversing; list sorting and, at the same time, permutations generator;
+multiplication of Peano numbers; simple binary arithmetic, including addition, multiplication, division and comparisons. 
+For all these problems we use simple relations, which are refutationally complete with optimized search, regardless of the order of goals. At the same time, 
+for all problems (except for list concatenation), the naive implementations are known not to be refutationally complete with non-optimized search.
 
 \begin{thebibliography}{99}
 \bibitem{TRS}
@@ -231,9 +306,15 @@ Proceedings of the 10th ACM SIGPLAN International Conference on Functional Progr
 \bibitem{Ocanren}
 Dmitry Kosarev, Dmitry Boulytchev. Typed Embedding of a Relational Language in OCaml // ACM SIGPLAN Workshop on ML, 2016.
 
-\bibitem{PE}
-Neil D. Jones, Carsten K. Gomard, Peter Sestoft. Partial Evaluation and Automatic Program Generation. Prentice-Hall, 1993.
+%\bibitem{PE}
+%Neil D. Jones, Carsten K. Gomard, Peter Sestoft. Partial Evaluation and Automatic Program Generation. Prentice-Hall, 1993.
 
+%\bibitem{Turchin}
+%Valentin F. Turchin. The Concept of a Supercompiler // ACM Transactions on Programming Languages and Systems, Vol.~8, 1986.
+
+%\bibitem{Supercompilation}
+%Morten Heine S{\o}rensen, Robert Gl\"{u}ck. Introduction to Supercompilation // Partial Evaluation~--- Practice and Theory, 
+%DIKU 1998 International Summer School, 1999.
 \end{thebibliography}
 %\end{multicols}
 \end{document}
