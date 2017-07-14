@@ -17,7 +17,7 @@ it has to be carefully developed and tested.
 
 An important difference between polymorphic comparison and unification is that the former only inspects its operands,
 while the results of unification are recorded in a substitution (a mapping from logical variables to terms), which
-later is used to refine answers and reify constraints. So, generally speaking, we have to show that no ill-typed
+later is used to reify answers. So, generally speaking, we have to show that no ill-typed
 terms are constructed as a result. Overall, this property seems to be maintained vacuously, since the very
 nature of (syntactic) unification is to detect whether some things can be considered equal. Nevertheless there are
 different type systems and different unification implementations; in addition \emph{equal things} can be
@@ -64,9 +64,9 @@ representation for terms and types:
     val unify : term -> term -> subst option -> subst option
 \end{lstlisting}
 
-\noindent where ``\lstinline{term}'' stands for , representing typed terms, ``\lstinline{subst}'' stands for the type of
-substitution (a partial mapping from logic variables to terms). Unification can fail (hence ``\lstinline{option}'' in the result type)
-and it is performed in the context of existing substitution (hence ``\lstinline{subst}'' in the third argument) and can be
+\noindent where ``\lstinline{term}'' stands for the type, representing typed terms, ``\lstinline{subst}'' stands for the type of
+substitution (a partial mapping from logic variables to terms). Unification can fail (hence ``\lstinline{option}'' in the result type),
+is performed in the context of existing substitution (hence ``\lstinline{subst}'' in the third argument) and can be
 chained (hence ``\lstinline{option}'' in the third argument).
 
 We use exactly the same unification algorithm with triangular substitution as in the reference implementation~\cite{MicroKanren}. We
@@ -133,6 +133,6 @@ We call our implementation \emph{polymorphic}, since at the top level it is defi
 \end{lstlisting}
 
 The type of substitution is not polymorphic, which means that the compiler completely loses track
-of types for values stored in a substitution. These types are recovered later during the refinement-of-answers phase.
+of types for values stored in a substitution. These types are recovered later during the reification-of-answers phase.
 Outside unification the compiler maintains typing, which means that all terms, subterms, and variables agree in their types
 in all contexts.

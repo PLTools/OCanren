@@ -20,6 +20,20 @@ as a model language, because it was specifically designed as a relational DSL, e
 Being rather a minimalistic language, which can be implemented with just a few data structures and
 combinators, \miniKanren found its way into dozens of host languages, including Scala, Haskell and Standard ML.
 
+This paper addresses the problem of embedding \miniKanren into OCaml~--- a statically-typed functional language with 
+a rich type system. A statically-typed implementation would bring us a number of benefits. First, as always, 
+we expect typing to provide a certain level of correctness guarantees, ruling out some pathological programs, which
+otherwise would provide pathological results. In the context of relational programming, however, typing would additionally 
+help us to interpret the results of queries. Often an answer of relational query contains a number of
+free variables, which supposed to take arbitrary values. In typed case these variables become typed,  
+facilitating the understanding of the answers, especially those with multiple free variables. Next, a number of \miniKanren 
+applications require additional constraints to be implemented. In the untyped setting, when everything can be everything, 
+some symbols or data structures tend to percolate into undesirable contexts~\cite{Untagged}. In order to prevent this from happening, some 
+auxiliary constraints (``\lstinline{absent$^o$}'', ``\lstinline{symbol$^o$}'', etc.) were introduced. These constraints play role of 
+a weak dynamic type system, cutting undesirable answers out at runtime. Conversely, in a typed language this work can be
+entrusted to the type checker (at the price of enforcing an end user to write properly typed typed specifications), not only improving the
+performance of the system, but also reducing the number of constraints which have to be properly implemented.
+
 There is a predictable glitch in implementing \miniKanren for a strongly typed language. 
 Designed in the metaprogramming-friendly and dynamically typed realm of Scheme/Racket, the original 
 \miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
@@ -69,7 +83,7 @@ believe, would lead to a more regular and easy way to maintain relational specif
 
 \item We provide a simplified way to integrate relational and functional code. Our approach utilizes
 a well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementation and makes it
-possible to hide the refinement of the answers phase from an end user.
+possible to hide the reification of the answers phase from an end user.
 \end{enumerate}
 
 The rest of the paper is organized as follows: in the next section we briefly introduce \miniKanren in
@@ -78,7 +92,7 @@ refer to~\cite{TRS}). In Section~\ref{sec:goals} we describe some basic construc
 in OCaml. In Section \ref{sec:unification} we discuss polymorphic unification, and show that unification with 
 triangular substitution respects typing. Then we present our approach to handle user-defined types by injecting them 
 into the logic domain; we consider a simple approach and more elaborate and efficient tagless variant (see Section~\ref{sec:injection}). 
-Section~\ref{refinement} describes top-level primitives and addresses the problem of relational and functional code integration. 
+Section~\ref{reification} describes top-level primitives and addresses the problem of relational and functional code integration. 
 Then, in Section~\ref{sec:examples} we present a set of relational examples, written with the aid of our 
 library. Section~\ref{sec:evaluation} contains the results of a performance evaluation and a comparison of our implementations 
 with two different implementations for Scheme. The final section concludes.

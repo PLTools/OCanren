@@ -4,7 +4,7 @@ all: ocanren.pdf
 
 OCANREN_TEX=ocanren.tex evaluation.tex conclusion.tex demo.tex \
 	examples.tex goals.tex injection.tex introduction.tex \
-	polymorphic-unification.tex refinement.tex
+	polymorphic-unification.tex reification.tex
 
 ocanren.pdf: $(OCANREN_TEX)
 	pdflatex $<

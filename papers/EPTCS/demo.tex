@@ -59,11 +59,11 @@ of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$
             (append$^o$ t y ty))]))
 \end{lstlisting}
 
-We interpret the relation ``\lstinline{append$^o$ xs ys xys}'' as ``the concatenation of \lstinline{xs} and \lstinline{ys} 
-equals \lstinline{xys}''. Indeed, if the list \lstinline{xs} is empty, then (regardless the content of \lstinline{ys}) in order for the relation to hold 
-the value for \lstinline{xys} should by equal to that of \lstinline{ys}~--- hence line 3. 
+We interpret the relation ``\lstinline{append$^o$ x y xy}'' as ``the concatenation of \lstinline{x} and \lstinline{y} 
+equals \lstinline{xy}''. Indeed, if the list \lstinline{x} is empty, then (regardless the content of \lstinline{y}) in order for the relation to hold 
+the value for \lstinline{xy} should by equal to that of \lstinline{y}~--- hence line 3. 
 
-Otherwise, \lstinline{xs} can be decomposed into the head \lstinline{h} and the tail \lstinline{t}~--- so we need some fresh variables. We also
-need additional variable \lstinline{tys} to designate the list, being in the relation \lstinline{append$^o$} with \lstinline{t} and \lstinline{ys}.
+Otherwise, \lstinline{x} can be decomposed into the head \lstinline{h} and the tail \lstinline{t}~--- so we need some fresh variables. We also
+need additional variable \lstinline{ty} to designate the list, being in the relation \lstinline{append$^o$} with \lstinline{t} and \lstinline{y}.
 Trivial relational reasonings complete the implementation (lines 5-7).
 

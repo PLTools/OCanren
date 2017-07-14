@@ -109,35 +109,35 @@ Taking into account that the state type is abstract at the user level, we guaran
 created during the current run session would pass the test, since the pointer to the anchor is unique among all pointers to a boxed value
 and could not be disclosed anywhere but in the variable-creation primitive.
 
-The only thing to describe now is the implementation of the refinement stage. The refinement is represented by the following
+The only thing to describe now is the implementation of the reification stage. The reification is represented by the following
 function:
 
 \begin{lstlisting}
-   val refine : state -> $[\alpha]$ -> $[\alpha]$
+   val reify : state -> $[\alpha]$ -> $[\alpha]$
 \end{lstlisting}
 
 This function takes a state and a logical value and recursively substitutes all logical variables in that value w.r.t.
 the substitution in the state until no occurrences of bound variables are left. Since in our implementation the type of a substitution is
-not polymorphic, \lstinline{refine} is also implemented in an unsafe manner. However, it is easy to see that \lstinline{refine}
+not polymorphic, \lstinline{reify} is also implemented in an unsafe manner. However, it is easy to see that \lstinline{reify}
 does not produce ill-typed terms. Indeed, all original types of variables are preserved in a substitution; unification does not
-change unified terms, so all terms bound in a substitution are well-typed. Hence, \lstinline{refine} always substitutes
+change unified terms, so all terms bound in a substitution are well-typed. Hence, \lstinline{reify} always substitutes
 some subterm in a well-typed term with another term of the same type, which preserves well-typedness.
 
-In addition to performing substitutions, \lstinline{refine} also reifies disequality constraints. Reification
-attaches to each free variable in a refined term a list of refined terms, describing the disequality constraints for that
-free variable. Note, disequality can be established only for equally-typed terms, which justifies type-safety of reification.
-Note also, additional care has to be taken to avoid infinite looping, since refinement and reification are
-mutually recursive, and refinement of a variable can be potentially invoked from itself due to a chain of disequality
+In addition to performing substitutions, \lstinline{reify} also reifies disequality constraints. Constraint reification
+attaches to each free variable in a reified term a list of reified terms, describing the disequality constraints for that
+free variable. Note, disequality can be established only for equally-typed terms, which justifies the type-safety of reification.
+Note also, additional care has to be taken to avoid infinite looping, since reification of answers and constraints are
+mutually recursive, and the reification of a variable can be potentially invoked from itself due to a chain of disequality
 constraints.
 
-After refinement, the content of a logical value can be inspected via the following function:
+After the reification, the content of a logical value can be inspected via the following function:
 
 \begin{lstlisting}
    val destruct : $[\alpha]$ -> [`Var of int * $[\alpha]$ list | `Value of $\alpha$]
 \end{lstlisting}
 
 Constructor \lstinline{`Var} corresponds to a free variable with unique integer identifier and a list of terms,
-representing all disequality constraints for this variable. These terms are refined as well.
+representing all disequality constraints for this variable. These terms are reified as well.
 
 \subsection{Tagless Logical Values and Type Bookkeeping}
 
@@ -165,27 +165,27 @@ now it can introduce the occurrences of free logic variables in non-logical, tag
 do not get in the way of unification itself (since it can handle them properly, thanks to the variable test), but they can not
 be disclosed to the outer world as is.
 
-Our idea is to use this generally unsound representation for all internal actions, and perform tagging only during the refinement
-stage. However, this scenario raises the following question: what would the type of \lstinline{refine} be? It can not be simply
+Our idea is to use this generally unsound representation for all internal actions, and perform tagging only during the reification
+stage. However, this scenario raises the following question: what would the type of \lstinline{reify} be? It can not be simply
 
 \begin{lstlisting}
-   val refine : state -> $[\alpha]$ -> $[\alpha]$
+   val reify : state -> $[\alpha]$ -> $[\alpha]$
 \end{lstlisting}
 
 anymore since $[\alpha]$ now equals $\alpha$. We \emph{want}, however, it be something like
 
 \begin{lstlisting}
-   val refine : state -> $[\alpha]$ -> $(\mbox{``tagged'' }[\alpha])$
+   val reify : state -> $[\alpha]$ -> $(\mbox{``tagged'' }[\alpha])$
 \end{lstlisting}
 
 If $\alpha$ is not a parametric type, we can simply test if the value is a variable, and if yes, tag it with constructor \lstinline{Var};
 otherwise we tag it with \lstinline{Value}, and we're done. This trick, however, would not work for parametric types. Consider, for example,
-the refinement of a value of type \lstinline{$[[$int$]$ list$]$}. The (hypothetical) approach being described would return a value of
+the reification of a value of type \lstinline{$[[$int$]$ list$]$}. The (hypothetical) approach being described would return a value of
 type \lstinline{$(\mbox{``tagged'' }[[$int$]$ list$])$}, i.e. tagged only on the top level; we need to repeat the procedure
-recursively. In other words, we need the following (meta) type for the refinement primitive:
+recursively. In other words, we need the following (meta) type for the reification primitive:
 
 \begin{lstlisting}
-   val refine : state -> $[\alpha]$ -> $\mbox{(``tagged''} [\beta])$
+   val reify : state -> $[\alpha]$ -> $\mbox{(``tagged''} [\beta])$
 \end{lstlisting}
 
 where $\beta$ is the result of tagging $\alpha$.
@@ -201,7 +201,7 @@ We introduce a new, two-parameter type\footnote{In concrete syntax called ``$(\a
 
 Of course, this type is kept abstract at the end-user level. Informally speaking, type $\{\alpha,\;\beta\}$ designates the
 injection of tagless type $\alpha$ into tagged type $\beta$; the value itself is kept in the tagless form, but
-tagged type can be used during the refinement stage as a constraint, which would allow us to a refine tagless
+tagged type can be used during the reify stage as a constraint, which would allow us to a reify tagless
 representation only to a feasible tagged one.
 
 We introduce the following primitives for the type $\{\alpha,\;\beta\}$:
@@ -238,7 +238,7 @@ one parameter, we introduce the following functor:
 
 Note, that we do not use the function ``\lstinline{T.fmap}'' in the implementation; however, first, we need an inhabitant of the
 corresponding type to make sure we are indeed dealing with a functor, and next, we actually will use it in the
-implementation of type-specific refinement, see below).
+implementation of type-specific reify, see below).
 
 In order to handle two-, three-, etc. parameter types we need higher-kinded polymorphism, which is
 not supported in a direct form in OCaml. So, unfortunately, we need to introduce separate
@@ -276,23 +276,23 @@ With the new implementation, the types for ``basic'' goal constructors have to b
 As always, we require both arguments of unification and disequality constraint to be of the same type; in addition
 we require the ``injected'' part of the type to be logical.
 
-During the refinement stage the bindings for ``interesting'' variables, reconstructed using the final
+During the reification stage the bindings for ``interesting'' variables, reconstructed using the final
 substitution, have to be properly tagged. This process as well is implemented in a datatype-generic manner:
-first, we have refiners for primitive types:
+first, we have reifiers for primitive types:
 
 \begin{lstlisting}
-   val refine$_{\mbox{\texttt{int}}}$ : helper -> $\{$int,$[$int$]\}$ -> $[$int$]$
-   val refine$_{\mbox{\texttt{string}}}$ : helper -> $\{$string,$[$string$]\}$ -> $[$string$]$
+   val reify$_{\mbox{\texttt{int}}}$ : helper -> $\{$int,$[$int$]\}$ -> $[$int$]$
+   val reify$_{\mbox{\texttt{string}}}$ : helper -> $\{$string,$[$string$]\}$ -> $[$string$]$
    ...
 \end{lstlisting}
 
-and, then, we add the refiner to the output signature in all \lstinline{FMap}-like functors:
+and, then, we add the reifier to the output signature in all \lstinline{FMap}-like functors:
 
 \begin{lstlisting}
-   val refine: (helper -> $\{\alpha,\;\beta\}$ -> $\beta$) -> helper -> $\{\alpha$ T.t, $[\beta$ T.t$]$ as $\gamma\}$ -> $\gamma$
+   val reify: (helper -> $\{\alpha,\;\beta\}$ -> $\beta$) -> helper -> $\{\alpha$ T.t, $[\beta$ T.t$]$ as $\gamma\}$ -> $\gamma$
 \end{lstlisting}
 
-Note, since now \lstinline{refine} is type-specific and, hence, constructed at the user-level, we refrain from passing
+Note, since now \lstinline{reify} is type-specific and, hence, constructed at the user-level, we refrain from passing
 it a state (which is inaccessible on the user level). Instead, we wrap all state-specific functionality in
-abstract \lstinline{helper} data type, which encapsulates all state-dependent functionality needed for \lstinline{refine}
+abstract \lstinline{helper} data type, which encapsulates all state-dependent functionality needed for \lstinline{reify}
 to work properly.

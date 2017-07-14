@@ -1,11 +1,11 @@
-\section{Refinement and Top-Level Primitives}
-\label{refinement}
+\section{Reification and Top-Level Primitives}
+\label{reification}
 
 Since we do not make states accessible on the user level explicitly, we provide
 a set of top-level combinators, which should be used to surround relational code
-and perform refinement in a transparent manner. Note, from a pragmatic
+and perform reification in a transparent manner. Note, from a pragmatic
 standpoint only variables supplied as arguments for the top-level goal have
-to be refined (the original \miniKanren implementation follows the same convention).
+to be reified (the original \miniKanren implementation follows the same convention).
 
 The top-level primitive in our implementation is \lstinline{run}, which takes three
 arguments. The exact type of \lstinline{run} is rather complex and non-instructive,
@@ -18,7 +18,7 @@ so we prefer to describe the typical form of its application:
 Here $\overline{n}$ stands for a \emph{numeral}, which describes the number of
 parameters for two other arguments of \lstinline{run}, \mbox{$l_1\dots l_n$}~---
 free logical variables, $G$~--- a goal (which can make use of \mbox{$l_1\dots l_n$}),
-\mbox{$a_1\dots a_n$}~--- refined answers for \mbox{$l_1\dots l_n$}, respectively, and,
+\mbox{$a_1\dots a_n$}~--- reified answers for \mbox{$l_1\dots l_n$}, respectively, and,
 finally, $H$~--- a \emph{handler} (which can make use of \mbox{$a_1\dots a_n$}).
 
 The types of \mbox{$l_1\dots l_n$} are inferred from $G$ and always have a form
@@ -33,23 +33,23 @@ The types of \mbox{$a_1\dots a_n$} are inferred from types of \mbox{$l_1\dots l_
 have the form
 
 \begin{lstlisting}
-   $(\alpha,\;\beta)$ refined stream
+   $(\alpha,\;\beta)$ reified stream
 \end{lstlisting}
 
-where the type \lstinline{refined}, in turn, is
+where the type \lstinline{reified}, in turn, is
 
 \begin{lstlisting}
-   type ($\alpha$, $\beta$) refined = $<\;$prj : $\alpha$; refine : (helper -> $\{\alpha,\;\beta\}$ -> $\beta$) -> $\beta>$
+   type ($\alpha$, $\beta$) reified = $<\;$prj : $\alpha$; reify : (helper -> $\{\alpha,\;\beta\}$ -> $\beta$) -> $\beta>$
 \end{lstlisting}
 
-Two methods of this type can be used to perform two different styles of refinement: first, a value without
+Two methods of this type can be used to perform two different styles of reificationt: first, a value without
 free variables can be returned as is (method \lstinline{prj} does this: it checks that in the value of
 interest no free variables occur, and raises an exception otherwise). If the value contains free
-variables, it has to be properly injected into the logic domain~--- this is what \lstinline{refine} stands
+variables, it has to be properly injected into the logic domain~--- this is what \lstinline{reify} stands
 for. It takes as an argument a type-specific tagging function, constructed using generic
 primitives described in the previous section.
 
-In other words a user-defined handler takes streams of refined answers for all variables supplied to the top-level
+In other words a user-defined handler takes streams of reified answers for all variables supplied to the top-level
 goal. All streams $a_i$ contains coherent elements, so they all have the same length and $n$-th elements of all
 streams correspond to the $n$-th answer, produced by the goal $G$.
 

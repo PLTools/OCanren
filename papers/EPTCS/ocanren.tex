@@ -27,7 +27,7 @@ literate={==}{{$\equiv$}}1
 }
 
 \lstdefinelanguage{ocaml}{
-keywords={fresh, let, begin, end, in, match, type, and, fun, function, try, with, when, class,
+keywords={fresh, conde, let, begin, end, in, match, type, and, fun, function, try, with, when, class,
 object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
 new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, @type},
 sensitive=true,
@@ -53,7 +53,7 @@ language=ocaml
 
 \sloppy
 
-\newcommand{\miniKanren}{\texttt{miniKanren}\xspace}
+\newcommand{\miniKanren}{miniKanren\xspace}
 
 \title{Typed Embedding of a Relational Language in OCaml}
 \author{Dmitry Kosarev
@@ -83,7 +83,7 @@ integration.
 \input{goals}
 \input{polymorphic-unification}
 \input{injection}
-\input{refinement}
+\input{reification}
 \input{examples}
 \input{evaluation}
 \input{conclusion}

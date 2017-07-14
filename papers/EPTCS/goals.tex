@@ -91,10 +91,10 @@ various solutions for the goal. As the stream is constructed lazily, taking elem
 the search progress.
 
 To discover concrete answers, the state has to be queried for its contents. As a rule, a few variables
-are \emph{refined} in a state, i.e. their bindings in the corresponding substitution are retrieved. For free
-variables in addition their disequality constraints have to be \emph{reified} (e.g. represented as a list of
+are \emph{reified} in a state, i.e. their bindings in the corresponding substitution are retrieved. For free
+variables in addition their disequality constraints have to be reified (e.g. represented as a list of
 ``forbidden'' terms). As forbidden terms can in turn contain free variables, the constraint reification
 process is recursive.
 
-In our case refinement and reification are subtle parts, since, as we will see shortly, they can not be
-implemented in a type-safe part of the language.
+In our case reification is a subtle part, since, as we will see shortly, it can not be implemented in a 
+type-safe fragment of the language.
