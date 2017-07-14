@@ -21,11 +21,11 @@ open Printf
 module Log =
   struct
 
-    type t = < name    : string; 
-               count   : int; 
-               elapsed : float; 
-               enter   : unit; 
-               leave   : unit; 
+    type t = < name    : string;
+               count   : int;
+               elapsed : float;
+               enter   : unit;
+               leave   : unit;
                subs    : t list;
                attach  : t -> unit;
                clear   : unit
@@ -33,17 +33,17 @@ module Log =
 
     class tc (name : string) =
       object
-        val mutable count   = 0                 
-        val mutable elapsed = float_of_int 0 
-        val mutable origin  = float_of_int 0 
-        val mutable depth   = 0                 
+        val mutable count   = 0
+        val mutable elapsed = float_of_int 0
+        val mutable origin  = float_of_int 0
+        val mutable depth   = 0
         val mutable subs    = ([] : t list)
         method name     = name
         method elapsed  = elapsed
         method count    = count
         method subs     = subs
         method attach l = subs <- l :: subs
-        method clear    = 
+        method clear    =
           count   <- 0;
           elapsed <- float_of_int 0;
           depth   <- 0;
@@ -53,33 +53,33 @@ module Log =
           depth <- depth + 1;
           origin <- Unix.((times ()).tms_utime)
         method leave   =
-          if depth > 0 
+          if depth > 0
           then elapsed <- elapsed +. Unix.((times ()).tms_utime) -. origin
           else failwith (sprintf "OCanren fatal (Log.leave): zero depth");
           depth <- depth - 1
       end
 
-    let create parent name = 
+    let create parent name =
       let this = new tc name in
-      match parent with 
+      match parent with
       | Some p -> p#attach this; this
-      | None   -> this 
+      | None   -> this
 
     let run   = create None "run"
     let unify = create (Some run) "unify"
 
-    let report () = 
+    let report () =
       let buf      = Buffer.create 1024      in
       let append s = Buffer.add_string buf s in
-      let rec show o l = 
+      let rec show o l =
 	append @@ sprintf "%s%s: count=%d, time=%f\n" o l#name l#count l#elapsed;
         List.iter (show (o ^ "  ")) l#subs
       in
       show "" run;
-      Buffer.contents buf 
+      Buffer.contents buf
 
     let clear () = run#clear
-   
+
   end
 
 let (!!!) = Obj.magic
@@ -116,7 +116,7 @@ module Stream =
 
     module Internal =
       struct
-	type 'a t = 
+	type 'a t =
 	  | Nil
 	  | Thunk  of 'a thunk
 	  | Single of 'a
@@ -253,21 +253,21 @@ module Var =
     let global_anchor = [-8]
 
     type t = {
-      anchor        : anchor; 
-      env           : env; 
+      anchor        : anchor;
+      env           : env;
       index         : int;
-      mutable subst : Obj.t option; 
+      mutable subst : Obj.t option;
       scope         : scope;
       constraints   : Obj.t list
     }
 
-    let make ~env ~scope index = { 
-      env         = env; 
-      anchor      = global_anchor; 
-      subst       = None; 
+    let make ~env ~scope index = {
+      env         = env;
+      anchor      = global_anchor;
+      subst       = None;
       constraints = [];
-      index; 
-      scope; 
+      index;
+      scope;
     }
   end
 
@@ -276,37 +276,37 @@ type ('a, 'b) injected = 'a
 external lift : 'a -> ('a, 'a) injected                      = "%identity"
 external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
 
-module type T1 = 
+module type T1 =
   sig
     type 'a t
     val fmap : ('a -> 'b) -> 'a t -> 'b t
   end
 
-module type T2 = 
+module type T2 =
   sig
     type ('a, 'b) t
     val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
   end
 
-module type T3 = 
+module type T3 =
   sig
     type ('a, 'b, 'c) t
     val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
   end
 
-module type T4 = 
+module type T4 =
   sig
     type ('a, 'b, 'c, 'd) t
     val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
   end
 
-module type T5 = 
+module type T5 =
   sig
     type ('a, 'b, 'c, 'd, 'e) t
     val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
   end
 
-module type T6 = 
+module type T6 =
   sig
     type ('a, 'b, 'c, 'd, 'e, 'f) t
     val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
@@ -314,14 +314,14 @@ module type T6 =
 
 type helper = < isVar : 'a . 'a -> bool >
 
-let to_var (c : helper) x r = 
+let to_var (c : helper) x r =
   if c#isVar x
   then
     let x : Var.t = !!!x in
     !!!(Var (x.index, List.map (!!!(r c)) x.Var.constraints))
   else failwith "OCanren fatal (to_var): not a logic variable"
 
-module Fmap (T : T1) = 
+module Fmap (T : T1) =
   struct
     external distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected = "%identity"
 
@@ -331,17 +331,17 @@ module Fmap (T : T1) =
       else Value (T.fmap (r c) x)
   end
 
-module Fmap2 (T : T2) = 
+module Fmap2 (T : T2) =
   struct
     external distrib : (('a,'b) injected, ('c, 'd) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected = "%identity"
 
-    let rec reify r1 r2 (c : helper) x = 
-      if c#isVar x 
+    let rec reify r1 r2 (c : helper) x =
+      if c#isVar x
       then to_var c x (reify r1 r2)
       else Value (T.fmap (r1 c) (r2 c) x)
   end
 
-module Fmap3 (T : T3) = 
+module Fmap3 (T : T3) =
   struct
     external distrib : (('a, 'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected = "%identity"
 
@@ -355,7 +355,7 @@ module Fmap4 (T : T4) = struct
                      (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected = "%identity"
 
   let rec reify r1 r2 r3 r4 (c : helper) x =
-    if c#isVar x 
+    if c#isVar x
     then to_var c x (reify r1 r2 r3 r4)
     else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) x)
 end
@@ -365,7 +365,7 @@ module Fmap5 (T : T5) = struct
                      (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected = "%identity"
 
   let rec reify r1 r2 r3 r4 r5 (c : helper) x =
-    if c#isVar x 
+    if c#isVar x
     then to_var c x (reify r1 r2 r3 r4 r5)
     else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) x)
 end
@@ -375,7 +375,7 @@ module Fmap6 (T : T6) = struct
                      (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected = "%identity"
 
   let rec reify r1 r2 r3 r4 r5 r6 (c : helper) x =
-    if c#isVar x then 
+    if c#isVar x then
     to_var c x (reify r1 r2 r3 r4 r5 r6)
     else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) (r6 c) x)
 end
@@ -434,11 +434,11 @@ module Env :
       if Obj.tag  t = var_tag  &&
          Obj.size t = var_size &&
          (let token = (!!!x : Var.t).Var.anchor in (Obj.is_block !!!token) && token == !!!Var.global_anchor)
-      then 
+      then
         let q = (!!!x : Var.t).Var.env in
         if (Obj.is_int !!!q) && q == !!!env.anchor
         then Some (!!!x : Var.t).index
-        else failwith "OCanren fatal (Env.var): wrong environment"            
+        else failwith "OCanren fatal (Env.var): wrong environment"
       else None
 
     let is_var env v = None <> var env v
@@ -458,7 +458,7 @@ module Subst :
     val merge_prefix        : Env.t -> scope:Var.scope -> content list -> t -> (t * bool) option
 
     val unify   : Env.t -> 'a -> 'a -> scope:Var.scope -> t -> (content list * t) option
-  end = 
+  end =
   struct
     type content = {var : Var.t; term : Obj.t }
     type t       = content M.t
@@ -472,10 +472,10 @@ module Subst :
       | Some term -> {var = u; term}
       | None      -> M.find !!!ui map
 
-    let rec walk env t subst = 
+    let rec walk env t subst =
       let rec helper x =
         if Env.is_var env x
-        then 
+        then
           let v = (!!!x : Var.t) in
           match v.subst with
           | Some term -> walk env !!!term subst
@@ -585,7 +585,7 @@ let rec reify' env subst do_diseq x =
         (match wrap (Obj.repr var) with
          | Unboxed _ -> Obj.repr var
          | Boxed (t, s, f) ->
-            let copy = Obj.dup (Obj.repr var) in 
+            let copy = Obj.dup (Obj.repr var) in
             let sf =
               if t = Obj.double_array_tag
               then !!!Obj.set_double_field
@@ -612,7 +612,7 @@ module Constraints =
   struct
     type single = Subst.content list
 
-    module M = 
+    module M =
       struct
         include M
 
@@ -691,10 +691,10 @@ module Constraints =
       let s = Subst.merge_prefix_unsafe ~scope:Var.non_local_scope d Subst.empty in
       let rec helper = function
       | [] -> false
-      | h::tl -> 
+      | h::tl ->
           match Subst.merge_prefix env ~scope:Var.non_local_scope h s with
           | None            -> helper tl
-          | Some (_, false) -> true 
+          | Some (_, false) -> true
           | Some (__, _)    -> helper tl
     in
     helper d2
@@ -721,11 +721,11 @@ module Constraints =
        *)
       let rec helper acc = function
       | []       -> acc
-      | cont::tl -> 
+      | cont::tl ->
           match Subst.(unify env !!!(cont.var) !!!cont.term Var.non_local_scope subst) with
           | None         -> raise ReallyNotEqual
-          | Some ([], _) -> 
-              if cont.Subst.var != asked_var && cont.Subst.term != !!!asked_var 
+          | Some ([], _) ->
+              if cont.Subst.var != asked_var && cont.Subst.term != !!!asked_var
               then []
               else helper acc tl
           | Some (_, _) -> helper ((maybe_swap cont) :: acc) tl
@@ -733,11 +733,11 @@ module Constraints =
       try helper [] single with ReallyNotEqual -> []
 
     let rem_subsumed_opt ~env ~subst asked_var maybe_swap cs_map  =
-      M.fold (fun k cs_list acc ->      
+      M.fold (fun k cs_list acc ->
                 ListLabels.fold_left ~init:acc cs_list
                                      ~f:(fun acc single ->
                                            let single = simplify_single ~env ~subst asked_var maybe_swap single in
-                                           try 
+                                           try
                                              ignore (List.find (fun x -> (x.Subst.var == asked_var) || (x.Subst.term == !!!asked_var)) single);
                                              if is_subsumed env single acc then acc else single::acc
                                            with Not_found -> acc
@@ -754,7 +754,7 @@ module Constraints =
       in
       loop [] xs
 
-    let reify env subst cs term = 
+    let reify env subst cs term =
       let maybe_swap cnt =
         Subst.(if cnt.term == !!!term then {var = !!!term; term = Obj.repr cnt.var} else cnt)
       in
@@ -764,7 +764,7 @@ module Constraints =
                              let dest = Subst.walk env !!!term cs_sub in
                              assert (term <> dest);
                              dest
-                          ) 
+                          )
                           (rem_subsumed_opt ~env ~subst term maybe_swap cs)
       in
       rem_duplicates ans
@@ -772,19 +772,30 @@ end
 
 module State =
   struct
-    type t = Env.t * Subst.t * Constraints.t * Var.scope
+    type t =
+      { env   : Env.t
+      ; subst : Subst.t
+      ; ctrs  : Constraints.t
+      ; scope : Var.scope
+      }
 
-    let empty       ()             = (Env.empty (), Subst.empty, Constraints.empty, Var.new_scope ())
-    let env         (env, _, _, _) = env
-    let subst       (_, s, _, _)   = s
-    let constraints (_, _, cs, _)  = cs
+    let empty () =
+      { env   = Env.empty ()
+      ; subst = Subst.empty
+      ; ctrs  = Constraints.empty
+      ; scope = Var.new_scope ()
+      }
 
-    let new_var (e, _, _, scope) =
-      let (x, _) = Env.fresh ~scope e in
+    let env   {env;} = env
+    let subst {subst;} = subst
+    let constraints {ctrs;} = ctrs
+
+    let new_var {env; scope} =
+      let (x,_) = Env.fresh ~scope env in
       let i = (!!!x : Var.t).index in
-      (x, i)
+      (x,i)
 
-    let incr_scope (e, subs, cs, scp) = (e, subs, cs, Var.new_scope ())
+    let incr_scope {scope} as st = {st with scope = Var.new_scope ()}
   end
 
 type 'a goal' = State.t -> 'a
@@ -793,44 +804,34 @@ type goal = State.t Stream.internal goal'
 let success st = Stream.Internal.single st
 let failure _  = Stream.Internal.nil
 
-let call_fresh f (env, subst, constr, scope) =
-  let x, env' = Env.fresh ~scope env in
-  f x (env', subst, constr, scope)
+let call_fresh f =
+  let open State in fun {env; scope} as st ->
+    let x, env' = Env.fresh ~scope env in
+    f x {st with env=env'}
 
-(*
-let unif_counter = ref 0
-let logged_unif_counter = ref 0
-let diseq_counter = ref 0
-let logged_diseq_counter = ref 0
-
-let report_counters () =
-  let printfn fmt = kprintf (printf "%s\n%!") fmt in
-  printfn "total  unifications: %d" !unif_counter;
-  printfn "logged unifications: %d" !logged_unif_counter;
-  printfn "total diseq calls : %d" !diseq_counter;
-  printfn "logged diseq calls : %d" !logged_diseq_counter
-*)
-let (===) (x: _ injected) y (env, subst, constr, scope) =
+let (===) (x: _ injected) y =
+  let open State in fun {env; subst; ctrs; scope} as st ->
   LOG[perf] (Log.unify#enter);
   let result =
     match Subst.unify env x y scope subst with
     | None -> Stream.Internal.nil
     | Some (prefix, s) ->
-	try
-          let constr' = Constraints.check ~prefix env s constr in
-          Stream.Internal.single (env, s, constr', scope)
-	with Disequality_violated -> Stream.Internal.nil
-  in 
-  LOG[perf] (Log.unify#leave); 
+      try
+        let ctrs' = Constraints.check ~prefix env s ctrs in
+        Stream.Internal.single {st with subst=s; ctrs=ctrs'}
+      with Disequality_violated -> Stream.Internal.nil
+  in
+  LOG[perf] (Log.unify#leave);
   result
 
-let (=/=) x y ((env, subst, constrs, scope) as st) =
+let (=/=) x y =
+  let open State in fun {env; subst; ctrs; scope} as st ->
   match Subst.unify env x y Var.non_local_scope subst with
   | None         -> Stream.Internal.single st
-  | Some ([], _) -> Stream.Internal.nil 
+  | Some ([], _) -> Stream.Internal.nil
   | Some (prefix, _) ->
-      let new_constrs = Constraints.extend ~prefix env constrs in
-      Stream.Internal.single (env, subst, new_constrs, scope)
+      let ctrs' = Constraints.extend ~prefix env ctrs in
+      Stream.Internal.single {st with ctrs=ctrs'}
 
 let delay g st = Stream.Internal.from_fun (fun () -> g () st)
 
@@ -844,11 +845,11 @@ let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> Str
 
 let (|||) = disj
 
-let (?|) gs st = 
+let (?|) gs st =
   let st = State.incr_scope st in
-  let rec inner = function 
+  let rec inner = function
   | [g]   -> g
-  | g::gs -> disj_base g (inner gs) 
+  | g::gs -> disj_base g (inner gs)
   in
   inner gs |> (fun g -> Stream.Internal.inc (fun () -> g st))
 
@@ -906,9 +907,10 @@ class type ['a,'b] reified = object
   method reify   : (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
 end
 
-let make_rr x ((env, s, cs, scp) as st) = 
-  let ans       = !!!(reify' env s (Constraints.reify env s cs) (Obj.repr x)) in
-  let is_open   = has_free_vars (Env.is_var env) (Obj.repr ans) in
+let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) reified =
+  let open State in fun x ({env; subst; ctrs;} as st) ->
+  let ans = !!!(reify' env subst (Constraints.reify env subst ctrs) (Obj.repr x)) in
+  let is_open = has_free_vars (Env.is_var env) (Obj.repr ans) in
   let c: helper = helper_of_state st in
   object (self)
     method is_open            = is_open
@@ -918,12 +920,12 @@ let make_rr x ((env, s, cs, scp) as st) =
 
 let prj x = let rr = make_rr x @@ State.empty () in rr#prj
 
-module R : 
+module R :
   sig
     type ('a, 'b) reifier
     val reifier       :  ('a, 'b) injected -> ('a, 'b) reifier
     val apply_reifier : State.t Stream.t -> ('a, 'b) reifier -> ('a, 'b) reified Stream.t
-  end = 
+  end =
   struct
     type ('a, 'b) reifier = State.t Stream.t -> ('a, 'b) reified Stream.t
 
@@ -987,7 +989,7 @@ let run n goalish f =
   let run f  = f (State.empty ())  in
   let result = run (adder goalish) |> ApplyLatest.apply app_num |> (currier f) in
   LOG[perf] (
-    Log.run#leave;  
+    Log.run#leave;
     printf "Run report:\n%s" @@ Log.report ()
   );
   result
@@ -996,7 +998,7 @@ let run n goalish f =
 
 (* Tracing/debugging stuff *)
 
-(* module State 
+(* module State
 
     let show  (env, subst, constr, scp) =
       sprintf "st {%s, %s} scope=%d" (Subst.show subst) (Constraints.show ~env constr) scp
@@ -1099,7 +1101,13 @@ let trace msg g = fun state ->
   printf "%s: %s\n%!" msg (State.show state);
   g state
 
+<<<<<<< HEAD
 let reify_with_state (env,subs,cs,_) term = reify' env subs (Constraints.reify env subs cs) (Obj.repr term)
+=======
+let refine_with_state =
+  let open State in fun {env; subst; ctrs;} term ->
+  refine env subst (Constraints.refine env subst ctrs) (Obj.repr term)
+>>>>>>> 2535862... state as a record
 
 let project1 ~msg : (helper -> 'b -> string) -> ('a, 'b) injected -> goal = fun shower q st ->
   printf "%s %s\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ reify_with_state st q);
