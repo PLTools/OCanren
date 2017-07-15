@@ -76,15 +76,8 @@ The following snippet literally implements this definition:
      ]
 \end{lstlisting}
 
-The meaning of the expression
-
-\begin{lstlisting}
-   smallest$^o$ x s xs
-\end{lstlisting}
-
-is  ``\lstinline{s}'' is the smallest element of a (non-empty) list ``\lstinline{x}'', and ``\lstinline{xs}'' is the
-list of all its remaining elements. Now, \lstinline{smallest$^o$} can be implemented using case analysis (note,
-``\lstinline{l}'' here is a non-empty list):
+The meaning of the expression ``\lstinline{smallest$^o$ x s xs}'' is ``\lstinline{s} is the smallest element of a (non-empty) list \lstinline{x}, and \lstinline{xs} is the
+list of all its remaining elements''. Now, \lstinline{smallest$^o$} can be implemented using a case analysis (note, ``\lstinline{l}'' here is a non-empty list):
 
 \begin{lstlisting}
    let rec smallest$^o$ l s l' =
@@ -150,7 +143,7 @@ we show once again the utilization of generic programming techniques we describe
 As a supplementary generic programming library here we used object-oriented generic transformers\footnote{https://github.com/dboulytchev/GT};
 we presume, however, that any other framework could equally be used.
 
-We first describe the type of lambda terms and their logic representatives:
+We first describe the type of lambda terms and their logic representation:
 
 \begin{lstlisting}
    module Term =
@@ -199,7 +192,7 @@ Now we have to repeat the work for the type of simple types:
 \end{lstlisting}
 
 Note, the ``relational'' part is trivial, boilerplate and short (and could even be generated
-using more advanced framework).
+using a more advanced framework).
 
 The relational type inferencer itself rather resembles the original implementation. The only
 difference (besides the syntax) is that instead of data constructors we use their logic
