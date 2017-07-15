@@ -1,14 +1,20 @@
 \section{\miniKanren~--- a Short Presentation}
 \label{sec:demo}
 
-In this section we briefly describe \miniKanren in its original form, using a canonical example. \miniKanren enriches 
-a host language (Scheme/Racket) with three domain-specific constructs to build \emph{goals}:
+In this section we briefly describe \miniKanren in its original form, using a canonical example. 
+\miniKanren is organized as a set of combinators and macros for Scheme/Racket, designated to describe 
+a search for the solution of a certain \emph{goal}. There are four domain-specific constructs 
+to build \emph{goals}:
 
 \begin{itemize}
 \item Syntactic unification~\cite{Unification} in the form \lstinline[language=scheme]{(== $t_1$ $t_2$)}, where $t_1$, $t_2$ are
 some \emph{terms}; unification establishes a syntactic basis for all other goals. If there is a unifier for
 two given terms, the goal is considered satisfied, a most general unifier is kept as a partial solution, and the execution
 of current branch continues. Otherwise the current branch backtracks.
+
+\item Disequality constraint~\cite{CKanren} in the form \lstinline[language=scheme]{($\not\equiv$ $t_1$ $t_2$)}, where
+$t_1$, $t_2$ are some terms; a disequality constraint prevents all branches (starting from the current), in which the 
+specified terms are equal (w.r.t. the search state), from being considered.
 
 \item Conditional construct in the form 
 
@@ -42,11 +48,7 @@ tries to satisfy the conjunction of all subgoals $g_1\;\;g_2\;\;\dots\;\;g_n$ (t
 introduced fresh variables).
 \end{itemize}
 
-The results of search are combined into a stream, which can be queried for answers; the language paradigm itself
-can be described as ``lightweight logic programming''\footnote{An in-depth comparison of \miniKanren and Prolog can be found
-here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
- 
-As an example we consider list concatenation function; by a well-established tradition, the names 
+As an example consider a list concatenation relation; by a well-established tradition, the names 
 of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$}: 
 
 \begin{lstlisting}[mathescape=true,language=scheme,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt]
@@ -71,9 +73,11 @@ A goal, built with the aid of the aforementioned constructs, can be run by the f
    run $n$ ($q_1\dots q_k$) $G$
 \end{lstlisting}
 
-Here $n$ is the number of requested answers (or ``*'' for all answers), $q_i$ are query variables, and $G$ is a goal, which can
-contain these query variables. The \lstinline{run} construct returns a (finite or infinite) list of answers (the bindings for query variables, 
-which represent individual solutions for that query). For example,
+Here $n$ is the number of requested answers (or ``*'' for all answers), $q_i$ are fresh query variables, and $G$ is a goal, which can
+contain these variables. 
+
+The \lstinline{run} construct initiates the search for answers for given goal and returns a (finite or infinite) list 
+of answers~--- the bindings for query variables, which represent individual solutions for that query. For example,
 
 \begin{lstlisting}[mathescape=true,language=scheme]
    run 1 (q) (append$^0$ '(1 2) '(3 4) q) 
@@ -81,3 +85,6 @@ which represent individual solutions for that query). For example,
 
 \noindent returns a list \lstinline{((1 2 3 4))}, which constitutes the answer for query variable $q$. The process of constructing
 the answers from internal data structures of miniKanren interpreter is called \emph{reification}~\cite{WillThesis}. 
+
+The paradigm behind \miniKanren can be described as ``lightweight logic programming''\footnote{An in-depth comparison of \miniKanren 
+and Prolog can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.

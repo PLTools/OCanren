@@ -5,9 +5,7 @@ This section describes a top-level framework for our implementation. Even though
 nothing more than a reiteration of the original implementation~\cite{MicroKanren, CKanren}
 in OCaml, we still need some notions to be properly established.
 
-\miniKanren is organized as a set of combinators, designed to describe a search for
-the solution of a certain \emph{goal}. The search itself is implemented using a
-backtracking lazy stream monad:
+The search itself is implemented using a backtracking lazy stream monad:
 
 \begin{lstlisting}
    type $\alpha$ stream
@@ -95,5 +93,5 @@ variables their disequality constraints have to be reified additionaly (e.g. rep
 ``forbidden'' terms). As forbidden terms can in turn contain free variables, the constraint reification
 process is recursive.
 
-In our case reification is a subtle part, since, as we will see shortly, it can not be implemented in a 
+In our case the reification is a subtle part, since, as we will see shortly, it can not be implemented in a 
 type-safe fragment of the language.
