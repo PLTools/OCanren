@@ -1,36 +1,63 @@
-\section{Logic Variables and Injection}
+\section{Term Representation and Injection}
 \label{sec:injection}
 
-Unification, considered in Section~\ref{sec:unification}, works for values of any types. However, it
-is too generic to be used directly. As long as we use it to unify closed terms, it's ok (but rather meaningless);
-however, for terms with free variables the situation becomes more complicated. Indeed, as we've seen in the
-previous section, a variable $x^\tau$ must have a runtime representation of some value of type $\tau$. As different
-types may not have any values in common, if we wish to unify arbitrary types, we would need to specify the
-ground type for each logical variable explicitly, which would throw our implementation into a non-polymorphic
-realm with no type inference.
+Polymorphic unification, considered in the previous section, works for the values of any type under the assumption that we
+are capable of identifying logical variables. The latter depends on the term representation. In the original
+implementation all terms are represented as the conventional S-expressions, while logical variables (in a simplest case)~--- as one-element vectors; it's an end user responsibility to respect this convention and refrain from operating 
+with vectors as a user data.
 
-In this part we consider two approaches to safely handling typed terms while preserving polymorphism and
-type inference. The first is rather easy to develop and implement; unfortunately, the implementation demonstrates
-poor performance for a number of important applications. In order to fix this deficiency, we develop a more
-elaborated technique which nevertheless reuses some components from the previous one. In Section~\ref{sec:evaluation}
-we present the results of performance evaluation for both approaches and compare them to that of both
-implementations.
+In our case we want to preserve both strong typing and type inference. Since we have chosen to use polymorphic 
+unification, it is undesirable to represent logical variables of different types differently (while technically 
+possible, it would compromise the lightweight approach we used so far). This means that terms with logical
+variables have to be typed differently, than user-defined data~--- otherwise it would be possible to use
+a term in some context which does not handle logical variables properly. At the same time we do not want term types
+to be completely different from user-defined~--- for example, we would like to reuse user-defined constructors, etc.
+This considerations boil down to the idea of \emph{logical represenation} for a user-defined type. Informally, 
+a logical representation for the type $t$ is a type $\rho_t$ with a couple of conversion functions:
+    
+$$
+\begin{array}{rcl}
+   \uparrow  \;: t \to \rho_t & - & \mbox{injection}\\
+   \downarrow\;: \rho_t \to t & - & \mbox{projection}
+\end{array}
+$$
+
+Type $\rho_t$ repeats the structure of $t$, but can contain logic variables. So, the injection is total, 
+while the projection is partial. 
+
+It is important to design representations as instances of some generic scheme~--- otherwise \miniKanren combinators
+could not be properly typed. In addition it is desirable to provide a generic way to build
+injection/projection pair in a uniform manner (and, even better, automatically) to lift the burden of
+their implementation off the end-user shoulders and improve the reliability of the solution. Finally,
+representation must provide a way to detect logic variable occurrences. 
+
+
+%Unification, considered in Section~\ref{sec:unification}, works for values of any types. However, it
+%is too generic to be used directly. As long as we use it to unify closed terms, it's ok (but rather meaningless);
+%however, for terms with free variables the situation becomes more complicated. Indeed, as we've seen in the
+%previous section, a variable $x^\tau$ must have a runtime representation of some value of type $\tau$. As different
+%types may not have any values in common, if we wish to unify arbitrary types, we would need to specify the
+%ground type for each logical variable explicitly, which would throw our implementation into a non-polymorphic
+%realm with no type inference.
+
+In this part we consider two approaches to implementing logical representations.  The first is rather easy to 
+develop and implement; unfortunately, the implementation demonstrates a poor performance for a number of 
+important applications. In order to fix this deficiency, we develop a more elaborate technique which 
+nevertheless reuses some components from the previous one. In Section~\ref{sec:evaluation}
+we present the results of performance evaluation for both approaches.
 
 \subsection{Tagged Logical Values}
 
-The first natural solution is to restrict the unification to logic values only. We introduce the following polymorphic
-type $[\alpha]$\footnote{In concrete syntax called ``$\alpha\;$\lstinline{logic}''}, which corresponds to a type, injected into
-the logic domain:
+The first natural solution is to use tagging for representing logical representations.
+We introduce the following polymorphic type $[\alpha]$\footnote{In concrete syntax called ``$\alpha\;$\lstinline{logic}''}, which corresponds to a logical representation of the type $\alpha$:
 
 \begin{lstlisting}
    type $[\alpha]$ = Var of int | Value of $\alpha$
 \end{lstlisting}
 
-Note, this type cannot be disclosed to an end-user, since the only possible way to create a logic variable should
-still be by using the ``\lstinline{fresh}'' construct.
-
 Informally speaking, any value of type $[\alpha]$ is either a value of type $\alpha$, or a free
-logic variable. Now, we may redefine the signature of abstraction, unification and disequality primitives in the
+logic variable. Note, this type cannot be disclosed to an end user, since the only possible way to create a logic variable should still be by using the ``\lstinline{fresh}'' construct.
+Now, we may redefine the signature of abstraction, unification and disequality primitives in the
 following manner
 
 \begin{lstlisting}
@@ -96,7 +123,7 @@ as follows:
 \item in an environment, we additionally keep some unique boxed value~--- \emph{anchor}~--- created by \lstinline{run} at the moment of initial
 state generation; the anchor is inherited unchanged in all derived environments during the search session;
 \item in each variable we additionally save the anchor, inherited from the environment, in which the variable was created;
-\item inside a unification, in order to check if we are dealing with a variable, we test the conjunction of the following properties:
+\item inside the unification, in order to check if we are dealing with a variable, we test the conjunction of the following properties:
 
   \begin{enumerate}
     \item the scrutinee is boxed;
@@ -121,7 +148,7 @@ the substitution in the state until no occurrences of bound variables are left. 
 not polymorphic, \lstinline{reify} is also implemented in an unsafe manner. However, it is easy to see that \lstinline{reify}
 does not produce ill-typed terms. Indeed, all original types of variables are preserved in a substitution; unification does not
 change unified terms, so all terms bound in a substitution are well-typed. Hence, \lstinline{reify} always substitutes
-some subterm in a well-typed term with another term of the same type, which preserves well-typedness.
+some subterms in a well-typed term with another terms of the same type, which preserves well-typedness.
 
 In addition to performing substitutions, \lstinline{reify} also reifies disequality constraints. Constraint reification
 attaches to each free variable in a reified term a list of reified terms, describing the disequality constraints for that
@@ -159,7 +186,7 @@ we still could have a separate type for variables
    type var = Var of int * anchor
 \end{lstlisting}
 
-and use \emph{the same} variable test procedure. As the type $[\alpha]$ is abstract, this modification does not change the interface.
+\noindent and use \emph{the same} variable test procedure. As the type $[\alpha]$ is abstract, this modification does not change the interface.
 As we reuse the variable test, polymorphic unification can continue to work \emph{almost} correctly. The problem is that
 now it can introduce the occurrences of free logic variables in non-logical, tagless, data structures. These free logic variables
 do not get in the way of unification itself (since it can handle them properly, thanks to the variable test), but they can not

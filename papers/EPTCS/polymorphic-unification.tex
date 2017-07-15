@@ -120,7 +120,6 @@ chain length completes the proof.
 
 So, type attributes are inessential~--- they are never analyzed and never restrict pattern matching; hence,
 they can be erased completely. 
-
 We can notice now that for the representation of terms we can use OCaml's native runtime representation. 
 It can not be done, however, using regular OCaml~--- we have to utilize the low-level, unsafe interface \lstinline{Obj}. 
 Note also, we need some way to identify the occurrences of logical variables inside the terms (in the original \miniKanren
