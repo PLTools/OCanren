@@ -102,7 +102,7 @@ substitution can only be acquired from the empty one by a sequence of unificatio
 
 We are going to show that under these assumptions all type attributes are superfluous~--- they
 do not affect the execution of \lstinline{unify} and can be removed. Note that the only place where we
-were incapable of providing an explicit type attribute was in line 4, where the result of
+were incapable of providing an explicit type attribute was in the line 4, where the result of
 substitution application was returned. However, we can prove by induction that any substitution
 respects the following property: if a substitution $s$ is defined for a variable $x^\tau$,
 then $s\;\;x^\tau$ is attributed with the type $\tau$ (and, consequently, \lstinline{walk $s$ $t^\tau$} always
@@ -119,12 +119,19 @@ types, starting from a substitution posessing the property of interest. A simple
 chain length completes the proof.
 
 So, type attributes are inessential~--- they are never analyzed and never restrict pattern matching; hence,
-they can be erased completely. We can notice now that for the representation of terms we can use OCaml's
-native runtime representation. It can not be done, however, using regular OCaml~--- we have to utilize
-the low-level, unsafe interface \lstinline{Obj}. Note also, the correctness our of implementation is based on
-the following convention about logical variables: the representation of a logical variable $x^\tau$ must
-correspond to a representation of some value of type $\tau$. This, in turn, makes it somewhat problematic
-to detect a variable occurrence in a term. We postpone the discussion of this subject until Section~\ref{sec:injection}.
+they can be erased completely. 
+
+We can notice now that for the representation of terms we can use OCaml's native runtime representation. 
+It can not be done, however, using regular OCaml~--- we have to utilize the low-level, unsafe interface \lstinline{Obj}. 
+Note also, we need some way to identify the occurrences of logical variables inside the terms (in the original \miniKanren
+implementation the ambiguity between variable and non-variable datum representation is resolved by a convention~--- a luxury 
+we cannot afford).  We postpone the discussion of this subject until the next section.
+
+
+%the correctness our of implementation is based on
+%the following convention about logical variables: the representation of a logical variable $x^\tau$ must
+%correspond to a representation of some value of type $\tau$. This, in turn, makes it somewhat problematic
+%to detect a variable occurrence in a term. We postpone the discussion of this subject until Section~\ref{sec:injection}.
 
 We call our implementation \emph{polymorphic}, since at the top level it is defined as
 
@@ -134,5 +141,5 @@ We call our implementation \emph{polymorphic}, since at the top level it is defi
 
 The type of substitution is not polymorphic, which means that the compiler completely loses track
 of types for values stored in a substitution. These types are recovered later during the reification-of-answers phase.
-Outside unification the compiler maintains typing, which means that all terms, subterms, and variables agree in their types
+Outside the unification the compiler maintains typing, which means that all terms, subterms, and variables agree in their types
 in all contexts.

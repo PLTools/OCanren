@@ -37,7 +37,7 @@ as a disjunction.
    )
 \end{lstlisting}
 
-where each $g_i$ is a goal. This form introduced fresh variables $x_1\;\;x_2\;\;\dots\;\;x_k$ and
+where each $g_i$ is a goal. This form introduces fresh variables $x_1\;\;x_2\;\;\dots\;\;x_k$ and
 tries to satisfy the conjunction of all subgoals $g_1\;\;g_2\;\;\dots\;\;g_n$ (these subgoals may contain
 introduced fresh variables).
 \end{itemize}
@@ -61,9 +61,23 @@ of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$
 
 We interpret the relation ``\lstinline{append$^o$ x y xy}'' as ``the concatenation of \lstinline{x} and \lstinline{y} 
 equals \lstinline{xy}''. Indeed, if the list \lstinline{x} is empty, then (regardless the content of \lstinline{y}) in order for the relation to hold 
-the value for \lstinline{xy} should by equal to that of \lstinline{y}~--- hence line 3. 
+the value for \lstinline{xy} should by equal to that of \lstinline{y}~--- hence line 3. Otherwise, \lstinline{x} can be decomposed into the head 
+\lstinline{h} and the tail \lstinline{t}~--- so we need some fresh variables. We also need additional variable \lstinline{ty} to designate the list, 
+being in the relation \lstinline{append$^o$} with \lstinline{t} and \lstinline{y}. Trivial relational reasonings complete the implementation (lines 5-7).
 
-Otherwise, \lstinline{x} can be decomposed into the head \lstinline{h} and the tail \lstinline{t}~--- so we need some fresh variables. We also
-need additional variable \lstinline{ty} to designate the list, being in the relation \lstinline{append$^o$} with \lstinline{t} and \lstinline{y}.
-Trivial relational reasonings complete the implementation (lines 5-7).
+A goal, built with the aid of the aforementioned constructs, can be run by the following primitive:
 
+\begin{lstlisting}[mathescape=true,language=scheme]
+   run $n$ ($q_1\dots q_k$) $G$
+\end{lstlisting}
+
+Here $n$ is the number of requested answers (or ``*'' for all answers), $q_i$ are query variables, and $G$ is a goal, which can
+contain these query variables. The \lstinline{run} construct returns a (finite or infinite) list of answers (the bindings for query variables, 
+which represent individual solutions for that query). For example,
+
+\begin{lstlisting}[mathescape=true,language=scheme]
+   run 1 (q) (append$^0$ '(1 2) '(3 4) q) 
+\end{lstlisting}
+
+\noindent returns a list \lstinline{((1 2 3 4))}, which constitutes the answer for query variable $q$. The process of constructing
+the answers from internal data structures of miniKanren interpreter is called \emph{reification}~\cite{WillThesis}. 

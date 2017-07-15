@@ -20,19 +20,20 @@ as a model language, because it was specifically designed as a relational DSL, e
 Being rather a minimalistic language, which can be implemented with just a few data structures and
 combinators, \miniKanren found its way into dozens of host languages, including Scala, Haskell and Standard ML.
 
-This paper addresses the problem of embedding \miniKanren into OCaml~--- a statically-typed functional language with 
+This paper addresses the problem of embedding \miniKanren into OCaml\footnote{\url{http://ocaml.org}}~--- a statically-typed functional language with 
 a rich type system. A statically-typed implementation would bring us a number of benefits. First, as always, 
 we expect typing to provide a certain level of correctness guarantees, ruling out some pathological programs, which
 otherwise would provide pathological results. In the context of relational programming, however, typing would additionally 
 help us to interpret the results of queries. Often an answer of relational query contains a number of
-free variables, which supposed to take arbitrary values. In typed case these variables become typed,  
+free variables, which supposed to take arbitrary values. In the typed case these variables become typed,  
 facilitating the understanding of the answers, especially those with multiple free variables. Next, a number of \miniKanren 
-applications require additional constraints to be implemented. In the untyped setting, when everything can be everything, 
+applications require additional constraints to be implemented. In the untyped setting, when everything can be anything, 
 some symbols or data structures tend to percolate into undesirable contexts~\cite{Untagged}. In order to prevent this from happening, some 
 auxiliary constraints (``\lstinline{absent$^o$}'', ``\lstinline{symbol$^o$}'', etc.) were introduced. These constraints play role of 
 a weak dynamic type system, cutting undesirable answers out at runtime. Conversely, in a typed language this work can be
-entrusted to the type checker (at the price of enforcing an end user to write properly typed typed specifications), not only improving the
-performance of the system, but also reducing the number of constraints which have to be properly implemented.
+entrusted to the type checker (at the price of enforcing an end user to write properly typed specifications), not only improving the
+performance of the system, but also reducing the number of constraints which have to be implemented. Finally, it is rather natural
+to expect better performance of statically-typed implementation.
 
 There is a predictable glitch in implementing \miniKanren for a strongly typed language. 
 Designed in the metaprogramming-friendly and dynamically typed realm of Scheme/Racket, the original 
@@ -78,7 +79,7 @@ which would provide a less \emph{ad hoc} solution are not yet well integrated in
 \item We describe a uniform and scalable pattern for using types for relational programming, which
 helps in converting typed data to and from the relational domain. With this pattern, only one
 generic feature (``\lstinline{map/morphism/Functor}'') is needed, and thus virtually any generic 
-framework for OCaml can be used. Despite being rather a pragmatic observation, this pattern, we
+framework for OCaml can be used. Although being rather a pragmatic observation, this pattern, we
 believe, would lead to a more regular and easy way to maintain relational specifications.
 
 \item We provide a simplified way to integrate relational and functional code. Our approach utilizes
