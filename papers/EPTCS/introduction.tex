@@ -35,35 +35,6 @@ entrusted to the type checker (at the price of enforcing an end user to write pr
 performance of the system, but also reducing the number of constraints which have to be implemented. Finally, it is rather natural
 to expect better performance of statically-typed implementation.
 
-There is a predictable glitch in implementing \miniKanren for a strongly typed language. 
-Designed in the metaprogramming-friendly and dynamically typed realm of Scheme/Racket, the original 
-\miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
-ML or Haskell. In particular, one of the capstone constructs of \miniKanren~--- unification~--- has to work for 
-different data structures, which may have types different beyond parametricity.
-
-There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
-provide unification for some concrete type, rich enough to represent any reasonable data structures.
-Some Haskell \miniKanren libraries\footnote{\url{https://github.com/JaimieMurdock/HK}, \url{https://github.com/rntz/ukanren}}
-as well as the previous OCaml implementation\footnote{\url{https://github.com/lightyang/minikanren-ocaml}} take this approach. 
-As a result, the original implementation can be retold with all its elegance; the relational specifications, however,
-become weakly typed. Another approach is to utilize \emph{ad hoc} polymorphism and provide type-specific
-unification for each ``interesting'' type; Molog\footnote{\url{https://github.com/acfoltzer/Molog}} and 
-MiniKanrenT\footnote{\url{https://github.com/jvranish/MiniKanrenT}}, both for Haskell, can be mentioned as examples.
-While preserving strong typing, this approach requires a lot of ``boilerplate'' code to be written, so some
-automation, for example, using Template Haskell\footnote{\url{https://wiki.haskell.org/Template_Haskell}},
-is desirable. There is, actually, another potential approach, but we do not know if anybody has tried
-it: to implement unification for a generic representation of types as sum-of-products and fixpoints of 
-functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types for which a representation
-is provided. We assume that implementing this representation would require less boilerplate code to be written.
-
-As follows from this exposition, a typed embedding of \miniKanren in OCaml can be done with
-a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a 
-number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
-for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power to Haskell 
-type classes, and even though sometimes the object-oriented layer of the language can be used to mimic
-desirable behavior, the result as a rule is far from satisfactory. Existing proposals (for example, 
-modular implicits~\cite{Implicits}) require patching the compiler, which we tend to avoid.
-
 We present an implementation of a set of relational combinators and syntax extensions for 
 OCaml\footnote{The source code of our implementation is accessible from \url{https://github.com/dboulytchev/OCanren}.}, 
 which, technically speaking, corresponds to $\mu$Kanren~\cite{MicroKanren} with disequality 
@@ -76,9 +47,8 @@ all logical variables are inferred from the context.
 
 \item Our implementation is based on \emph{polymorphic unification}, which, like polymorphic comparison,
 can be used for arbitrary types. The implementation of polymorphic unification uses unsafe features and
-relies on intrinsic knowledge of the runtime representation of values; we show, however, that this does not
-compromise type safety. Practically, we apply a purely \emph{ad hoc} approach since the features 
-which would provide a less \emph{ad hoc} solution are not yet well integrated into the language.
+relies on the intrinsic knowledge of the runtime representation of values; we show, however, that this does not
+compromise type safety.
 
 \item We describe a uniform and scalable pattern for using types for relational programming, which
 helps in converting typed data to and from the relational domain. With this pattern, only one
@@ -91,7 +61,8 @@ a well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementa
 possible to hide the reification of the answers phase from an end user.
 \end{enumerate}
 
-The rest of the paper is organized as follows: in the next section we briefly introduce \miniKanren in
+The rest of the paper is organized as follows: in the next section we provide a short overview of the related
+works. Then we briefly introduce \miniKanren in
 its original form to establish some notions; we do not intend to describe the language in its full bloom (interested readers can
 refer to~\cite{TRS}). In Section~\ref{sec:goals} we describe some basic constructs behind a \miniKanren implementation, this time 
 in OCaml. In Section \ref{sec:unification} we discuss polymorphic unification, and show that unification with 
