@@ -1,13 +1,20 @@
 \section{Reification and Top-Level Primitives}
 \label{reification}
 
-Since we do not make states accessible on the user level explicitly, we provide
-a set of top-level combinators, which should be used to surround relational code
-and perform reification in a transparent manner. Note, from a pragmatic
-standpoint only variables supplied as arguments for the top-level goal have
-to be reified (the original \miniKanren implementation follows the same convention).
+In Section~\ref{sec:goals} we presented a top-level function \lstinline{run}, which
+runs a goal and returns a stream of states. To acquire answers for the query, 
+represented by that goal, its free variables have to be reified in these states, and
+we described the reification primitives in Section~\ref{sec:injection}. However, 
+the states keep answers in an untyped form, and the types of answers are
+recovered solely on the basis of the types of variables being reified. So, the 
+type safety of the reification critically depends on the requirement to
+reify each variable only in those states, which are descendants (w.r.t. the search tree)
+of the state, in which that variable was created. In this section we describe a set of
+top-level primitives, which enforce this requirement.
 
-The top-level primitive in our implementation is \lstinline{run}, which takes three
+We provide a set of top-level combinators, which should be used to surround relational code
+and perform reification in a transparent manner only in correct states.
+We reimplement the top-level primitive \lstinline{run} to take three
 arguments. The exact type of \lstinline{run} is rather complex and non-instructive,
 so we prefer to describe the typical form of its application:
 
@@ -29,7 +36,7 @@ The types of \mbox{$l_1\dots l_n$} are inferred from $G$ and always have a form
 
 \noindent since the types of variables can be constrained only in unification or disequality constraints.
 
-The types of \mbox{$a_1\dots a_n$} are inferred from types of \mbox{$l_1\dots l_n$} and
+The types of \mbox{$a_1\dots a_n$} are inferred from the types of \mbox{$l_1\dots l_n$} and
 have the form
 
 \begin{lstlisting}

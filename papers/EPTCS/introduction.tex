@@ -70,6 +70,10 @@ which, technically speaking, corresponds to $\mu$Kanren~\cite{MicroKanren} with 
 constraints~\cite{CKanren}. The contribution of our work is as follows:
 
 \begin{enumerate}
+\item Our embedding allows an end user to enjoy strong static typing and type inference in relational
+specifications; in particular, all type errors are reported at compile time and the types for
+all logical variables are inferred from the context.
+
 \item Our implementation is based on \emph{polymorphic unification}, which, like polymorphic comparison,
 can be used for arbitrary types. The implementation of polymorphic unification uses unsafe features and
 relies on intrinsic knowledge of the runtime representation of values; we show, however, that this does not
