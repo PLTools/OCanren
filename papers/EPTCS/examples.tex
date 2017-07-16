@@ -5,7 +5,7 @@ In this section we present some examples of relational specification, written wi
 Besides \miniKanren combinators themselves, our implementation contains two syntax extensions~--- one
 for \lstinline{fresh} construct and another for \emph{inverse-$\eta$-delay}~\cite{MicroKanren}, which is
 sometimes necessary to delay recursive calls in order to prevent infinite looping. In addition we included a
-small relational library of data structures like lists, numbers, booleans etc. This library is written
+small relational library of data structures like lists, numbers, booleans, etc. This library is written
 completely on the user level using techniques described in Section~\ref{sec:injection} with no utilization
 of any unsafe features. The examples given below illustrate the usage of all these elements as well.
 
@@ -70,8 +70,8 @@ The following snippet literally implements this definition:
      conde [
        (x === nil ()) &&& (y === nil ());
        fresh (s xs xs')
-         (y === s % xs') &&&
-         (sort$^o$ xs xs') &&&
+         (y === s % xs')
+         (sort$^o$ xs xs')
          (smallest$^o$ x s xs)
      ]
 \end{lstlisting}
@@ -205,7 +205,7 @@ counterparts:
        (conde [
          (a' === a) &&& (t' === t);
          (a' =/= a) &&& (lookup$^o$ a tl t)
-        ])
+       ])
 
    let infer$^o$ expr typ =
      let rec infer$^o$ gamma expr typ =
