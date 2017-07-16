@@ -60,7 +60,11 @@ In other words a user-defined handler takes streams of reified answers for all v
 goal. All streams $a_i$ contain coherent elements, so they all have the same length and $n$-th elements of all
 streams correspond to the $n$-th answer, produced by the goal $G$.
 
-There are a few predefined numerals for one, two, etc. arguments (called, by tradition,
+There are a few predefined numerals for one, two, etc. arguments (called, traditionally,
 \lstinline{q}, \lstinline{qr}, \lstinline{qrs} etc.), and a successor function, which
 can be applied to existing numeral to increment the number of expected arguments. The
 implementation technique generally follows~\cite{Unparsing, DoWeNeed}.
+
+Thus, the search and reification are tightly coupled; it is simply impossible to perform the reification 
+for arbitrary taken state and variable. This solution both guarantees the type safety and frees an end
+user from the necessity to call reification primitives manually.
