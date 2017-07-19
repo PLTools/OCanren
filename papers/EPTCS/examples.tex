@@ -70,8 +70,8 @@ The following snippet literally implements this definition:
      conde [
        (x === nil ()) &&& (y === nil ());
        fresh (s xs xs')
-         (y === s % xs'))
-         (sort$^o$ xs xs')
+         (y === s % xs') &&&
+         (sort$^o$ xs xs') &&&
          (smallest$^o$ x s xs)
      ]
 \end{lstlisting}
@@ -84,9 +84,9 @@ list of all its remaining elements''. Now, \lstinline{smallest$^o$} can be imple
      conde [
        (l === s % nil ()) &&& (l' === nil ());
        fresh (h t s' t' max)
-         (l' === max % t')
-         (l === h % t)
-         (minmax$^o$ h s' s max)
+         (l' === max % t') &&&
+         (l === h % t) &&&
+         (minmax$^o$ h s' s max) &&&
          (smallest$^o$ t s' t')
      ]
 \end{lstlisting}

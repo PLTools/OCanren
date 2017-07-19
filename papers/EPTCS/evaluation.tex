@@ -16,6 +16,15 @@ to speedup the search; moreover, the search order in our implementaion initially
 fair, we additionally implemented all these optimizations and adjusted the search order to exactly coinside with 
 what faster-miniKanren does.
 
+\begin{figure}[t]
+\centering
+\includegraphics[scale=0.4]{graph.png}
+\caption{The Results of the Performance Evaluation}
+\label{eval}
+\end{figure}
+
+\FloatBarrier 
+
 For the set of benchmarks we took the following problems:
 
 \begin{itemize}
@@ -30,7 +39,7 @@ concrete tests took the first 100, 15 and 3 answers for these problems respectiv
 %Since the last bundle of benchmarks uses disequality constraints (and, hence, $\mu$Kanren is ruled out) we
 %split all benchmarks into two sets.
 
-The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU @ 4.00GHz processor and 32GB of memory.
+The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU @ 4.00GHz processor and 16GB of memory.
 For OCanren \mbox{ocaml-4.04.0+frame_pointer+flambda} was used, for faster-miniKanren~--- Chez~Scheme~9.4.1.
 All benchmarks were ran in the natively compiled mode ten times, then average user time was taken. The results of the evaluation
 are shown on Figure~\ref{eval}. The whole evaluation repository with all scripts and detailed description is accessible 
@@ -43,9 +52,3 @@ and permutations benchmarks). The situation was improved drastically, however, w
 Yet, in comparison with faster-miniKanren our implementation is still lagging behind. We can conclude, that the optimizations, 
 used in Scheme/Racket version, have a different impact in the OCaml case; we save this problem for future research.
 
-\begin{figure}[t]
-\centering
-\includegraphics[scale=0.4]{graph.png}
-\caption{The Results of the Performance Evaluation}
-\label{eval}
-\end{figure}

@@ -19,6 +19,8 @@ can be considered relational. We have chosen \miniKanren\footnote{\url{http://mi
 as a model language, because it was specifically designed as a relational DSL, embedded in Scheme/Racket. 
 Being rather a minimalistic language, which can be implemented with just a few data structures and
 combinators, \miniKanren found its way into dozens of host languages, including Scala, Haskell and Standard ML.
+The paradigm behind \miniKanren can be described as ``lightweight logic programming''\footnote{An in-depth comparison of \miniKanren 
+and Prolog can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
 
 This paper addresses the problem of embedding \miniKanren into OCaml\footnote{\url{http://ocaml.org}}~--- a statically-typed functional language with 
 a rich type system. A statically-typed implementation would bring us a number of benefits. First, as always, 
@@ -68,7 +70,7 @@ refer to~\cite{TRS}). In Section~\ref{sec:goals} we describe some basic construc
 in OCaml. In Section \ref{sec:unification} we discuss polymorphic unification, and show that unification with 
 triangular substitution respects typing. Then we present our approach to handle user-defined types by injecting them 
 into the logic domain; we consider a simple approach and more elaborate and efficient tagless variant (see Section~\ref{sec:injection}). 
-Section~\ref{reification} describes top-level primitives and addresses the problem of relational and functional code integration. 
+Section~\ref{sec:reification} describes top-level primitives and addresses the problem of relational and functional code integration. 
 Then, in Section~\ref{sec:examples} we present a set of relational examples, written with the aid of our 
 library. Section~\ref{sec:evaluation} contains the results of a performance evaluation and a comparison of our implementations 
 with existing implementation for Scheme. The final section concludes.

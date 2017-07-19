@@ -9,7 +9,7 @@ to build \emph{goals}:
 \begin{itemize}
 \item Syntactic unification~\cite{Unification} in the form \lstinline[language=scheme]{(== $t_1$ $t_2$)}, where $t_1$, $t_2$ are
 some \emph{terms}; unification establishes a syntactic basis for all other goals. If there is a unifier for
-two given terms, the goal is considered satisfied, a most general unifier is kept as a partial solution, and the execution
+two given terms, the goal is considered satisfied, the most general unifier is kept as a partial solution, and the execution
 of current branch continues. Otherwise the current branch backtracks.
 
 \item Disequality constraint~\cite{CKanren} in the form \lstinline[language=scheme]{($\not\equiv$ $t_1$ $t_2$)}, where
@@ -76,7 +76,7 @@ A goal, built with the aid of the aforementioned constructs, can be run by the f
 Here $n$ is the number of requested answers (or ``*'' for all answers), $q_i$ are fresh query variables, and $G$ is a goal, which can
 contain these variables. 
 
-The \lstinline{run} construct initiates the search for answers for given goal and returns a (finite or infinite) list 
+The \lstinline{run} construct initiates the search for answers for a given goal and returns a (finite or infinite) list 
 of answers~--- the bindings for query variables, which represent individual solutions for that query. For example,
 
 \begin{lstlisting}[mathescape=true,language=scheme]
@@ -86,5 +86,3 @@ of answers~--- the bindings for query variables, which represent individual solu
 \noindent returns a list \lstinline{((1 2 3 4))}, which constitutes the answer for query variable $q$. The process of constructing
 the answers from internal data structures of miniKanren interpreter is called \emph{reification}~\cite{WillThesis}. 
 
-The paradigm behind \miniKanren can be described as ``lightweight logic programming''\footnote{An in-depth comparison of \miniKanren 
-and Prolog can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
