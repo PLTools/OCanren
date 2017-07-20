@@ -9,7 +9,7 @@ to build \emph{goals}:
 \begin{itemize}
 \item Syntactic unification~\cite{Unification} in the form \lstinline[language=scheme]{(== $t_1$ $t_2$)}, where $t_1$, $t_2$ are
 some \emph{terms}; unification establishes a syntactic basis for all other goals. If there is a unifier for
-two given terms, the goal is considered satisfied, the most general unifier is kept as a partial solution, and the execution
+two given terms, the goal is considered satisfied, a most general unifier is kept as a partial solution, and the execution
 of current branch continues. Otherwise the current branch backtracks.
 
 \item Disequality constraint~\cite{CKanren} in the form \lstinline[language=scheme]{($\not\equiv$ $t_1$ $t_2$)}, where
