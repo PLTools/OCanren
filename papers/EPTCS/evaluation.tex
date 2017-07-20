@@ -12,8 +12,8 @@ One of our initial goals was to evaluate, what performance impact would choosing
 efforts in order to implement \miniKanren in an efficient, tagless manner, and, of course, the outcome of this decision also has to be 
 measured. For comparison we took faster-miniKanren\footnote{\url{https://github.com/webyrd/faster-miniKanren}}~--- a full-fledged 
 \miniKanren implementation for Scheme/Racket. It turned out that faster-miniKanren implements a number of optimizations~\cite{WillThesis, Optimizations} 
-to speedup the search; moreover, the search order in our implementaion initially was a little bit different. In order to make the comparison
-fair, we additionally implemented all these optimizations and adjusted the search order to exactly coinside with 
+to speedup the search; moreover, the search order in our implementation initially was a little bit different. In order to make the comparison
+fair, we additionally implemented all these optimizations and adjusted the search order to exactly coincide with 
 what faster-miniKanren does.
 
 \begin{figure}[t]
@@ -30,7 +30,7 @@ For the set of benchmarks we took the following problems:
 \begin{itemize}
 %\item \textbf{sorto, permo}~--- sorting and permutation for lists of Peano numbers (shown as example in Section~\ref{sec:examples}).
 %The concrete tests are the sorting of the list \lstinline{[3; 2; 1; 0]} and taking all permutations of the list \lstinline{[0; 1; 2; 3; 4; 5; 6; 7]}.
-\item \textbf{pow, logo}~--- exponentation and logarithm for integers in binary form. The concrete tests relationally computed
+\item \textbf{pow, logo}~--- exponentiation and logarithm for integers in binary form. The concrete tests relationally computed
 $3^5$ (which in 243) and $log_3 243$ (which is, conversely, 5).
 \item \textbf{quines, twines, trines}~--- self/co-evaluating program synthesis problems from~\cite{Untagged}. The
 concrete tests took the first 100, 15 and 3 answers for these problems respectively.

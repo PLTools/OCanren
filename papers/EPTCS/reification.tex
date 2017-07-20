@@ -49,7 +49,7 @@ have the form
    type ($\alpha$, $\beta$) reified = $<\;$prj : $\alpha$; reify : (helper -> $\{\alpha,\;\beta\}$ -> $\beta$) -> $\beta>$
 \end{lstlisting}
 
-Two methods of this type can be used to perform two different styles of reificationt: first, a value without
+Two methods of this type can be used to perform two different styles of reification: first, a value without
 free variables can be returned as is (using the method \lstinline{prj} which checks that in the value of
 interest no free variables occur, and raises an exception otherwise). If the value contains some free
 variables, it has to be properly injected into the logic domain~--- this is what \lstinline{reify} stands

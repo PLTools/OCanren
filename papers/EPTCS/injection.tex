@@ -12,7 +12,7 @@ possible, it would compromise the lightweight approach we used so far). This mea
 variables have to be typed differently, than user-defined data~--- otherwise it would be possible to use
 terms in contexts, where logical variables are not handled properly. At the same time we do not want term types
 to be completely different from user-defined~--- for example, we would like to reuse user-defined constructors, etc.
-This considerations boil down to the idea of \emph{logical represenation} for a user-defined type. Informally, 
+This considerations boil down to the idea of \emph{logical representation} for a user-defined type. Informally, 
 a logical representation for the type $t$ is a type $\rho_t$ with a couple of conversion functions:
     
 $$
@@ -33,7 +33,7 @@ representation must provide a way to detect logic variable occurrences.
 
 
 %Unification, considered in Section~\ref{sec:unification}, works for values of any types. However, it
-%is too generic to be used directly. As long as we use it to unify closed terms, it's ok (but rather meaningless);
+%is too generic to be used directly. As long as we use it to unify closed terms, it's OK (but rather meaningless);
 %however, for terms with free variables the situation becomes more complicated. Indeed, as we've seen in the
 %previous section, a variable $x^\tau$ must have a runtime representation of some value of type $\tau$. As different
 %types may not have any values in common, if we wish to unify arbitrary types, we would need to specify the
@@ -87,7 +87,7 @@ for these purposes
 \noindent which can be used to perform a \emph{shallow} injection/projection. As expected, the injection is total, while the projection is partial.
 
 Shallow pair works well for primitive types; to implement injection/projection for arbitrary types we exploit the 
-idea of representing regular types as fixpoints of functors~\cite{ALaCarte}. For our purposes it is desirable to make
+idea of representing regular types as fixed points of functors~\cite{ALaCarte}. For our purposes it is desirable to make
 the functors fully polymorphic~--- thus a type, in which we can place a logical variable into arbitrary position,
 can be easily manufactured. In addition this approach makes it possible to refactor the existing code to use relational
 programming with only minor changes.
@@ -133,7 +133,7 @@ Moreover, with the aid of conventional functor-specific mapping function
 \end{lstlisting}
 
 As functor-specific mapping functions can be easily written or, better, derived automatically using a number of existing frameworks for
-generic programming for OCaml, one can easily provide injection/projection pair for user-defined datatypes.
+generic programming for OCaml, one can easily provide injection/projection pair for user-defined data types.
 
 We now can address the problem of variable identification during polymorphic unification. As we do not know the types, we cannot discriminate logical
 variables by their tags only and, thus, cannot simply use pattern matching. In our implementation we perform a variable test
