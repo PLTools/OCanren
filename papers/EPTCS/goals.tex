@@ -77,7 +77,7 @@ is true for us as well. However, due to a drastic difference in host languages t
 efficient polymorphic unification itself leads to a number of tricks with typing and data representation
 absent in the original version.
 
-In this setting, the run primitive is represented by the follwing function:
+In this setting, the run primitive is represented by the following function:
 
 \begin{lstlisting}
    val run : goal -> state stream
@@ -89,7 +89,7 @@ the search progress.
 
 To discover concrete answers, the state has to be queried for its contents. As a rule, a few variables
 are reified in a state, i.e. their bindings in the corresponding substitution are retrieved. For free
-variables their disequality constraints have to be reified additionaly (e.g. represented as a list of
+variables their disequality constraints have to be reified additionally (e.g. represented as a list of
 ``forbidden'' terms). As forbidden terms can in turn contain free variables, the constraint reification
 process is recursive.
 

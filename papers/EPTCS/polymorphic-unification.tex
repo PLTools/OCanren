@@ -115,7 +115,7 @@ by our induction hypothesis these results are again attributed by the type $\tau
 pattern matching. In line 11 we return the substitution unchanged, in lines 12 and 13 we extend the
 existing substitution, but preserve the property of interest. Finally, in line 15 we chain a few
 applications of \lstinline{unify}; note that, again, all these calls are performed for terms of equal
-types, starting from a substitution posessing the property of interest. A simple induction on the
+types, starting from a substitution possessing the property of interest. A simple induction on the
 chain length completes the proof.
 
 So, type attributes are inessential~--- they are never analyzed and never restrict pattern matching; hence,
