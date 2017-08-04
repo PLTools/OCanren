@@ -96,7 +96,7 @@ language=ocanren
 We address the problem of transforming typed functional programs into relational form. 
 In this form a program can be run in various ``directions'' with various arguments left 
 free, making it possible to acquire different behaviors from a single specification. 
-We present an implementation of relational convertor for the subset of Objective Caml and
+We present an implementation of relational convertor for a subset of Objective Caml and
 evaluate it on a number of benchmarks, obtaining some relational programs never written 
 before.
 \end{abstract}
@@ -107,13 +107,13 @@ before.
 Relational programming is an attractive technique, based on the idea of constructing programs as relations.
 Many logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
 or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}} to some extent can be considered as relational. 
-In this paper we, specifically, focus on \miniKanren~\cite{TRS,CKanren,MicroKanren}. 
+In this paper we focus on \miniKanren~\cite{TRS,CKanren,MicroKanren}. 
 
 \miniKanren\footnote{\url{http://minikanren.org}} was originally designed as a small relational DSL, embedded in Scheme/Racket. 
 The advantage of this approach is the flexibility in combining functional and logic features; in addition \miniKanren possesses 
 some quite appealing features (complete search, purity, declarativity, etc).
 
-With relational approach, it becomes possible to give simple and elegant solutions for the problems, otherwise
+With relational approach, it becomes possible to give simple and elegant solutions for problems otherwise
 considered as tricky, tough, tedious, or boring. For example, relational interpreters can be used to derive
 \emph{quines}~--- programs, which reduce to themselves, as well as \emph{twines} or \emph{trines} (a pairs or triples of
 programs, reducing to each other)~\cite{Untagged}; a straightforward relational description of
@@ -123,7 +123,7 @@ relational list sorting can be used to generate all permutations~\cite{ocanren},
 On the other hand, writing relational specification can sometimes be a tricky and error-prone task. Fortunately, many 
 specifications can be written systematically by ``generalizing'' a certain functional program. From the very beginning 
 the conversion from functional to relational form was considered as an element of relational programming thesaurus~\cite{TRS}. However,
-the traditional approach~--- \emph{unnesting}~--- was formulated for untyped case, worked only for specifically written
+the traditional approach~--- \emph{unnesting}~--- was formulated for the untyped case, worked only for specifically written
 programs and, to our knowledge, was never implemented.
 
 We present a generalized form of relational conversion, which can be applied to typed terms in general form. We study the relational conversion 
@@ -136,7 +136,7 @@ Programming\footnote{https://www.cs.kent.ac.uk/events/tfp17}.
 
 \section{Relational Extension and Conversion}
 
-\OCanren can be seen as a relational extension for Objective Caml. The central notion in this extension is \emph{goal}, which can be an arbitrary 
+\OCanren can be seen as a relational extension for Objective Caml. The central notion in this extension is the \emph{goal}, which can be an arbitrary 
 expression of reserved goal type $\G$. There are only five syntactic forms of goals:
 
 \begin{itemize}
@@ -157,7 +157,7 @@ consider the following code snippet:
 \end{lstlisting}
 
 Function \lstinline|is_zero| implements a binary relation between integers and booleans; when called with specific arguments, it
-returns a goal, which can be executed, returning a \emph{stream of answers}. An element of the stream contains the description of 
+returns a goal which can be executed, returning a \emph{stream of answers}. An element of the stream contains the description of 
 certain constraints for logical variables, which have to be respected in order for the relation to hold. For example,
 
 \begin{lstlisting}[basicstyle=\small]
@@ -182,8 +182,8 @@ $$
 $$
 
 \noindent where $a$~--- arbitrary ground (non-polymorphic, non-functional type). Despite its type-based description, 
-the conversion itself does not make use of types. The static correctness property, which we've proven, claims, that
-for properly typed source terms the results of conversion always properly typed in relational sense. The similar
+the conversion itself does not make use of types. The static correctness property, which we have proven, claims that
+for properly typed source terms the results of conversion are always properly typed in relational sense. The similar
 result holds for dynamic correctness.
 
 %There is an important limitation, however, which originates from the fundamental feature of \miniKanren~--- the use of
