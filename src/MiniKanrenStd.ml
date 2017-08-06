@@ -337,7 +337,7 @@ module List =
           method foldr   fa l = GT.foldr   (logic') (GT.foldr   (llist) fa (this#foldr   fa)) l
           method html    fa l = GT.html    (logic') (GT.html    (llist) fa (this#html    fa)) l
 
-          (* We override default implementation to show list as semicolon-separated *)
+          (* We override the default implementation to show lists semicolon-separated *)
           method show : ('a -> string) -> 'a logic -> GT.string = fun fa l ->
             GT.show(logic')
               (fun l -> "[" ^

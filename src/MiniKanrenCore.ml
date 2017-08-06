@@ -701,7 +701,7 @@ module Subst :
 
   end
 
-let rec refine : Env.t -> Subst.t -> _ -> Obj.t -> Obj.t = fun env subst do_diseq x ->
+let rec reify : Env.t -> Subst.t -> _ -> Obj.t -> Obj.t = fun env subst do_diseq x ->
   let rec walk' forbidden term =
     let var = Subst.walk env term subst in
     match Env.var env var with
@@ -739,10 +739,10 @@ module type CONSTRAINTS = sig
   val empty: t
   val show: env:Env.t -> t -> string
 
-  (** [refine env c x] refines [x] and maybe changes constraints [c].
+  (* [reify env c x] reifies [x] and maybe changes constraints [c].
    *  It returns a list of term that [x] should not be equal
    *)
-  val refine: Env.t -> Subst.t -> t -> inner_logic -> Obj.t list
+  val reify: Env.t -> Subst.t -> t -> inner_logic -> Obj.t list
 
   val extend : prefix:Subst.content list -> Env.t -> t -> t
 
@@ -916,7 +916,7 @@ struct
      *   subst: [ q -> (a,b); ]
      *   constr: [ (a=/=5) || (b=/=6) ]
      *   extend subst with (a === 3)
-     *   ask to refine: q
+     *   ask to reify: q
      *   expected answer: q = (3, b)
      *   without simplification: q = (3, b {{ =/= 6}})
      **)
@@ -960,11 +960,11 @@ struct
     in
     loop [] xs
 
-  let refine: Env.t -> Subst.t -> t -> inner_logic -> Obj.t list = fun env subst cs term ->
-    (* printfn "going to refine constraints for a variable '%s'" (generic_show term); *)
+  let reify: Env.t -> Subst.t -> t -> inner_logic -> Obj.t list = fun env subst cs term ->
+    (* printfn "going to reify constraints for a variable '%s'" (generic_show term); *)
     let maybe_swap cnt =
       let open Subst in
-      (* We always refine logic variables by design, so we can omit checking that term is a variable *)
+      (* We always reify logic variables by design, so we can omit checking that term is a variable *)
       (* TODO: I'm not sure that maybe_swap is still needed *)
       if cnt.new_val == !!!term
       then { lvar = !!!term; new_val = Obj.repr cnt.lvar }
@@ -1080,7 +1080,7 @@ let report_counters () =
   printfn "total diseq calls : %d" !diseq_counter;
   printfn "logged diseq calls : %d" !logged_diseq_counter
 
-let (===) ?loc (x: _ injected) y (env, subst, constr, scope) =
+let (===) (x: _ injected) y (env, subst, constr, scope) =
   (* we should always unify two injected types *)
   (* incr unif_counter; *)
 
@@ -1115,6 +1115,8 @@ let disj f g st =
   mplus (f st) (MKStream.from_fun (fun () -> g st))
 
 let (|||) = disj
+
+(* TODO: right-associative, via fold *)
 
 (* mplus_star *)
 let rec (?|) = function
@@ -1201,22 +1203,22 @@ module ExtractDeepest =
 let helper_of_state st : helper =
   !!!(object method isVar x = Env.is_var (State.env st) (Obj.repr x) end)
 
-class type ['a,'b] refined = object
+class type ['a,'b] reified = object
   method is_open: bool
   method prj: 'a
-  method refine: (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
+  method reify: (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
 end
 
-let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) refined = fun x ((env, s, cs, scp) as st) ->
-  let ans = !!!(refine env s (Constraints.refine env s cs) (Obj.repr x)) in
+let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) reified = fun x ((env, s, cs, scp) as st) ->
+  let ans = !!!(reify env s (Constraints.reify env s cs) (Obj.repr x)) in
   let is_open = has_free_vars (Env.is_var env) (Obj.repr ans) in
   let c: helper = helper_of_state st in
 
   object(self)
     method is_open = is_open
     method prj = if self#is_open then raise Not_a_value else !!!ans
-    method refine refiner ~inj =
-      if self#is_open then refiner c ans else inj ans
+    method reify reifier ~inj =
+      if self#is_open then reifier c ans else inj ans
   end
 
 let prj : ('a, 'b) injected -> 'a = fun x ->
@@ -1224,23 +1226,23 @@ let prj : ('a, 'b) injected -> 'a = fun x ->
   rr#prj
 
 module R : sig
-  type ('a, 'b) refiner
+  type ('a, 'b) reifier
 
-  val refiner :  ('a, 'b) injected -> ('a, 'b) refiner
+  val reifier :  ('a, 'b) injected -> ('a, 'b) reifier
 
-  val apply_refiner : State.t Stream.t -> ('a, 'b) refiner -> ('a, 'b) refined Stream.t
+  val apply_reifier : State.t Stream.t -> ('a, 'b) reifier -> ('a, 'b) reified Stream.t
 end = struct
-  type ('a, 'b) refiner = State.t Stream.t -> ('a, 'b) refined Stream.t
+  type ('a, 'b) reifier = State.t Stream.t -> ('a, 'b) reified Stream.t
 
-  let refiner : ('a,'b) injected -> ('a,'b) refiner = fun x -> Stream.map (make_rr x)
-  let apply_refiner = fun st r -> r st
+  let reifier : ('a,'b) injected -> ('a,'b) reifier = fun x -> Stream.map (make_rr x)
+  let apply_reifier = fun st r -> r st
 end
 
 module ApplyTuple =
   struct
-    let one arg r = R.apply_refiner arg r
+    let one arg r = R.apply_reifier arg r
 
-    let succ prev = fun arg (r, y) -> (R.apply_refiner arg r, prev arg y)
+    let succ prev = fun arg (r, y) -> (R.apply_reifier arg r, prev arg y)
   end
 
 module ApplyLatest =
@@ -1259,18 +1261,18 @@ module Uncurry =
     let succ k f (x,y) = k (f x) y
   end
 
-type ('a, 'b) refiner = ('a, 'b) R.refiner
-let refiner = R.refiner
+type ('a, 'b) reifier = ('a, 'b) R.reifier
+let reifier = R.reifier
 
 module LogicAdder :
   sig
     val zero : 'a -> 'a
-    val succ: ('a -> State.t -> 'd) -> (('e, 'f) injected -> 'a) -> State.t -> ('e, 'f) R.refiner * 'd
+    val succ: ('a -> State.t -> 'd) -> (('e, 'f) injected -> 'a) -> State.t -> ('e, 'f) R.reifier * 'd
   end = struct
     let zero f = f
 
     let succ prev f =
-      call_fresh (fun logic st -> (R.refiner logic, prev (f logic) st))
+      call_fresh (fun logic st -> (R.reifier logic, prev (f logic) st))
   end
 
 
@@ -1301,22 +1303,22 @@ let trace msg g = fun state ->
   printf "%s: %s\n%!" msg (State.show state);
   g state
 
-let refine_with_state (env,subs,cs,_) term = refine env subs (Constraints.refine env subs cs) (Obj.repr term)
+let reify_with_state (env,subs,cs,_) term = reify env subs (Constraints.reify env subs cs) (Obj.repr term)
 
 let project1 ~msg : (helper -> 'b -> string) -> ('a, 'b) injected -> goal = fun shower q st ->
-  printf "%s %s\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st q);
+  printf "%s %s\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ reify_with_state st q);
   success st
 
 let project2 ~msg : (helper -> 'b -> string) -> (('a, 'b) injected as 'v) -> 'v -> goal = fun shower q r st ->
-  printf "%s '%s' and '%s'\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st q)
-                                    (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st r);
+  printf "%s '%s' and '%s'\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ reify_with_state st q)
+                                    (shower (helper_of_state st) @@ Obj.magic @@ reify_with_state st r);
   success st
 
 let project3 ~msg : (helper -> 'b -> string) -> (('a, 'b) injected as 'v) -> 'v -> 'v -> goal = fun shower q r s st ->
   printf "%s '%s' and '%s' and '%s'\n%!" msg
-    (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st q)
-    (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st r)
-    (shower (helper_of_state st) @@ Obj.magic @@ refine_with_state st s);
+    (shower (helper_of_state st) @@ Obj.magic @@ reify_with_state st q)
+    (shower (helper_of_state st) @@ Obj.magic @@ reify_with_state st r)
+    (shower (helper_of_state st) @@ Obj.magic @@ reify_with_state st s);
   success st
 
 let unitrace ?loc shower x y = fun st ->

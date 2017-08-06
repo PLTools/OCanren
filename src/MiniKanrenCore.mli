@@ -16,10 +16,6 @@
  * (enclosed in the file COPYING).
  *)
 
-val generic_show: ?maxdepth:int -> 'a -> string
-
-val printfn : ('a, unit, string, unit) format4 -> 'a
-
 (** {1 Implementation of miniKanren primitives} *)
 
 (** {2 Basic modules and types} *)
@@ -30,11 +26,9 @@ module MKStream :
     (** Stream type *)
     type 'a t
 
-    val inc: (unit -> 'a t) -> 'a t
-
+    (** Monadic primitives *)
     val mplus : 'a t -> 'a t -> 'a t
-
-    val bind: 'a t -> ('a ->  'a t) -> 'a t
+    val bind  : 'a t -> ('a ->  'b t) -> 'b t
   end
 
 module Stream :
@@ -71,30 +65,20 @@ module Stream :
 
 (** {3 States and goals} *)
 
-(**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
-type ('a, 'b) injected
-
 (** A state *)
 module State :
   sig
     (** State type *)
     type t
-
-    (** Printing helper *)
-    (* val show : t -> string *)
-
-    val new_var : t -> ('a, 'b) injected * int
-    val incr_scope : t -> t
   end
 
 (** Goal converts a state into a lazy stream of states *)
 type 'a goal'
 type goal = State.t MKStream.t goal'
 
-(** {3 Logical values and injections} *)
+(** {3 Logic values} *)
 
-
-(** A type of abstract logic values *)
+(** A type of logic value *)
 @type 'a logic =
 | Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
@@ -111,7 +95,17 @@ val logic :
      gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic
    >) GT.t
 
-(** [lift x] injects [x] into itself *)
+(** [from_logic x] makes a regular value from a logic one.
+    Raises exception [Not_a_value] if [x] contains free variables 
+*)
+val from_logic : 'a logic -> 'a
+
+(** {3 Injections/projections} *)
+
+(**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
+type ('a, 'b) injected
+
+(** [lift x] lifts [x] into injected doamin *)
 val lift : 'a -> ('a, 'a) injected
 
 (** [inj x] injects [x] into logical [x] *)
@@ -120,27 +114,19 @@ val inj : ('a, 'b) injected -> ('a, 'b logic) injected
 (** A synonym for [fun x -> inj @@ lift x] (for non-parametric types) *)
 val (!!) : 'a -> ('a, 'a logic) injected
 
-(** [prj x] returns plain value from injected representation.
-    Raises exception [Not_a_value] if [x] contains logic variables. *)
+(** [prj x] returns a regular value from injected representation.
+    Raises exception [Not_a_value] if [x] contains free variables 
+*)
 val prj : ('a, 'b) injected -> 'a
 
-(** [to_logic x] makes logic value from plain one *)
-val to_logic : 'a -> 'a logic
-
-(** [from_logic x] makes plain value from logic one.
-    Raises exception [Not_a_value] if [x] contains logic variables. *)
-val from_logic : 'a logic -> 'a
-
-(** {2 miniKanren basic primitives} *)
+(** {3 miniKanren basic combinators} *)
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the
     parameter *)
 val call_fresh : (('a, 'b) injected -> goal) -> goal
 
-val report_counters : unit -> unit
-
 (** [x === y] creates a goal, which performs a unification of [x] and [y] *)
-val (===) : ?loc:string -> ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
+val (===) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
 (** [x =/= y] creates a goal, which introduces a disequality constraint for [x] and [y] *)
 val (=/=) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
@@ -148,13 +134,13 @@ val (=/=) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
 val conj : goal -> goal -> goal
 
-(** [&&&] is left-associative infix synonym for [conj] *)
+(** [&&&] is a left-associative infix synonym for [conj] *)
 val (&&&) : goal -> goal -> goal
 
 (** [disj s1 s2] creates a goal, which is a disjunction of its arguments *)
 val disj : goal -> goal -> goal
 
-(** [|||] is left-associative infix synonym for [disj] *)
+(** [|||] is a left-associative infix synonym for [disj] *)
 val (|||) : goal -> goal -> goal
 
 (** [?| [s1; s2; ...; sk]] calculates [s1 ||| s2 ||| ... ||| sk] for a non-empty list of goals *)
@@ -165,8 +151,6 @@ val conde : goal list -> goal
 
 (** [?& [s1; s2; ...; sk]] calculates [s1 &&& s2 && ... &&& sk] for a non-empty list of goals *)
 val (?&) : goal list -> goal
-
-val bind_star : goal list -> goal
 
 (** {2 Some predefined goals} *)
 
@@ -180,7 +164,8 @@ val failure : goal
 module Fresh :
   sig
     (** [succ num f] increments the number of free logic variables in
-        a goal; can be used to get rid of ``fresh'' syntax extension *)
+        a goal; can be used to get rid of ``fresh'' syntax extension 
+    *)
     val succ : ('a -> 'b goal') -> ((_, _) injected -> 'a) -> 'b goal'
 
     (** Zero logic parameters *)
@@ -203,190 +188,169 @@ module Fresh :
 
 (** {2 Top-level running primitives} *)
 
-(** [run n g h] runs a goal [g] with [n] logical parameters and passes refined results to the handler [h]. The number of parameters is encoded using variadic
-    machinery {a la} Danvy and represented by a number of predefined numerals and successor function (see below). The refinement replaces each variable, passed
-    to [g], with the stream of values, associated with that variables as the goal succeeds.
+(** [run n g h] runs a goal [g] with [n] logical parameters and passes reified results to the handler [h]. 
+    The number of parameters is encoded using variadic machinery {a la} Olivier Danvy and represented by 
+    a number of predefined numerals and successor function (see below). The reification replaces each variable, 
+    passed to [g], with the stream of values, associated with that variable as the goal succeeds.
 
     Examples:
 
     - [run one        (fun q   -> q === !!5)               (fun qs    -> ]{i here [q]s       --- a stream of all values, associated with the variable [q]}[)]
     - [run two        (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i here [qs], [rs] --- streams of all values, associated with the variable [q] and [r], respectively}[)]
     - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
- *)
+*)
 val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) *
                       (('g Stream.t -> 'h -> 'e) * ('c -> 'h * 'g MKStream.t))) ->
           'a -> 'd -> 'f
 
-(**
-  The primitive [delay] helps to construct recursive goals that depend on themselves. For example,
-  we can't write [let fives q = (q===!!5) ||| (fives q)] because generation of this goal leads to
-  infinite reciursion. The right way to implement this is [let fives q = (q===!!5) ||| delay (fun () -> fives q)]
+(** The primitive [delay] helps to construct recursive goals, which depend on themselves. For example,
+    we can't write [let rec fives q = (q===!!5) ||| (fives q)] because the generation of this goal leads to
+    infinite recursion. The correcr way to implement this is [let rec fives q = (q===!!5) ||| delay (fun () -> fives q)]
 
-  See also syntax extension which simplifies the syntax.
+    See also syntax extension [defer].
 *)
-val delay  : (unit -> goal) -> goal
-
-val trace: string -> goal -> goal
+val delay : (unit -> goal) -> goal
 
 (** Reification helper *)
 type helper
 
-val project1: msg:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> goal
-val project2: msg:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
-val project3: msg:string -> (helper -> ('a, 'b) injected -> string) ->
-    ('a, 'b) injected -> ('a, 'b) injected -> ('a, 'b) injected -> goal
-
-(* Like (===) but with tracing *)
-val unitrace: ?loc:string -> (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
-
-val diseqtrace: (helper -> ('a, 'b) injected -> string) -> ('a, 'b) injected -> ('a, 'b) injected -> goal
-
-(**
-  The exception is raised when we try to extract plain term from the answer but only terms with free
-  variables are possible.
-*)
+(** The exception is raised when we try to extract a regular term from the answer with some free variables *)
 exception Not_a_value
 
 (** Reification result *)
-class type ['a,'b] refined = object
+class type ['a,'b] reified = 
+object
   (** Returns [true] if the term has any free logic variable inside *)
   method is_open: bool
 
-  (**
-    Get the answer as plain term. Raises exception [Not_a_value] when only terms with free variables
-    are available.
-  *)
+  (** Gets the answer as regular term. Raises exception [Not_a_value] when the answer contains free variables *)
   method prj: 'a
 
-  (**
-    Get the answer as non-flat value. If the actual answer is a flat value it will be injected using
-    the function provided.
-   *)
-  method refine: (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
+  (** Gets the answer as a logic value using provided injection function [inj] *)
+  method reify: (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
 end
 
-(** A type to refine a stream of states into the stream of answers (w.r.t. some known logic variable *)
-type ('a, 'b) refiner
+(** A type to reify a stream of states into the stream of answers (w.r.t. some known logic variable) *)
+type ('a, 'b) reifier
 
 (** Successor function *)
-val succ :
-           (unit ->
+val succ : (unit ->
             ('a -> 'b goal') * ('c -> 'd -> 'e) *
             ((State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j))) ->
            unit ->
-           ((('k, 'l) injected -> 'a) -> (('k, 'l) refiner * 'b) goal') *
+           ((('k, 'l) injected -> 'a) -> (('k, 'l) reifier * 'b) goal') *
            (('m -> 'c) -> 'm * 'd -> 'e) *
            ((State.t Stream.t ->
-             ('n, 'o) refiner * 'f -> ('n, 'o) refined Stream.t * 'g) *
+             ('n, 'o) reifier * 'f -> ('n, 'o) reified Stream.t * 'g) *
             ('p * 'h -> ('p * 'i) * 'j))
 
 (** {3 Predefined numerals (one to five)} *)
 
 val one : unit ->
-  ((('a,'c) injected -> 'b goal') -> (('a, 'c) refiner * 'b) goal') *
+  ((('a,'c) injected -> 'b goal') -> (('a, 'c) reifier * 'b) goal') *
   (('d -> 'e) -> 'd -> 'e) *
   ((State.t Stream.t ->
-    ('f, 'g) refiner -> ('f, 'g) refined Stream.t) *
+    ('f, 'g) reifier -> ('f, 'g) reified Stream.t) *
     ('h -> 'h))
 
 val two : unit ->
   ((('a,'d) injected -> ('b,'e) injected -> 'c goal') ->
-    (('a, 'd) refiner * (('b, 'e) refiner * 'c)) goal') *
+    (('a, 'd) reifier * (('b, 'e) reifier * 'c)) goal') *
     (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
     ((State.t Stream.t ->
-      ('i, 'j) refiner * ('k, 'l) refiner ->
-      ('i, 'j) refined Stream.t *
-      ('k, 'l) refined Stream.t) *
+      ('i, 'j) reifier * ('k, 'l) reifier ->
+      ('i, 'j) reified Stream.t *
+      ('k, 'l) reified Stream.t) *
      ('m * ('n * 'o) -> ('m * 'n) * 'o))
 
 val three : unit ->
   (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> 'd goal') ->
-    (('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) goal') *
+    (('a, 'e) reifier * (('b, 'f) reifier * (('c, 'g) reifier * 'd))) goal') *
    (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
    ((State.t Stream.t ->
-     ('l, 'm) refiner * (('n, 'o) refiner * ('p, 'q) refiner) ->
-     ('l, 'm) refined Stream.t *
-     (('n, 'o) refined Stream.t *
-      ('p, 'q) refined Stream.t)) *
+     ('l, 'm) reifier * (('n, 'o) reifier * ('p, 'q) reifier) ->
+     ('l, 'm) reified Stream.t *
+     (('n, 'o) reified Stream.t *
+      ('p, 'q) reified Stream.t)) *
     ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
 
 val four : unit ->
   ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> 'f goal') ->
-    (('a, 'g) refiner * (('b, 'h) refiner * (('c, 'i) refiner * (('d, 'j) refiner * 'f)))) goal') *
+    (('a, 'g) reifier * (('b, 'h) reifier * (('c, 'i) reifier * (('d, 'j) reifier * 'f)))) goal') *
   (('l -> 'm -> 'n -> 'o -> 'q) ->
     'l * ('m * ('n * 'o)) -> 'q) *
    ((State.t Stream.t ->
-     ('r, 's) refiner * (('t, 'u) refiner * (('v, 'w) refiner * ('x, 'y) refiner)) ->
-     ('r, 's) refined Stream.t *
-     (('t, 'u) refined Stream.t *
-      (('v, 'w) refined Stream.t *
-       (('x, 'y) refined Stream.t)))) *
+     ('r, 's) reifier * (('t, 'u) reifier * (('v, 'w) reifier * ('x, 'y) reifier)) ->
+     ('r, 's) reified Stream.t *
+     (('t, 'u) reified Stream.t *
+      (('v, 'w) reified Stream.t *
+       (('x, 'y) reified Stream.t)))) *
     ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) ->
      ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1))
 
 val five : unit ->
   ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> 'f goal') ->
-   (('a, 'g) refiner *
-    (('b, 'h) refiner *
-     (('c, 'i) refiner * (('d, 'j) refiner * (('e, 'k) refiner * 'f))))) goal') *
+   (('a, 'g) reifier *
+    (('b, 'h) reifier *
+     (('c, 'i) reifier * (('d, 'j) reifier * (('e, 'k) reifier * 'f))))) goal') *
   (('l -> 'm -> 'n -> 'o -> 'p -> 'q) ->
    'l * ('m * ('n * ('o * 'p))) -> 'q) *
    ((State.t Stream.t ->
-     ('r, 's) refiner *
-     (('t, 'u) refiner *
-      (('v, 'w) refiner * (('x, 'y) refiner * ('z, 'a1) refiner))) ->
-     ('r, 's) refined Stream.t *
-     (('t, 'u) refined Stream.t *
-      (('v, 'w) refined Stream.t *
-       (('x, 'y) refined Stream.t *
-        ('z, 'a1) refined Stream.t)))) *
+     ('r, 's) reifier *
+     (('t, 'u) reifier *
+      (('v, 'w) reifier * (('x, 'y) reifier * ('z, 'a1) reifier))) ->
+     ('r, 's) reified Stream.t *
+     (('t, 'u) reified Stream.t *
+      (('v, 'w) reified Stream.t *
+       (('x, 'y) reified Stream.t *
+        ('z, 'a1) reified Stream.t)))) *
     ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) ->
      ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1))
 
 (** {3 The same numerals with conventional names} *)
 val q : unit ->
-  ((('a,'c) injected -> 'b goal') -> (('a, 'c) refiner * 'b) goal') *
+  ((('a,'c) injected -> 'b goal') -> (('a, 'c) reifier * 'b) goal') *
   (('d -> 'e) -> 'd -> 'e) *
   ((State.t Stream.t ->
-    ('f, 'g) refiner -> ('f, 'g) refined Stream.t) *
+    ('f, 'g) reifier -> ('f, 'g) reified Stream.t) *
     ('h -> 'h))
 
 val qr : unit ->
   ((('a,'d) injected -> ('b,'e) injected -> 'c goal') ->
-    (('a, 'd) refiner * (('b, 'e) refiner * 'c)) goal') *
+    (('a, 'd) reifier * (('b, 'e) reifier * 'c)) goal') *
     (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
     ((State.t Stream.t ->
-      ('i, 'j) refiner * ('k, 'l) refiner ->
-      ('i, 'j) refined Stream.t *
-      ('k, 'l) refined Stream.t) *
+      ('i, 'j) reifier * ('k, 'l) reifier ->
+      ('i, 'j) reified Stream.t *
+      ('k, 'l) reified Stream.t) *
      ('m * ('n * 'o) -> ('m * 'n) * 'o))
 
 val qrs : unit ->
   (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> 'd goal') ->
-    (('a, 'e) refiner * (('b, 'f) refiner * (('c, 'g) refiner * 'd))) goal') *
+    (('a, 'e) reifier * (('b, 'f) reifier * (('c, 'g) reifier * 'd))) goal') *
    (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
    ((State.t Stream.t ->
-     ('l, 'm) refiner * (('n, 'o) refiner * ('p, 'q) refiner) ->
-     ('l, 'm) refined Stream.t *
-     (('n, 'o) refined Stream.t *
-      ('p, 'q) refined Stream.t)) *
+     ('l, 'm) reifier * (('n, 'o) reifier * ('p, 'q) reifier) ->
+     ('l, 'm) reified Stream.t *
+     (('n, 'o) reified Stream.t *
+      ('p, 'q) reified Stream.t)) *
     ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
 
 val qrst : unit ->
   ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> 'f goal') ->
-    (('a, 'g) refiner * (('b, 'h) refiner * (('c, 'i) refiner * (('d, 'j) refiner * 'f)))) goal') *
+    (('a, 'g) reifier * (('b, 'h) reifier * (('c, 'i) reifier * (('d, 'j) reifier * 'f)))) goal') *
   (('l -> 'm -> 'n -> 'o -> 'q) ->
     'l * ('m * ('n * 'o)) -> 'q) *
    ((State.t Stream.t ->
-     ('r, 's) refiner * (('t, 'u) refiner * (('v, 'w) refiner * ('x, 'y) refiner)) ->
-     ('r, 's) refined Stream.t *
-     (('t, 'u) refined Stream.t *
-      (('v, 'w) refined Stream.t *
-       (('x, 'y) refined Stream.t)))) *
+     ('r, 's) reifier * (('t, 'u) reifier * (('v, 'w) reifier * ('x, 'y) reifier)) ->
+     ('r, 's) reified Stream.t *
+     (('t, 'u) reified Stream.t *
+      (('v, 'w) reified Stream.t *
+       (('x, 'y) reified Stream.t)))) *
     ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) ->
      ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1))
 
-(** {2 Building reifiers compositionally } *)
+(** {2 Building reifiers for a custom type compositionally} *)
 module type T1 =
   sig
     type 'a t
@@ -406,22 +370,22 @@ module type T3 =
   end
 
 module type T4 =
-sig
-  type ('a, 'b, 'c, 'd) t
-  val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
-end
+  sig
+    type ('a, 'b, 'c, 'd) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
+  end
 
 module type T5 =
-sig
-  type ('a, 'b, 'c, 'd, 'e) t
-  val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
-end
+  sig
+    type ('a, 'b, 'c, 'd, 'e) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
+  end
 
 module type T6 =
-sig
-  type ('a, 'b, 'c, 'd, 'e, 'f) t
-  val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
-end
+  sig
+    type ('a, 'b, 'c, 'd, 'e, 'f) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
+  end
 
 module Fmap1 (T : T1) :
   sig
@@ -473,3 +437,4 @@ module Fmap6 (T : T6) :
   end
 
 val simple_reifier: helper -> ('a, 'a logic) injected -> 'a logic
+
