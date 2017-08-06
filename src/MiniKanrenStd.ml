@@ -1,38 +1,39 @@
+(*
+ * MiniKanrenStd: miniKanren standard library implementation.
+ * Copyright (C) 2015-2017
+ * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
+ * St.Petersburg State University, JetBrains Research
+ *
+ * This software is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License version 2, as published by the Free Software Foundation.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU Library General Public License version 2 for more details
+ * (enclosed in the file COPYING).
+ *)
+
 open MiniKanrenCore
 
-external inj_int : int -> (int, int logic) injected = "%identity";;
+external inj_int : int -> (int, int logic) injected = "%identity"
 
-module Pair = struct
-  module X = struct
-    type ('a,'b) t = 'a * 'b
-    let fmap f g (x,y) = (f x, g y)
-  end
-  include Fmap2(X)
-end
+module Pair   = Fmap2 (struct type ('a, 'b) t = 'a * 'b let fmap f g (x, y) = GT.(gmap pair) f g (x, y) end)
+module Triple = Fmap3 (struct type ('a, 'b, 'c) t = 'a * 'b * 'c let fmap f g h (x, y, z) = GT.(gmap triple) f g h (x, y, z) end)
 
-module Tuple3 = Fmap3(struct
-  type ('a,'b,'c) t = 'a * 'b * 'c
-  let fmap f g h (x,y,z) = (f x, g y, h z)
-end)
+let pair   x y =   inj @@ Pair.distrib (x, y)
+let triple x y z = inj @@ Triple.distrib (x, y, z)
 
-let inj_pair : ('a, 'c) injected -> ('b,'d) injected -> ('a * 'b, ('c * 'd) logic) injected =
-  fun x y -> inj @@ Pair.distrib (x, y)
-
-let inj_triple : ('a, 'd) injected -> ('b,'e) injected -> ('c,'f) injected
-                 -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected =
-  fun x y z -> inj @@ Tuple3.distrib (x, y, z)
-
-module ManualReifiers = struct
-
-  let bool : helper -> (bool, bool logic) injected -> bool logic = shallow_reifier
-
-  let int : helper -> (int, int logic) injected -> int logic = shallow_reifier
-
-  let string : helper -> (string, string logic) injected -> string logic = shallow_reifier
-
-  let pair = Pair.reify
-  let triple = Tuple3.reify
-end;;
+module Reify = 
+  struct
+    let bool   = shallow_reifier
+    let int    = shallow_reifier
+    let string = shallow_reifier
+    let pair   = Pair.reify
+    let triple = Triple.reify
+  end;;
 
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr;;
 @type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap;;
@@ -93,8 +94,8 @@ module Bool =
     type groundi = boolf
     type injected   = groundi
 
-    let false_ : boolf = inj@@lift false
-    let true_  : boolf = inj@@lift true
+    let false_ : boolf = inj @@ lift false
+    let true_  : boolf = inj @@ lift true
 
     let (|^) a b c =
       conde [
@@ -126,7 +127,7 @@ module Bool =
 
     let show_ground  : ground  -> string = string_of_bool
 
-    let inj b : boolf = inj@@lift b
+    let inj b : boolf = inj @@ lift b
 
   end
 
@@ -142,27 +143,24 @@ let neqo x y t =
     (x === y) &&& (t === Bool.false_);
   ]
 
-
 module Nat = struct
     type 'a logic' = 'a logic
     let logic' = logic
 
     module X = struct
       type 'a t = 'a lnat
+
       let fmap f = function
       | O -> O
       | S n -> S (f n)
     end
+
     include X
     module F = Fmap1(X)
 
     type ground = ground t
     type logic = logic t logic'
     type groundi = (ground, logic) injected
-
-    (* let rec reify : helper -> (ground, logic) injected -> logic  = fun c x ->
-      if c#isVar x then var_of_injected_exn c x reify
-      else F.reify reify c x *)
 
     let rec reify h n = F.reify reify h n
 
@@ -203,8 +201,8 @@ module Nat = struct
 
     let rec from_logic x = GT.gmap(lnat) (from_logic) @@ from_logic' x
 
-    let o   = inj@@ F.distrib O
-    let s x = inj@@ F.distrib (S x)
+    let o   = inj @@ F.distrib O
+    let s x = inj @@ F.distrib (S x)
 
     let inj' = inj
 
@@ -400,7 +398,6 @@ module List =
             (foldro f a t a')
         )
       ]
-    (* let (_:int) = foldro *)
 
     let rec mapo f xs ys =
       conde [
@@ -478,7 +475,7 @@ module List =
           (x =/= a) &&& (membero xs a)
         ])
       )
-    (* let (_:int) = membero *)
+
     let nullo q : goal = (q === nil())
 
     let caro xs h  : goal = call_fresh (fun tl -> xs === (h % tl))

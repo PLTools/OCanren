@@ -29,7 +29,7 @@ let _ =
   run_exn show_fint (-1)    q   qh (REPR (fun q   -> (fresh (x y z) (x === y)(y === z)(z === !(2+2))(x =/= !4))));
   run_exn show_fint (-1)    q   qh (REPR (fun q   -> (fresh (x y z) (x =/= !4)(y === z)(x === y)(z === !(2+2)))))
 
-let runI n = runR ManualReifiers.int show_int (show(logic) show_int) n
+let runI n = runR Reify.int show_int (show(logic) show_int) n
 
 let _ =
   runI (-1)  q qh (REPR (fun q   -> (q =/= !5)                                                ));

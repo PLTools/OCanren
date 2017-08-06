@@ -1,22 +1,39 @@
+(*
+ * MiniKanrenStd: miniKanren standard library.
+ * Copyright (C) 2015-2017
+ * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
+ * St.Petersburg State University, JetBrains Research
+ *
+ * This software is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License version 2, as published by the Free Software Foundation.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU Library General Public License version 2 for more details
+ * (enclosed in the file COPYING).
+ *)
+
+
 open MiniKanrenCore
 
-module ManualReifiers : sig
-  val bool : helper -> (bool, bool logic) injected -> bool logic
-
-  val int: helper -> (int, int logic) injected -> int logic
-
-  val string  : helper -> (string, string logic) injected -> string logic
-
-  val pair    : (helper -> ('a,'b) injected -> 'b) ->
-                (helper -> ('c,'d) injected -> 'd) ->
-                helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
-
-  val triple  : (helper -> ('a,'b) injected -> 'b) ->
-                (helper -> ('c,'d) injected -> 'd) ->
-                (helper -> ('e,'f) injected -> 'f) ->
-                helper -> ('a * 'c * 'e, ('b * 'd * 'f) logic as 'r) injected -> 'r
+module Reify : 
+  sig
+  val bool   : helper -> (bool, bool logic) injected -> bool logic
+  val int    : helper -> (int, int logic) injected -> int logic
+  val string : helper -> (string, string logic) injected -> string logic
+  val pair   : (helper -> ('a,'b) injected -> 'b) ->
+               (helper -> ('c,'d) injected -> 'd) ->
+               helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
+  val triple : (helper -> ('a,'b) injected -> 'b) ->
+               (helper -> ('c,'d) injected -> 'd) ->
+               (helper -> ('e,'f) injected -> 'f) ->
+               helper -> ('a * 'c * 'e, ('b * 'd * 'f) logic as 'r) injected -> 'r
 end;;
-(** {2 Standart relational library } *)
+
+(** {2 Standard relational library } *)
 
 (** {3 Predefined types (lists, nats, bools etc.)} *)
 
@@ -326,8 +343,8 @@ val inj_list : ('a -> ('a, 'b) injected) -> 'a list -> ('a, 'b) List.groundi
 
 val inj_listi : ('a, 'b) injected list -> ('a, 'b) List.groundi
 
-val inj_pair   : ('a, 'b) injected -> ('c, 'd) injected -> ('a * 'c, ('b * 'd) logic) injected
-val inj_triple : ('a, 'd) injected -> ('b, 'e) injected -> ('c,'f) injected -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected
+val pair   : ('a, 'b) injected -> ('c, 'd) injected -> ('a * 'c, ('b * 'd) logic) injected
+val triple : ('a, 'd) injected -> ('b, 'e) injected -> ('c,'f) injected -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected
 
 (** [inj_nat_list l] is a deforsted synonym for injection *)
 val inj_nat_list : int list -> (Nat.ground, Nat.logic) List.groundi

@@ -329,7 +329,7 @@ let _ffoo _ =
   run_exn show_int_list (-1)   q  qh (REPR (fun q       -> logo (build_num 14) (build_num 2) (build_num 3) q));
   run_exn show_int_list (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ))
 
-let runL n = runR (List.reify ManualReifiers.int) show_int_list show_intl_llist n
+let runL n = runR (List.reify Reify.int) show_int_list show_intl_llist n
 
 let _freeVars =
   runL   22  qrs  qrsh (REPR (fun q r s   -> pluso q r s                                      ));

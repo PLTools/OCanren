@@ -23,7 +23,7 @@ let demo2 q =
     )
 
 let intlist_reifier c xs =
-  List.reify ManualReifiers.int c xs
+  List.reify Reify.int c xs
 
 let show_int = show(int)
 let show_int_list = show(List.ground) show_int

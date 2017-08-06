@@ -38,4 +38,4 @@ let varY = !! "y"
 let varF = !! "f"
 
 let rec glam_reifier : helper -> GLam.flam -> GLam.llam = fun c x ->
-  GLam.reify ManualReifiers.string glam_reifier c x
+  GLam.reify Reify.string glam_reifier c x

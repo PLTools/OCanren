@@ -1,7 +1,7 @@
 (*
  * MiniKanren: miniKanren implementation.
- * Copyright (C) 2015-2016
- * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin,
+ * Copyright (C) 2015-2017
+ * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
  * This software is free software; you can redistribute it and/or
@@ -208,8 +208,8 @@ val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) *
           'a -> 'd -> 'f
 
 (** The primitive [delay] helps to construct recursive goals, which depend on themselves. For example,
-    we can't write [let rec fives q = (q===!!5) ||| (fives q)] because the generation of this goal leads to
-    infinite recursion. The correcr way to implement this is [let rec fives q = (q===!!5) ||| delay (fun () -> fives q)]
+    we can't write [let rec fives q = (q === !!5) ||| (fives q)] because the generation of this goal leads to
+    infinite recursion. The correct way to implement this is [let rec fives q = (q === !!5) ||| delay (fun () -> fives q)]
 
     See also syntax extension [defer].
 *)

@@ -33,14 +33,14 @@ module GTyp =
 
 end
 
-let rec gtyp_reifier c x = GTyp.reify ManualReifiers.string gtyp_reifier c x
+let rec gtyp_reifier c x = GTyp.reify Reify.string gtyp_reifier c x
 
 open GLam
 open GTyp
 
 let rec lookupo a g t =
   Fresh.three (fun a' t' tl ->
-    (g === (inj_pair a' t')%tl) &&&
+    (g === (pair a' t')%tl) &&&
     (conde [
       (a' === a) &&& (t' === t);
       lookupo a tl t
@@ -60,7 +60,7 @@ let infero expr typ =
       Fresh.four (fun x l t t' ->
         (expr === abs x l) &&&
         (typ  === arr t t') &&&
-        (infero ((inj_pair x t)%gamma) l t'))
+        (infero ((pair x t)%gamma) l t'))
     ]
   in
   infero (nil()) expr typ
@@ -68,7 +68,7 @@ let infero expr typ =
 let show_string  = show(string)
 let show_stringl = show(logic) (show(string))
 
-let inj_list_p xs = inj_listi @@ List.map (fun (x,y) -> inj_pair x y) xs
+let inj_list_p xs = inj_listi @@ List.map (fun (x,y) -> pair x y) xs
 
 (* Without free variables *)
 let () =
@@ -81,9 +81,9 @@ let () =
 
   run_exn GTyp.show_rtyp    1 q qh (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q))
 
-let show_env_logic = show(List.logic) @@ show(logic) (show pair (show(logic) (fun s -> s)) show_llam)
+let show_env_logic = show(List.logic) @@ show(logic) (show(GT.pair) (show(logic) (fun s -> s)) show_llam)
 
-let pair c p = ManualReifiers.pair ManualReifiers.string glam_reifier c p
+let pair c p = Reify.pair Reify.string glam_reifier c p
 
 let env_reifier c xs = List.reify pair c xs
 
