@@ -24,11 +24,11 @@ let inj_triple : ('a, 'd) injected -> ('b,'e) injected -> ('c,'f) injected
 
 module ManualReifiers = struct
 
-  let bool : helper -> (bool, bool logic) injected -> bool logic = simple_reifier
+  let bool : helper -> (bool, bool logic) injected -> bool logic = shallow_reifier
 
-  let int : helper -> (int, int logic) injected -> int logic = simple_reifier
+  let int : helper -> (int, int logic) injected -> int logic = shallow_reifier
 
-  let string : helper -> (string, string logic) injected -> string logic = simple_reifier
+  let string : helper -> (string, string logic) injected -> string logic = shallow_reifier
 
   let pair = Pair.reify
   let triple = Tuple3.reify

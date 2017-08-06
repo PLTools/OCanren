@@ -362,9 +362,9 @@ module Fmap6 (T : T6) = struct
     else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) (r6 c) x)
 end
 
-let rec simple_reifier: helper -> ('a, 'a logic) injected -> 'a logic = fun c n ->
+let rec shallow_reifier: helper -> ('a, 'a logic) injected -> 'a logic = fun c n ->
   if c#isVar n
-  then var_of_injected_exn c n simple_reifier
+  then var_of_injected_exn c n shallow_reifier
   else Value n
 
 (** Importand part about reification and injected values finishes*)

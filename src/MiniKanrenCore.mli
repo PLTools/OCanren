@@ -249,7 +249,6 @@ val succ : (unit ->
             ('p * 'h -> ('p * 'i) * 'j))
 
 (** {3 Predefined numerals (one to five)} *)
-
 val one : unit ->
   ((('a,'c) injected -> 'b goal') -> (('a, 'c) reifier * 'b) goal') *
   (('d -> 'e) -> 'd -> 'e) *
@@ -440,5 +439,5 @@ module Fmap6 (T : T6) :
                 helper -> (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t logic as 'r) injected -> 'r
   end
 
-val simple_reifier: helper -> ('a, 'a logic) injected -> 'a logic
-
+(* A default shallow reifier *)
+val shallow_reifier: helper -> ('a, 'a logic) injected -> 'a logic
