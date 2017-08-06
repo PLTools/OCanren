@@ -1065,6 +1065,9 @@ module State =
 type 'a goal' = State.t -> 'a
 type goal = State.t MKStream.t goal'
 
+let success st = MKStream.single st
+let failure _  = MKStream.nil
+
 let call_fresh f : State.t -> _ = fun (env, subst, constr, scope) ->
   let x, env' = Env.fresh ~scope env in
   f x (env', subst, constr, scope)
@@ -1116,21 +1119,8 @@ let disj f g st =
 
 let (|||) = disj
 
-(* TODO: right-associative, via fold *)
-
-(* mplus_star *)
-let rec (?|) = function
-| []    -> failwith "wrong argument of ?|"
-| [h]   -> h
-| h::tl -> h ||| (?| tl)
-
-(* "bind*" *)
-let rec (?&) = function
-| []   -> failwith "wrong argument of ?&"
-| [h]  -> h
-| x::y::tl -> ?& ((x &&& y)::tl)
-
-let bind_star = (?&)
+let (?|) gs = List.fold_right (|||) gs success
+let (?&) gs = List.fold_right (&&&) gs success
 
 let list_fold ~f ~initer xs =
   match xs with
@@ -1172,9 +1162,6 @@ module Fresh =
     let pqrst = five
 
   end
-
-let success st = MKStream.single st
-let failure _  = MKStream.nil
 
 exception FreeVarFound
 let has_free_vars is_var x =
