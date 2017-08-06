@@ -1,5 +1,6 @@
 open Printf
 open MiniKanren
+open Std
 open Tester
 
 let rec build_num =

@@ -1,4 +1,5 @@
 open MiniKanren
+open Std
 open Tester
 open Printf
 open GT

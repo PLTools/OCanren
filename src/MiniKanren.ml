@@ -1,2 +1,3 @@
 include MiniKanrenCore
-include MiniKanrenStd
+
+module Std = MiniKanrenStd

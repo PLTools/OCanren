@@ -1,6 +1,7 @@
 (* Some tests about constraints *)
 open GT
 open MiniKanren
+open Std
 open Tester
 
 let (!) = (!!)

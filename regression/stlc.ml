@@ -1,6 +1,7 @@
 open Printf
 open GT
 open MiniKanren
+open Std
 
 module GLam =
   struct
