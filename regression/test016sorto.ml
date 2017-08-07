@@ -14,12 +14,12 @@ let minmaxo a b min max = Nat.(
       ]
   )
 
-let () = Nat.(
-    run_exn GT.(show bool)  (-1)   q  qh (REPR (fun q   -> leo (inj_nat 1) (inj_nat 2) q ));
-    run_exn GT.(show bool)  (-1)   q  qh (REPR (fun q   -> leo (inj_nat 2) (inj_nat 1) q ));
-    run_exn GT.(show bool)  (-1)   q  qh (REPR (fun q   -> gto (inj_nat 1) (inj_nat 2) q ));
-    run_exn GT.(show bool)  (-1)   q  qh (REPR (fun q   -> gto (inj_nat 2) (inj_nat 1) q ));
+let () = 
+    run_exn GT.(show bool)  (-1)   q  qh (REPR (fun q   -> Nat.leo (nat 1) (nat 2) q));
+    run_exn GT.(show bool)  (-1)   q  qh (REPR (fun q   -> Nat.leo (nat 2) (nat 1) q));
+    run_exn GT.(show bool)  (-1)   q  qh (REPR (fun q   -> Nat.gto (nat 1) (nat 2) q));
+    run_exn GT.(show bool)  (-1)   q  qh (REPR (fun q   -> Nat.gto (nat 2) (nat 1) q));
 
-    run_exn show_nat  (-1)  qr qrh (REPR (fun q r -> minmaxo (inj_nat 1) (inj_nat 2)  q r ));
+    run_exn show_nat  (-1)  qr qrh (REPR (fun q r -> minmaxo (nat 1) (nat 2)  q r ));
     ()
-  )
+  

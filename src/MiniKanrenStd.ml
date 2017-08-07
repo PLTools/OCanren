@@ -139,26 +139,25 @@ let neqo x y t =
     (x === y) &&& (t === Bool.falso);
   ]
 
-module Nat = struct
+module Nat = 
+  struct
+
     type 'a logic' = 'a logic
     let logic' = logic
 
-    module X = struct
-      type 'a t = 'a lnat
-
-      let fmap f = function
-      | O -> O
-      | S n -> S (f n)
-    end
+    module X = 
+      struct
+        type 'a t = 'a lnat
+        let fmap f x = GT.(gmap lnat) f x 
+      end
 
     include X
+
     module F = Fmap1(X)
 
     type ground = ground t
     type logic = logic t logic'
     type groundi = (ground, logic) injected
-
-    let rec reify h n = F.reify reify h n
 
     let ground = {
       GT.gcata = ();
@@ -191,18 +190,14 @@ module Nat = struct
     let rec of_int n = if n <= 0 then O else S (of_int (n-1))
     let rec to_int   = function O -> 0 | S n -> 1 + to_int n
 
-    let rec to_logic n = Value (GT.(gmap lnat) to_logic n)
+    let rec inj n = to_logic (GT.(gmap lnat) inj n)
 
-    let from_logic' = from_logic
+    let rec reify h n = F.reify reify h n
 
-    let rec from_logic x = GT.gmap(lnat) (from_logic) @@ from_logic' x
+    let o   = MiniKanrenCore.inj @@ F.distrib O
+    let s x = MiniKanrenCore.inj @@ F.distrib (S x)
 
-    let o   = inj @@ F.distrib O
-    let s x = inj @@ F.distrib (S x)
-
-    let inj' = inj
-
-    let rec inj n = inj' @@ F.distrib @@ X.fmap inj n
+    let rec nat n = MiniKanrenCore.inj @@ F.distrib @@ X.fmap nat n
 
     let zero = o
     let one  = s o
@@ -259,13 +254,9 @@ module Nat = struct
     let (>) x y = gto x y Bool.truo
     let (<) x y = lto x y Bool.truo
 
-    let show_ground: ground -> string = GT.show(ground)
-
   end
 
-let rec inj_nat n =
-  if n <= 0 then Nat.zero
-  else Nat.succ (inj_nat @@ n-1)
+let rec nat n = Nat.nat (Nat.of_int n) 
 
 module List =
   struct
@@ -497,4 +488,4 @@ let rec inj_listi: ('a, 'b) injected list -> ('a, 'b) List.groundi = function
 
 let rec inj_nat_list = function
   | []    -> nil ()
-  | x::xs -> inj_nat x % inj_nat_list xs
+  | x::xs -> nat x % inj_nat_list xs

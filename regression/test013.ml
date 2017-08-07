@@ -10,7 +10,7 @@ let show_nat_llist  = GT.show(List.ground) (GT.show(Nat.ground))
 let show_bool_llist = GT.show(List.ground) (GT.show(Bool.ground))
 let show_option_nat = GT.(show option  (show Nat.ground))
 
-let (?$) = inj_nat
+let (?$) = nat
 let nats = inj_nat_list
 let bools = inj_list (!!)
 

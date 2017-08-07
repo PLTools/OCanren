@@ -66,7 +66,7 @@ let _ =
                 printf "%s\n%!"  @@ (if rr#is_open
                 then
                   GT.(show List.logic (show Nat.logic)) @@
-                    rr#reify (List.reify Nat.reify) ~inj:(List.to_logic Nat.to_logic)
+                    rr#reify (List.reify Nat.reify) ~inj:(List.to_logic Nat.inj)
                 else
                   GT.(show List.ground (show Nat.ground) rr#prj)
                 )

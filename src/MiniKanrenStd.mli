@@ -173,6 +173,9 @@ module Nat :
          show    : logic -> string >)
       GT.t
 
+    (** Logic injection (for reification) *)
+    val inj : ground -> logic
+
     (** A type synonym for injected nat *)
     type groundi = (ground, logic) injected
 
@@ -184,16 +187,9 @@ module Nat :
 
     (** [to_int g] converts ground [g] into integer *)
     val to_int : ground -> int
-(* TODO *)
-    (** [to_logic x] makes logic nat from ground one *)
-    val to_logic : ground -> logic
-(*
-    (** [from_logic x] makes ground nat from logic one.
-        Raises exception [Not_a_value] if [x] contains logic variables.*)
-    val from_logic : logic -> ground
-*)
+
     (** Make injected nat from ground one *)
-    val inj : ground -> groundi
+    val nat : ground -> groundi
 
     val zero : groundi
     val one  : groundi
@@ -225,7 +221,7 @@ module Nat :
   end
 
 (** [inj_nat n] is a deforested synonym for injection *)
-val inj_nat : int -> Nat.groundi
+val nat : int -> Nat.groundi
 
 (** {3 Relational Lists} *)
 module List :

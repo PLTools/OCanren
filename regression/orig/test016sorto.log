@@ -1,15 +1,15 @@
-fun q -> leo (inj_nat 1) (inj_nat 2) q, all answers {
+fun q -> Nat.leo (nat 1) (nat 2) q, all answers {
 q=true;
 }
-fun q -> leo (inj_nat 2) (inj_nat 1) q, all answers {
+fun q -> Nat.leo (nat 2) (nat 1) q, all answers {
 q=false;
 }
-fun q -> gto (inj_nat 1) (inj_nat 2) q, all answers {
+fun q -> Nat.gto (nat 1) (nat 2) q, all answers {
 q=false;
 }
-fun q -> gto (inj_nat 2) (inj_nat 1) q, all answers {
+fun q -> Nat.gto (nat 2) (nat 1) q, all answers {
 q=true;
 }
-fun q r -> minmaxo (inj_nat 1) (inj_nat 2) q r, all answers {
+fun q r -> minmaxo (nat 1) (nat 2) q r, all answers {
 q=S (O ()); r=S (S (O ()));
 }
