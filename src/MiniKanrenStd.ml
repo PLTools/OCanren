@@ -256,7 +256,7 @@ module Nat =
 
   end
 
-let rec nat n = Nat.nat (Nat.of_int n) 
+let nat n = Nat.nat (Nat.of_int n) 
 
 module List =
   struct
@@ -269,16 +269,16 @@ module List =
 
     type ('a, 'l) t = ('a, 'l) llist
 
-    module X = struct
-      type ('a,'b) t = ('a, 'b) llist
-      let fmap f g = function
-      | Nil -> Nil
-      | Cons (x,xs) -> Cons (f x, g xs)
-    end
-    module F = Fmap2(X)
+    module X = 
+      struct
+        type ('a,'b) t = ('a, 'b) llist
+        let fmap f g x = GT.(gmap llist) f g x
+      end
 
-    let nil ()  = inj (F.distrib Nil)
-    let conso x y = inj (F.distrib (Cons (x, y)))
+    module F = Fmap2 (X)
+
+    let nil ()    = MiniKanrenCore.inj @@ F.distrib Nil
+    let conso x y = MiniKanrenCore.inj @@ F.distrib (Cons (x, y))
 
     type 'a ground = ('a, 'a ground) t;;
     type 'a logic  = ('a, 'a logic) t logic'
@@ -321,8 +321,6 @@ module List =
           method foldl   fa l = GT.foldl   (logic') (GT.foldl   (llist) fa (this#foldl   fa)) l
           method foldr   fa l = GT.foldr   (logic') (GT.foldr   (llist) fa (this#foldr   fa)) l
           method html    fa l = GT.html    (logic') (GT.html    (llist) fa (this#html    fa)) l
-
-          (* We override the default implementation to show lists semicolon-separated *)
           method show : ('a -> string) -> 'a logic -> GT.string = fun fa l ->
             GT.show(logic')
               (fun l -> "[" ^
@@ -351,15 +349,13 @@ module List =
     | Nil -> []
     | Cons (x,xs) -> (f x)::(to_list f xs)
 
-    let rec to_logic f xs = Value (GT.(gmap llist) f (to_logic f) xs)
+    let rec inj f xs = to_logic (GT.(gmap llist) f (inj f) xs)
 
-    let from_logic' = from_logic
+    let rec list fa x = MiniKanrenCore.inj @@ F.distrib @@ X.fmap fa (list fa) x
 
-    let rec from_logic fa x = GT.gmap(llist) fa (from_logic fa) @@ from_logic' x
-
-    let inj' = inj
-
-    let rec inj fa x = inj' @@ F.distrib @@ X.fmap (fa) (inj fa) x
+    let rec distrib = function
+    | []    -> nil ()
+    | x::xs -> conso x (distrib xs)
 
     type ('a,'b) groundi = ('a ground, 'b logic) injected
 
@@ -367,7 +363,6 @@ module List =
       { GT.gcata = ()
       ; plugins = object
           method show : ('a -> string) -> ('a,_) groundi -> string = fun fa l ->
-          (* we expect no free variables here *)
           GT.show(ground) fa (Obj.magic l : 'a ground)
         end
       }
@@ -477,15 +472,16 @@ let (%<) = List.(%<)
 let (!<) = List.(!<)
 let nil  = List.nil
 
-let rec inj_list: ('a -> (('a, 'b) injected)) -> 'a list -> ('a, 'b) List.groundi =
+let rec list: ('a -> (('a, 'b) injected)) -> 'a list -> ('a, 'b) List.groundi =
   fun f -> function
   | []    -> nil ()
-  | x::xs -> List.conso (f x) (inj_list f xs)
+  | x::xs -> List.conso (f x) (list f xs)
 
+(*
 let rec inj_listi: ('a, 'b) injected list -> ('a, 'b) List.groundi = function
   | []    -> nil ()
   | x::xs -> List.conso x (inj_listi xs)
-
-let rec inj_nat_list = function
+*)
+let rec nat_list = function
   | []    -> nil ()
-  | x::xs -> nat x % inj_nat_list xs
+  | x::xs -> nat x % nat_list xs

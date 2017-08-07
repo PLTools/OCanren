@@ -77,11 +77,11 @@ let runE_exn n = run_exn show_expr n
 let show_stream xs = show(List.ground) show_token xs
 
 let _ =
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id]) q                              ));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Mul; !!Id]) q               ));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Mul; !!Id; !!Mul; !!Id]) q));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Mul; !!Id; !!Add; !!Id]) q));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Add; !!Id; !!Mul; !!Id]) q));
-  runE_exn   1   q   qh (REPR (fun q -> pExpr (inj_listi [!!Id; !!Add; !!Id; !!Add; !!Id]) q));
-  run_exn show_stream 1   q   qh (REPR (fun q -> pExpr q (m (i ()) (i ()))                   ));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id]) q                  ));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id; Mul; Id]) q         ));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id; Mul; Id; Mul; Id]) q));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id; Mul; Id; Add; Id]) q));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id; Add; Id; Mul; Id]) q));
+  runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id; Add; Id; Add; Id]) q));
+  run_exn show_stream 1   q   qh (REPR (fun q -> pExpr q (m (i ()) (i ()))        ));
   ()

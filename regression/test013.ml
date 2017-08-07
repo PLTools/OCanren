@@ -11,8 +11,8 @@ let show_bool_llist = GT.show(List.ground) (GT.show(Bool.ground))
 let show_option_nat = GT.(show option  (show Nat.ground))
 
 let (?$) = nat
-let nats = inj_nat_list
-let bools = inj_list (!!)
+let nats = nat_list
+let bools = list (!!)
 
 let sumo = List.foldro Nat.addo ?$0
 
@@ -46,7 +46,7 @@ let () =
 
 let () =
   run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (nats [1;2;3;4]) q                    ));
-  run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (inj_list (!!) [(); (); ()]) q    ));
+  run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (list (!!) [(); (); ()]) q    ));
   run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (bools [false; true]) q               ));
   run_exn show_nat         1    q   qh (REPR (fun q     -> List.lengtho (nats [4;3;2;1;0]) q                  ));
   run_exn show_nat_llist   1    q   qh (REPR (fun q     -> List.lengtho q ?$0                                 ));

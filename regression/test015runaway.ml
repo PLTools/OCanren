@@ -4,7 +4,7 @@ open Std
 open Tester
 open Printf
 
-let ilist xs = inj_list (!!) xs
+let ilist xs = list (!!) xs
 
 let runaway_cell: (int List.ground, int logic List.logic) injected ref = ref (Obj.magic ())
 

@@ -1,10 +1,10 @@
+open GT
 open MiniKanren
 open Std
 open Tester
 open Printf
-open GT
 
-let ilist xs = inj_list (!!) xs
+let ilist xs = list (!!) xs 
 let just_a a = a === !!5
 
 let a_and_b a =

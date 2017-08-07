@@ -274,15 +274,14 @@ module List :
     (** [to_list g] converts OCanren list [g] into regular OCaml list *)
     val to_list : ('a -> 'b) -> 'a ground -> 'b list
 
-    (** [to_logic x] makes logic list from ground one *)
-    val to_logic : ('a -> 'b) -> 'a ground -> 'b logic
-
-    (** [from_logic x] makes ground list from logic one.
-        Raises exception [Not_a_value] if [x] contains logic variables.*)
-    val from_logic : ('b -> 'a) -> 'b logic -> 'a ground
+    (** [inj x] makes a logic list from a ground one *)
+    val inj : ('a -> 'b) -> 'a ground -> 'b logic
 
     (** Make injected list from ground one *)
-    val inj : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
+    val list : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
+
+    (** Distribute the injectivity over the list *)
+    val distrib : ('a, 'b) injected list -> ('a, 'b) groundi
 
     (** Reifier *)
     val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
@@ -319,7 +318,7 @@ module List :
     val reverso : ('a, 'b) groundi -> ('a, 'b) groundi -> goal
 
     (** Relational occurrence check (a shortcut) *)
-    val membero : ('a, 'b MiniKanrenCore.logic) groundi  -> ('a, 'b MiniKanrenCore.logic) injected  -> goal
+    val membero : ('a, 'b logic') groundi  -> ('a, 'b logic') injected  -> goal
 
     (** Relational check for empty list *)
     val nullo : _ groundi -> goal
@@ -339,15 +338,13 @@ module List :
   end
 
 (** [inj_list inj_a l] is a deforested synonym for injection *)
-val inj_list : ('a -> ('a, 'b) injected) -> 'a list -> ('a, 'b) List.groundi
-
-val inj_listi : ('a, 'b) injected list -> ('a, 'b) List.groundi
+val list : ('a -> ('a, 'b) injected) -> 'a list -> ('a, 'b) List.groundi
 
 val pair   : ('a, 'b) injected -> ('c, 'd) injected -> ('a * 'c, ('b * 'd) logic) injected
 val triple : ('a, 'd) injected -> ('b, 'e) injected -> ('c,'f) injected -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected
 
 (** [inj_nat_list l] is a deforsted synonym for injection *)
-val inj_nat_list : int list -> (Nat.ground, Nat.logic) List.groundi
+val nat_list : int list -> (Nat.ground, Nat.logic) List.groundi
 
 (** Infix synonym for [Cons] *)
 val (%) : ('a, 'b) injected -> ('a,'b) List.groundi -> ('a,'b) List.groundi
