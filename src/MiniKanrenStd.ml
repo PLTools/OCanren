@@ -90,24 +90,22 @@ module Bool =
         end
     }
 
-    type boolf = (bool, bool logic') injected
-    type groundi = boolf
-    type injected   = groundi
+    let inj = to_logic
 
-    let false_ : boolf = inj @@ lift false
-    let true_  : boolf = inj @@ lift true
+    type groundi = (ground, logic) injected
+
+    let falso = MiniKanrenCore.inj @@ lift false
+    let truo  = MiniKanrenCore.inj @@ lift true
 
     let (|^) a b c =
       conde [
-        (a === false_) &&& (b === false_) &&& (c === true_);
-        (a === false_) &&& (b === true_)  &&& (c === true_);
-        (a === true_)  &&& (b === false_) &&& (c === true_);
-        (a === true_)  &&& (b === true_)  &&& (c === false_);
+        (a === falso) &&& (b === falso) &&& (c === truo );
+        (a === falso) &&& (b === truo ) &&& (c === truo );
+        (a === truo ) &&& (b === falso) &&& (c === truo );
+        (a === truo ) &&& (b === truo ) &&& (c === falso);
       ]
 
-    let noto' a na = (a |^ a) na
-
-    let noto a = noto' a true_
+    let noto a na = (a |^ a) na
 
     let oro a b c =
       Fresh.two (fun aa bb ->
@@ -122,25 +120,22 @@ module Bool =
         ((ab |^ ab) c)
       )
 
-    let (&&) a b = ando a b true_
-    let (||) a b = oro  a b true_
-
-    let show_ground  : ground  -> string = string_of_bool
-
-    let inj b : boolf = inj @@ lift b
+    let (~~) a   = noto a truo
+    let (&&) a b = ando a b truo
+    let (||) a b = oro  a b truo
 
   end
 
 let eqo x y t =
   conde [
-    (x === y) &&& (t === Bool.true_);
-    (x =/= y) &&& (t === Bool.false_);
+    (x === y) &&& (t === Bool.truo);
+    (x =/= y) &&& (t === Bool.falso);
   ]
 
 let neqo x y t =
   conde [
-    (x =/= y) &&& (t === Bool.true_);
-    (x === y) &&& (t === Bool.false_);
+    (x =/= y) &&& (t === Bool.truo);
+    (x === y) &&& (t === Bool.falso);
   ]
 
 module Nat = struct
@@ -238,8 +233,8 @@ module Nat = struct
 
     let rec leo x y b =
       conde [
-        (x === o) &&& (b === Bool.true_);
-        (x =/= o) &&& (y === o) &&& (b === Bool.false_);
+        (x === o) &&& (b === Bool.truo);
+        (x =/= o) &&& (y === o) &&& (b === Bool.falso);
         Fresh.two (fun x' y' ->
           (x === (s x')) &&& (y === (s y')) &&& (leo x' y' b)
         )
@@ -247,12 +242,12 @@ module Nat = struct
 
     let geo x y b = leo y x b
 
-    let (<=) x y = leo x y Bool.true_
-    let (>=) x y = geo x y Bool.false_
+    let (<=) x y = leo x y Bool.truo
+    let (>=) x y = geo x y Bool.falso
 
     let rec gto x y b = conde
-      [ (x =/= o) &&& (y === o) &&& (b === Bool.true_)
-      ; (x === o) &&& (b === Bool.false_)
+      [ (x =/= o) &&& (y === o) &&& (b === Bool.truo)
+      ; (x === o) &&& (b === Bool.falso)
       ; Fresh.two (fun x' y' ->
           (x === s x') &&& (y === s y') &&& (gto x' y' b)
         )
@@ -260,8 +255,8 @@ module Nat = struct
 
     let lto x y b = gto y x b
 
-    let (>) x y = gto x y Bool.true_
-    let (<) x y = lto x y Bool.true_
+    let (>) x y = gto x y Bool.truo
+    let (<) x y = lto x y Bool.truo
 
     let show_ground: ground -> string = GT.show(ground)
 
@@ -415,8 +410,8 @@ module List =
     let filtero p xs ys =
       let folder x a a' =
         conde [
-          (p x Bool.true_) &&& (x % a === a');
-          (p x Bool.false_) &&& (a === a')
+          (p x Bool.truo) &&& (x % a === a');
+          (p x Bool.falso) &&& (a === a')
         ]
       in
       foldro folder (nil ()) xs ys
@@ -427,15 +422,15 @@ module List =
         Fresh.two (fun h t ->
           (h % t === xs) &&&
           (conde [
-            (p h Bool.true_) &&& (mx === (Option.some h));
-            (p h Bool.false_) &&& (lookupo p t mx)
+            (p h Bool.truo) &&& (mx === (Option.some h));
+            (p h Bool.falso) &&& (lookupo p t mx)
           ])
         )
       ]
 
-    let anyo = foldro Bool.oro Bool.false_
+    let anyo = foldro Bool.oro Bool.falso
 
-    let allo = foldro Bool.ando Bool.true_
+    let allo = foldro Bool.ando Bool.truo
 
     let rec lengtho l n =
       conde [

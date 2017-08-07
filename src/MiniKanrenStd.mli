@@ -16,22 +16,22 @@
  * (enclosed in the file COPYING).
  *)
 
-
 open MiniKanrenCore
 
+(** {2 Reification for primitive types} *)
 module Reify : 
   sig
-  val bool   : helper -> (bool, bool logic) injected -> bool logic
-  val int    : helper -> (int, int logic) injected -> int logic
-  val string : helper -> (string, string logic) injected -> string logic
-  val pair   : (helper -> ('a,'b) injected -> 'b) ->
-               (helper -> ('c,'d) injected -> 'd) ->
-               helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
-  val triple : (helper -> ('a,'b) injected -> 'b) ->
-               (helper -> ('c,'d) injected -> 'd) ->
-               (helper -> ('e,'f) injected -> 'f) ->
-               helper -> ('a * 'c * 'e, ('b * 'd * 'f) logic as 'r) injected -> 'r
-end;;
+    val bool   : helper -> (bool, bool logic) injected -> bool logic
+    val int    : helper -> (int, int logic) injected -> int logic
+    val string : helper -> (string, string logic) injected -> string logic
+    val pair   : (helper -> ('a,'b) injected -> 'b) ->
+                 (helper -> ('c,'d) injected -> 'd) ->
+                 helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
+    val triple : (helper -> ('a,'b) injected -> 'b) ->
+                 (helper -> ('c,'d) injected -> 'd) ->
+                 (helper -> ('e,'f) injected -> 'f) ->
+                 helper -> ('a * 'c * 'e, ('b * 'd * 'f) logic as 'r) injected -> 'r
+  end;;
 
 (** {2 Standard relational library } *)
 
@@ -47,17 +47,16 @@ end;;
 | O
 | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
-module Option : sig
-  type 'a t = 'a option
-  val fmap : ('a -> 'b) -> 'a t -> 'b t
+module Option : 
+  sig
+    type 'a t = 'a option
+    val fmap : ('a -> 'b) -> 'a t -> 'b t
 
-  val reify :
-    (helper -> ('a, 'b) injected -> 'b) ->
-    helper -> ('a t, 'b t logic) injected -> 'b t logic
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a t, 'b t logic) injected -> 'b t logic
 
-  val some : ('a, 'b) injected -> ('a t, 'b t logic) injected
-  val none : unit -> ('a t, 'b t logic) injected
-end
+    val some : ('a, 'b) injected -> ('a t, 'b t logic) injected
+    val none : unit -> ('a t, 'b t logic) injected
+  end
 
 (** {3 Relations on booleans} *)
 module Bool :
@@ -95,21 +94,24 @@ module Bool :
          show    : logic -> string >)
       GT.t
 
-    (** A synonym for injected boolean *)
+    (** Logic injection (for reification) *)
+    val inj : ground -> logic
+
+    (** A synonym for injected boolean; use [(!!)] operator to make a [groundi] from a regular [bool] *)
     type groundi = (ground, logic) injected
 
     (** Constants *)
-    val false_ : groundi
-    val true_  : groundi
+    val falso : groundi
+    val truo  : groundi
 
     (** Sheffer stroke *)
     val (|^) : groundi -> groundi -> groundi -> goal
 
     (** Negation *)
-    val noto' : groundi -> groundi -> goal
+    val noto : groundi -> groundi -> goal
 
     (** Negation as a goal *)
-    val noto : groundi -> goal
+    val (~~) : groundi -> goal
 
     (** Disjunction *)
     val oro : groundi -> groundi -> groundi -> goal
@@ -180,14 +182,14 @@ module Nat :
 
     (** [to_int g] converts ground [g] into integer *)
     val to_int : ground -> int
-
+(* TODO *)
     (** [to_logic x] makes logic nat from ground one *)
     val to_logic : ground -> logic
-
+(*
     (** [from_logic x] makes ground nat from logic one.
         Raises exception [Not_a_value] if [x] contains logic variables.*)
     val from_logic : logic -> ground
-
+*)
     (** Make injected nat from ground one *)
     val inj : ground -> groundi
 

@@ -95,6 +95,9 @@ val logic :
      gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic
    >) GT.t
 
+(** [to_logic x] makes a logic value from a regular one *)
+val to_logic : 'a -> 'a logic
+
 (** [from_logic x] makes a regular value from a logic one.
     Raises exception [Not_a_value] if [x] contains free variables 
 *)

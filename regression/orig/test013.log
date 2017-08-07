@@ -1,34 +1,34 @@
-fun q -> Bool.noto' Bool.true_ q, 1 answer {
+fun q -> Bool.noto Bool.truo q, 1 answer {
 q=false;
 }
-fun q -> Bool.noto' Bool.false_ q, 1 answer {
+fun q -> Bool.noto Bool.falso q, 1 answer {
 q=true;
 }
-fun q -> Bool.noto' q Bool.true_, 1 answer {
+fun q -> Bool.noto q Bool.truo, 1 answer {
 q=false;
 }
-fun q -> Bool.oro Bool.false_ Bool.false_ q, 1 answer {
+fun q -> Bool.oro Bool.falso Bool.falso q, 1 answer {
 q=false;
 }
-fun q -> Bool.oro Bool.false_ Bool.true_ q, 1 answer {
+fun q -> Bool.oro Bool.falso Bool.truo q, 1 answer {
 q=true;
 }
-fun q -> Bool.oro Bool.true_ Bool.false_ q, 1 answer {
+fun q -> Bool.oro Bool.truo Bool.falso q, 1 answer {
 q=true;
 }
-fun q -> Bool.oro Bool.true_ Bool.true_ q, 1 answer {
+fun q -> Bool.oro Bool.truo Bool.truo q, 1 answer {
 q=true;
 }
-fun q -> Bool.ando Bool.false_ Bool.false_ q, 1 answer {
+fun q -> Bool.ando Bool.falso Bool.falso q, 1 answer {
 q=false;
 }
-fun q -> Bool.ando Bool.false_ Bool.true_ q, 1 answer {
+fun q -> Bool.ando Bool.falso Bool.truo q, 1 answer {
 q=false;
 }
-fun q -> Bool.ando Bool.true_ Bool.false_ q, 1 answer {
+fun q -> Bool.ando Bool.truo Bool.falso q, 1 answer {
 q=false;
 }
-fun q -> Bool.ando Bool.true_ Bool.true_ q, 1 answer {
+fun q -> Bool.ando Bool.truo Bool.truo q, 1 answer {
 q=true;
 }
 fun q -> Nat.addo ((?$) 0) ((?$) 1) q, 1 answer {
@@ -95,10 +95,10 @@ q=false;
 fun q -> List.allo (bools [true; false; true]) q, 1 answer {
 q=false;
 }
-fun q -> List.allo ((%) Bool.true_ ((%<) q Bool.true_)) Bool.true_, 1 answer {
+fun q -> List.allo ((%) Bool.truo ((%<) q Bool.truo)) Bool.truo, 1 answer {
 q=true;
 }
-fun q r s -> List.allo ((%) Bool.true_ ((%<) q r)) s, all answers {
+fun q r s -> List.allo ((%) Bool.truo ((%<) q r)) s, all answers {
 q=true; r=true; s=true;
 q=false; r=false; s=false;
 q=false; r=true; s=false;
@@ -125,10 +125,10 @@ q=[S (O ()); S (S (O ())); S (S (S (O ())))];
 fun q -> List.mapo (===) (nats [1; 2; 3]) ((%) ((?$) 1) ((%<) ((?$) 2) q)), 1 answer {
 q=S (S (S (O ())));
 }
-fun q -> List.mapo Bool.noto' (bools [true; false; true]) q, 1 answer {
+fun q -> List.mapo Bool.noto (bools [true; false; true]) q, 1 answer {
 q=[false; true; false];
 }
-fun q -> List.mapo Bool.noto' (bools []) q, 1 answer {
+fun q -> List.mapo Bool.noto (bools []) q, 1 answer {
 q=[];
 }
 fun q -> List.filtero (eqo ((?$) 2)) (nats [0; 1; 2; 3]) q, all answers {
