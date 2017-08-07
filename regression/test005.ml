@@ -68,7 +68,7 @@ let infero expr typ =
 let show_string  = show(string)
 let show_stringl = show(logic) (show(string))
 
-let inj_list_p xs = List.distrib @@ List.map (fun (x,y) -> pair x y) xs
+let inj_list_p xs = List.list @@ List.map (fun (x,y) -> pair x y) xs
 
 (* Without free variables *)
 let () =

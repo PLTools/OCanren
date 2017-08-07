@@ -37,7 +37,7 @@ module Reify :
 (** {3 Predefined types (lists, nats, bools etc.)} *)
 
 (** Abstract list type *)
-@type ('a, 'l) llist =
+@type ('a, 'l) list =
 | Nil
 | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr
 
@@ -233,7 +233,7 @@ module List :
     type 'a logic' = 'a logic
 
     (** Synonym for abstract list type *)
-    type ('a, 'l) t = ('a, 'l) llist
+    type ('a, 'l) t = ('a, 'l) list
 
     (** Ground lists (isomorphic to regular ones) *)
     type 'a ground = ('a, 'a ground) t
@@ -269,19 +269,16 @@ module List :
     type ('a,'b) groundi = ('a ground, 'b logic) injected
 
     (** [of_list l] converts regular OCaml list [l] into isomorphic OCanren [ground] list *)
-    val of_list : ('a -> 'b) -> 'a list -> 'b ground
+    val of_list : ('a -> 'b) -> 'a GT.list -> 'b ground
 
     (** [to_list g] converts OCanren list [g] into regular OCaml list *)
-    val to_list : ('a -> 'b) -> 'a ground -> 'b list
+    val to_list : ('a -> 'b) -> 'a ground -> 'b GT.list
 
     (** [inj x] makes a logic list from a ground one *)
     val inj : ('a -> 'b) -> 'a ground -> 'b logic
 
-    (** Make injected list from ground one *)
-    val list : ('a -> (('a, 'b) injected)) -> 'a ground -> ('a, 'b) groundi
-
-    (** Distribute the injectivity over the list *)
-    val distrib : ('a, 'b) injected list -> ('a, 'b) groundi
+    (** Make injected list from ground one of injected elements *)
+    val list : ('a, 'b) injected GT.list -> ('a, 'b) groundi
 
     (** Reifier *)
     val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
@@ -338,13 +335,13 @@ module List :
   end
 
 (** [inj_list inj_a l] is a deforested synonym for injection *)
-val list : ('a -> ('a, 'b) injected) -> 'a list -> ('a, 'b) List.groundi
+val list : ('a -> ('a, 'b) injected) -> 'a GT.list -> ('a, 'b) List.groundi
 
 val pair   : ('a, 'b) injected -> ('c, 'd) injected -> ('a * 'c, ('b * 'd) logic) injected
 val triple : ('a, 'd) injected -> ('b, 'e) injected -> ('c,'f) injected -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected
 
 (** [inj_nat_list l] is a deforsted synonym for injection *)
-val nat_list : int list -> (Nat.ground, Nat.logic) List.groundi
+val nat_list : int GT.list -> (Nat.ground, Nat.logic) List.groundi
 
 (** Infix synonym for [Cons] *)
 val (%) : ('a, 'b) injected -> ('a,'b) List.groundi -> ('a,'b) List.groundi

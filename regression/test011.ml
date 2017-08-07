@@ -4,7 +4,7 @@ open Std
 open Tester
 
 let (!) = (!!)
-let (!!) = List.distrib
+let (!!) = List.list
 
 let show_int_list   = GT.(show List.ground @@ show int)
 let show_intl_llist = GT.(show List.logic @@ show logic @@ show int)
