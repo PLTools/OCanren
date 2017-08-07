@@ -18,26 +18,10 @@
 
 open MiniKanrenCore
 
-external inj_int : int -> (int, int logic) injected = "%identity"
-
-module Pair   = Fmap2 (struct type ('a, 'b) t = 'a * 'b let fmap f g (x, y) = GT.(gmap pair) f g (x, y) end)
-module Triple = Fmap3 (struct type ('a, 'b, 'c) t = 'a * 'b * 'c let fmap f g h (x, y, z) = GT.(gmap triple) f g h (x, y, z) end)
-
-let pair   x y =   inj @@ Pair.distrib (x, y)
-let triple x y z = inj @@ Triple.distrib (x, y, z)
-
-module Reify = 
-  struct
-    let int    = reify
-    let string = reify
-    let pair   = Pair.reify
-    let triple = Triple.reify
-  end;;
-
 @type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr;;
 @type 'a nat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap;;
 
-module Pair' = 
+module Pair = 
   struct
 
     type 'a logic' = 'a logic
@@ -80,7 +64,7 @@ module Pair' =
 
     let inj f g p = to_logic (GT.(gmap pair) f g p)
 
-    type ('a, 'b, 'c, 'd) groundi = (('a, 'b) ground, ('c, 'd) logic) injected
+    type ('a, 'b, 'c, 'd) groundi = (('a, 'c) ground, ('b, 'd) logic) injected
 
     module T =
       struct
@@ -584,3 +568,7 @@ let rec list f = function
 let rec nat_list = function
 | []    -> nil ()
 | x::xs -> nat x % nat_list xs
+
+let some = Option.some
+let none = Option.none
+let pair = Pair.pair

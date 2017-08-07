@@ -33,7 +33,7 @@ module GTyp =
 
 end
 
-let rec gtyp_reifier c x = GTyp.reify Reify.string gtyp_reifier c x
+let rec gtyp_reifier c x = GTyp.reify MiniKanren.reify gtyp_reifier c x
 
 open GLam
 open GTyp
@@ -83,7 +83,7 @@ let () =
 
 let show_env_logic = show(List.logic) @@ show(logic) (show(GT.pair) (show(logic) (fun s -> s)) show_llam)
 
-let pair c p = Reify.pair Reify.string glam_reifier c p
+let pair c p = Pair.reify MiniKanren.reify glam_reifier c p
 
 let env_reifier c xs = List.reify pair c xs
 

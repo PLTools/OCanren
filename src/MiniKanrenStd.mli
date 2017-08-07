@@ -18,24 +18,7 @@
 
 open MiniKanrenCore
 
-(** {2 Reification for primitive types} *)
-module Reify : 
-  sig
-    val int    : helper -> (int, int logic) injected -> int logic
-    val string : helper -> (string, string logic) injected -> string logic
-    val pair   : (helper -> ('a,'b) injected -> 'b) ->
-                 (helper -> ('c,'d) injected -> 'd) ->
-                 helper -> ('a * 'c, ('b * 'd) logic as 'r) injected -> 'r
-    val triple : (helper -> ('a,'b) injected -> 'b) ->
-                 (helper -> ('c,'d) injected -> 'd) ->
-                 (helper -> ('e,'f) injected -> 'f) ->
-                 helper -> ('a * 'c * 'e, ('b * 'd * 'f) logic as 'r) injected -> 'r
-  end;;
-
-val pair   : ('a, 'b) injected -> ('c, 'd) injected -> ('a * 'c, ('b * 'd) logic) injected
-val triple : ('a, 'd) injected -> ('b, 'e) injected -> ('c,'f) injected -> ('a * 'b * 'c, ('d * 'e * 'f) logic) injected
-
-(** {2 Standard relational library } *)
+(** {2 Standard relational library} *)
 
 (** {3 Some predefined types} *)
 
@@ -50,7 +33,7 @@ val triple : ('a, 'd) injected -> ('b, 'e) injected -> ('c,'f) injected -> ('a *
 | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 (** {3 Relational pairs} *)
-module Pair' : 
+module Pair : 
   sig
 
     (** Type synonym to prevent toplevel [logic] from being hidden *)
@@ -93,19 +76,14 @@ module Pair' :
     val inj : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) ground -> ('c, 'd) logic
 
     (** A synonym for injected pair *)
-    type ('a, 'b, 'c, 'd) groundi = (('a, 'b) ground, ('c, 'd) logic) injected
+    type ('a, 'b, 'c, 'd) groundi = (('a, 'c) ground, ('b, 'd) logic) injected
 
     (** Make injected pair from ground one with injected components *)
     val pair : ('a, 'b) injected -> ('c, 'd) injected -> ('a, 'b, 'c, 'd) groundi
 
-(*
     (** Reifier *)
-    val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a, 'b) groundi -> 'b logic
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> helper -> ('a, 'b, 'c, 'd) groundi -> ('b, 'd) logic
 
-    (** Injection counterpart for constructors *)
-    val some : ('a, 'b) injected -> ('a, 'b) groundi
-    val none : unit -> ('a, 'b) groundi
-*)
   end
 
 (** {3 Relational [option]} *)
@@ -463,3 +441,10 @@ val (!<) : ('a, 'b) injected -> ('a, 'b) List.groundi
 
 (** [nil] is a synonym for [inj Nil] *)
 val nil : unit -> (_, _) List.groundi
+
+(** Synonyms for [option] constructors *)
+val some : ('a, 'b) injected -> ('a, 'b) Option.groundi
+val none : unit -> ('a, 'b) Option.groundi
+
+(** Synonym for pair *)
+val pair : ('a, 'b) injected -> ('c, 'd) injected -> ('a, 'b, 'c, 'd) Pair.groundi
