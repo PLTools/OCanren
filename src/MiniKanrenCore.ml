@@ -362,9 +362,9 @@ module Fmap6 (T : T6) = struct
     else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) (r6 c) x)
 end
 
-let rec shallow_reifier: helper -> ('a, 'a logic) injected -> 'a logic = fun c n ->
+let rec reify : helper -> ('a, 'a logic) injected -> 'a logic = fun c n ->
   if c#isVar n
-  then var_of_injected_exn c n shallow_reifier
+  then var_of_injected_exn c n reify
   else Value n
 
 (** Importand part about reification and injected values finishes*)
@@ -701,7 +701,7 @@ module Subst :
 
   end
 
-let rec reify : Env.t -> Subst.t -> _ -> Obj.t -> Obj.t = fun env subst do_diseq x ->
+let rec reify' : Env.t -> Subst.t -> _ -> Obj.t -> Obj.t = fun env subst do_diseq x ->
   let rec walk' forbidden term =
     let var = Subst.walk env term subst in
     match Env.var env var with
@@ -1197,7 +1197,7 @@ class type ['a,'b] reified = object
 end
 
 let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) reified = fun x ((env, s, cs, scp) as st) ->
-  let ans = !!!(reify env s (Constraints.reify env s cs) (Obj.repr x)) in
+  let ans = !!!(reify' env s (Constraints.reify env s cs) (Obj.repr x)) in
   let is_open = has_free_vars (Env.is_var env) (Obj.repr ans) in
   let c: helper = helper_of_state st in
 
@@ -1290,7 +1290,7 @@ let trace msg g = fun state ->
   printf "%s: %s\n%!" msg (State.show state);
   g state
 
-let reify_with_state (env,subs,cs,_) term = reify env subs (Constraints.reify env subs cs) (Obj.repr term)
+let reify_with_state (env,subs,cs,_) term = reify' env subs (Constraints.reify env subs cs) (Obj.repr term)
 
 let project1 ~msg : (helper -> 'b -> string) -> ('a, 'b) injected -> goal = fun shower q st ->
   printf "%s %s\n%!" msg (shower (helper_of_state st) @@ Obj.magic @@ reify_with_state st q);

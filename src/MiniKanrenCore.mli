@@ -78,7 +78,7 @@ type goal = State.t MKStream.t goal'
 
 (** {3 Logic values} *)
 
-(** A type of logic value *)
+(** A type of a logic value *)
 @type 'a logic =
 | Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
@@ -443,4 +443,4 @@ module Fmap6 (T : T6) :
   end
 
 (* A default shallow reifier *)
-val shallow_reifier: helper -> ('a, 'a logic) injected -> 'a logic
+val reify : helper -> ('a, 'a logic) injected -> 'a logic

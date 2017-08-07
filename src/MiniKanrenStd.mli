@@ -21,7 +21,6 @@ open MiniKanrenCore
 (** {2 Reification for primitive types} *)
 module Reify : 
   sig
-    val bool   : helper -> (bool, bool logic) injected -> bool logic
     val int    : helper -> (int, int logic) injected -> int logic
     val string : helper -> (string, string logic) injected -> string logic
     val pair   : (helper -> ('a,'b) injected -> 'b) ->
@@ -100,6 +99,9 @@ module Bool :
     (** A synonym for injected boolean; use [(!!)] operator to make a [groundi] from a regular [bool] *)
     type groundi = (ground, logic) injected
 
+    (** Reifier *)
+    val reify : helper -> groundi -> logic
+
     (** Constants *)
     val falso : groundi
     val truo  : groundi
@@ -147,9 +149,6 @@ module Nat :
     (** Logic nat *)
     type logic = logic t logic'
 
-    (** Reifier *)
-    val reify : helper -> (ground, logic) injected -> logic
-
     (** GT-compatible typeinfo for [ground] *)
     val ground :
       (unit,
@@ -176,6 +175,9 @@ module Nat :
 
     (** A type synonym for injected nat *)
     type groundi = (ground, logic) injected
+
+    (** Reifier *)
+    val reify : helper -> groundi -> logic
 
     (** [of_int n] converts integer [n] into [ground]; negative integers become [O] *)
     val of_int : int -> ground

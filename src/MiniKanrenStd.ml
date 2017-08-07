@@ -28,9 +28,8 @@ let triple x y z = inj @@ Triple.distrib (x, y, z)
 
 module Reify = 
   struct
-    let bool   = shallow_reifier
-    let int    = shallow_reifier
-    let string = shallow_reifier
+    let int    = reify
+    let string = reify
     let pair   = Pair.reify
     let triple = Triple.reify
   end;;
@@ -93,6 +92,8 @@ module Bool =
     let inj = to_logic
 
     type groundi = (ground, logic) injected
+
+    let reify = MiniKanrenCore.reify
 
     let falso = MiniKanrenCore.inj @@ lift false
     let truo  = MiniKanrenCore.inj @@ lift true
