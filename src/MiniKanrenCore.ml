@@ -300,7 +300,7 @@ let var_of_injected_exn : helper -> ('a,'b) injected -> (helper -> ('a,'b) injec
     !!!(Var (x.index, List.map (!!!(r c)) x.constraints))
   else failwith "Bad argument of var_of_injected: it should be logic variable"
 
-module Fmap1 (T : T1) = struct
+module Fmap (T : T1) = struct
   external distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected = "%identity"
 
   let rec reify: (helper -> ('a,'b) injected -> 'b) -> helper ->

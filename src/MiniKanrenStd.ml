@@ -35,7 +35,7 @@ module Reify =
   end;;
 
 @type ('a, 'l) llist = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr;;
-@type 'a lnat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap;;
+@type 'a nat = O | S of 'a with show, html, eq, compare, foldl, foldr, gmap;;
 
 module Option = struct
   module T =
@@ -45,7 +45,7 @@ module Option = struct
     end
 
   include T
-  include Fmap1(T)
+  include Fmap (T)
 
   let some x  = inj @@ distrib (Some x)
   let none () = inj @@ distrib None
@@ -147,13 +147,13 @@ module Nat =
 
     module X = 
       struct
-        type 'a t = 'a lnat
-        let fmap f x = GT.(gmap lnat) f x 
+        type 'a t = 'a nat
+        let fmap f x = GT.(gmap nat) f x 
       end
 
     include X
 
-    module F = Fmap1(X)
+    module F = Fmap (X)
 
     type ground = ground t
     type logic = logic t logic'
@@ -163,13 +163,13 @@ module Nat =
       GT.gcata = ();
       GT.plugins =
         object(this)
-          method html    n = GT.html   (lnat) this#html    n
-          method eq      n = GT.eq     (lnat) this#eq      n
-          method compare n = GT.compare(lnat) this#compare n
-          method foldr   n = GT.foldr  (lnat) this#foldr   n
-          method foldl   n = GT.foldl  (lnat) this#foldl   n
-          method gmap    n = GT.gmap   (lnat) this#gmap    n
-          method show    n = GT.show   (lnat) this#show    n
+          method html    n = GT.html   (nat) this#html    n
+          method eq      n = GT.eq     (nat) this#eq      n
+          method compare n = GT.compare(nat) this#compare n
+          method foldr   n = GT.foldr  (nat) this#foldr   n
+          method foldl   n = GT.foldl  (nat) this#foldl   n
+          method gmap    n = GT.gmap   (nat) this#gmap    n
+          method show    n = GT.show   (nat) this#show    n
         end
     }
 
@@ -177,20 +177,20 @@ module Nat =
       GT.gcata = ();
       GT.plugins =
         object(this)
-          method html    n   = GT.html   (logic') (GT.html   (lnat) this#html   ) n
-          method eq      n m = GT.eq     (logic') (GT.eq     (lnat) this#eq     ) n m
-          method compare n m = GT.compare(logic') (GT.compare(lnat) this#compare) n m
-          method foldr   a n = GT.foldr  (logic') (GT.foldr  (lnat) this#foldr  ) a n
-          method foldl   a n = GT.foldl  (logic') (GT.foldl  (lnat) this#foldl  ) a n
-          method gmap    n   = GT.gmap   (logic') (GT.gmap   (lnat) this#gmap   ) n
-          method show    n   = GT.show   (logic') (GT.show   (lnat) this#show   ) n
+          method html    n   = GT.html   (logic') (GT.html   (nat) this#html   ) n
+          method eq      n m = GT.eq     (logic') (GT.eq     (nat) this#eq     ) n m
+          method compare n m = GT.compare(logic') (GT.compare(nat) this#compare) n m
+          method foldr   a n = GT.foldr  (logic') (GT.foldr  (nat) this#foldr  ) a n
+          method foldl   a n = GT.foldl  (logic') (GT.foldl  (nat) this#foldl  ) a n
+          method gmap    n   = GT.gmap   (logic') (GT.gmap   (nat) this#gmap   ) n
+          method show    n   = GT.show   (logic') (GT.show   (nat) this#show   ) n
         end
     }
 
     let rec of_int n = if n <= 0 then O else S (of_int (n-1))
     let rec to_int   = function O -> 0 | S n -> 1 + to_int n
 
-    let rec inj n = to_logic (GT.(gmap lnat) inj n)
+    let rec inj n = to_logic (GT.(gmap nat) inj n)
 
     let rec reify h n = F.reify reify h n
 

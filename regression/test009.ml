@@ -19,7 +19,7 @@ module GExpr =
      end
 
   include T
-  include Fmap1(T)
+  include Fmap (T)
 
   type  expr = expr t
   type lexpr = lexpr t logic

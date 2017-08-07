@@ -42,7 +42,7 @@ module Reify :
 | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr
 
 (** Abstract nat type *)
-@type 'a lnat =
+@type 'a nat =
 | O
 | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
@@ -141,7 +141,7 @@ module Nat :
     type 'a logic' = 'a logic
 
     (** Synonym for abstract nat type *)
-    type 'a t = 'a lnat
+    type 'a t = 'a nat
 
     (** Ground nat are ismorphic for regular one *)
     type ground = ground t
