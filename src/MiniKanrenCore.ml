@@ -178,15 +178,15 @@ let logic = {logic with
         GT.transform(logic)
           (GT.lift fa)
           (object inherit ['a] @logic[show]
-            method c_Var _ s i cs =
-              (* I have some issues with callign show_logic there, so copy-paste*)
-              (* show_logic (fun _ -> assert false) (Var(_token,i,cs)) *)
-              let c = match cs with
-              | [] -> ""
-              | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ s.GT.f () l) cs)
-              in
-              sprintf "_.%d%s" i c
-            method c_Value _ _ x = x.GT.fx ()
+             method c_Var _ s i cs =
+               (* I have some issues with callign show_logic there, so copy-paste*)
+               (* show_logic (fun _ -> assert false) (Var(_token,i,cs)) *)
+               let c = match cs with
+               | [] -> ""
+               | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ s.GT.f () l) cs)
+               in
+               sprintf "_.%d%s" i c
+             method c_Value _ _ x = x.GT.fx ()
            end)
           ()
           x
@@ -381,31 +381,8 @@ let from_logic = function
 
 let (!!) x = inj (lift x)
 
-module Int = struct type t = int let compare = (-) (*: int -> int -> int = Pervasives.compare*) end
-
-module MultiIntMap : sig
-  type key = Int.t
-  type 'a t
-  val empty: 'a t
-  val add : key -> 'a -> 'a t -> 'a t
-  val find_exn: key -> 'a t -> 'a list
-  val replace: key -> 'a list -> 'a t -> 'a t
-end = struct
-  module M = Map.Make(Int)
-
-  type key = Int.t
-  type 'a t = 'a list M.t
-
-  let empty : 'a t = M.empty
-  let add k v m =
-    try let vs = M.find k m in
-        let vs = if List.memq v vs then vs else v::vs in
-        M.add k vs m
-    with Not_found -> M.add k [v] m
-
-  let find_exn : key -> 'a t -> 'a list = M.find
-  let replace: key -> 'a list -> 'a t -> 'a t = M.add
-end
+module M = Map.Make (struct type t = int let compare = (-) end)
+module Int = struct type t = int let compare = (-) end
 
 module Env :
   sig
@@ -417,18 +394,17 @@ module Env :
     val is_var : t -> 'a -> bool
   end =
   struct
-    type t =  { token : Var.env;
-                mutable next: int;
-              }
+    type t = {token : Var.env; mutable next : int}
 
-    let last_token : Var.env ref = ref 11
+    let last_token = ref 11
+
     let empty () =
       incr last_token;
-      { token= !last_token; next=10 }
+      {token= !last_token; next=10}
 
     let fresh ?name ~scope e =
       let v = !!!(Var.make ~env:e.token ~scope e.next) in
-      e.next <- 1+e.next;
+      e.next <- 1 + e.next;
       (!!!v, e)
 
     let var_tag, var_size =
@@ -436,35 +412,30 @@ module Env :
       let env   = 0 in (* dummy env token *)
       let scope = 0 in (* dummy scope *)
       let v = Var.make ~env ~scope index in
-      Obj.tag (!!! v), Obj.size (!!! v)
+      Obj.tag !!!v, Obj.size !!!v
 
     let var env x =
-      (* There we detect if x is a logic variable and then that it belongs to current env *)
       let t = !!! x in
       if Obj.tag  t = var_tag  &&
          Obj.size t = var_size &&
-         (let token = (!!!x : Var.t).Var.anchor in
-          (Obj.is_block !!!token) && token == (!!!Var.global_anchor)
-         )
-      then (let q = (!!!x : Var.t).Var.env in
-            if (Obj.is_int !!!q) && q == (!!!env.token)
-            then Some (!!!x : Var.t).index
-            else failwith "OCanren fatal (Env.var): wrong environment"
-            )
+         (let token = (!!!x : Var.t).Var.anchor in (Obj.is_block !!!token) && token == !!!Var.global_anchor)
+      then 
+        let q = (!!!x : Var.t).Var.env in
+        if (Obj.is_int !!!q) && q == !!!env.token
+        then Some (!!!x : Var.t).index
+        else failwith "OCanren fatal (Env.var): wrong environment"            
       else None
 
     let is_var env v = None <> var env v
-
   end
-
 
 module Subst :
   sig
     type t
 
-    val empty   : t
+    val empty : t
 
-    type content = { lvar: Var.t; new_val: Obj.t }
+    type content = {lvar: Var.t; new_val: Obj.t }
     val make_content : Var.t -> 'b  -> content
 
     val of_list : content list -> t
@@ -483,11 +454,8 @@ module Subst :
     val unify   : Env.t -> 'a -> 'a -> scope:Var.scope -> t -> (content list * t) option
     val show    : t -> string
     val pretty_show : ('a -> bool) -> t -> string
-  end = struct
-
-    module M = Map.Make (Int)
-
-    (* map from var indicies to tuples of (actual vars, value) *)
+  end = 
+  struct
     type content = { lvar: Var.t; new_val: Obj.t }
     type t = content M.t
 
@@ -556,9 +524,10 @@ module Subst :
     let merge_a_prefix_unsafe ~scope prefix subst =
       ListLabels.fold_left prefix ~init:subst ~f:(fun acc cnt ->
         if scope = cnt.lvar.Var.scope
-        then  (*let () = subst_inner_term cnt.lvar.subst <- Some cnt.new_val in*)
-              (cnt.lvar.subst <- Some cnt.new_val;
-              acc)
+        then (
+          cnt.lvar.subst <- Some cnt.new_val;
+          acc
+        )
         else M.add cnt.lvar.index cnt acc
       )
 
@@ -650,7 +619,6 @@ let rec reify' : Env.t -> Subst.t -> _ -> Obj.t -> Obj.t = fun env subst do_dise
         )
     | Some n when List.mem n forbidden -> var
     | Some n ->
-          (* assert (i=n); *)
           let cs : _ list = do_diseq !!!var in
           let cs = List.filter (fun x -> match Env.var env x with Some n -> not (List.mem n forbidden) | None -> true) cs in
           let cs = List.map (walk' ((!!!var : Var.t).index :: forbidden)) cs in
@@ -681,8 +649,7 @@ struct
   type single_constraint = Subst.content list
 
   module M = struct
-    include Map.Make(Int)
-    (* and this should be a multimap *)
+    include M
 
     let empty : single_constraint list t = empty
     let find_exn : key -> 'a list t -> 'a list = find
@@ -692,7 +659,7 @@ struct
 
     let add1 : key -> 'a -> 'a list t -> 'a list t = fun k v m ->
       try let vs = find_exn k m in
-          let vs = (*if List.memq v vs then vs else*) v::vs in
+          let vs = v::vs in
           add k vs m
       with Not_found -> add k [v] m
 
@@ -977,40 +944,24 @@ let (=/=) x y ((env, subst, constrs, scope) as st) =
 let delay g st = MKStream.from_fun (fun () -> g () st)
 
 let conj f g st = MKStream.bind (f st) g
-
 let (&&&) = conj
+let (?&) gs = List.fold_right (&&&) gs success
 
-let disj f g st =
-  let st = State.incr_scope st in
-  MKStream.(mplus (f st) (from_fun (fun () -> g st)))
+let disj_base f g st = MKStream.(mplus (f st) (from_fun (fun () -> g st)))
+
+let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> MKStream.inc (fun () -> g st))
 
 let (|||) = disj
 
-let (?|) gs = List.fold_right (|||) gs success
-let (?&) gs = List.fold_right (&&&) gs success
-
-let list_fold ~f ~initer xs =
-  match xs with
-  | [] -> failwith "bad argument"
-  | start::xs -> ListLabels.fold_left ~init:(initer start) ~f xs
-
-let list_fold_right0 ~f ~initer xs =
-  let rec helper = function
-  | [] -> failwith "bad_argument"
-  | x::xs -> list_fold ~initer ~f:(fun acc x -> f x acc) (x::xs)
-  in
-  helper (List.rev xs)
-
-let conde : goal list -> goal = fun xs st ->
+let (?|) gs st = 
   let st = State.incr_scope st in
-  list_fold_right0 ~initer:(fun x -> x)
-    xs
-    ~f:(fun g acc st ->
-          MKStream.mplus (g st) @@ MKStream.inc (fun () -> acc st)
-      )
-  |> (fun g -> MKStream.inc (fun () -> g st))
+  let rec inner = function 
+  | [g]   -> g
+  | g::gs -> disj_base g (inner gs) 
+  in
+  inner gs |> (fun g -> MKStream.inc (fun () -> g st))
 
-
+let conde = (?|)
 
 module Fresh =
   struct

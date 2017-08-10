@@ -25,10 +25,6 @@ module MKStream :
   sig
     (** Stream type *)
     type 'a t
-
-    (** Monadic primitives *)
-    val mplus : 'a t -> 'a t -> 'a t
-    val bind  : 'a t -> ('a ->  'b t) -> 'b t
   end
 
 module Stream :
