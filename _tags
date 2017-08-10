@@ -1,4 +1,4 @@
-true: debug, rectypes, color(always), bin_annot, keep_asm
+true: debug, rectypes, color(auto), bin_annot, keep_asm
 true: short_paths
 
 <ppx/*>: package(ppx_tools_versioned,ppx_tools_versioned.metaquot_405,ppx_deriving.std)
