@@ -30,7 +30,7 @@ let is_valid_tag t =
       ])
   )
 
-let rec wrap (x : Obj.t) =
+let rec wrap x =
   Obj.(
     let is_unboxed obj =
       is_int obj ||
@@ -47,47 +47,49 @@ let rec wrap (x : Obj.t) =
       else Invalid t
     )
 
-module MKStream =
-  struct
-    type 'a t = 
-    | Nil
-    | Thunk  of 'a thunk
-    | Single of 'a
-    | Choice of 'a * ('a t)
-    and 'a thunk = unit -> 'a t
-
-    let nil        = Nil
-    let single x   = Single x
-    let choice a f = Choice (a, f)
-    let inc    f   = Thunk f
-    let from_fun   = inc
-
-    let rec is_empty = function
-    | Nil      -> true
-    | Thunk f  -> is_empty @@ f ()
-    | _        -> false
-
-    let force = function
-    | Thunk f -> f ()
-    | fs      -> fs
-
-    let rec mplus fs gs =
-      match fs with
-      | Nil            -> force gs
-      | Thunk   _      -> inc (fun () -> mplus (force gs) fs)
-      | Single  a      -> choice a gs
-      | Choice (a, hs) -> choice a (from_fun @@ fun () -> mplus (force gs) hs)
-
-    let rec bind xs g =
-      match xs with
-      | Nil           -> Nil
-      | Thunk   f     -> inc (fun () -> bind (f ()) g)
-      | Single  c     -> g c
-      | Choice (c, f) -> mplus (g c) (from_fun (fun () -> bind (force f) g))
-  end
-
 module Stream =
   struct
+
+    module Internal =
+      struct
+	type 'a t = 
+	  | Nil
+	  | Thunk  of 'a thunk
+	  | Single of 'a
+	  | Choice of 'a * ('a t)
+	and 'a thunk = unit -> 'a t
+
+	let nil        = Nil
+	let single x   = Single x
+	let choice a f = Choice (a, f)
+	let inc    f   = Thunk f
+	let from_fun   = inc
+
+	let rec is_empty = function
+        | Nil      -> true
+        | Thunk f  -> is_empty @@ f ()
+        | _        -> false
+
+	let force = function
+        | Thunk f -> f ()
+        | fs      -> fs
+
+	let rec mplus fs gs =
+	  match fs with
+	  | Nil            -> force gs
+	  | Thunk   _      -> inc (fun () -> mplus (force gs) fs)
+	  | Single  a      -> choice a gs
+	  | Choice (a, hs) -> choice a (from_fun @@ fun () -> mplus (force gs) hs)
+
+	let rec bind xs g =
+	  match xs with
+	  | Nil           -> Nil
+	  | Thunk   f     -> inc (fun () -> bind (f ()) g)
+	  | Single  c     -> g c
+	  | Choice (c, f) -> mplus (g c) (from_fun (fun () -> bind (force f) g))
+      end
+
+    type 'a internal = 'a Internal.t
     type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t
 
     let from_fun (f: unit -> 'a t) : 'a t = Lazy (Lazy.from_fun f)
@@ -97,10 +99,10 @@ module Stream =
     let cons h t = Cons (h, t)
 
     let rec of_mkstream = function
-    | MKStream.Nil -> Nil
-    | MKStream.Thunk f -> from_fun (fun () -> of_mkstream @@ f ())
-    | MKStream.Single a -> Cons (a, Nil)
-    | MKStream.Choice (a, f) -> Cons (a, from_fun (fun () -> of_mkstream @@ MKStream.force f))
+    | Internal.Nil -> Nil
+    | Internal.Thunk f -> from_fun (fun () -> of_mkstream @@ f ())
+    | Internal.Single a -> Cons (a, Nil)
+    | Internal.Choice (a, f) -> Cons (a, from_fun (fun () -> of_mkstream @@ Internal.force f))
 
     let rec is_empty = function
     | Nil    -> true
@@ -722,10 +724,10 @@ module State =
   end
 
 type 'a goal' = State.t -> 'a
-type goal = State.t MKStream.t goal'
+type goal = State.t Stream.internal goal'
 
-let success st = MKStream.single st
-let failure _  = MKStream.nil
+let success st = Stream.Internal.single st
+let failure _  = Stream.Internal.nil
 
 let call_fresh f (env, subst, constr, scope) =
   let x, env' = Env.fresh ~scope env in
@@ -746,30 +748,30 @@ let report_counters () =
 *)
 let (===) (x: _ injected) y (env, subst, constr, scope) =
   match Subst.unify env x y scope subst with
-  | None -> MKStream.nil
+  | None -> Stream.Internal.nil
   | Some (prefix, s) ->
       try
         let constr' = Constraints.check ~prefix env s constr in
-        MKStream.single (env, s, constr', scope)
-      with Disequality_violated -> MKStream.nil
+        Stream.Internal.single (env, s, constr', scope)
+      with Disequality_violated -> Stream.Internal.nil
 
 let (=/=) x y ((env, subst, constrs, scope) as st) =
   match Subst.unify env x y Var.non_local_scope subst with
-  | None         -> MKStream.single st
-  | Some ([], _) -> MKStream.nil 
+  | None         -> Stream.Internal.single st
+  | Some ([], _) -> Stream.Internal.nil 
   | Some (prefix, _) ->
       let new_constrs = Constraints.extend ~prefix env constrs in
-      MKStream.single (env, subst, new_constrs, scope)
+      Stream.Internal.single (env, subst, new_constrs, scope)
 
-let delay g st = MKStream.from_fun (fun () -> g () st)
+let delay g st = Stream.Internal.from_fun (fun () -> g () st)
 
-let conj f g st = MKStream.bind (f st) g
+let conj f g st = Stream.Internal.bind (f st) g
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
 
-let disj_base f g st = MKStream.(mplus (f st) (from_fun (fun () -> g st)))
+let disj_base f g st = Stream.Internal.mplus (f st) (Stream.Internal.from_fun (fun () -> g st))
 
-let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> MKStream.inc (fun () -> g st))
+let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> Stream.Internal.inc (fun () -> g st))
 
 let (|||) = disj
 
@@ -779,7 +781,7 @@ let (?|) gs st =
   | [g]   -> g
   | g::gs -> disj_base g (inner gs) 
   in
-  inner gs |> (fun g -> MKStream.inc (fun () -> g st))
+  inner gs |> (fun g -> Stream.Internal.inc (fun () -> g st))
 
 let conde = (?|)
 
@@ -1045,7 +1047,7 @@ let unitrace ?loc shower x y = fun st ->
   (* printf "%d: unify '%s' and '%s'" !logged_unif_counter (shower (helper_of_state st) x) (shower (helper_of_state st) y);
   (match loc with Some l -> printf " on %s" l | None -> ());
 
-  if MKStream.is_nil ans then printfn "  -"
+  if Stream.Internal.is_nil ans then printfn "  -"
   else  printfn "  +"; *)
   ans
 
@@ -1055,7 +1057,7 @@ let diseqtrace shower x y = fun st ->
   (* printf "%d: (=/=) '%s' and '%s'" !logged_diseq_counter
     (shower (helper_of_state st) x)
     (shower (helper_of_state st) y);
-  if MKStream.is_nil ans then printfn "  -"
+  if Stream.Internal.is_nil ans then printfn "  -"
   else  printfn "  +"; *)
   ans;;
 

@@ -20,18 +20,14 @@
 
 (** {2 Basic modules and types} *)
 
-(** {3 Lazy streams} *)
-module MKStream :
-  sig
-    (** Stream type *)
-    type 'a t
-  end
-
 module Stream :
   sig
+    (** Internal stream type *)
+    type 'a internal
+
     (** Stream type *)
     type 'a t
-
+    
     (** Emptiness test *)
     val is_empty : 'a t -> bool
 
@@ -70,12 +66,12 @@ module State :
 
 (** Goal converts a state into a lazy stream of states *)
 type 'a goal'
-type goal = State.t MKStream.t goal'
+type goal = State.t Stream.internal goal'
 
 (** {3 Logic values} *)
 
 (** A type of a logic value *)
-@type 'a logic =
+@type 'a logic = private
 | Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
@@ -203,7 +199,7 @@ module Fresh :
     - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
 *)
 val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) *
-                      (('g Stream.t -> 'h -> 'e) * ('c -> 'h * 'g MKStream.t))) ->
+                      (('g Stream.t -> 'h -> 'e) * ('c -> 'h * 'g Stream.internal))) ->
           'a -> 'd -> 'f
 
 (** The primitive [delay] helps to construct recursive goals, which depend on themselves. For example,
