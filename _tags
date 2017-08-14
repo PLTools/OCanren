@@ -7,6 +7,7 @@ true: short_paths
 <samples>: not_hygienic
 <camlp5/pa_minikanren.*>: syntax(camlp5o), package(camlp5)
 
+#<src/MiniKanrenCore.ml>: use_time_log
 <src/MiniKanrenCore*.*> or <src/MiniKanrenStd*.*>: opaque
 <src/MiniKanren*.*>: package(unix),syntax(camlp5o),package(GT,GT.syntax.all),package(logger.syntax)
 <src/*.ml*>: package(GT)

@@ -27,39 +27,40 @@ module Log =
                enter   : unit; 
                leave   : unit; 
                subs    : t list;
-               attach  : t;
+               attach  : t -> unit;
                clear   : unit
              >
 
-    let create parent name =
-      let count   = ref 0                 in
-      let elapsed = ref @@ float_of_int 0 in
-      let origin  = ref @@ float_of_int 0 in
-      let depth   = ref 0                 in
-      let subs    = ref []                in
-      let this =
-        object
-          method name     = name
-          method elapsed  = !elapsed
-          method count    = !count
-          method subs     = !subs
-          method attach l = subs := l :: !subs
-          method clear    = 
-            count   := 0;
-            elapsed := float_of_int 0;
-            depth   := 0;
-            List.iter (fun l -> l#clear) !subs
-          method enter    =
-            incr count;
-            incr depth;
-            origin := Unix.((times ()).tms_utime)
-          method leave   =
-            if !depth > 0 
-            then elapsed := !elapsed +. Unix.((times ()).tms_utime) -. !origin
-            else failwith (sprintf "OCanren fatal (Log.leave): zero depth")
-            decr depth
-        end
-      in 
+    class tc (name : string) =
+      object
+        val mutable count   = 0                 
+        val mutable elapsed = float_of_int 0 
+        val mutable origin  = float_of_int 0 
+        val mutable depth   = 0                 
+        val mutable subs    = ([] : t list)
+        method name     = name
+        method elapsed  = elapsed
+        method count    = count
+        method subs     = subs
+        method attach l = subs <- l :: subs
+        method clear    = 
+          count   <- 0;
+          elapsed <- float_of_int 0;
+          depth   <- 0;
+          List.iter (fun l -> l#clear) subs
+        method enter    =
+          count <- count + 1;
+          depth <- depth + 1;
+          origin <- Unix.((times ()).tms_utime)
+        method leave   =
+          if depth > 0 
+          then elapsed <- elapsed +. Unix.((times ()).tms_utime) -. origin
+          else failwith (sprintf "OCanren fatal (Log.leave): zero depth");
+          depth <- depth - 1
+      end
+
+    let create parent name = 
+      let this = new tc name in
       match parent with 
       | Some p -> p#attach this; this
       | None   -> this 
