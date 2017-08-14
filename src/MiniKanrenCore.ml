@@ -18,6 +18,69 @@
 
 open Printf
 
+module Log =
+  struct
+
+    type t = < name    : string; 
+               count   : int; 
+               elapsed : float; 
+               enter   : unit; 
+               leave   : unit; 
+               subs    : t list;
+               attach  : t;
+               clear   : unit
+             >
+
+    let create parent name =
+      let count   = ref 0                 in
+      let elapsed = ref @@ float_of_int 0 in
+      let origin  = ref @@ float_of_int 0 in
+      let depth   = ref 0                 in
+      let subs    = ref []                in
+      let this =
+        object
+          method name     = name
+          method elapsed  = !elapsed
+          method count    = !count
+          method subs     = !subs
+          method attach l = subs := l :: !subs
+          method clear    = 
+            count   := 0;
+            elapsed := float_of_int 0;
+            depth   := 0;
+            List.iter (fun l -> l#clear) !subs
+          method enter    =
+            incr count;
+            incr depth;
+            origin := Unix.((times ()).tms_utime)
+          method leave   =
+            if !depth > 0 
+            then elapsed := !elapsed +. Unix.((times ()).tms_utime) -. !origin
+            else failwith (sprintf "OCanren fatal (Log.leave): zero depth")
+            decr depth
+        end
+      in 
+      match parent with 
+      | Some p -> p#attach this; this
+      | None   -> this 
+
+    let run   = create None "run"
+    let unify = create (Some run) "unify"
+
+    let report () = 
+      let buf      = Buffer.create 1024      in
+      let append s = Buffer.add_string buf s in
+      let rec show o l = 
+	append @@ sprintf "%s%s: count=%d, time=%f\n" o l#name l#count l#elapsed;
+        List.iter (show (o ^ "  ")) l#subs
+      in
+      show "" run;
+      Buffer.contents buf 
+
+    let clear () = run#clear
+   
+  end
+
 let (!!!) = Obj.magic
 
 type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
@@ -747,13 +810,18 @@ let report_counters () =
   printfn "logged diseq calls : %d" !logged_diseq_counter
 *)
 let (===) (x: _ injected) y (env, subst, constr, scope) =
-  match Subst.unify env x y scope subst with
-  | None -> Stream.Internal.nil
-  | Some (prefix, s) ->
-      try
-        let constr' = Constraints.check ~prefix env s constr in
-        Stream.Internal.single (env, s, constr', scope)
-      with Disequality_violated -> Stream.Internal.nil
+  LOG[perf] (Log.unify#enter);
+  let result =
+    match Subst.unify env x y scope subst with
+    | None -> Stream.Internal.nil
+    | Some (prefix, s) ->
+	try
+          let constr' = Constraints.check ~prefix env s constr in
+          Stream.Internal.single (env, s, constr', scope)
+	with Disequality_violated -> Stream.Internal.nil
+  in 
+  LOG[perf] (Log.unify#leave); 
+  result
 
 let (=/=) x y ((env, subst, constrs, scope) as st) =
   match Subst.unify env x y Var.non_local_scope subst with
@@ -913,8 +981,16 @@ let pqrst = five
 
 let run n goalish f =
   let adder, currier, app_num = n () in
-  let run f = f (State.empty ()) in
-  run (adder goalish) |> ApplyLatest.apply app_num |> (currier f)
+  Log.clear ();
+  LOG[perf] (Log.run#enter);
+  let run f  = f (State.empty ())  in
+  let result = run (adder goalish) |> ApplyLatest.apply app_num |> (currier f) in
+  LOG[perf] (
+    Log.run#leave;  
+    printf "Run report:\n%s" @@ Log.report ()
+  );
+  result
+
 
 
 (* Tracing/debugging stuff *)

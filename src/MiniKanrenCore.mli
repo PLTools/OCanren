@@ -198,8 +198,7 @@ module Fresh :
     - [run two        (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i here [qs], [rs] --- streams of all values, associated with the variable [q] and [r], respectively}[)]
     - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
 *)
-val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) *
-                      (('g Stream.t -> 'h -> 'e) * ('c -> 'h * 'g Stream.internal))) ->
+val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) * (('g Stream.t -> 'h -> 'e) * ('c -> 'h * 'g Stream.internal))) ->
           'a -> 'd -> 'f
 
 (** The primitive [delay] helps to construct recursive goals, which depend on themselves. For example,
@@ -345,8 +344,7 @@ val qrst : unit ->
      (('t, 'u) reified Stream.t *
       (('v, 'w) reified Stream.t *
        (('x, 'y) reified Stream.t)))) *
-    ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) ->
-     ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1))
+    ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) ->     ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1))
 
 (** {2 Building reifiers for a custom type compositionally} *)
 module type T1 =
