@@ -1,131 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Jacobs Portrait Poster
-% LaTeX Template
-% Version 1.0 (31/08/2015)
-% (Based on Version 1.0 (29/03/13) of the landscape template
-%
-% Created by:
-% Computational Physics and Biophysics Group, Jacobs University
-% https://teamwork.jacobs-university.de:8443/confluence/display/CoPandBiG/LaTeX+Poster
-% 
-% Further modified by:
-% Nathaniel Johnston (nathaniel@njohnston.ca)
-%
-% Portrait version by:
-% John Hammersley
-%
-% The landscape version of this template was downloaded from:
-% http://www.LaTeXTemplates.com
-%
-% License:
-% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%----------------------------------------------------------------------------------------
-%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
-%----------------------------------------------------------------------------------------
-
-\documentclass[final]{beamer}
-
-\usepackage[orientation=portrait,size=a0]{beamerposter} % Use the beamerposter package for laying out the poster
-\usepackage{wrapfig}
-\usepackage{listings}
-\usepackage{filecontents}
-\usepackage{hhline}
-\usepackage{tikz}
-\usetikzlibrary{backgrounds,tikzmark}
-
-%\usepackage[backend=bibtex,style=numeric,maxnames=2,firstinits=true]{biblatex}
-
-\usetheme{confposter} % Use the confposter theme supplied with this template
-
-%% \setbeamercolor{titlelike}         {bg=jblue,fg=white}
-\setbeamercolor{block title}{fg=jblue,bg=white} % Colors of the block titles
-\setbeamercolor{block body}{fg=black,bg=white} % Colors of the body of blocks
-\setbeamercolor{block alerted title}{fg=white,bg=dblue!70} % Colors of the highlighted block titles
-\setbeamercolor{block alerted body}{fg=black,bg=dblue!10} % Colors of the body of highlighted blocks
-% Many more colors are available for use in beamerthemeconfposter.sty
-
-%-----------------------------------------------------------
-% Define the column widths and overall poster size
-% To set effective sepwid, onecolwid and twocolwid values, first choose how many columns you want and how much separation you want between columns
-% In this template, the separation width chosen is 0.024 of the paper width and a 4-column layout
-% onecolwid should therefore be (1-(# of columns+1)*sepwid)/# of columns e.g. (1-(4+1)*0.024)/4 = 0.22
-% Set twocolwid to be (2*onecolwid)+sepwid = 0.464
-% Set threecolwid to be (3*onecolwid)+2*sepwid = 0.708
-
-\newlength{\sepwid}
-\newlength{\onecolwid}
-\newlength{\twocolwid}
-\newlength{\threecolwid}
-
-%% \setlength{\paperwidth}{33.1in} % A0 width: 46.8in
-%% \setlength{\paperheight}{46.8in} % A0 height: 33.1in
-
-\setlength{\sepwid}{0.024\paperwidth} % Separation width (white space) between columns
-\setlength{\onecolwid}{0.301\paperwidth} % Width of one column
-\setlength{\twocolwid}{0.626\paperwidth} % Width of two columns
-\setlength{\threecolwid}{0.952\paperwidth} % Width of three columns
-\setlength{\topmargin}{-0.5in} % Reduce the top margin size
-%-----------------------------------------------------------
-
-\usepackage{graphicx}  % Required for including images
-
-\usepackage{booktabs} % Top and bottom rules for tables
-
-\usepackage{mathtools}
-\usepackage{listings}
-
-\usepackage{verbatim}
-
-\lstdefinelanguage{ocanren}{
-keywords={fresh, let, in, match, with, when, class, type,
-object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
-new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure},
-sensitive=true,
-commentstyle=\small\itshape\ttfamily,
-keywordstyle=\ttfamily\underbar,
-identifierstyle=\ttfamily,
-basewidth={0.5em,0.5em},
-columns=fixed,
-fontadjust=true,
-literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2 {^}{{$\uparrow$}}1,
-morecomment=[s]{(*}{*)}
-}
-
-\lstset{
-mathescape=true,
-basicstyle=\small,
-identifierstyle=\ttfamily,
-keywordstyle=\bfseries,
-commentstyle=\scriptsize\rmfamily,
-basewidth={0.5em,0.5em},
-fontadjust=true,
-language=ocanren
-}
-
-%----------------------------------------------------------------------------------------
-%	TITLE SECTION 
-%----------------------------------------------------------------------------------------
-
-\title{To refutational completeness through non-termination test} % Poster title
-
-\author{Dmitri Rozplokhas} % Author(s)
-
-\institute{Saint-Petersburg Academic University} % Institution(s)
-
-%----------------------------------------------------------------------------------------
-
-\begin{document}
-
-\addtobeamertemplate{block end}{}{\vspace*{2ex}} % White space under blocks
-\addtobeamertemplate{block alerted end}{}{\vspace*{2ex}} % White space under highlighted (alert) blocks
-
-\setlength{\belowcaptionskip}{2ex} % White space under figures
-\setlength\belowdisplayshortskip{2ex} % White space under equations
-
-\begin{frame}[fragile] % The whole poster is enclosed in one beamer frame
 
 \begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
 
@@ -268,7 +140,7 @@ In more complex cases, different directions of program execution may require dif
 
 Make it easier to write refutationally complete relations, i.e. programs that always terminate whenever there are finitely many answers.
 
-\end{alertblock} 
+\end{alertblock}
 
 \end{block}
 
@@ -334,7 +206,7 @@ In more complex cases, different directions of program execution may require dif
 
 Make it easier to write refutationally complete relations, i.e. programs that always terminate whenever there are finitely many answers.
 
-\end{alertblock} 
+\end{alertblock}
 
 \end{block}
 
@@ -478,9 +350,9 @@ The reason is \textbf{non-comutativity of conjunction}.
 
 Fuction call get only information recieved by this point, wich can lead to divergence.
 
-In this case, non-termination test will signal divergence in less informative call and optimized search will pull out more informative call ahead, making this sorting relation refutationally complete. 
+In this case, non-termination test will signal divergence in less informative call and optimized search will pull out more informative call ahead, making this sorting relation refutationally complete.
 
-This automatic order choice gives opportunity to write easier definitions, as if conjunction was commutative, and still get terminating programs. 
+This automatic order choice gives opportunity to write easier definitions, as if conjunction was commutative, and still get terminating programs.
 
 For example, consider the definition of division with reminder for binary numbers from MiniKanren standart library.
 
@@ -493,7 +365,7 @@ let rec div$^o$ n m q r =
    (fresh (nh nl qh ql qlm qlmr rr rh) (
      (split$^o$ n r nl nh) /\
      (split$^o$ q r ql qh) /\
-     ((([] === nh) /\ ([] === qh) /\ 
+     ((([] === nh) /\ ([] === qh) /\
        (minus$^o$ nl r qlm) /\ (mult$^o$ ql m qlm)) \/
       ((pos$^o$ nh) /\ (mult$^o$ ql m qlm) /\
        (plus$^o$ qlm r qlmr) /\ (minus$^o$ qlmr nl rr) /\
@@ -551,7 +423,7 @@ This optimization is
 
 \begin{block}{Results}
 
-We present prototype implementation of optimized search and number of naive relational solutions for different problems. 
+We present prototype implementation of optimized search and number of naive relational solutions for different problems.
 
 \begin{itemize}
   \item List reversing
@@ -560,7 +432,7 @@ We present prototype implementation of optimized search and number of naive rela
   \item Binary arithmetic (including addition, multiplication, division \\ and comparisons)
 \end{itemize}
 
-These relations are refutationally complete with optimized search, \\ regardless of the order of goals. 
+These relations are refutationally complete with optimized search, \\ regardless of the order of goals.
 
 At the same time, for all problems the naive solutions are known not to be refutationally complete with non-optimized search.
 
@@ -614,20 +486,20 @@ We chose following observation as non-termination test:
 
 \begin{alertblock}{Non-termination criterion}
 
-If during the derivation of some branch we arrived at the 
+If during the derivation of some branch we arrived at the
 following configuration
 
 $$
 \begin{array}{c}
   \Delta\vdash\sigma_2\xRightarrow{f(x_1,\dots,x_n)}\\
   \ldots\\
-  \Delta\vdash\sigma_1\xRightarrow{f(y_1,\dots,y_n)} 
+  \Delta\vdash\sigma_1\xRightarrow{f(y_1,\dots,y_n)}
 \end{array}
 $$
 
 and there is some substitution $\tau$, such that $y_i\sigma_1=(x_i\sigma_2)\tau$, then there is no $S$, such that $\Delta\vdash\sigma_2\xRightarrow{f(x_1,\dots,x_n)} S$.
 
-\end{alertblock} 
+\end{alertblock}
 
 And formally proved it.
 
@@ -653,6 +525,3 @@ As a consequence, our optimization preserves refutational completeness.
 
 \end{columns} % End of all the columns in the poster
 
-\end{frame}
-
-\end{document}
