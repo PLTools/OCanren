@@ -608,7 +608,15 @@ let rec reify' env subst do_diseq x =
 
 exception Disequality_violated
 
-module Constraints =
+module Constraints :
+  sig
+    type t
+
+    val empty  : t
+    val check  : prefix:Subst.content list -> Env.t -> Subst.t -> t -> t
+    val extend : prefix:Subst.content list -> Env.t -> t -> t
+    val reify  : Env.t -> Subst.t -> t -> Var.t -> 'a list
+  end =
   struct
     type single = Subst.content list
 
