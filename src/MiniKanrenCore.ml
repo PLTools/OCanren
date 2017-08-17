@@ -72,7 +72,7 @@ module Log =
       let buf      = Buffer.create 1024      in
       let append s = Buffer.add_string buf s in
       let rec show o l =
-	append @@ sprintf "%s%s: count=%d, time=%f\n" o l#name l#count l#elapsed;
+        append @@ sprintf "%s%s: count=%d, time=%f\n" o l#name l#count l#elapsed;
         List.iter (show (o ^ "  ")) l#subs
       in
       show "" run;
@@ -111,46 +111,47 @@ let rec wrap x =
       else Invalid t
     )
 
+
 module Stream =
   struct
 
     module Internal =
       struct
-	type 'a t =
-	  | Nil
-	  | Thunk  of 'a thunk
-	  | Single of 'a
-	  | Choice of 'a * ('a t)
-	and 'a thunk = unit -> 'a t
+        type 'a t =
+          | Nil
+          | Thunk  of 'a thunk
+          | Single of 'a
+          | Choice of 'a * ('a t)
+        and 'a thunk = unit -> 'a t
 
-	let nil        = Nil
-	let single x   = Single x
-	let choice a f = Choice (a, f)
-	let inc    f   = Thunk f
-	let from_fun   = inc
+        let nil        = Nil
+        let single x   = Single x
+        let choice a f = Choice (a, f)
+        let inc    f   = Thunk f
+        let from_fun   = inc
 
-	let rec is_empty = function
+        let rec is_empty = function
         | Nil      -> true
         | Thunk f  -> is_empty @@ f ()
         | _        -> false
 
-	let force = function
+        let force = function
         | Thunk f -> f ()
         | fs      -> fs
 
-	let rec mplus fs gs =
-	  match fs with
-	  | Nil            -> force gs
-	  | Thunk   _      -> inc (fun () -> mplus (force gs) fs)
-	  | Single  a      -> choice a gs
-	  | Choice (a, hs) -> choice a (from_fun @@ fun () -> mplus (force gs) hs)
+        let rec mplus fs gs =
+          match fs with
+          | Nil            -> force gs
+          | Thunk   _      -> inc (fun () -> mplus (force gs) fs)
+          | Single  a      -> choice a gs
+          | Choice (a, hs) -> choice a (from_fun @@ fun () -> mplus (force gs) hs)
 
-	let rec bind xs g =
-	  match xs with
-	  | Nil           -> Nil
-	  | Thunk   f     -> inc (fun () -> bind (f ()) g)
-	  | Single  c     -> g c
-	  | Choice (c, f) -> mplus (g c) (from_fun (fun () -> bind (force f) g))
+        let rec bind xs g =
+          match xs with
+          | Nil           -> Nil
+          | Thunk   f     -> inc (fun () -> bind (f ()) g)
+          | Single  c     -> g c
+          | Choice (c, f) -> mplus (g c) (from_fun (fun () -> bind (force f) g))
       end
 
     type 'a internal = 'a Internal.t
@@ -457,6 +458,10 @@ module Subst :
     val merge_prefix_unsafe : scope : Var.scope -> content list  -> t -> t
     val merge_prefix        : Env.t -> scope:Var.scope -> content list -> t -> (t * bool) option
 
+    (* [unify env x y scope subst] returns None if two terms are not unifiable.
+     *   Otherwise it returns a pair of prefix and new substituion.
+     *   Prefix is a list of pairs (var, term) that were added to the original substituion.
+     *)
     val unify   : Env.t -> 'a -> 'a -> scope:Var.scope -> t -> (content list * t) option
   end =
   struct
@@ -618,6 +623,12 @@ module Constraints :
     val reify  : Env.t -> Subst.t -> t -> Var.t -> 'a list
   end =
   struct
+    (* single constraint (a.k.a. prefix) is a substitution represented as
+     * associativity list.
+     * Single constraint can be viewed as a list of disjuncts,
+     * i.e. conde [(x1=/=t1); (x2=/=t2); ...]
+     *)
+
     type single = Subst.content list
 
     module M =
@@ -631,15 +642,57 @@ module Constraints :
         let replace  k v     = if v = [] then remove k else M.add k v
       end
 
+    (* Whole constraint store is a map from variable indexes to the list of
+     * single constraints. The map is used to optimize constraint lookup:
+     * we want to check constraints only for variables that get a substitution
+     * term during last unification.
+     *)
     type t = single list M.t
 
     let empty = M.empty
 
-    let extend ~prefix env cs =
+    (* An example: A =/= B where A is (_.10, 1, _.11) and B is (2, _.12, 3).
+     * These two terms can be distinct, when either {_.10 <> 2} or {_.12 <> 1} or {_.11 <> 3}
+     *
+     * We check single disequality constrain in the current substituion as follows:
+     *
+     * If, for example {_.10 = 1} in current substitution, then there is no chance
+     * to violate constraint (i.e. Subst.unify returns None) in derivatives of current substitution and we can
+     * forget this constraint.
+
+     * If Subst.unify returns `Some (prefix, _)` when prefix is not empty it means that the
+     * current substitution requires some extending to make two terms the same. In other words,
+     * the constraint is not yet violated but can be in the future. We will revisit this constraint
+     * again when the substitution become more specialized.
+     * Observation: if first elements of tuples A and B in the example can be distinct then the terms
+     *   A and B can be distinct.
+     * Observation: if we checked first elements of tuples A and B and already know that A and B can be distinct
+     * we don't need to check other elements of the tuples.
+
+     * The last chance is when unification returns `Some ([],_)`. It means that two terms are the same in the
+     * current substitution and there is no need to extend the current substitution. It means that the constraint
+     * is partially violated. In the example above we check the 1st elements of tuples, and if disequality is
+     * violated we check next pair of elements, etc. If disequality is violated for all corresponding subterms
+     * then disequality is violated for initial terms.
+     *)
+    type revisiting_result =
+      (* Constraint always holds in the current substitution *)
+      | Obsolete
+      (* Constraint was changed and needs to be bind to the new variable *)
+      | Reworked of int * single
+      (* Constraint was violated *)
+      | Violated
+
+    (* extend adds new single constraint to the store *)
+    let extend ~prefix env cstore =
       assert (prefix <> []);
       Subst.(
+        (* We bind constraint to the first variable in prefix.
+         * If head of prefix is a pair of two variables, we bind constraint to both.
+         * Constraint can be reworked and rebound to other variables in the future.
+         *)
         let h   = List.hd prefix in
-        let ans = M.add h.var.index prefix cs in
+        let ans = M.add h.var.index prefix cstore in
         match Env.var env h.term with
         | None -> ans
         | Some n ->
@@ -647,56 +700,37 @@ module Constraints :
             M.add n (swapped::(List.tl prefix)) ans
       )
 
-    let split_and_unify ~prefix env subst =
-      Subst.(
-        let vs,ts = List.split @@ List.map (fun {var; term} -> (var, term)) prefix in
-        unify env !!!vs !!!ts Var.non_local_scope subst
-      )
-
-    let interacts_with ~prefix c =
-      let first_var = (List.hd c).Subst.var in
-      try Some (List.find (fun cnt -> cnt.Subst.var.index = first_var.index) prefix)
-      with Not_found ->
-        match first_var.subst with
-        | Some term -> Some {Subst.var=first_var; Subst.term=term}
-        | None      -> None
-
-    type revisiting_result = Obsolete | Reworked of int * single | Violated
-
-    let check ~prefix env subst c_store =
-      let revisit_constraint c =
-        let rec helper = function
-        | []    -> Violated
-        | h::tl ->
-            match Subst.(unify env !!!(h.Subst.var) h.Subst.term) Var.non_local_scope subst with
-            | None                             -> Obsolete
-            | Some ([], _)                     -> helper tl
-            | Some ((ph::_) as new_prefix, _)  -> Reworked (ph.Subst.var.index, new_prefix@tl)
-        in
-        helper c
+    let check ~prefix env subst cstore =
+      let rec revisit_single = function
+      | []    -> Violated
+      | h::tl ->
+          match Subst.(unify env !!!(h.Subst.var) h.Subst.term) Var.non_local_scope subst with
+          | None                             -> Obsolete
+          | Some ([], _)                     -> revisit_single tl
+          | Some ((ph::_) as new_prefix, _)  -> Reworked (ph.Subst.var.index, new_prefix@tl)
       in
-      let rec loop2 map = function
-      | [] -> map
-      | h :: tl ->
-          let important = M.find h.Subst.var.index map in
-          let (acc_cur, acc_other) =
-            ListLabels.fold_left important ~init:([], [])
-                ~f:(fun (acc_cur, acc_other) cs ->
-                      match revisit_constraint cs with
-                      | Violated                                             -> raise Disequality_violated
-                      | Reworked (idx, new_one) when idx = h.Subst.var.index -> (new_one::acc_cur, acc_other)
-                      | Reworked (idx, new_one)                              -> (acc_cur, (idx, new_one)::acc_other)
-                      | Obsolete                                             -> (acc_cur, acc_other)
-                   )
-          in
-          let map = M.replace h.Subst.var.index acc_cur map in
-          let map = ListLabels.fold_left ~init:map acc_other ~f:(fun acc (i, cs) -> M.add i cs acc) in
-          loop2 map tl
+      let revisit_constraints cs var_idx =
+        ListLabels.fold_left cs
+            ~init:([], [])
+            ~f:(fun (stayed, rebound) single ->
+                  match revisit_single single with
+                  | Violated                                   -> raise Disequality_violated
+                  | Reworked (idx, new_one) when idx = var_idx -> (new_one::stayed, rebound)
+                  | Reworked (idx, new_one)                    -> (stayed, (idx, new_one)::rebound)
+                  | Obsolete                                   -> (stayed, rebound)
+               )
       in
-      loop2 c_store prefix
+      ListLabels.fold_left prefix ~init:cstore
+        ~f:(fun map cnt ->
+          let var_idx = cnt.Subst.var.index in
+          let stayed, rebound = revisit_constraints (M.find var_idx map) var_idx in
+          let map = M.replace var_idx stayed map in
+          ListLabels.fold_left rebound ~init:map ~f:(fun acc (i, cs) -> M.add i cs acc)
+        )
 
-    let is_subsumed env d d2 =
-      let s = Subst.merge_prefix_unsafe ~scope:Var.non_local_scope d Subst.empty in
+    (* check that `single` is a part of some other single constraint from `cs` *)
+    let is_subsumed env (single:single) (cs:single list) =
+      let s = Subst.merge_prefix_unsafe ~scope:Var.non_local_scope single Subst.empty in
       let rec helper = function
       | [] -> false
       | h::tl ->
@@ -705,16 +739,7 @@ module Constraints :
           | Some (_, false) -> true
           | Some (__, _)    -> helper tl
     in
-    helper d2
-
-    let rem_subsumed env cs =
-      let rec helper d acc =
-        match d with
-        | []                                                       -> acc
-        | h::tl when is_subsumed env h tl || is_subsumed env h acc -> helper tl acc
-        | h:: tl                                                   -> helper tl (h::acc)
-    in
-    helper cs []
+    single=[] || helper cs
 
     exception ReallyNotEqual
 
@@ -727,31 +752,29 @@ module Constraints :
        *   expected answer: q = (3, b)
        *   without simplification: q = (3, b {{ =/= 6}})
        *)
-      let rec helper acc = function
-      | []       -> acc
-      | cont::tl ->
-          match Subst.(unify env !!!(cont.var) !!!cont.term Var.non_local_scope subst) with
-          | None         -> raise ReallyNotEqual
-          | Some ([], _) ->
+      try ListLabels.fold_left single ~init:[]
+       ~f:(fun acc cont ->
+            match Subst.(unify env !!!(cont.var) !!!cont.term Var.non_local_scope subst) with
+            | None         -> raise ReallyNotEqual
+            | Some ([], _) -> acc
+            | Some (_, _) ->
               if cont.Subst.var != asked_var && cont.Subst.term != !!!asked_var
-              then []
-              else helper acc tl
-          | Some (_, _) -> helper ((maybe_swap cont) :: acc) tl
-      in
-      try helper [] single with ReallyNotEqual -> []
+              then acc
+              else (maybe_swap cont) :: acc)
+      with ReallyNotEqual -> []
 
-    let rem_subsumed_opt ~env ~subst asked_var maybe_swap cs_map  =
-      M.fold (fun k cs_list acc ->
-                ListLabels.fold_left ~init:acc cs_list
-                                     ~f:(fun acc single ->
-                                           let single = simplify_single ~env ~subst asked_var maybe_swap single in
-                                           try
-                                             ignore (List.find (fun x -> (x.Subst.var == asked_var) || (x.Subst.term == !!!asked_var)) single);
-                                             if is_subsumed env single acc then acc else single::acc
-                                           with Not_found -> acc
-                                        )
+    let rem_subsumed ~env ~subst asked_var maybe_swap cstore  =
+      M.fold (fun _ cs acc ->
+                ListLabels.fold_left cs
+                  ~init:acc
+                  ~f:(fun acc single ->
+                       let single = simplify_single ~env ~subst asked_var maybe_swap single in
+                       if is_subsumed env single acc
+                       then acc
+                       else single::acc
+                  )
              )
-             cs_map
+             cstore
              []
 
     let rem_duplicates xs =
@@ -767,13 +790,14 @@ module Constraints :
         Subst.(if cnt.term == !!!term then {var = !!!term; term = Obj.repr cnt.var} else cnt)
       in
       let ans =
-        ListLabels.map ~f:(fun prefix ->
-                             let cs_sub = Subst.merge_prefix_unsafe ~scope:Var.non_local_scope prefix Subst.empty in
-                             let dest = Subst.walk env !!!term cs_sub in
-                             assert (term <> dest);
-                             dest
-                          )
-                          (rem_subsumed_opt ~env ~subst term maybe_swap cs)
+        ListLabels.map
+          ~f:(fun prefix ->
+                 let cs_sub = Subst.merge_prefix_unsafe ~scope:Var.non_local_scope prefix Subst.empty in
+                 let dest = Subst.walk env !!!term cs_sub in
+                 assert (term <> dest);
+                 dest
+          )
+          (rem_subsumed ~env ~subst term maybe_swap cs)
       in
       rem_duplicates ans
 end

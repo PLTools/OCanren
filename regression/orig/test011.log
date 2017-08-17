@@ -93,7 +93,7 @@ fun q ->
          (fun () ->
             conj (conj ((=/=) ((!!) [x; !1]) ((!!) [!2; y])) ((===) x !2))
               ((===) ((!!) [x; y]) q))), all answers {
-q=[2; _.12];
+q=[2; _.12 [=/= 1]];
 }
 fun q ->
   MiniKanren.Fresh.two
@@ -160,7 +160,7 @@ fun q ->
          (fun () ->
             conj (conj ((===) ((!!) [a; d]) q) ((=/=) q ((!!) [!5; !6])))
               ((===) a !5))), all answers {
-q=[5; _.12];
+q=[5; _.12 [=/= 6]];
 }
 fun q ->
   MiniKanren.Fresh.one
