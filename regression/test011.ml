@@ -12,6 +12,8 @@ let show_intl_llist = GT.(show List.logic @@ show logic @@ show int)
 let runInt n = runR MiniKanren.reify GT.(show int) GT.(show logic @@ show int) n
 let runIList n = runR (List.reify MiniKanren.reify) show_int_list show_intl_llist n
 
+let pair = Std.Pair.pair
+
 let _ =
   runInt       (-1) q qh (REPR (fun q -> (q =/= !1)       ));
   runIList     (-1) q qh (REPR (fun q -> (fresh (x y z)(x =/= y)(x === !![!0; z; !1])(y === !![!0; !1; !1]))                   ));
@@ -62,11 +64,14 @@ let _ =
   runIList            (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; y] === q)(x =/= y)(x =/= y))           ));
   runInt              (-1) q qh (REPR (fun q -> ((q =/= !5) &&& (!5 =/= q))                  ));
 
-  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; y] === q)(!![x; y] =/= !![!5; !6])(x =/= !5))                 ));
-  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; y] === q)(x =/= !5)(!![x; y] =/= !![!5; !6]))                 ));
-  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(x =/= !5)(!![x; y] =/= !![!5; !6])(!![x; y] === q))                 ));
-  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!5 =/= x)(!![x; y] =/= !![!5; !6])(!![x; y] === q))                 ));
-  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!5 =/= x)(!![y; x] =/= !![!6; !5])(!![x; y] === q))                 ));
+  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; y] === q)(!![x; y] =/= !![!5; !6])(x =/= !5))));
+  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; y] === q)(x =/= !5)(!![x; y] =/= !![!5; !6]))));
+  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(x =/= !5)(!![x; y] =/= !![!5; !6])(!![x; y] === q))));
+  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!5 =/= x)(!![x; y] =/= !![!5; !6])(!![x; y] === q))));
+  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(!5 =/= x)(!![y; x] =/= !![!6; !5])(!![x; y] === q))));
+
+  runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(x%y === q)(x%y =/= !![!1; x])(y === !![!2]))));
+
 
   let xsh xs = ["xs", xs] in
   runIList (-1) q xsh (REPR (fun x -> (fresh (y z)(x =/= !![y; !2])(x === !![z; !2]))))
