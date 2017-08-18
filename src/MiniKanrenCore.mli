@@ -198,7 +198,7 @@ module Fresh :
     - [run two        (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i here [qs], [rs] --- streams of all values, associated with the variable [q] and [r], respectively}[)]
     - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
 *)
-val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) * (('g Stream.t -> 'h -> 'e) * ('c -> 'h * 'g Stream.internal))) ->
+val run : (unit -> ('a -> 'c goal') * ('d -> 'e -> 'f) * (State.t Stream.t -> 'h -> 'e) * ('c -> 'h * State.t Stream.internal)) ->
           'a -> 'd -> 'f
 
 (** The primitive [delay] helps to construct recursive goals, which depend on themselves. For example,
@@ -228,123 +228,116 @@ object
   method reify: (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
 end
 
-(** A type to reify a stream of states into the stream of answers (w.r.t. some known logic variable) *)
-type ('a, 'b) reifier
-
 (** Successor function *)
 val succ : (unit ->
-            ('a -> 'b goal') * ('c -> 'd -> 'e) *
-            ((State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j))) ->
+            ('a -> 'b goal') * ('c -> 'd -> 'e) * (State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j)) ->
            unit ->
-           ((('k, 'l) injected -> 'a) -> (('k, 'l) reifier * 'b) goal') *
+           ((('k, 'l) injected -> 'a) -> (('k, 'l) injected * 'b) goal') *
            (('m -> 'c) -> 'm * 'd -> 'e) *
-           ((State.t Stream.t ->
-             ('n, 'o) reifier * 'f -> ('n, 'o) reified Stream.t * 'g) *
-            ('p * 'h -> ('p * 'i) * 'j))
+           (State.t Stream.t -> ('n, 'o) injected * 'f -> ('n, 'o) reified Stream.t * 'g) *
+           ('p * 'h -> ('p * 'i) * 'j)
 
 (** {3 Predefined numerals (one to five)} *)
 val one : unit ->
-  ((('a,'c) injected -> 'b goal') -> (('a, 'c) reifier * 'b) goal') *
+  ((('a,'c) injected -> State.t Stream.internal goal') -> (('a, 'c) injected * State.t Stream.internal) goal') *
   (('d -> 'e) -> 'd -> 'e) *
-  ((State.t Stream.t ->
-    ('f, 'g) reifier -> ('f, 'g) reified Stream.t) *
-    ('h -> 'h))
+  (State.t Stream.t ->
+    ('f, 'g) injected -> ('f, 'g) reified Stream.t) *
+  ('h -> 'h)
 
 val two : unit ->
-  ((('a,'d) injected -> ('b,'e) injected -> 'c goal') ->
-    (('a, 'd) reifier * (('b, 'e) reifier * 'c)) goal') *
-    (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
-    ((State.t Stream.t ->
-      ('i, 'j) reifier * ('k, 'l) reifier ->
-      ('i, 'j) reified Stream.t *
-      ('k, 'l) reified Stream.t) *
-     ('m * ('n * 'o) -> ('m * 'n) * 'o))
+  ((('a,'d) injected -> ('b,'e) injected -> State.t Stream.internal goal') ->
+    (('a, 'd) injected * (('b, 'e) injected * State.t Stream.internal)) goal') *
+  (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
+  (State.t Stream.t ->
+    ('i, 'j) injected * ('k, 'l) injected ->
+    ('i, 'j) reified Stream.t *
+    ('k, 'l) reified Stream.t) *
+  ('m * ('n * 'o) -> ('m * 'n) * 'o)
 
 val three : unit ->
-  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> 'd goal') ->
-    (('a, 'e) reifier * (('b, 'f) reifier * (('c, 'g) reifier * 'd))) goal') *
-   (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
-   ((State.t Stream.t ->
-     ('l, 'm) reifier * (('n, 'o) reifier * ('p, 'q) reifier) ->
-     ('l, 'm) reified Stream.t *
-     (('n, 'o) reified Stream.t *
-      ('p, 'q) reified Stream.t)) *
-    ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
+  ((('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> State.t Stream.internal goal') ->
+    (('a, 'e) injected * (('b, 'f) injected * (('c, 'g) injected * State.t Stream.internal))) goal') *
+  (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
+  (State.t Stream.t ->
+    ('l, 'm) injected * (('n, 'o) injected * ('p, 'q) injected) ->
+    ('l, 'm) reified Stream.t *
+    (('n, 'o) reified Stream.t *
+    ('p, 'q) reified Stream.t)) *
+  ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u)
 
 val four : unit ->
-  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> 'f goal') ->
-    (('a, 'g) reifier * (('b, 'h) reifier * (('c, 'i) reifier * (('d, 'j) reifier * 'f)))) goal') *
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> State.t Stream.internal goal') ->
+    (('a, 'g) injected * (('b, 'h) injected * (('c, 'i) injected * (('d, 'j) injected * State.t Stream.internal)))) goal') *
   (('l -> 'm -> 'n -> 'o -> 'q) ->
     'l * ('m * ('n * 'o)) -> 'q) *
-   ((State.t Stream.t ->
-     ('r, 's) reifier * (('t, 'u) reifier * (('v, 'w) reifier * ('x, 'y) reifier)) ->
+  (State.t Stream.t ->
+     ('r, 's) injected * (('t, 'u) injected * (('v, 'w) injected * ('x, 'y) injected)) ->
      ('r, 's) reified Stream.t *
      (('t, 'u) reified Stream.t *
       (('v, 'w) reified Stream.t *
        (('x, 'y) reified Stream.t)))) *
-    ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) ->
-     ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1))
+  ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) -> ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1)
 
 val five : unit ->
-  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> 'f goal') ->
-   (('a, 'g) reifier *
-    (('b, 'h) reifier *
-     (('c, 'i) reifier * (('d, 'j) reifier * (('e, 'k) reifier * 'f))))) goal') *
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> ('e, 'k) injected -> State.t Stream.internal goal') ->
+   (('a, 'g) injected *
+    (('b, 'h) injected *
+     (('c, 'i) injected * (('d, 'j) injected * (('e, 'k) injected * State.t Stream.internal))))) goal') *
   (('l -> 'm -> 'n -> 'o -> 'p -> 'q) ->
-   'l * ('m * ('n * ('o * 'p))) -> 'q) *
-   ((State.t Stream.t ->
-     ('r, 's) reifier *
-     (('t, 'u) reifier *
-      (('v, 'w) reifier * (('x, 'y) reifier * ('z, 'a1) reifier))) ->
+    'l * ('m * ('n * ('o * 'p))) -> 'q) *
+  (State.t Stream.t ->
+     ('r, 's) injected *
+     (('t, 'u) injected *
+      (('v, 'w) injected * (('x, 'y) injected * ('z, 'a1) injected))) ->
      ('r, 's) reified Stream.t *
      (('t, 'u) reified Stream.t *
       (('v, 'w) reified Stream.t *
        (('x, 'y) reified Stream.t *
         ('z, 'a1) reified Stream.t)))) *
-    ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) ->
-     ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1))
+  ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) -> ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1)
 
 (** {3 The same numerals with conventional names} *)
 val q : unit ->
-  ((('a,'c) injected -> 'b goal') -> (('a, 'c) reifier * 'b) goal') *
+  ((('a,'c) injected -> State.t Stream.internal goal') -> (('a, 'c) injected * State.t Stream.internal) goal') *
   (('d -> 'e) -> 'd -> 'e) *
-  ((State.t Stream.t ->
-    ('f, 'g) reifier -> ('f, 'g) reified Stream.t) *
-    ('h -> 'h))
+  (State.t Stream.t ->
+    ('f, 'g) injected -> ('f, 'g) reified Stream.t) *
+  ('h -> 'h)
 
 val qr : unit ->
-  ((('a,'d) injected -> ('b,'e) injected -> 'c goal') ->
-    (('a, 'd) reifier * (('b, 'e) reifier * 'c)) goal') *
-    (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
-    ((State.t Stream.t ->
-      ('i, 'j) reifier * ('k, 'l) reifier ->
-      ('i, 'j) reified Stream.t *
-      ('k, 'l) reified Stream.t) *
-     ('m * ('n * 'o) -> ('m * 'n) * 'o))
+  ((('a,'d) injected -> ('b,'e) injected -> State.t Stream.internal goal') ->
+    (('a, 'd) injected * (('b, 'e) injected * State.t Stream.internal)) goal') *
+  (('f -> 'g -> 'h) -> 'f * 'g -> 'h) *
+  (State.t Stream.t ->
+    ('i, 'j) injected * ('k, 'l) injected ->
+    ('i, 'j) reified Stream.t *
+    ('k, 'l) reified Stream.t) *
+  ('m * ('n * 'o) -> ('m * 'n) * 'o)
 
 val qrs : unit ->
-  (( ('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> 'd goal') ->
-    (('a, 'e) reifier * (('b, 'f) reifier * (('c, 'g) reifier * 'd))) goal') *
-   (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
-   ((State.t Stream.t ->
-     ('l, 'm) reifier * (('n, 'o) reifier * ('p, 'q) reifier) ->
-     ('l, 'm) reified Stream.t *
-     (('n, 'o) reified Stream.t *
-      ('p, 'q) reified Stream.t)) *
-    ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u))
+  ((('a,'e) injected -> ('b, 'f) injected -> ('c, 'g) injected -> State.t Stream.internal goal') ->
+    (('a, 'e) injected * (('b, 'f) injected * (('c, 'g) injected * State.t Stream.internal))) goal') *
+  (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k) *
+  (State.t Stream.t ->
+    ('l, 'm) injected * (('n, 'o) injected * ('p, 'q) injected) ->
+    ('l, 'm) reified Stream.t *
+    (('n, 'o) reified Stream.t *
+    ('p, 'q) reified Stream.t)) *
+  ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u)
 
 val qrst : unit ->
-  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> 'f goal') ->
-    (('a, 'g) reifier * (('b, 'h) reifier * (('c, 'i) reifier * (('d, 'j) reifier * 'f)))) goal') *
+  ((('a, 'g) injected -> ('b, 'h) injected -> ('c, 'i) injected -> ('d, 'j)  injected -> State.t Stream.internal goal') ->
+    (('a, 'g) injected * (('b, 'h) injected * (('c, 'i) injected * (('d, 'j) injected * State.t Stream.internal)))) goal') *
   (('l -> 'm -> 'n -> 'o -> 'q) ->
     'l * ('m * ('n * 'o)) -> 'q) *
-   ((State.t Stream.t ->
-     ('r, 's) reifier * (('t, 'u) reifier * (('v, 'w) reifier * ('x, 'y) reifier)) ->
-     ('r, 's) reified Stream.t *
-     (('t, 'u) reified Stream.t *
-      (('v, 'w) reified Stream.t *
-       (('x, 'y) reified Stream.t)))) *
-    ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) ->     ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1))
+  (State.t Stream.t ->
+   ('r, 's) injected * (('t, 'u) injected * (('v, 'w) injected * ('x, 'y) injected)) ->
+   ('r, 's) reified Stream.t *
+   (('t, 'u) reified Stream.t *
+    (('v, 'w) reified Stream.t *
+     (('x, 'y) reified Stream.t)))) *
+   ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) -> ('b1 * ('c1 * ('d1 * 'e1))) * 'f1)
 
 (** {2 Building reifiers for a custom type compositionally} *)
 module type T1 =
