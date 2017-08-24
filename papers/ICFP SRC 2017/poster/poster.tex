@@ -131,79 +131,6 @@ language=ocanren
     ))
 \end{filecontents*}
 
-%% \begin{filecontents*}{verify.ml}
-%%    let verify$^o$ assert$^o$ t = run * (fun t'. 
-%%      consistent$^o$ !assert$^o$ t t'
-%%    )
-%% \end{filecontents*}
-
-% \begin{filecontents*}{verify.ml}
-%    let verify t assert$^o$ =
-%      run * fun t'. (eval$^o$ t t') /\ (!assert$^o$ t')
-% \end{filecontents*}
-
-% \begin{filecontents*}{solve.ml}
-%    let solve n sketch$^o$ assert$^o$ = 
-%      run n fun t. 
-%        (sketch$^o$ t) /\ 
-%        (fresh (t') 
-%          (eval$^o$ t t') /\ 
-%          (assert$^o$ t'))
-% \end{filecontents*}
-
-% \begin{filecontents*}{synth.ml}
-%    let synth n sketch$^o$ assert$^o$ = 
-%      run n fun t. 
-%        (sketch$^o$ t) /\ 
-%       !(fresh (t') 
-%          (eval$^o$ t t') /\ 
-%          (!assert$^o$ t'))
-% \end{filecontents*}
-
-% \begin{filecontents*}{mp_init.c11}
-%    $[$x$]_{na}$ = 0; $[$f$]_{na}$ = 0
-% \end{filecontents*}
-
-% \begin{filecontents*}{mp_bad_thrd1.c11}
-%    $[$x$]_{na}$ := 42;
-%    $[$f$]_{na}$ := 1
-% \end{filecontents*}
-
-% \begin{filecontents*}{mp_bad_thrd2.c11}
-%    repeat $[$f$]_{na}$;
-%    $r1$ = $[$x$]_{na}$
-% \end{filecontents*}
-
-% \begin{filecontents*}{mp_part_thrd1.c11}
-%    $[$x$]_{na}$ := 42;
-%    A
-% \end{filecontents*}
-
-% \begin{filecontents*}{mp_part_thrd2.c11}
-%    B
-%    $r1$ = $[$x$]_{na}$
-% \end{filecontents*}
-
-% \begin{filecontents*}{mp_sketch.ml}
-%   let scketch_mp$^o$ t = 
-%     fresh (A B)
-%       (stmt$^o$ A) /\ (stmt$^o$ B) /\ (t === sketch_MP)
-% \end{filecontents*}
-
-% \begin{filecontents*}{verify_mp.ml}
-%    > verify prog_mp (fun p'. p'{r1 === 42}) 
-%    [p'=stuck]
-% \end{filecontents*}
-
-% \begin{filecontents*}{solve_mp.ml}
-%    > solve 1 scketch_mp (fun p'. p'{r1 === 42})
-%    [A=$[$f$]_{rel}$ := 1; B=repeat $[$f$]_{acq}$;]
-% \end{filecontents*}
-
-% \begin{filecontents*}{synth_mp.ml}
-%    > synth 1 sketch_mp (fun p'. p'{r1 === 42})
-%    [A=$[$f$]_{rel}$ := 1; B=repeat $[$f$]_{acq}$;]
-% \end{filecontents*}
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION 
@@ -253,8 +180,8 @@ language=ocanren
         \item Elegant solutions to non-trivial problems.
       \end{itemize}
       
-      \textbf{\textcolor{blue}{Sorting}}  for \textbf{\textcolor{blue}{generation of permutations}} \\
-      \textbf{\textcolor{blue}{Typechecker}}  for \textbf{\textcolor{blue}{inhabitation problem}} \\
+      \textbf{\textcolor{blue}{Sorting}} for \textbf{\textcolor{blue}{generation of permutations}} \\
+      \textbf{\textcolor{blue}{Typechecker}} for \textbf{\textcolor{blue}{inhabitation problem}} \\
       \textbf{\textcolor{blue}{Interpreter}} for \textbf{\textcolor{blue}{generation of quines}}
     \end{block}
 
@@ -385,12 +312,72 @@ language=ocanren
   \begin{column}{\sepwid}\end{column} % Empty spacer column
 
   \begin{column}{\onecolwid} % The third column
+  
+    \begin{block}{Non-termination test}
+      \textbf{Observation}: in recursive call arguments are \\ \textit{more general} $\Rightarrow$ execution won't terminate
+      \bigskip
+      \bigskip
+      
+      \begin{center} Big-step semantics for OCanren \end{center}
+	  \begin{center} $\Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{g} S$ \end{center}
+      \begin{itemize}
+        \item $\Gamma$ - function definitions
+        \item $\iota$ - interpretation of syntactic variables
+        \item $\sigma$ - current substitution
+        \item $\delta$ - known logic variables
+        \item $g$ - specification
+        \item $S$ - result multiset of states
+      \end{itemize}
+      
+      \[ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{t_1 \equiv t_2} \{\}, \texttt{mgu}(t_1 \iota \sigma, t_2 \iota \sigma) = \bot \]
+      
+      \[ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{t_1 \equiv t_2} \{(\sigma \ \texttt{mgu}(t_1 \iota \sigma, t_2 \iota \sigma), \delta)\} \]
+      
+      \[ \frac{ \Gamma, \iota[x \leftarrow s] \vdash (\sigma, \delta \cup \{s\}) \xrightarrow{g} S }{ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ fresh \ x \ g} S }, s \not\in \delta \]
+      
+      \[ \frac{ \Gamma, i' \vdash (id, \delta) \xrightarrow{g} \{ (\sigma_1, \delta_1), \dots, (\sigma_k, \delta_k) \}  }{ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ r^n \ t_1 \ \dots \ t_n} \{ (\sigma \sigma_1, \delta_1), \dots, (\sigma \sigma_k, \delta_k)\} }, \]
+      \[ i' = [x_1 \leftarrow t_1 \iota \sigma, \dots, x_n \leftarrow t_n \iota \sigma], \]
+      \[ \Gamma(r^n) = \lambda x_1 \ \dots \ x_n. g \]
+      
+      \[ \frac{ \begin{array}{c} \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_1 } S_1 \\ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_2 } S_2 \end{array}}{ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_1 \vee g_2 } S_1 \cup S_2 } \]
+      
+      \[ \frac{ \begin{array}{c} \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_1 } \{ (\sigma_1, \delta_1), \dots, (\sigma_k, \delta_k) \} \\ \Gamma, \iota \vdash (\sigma_i, \delta_i) \xrightarrow{ g_2 } S_i \end{array}}{ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_1 \wedge g_2 } \cup_i S_i } \]
+
+      \begin{center} Only for terminating search! \end{center}
+      \begin{exampleblock}{Non-termination test}
+        If we meet such configuration
+        \[
+          \begin{array}{c}
+            \Gamma, \iota_1 \vdash (\sigma_2, \delta_2) \xrightarrow{r^n b_1 \dots b_n} \\
+            \ldots \\
+            \Gamma, \iota_1 \vdash (\sigma_1, \delta_1) \xrightarrow{r^n a_1 \dots a_n}
+          \end{array}
+        \]
+        and for some substitution $\tau$
+        \[ a_i \iota_1 \sigma_1 = (b_i \iota_2 \sigma_2) \tau \]
+        then there is no $S$ such that
+        \[ \Gamma, \iota_1 \vdash (\sigma_1, \delta_1) \xrightarrow{r^n a_1 \dots a_n} S \]
+      \end{exampleblock}
+      We prove it to be correct.
+      
+      \textbf{Corollary:} search extention preserves \\ refutational completeness.
+    \end{block}
+    
+    \begin{block}{Implementation details}
+      \begin{itemize}
+        \item Deep embedding required
+        \item $\mathcal{O}(n^2)$ orders are checked in worst case, \\ but optimal can't be missed
+        \item Extended search is $10$ times slower \\ on terminating programs at the moment
+      \end{itemize}
+    \end{block}
     
     \begin{block}{Acknowledgements}
-      \small{}
+      This work is sponsored by JetBrains Research.
     \end{block}
 
   \end{column}
+  
+  \begin{column}{\sepwid}\end{column} % Empty spacer column
 \end{columns}
 
 \end{frame} % End of the enclosing frame
