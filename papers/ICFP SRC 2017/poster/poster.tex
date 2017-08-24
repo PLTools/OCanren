@@ -2,6 +2,7 @@
 
 \usepackage[orientation=portrait,size=a0,scale=1.4]{beamerposter}
 \usepackage{wrapfig}
+\usepackage[english]{babel}
 \usepackage{listings}
 \usepackage{verbatimbox}
 \usepackage{filecontents}
@@ -9,6 +10,7 @@
 \usepackage{tikz}
 \usepackage{comment}
 \usepackage{mathtools}
+\usepackage{ragged2e}
 \usetikzlibrary{backgrounds,tikzmark}
 
 %% \usepackage[backend=bibtex,style=numeric,maxnames=2,firstinits=true]{biblatex}
@@ -53,12 +55,13 @@ basewidth={0.5em,0.5em},
 columns=fixed,
 fontadjust=true,
 literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2 {^}{{$\uparrow$}}1,
-morecomment=[s]{(*}{*)}
+morecomment=[s]{(*}{*)},
+escapechar=~
 }
 
 \lstset{
 mathescape=true,
-basicstyle=\small,
+%basicstyle=\small,
 identifierstyle=\ttfamily,
 keywordstyle=\bfseries,
 commentstyle=\scriptsize\rmfamily,
@@ -77,13 +80,13 @@ language=ocanren
 \newcommand{\Xrightarrow}[1]{\xrightarrow{\phantom{x}#1\phantom{x}}}
 
 \begin{filecontents*}{appendo.ml}
-  let rec append$^o$ x y xy =
-    (x === [] /\ y === xy) \/
-    (fresh (h t ty) (
-      (x === h :: t) /\
-      (append$^o$ t y ty) /\
-      (xy === h :: ty)
-    ))
+let rec append$^o$ x y xy =
+  (x === [] /\ y === xy) \/
+  (fresh (h t ty) 
+    (x === h :: t) /\
+    (append$^o$ t y ty) /\
+    (xy === h :: ty)
+  )
 \end{filecontents*}
 
 \begin{filecontents*}{appendorun.ml}
@@ -92,47 +95,46 @@ language=ocanren
 \end{filecontents*}
 
 \begin{filecontents*}{sorto.ml}
-  let rec sort$^o$ xs ys =
-    (xs === [] /\ ys === []) \/
-    (fresh (s xst yst) (
-      (ys === s :: yst) /\
-      (smallest$^o$ xs s xst) /\  (*1*)
-      (sort$^o$ xst yst)           (*2*)
-    ))
+let rec sort$^o$ xs ys =
+  (xs === [] /\ ys === []) \/
+  (fresh (s xst yst) 
+    (ys === s :: yst) /\
+    (smallest$^o$ xs s xst) /\  (*1*)
+    (sort$^o$ xst yst)~\phantom{$\wedge$}~         (*2*)
+  )
 \end{filecontents*}
 
 \begin{filecontents*}{permo.ml}
-  let rec perm$^o$ xs ys =
-    (fresh (ts) (
-      (sort$^o$ xs ts) /\ (sort$^o$ ys ts)
-    ))
+let perm$^o$ xs ys =
+  fresh (ts) (sort$^o$ xs ts) /\ (sort$^o$ ys ts)    
 \end{filecontents*}
 
 \begin{filecontents*}{divo.ml}
-  let rec div$^o$ n m q r =
-    (r === n /\ [] === q /\ plus$^o$ r m n /\ lt$^o$ r m) \/
-    ([1] === q /\ eql$^o$ n m /\ plus$^o$ r m n /\ lt$^o$ r m) \/
-    ((ltl$^o$ m n) /\ (lt$^o$ r m) /\ (pos$^o$ q) /\
-     (fresh (nh nl qh ql qlm qlmr rr rh) (
-       (split$^o$ n r nl nh) /\
-       (split$^o$ q r ql qh) /\
-       ((([] === nh) /\ ([] === qh) /\ 
-         (minus$^o$ nl r qlm) /\ (mult$^o$ ql m qlm)) \/
-        ((pos$^o$ nh) /\ (mult$^o$ ql m qlm) /\
-         (plus$^o$ qlm r qlmr) /\
-         (minus$^o$ qlmr nl rr) /\
-         (split$^o$ rr r [] rh) /\
-         (div$^o$ nh m qh rh))
-       )
-     ))
-    )
+let rec div$^o$ n m q r =
+  (r === n /\ [] === q /\ plus$^o$ r m n /\ lt$^o$ r m) \/
+  ([1] === q /\ eql$^o$ n m /\ plus$^o$ r m n /\ lt$^o$ r m) \/
+  ((ltl$^o$ m n) /\ (lt$^o$ r m) /\ (pos$^o$ q) /\
+   (fresh (nh nl qh ql qlm qlmr rr rh) (
+     (split$^o$ n r nl nh) /\
+     (split$^o$ q r ql qh) /\
+     ((([] === nh) /\ ([] === qh) /\ 
+       (minus$^o$ nl r qlm) /\ (mult$^o$ ql m qlm)) \/
+       ((pos$^o$ nh) /\ (mult$^o$ ql m qlm) /\
+       (plus$^o$ qlm r qlmr) /\
+       (minus$^o$ qlmr nl rr) /\
+       (split$^o$ rr r [] rh) /\
+       (div$^o$ nh m qh rh))
+     )
+   ))
+  )
 \end{filecontents*}
 
 \begin{filecontents*}{divoeasy.ml}
-  let rec div$^o$ n m q r =
-    (fresh (mq) (
-      (mult$^o$ m q mq) /\ (plus$^o$ mq r n) /\ (lt$^o$ r m)
-    ))
+let div$^o$ n m q r =
+  fresh (mq) 
+    (mult$^o$ m q mq) /\ 
+    (plus$^o$ mq r n) /\ 
+    (lt$^o$ r m)    
 \end{filecontents*}
 
 
@@ -161,7 +163,7 @@ language=ocanren
 %% \vspace*{-1cm}
 
 %----------------------------------------------------------------------------------------
-
+\sloppy
 \begin{document}
 
 %% \addtobeamertemplate{block end}{}{\vspace*{1ex}} % White space under blocks
@@ -259,55 +261,75 @@ language=ocanren
   \begin{column}{\sepwid}\end{column} % Empty spacer column
 
   \begin{column}{\onecolwid} % The second column
+   
+    \begin{block}{Evaluation}
     
-    \begin{block}{Conjuncts reordering approach}
-      \textbf{Idea:} 
-      \begin{enumerate}
-        \item testing current search proccess for divergence
-        \item try different order if it was detected
-      \end{enumerate}
-      This search extension is:
-      \begin{itemize}
-        \item online
-        \item non-intrusive
-        \item conservative
-      \end{itemize}
-    \end{block}
+    \vskip5mm
     
-    \begin{block}{Examples}
-      \begin{exampleblock}{Example}
-        In relational sorting
-	    \lstinputlisting{sorto.ml}
-        for termination we need
-        \begin{itemize}
-        \item order $1 \to 2$ for direct execution
-        \item order $2 \to 1$ for reverse execution
-        \end{itemize}
+     \begin{exampleblock}{Relational Sorting/Permutations}
+        \justifying
+        \lstinputlisting{sorto.ml}
         \bigskip
-        Permutation relation based on it
+        %For termination we need
+
+        %\begin{itemize}
+        %  \item order $1 \to 2$ for forward evaluation
+        %  \item order $2 \to 1$ for reverse evaluation
+        %\end{itemize}
+ 
+       %\bigskip
+
+        %Calculating all permutations via sorting:
+        %\bigskip
         \lstinputlisting{permo.ml}
-        requires execution in both directions.
         \bigskip
-        
-        Original search diverges with any order
-        
-        + search is too inefficient if length $> 3$.
+        $\cal{NB}:$ requires evaluation of \lstinline|sort$^o$| in \emph{both} directions simultaneously.
+
+        \bigskip
+        \justifying
+        \textbf{Conventional search:}
+        \begin{itemize}
+           \justifying
+           \item diverges, when \emph{all} permututations are requested for 
+                 any positive list length (regardless the direction of evaluation);
+           \item unreasonably slow for list length $>3$. 
+        \end{itemize}
+        \textbf{Improved search:}
+        \begin{itemize}
+           \justifying
+           \item returns all permutations for all directions of evaluation;
+           \item works in a reasonable time for all reasonable list lengths (7, 8, ...)
+        \end{itemize}
 	 \end{exampleblock}
-     Extended search reconstructs (experimentally) \\ the way of information propagation for each call.
+     %Extended search reconstructs (experimentally) \\ the way of information propagation for each call.
 
-     Multidirectional calls (like in {\ttfamily perm$^o$}) converge.
+     %Multidirectional calls (like in {\ttfamily perm$^o$}) converge.
       \bigskip
-      \bigskip
+      
+     %Extention allows to write RC specifications naively.
 
-     Extention allows to write RC specifications naively.
-      \begin{exampleblock}{Example}
-        For division with remainder in binary arithmetics:
-        \[ n = m \cdot q + r, \quad r < m \]
-        instead of this sophisticated solution
-        \lstinputlisting{divo.ml}
-        we can just write down definition
+      \begin{exampleblock}{Binary Division with Reminder}
+        \justifying
+        Definition-based natural implementation:
+
+        %For the division with remainder 
+
+        %\[ n = m \cdot q + r, \quad r < m \]
+ 
+        %for binary representation of numbers the following definition-based implementation seems to be natural:
+        \bigskip
         \lstinputlisting{divoeasy.ml}
-        and it will be RC under extended search.
+        \bigskip
+
+        Does not work well in all directions with conventional search.
+
+        \bigskip
+
+        Fix: use tricky and sophisticated solution [Kiselyov, Byrd, Friedman, Shan, 2008]:
+ 
+        \lstinputlisting{divo.ml}
+
+        ... or improved search.        
       \end{exampleblock}
     \end{block}
 
@@ -320,7 +342,7 @@ language=ocanren
     \begin{block}{Formal Development}
       \vskip5mm      
       \begin{center} 
-         {\bf Big-step operational semantics:}
+         \textbf{Big-step operational semantics:}
 
 	 $$\Gamma, \iota \vdash \sigma \Xrightarrow{\ocanren{$g$}} S$$
 
@@ -381,7 +403,7 @@ $$
 \vskip1.5cm
 
 \begin{center}      
-        {\bf Divergence test:}
+        \textbf{Divergence test:}
 \end{center}
 \vskip3mm
 
@@ -405,7 +427,7 @@ $$
 
 \vskip1cm
 \begin{center}
-     \textbf{Extended Semantics}
+     \textbf{Improved Semantics}
       
      $$\Gamma,\, \iota,\, \dots \vdash \sigma \xRightarrow{\ocanren{$\phantom{x}g\phantom{x}$}} S$$
 
