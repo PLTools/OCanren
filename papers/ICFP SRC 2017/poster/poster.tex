@@ -7,6 +7,7 @@
 \usepackage{filecontents}
 \usepackage{hhline}
 \usepackage{tikz}
+\usepackage{comment}
 \usetikzlibrary{backgrounds,tikzmark}
 
 %% \usepackage[backend=bibtex,style=numeric,maxnames=2,firstinits=true]{biblatex}
@@ -71,6 +72,8 @@ language=ocanren
 %% \setbeamertemplate{itemize subitem}{\color{\bluecolor}$\blacktriangleright$}
 
 \newcommand*{\code}[1]{\texttt{#1}}
+\newcommand{\ocanren}[1]{\mbox{\lstinline|#1|}}
+\newcommand{\Xrightarrow}[1]{\xrightarrow{\phantom{x}#1\phantom{x}}}
 
 \begin{filecontents*}{appendo.ml}
   let rec append$^o$ x y xy =
@@ -319,7 +322,7 @@ language=ocanren
       \bigskip
       
       \begin{center} Big-step semantics for OCanren \end{center}
-	  \begin{center} $\Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{g} S$ \end{center}
+	  \begin{center} $\Gamma, \iota \vdash (\sigma, \delta) \Xrightarrow{g} S$ \end{center}
       \begin{itemize}
         \item $\Gamma$ - function definitions
         \item $\iota$ - interpretation of syntactic variables
@@ -329,34 +332,65 @@ language=ocanren
         \item $S$ - result multiset of states
       \end{itemize}
       
-      \[ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{t_1 \equiv t_2} \{\}, \texttt{mgu}(t_1 \iota \sigma, t_2 \iota \sigma) = \bot \]
+$$
+\def\arraystretch{3.3}
+\begin{array}{c}
+       %\Gamma,\,\iota \vdash (\sigma,\,\delta) \Xrightarrow{\ocanren{$t_1\;$ === $\;t_2$}} 
+       %  \left\{
+       %     \def\arraystretch{1}
+       %     \begin{array}{c}
+       %        \{(\sigma\ \mbox{\bf{mgu}}\,(t_1 \iota \sigma,\,t_2 \iota \sigma),\,\delta)\}\\
+       %        \emptyset,\;\mbox{if no mgu exists}
+       %     \end{array}
+       %  \right. \\
       
-      \[ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{t_1 \equiv t_2} \{(\sigma \ \texttt{mgu}(t_1 \iota \sigma, t_2 \iota \sigma), \delta)\} \]
+       \Gamma,\,\iota \vdash \sigma \Xrightarrow{\ocanren{$t_1\;$ === $\;t_2$}} 
+         \left\{
+            \def\arraystretch{1}
+            \begin{array}{l}
+               \{\sigma\ \mbox{mgu}\,(t_1 \iota \sigma,\,t_2 \iota \sigma)\}\\
+               \emptyset,\;\mbox{if no m.g.u. exists}
+            \end{array}
+         \right. \\
       
-      \[ \frac{ \Gamma, \iota[x \leftarrow s] \vdash (\sigma, \delta \cup \{s\}) \xrightarrow{g} S }{ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ fresh \ x \ g} S }, s \not\in \delta \]
+      %\dfrac{ \Gamma,\,\iota[x \leftarrow s] \vdash (\sigma,\,\delta \cup \{s\}) \Xrightarrow{\ocanren{$g$}} S }{ \Gamma, \iota \vdash (\sigma,\,\delta) \Xrightarrow{\ocanren{fresh ($x$) $\;g$}} S },\;s \not\in \delta\\ 
       
-      \[ \frac{ \Gamma, i' \vdash (id, \delta) \xrightarrow{g} \{ (\sigma_1, \delta_1), \dots, (\sigma_k, \delta_k) \}  }{ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ r^n \ t_1 \ \dots \ t_n} \{ (\sigma \sigma_1, \delta_1), \dots, (\sigma \sigma_k, \delta_k)\} }, \]
-      \[ i' = [x_1 \leftarrow t_1 \iota \sigma, \dots, x_n \leftarrow t_n \iota \sigma], \]
-      \[ \Gamma(r^n) = \lambda x_1 \ \dots \ x_n. g \]
+\dfrac{ \Gamma,\,\iota\,[x \leftarrow s] \vdash \sigma \Xrightarrow{\ocanren{$g$}} S }{ \Gamma, \iota \vdash \sigma \Xrightarrow{\ocanren{fresh ($x$) $\;g$}} S },\;s\;\mbox{is fresh}\\ 
       
-      \[ \frac{ \begin{array}{c} \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_1 } S_1 \\ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_2 } S_2 \end{array}}{ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_1 \vee g_2 } S_1 \cup S_2 } \]
+%       \dfrac{\Gamma,\,\iota[x_i\gets t_i\iota\sigma] \vdash (\epsilon,\,\delta) \Xrightarrow{\ocanren{$g$}} \{ (\sigma_j,\,\delta_j) \}}
+%             {\Gamma,\,\iota \vdash (\sigma,\,\delta) \Xrightarrow{\ocanren{$r^n \ t_1 \ \dots \ t_n$}} \{ (\sigma \sigma_j,\,\delta_j)\} },\,\Gamma\,(r^n) = \lambda\bar{x_i}.g \\
+
+       \dfrac{\Gamma,\,\iota\,[x_i\gets t_i\iota\sigma] \vdash \epsilon \Xrightarrow{\ocanren{$g$}} \{\sigma_j\}}
+             {\Gamma,\,\iota \vdash \sigma \Xrightarrow{\ocanren{$r^n \ t_1 \ \dots \ t_n$}} \{ \sigma \sigma_j\} },\,\Gamma\,(r^n) = \lambda x_1\dots x_n.g \\
       
-      \[ \frac{ \begin{array}{c} \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_1 } \{ (\sigma_1, \delta_1), \dots, (\sigma_k, \delta_k) \} \\ \Gamma, \iota \vdash (\sigma_i, \delta_i) \xrightarrow{ g_2 } S_i \end{array}}{ \Gamma, \iota \vdash (\sigma, \delta) \xrightarrow{ g_1 \wedge g_2 } \cup_i S_i } \]
+%       \dfrac{ \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1$} } S_1,\; 
+%       \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_2$} } S_2}{ \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1\;\vee\;g_2$} } S_1 \cup S_2 } \\
+
+      \dfrac{ \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1$} } S_1,\;\;\; 
+       \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_2$} } S_2}{ \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1\;\vee\;g_2$} } S_1 \cup S_2 } \\
+      
+%       \dfrac{ \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1$} } \{ (\sigma_i,\, \delta_i)\},\;
+%       \Gamma,\, \iota \vdash (\sigma_i,\, \delta_i) \Xrightarrow{ \ocanren{$g_2$} } S_i }{ \Gamma,\,\iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1 \wedge g_2$} } \cup_i S_i }
+
+\dfrac{ \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1$} } \{ \sigma_i\},\;\;\;
+       \Gamma,\, \iota \vdash \sigma_i \Xrightarrow{ \ocanren{$g_2$} } S_i }{ \Gamma,\,\iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1 \wedge g_2$} } \uplus\,S_i } 
+\end{array}
+$$
 
       \begin{center} Only for terminating search! \end{center}
       \begin{exampleblock}{Non-termination test}
         If we meet such configuration
         \[
           \begin{array}{c}
-            \Gamma, \iota_1 \vdash (\sigma_2, \delta_2) \xrightarrow{r^n b_1 \dots b_n} \\
+            \Gamma, \iota_1 \vdash (\sigma_2, \delta_2) \Xrightarrow{r^n b_1 \dots b_n} \\
             \ldots \\
-            \Gamma, \iota_1 \vdash (\sigma_1, \delta_1) \xrightarrow{r^n a_1 \dots a_n}
+            \Gamma, \iota_1 \vdash (\sigma_1, \delta_1) \Xrightarrow{r^n a_1 \dots a_n}
           \end{array}
         \]
         and for some substitution $\tau$
         \[ a_i \iota_1 \sigma_1 = (b_i \iota_2 \sigma_2) \tau \]
         then there is no $S$ such that
-        \[ \Gamma, \iota_1 \vdash (\sigma_1, \delta_1) \xrightarrow{r^n a_1 \dots a_n} S \]
+        \[ \Gamma, \iota_1 \vdash (\sigma_1, \delta_1) \Xrightarrow{r^n a_1 \dots a_n} S \]
       \end{exampleblock}
       We prove it to be correct.
       
