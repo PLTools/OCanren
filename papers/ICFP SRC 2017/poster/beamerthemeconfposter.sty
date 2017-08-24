@@ -12,6 +12,7 @@
 \usetikzlibrary{arrows,backgrounds}
 \RequirePackage[T1]{fontenc}
 \RequirePackage{lmodern}
+\usepackage{exscale}
 \RequirePackage{textcomp}
 \RequirePackage{amsmath,amssymb}
 \usefonttheme{professionalfonts}
@@ -219,10 +220,10 @@
     \usebeamerfont{block title}\large\insertblocktitle
     \begin{flushleft}
     \vskip-1cm
-    \begin{tikzpicture}[remember picture,overlay]
-      \shade [inner color=gray,outer color=white]
-      (0,0) rectangle (\textwidth,0.3cm);
-    \end{tikzpicture}
+    %% \begin{tikzpicture}[remember picture,overlay]
+    %%   \shade [inner color=gray,outer color=white]
+    %%   (0,0) rectangle (\textwidth,0.3cm);
+    %% \end{tikzpicture}
     \end{flushleft}
   \end{beamercolorbox}
   {\parskip0pt\par}
@@ -230,7 +231,7 @@
   {}
   {\ifbeamercolorempty[bg]{block body}{}{\nointerlineskip\vskip-0.5pt}}
   \usebeamerfont{block body}
-  \vskip-0.5cm
+  \vskip-2cm
   \begin{beamercolorbox}[colsep*=0ex,vmode]{block body}
   \justifying
 }
@@ -251,7 +252,7 @@
   \end{beamercolorbox}
   {\parskip0pt\par}
   \usebeamerfont{block body}
-  \vskip-0.8cm
+  \vskip-0.6cm
   \begin{beamercolorbox}[sep=0.5cm, rounded=true,center]{block alerted title}
   \setlength{\inboxwd}{\linewidth}
   \addtolength{\inboxwd}{-1cm}
