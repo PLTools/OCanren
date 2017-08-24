@@ -90,8 +90,8 @@ let rec append$^o$ x y xy =
 \end{filecontents*}
 
 \begin{filecontents*}{appendorun.ml}
-(fun q -> append$^o$ [1; 2] [3] q) $\leadsto$ {q=[1; 2; 3]}
-(fun q r -> append$^o$ q r [1; 2; 3]) $\leadsto$ $\bot$
+(fun q -> append$^o$ [1;2] [3] q) $\leadsto^*$ {q=[1;2;3]}
+(fun q r -> append$^o$ q r [1;2;3]) $\leadsto^*$ $\bot$
 \end{filecontents*}
 
 \begin{filecontents*}{sorto.ml}
@@ -142,16 +142,16 @@ let div$^o$ n m q r =
 %	TITLE SECTION 
 %----------------------------------------------------------------------------------------
 
-\title[Refutationally safer relational search]{Refutationally safer relational search}
+\title[Improving Refutational Completeness of Relational Search]{Improving Refutational Completeness of Relational Search}
 
 \author
-{\textbf{Dmitri Rozplokhas}\inst{1} \quad Dmitri Boulytchev\inst{2}}
+{\textbf{Dmitri Rozplokhas}\inst{1}}% \quad Dmitri Boulytchev\inst{2}}
 
 \institute{
   \inst{1}%
-  Saint Petersburg Academic University, Russia \quad
-  \inst{2}%
-  Saint Petersburg State University, JetBrains, Russia
+  Saint Petersburg Academic University, JetBrains Research, Russia% \quad
+%  \inst{2}%
+%  Saint Petersburg State University, JetBrains, Russia
 }
 
 %% \vspace*{.5cm}
@@ -179,51 +179,93 @@ let div$^o$ n m q r =
 
   \begin{column}{\onecolwid} % The first column
   
-    \begin{block}{Relational programming}
+    \begin{block}{Relational Programming}
+      \vskip7mm
       \begin{itemize}
-        \item Construction of functions as relations.
-        \item Allows execution in various directions \\ (e.g. get arguments by result value).
-        \item Elegant solutions to non-trivial problems.
-      \end{itemize}
-      
-      \textbf{\textcolor{blue}{Sorting}} for \textbf{\textcolor{blue}{generation of permutations}} \\
-      \textbf{\textcolor{blue}{Typechecker}} for \textbf{\textcolor{blue}{inhabitation problem}} \\
-      \textbf{\textcolor{blue}{Interpreter}} for \textbf{\textcolor{blue}{generation of quines}}
-    \end{block}
+        \justifying
+        \item From programs as \emph{functions} to programs as \emph{relations}.
+        \item Evaluation in various directions (e.g. evaluating the arguments from a result value).
+        \item Elegant solutions by duality for some non-trivial problems:
+          \bigskip
 
-    \begin{block}{MiniKanren}
-      MiniKanren is a family of relational EDSLs.
+          \begin{center}
+          \textbf{\textcolor{blue}{
+          \begin{tabular}{rcl}
+             sorting        & $\leftrightarrow$ & permutations\\
+             type inference & $\leftrightarrow$ & type inhabitation\\
+             interpretation & $\leftrightarrow$ & program synthesis
+          \end{tabular}}}
+          \end{center}
 
-      Host languages include:
-      \begin{itemize}
-        \item Scheme (original implementation)
-        \item Closure
-        \item Haskell
+      %\textbf{\textcolor{blue}{Sorting}} for \textbf{\textcolor{blue}{generation of permutations}} \\
+      %\textbf{\textcolor{blue}{Typechecker}} for \textbf{\textcolor{blue}{inhabitation problem}} \\
+      %\textbf{\textcolor{blue}{Interpreter}} for \textbf{\textcolor{blue}{generation of quines}}
+      \end{itemize}      
+   
+    %\begin{block}{MiniKanren}
+      MiniKanren [Friedman, Byrd, Kiselyov, 2005]: % is a family of relational EDSLs. Relational constructs:
+      %Host languages include:
+      %\begin{itemize}
+      %  \item Scheme (original implementation)
+      %  \item Closure
+      %  \item Haskell
         %% \item Go
-        \item OCaml (implementation we use)
-      \end{itemize}
-      Specification constructors:
+      %  \item OCaml (implementation we use)
+      %\end{itemize}
+      %Specification constructors:
+
       \begin{itemize}
-        \item unification ($\equiv$) of two terms
-        \item conjunction ($\wedge$) and disjunction ($\vee$)
-        \item fresh variable introduction
+        \item unification ($\equiv$) of two terms;
+        \item conjunction ($\wedge$) and disjunction ($\vee$);
+        \item fresh variable introduction;
+        \item plus some host language (Scheme/Racket, Clojure, Haskell, \textbf{OCaml}).
       \end{itemize}
       
-      \begin{exampleblock}{Example}
-        Relational specification of list concatenation.
+      \begin{exampleblock}{Relational List Concatenation}
         \lstinputlisting{appendo.ml}
       \end{exampleblock}
+      \vskip7mm
+      Running relational programs:
+
+      \bigskip
+      \begin{center}
+      \lstinline|(fun q -> append$^o$ [1; 2] [3] q) $\;\leadsto^*\;$ \{q=[1; 2; 3]\}|
+      \end{center}
+      \bigskip
+      %\lstinputlisting{appendorun.ml}
     \end{block}
     
-    \begin{block}{Problem}
-      Interleaving search is guaranteed to find all answers. \\
-      But it can diverge when no answers left.
-      \lstinputlisting{appendorun.ml}
-      \textbf{Reason:} non-commutativity of conjunction.
+    \begin{block}{Refutational Completeness}
+      \vskip7mm
+
+      MiniKanren search:
+      \begin{itemize}
+         \justifying
+         \item is complete (capable of finding all answers); 
+         \item can diverge, when no answers exist (or the number of 
+         requested answers exceeds the number of existing ones):
+         \begin{center}
+            \lstinline|(fun q r -> append$^o\;$ q r [1;2;3]) $\;\leadsto^*\;$ $\bot$|
+         \end{center}
+      \end{itemize}
+
+      Relational specification is \textbf{refutationally complete} [Byrd, 2009], if any query terminates when 
+      no answers left. Many important specifications are refutationally \emph{incomplete}.
+      \bigskip
+      \end{block}
+
+      \begin{alertblock}{Goal}
+        Improve the search to make more specifications refutationally complete.
+      \end{alertblock}
+   
+      \begin{block}{Approach}
+      \vskip7mm
+      One of the reasons for refutational incompleteness is the non-commutativity of conjunction:
+
       \begin{figure}
-        \large{Information passing}\\
-        \begin{tikzpicture}
-          \node[text width=6cm] at (0,0) {\huge $g_1 \wedge g_2$};
+        %\large{Information passing}\\
+        \begin{tikzpicture}[scale=0.7]
+          \node[text width=4cm] at (0,0) {\large $g_1 \wedge g_2$};
           \draw [->, line width=9, blue] (-7,0) -- (-3.5,0);
           \draw [->, line width=9, blue] (3.5,0) -- (7,0); 
           \draw [->, line width=9, blue] (-2,1) .. controls (-1,3) and (1,3) .. (2,1);
@@ -231,30 +273,30 @@ let div$^o$ n m q r =
           \draw [line width=9, red] (-0.75,-3.25) -- (0.75,-1.75); 
           \draw [line width=9, red] (-0.75,-1.75) -- (0.75,-3.25);
         \end{tikzpicture}
+      %\caption{Information flow}
       \end{figure}
-      Search in $g_1$ diverges $\Rightarrow$ search in $g_1 \wedge g_2$ diverges
+      If $g_1$ diverges, then $g_1 \wedge g_2$ diverges even when $g_2$ fails. 
       \bigskip
-      \bigskip
-      
-      Specification is \textbf{Refutationally Complete}, if search by it always terminates when no answers left.
-      \bigskip
-      
-      Shift of recursive call to the end makes {\ttfamily append$^o$} RC.
-      It doesn't work in more complex cases.
-    \end{block}
+ 
+      \textbf{Idea:} swap the constituents of a conjunction as soon as the divergence of the first
+      one is detected dynamically, and repeat the search.
 
-    \begin{alertblock}{Goal}
-        Make it easier to write refutationally complete specifications.
-    \end{alertblock}
-    
-    \begin{block}{Possible solutions}
-      \begin{enumerate}
-        \item Advanced technics of writing specifications, \\ such as bounding the sizes of terms
-        \item Simulation of commutative conjunction
-        \item Reordering of conjuncts during execution
-        \item[\textcolor{red}{$\uparrow$}] \textcolor{red}{ \textbf{our approach} }
-      \end{enumerate}
+      %\bigskip
+      %\bigskip
+      
+      
+      %Shift of recursive call to the end makes {\ttfamily append$^o$} RC.
+      %It doesn't work in more complex cases.
     \end{block}
+    
+    %\begin{block}{Possible solutions}
+     % \begin{enumerate}
+     %   \item Advanced technics of writing specifications, \\ such as bounding the sizes of terms
+     %   \item Simulation of commutative conjunction
+     %   \item Reordering of conjuncts during execution
+     %   \item[\textcolor{red}{$\uparrow$}] \textcolor{red}{ \textbf{our approach} }
+     % \end{enumerate}
+    %\end{block}
   
   \end{column}
 
@@ -262,10 +304,14 @@ let div$^o$ n m q r =
 
   \begin{column}{\onecolwid} % The second column
    
-    \begin{block}{Evaluation}
+    \begin{block}{Implementation and Evaluation}
     
     \vskip5mm
-    
+     
+     Improved search was implemented for deeply embedded version of MiniKanren for OCaml. A few
+existing specificaitons were evaluated:
+     \bigskip
+
      \begin{exampleblock}{Relational Sorting/Permutations}
         \justifying
         \lstinputlisting{sorto.ml}
