@@ -8,6 +8,7 @@
 \usepackage{hhline}
 \usepackage{tikz}
 \usepackage{comment}
+\usepackage{mathtools}
 \usetikzlibrary{backgrounds,tikzmark}
 
 %% \usepackage[backend=bibtex,style=numeric,maxnames=2,firstinits=true]{biblatex}
@@ -17,7 +18,7 @@
 %% \setbeamercolor{titlelike}         {bg=jblue,fg=white}
 \setbeamercolor{block title example}{fg=white,bg=dgreen!70}
 \setbeamercolor{block body example}{fg=black,bg=dgreen!10}
-\setbeamercolor{block title}{fg=jblue,bg=white} % Colors of the block titles
+\setbeamercolor{block title}{fg=white,bg=jblue!70} % Colors of the block titles
 \setbeamercolor{block body}{fg=black,bg=white} % Colors of the body of blocks
 \setbeamercolor{block alerted title}{fg=white,bg=dblue!70} % Colors of the highlighted block titles
 \setbeamercolor{block alerted body}{fg=black,bg=dblue!10} % Colors of the body of highlighted blocks
@@ -316,22 +317,20 @@ language=ocanren
 
   \begin{column}{\onecolwid} % The third column
   
-    \begin{block}{Non-termination test}
-      \textbf{Observation}: in recursive call arguments are \\ \textit{more general} $\Rightarrow$ execution won't terminate
-      \bigskip
-      \bigskip
-      
-      \begin{center} Big-step semantics for OCanren \end{center}
-	  \begin{center} $\Gamma, \iota \vdash (\sigma, \delta) \Xrightarrow{g} S$ \end{center}
-      \begin{itemize}
-        \item $\Gamma$ - function definitions
-        \item $\iota$ - interpretation of syntactic variables
-        \item $\sigma$ - current substitution
-        \item $\delta$ - known logic variables
-        \item $g$ - specification
-        \item $S$ - result multiset of states
-      \end{itemize}
-      
+    \begin{block}{Formal Development}
+      \vskip5mm      
+      \begin{center} 
+         {\bf Big-step operational semantics:}
+
+	 $$\Gamma, \iota \vdash \sigma \Xrightarrow{\ocanren{$g$}} S$$
+
+         \begin{itemize}
+           \item $\Gamma$~--- functional environment
+           \item $\iota$~--- valuation of variables
+           \item $\sigma$~--- substitution
+           \item $g$~--- goal
+           \item $S$~--- (multi) set of answers
+         \end{itemize}
 $$
 \def\arraystretch{3.3}
 \begin{array}{c}
@@ -367,7 +366,7 @@ $$
 %       \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_2$} } S_2}{ \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1\;\vee\;g_2$} } S_1 \cup S_2 } \\
 
       \dfrac{ \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1$} } S_1,\;\;\; 
-       \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_2$} } S_2}{ \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1\;\vee\;g_2$} } S_1 \cup S_2 } \\
+       \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_2$} } S_2}{ \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1\;\vee\;g_2$} } S_1 \uplus S_2 } \\
       
 %       \dfrac{ \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1$} } \{ (\sigma_i,\, \delta_i)\},\;
 %       \Gamma,\, \iota \vdash (\sigma_i,\, \delta_i) \Xrightarrow{ \ocanren{$g_2$} } S_i }{ \Gamma,\,\iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1 \wedge g_2$} } \cup_i S_i }
@@ -376,38 +375,69 @@ $$
        \Gamma,\, \iota \vdash \sigma_i \Xrightarrow{ \ocanren{$g_2$} } S_i }{ \Gamma,\,\iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1 \wedge g_2$} } \uplus\,S_i } 
 \end{array}
 $$
+\vskip5mm
+      $\cal{NB}:$ describes only terminating runs. 
+\end{center}
+\vskip1.5cm
 
-      \begin{center} Only for terminating search! \end{center}
-      \begin{exampleblock}{Non-termination test}
-        If we meet such configuration
-        \[
+\begin{center}      
+        {\bf Divergence test:}
+\end{center}
+\vskip3mm
+
+        \underline{Theorem} If we have a derivation
+
+        $$
           \begin{array}{c}
-            \Gamma, \iota_1 \vdash (\sigma_2, \delta_2) \Xrightarrow{r^n b_1 \dots b_n} \\
+            \Gamma, \iota_2 \vdash \sigma_2 \Xrightarrow{\ocanren{$r^n\;b_1 \dots b_n$}} \\
             \ldots \\
-            \Gamma, \iota_1 \vdash (\sigma_1, \delta_1) \Xrightarrow{r^n a_1 \dots a_n}
+            \Gamma, \iota_1 \vdash \sigma_1 \Xrightarrow{\ocanren{$r^n\;a_1 \dots a_n$}}
           \end{array}
-        \]
-        and for some substitution $\tau$
+        $$
+
+        where for some substitution $\tau$
+
         \[ a_i \iota_1 \sigma_1 = (b_i \iota_2 \sigma_2) \tau \]
-        then there is no $S$ such that
-        \[ \Gamma, \iota_1 \vdash (\sigma_1, \delta_1) \Xrightarrow{r^n a_1 \dots a_n} S \]
-      \end{exampleblock}
-      We prove it to be correct.
+
+        then there is no $S$, such that
+
+        \[ \Gamma, \iota_1 \vdash \sigma_1 \Xrightarrow{\ocanren{$r^n\;a_1 \dots a_n$}} S \]
+
+\vskip1cm
+\begin{center}
+     \textbf{Extended Semantics}
       
-      \textbf{Corollary:} search extention preserves \\ refutational completeness.
+     $$\Gamma,\, \iota,\, \dots \vdash \sigma \xRightarrow{\ocanren{$\phantom{x}g\phantom{x}$}} S$$
+
+     (too hairy to be presented here)
+\end{center}
+\vskip1cm
+\underline{Theorem} For arbitrary $\Gamma$, $\sigma$, $\iota$, $g$, and $S$ if
+
+     $$
+       \Gamma,\,\iota\vdash \sigma\Xrightarrow{\ocanren{$g$}} S
+     $$
+
+     then
+
+     $$
+       \Gamma,\,\iota,\,\dots\vdash\sigma\xRightarrow{\ocanren{$\phantom{x}a\phantom{x}$}} S
+     $$
+
     \end{block}
     
-    \begin{block}{Implementation details}
-      \begin{itemize}
-        \item Deep embedding required
-        \item $\mathcal{O}(n^2)$ orders are checked in worst case, \\ but optimal can't be missed
-        \item Extended search is $10$ times slower \\ on terminating programs at the moment
-      \end{itemize}
-    \end{block}
+
+%    \begin{block}{Implementation details}
+%      \begin{itemize}
+%        \item Deep embedding required
+%        \item $\mathcal{O}(n^2)$ orders are checked in worst case, \\ but optimal can't be missed
+%        \item Extended search is $10$ times slower \\ on terminating programs at the moment
+%      \end{itemize}
+%    \end{block}
     
-    \begin{block}{Acknowledgements}
-      This work is sponsored by JetBrains Research.
-    \end{block}
+%    \begin{block}{Acknowledgements}
+%      This work is sponsored by JetBrains Research.
+%    \end{block}
 
   \end{column}
   
