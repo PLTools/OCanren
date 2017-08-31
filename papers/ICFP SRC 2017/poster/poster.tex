@@ -1,6 +1,6 @@
 \documentclass[final,20pt]{beamer}
 
-\usepackage[orientation=portrait,size=a0,scale=1.4]{beamerposter}
+\usepackage[orientation=portrait,size=a0,scale=1.6]{beamerposter}
 \usepackage{wrapfig}
 \usepackage[english]{babel}
 \usepackage{listings}
@@ -22,7 +22,7 @@
 \setbeamercolor{block body example}{fg=black,bg=dgreen!10}
 \setbeamercolor{block title}{fg=white,bg=jblue!70} % Colors of the block titles
 \setbeamercolor{block body}{fg=black,bg=white} % Colors of the body of blocks
-\setbeamercolor{block alerted title}{fg=white,bg=dblue!70} % Colors of the highlighted block titles
+\setbeamercolor{block alerted title}{fg=white,bg=jblue!70} % Colors of the highlighted block titles
 \setbeamercolor{block alerted body}{fg=black,bg=dblue!10} % Colors of the body of highlighted blocks
 %\setbeamercolor{block example title}{fg=black,bg=dblue!70} % Colors of the example block titles
 %\setbeamercolor{block example body}{fg=black,bg=dblue!10} % Colors of the body of example blocks
@@ -35,6 +35,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{wasysym}
+\usepackage{comment}
 
 %% \bibliography{../references,../proceedings}
 
@@ -78,6 +79,13 @@ language=ocanren
 \newcommand*{\code}[1]{\texttt{#1}}
 \newcommand{\ocanren}[1]{\mbox{\lstinline|#1|}}
 \newcommand{\Xrightarrow}[1]{\xrightarrow{\phantom{x}#1\phantom{x}}}
+\newcommand\NoIndent[1]{%
+  \begingroup
+  \par
+  \parshape0
+  #1\par
+  \endgroup
+}
 
 \begin{filecontents*}{appendo.ml}
 let rec append$^o$ x y xy =
@@ -90,8 +98,14 @@ let rec append$^o$ x y xy =
 \end{filecontents*}
 
 \begin{filecontents*}{appendorun.ml}
-(fun q -> append$^o$ [1;2] [3] q) $\leadsto^*$ {q=[1;2;3]}
-(fun q r -> append$^o$ q r [1;2;3]) $\leadsto^*$ $\bot$
+
+run 1 (fun q -> append$^o$ [1;2] [3] q)
+            $\leadsto$ {q=[1;2;3]}
+
+run 3 (fun q r -> append$^o$ q r [1;2])
+            $\leadsto$ {q=[ ], r=[1;2];
+            ~\phantom{$\leadsto$}~  q=[1], r=[2];
+            ~\phantom{$\leadsto$}~  q=[1;2], r=[ ]}
 \end{filecontents*}
 
 \begin{filecontents*}{sorto.ml}
@@ -105,8 +119,10 @@ let rec sort$^o$ xs ys =
 \end{filecontents*}
 
 \begin{filecontents*}{permo.ml}
-let perm$^o$ xs ys =
-  fresh (ts) (sort$^o$ xs ts) /\ (sort$^o$ ys ts)    
+let perm$^o$ xs ys = 
+   fresh (ts)
+      (sort$^o$ xs ts) /\ 
+      (sort$^o$ ys ts)    
 \end{filecontents*}
 
 \begin{filecontents*}{divo.ml}
@@ -115,15 +131,10 @@ let rec div$^o$ n m q r =
   ([1] === q /\ eql$^o$ n m /\ plus$^o$ r m n /\ lt$^o$ r m) \/
   ((ltl$^o$ m n) /\ (lt$^o$ r m) /\ (pos$^o$ q) /\
    (fresh (nh nl qh ql qlm qlmr rr rh) (
-     (split$^o$ n r nl nh) /\
-     (split$^o$ q r ql qh) /\
-     ((([] === nh) /\ ([] === qh) /\ 
-       (minus$^o$ nl r qlm) /\ (mult$^o$ ql m qlm)) \/
-       ((pos$^o$ nh) /\ (mult$^o$ ql m qlm) /\
-       (plus$^o$ qlm r qlmr) /\
-       (minus$^o$ qlmr nl rr) /\
-       (split$^o$ rr r [] rh) /\
-       (div$^o$ nh m qh rh))
+     (split$^o$ n r nl nh) /\ (split$^o$ q r ql qh) /\
+     ((([] === nh) /\ ([] === qh) /\ (minus$^o$ nl r qlm) /\ (mult$^o$ ql m qlm)) \/
+       ((pos$^o$ nh) /\ (mult$^o$ ql m qlm) /\ (plus$^o$ qlm r qlmr) /\
+       (minus$^o$ qlmr nl rr) /\ (split$^o$ rr r [] rh) /\ (div$^o$ nh m qh rh))
      )
    ))
   )
@@ -142,13 +153,12 @@ let div$^o$ n m q r =
 %	TITLE SECTION 
 %----------------------------------------------------------------------------------------
 
-\title[Improving Refutational Completeness of Relational Search]{Improving Refutational Completeness of Relational Search}
+\title[Improving Refutational Completeness \\ of Relational Search]{Improving Refutational Completeness \\ of Relational Search}
 
 \author
-{\textbf{Dmitri Rozplokhas}\inst{1}}% \quad Dmitri Boulytchev\inst{2}}
+{Dmitri Rozplokhas}% \quad Dmitri Boulytchev\inst{2}}
 
 \institute{
-  \inst{1}%
   Saint Petersburg Academic University, JetBrains Research, Russia% \quad
 %  \inst{2}%
 %  Saint Petersburg State University, JetBrains, Russia
@@ -166,6 +176,14 @@ let div$^o$ n m q r =
 \sloppy
 \begin{document}
 
+\addtobeamertemplate{headline}{} 
+{
+\begin{tikzpicture}[remember picture,overlay] 
+\node [shift={(-10 cm,-13cm)}] at (current page.north east) {\includegraphics[height=10cm]{jetbrains_logo}}; 
+\node [shift={(10 cm,-13cm)}] at (current page.north west) {\includegraphics[height=10cm]{AU_logo}}; 
+\end{tikzpicture} 
+}
+
 %% \addtobeamertemplate{block end}{}{\vspace*{1ex}} % White space under blocks
 %% \addtobeamertemplate{block alerted end}{}{\vspace*{1ex}} % White space under highlighted (alert) blocks
 
@@ -181,112 +199,75 @@ let div$^o$ n m q r =
   
     \begin{block}{Relational Programming}
       \vskip7mm
-      \begin{itemize}
-        \justifying
-        \item From programs as \emph{functions} to programs as \emph{relations}.
-        \item Evaluation in various directions (e.g. evaluating the arguments from a result value).
-        \item Elegant solutions by duality for some non-trivial problems:
-          \bigskip
-
-          \begin{center}
-          \textbf{\textcolor{blue}{
-          \begin{tabular}{rcl}
-             sorting        & $\leftrightarrow$ & permutations\\
-             type inference & $\leftrightarrow$ & type inhabitation\\
-             interpretation & $\leftrightarrow$ & program synthesis
-          \end{tabular}}}
-          \end{center}
-
-      %\textbf{\textcolor{blue}{Sorting}} for \textbf{\textcolor{blue}{generation of permutations}} \\
-      %\textbf{\textcolor{blue}{Typechecker}} for \textbf{\textcolor{blue}{inhabitation problem}} \\
-      %\textbf{\textcolor{blue}{Interpreter}} for \textbf{\textcolor{blue}{generation of quines}}
-      \end{itemize}      
-   
-    %\begin{block}{MiniKanren}
-      MiniKanren [Friedman, Byrd, Kiselyov, 2005]: % is a family of relational EDSLs. Relational constructs:
-      %Host languages include:
-      %\begin{itemize}
-      %  \item Scheme (original implementation)
-      %  \item Closure
-      %  \item Haskell
-        %% \item Go
-      %  \item OCaml (implementation we use)
-      %\end{itemize}
-      %Specification constructors:
-
-      \begin{itemize}
-        \item unification ($\equiv$) of two terms;
-        \item conjunction ($\wedge$) and disjunction ($\vee$);
-        \item fresh variable introduction;
-        \item plus some host language (Scheme/Racket, Clojure, Haskell, \textbf{OCaml}).
-      \end{itemize}
       
+      
+    %  From \\
+     %\begin{center}
+      {\Large
+      $$
+         \begin{array}{c}
+         \mbox{Programs as \emph{functions}}\\
+         \Downarrow\\
+         \mbox{Programs as \emph{relations}}
+         \end{array}
+      $$}
+      \vskip8mm
+      
+      %\centerline{\large programs as \emph{functions}} 
+      % begin{center} \large programs as \emph{functions} \end{center}
+     % to \\
+      %\centerline{\large programs as \emph{relations}}
+      %\begin{center} \large programs as \emph{relations} \end{center}
+      
+      MiniKanren [Friedman, Byrd, Kiselyov, 2005]~--- a small relational DSL
+      %\end{center}
+      
+      %[Friedman, Byrd, Kiselyov, 2005]:
+%      \begin{itemize}
+%       \item 4 relational constructors
+%        \item some host language (Scheme, Racket, Clojure, Haskell, \textbf{OCaml}).
+%     \end{itemize}
+      \vskip8mm
       \begin{exampleblock}{Relational List Concatenation}
         \lstinputlisting{appendo.ml}
+        \lstinputlisting{appendorun.ml}
       \end{exampleblock}
-      \vskip7mm
-      Running relational programs:
-
-      \bigskip
+      
+      In relational world:
+      
       \begin{center}
-      \lstinline|(fun q -> append$^o$ [1; 2] [3] q) $\;\leadsto^*\;$ \{q=[1; 2; 3]\}|
+        \textbf{\textcolor{blue}{
+        \begin{tabular}{rcl}
+          sorting        & $\leftrightarrow$ & permutations\\
+          type inference & $\leftrightarrow$ & type inhabitation\\
+           interpretation & $\leftrightarrow$ & program synthesis
+        \end{tabular}}}
       \end{center}
-      \bigskip
-      %\lstinputlisting{appendorun.ml}
+      
     \end{block}
     
-    \begin{block}{Refutational Completeness}
-      \vskip7mm
+    \begin{block}{Refutational completeness}
+    \vskip7mm
 
-      MiniKanren search:
       \begin{itemize}
-         \justifying
-         \item is complete (capable of finding all answers); 
-         \item can diverge, when no answers exist (or the number of 
-         requested answers exceeds the number of existing ones):
-         \begin{center}
-            \lstinline|(fun q r -> append$^o\;$ q r [1;2;3]) $\;\leadsto^*\;$ $\bot$|
-         \end{center}
-      \end{itemize}
+        \item MiniKanren search: complete, but can diverge when no answers exist:
+      \vskip8mm
 
-      Relational specification is \textbf{refutationally complete} [Byrd, 2009], if any query terminates when 
-      no answers left. Many important specifications are refutationally \emph{incomplete}.
-      \bigskip
-      \end{block}
-
-      \begin{alertblock}{Goal}
-        Improve the search to make more specifications refutationally complete.
-      \end{alertblock}
-   
-      \begin{block}{Approach}
-      \vskip7mm
-      One of the reasons for refutational incompleteness is the non-commutativity of conjunction:
-
-      \begin{figure}
-        %\large{Information passing}\\
-        \begin{tikzpicture}[scale=0.7]
-          \node[text width=4cm] at (0,0) {\large $g_1 \wedge g_2$};
-          \draw [->, line width=9, blue] (-7,0) -- (-3.5,0);
-          \draw [->, line width=9, blue] (3.5,0) -- (7,0); 
-          \draw [->, line width=9, blue] (-2,1) .. controls (-1,3) and (1,3) .. (2,1);
-          \draw [->, line width=9, blue] (2,-1) .. controls (1,-3) and (-1,-3) .. (-2,-1);
-          \draw [line width=9, red] (-0.75,-3.25) -- (0.75,-1.75); 
-          \draw [line width=9, red] (-0.75,-1.75) -- (0.75,-3.25);
-        \end{tikzpicture}
-      %\caption{Information flow}
-      \end{figure}
-      If $g_1$ diverges, then $g_1 \wedge g_2$ diverges even when $g_2$ fails. 
-      \bigskip
- 
-      \textbf{Idea:} swap the constituents of a conjunction as soon as the divergence of the first
-      one is detected dynamically, and repeat the search.
-
-      %\bigskip
-      %\bigskip
+            
+       \NoIndent{
+           \lstinline|run* (fun q r -> append$^o\;$ q r [1;2]) $\; \leadsto \;$ $\bot$|
+       }
+       \vskip8mm
+       \item \textbf{Refutational completeness} [Byrd, 2009]: any query terminates when no answers left.
+       \end{itemize}
+       \vskip1cm
       
-      
-      %Shift of recursive call to the end makes {\ttfamily append$^o$} RC.
-      %It doesn't work in more complex cases.
+       %Relational specification is \textbf{refutationally complete} [Byrd, 2009], if any query terminates when no answers left.
+       
+       \large Many important specifications are refutationally incomplete.
+       \vskip1cm
+       
+       
     \end{block}
     
     %\begin{block}{Possible solutions}
@@ -303,19 +284,60 @@ let div$^o$ n m q r =
   \begin{column}{\sepwid}\end{column} % Empty spacer column
 
   \begin{column}{\onecolwid} % The second column
+  
+  
+       \begin{alertblock}{Goal}
+         Extend the search to make more specifications refutationally complete.
+       \end{alertblock}
+  
+    \begin{block}{Approach}
+      \vskip8mm
+      \textbf{Problem:} the non-commutativity of conjunction.
+      
+      \begin{figure}
+        %\large{Information passing}\\
+        \begin{tikzpicture}%[scale=1.2]
+          \node[text width=7cm] at (0,0) {\huge $g_1 \wedge g_2$};
+          \draw [->, line width=13, blue] (-8,0) -- (-4,0);
+          \draw [->, line width=13, blue] (4,0) -- (8,0); 
+          \draw [->, line width=13, blue] (-2.5,1) .. controls (-1,3.5) and (1,3.5) .. (2.5,1);
+          \draw [->, line width=13, blue] (2.5,-1.5) .. controls (1,-4) and (-1,-4) .. (-2.5,-1.5);
+          \draw [line width=13, red] (-1,-4.25) -- (1,-2.25); 
+          \draw [line width=13, red] (-1,-2.25) -- (1,-4.25);
+        \end{tikzpicture}
+      %\caption{Information flow}
+      \end{figure}
+      
+      If $g_1$ diverges, then $g_1 \wedge g_2$ diverges. 
+      \vskip8mm
+     
+      \textbf{Idea:}
+      	\begin{enumerate}
+      	\justifying
+      	\item detect divergence dynamically;
+      	\item swap the constituents of enclosing conjunction;
+      	\item resume the search.
+      	\end{enumerate}
+      
+      \vskip8mm
+      \textbf{Divergence test informally:}
+      \vskip8mm
+      If arguments in a recursive call are more general, than those of the enclosing one, then the search will diverge.
+      
+      \end{block}
    
-    \begin{block}{Implementation and Evaluation}
+    \begin{block}{Results}
     
     \vskip5mm
-     
-     Improved search was implemented for deeply embedded version of MiniKanren for OCaml. A few
-existing specificaitons were evaluated:
-     \bigskip
+    
+    Prototype implementation for deeply embedded version for OCaml
+    \vskip8mm    
+    %Extentions allows to construct refutationally complete versions for new relations
 
-     \begin{exampleblock}{Relational Sorting/Permutations}
-        \justifying
-        \lstinputlisting{sorto.ml}
-        \bigskip
+     %\begin{exampleblock}{Permutations}
+        %\justifying
+        %\lstinputlisting{sorto.ml}
+        %\bigskip
         %For termination we need
 
         %\begin{itemize}
@@ -327,56 +349,42 @@ existing specificaitons were evaluated:
 
         %Calculating all permutations via sorting:
         %\bigskip
-        \lstinputlisting{permo.ml}
-        \bigskip
-        $\cal{NB}:$ requires evaluation of \lstinline|sort$^o$| in \emph{both} directions simultaneously.
+        %\lstinputlisting{permo.ml}
+        %\bigskip
+        %requires evaluation of \lstinline|sort$^o$| in \emph{both} directions simultaneously.
 
-        \bigskip
-        \justifying
-        \textbf{Conventional search:}
-        \begin{itemize}
-           \justifying
-           \item diverges, when \emph{all} permututations are requested for 
-                 any positive list length (regardless the direction of evaluation);
-           \item unreasonably slow for list length $>3$. 
-        \end{itemize}
-        \textbf{Improved search:}
-        \begin{itemize}
-           \justifying
-           \item returns all permutations for all directions of evaluation;
-           \item works in a reasonable time for all reasonable list lengths (7, 8, ...)
-        \end{itemize}
-	 \end{exampleblock}
+        %\bigskip
+        %\justifying
+        %\textbf{Conventional search:} diverges regardless the direction, unreasonably slow.
+        
+        %\textbf{Extended search:} terminates regardless the direction, reasonably slow.
+	 %\end{exampleblock}
+    
      %Extended search reconstructs (experimentally) \\ the way of information propagation for each call.
 
      %Multidirectional calls (like in {\ttfamily perm$^o$}) converge.
-      \bigskip
+      %\bigskip
+      %or simplify existing ones
       
-     %Extention allows to write RC specifications naively.
+     %Extention allows to write refutationallu specifications naively.
 
-      \begin{exampleblock}{Binary Division with Reminder}
+      \begin{exampleblock}{Binary Division}
         \justifying
         Definition-based natural implementation:
 
-        %For the division with remainder 
-
-        %\[ n = m \cdot q + r, \quad r < m \]
- 
-        %for binary representation of numbers the following definition-based implementation seems to be natural:
         \bigskip
         \lstinputlisting{divoeasy.ml}
         \bigskip
-
-        Does not work well in all directions with conventional search.
-
-        \bigskip
-
-        Fix: use tricky and sophisticated solution [Kiselyov, Byrd, Friedman, Shan, 2008]:
+        
+        is not refutationally complete under the convential search.
+        
+        Fix: use a tricky solution [Kiselyov, Byrd, Friedman, Shan, 2008]:
  
-        \lstinputlisting{divo.ml}
+        \lstinputlisting[basicstyle=\tiny]{divo.ml}
 
-        ... or improved search.        
+        ... or \textbf{extended search}.        
       \end{exampleblock}
+      
     \end{block}
 
   \end{column}
@@ -399,52 +407,9 @@ existing specificaitons were evaluated:
            \item $g$~--- goal
            \item $S$~--- (multi) set of answers
          \end{itemize}
-$$
-\def\arraystretch{3.3}
-\begin{array}{c}
-       %\Gamma,\,\iota \vdash (\sigma,\,\delta) \Xrightarrow{\ocanren{$t_1\;$ === $\;t_2$}} 
-       %  \left\{
-       %     \def\arraystretch{1}
-       %     \begin{array}{c}
-       %        \{(\sigma\ \mbox{\bf{mgu}}\,(t_1 \iota \sigma,\,t_2 \iota \sigma),\,\delta)\}\\
-       %        \emptyset,\;\mbox{if no mgu exists}
-       %     \end{array}
-       %  \right. \\
-      
-       \Gamma,\,\iota \vdash \sigma \Xrightarrow{\ocanren{$t_1\;$ === $\;t_2$}} 
-         \left\{
-            \def\arraystretch{1}
-            \begin{array}{l}
-               \{\sigma\ \mbox{mgu}\,(t_1 \iota \sigma,\,t_2 \iota \sigma)\}\\
-               \emptyset,\;\mbox{if no m.g.u. exists}
-            \end{array}
-         \right. \\
-      
-      %\dfrac{ \Gamma,\,\iota[x \leftarrow s] \vdash (\sigma,\,\delta \cup \{s\}) \Xrightarrow{\ocanren{$g$}} S }{ \Gamma, \iota \vdash (\sigma,\,\delta) \Xrightarrow{\ocanren{fresh ($x$) $\;g$}} S },\;s \not\in \delta\\ 
-      
-\dfrac{ \Gamma,\,\iota\,[x \leftarrow s] \vdash \sigma \Xrightarrow{\ocanren{$g$}} S }{ \Gamma, \iota \vdash \sigma \Xrightarrow{\ocanren{fresh ($x$) $\;g$}} S },\;s\;\mbox{is fresh}\\ 
-      
-%       \dfrac{\Gamma,\,\iota[x_i\gets t_i\iota\sigma] \vdash (\epsilon,\,\delta) \Xrightarrow{\ocanren{$g$}} \{ (\sigma_j,\,\delta_j) \}}
-%             {\Gamma,\,\iota \vdash (\sigma,\,\delta) \Xrightarrow{\ocanren{$r^n \ t_1 \ \dots \ t_n$}} \{ (\sigma \sigma_j,\,\delta_j)\} },\,\Gamma\,(r^n) = \lambda\bar{x_i}.g \\
 
-       \dfrac{\Gamma,\,\iota\,[x_i\gets t_i\iota\sigma] \vdash \epsilon \Xrightarrow{\ocanren{$g$}} \{\sigma_j\}}
-             {\Gamma,\,\iota \vdash \sigma \Xrightarrow{\ocanren{$r^n \ t_1 \ \dots \ t_n$}} \{ \sigma \sigma_j\} },\,\Gamma\,(r^n) = \lambda x_1\dots x_n.g \\
-      
-%       \dfrac{ \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1$} } S_1,\; 
-%       \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_2$} } S_2}{ \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1\;\vee\;g_2$} } S_1 \cup S_2 } \\
 
-      \dfrac{ \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1$} } S_1,\;\;\; 
-       \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_2$} } S_2}{ \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1\;\vee\;g_2$} } S_1 \uplus S_2 } \\
-      
-%       \dfrac{ \Gamma,\, \iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1$} } \{ (\sigma_i,\, \delta_i)\},\;
-%       \Gamma,\, \iota \vdash (\sigma_i,\, \delta_i) \Xrightarrow{ \ocanren{$g_2$} } S_i }{ \Gamma,\,\iota \vdash (\sigma,\, \delta) \Xrightarrow{ \ocanren{$g_1 \wedge g_2$} } \cup_i S_i }
-
-\dfrac{ \Gamma,\, \iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1$} } \{ \sigma_i\},\;\;\;
-       \Gamma,\, \iota \vdash \sigma_i \Xrightarrow{ \ocanren{$g_2$} } S_i }{ \Gamma,\,\iota \vdash \sigma \Xrightarrow{ \ocanren{$g_1 \wedge g_2$} } \uplus\,S_i } 
-\end{array}
-$$
-\vskip5mm
-      $\cal{NB}:$ describes only terminating runs. 
+$\cal{NB}:$ describes only terminating runs. 
 \end{center}
 \vskip1.5cm
 
@@ -457,27 +422,26 @@ $$
 
         $$
           \begin{array}{c}
-            \Gamma, \iota_2 \vdash \sigma_2 \Xrightarrow{\ocanren{$r^n\;b_1 \dots b_n$}} \\
+            \Gamma, \iota_2 \vdash \sigma_2 \Xrightarrow{\ocanren{$r^n\;\textcolor{blue}{b_1} \dots \textcolor{blue}{b_n}$}} \\
             \ldots \\
-            \Gamma, \iota_1 \vdash \sigma_1 \Xrightarrow{\ocanren{$r^n\;a_1 \dots a_n$}}
+            \Gamma, \iota_1 \vdash \sigma_1 \Xrightarrow{\ocanren{$r^n\;\textcolor{blue}{a_1} \dots \textcolor{blue}{a_n}$}}
           \end{array}
         $$
 
         where for some substitution $\tau$
 
-        \[ a_i \iota_1 \sigma_1 = (b_i \iota_2 \sigma_2) \tau \]
+        \[ \textcolor{blue}{a_i} \iota_1 \sigma_1 = (\textcolor{blue}{b_i} \iota_2 \sigma_2) \tau \]
 
         then there is no $S$, such that
 
-        \[ \Gamma, \iota_1 \vdash \sigma_1 \Xrightarrow{\ocanren{$r^n\;a_1 \dots a_n$}} S \]
+        \[ \Gamma, \iota_1 \vdash \sigma_1 \Xrightarrow{\ocanren{$r^n\;\textcolor{blue}{a_1} \dots \textcolor{blue}{a_n}$}} S \]
 
 \vskip1cm
 \begin{center}
-     \textbf{Improved Semantics}
+     \textbf{Extended Semantics:}
       
-     $$\Gamma,\, \iota,\, \dots \vdash \sigma \xRightarrow{\ocanren{$\phantom{x}g\phantom{x}$}} S$$
+     $$\Gamma,\, \iota,\, s \vdash \sigma \xRightarrow{\ocanren{$\phantom{x}g\phantom{x}$}} S$$
 
-     (too hairy to be presented here)
 \end{center}
 \vskip1cm
 \underline{Theorem} For arbitrary $\Gamma$, $\sigma$, $\iota$, $g$, and $S$ if
@@ -489,7 +453,7 @@ $$
      then
 
      $$
-       \Gamma,\,\iota,\,\dots\vdash\sigma\xRightarrow{\ocanren{$\phantom{x}a\phantom{x}$}} S
+       \Gamma,\,\iota,\,s\vdash\sigma\xRightarrow{\ocanren{$\phantom{x}g\phantom{x}$}} S
      $$
 
     \end{block}
@@ -503,9 +467,6 @@ $$
 %      \end{itemize}
 %    \end{block}
     
-%    \begin{block}{Acknowledgements}
-%      This work is sponsored by JetBrains Research.
-%    \end{block}
 
   \end{column}
   
