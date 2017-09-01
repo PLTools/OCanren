@@ -10,8 +10,15 @@
 \usepackage{tikz}
 \usepackage{comment}
 \usepackage{mathtools}
+\usepackage{fancybox}
 \usepackage{ragged2e}
+\usepackage[font={large}]{caption}
 \usetikzlibrary{backgrounds,tikzmark}
+
+\captionsetup[figure]{labelformat=empty}
+
+\usepackage[backend=bibtex,style=numeric,maxnames=2,firstinits=true]{biblatex}
+\addbibresource{poster.bib}
 
 %% \usepackage[backend=bibtex,style=numeric,maxnames=2,firstinits=true]{biblatex}
 
@@ -87,6 +94,12 @@ language=ocanren
   \endgroup
 }
 
+\makeatletter
+\newenvironment{CenteredBox}{% 
+\begin{Sbox}}{% Save the content in a box
+\end{Sbox}\centerline{\parbox{\wd\@Sbox}{\TheSbox}}}% And output it centered
+\makeatother
+
 \begin{filecontents*}{appendo.ml}
 let rec append$^o$ x y xy =
   (x === [] /\ y === xy) \/
@@ -99,13 +112,11 @@ let rec append$^o$ x y xy =
 
 \begin{filecontents*}{appendorun.ml}
 
-run 1 (fun q -> append$^o$ [1;2] [3] q)
-            $\leadsto$ {q=[1;2;3]}
+run 1 (fun q -> append$^o$ [1; 2] [3] q) $\leadsto$ {q=[1; 2; 3]}
 
-run 3 (fun q r -> append$^o$ q r [1;2])
-            $\leadsto$ {q=[ ], r=[1;2];
-            ~\phantom{$\leadsto$}~  q=[1], r=[2];
-            ~\phantom{$\leadsto$}~  q=[1;2], r=[ ]}
+run 3 (fun q r -> append$^o$ q r [1; 2]) $\leadsto$ {q=[ ], r=[1; 2];
+~\phantom{run 3 (fun q r -> append$^o$ q r [1; 2]) $\leadsto$ \{}~      q=[1], r=[2];
+~\phantom{run 3 (fun q r -> append$^o$ q r [1; 2]) $\leadsto$ \{}~      q=[1; 2], r=[ ]}
 \end{filecontents*}
 
 \begin{filecontents*}{sorto.ml}
@@ -200,41 +211,11 @@ let div$^o$ n m q r =
     \begin{block}{Relational Programming}
       \vskip7mm
       
-      
-    %  From \\
-     %\begin{center}
       {\Large
-      $$
-         \begin{array}{c}
-         \mbox{Programs as \emph{functions}}\\
-         \Downarrow\\
-         \mbox{Programs as \emph{relations}}
-         \end{array}
-      $$}
-      \vskip8mm
-      
-      %\centerline{\large programs as \emph{functions}} 
-      % begin{center} \large programs as \emph{functions} \end{center}
-     % to \\
-      %\centerline{\large programs as \emph{relations}}
-      %\begin{center} \large programs as \emph{relations} \end{center}
-      
-      MiniKanren [Friedman, Byrd, Kiselyov, 2005]~--- a small relational DSL
-      %\end{center}
-      
-      %[Friedman, Byrd, Kiselyov, 2005]:
-%      \begin{itemize}
-%       \item 4 relational constructors
-%        \item some host language (Scheme, Racket, Clojure, Haskell, \textbf{OCaml}).
-%     \end{itemize}
-      \vskip8mm
-      \begin{exampleblock}{Relational List Concatenation}
-        \lstinputlisting{appendo.ml}
-        \lstinputlisting{appendorun.ml}
-      \end{exampleblock}
-      
-      In relational world:
-      
+        $$\mbox{\emph{Functions}} \Rightarrow \mbox{\emph{Relations}}$$
+      }
+      {\large In relational world:
+       \vskip7mm
       \begin{center}
         \textbf{\textcolor{blue}{
         \begin{tabular}{rcl}
@@ -243,6 +224,40 @@ let div$^o$ n m q r =
            interpretation & $\leftrightarrow$ & program synthesis
         \end{tabular}}}
       \end{center}
+      }
+      
+      %{\Large
+      %$$
+      %   \begin{array}{c}
+      %   \mbox{Programs as \emph{functions}}\\
+      %   \Downarrow\\
+      %   \mbox{Programs as \emph{relations}}
+      %   \end{array}
+      %$$}
+      %\vskip8mm
+      
+      %\centerline{\large programs as \emph{functions}} 
+      % begin{center} \large programs as \emph{functions} \end{center}
+     % to \\
+      %\centerline{\large programs as \emph{relations}}
+      %\begin{center} \large programs as \emph{relations} \end{center}
+      
+      MiniKanren~\cite{friedman2005reasoned}~--- a small relational DSL
+      %\end{center}
+      
+      %[Friedman, Byrd, Kiselyov, 2005]:
+%      \begin{itemize}
+%       \item 4 relational constructors
+%        \item some host language (Scheme, Racket, Clojure, Haskell, \textbf{OCaml}).
+%     \end{itemize}
+      \vskip8mm
+      \begin{exampleblock}{\centering Relational List Concatenation}
+         \begin{CenteredBox}
+            \lstinputlisting{appendo.ml}
+          \end{CenteredBox}
+        \lstinputlisting{appendorun.ml}
+      \end{exampleblock}
+      
       
     \end{block}
     
@@ -250,15 +265,11 @@ let div$^o$ n m q r =
     \vskip7mm
 
       \begin{itemize}
-        \item MiniKanren search: complete, but can diverge when no answers exist:
-      \vskip8mm
-
-            
-       \NoIndent{
-           \lstinline|run* (fun q r -> append$^o\;$ q r [1;2]) $\; \leadsto \;$ $\bot$|
-       }
-       \vskip8mm
-       \item \textbf{Refutational completeness} [Byrd, 2009]: any query terminates when no answers left.
+        \item MiniKanren search is complete, but can diverge when no answers exist:
+        \vskip8mm
+        \lstinline|run* (fun q r -> append$^o\;$ q r [1; 2]) $\; \leadsto \;$ $\bot$|
+        \vskip8mm
+       \item \textbf{Refutational completeness}~\cite{byrd2009relational}: any query terminates when no answers left.
        \end{itemize}
        \vskip1cm
       
@@ -267,8 +278,34 @@ let div$^o$ n m q r =
        \large Many important specifications are refutationally incomplete.
        \vskip1cm
        
+    \end{block}
+    
+    \begin{block}{Existing techniques}
+    \vskip7mm
+
+	\begin{itemize}
+		\item Moving a recursive call to the end
+		
+		\item Bounding the sizes of terms:
+		
+	   \vskip8mm
+	   \begin{exampleblock}{\centering Binary Division with reminder}
+        \justifying
+        Changing definition-based natural implementation:
+
+        \bigskip
+            \lstinputlisting{divoeasy.ml}
+        \bigskip
+        
+        to a sophisticated recursive solution~\cite{Kiselyov:2008:PDC:1788446.1788456} of 20 LOC.
+      \end{exampleblock}
+		
+		\item lots of others
+	\end{itemize}
        
     \end{block}
+    
+   
     
     %\begin{block}{Possible solutions}
      % \begin{enumerate}
@@ -290,9 +327,13 @@ let div$^o$ n m q r =
          Extend the search to make more specifications refutationally complete.
        \end{alertblock}
   
-    \begin{block}{Approach}
+    \vskip8mm
+    
+    \begin{block}{Problem}
       \vskip8mm
-      \textbf{Problem:} the non-commutativity of conjunction.
+      {\large \textbf{The non-commutativity of conjunction. }}
+      
+      %\setbeamertemplate{caption}{\raggedright\insertcaption\par}
       
       \begin{figure}
         %\large{Information passing}\\
@@ -300,17 +341,20 @@ let div$^o$ n m q r =
           \node[text width=7cm] at (0,0) {\huge $g_1 \wedge g_2$};
           \draw [->, line width=13, blue] (-8,0) -- (-4,0);
           \draw [->, line width=13, blue] (4,0) -- (8,0); 
-          \draw [->, line width=13, blue] (-2.5,1) .. controls (-1,3.5) and (1,3.5) .. (2.5,1);
+          \draw [->, line width=13, blue] (-2.5,1.5) .. controls (-1,4) and (1,4) .. (2.5,1.5);
           \draw [->, line width=13, blue] (2.5,-1.5) .. controls (1,-4) and (-1,-4) .. (-2.5,-1.5);
           \draw [line width=13, red] (-1,-4.25) -- (1,-2.25); 
           \draw [line width=13, red] (-1,-2.25) -- (1,-4.25);
         \end{tikzpicture}
-      %\caption{Information flow}
+        \caption{Information flow}
       \end{figure}
       
       If $g_1$ diverges, then $g_1 \wedge g_2$ diverges. 
       \vskip8mm
-     
+    \end{block}    
+    
+    \begin{block}{Approach}
+       \vskip8mm
       \textbf{Idea:}
       	\begin{enumerate}
       	\justifying
@@ -320,9 +364,10 @@ let div$^o$ n m q r =
       	\end{enumerate}
       
       \vskip8mm
-      \textbf{Divergence test informally:}
+      \textbf{Divergence test:}
       \vskip8mm
       If arguments in a recursive call are more general, than those of the enclosing one, then the search will diverge.
+      \vskip8mm
       
       \end{block}
    
@@ -330,8 +375,19 @@ let div$^o$ n m q r =
     
     \vskip5mm
     
-    Prototype implementation for deeply embedded version for OCaml
-    \vskip8mm    
+    \begin{itemize}
+      \item Prototype implementation for deeply embedded version for OCaml.
+      \item Semantics for terminating MinKanren programs (convenient and extended search), proof of divergence test correctness and refutational completeness preserving.
+    \end{itemize}
+    \vskip8mm  
+    
+  \end{block}
+  
+   \begin{block}{References}
+      \vskip7mm
+      \printbibliography
+
+    \end{block}
     %Extentions allows to construct refutationally complete versions for new relations
 
      %\begin{exampleblock}{Permutations}
@@ -368,109 +424,30 @@ let div$^o$ n m q r =
       
      %Extention allows to write refutationallu specifications naively.
 
-      \begin{exampleblock}{Binary Division}
-        \justifying
-        Definition-based natural implementation:
+      %\begin{exampleblock}{Binary Division}
+        %\justifying
+        %Definition-based natural implementation:
 
-        \bigskip
-        \lstinputlisting{divoeasy.ml}
-        \bigskip
+        %\bigskip
+        %\lstinputlisting{divoeasy.ml}
+        %\bigskip
         
-        is not refutationally complete under the convential search.
+        %is not refutationally complete under the convential search.
         
-        Fix: use a tricky solution [Kiselyov, Byrd, Friedman, Shan, 2008]:
+        %Fix: use a tricky solution [Kiselyov, Byrd, Friedman, Shan, 2008]:
  
-        \lstinputlisting[basicstyle=\tiny]{divo.ml}
+        %\lstinputlisting[basicstyle=\tiny]{divo.ml}
 
-        ... or \textbf{extended search}.        
-      \end{exampleblock}
+        %... or \textbf{extended search}.        
+      %\end{exampleblock}
       
-    \end{block}
+    %\end{block}
 
   \end{column}
 
   \begin{column}{\sepwid}\end{column} % Empty spacer column
 
-  \begin{column}{\onecolwid} % The third column
-  
-    \begin{block}{Formal Development}
-      \vskip5mm      
-      \begin{center} 
-         \textbf{Big-step operational semantics:}
-
-	 $$\Gamma, \iota \vdash \sigma \Xrightarrow{\ocanren{$g$}} S$$
-
-         \begin{itemize}
-           \item $\Gamma$~--- functional environment
-           \item $\iota$~--- valuation of variables
-           \item $\sigma$~--- substitution
-           \item $g$~--- goal
-           \item $S$~--- (multi) set of answers
-         \end{itemize}
-
-
-$\cal{NB}:$ describes only terminating runs. 
-\end{center}
-\vskip1.5cm
-
-\begin{center}      
-        \textbf{Divergence test:}
-\end{center}
-\vskip3mm
-
-        \underline{Theorem} If we have a derivation
-
-        $$
-          \begin{array}{c}
-            \Gamma, \iota_2 \vdash \sigma_2 \Xrightarrow{\ocanren{$r^n\;\textcolor{blue}{b_1} \dots \textcolor{blue}{b_n}$}} \\
-            \ldots \\
-            \Gamma, \iota_1 \vdash \sigma_1 \Xrightarrow{\ocanren{$r^n\;\textcolor{blue}{a_1} \dots \textcolor{blue}{a_n}$}}
-          \end{array}
-        $$
-
-        where for some substitution $\tau$
-
-        \[ \textcolor{blue}{a_i} \iota_1 \sigma_1 = (\textcolor{blue}{b_i} \iota_2 \sigma_2) \tau \]
-
-        then there is no $S$, such that
-
-        \[ \Gamma, \iota_1 \vdash \sigma_1 \Xrightarrow{\ocanren{$r^n\;\textcolor{blue}{a_1} \dots \textcolor{blue}{a_n}$}} S \]
-
-\vskip1cm
-\begin{center}
-     \textbf{Extended Semantics:}
-      
-     $$\Gamma,\, \iota,\, s \vdash \sigma \xRightarrow{\ocanren{$\phantom{x}g\phantom{x}$}} S$$
-
-\end{center}
-\vskip1cm
-\underline{Theorem} For arbitrary $\Gamma$, $\sigma$, $\iota$, $g$, and $S$ if
-
-     $$
-       \Gamma,\,\iota\vdash \sigma\Xrightarrow{\ocanren{$g$}} S
-     $$
-
-     then
-
-     $$
-       \Gamma,\,\iota,\,s\vdash\sigma\xRightarrow{\ocanren{$\phantom{x}g\phantom{x}$}} S
-     $$
-
-    \end{block}
-    
-
-%    \begin{block}{Implementation details}
-%      \begin{itemize}
-%        \item Deep embedding required
-%        \item $\mathcal{O}(n^2)$ orders are checked in worst case, \\ but optimal can't be missed
-%        \item Extended search is $10$ times slower \\ on terminating programs at the moment
-%      \end{itemize}
-%    \end{block}
-    
-
-  \end{column}
-  
-  \begin{column}{\sepwid}\end{column} % Empty spacer column
+ 
 \end{columns}
 
 \end{frame} % End of the enclosing frame
