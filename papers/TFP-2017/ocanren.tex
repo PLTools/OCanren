@@ -1,130 +1,128 @@
 \section{Relational Programming in \miniKanren}
 \label{ocanren}
 
-In the context of this paper we will use a certain concrete implementation of \cd{miniKanren}~--- a shallow DSL for Objective 
+In the context of this paper we will use a certain concrete implementation of \miniKanren~--- a shallow DSL for Objective 
 Caml\footnote{https://github.com/dboulytchev/ocanren}, called \ocanren~\cite{ocanren}. \ocanren corresponds to \miniKanren with
-disequality constraints~\cite{CKanren}, and (modulo types) follows the original implementation. Here we describe the external view 
-on \ocanren, giving only intuitive meaning of its constructs; the formal semantics will be presented in the full version of the paper. %section~\ref{relational_extension}.
-We also use a simplified syntax, which is different from the concrete syntax in actual implementation, but assumed to
+disequality constraints~\cite{CKanren}, and (modulo typing) follows the original implementation. Here we describe the external view 
+on \ocanren, giving only intuitive meaning of its constructs; the formal description will be presented in Section~\ref{relational_extension}.
+We also use a simplified syntax, which is a little bit different from the concrete syntax in actual implementation, but assumed to
 be easier to read.
 
 The central notion of \miniKanren is \emph{goal}; in \ocanren a goal can be arbitrary expression of reserved goal type, which we denote $\G$.
-There are only five syntactic forms of goals (below $g, g_1, g_2$ denote arbitrary goals):
+There are only five syntactic forms of goals (denoted below as $g, g_1, g_2$, etc.):
 
 \begin{itemize}
-  \item conjunction: $g_1\wedge g_2$;
-  \item disjunction: $g_1\vee g_2$;
-  \item fresh variable introduction: $\lstinline|fresh ($x$) $\;g$|$;
-  \item unification: $t_1\;\equiv\;t_2$;
-  \item disequality constraint: $t_1\;\not\equiv\;t_2$.
+  \item conjunction $g_1\wedge g_2$;
+  \item disjunction $g_1\vee g_2$;
+  \item fresh variable introduction $\lstinline|fresh ($x$) $\;g$|$;
+  \item unification $t_1\;\equiv\;t_2$;
+  \item disequality constraint $t_1\;\not\equiv\;t_2$.
 \end{itemize}
 
-Two last forms constitute a basis for goal construction; here $t_1$ and $t_2$ are \emph{terms}. In \ocanren a term is
-arbitrary expression of polymorphic \emph{logic type}\footnote{In actual 
-implementation the terms have more complex two-parametric type, which encodes tagging, needed to be performed when the results of
-relational program are returned into the functional word; these details, however, are irrelevant to the objectives of the paper, and we stick with the 
-simplified version.} $\uparrow\!\alpha$. The simplest expression of logic type is a variable, bound in \lstinline|fresh|. Another examples are primitive values, \emph{injected} 
-into the logic domain with a built-in primitive ``$\uparrow$'', such as $\uparrow\!3$ (of type \lstinline|$\uparrow$int|) or \lstinline|$\uparrow$True| 
-(of type \lstinline|$\uparrow$bool|). With these simplest forms some relational programs can already be written:
+Two last forms of goals constitute a basis for goal construction; here $t_1$ and $t_2$ are \emph{terms}. In \ocanren a term is arbitrary expression of polymorphic logic type $\alpha^o$. The postfix notation $\Box^o$ is a traditional way to denote relational enities, and we will use it for types as well\footnote{In the real implementation the terms have more complex two-parametric type, which encodes tagging, needed to be performed when the results of relational program are returned into the functional word; these details, however, are irrelevant to the objectives of the paper, and we stick with the simplified version.}.
+
+The simplest expression of logic type is a variable, bound in \lstinline|fresh|. Another example is a primitive value, \emph{injected} into the logic domain with a built-in primitive ``$\uparrow$'', such as $\uparrow\!3$ (of type \lstinline|int$^o$|) or \lstinline|$\uparrow$true| (of type \lstinline|bool$^o$|). With these simplest forms some relational programs can already be written:
 
 \begin{lstlisting}
-   val is_zero : ^int -> ^bool -> $\G$
-   let is_zero n b = 
-     (n === ^0 /\ b === ^True) \/
-     (n =/= ^0 /\ b === ^False)
+   val is_zero$^o$ : int$^o$ -> bool$^o$ -> $\G$
+   let is_zero$^o$ n b = 
+     (n === ^0 &&& b === ^true) |||
+     (n =/= ^0 &&& b === ^false)
 \end{lstlisting}
 
-Function \lstinline|is_zero| implements a binary relation between integers and booleans; when called with specific arguments, it
-returns a goal, which can be executed or combined with another goals. In former case, a stream of \emph{answers} is returned. 
-An element of the stream contains the description of certain constraints for logical variables, which have to be respected in
-order for the relation to hold. 
-
-For example, running the goal 
+Function \lstinline|is_zero$^o$| implements a binary relation between integers and booleans; when called with specific arguments, it returns a goal, which can be executed or combined with another goals. In former case, a stream of \emph{answers} is returned. An element of the stream contains the description of certain constraints for logical variables, which have to be respected in order for the relation to hold. We denote running primitive ``$\leadsto$'', so
 
 \begin{lstlisting}
-   iz_zero ^0 ^True
+   iz_zero$^o$ ^0 ^true $\leadsto$ [()]
 \end{lstlisting}
 
-\noindent returns a stream \lstinline|[()]| with one ``empty'' element since no additional constraints are discovered. 
+\noindent returns a stream with one ``empty'' element since no additional constraints are discovered. 
 Running 
 
 \begin{lstlisting}
-   iz_zero q ^True
+   iz_zero$^o$ q ^true $\leadsto$ [q$\binds$0]
 \end{lstlisting}
 
-\noindent (where \lstinline|q| is a fresh logical variable) returns a stream \lstinline|[q=0]|, which represents the single
-answer. Goal
+\noindent (where \lstinline|q| is a fresh logical variable) returns a stream, which represents the single expected answer. Goal
 
 \begin{lstlisting}
-   iz_zero q ^False
+   iz_zero$^o$ q ^false $\leadsto$ [q$\binds\free{0}$ (=/= 0)]
 \end{lstlisting}
 
-\noindent provides a stream \lstinline|[q=_.0 (=/= 0)]|, which can be interpreted as ``\lstinline|q| can be arbitrary
-integer as long as it is different from zero''. 
-Finally, the goal
+\noindent provides a stream, which can be interpreted as ``\lstinline|q| can be arbitrary integer as long as it is different from zero'' ($\free{0}$, $\free{1}$, etc. denote free logical variables). Finally, the goal
 
 \begin{lstlisting}
-   iz_zero q p
+   iz_zero$^o$ q p $\leadsto$ [(q$\binds$0, p$\binds$true); (q$\binds\free{0}$ (=/= 0), p$\binds$false)]
 \end{lstlisting}
 
-\noindent returns a stream with two elements \lstinline|[(q=0, p=True); (q=_.0 (=/= 0), p=False)]|, which represents all possible
-pairs in the relation.
+\noindent returns a stream with two elements, which represents all possible pairs in the relation.
 
-As more interesting example consider the following definition\footnote{From now on we will maintain the relational naming convention
-by adding ``$^o$'' to the end of every relational definition name.}:
+\begin{comment}
+As more interesting example consider the following definition:
 
 \begin{lstlisting}
-   val eq$^o$ : ^$\alpha$ -> ^$\alpha$ -> ^bool -> $\G$
-   let eq$^o$ x y b = (x ===  y /\ b === ^True) \/ (x =/= y /\ b === ^False)
+   val eq$^o$ : $\alpha^o$ -> $\alpha^o$ -> bool$^o$ -> $\G$
+   let eq$^o$ x y b = 
+     (x === y &&& b === ^true) ||| 
+     (x =/= y &&& b === ^false)
 \end{lstlisting}
 
-The interesting part here is polymorphism: both \lstinline|eq$^o$ ^3 q ^True| and \lstinline|eq$^o$ ^False q ^True| would work, 
-giving as results streams \lstinline|[q=3]| and \lstinline|[q=False]| respectively. However, in the case of relational definition
-the polymorphism is implicitly \emph{bound}~\cite{cardelli}: despite the type, the application \lstinline|eq$^o$ ($\lambda$x.x) ($\lambda$y.y) q|
-would result in a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well, as it
-deals only with first-order syntactic unification~\cite{Unification}. The lack of direct support for bounded polymorphism in Objective Caml
-makes relational specifications in \ocanren somewhat weakly typed, so we express the requirement to unify only non-functional types in the form 
-of convention. A bit later we formulate this requirement in more precise form.
-
-Values of user-defined types have to be injected into the logic domain as well. Since we want to be 
-able to put a logical variable in arbitrary position inside a data structure, it is desirable to keep type definitions
-\emph{fully polymorphic}. In other words, instead of the following (very common) definition for, say, lists
+The interesting part here is polymorphism: both 
 
 \begin{lstlisting}
-   type $\alpha$ list = Nil | Cons of $\alpha$ * $\alpha$ list
+   eq$^o$ ^3 q ^true $\leadsto$ [q$\binds$3]
 \end{lstlisting}
 
-\noindent we suggest to use more abstract fully polymorphic type
+and 
 
 \begin{lstlisting}
-   type ($\alpha$, $\beta$) alist = Nil | Cons of $\alpha$ * $\beta$
+   eq$^o$ ^false q ^true $\leadsto$ [q$\binds$false]
 \end{lstlisting}
 
-This form of definition can be used to acquire both the original type
+\noindent work, giving expected results. However, an application 
 
 \begin{lstlisting}
-   type $\alpha$ list = ($\alpha$, $\alpha$ list) alist
+   eq$^o$ ($\lambda$x.x) ($\lambda$y.y) q
 \end{lstlisting}
 
-\noindent and its logical counterpart
+\noindent ends with a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well, as it deals only with first-order syntactic unification~\cite{Unification}. This example demostrates, that, unlike pure OCaml, the typing in OCanren is somewhat weak~--- some well-typed programs can do wrong. In order to restore the strong typing some of type variables have to be bounded to range over only non-functional types. The lack of direct support for bounded polymorphism in OCaml makes this step problematic. Our experience, however, shows, that in practice this deficiency rarely gets in the way. In the following development we assume, that in polymorphic types some type variables may be implicitly bounded to only non-function types, and these boundings are respected in all instantiations of those type variables.
+\end{comment}
+
+Other types (pairs, lists, user-defined algebraic datatypes, etc.) can be used in relational specifications as well, being injected by the same primitive. For example, expression \lstinline{^(1, "abc")} has type \lstinline{(int * string)$^o$}, \lstinline{^[1; 2; 3]}~--- type \lstinline{(int list)$^o$}, etc. The subtle part is that (since the unification only works for logical types) the placement of ``$^o$'' determines the granularity of unification. Indeed, a logical variable can only be placed where logical type is expected. Thus, in unification one can use a value of type \lstinline{(int * int)$^o$} as \emph{a whole}, but in order to control the \emph{contents} of the pair relationally the type \lstinline{(int$^o$, int$^o$)$^o$} is required. This makes it impossible to reuse some built-in or standard types in relational code~--- for example, predefined list type is not flexible enough, since it does not allow the tail of the list to be logical. Instead, logical list type has to be introduced:
 
 \begin{lstlisting}
-   type $\alpha$ llist = ^((^$\alpha$, $\alpha$ llist) alist)
+   type $\alpha$ llist = Nil | Cons of $\alpha^o$ * ($\alpha$ llist)$^o$
 \end{lstlisting}
 
-Then, the conversion between these two can be expressed using datatype-generic~\cite{DGP} function
-\lstinline|fmap|, which can be derived using existing frameworks~\cite{Deriving}:
+With logical list type, we can implement relations for lists:
 
 \begin{lstlisting}
-   val ($\uparrow_{\mbox{\cd{list}}}$) : $\alpha$ list -> $\alpha$ llist
-   let rec ($\uparrow_{\mbox{\cd{list}}}$) l = ^(fmap$_{\mbox{\cd{llist}}}$ (^) ($\uparrow_{\mbox{\cd{list}}}$) l)
+   val append : $\alpha$ llist$^o$ -> $\alpha$ llist$^o$ -> $\alpha$ llist$^o$ -> $\G$
+   let rec append$^o$ x y xy =
+     (x === ^Nil &&& xy === y) |||
+     (fresh (h t ty)
+        x  === ^(Cons (h, t)) &&&
+        xy === ^(Cons (h, ty)) &&&
+        append$^o$ t y ty
+     ) 
 \end{lstlisting}
 
-We consider fully polymorphic types to be a very attractive pattern since they allow to import/export
-data structures to/from logic domain in a systematic manner. Moreover, with fully polymorphic types the non-functional
-unification convention can be expressed in more straightforward form: we assume, that polymorphic types never
-instantiated for functional types (or types, which instantiated for functional types, etc.)
+Here we defined relational list concatenation \lstinline{append$^o$}, a canonical example in the field. This definition takes three logical lists \lstinline{x}, \lstinline{y} and \lstinline{xy} as arguments, and constructs a goal, which, being ran, finds all bindings for free variables in the lists (if any), trying to satisfy the desired relation. The search is described in terms of case analysis and recursion:
 
+\begin{enumerate}
+\item If the first list is empty, then the second and the third lists must be equal.
+\item Otherwise, the first list can be split into a head and a tail, and two fresh variables \lstinline{h} and \lstinline{t} are needed to denote them. We also need a fresh variable \lstinline{ty} to denote the list, such, that appending \lstinline{y} to \lstinline{t} equals \lstinline{ty}. To ensure this property we use a recursive call to \lstinline{append$^o$}. Finally, we acquire the final result by consing \lstinline{h} and \lstinline{ty}. 
+\end{enumerate}
+
+As it can be seen from the type, relational concatenation is polymorphic, like its functional counterpart. However, the query
+
+\begin{lstlisting}
+   appendo$^o$ ^(Cons (^$\lambda$x.x, ^Nil)) q ^(Cons (^$\lambda$y.y, ^Nil))  
+\end{lstlisting}
+
+\noindent ends with a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well, as it deals only with first-order syntactic unification~\cite{Unification}. This example demostrates, that, unlike pure OCaml, the typing in OCanren is somewhat weak. In order to restore the strong typing some of type variables have to be bounded to range over only non-functional types. The lack of direct support for bounded polymorphism in OCaml makes this step problematic. Our experience, however, shows, that in practice this deficiency rarely gets in the way. In the following development we assume, that in polymorphic types some type variables may be implicitly bounded to only non-function types, and these boundings are respected in all instantiations of those type variables.
+
+\begin{comment}
 Finally, we describe the unnesting technique, used for relational conversion of first-order functions. As an example we take
 list concatenation:
 
@@ -152,10 +150,10 @@ introduced in via bindings in patterns and unnestings, are transformed into \lst
 
 \begin{lstlisting}
    let rec append$^o$ x y xy =
-     (t === ^Nil /\ xy === y) \/
+     (t === ^Nil &&& xy === y) |||
      (fresh (h t ty)
-        (x  === ^Cons (h, t)) /\
-        (xy === ^Cons (h, ty)) /\
+        (x  === ^Cons (h, t)) |||
+        (xy === ^Cons (h, ty)) |||
         (append$^o$ t y ty)
      )
 \end{lstlisting}
@@ -166,7 +164,7 @@ untyped case, however, it can not be done automatically. Shifting this work into
 the flavor of functional programming; it would be very unreasonable to encourage this style of programming in order 
 for relational conversion to work. In our approach $\eta$-expansion is blended with the conversion algorithm and 
 performed on-demand invisibly for the end-user.
-
+\end{comment}
 
 
 

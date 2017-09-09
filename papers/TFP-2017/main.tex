@@ -36,13 +36,16 @@
 \newcommand{\G}{\mathfrak G}
 \newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
 \newcommand{\cd}[1]{\texttt{#1}}
-\newcommand{\miniKanren}{\texttt{miniKanren}\xspace}
-\newcommand{\ocanren}{\texttt{ocanren}\xspace}
+\newcommand{\miniKanren}{miniKanren\xspace}
+\newcommand{\ocanren}{OCanren\xspace}
+\newcommand{\free}[1]{\boxed{#1}}
+\newcommand{\binds}{\;\mapsto\;}
 
 \lstdefinelanguage{ocanren}{
 keywords={fresh, let, in, match, with, when, class, type,
 object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
-new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure},
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+true, false},
 sensitive=true,
 commentstyle=\small\itshape\ttfamily,
 keywordstyle=\ttfamily\underbar,
@@ -50,13 +53,13 @@ identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,
 fontadjust=true,
-literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2 {^}{{$\uparrow$}}1,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {&&&}{{$\wedge$}}2 {|||}{{$\vee$}}2 {^}{{$\uparrow$}}1,
 morecomment=[s]{(*}{*)}
 }
 
 \lstset{
 mathescape=true,
-basicstyle=\small,
+%basicstyle=\small,
 identifierstyle=\ttfamily,
 keywordstyle=\bfseries,
 commentstyle=\scriptsize\rmfamily,
@@ -83,46 +86,48 @@ language=ocanren
 
 \mainmatter
 
-\title{Typed Relational Conversion\\
-(extended abstract)}
+\title{Typed Relational Conversion}
 
 \author{
-  Petr Lozov\inst{1} \and Andrei Vyatkin\inst{2} \and Dmitry Boulytchev\inst{3}
+  Petr Lozov \and Andrei Vyatkin \and Dmitry Boulytchev
 }
 
 \institute{
 St.Petersburg State University\\
 Universitetski pr., 28, 198504, St.Petersburg, Russia\\
+JetBrains Research\\
+Universitetskaya emb., 7-9-11, bldg. 5A, 199034, St.Petersburg, Russia}
+
+%\email{lozov.peter@gmail.com}
+%\and
+%St.Petersburg State University\\
+%Universitetski pr., 28, 198504, St.Petersburg, Russia\\
+%\email{dewshick@gmail.com}
+%\and
+%St.Petersburg State University\\
+%Universitetski pr., 28, 198504, St.Petersburg, Russia\\
 %JetBrains Research\\
-\email{lozov.peter@gmail.com}
-\and
-St.Petersburg State University\\
-Universitetski pr., 28, 198504, St.Petersburg, Russia\\
-\email{dewshick@gmail.com}
-\and
-St.Petersburg State University\\
-Universitetski pr., 28, 198504, St.Petersburg, Russia\\
-%JetBrains Research\\
-\email{dboulytchev@math.spbu.ru}
-}
+%\email{dboulytchev@math.spbu.ru}
+%}
 
 \maketitle
 
 \begin{abstract}
-In this research paper we address the problem of transforming typed functional programs into relational form. 
-In this form a program can be run in various ``directions'' with various arguments left free, making it possible to
-acquire different behaviors from a single specification. We specify the syntax, typing rules and semantics for the source language
-as well as its relational extension, describe the conversion and prove its correctness both in terms of typing and dynamic
-semantics. We also discuss the limitations of our approach, present the implementation of the conversion for the subset of ML and 
-evaluate it for a number of realistic examples.
+We address the problem of transforming typed functional programs into relational form. 
+In this form a program can be run in various ``directions'' with some arguments left free, 
+making it possible to acquire different behaviors from a single specification. We specify the 
+syntax, typing rules and semantics for the source language as well as its relational extension, 
+describe the conversion and prove its correctness both in terms of typing and dynamic semantics. 
+We also discuss the limitations of our approach, present the implementation of the conversion for 
+the subset of OCaml and evaluate it on a number of realistic examples.
 \end{abstract}
 
 \input{introduction.tex}
 \input{ocanren.tex}
-\input{evaluation.tex}
-\input{conclusion.tex}
+%\input{evaluation.tex}
+%\input{conclusion.tex}
 
-%\begin{comment}
+\begin{comment}
 \section{The Source Language}
 
 \begin{figure}
@@ -562,7 +567,7 @@ $$}
 \egroup
 \caption{Relational conversion rules}
 \end{figure}
-%\end{comment}
+\end{comment}
 
 \begin{thebibliography}{99}
 \bibitem{TRS}
