@@ -1,332 +1,235 @@
-\section{Implementation and evaluation}
+\section{Implementation and Application}
 \label{evaluation}
 
-We implemented the relational conversion for the subset of Objective Caml language, using the infrastructure of the 
-original compiler\footnote{\url{http://github.com/ocaml/ocaml}}. We rewrite the original abstract syntax tree with
-the types, inferred by the compiler, into relational form, using the set of combinators from \ocanren. 
+We implemented relational conversion for the subset of OCaml language, using the infrastructure of the 
+original compiler. In its current form the converter takes the whole file and converts every definition into relational form, 
+but in future we consider to implement a more flexible approach when only some definitions are converted, being attributed
+for this purpose in some way. Our converter rewrites the original abstract syntax tree, annotated with the types, inferred by the compiler, 
+into relational form, using the set of combinators from \ocanren.  
 
-Our preliminary evaluation has shown, that our convertor generates a lot of abstractions, most of which can be inlined.
-So we additionally implemented an optimization pass, which performs inlining where possible. This optimization
-greatly improves the performance of the converted program.
+Our preliminary evaluation has shown, that the converter generates a lot of abstractions, many of which can be applied immediately.
+So we additionally implemented an optimization pass, which performs administrative reductions where possible. This optimization
+greatly improves the performance of the converted program in terms of both readability and performance.
 
-As the first example of the conversion we consider a plain implementation of the \lstinline|map| function for lists:
+As the first example of the conversion we consider the implementation of concatenation function for lists:
 
-\begin{lstlisting}
-   let rec map = fun f.fun l.
-     match l with
-     | Nil          -> Nil
-     | Cons (x, xs) -> Cons (f x, map f xs)
+\begin{lstlisting}[basicstyle=\small]
+   val append : $\alpha$ list -> $\alpha$ list -> $\alpha$ list
+   let rec append = fun x.fun y.
+     match x with
+     | Nil         -> y
+     | Cons (h, t) -> Cons (h, append t y)
 \end{lstlisting}
 
-It's relational counterpart without optimizations is shown below:
+In Section~\ref{ocanren} we already saw the canonical version of relational concatenation. The result of conversion, however,
+is slightly different:
 
-\begin{lstlisting}
-   let rec map = funf.funl.funq.
-     fresh (q$_1$) ((l q$_1$) /\
-       (((q$_1$ ===  ^Nil) /\ ((fun q$_2$. q$_2$ ===   ^Nil) q)) \/
-       (fresh (q$_3$ q$_4$)
-         (q$_1$ ===  ^Cons (q$_3$, q$_4$)) /\
-         (fun x.fun xs. (fun q$_5$.
-           (fresh (q$_6$ q$_7$) 
-             (f x q$_6$) /\
-             (map f xs q$_7$) /\
-             (q$_5$ ===  ^Cons (q$_6$, q$_7$)))) q
-         ) ((===) q$_3$) ((===) q$_4$))))
+\begin{lstlisting}[basicstyle=\small]
+   val append$^o$ : (($\alpha$ llist)$^o$ -> $\G$) -> (($\alpha$ llist)$^o$ -> $\G$) -> 
+                 ($\alpha$ llist)$^o$ -> $\G$
+   let rec append$^o$ a b q1 =
+     fresh (q2) &&&
+       (a q2) &&&
+       (((q2 === ^Nil) &&& (b q1)) |||
+         (fresh (q3 q4)
+           (q2 === ^(Cons (q3, q4))) &&&
+           (fresh (q6 q7)
+             (q6 === q3) &&&             
+             (q1 === ^(Cons q6 q7)) &&&
+             (append$^o$ (=== q4) b q7))))
 \end{lstlisting}
 
-After inlining we get the following final relational form:
+The main difference comes from the functionalization of primitive values. Thus, while conventional \lstinline|append$^o$| operates
+on logical lists, the converted variant uses a goal-returning functions. In particular, argument \lstinline|a| here is a function, 
+which takes a logical list and returns a goal. What does this goal do? It just tries to make the argument respect a certain contract.
+As the argument can have some variable occurrences, the goal tries to substitute these variables with some values in order to respect
+the contract this goal represents. For example, if we want to set the first argument of \lstinline{append$^o$} to \lstinline{Nil}, we just 
+have to construct a \lstinline{Nil}-ensuring goal: \lstinline{(===^Nil)}. Thus, the conventional \lstinline{append$^o$} for arguments
+\lstinline|x|, \lstinline|y| and \lstinline|q| can be expressed using the converted one as \lstinline{append$^o$ (===x) (===y) q}.
 
-\begin{lstlisting}
-   let rec map = fun f.fun l.fun q.
-     fresh (q$_1$) ((l q$_1$) /\
-       (((q$_1$ ===  ^Nil) /\ (q ===  ^Nil)) \/
-       (fresh (q$_3$ q$_4$)
-         (q$_1$ ===  ^Cons (q$_3$, q$_4$))
-           (fresh (q$_6$ q$_7$)
-             (f ((===) q$_3$) q$_6$) \/
-             (map f ((===) q$_4$) q$_7$) \/
-             (q === ^Cons (q$_6$, q$_7$))))))
+With this observation in mind, it is rather easy to understand the rest of the code. First, the value of the first argument is
+associated with the fresh variable \lstinline|q2|, and a case analysis is performed. If the first argument is an empty list, then the 
+value of the third argument is associated with the value of the second (by applying \lstinline|b| to \lstinline|q1|). Otherwise, the first
+argument is split into the head \lstinline|q3| and the tail \lstinline|q4|, the tail is functionalized and passed to the recursive
+call. The result \lstinline|q7| is consed with the head \lstinline|q3| of the original list and unified with the result \lstinline|q1|. One extra
+unification \lstinline|q6 === q3| is an artifact of conversion implementation.
+
+
+In the next subsections we consider more elaborated and interesting examples. From now on we refrain from presenting the complete source and
+converted code and consider only the signatures and some interesting queries. 
+
+\subsection{Higher-order Lambda Interpreter}
+
+As we mentioned in Section~\ref{intro}, one of the important application domains for miniKanren is implementation of relational interpreters~\cite{WillThesis,unified,Untagged}. 
+Writing relational interpreter as a rule amounts to a careful rewriting of functional implementation in miniKanren. In this regard obtaining a relational
+interpreter automatically from a functional specification looks a natural idea.
+
+In our case we generalize this idea a little bit: we build a relational interpreter for a family of languages~--- essentially, the lambda calculus with
+various reduction orders. The construction of this interpreter was inspired by Felleisen-style semantic description~\cite{Felleisen}. 
+Our interpreter takes as its first argument a function, which decomposes a term, passed as a second argument, into a redex and a context (if possible). 
+After the decomposition the interpreter performs beta-reduction on the redex and reconstructs the term by plugging the result back into the context. 
+These steps are repeated until the decomposition is possible (or infinitely). This approach brings us a few benefits: first, various reduction orders can be 
+expressed by changing only the decomposition function and, next, we demonstrate the applicability of our technique for higher-order case.
+
+The signatures of relevant functions are
+
+\begin{lstlisting}[basicstyle=\small]
+   val eval : (term -> split) -> term -> term
+
+   val call_by_name  : term -> split
+   val call_by_value : term -> split
+   val normal_order  : term -> split
 \end{lstlisting}
 
-In the next subsections we consider more elaborated and interesting examples.
+\noindent where \lstinline|term| and \lstinline|split| are the types of the terms (in De Bruijn form) and context-term pairs respectively; \lstinline|eval| 
+is a higher-order interpreter, all other functions define corresponding reduction orders. Relational counterparts for these definitions, provided 
+by the conversion, are shown below:
 
-\subsection{High-order Lambda Interpreter}
+\begin{lstlisting}[basicstyle=\small]
+   val eval$^o$ : ((term$^o$ -> $\G$) -> split$^o$ -> $\G$) -> (term$^o$ -> $\G$) -> 
+               term$^o$ -> $\G$
 
-The construction of this interpreter was inspired by Felleisen-style semantic description~\cite{Felleisen}, when the rule for finding a redex
-inside a lambda term is expressed by mean of a context. Our interpreter takes as a first argument a function, which decomposes the term, passed
-as a second argument, into the redex and the context. Thus, various reduction orders can be expressed by changing only decomposition function.
-
-We represent terms in the De Bruijn notation, thus the types for terms, contexts and the result of decomposition look like as follows:
-
-\begin{lstlisting}
-   type ('nat, 'lambda) lambda = 
-   | Index of 'nat
-   | Abst  of 'lambda
-   | App   of 'lambda * 'lambda
-  
-   type ('lambda, 'context) context = 
-   | Hole
-   | AppL  of 'context * 'lambda
-   | AppR  of 'lambda * 'context
-   | AbstH of 'context
-
-   type ('lambda, 'context) split = 
-   | Nothing 
-   | Beta of 'context * 'lambda * 'lambda
+   val call_by_name$^o$   : (term$^o$ -> $\G$) -> split$^o$ -> $\G$
+   val call_by_value$^o$ : (term$^o$ -> $\G$) -> split$^o$ -> $\G$
+   val normal_order$^o$   : (term$^o$ -> $\G$) -> split$^o$ -> $\G$
 \end{lstlisting}
 
-We also implemented three reduction strategies~--- call-by-name, call-by-value and normal order and converted 
-the interpreter into the relational form. Our relational interpreter now allows, first, to reduce lambda terms
+Note, due to the compositionality of the conversion the type of functions, representing reduction orders, still corresponds to the type of the first 
+argument of the interpreter.
 
-\begin{lstlisting}
-   eval normal_order (=== (^App^(Abst^(Index ^Z), ^Index ^(S ^Z)))) q ==> [q=Index (S Z)]
+The interpreter, constructed by our tool, can be ran in a forward direction (for readability purposes we use here a symbolic quoted representation of
+the terms instead of concrete datatype constructor-based):
+
+\begin{lstlisting}[basicstyle=\small]
+   eval$^o$ normal_order$^o$ (=== `(fun $\dbi{0}$) $\dbi{1}$`) q $\leadsto$ [q $\binds$ `$\dbi{1}$`]
+   
+   eval$^o$ call_by_name$^o$ (=== `$\dbi{0}$ ((fun $\dbi{0}$) $\dbi{1}$)`) q $\leadsto$ [q $\binds$ `$\dbi{0}$ ((fun $\dbi{0}$) $\dbi{1}$)`]   
+
+   eval$^o$ call_by_value$^o$ (=== `$\dbi{0}$ ((fun $\dbi{0}$) $\dbi{1}$)`) q $\leadsto$ [q $\binds$ `$\dbi{0}$ $\dbi{1}$`] 
 \end{lstlisting}
 
-and, second, to generate from a normal form a set of terms, which can be reduced to this normal form, using specified
-reduction order:
+As it is expected from relational interpreter, it is equally can be ran in the opposite direction, returning for a term (potentially infinite) stream
+of terms, reducing to it:
 
-\begin{lstlisting}
-   eval normal_order (=== q) ^(Index ^Z) ==>              
-   [
-    q=Index Z; 
-    q=App (Abst (Index Z), Index Z); 
-    q=App (Abst (Index (S Z)), _.18); 
-    q=App (Abst (Index Z), App (Abst (Index Z), Index Z)); 
-    q=App (Abst (Index Z), App (Abst (Index (S Z), _.45)); 
-    ...
-   ]
+\begin{lstlisting}[basicstyle=\small]
+   eval$^o$ normal_order$^o$ (=== q) (`fun $\dbi{0}$`) $\leadsto$ 
+     [
+       q $\binds$ `fun $\dbi{0}$`; 
+       q $\binds$ `(fun $\dbi{0}$) (fun $\dbi{0}$)`; 
+       q $\binds$ `fun ((fun $\dbi{1}$) $\framebox{0}$)`; 
+       q $\binds$ `(fun $\dbi{0}$) ((fun $\dbi{0}$) (fun $\dbi{0}$))`;  
+       ...
+     ] 
+
+   eval$^o$ call_by_name$^o$ (=== q) (`fun $\dbi{0}$`) $\leadsto$ 
+     [
+       q $\binds$ `fun $\dbi{0}$`; 
+       q $\binds$ `(fun $\dbi{0}$) (fun $\dbi{0}$)`; 
+       q $\binds$ `(fun $\dbi{0}$) ((fun $\dbi{0}$) (fun $\dbi{0}$))`; 
+       q $\binds$ `(fun fun $\;\dbi{0}$) $\dbi{0}$`; 
+       ...
+     ] 
 \end{lstlisting}
 
-\subsection{Syntactic Unification}
+This interpreter can be extended to the subset of Scheme, with which the quines/twines/thrines benchmarks~\cite{Untagged} can be
+reproduced.
 
-Syntactic unification~\cite{Unification} for two terms finds a substitution, which transforms these terms into equal. We 
-suppose, that a term can be either a variable, or an application of a constructor to some terms, hence the following definition:
+\subsection{Hindley-Milner Type Inference}
 
-\begin{lstlisting}
-   type ('var, 'const, 'terms) term = 
-   | Var  of 'var
-   | Cnst of 'const * 'terms
+Our next example is the type inference for Hindley-Milner type system~\cite{Types}. Interestingly enough, that while typing rules for
+STLC can be directly expressed in relational terms, providing the solutions for type inference, type checking and type inhabitation
+problems at the same time, for not so different Hindley-Milner system with let-polymorphism the problem becomes much
+harder. The most robust existing relational solution requires the extension of miniKanren with nominal constructs~\cite{alphaKanren}, while
+the correctness of other implementations in conventional miniKanren is still a matter of discussion~\cite{WillOnHM}.
+
+On the other hand, in terms of functional programming this task is rather a textbook exercise. We implemented a simple version of
+syntax-directed type inference and converted it into the relational form; the signatures for the original and converted
+implementations are shown below:
+
+\begin{lstlisting}[basicstyle=\small]
+   val type_inference  : term -> typ
+   val type_inference$^o$ : (term$^o$ -> $\G$) -> typ$^o$ -> $\G$
 \end{lstlisting}
 
-In our implementation we perform a unification in the context of some initial substitution; as the unification can fail, it
-returns optional substitution. We represents a substitution with a type \lstinline|subst|, which is simply an associative
-list. 
+For this example we use a conventional representation of terms with named variables. In a forward direction our relational implementation works, 
+as expected, as type inferencer~--- given a term it infers its type:
 
-Relational unification allows, first, to perform regular unification:
-
-\begin{lstlisting}
-   unify (=== Var "x") (=== ^(Cnst (^"A", (=== [])))) [] q ==> 
-   [q=Some [("x", Cnst ("A", []))]]
+\begin{lstlisting}[basicstyle=\small]
+   type_inference$^o$ (=== `$\lambda x \to x$`) q $\leadsto$ [q $\binds$ `$a\to a$`]
 \end{lstlisting}
 
-then, to generate one or both terms, which unification results in a given substitution:
+In a reverse direction relational type inferencer is capable of finding the inhabitants of specified type:
 
-\begin{lstlisting}
-   unify (=== q) (=== ^(Cnst (^"A", []))) (=== []) ^(Some [(^"z", ^(Cnst (^"A", [])))])) ==> 
-   [q=Var "z"]
+\begin{lstlisting}[basicstyle=\small]
+   type_inference$^o$ (=== q) '$a$' $\leadsto$ $\bot$
+
+   type_inference$^o$ (=== q) '$a$ -> $a$' $\leadsto$ 
+     [
+       q $\binds$ 'fun $\framebox{0}$ -> $\framebox{0}$'; 
+       q $\binds$ 'fun $\framebox{0}$ -> (fun $\framebox{1}$ -> $\framebox{1}$) $\framebox{0}$'; 
+       q $\binds$ 'fun $\framebox{0}$ -> let $\framebox{1}$ = $\framebox{2}$ in $\framebox{0}$' ($\framebox{0}$ =/= $\;\;\framebox{1}$);
+       q $\binds$ '(fun $\framebox{0}$ -> $\framebox{0}$) (fun $\framebox{1}$ -> $\framebox{1}$)';
+       ...
+     ]
 \end{lstlisting}
 
-and, finally, to calculate a pair of terms, which transform one substitution to another:
+Note, the first query diverges, providing no results (which is rather expected since the type is un-inhabited). This is a long-time known phenomenon of
+miniKanren~--- the search can diverge, when no answers exist; relational specifications, which always stop in this case, are called
+\emph{refutationally complete}~\cite{WillThesis}. Given example demonstrates, that our derived relational specification is not refulationally
+complete, which is not a rarity in the relational world; making it refutationally complete is a separate task.
 
-\begin{lstlisting}
-   unify (=== q) (=== r) (=== []) ^(Some ^[(^"z", ^(Cnst (^"A", ^[])))]) ==> 
-   [
-    (q=Var "x"               , r=Cnst ("A", []));
-    (q=Cnst ("A", [])        , r=Var "x");
-    (q=Cnst (_.32, [Var "x"]), r=Cnst (_.32, [Cnst ("A", [])]))
-   ]
+It may appear at first glance, that using relational Hindley-Milner inferencer for solving inhabitance problem is superfluous since the inhabitance for
+Hindley-Milner is equivalent to inhabitance for STLC. However, with relational inferencer we may solve some problems, which are distinct from
+both pure inference and pure inhabitance:
+
+\begin{lstlisting}[basicstyle=\small]
+   type_inference$^o$ (=== `let f = $\Box$ in f (fun x -> f x)`) `$a\to a$` $\leadsto$ 
+     [$\Box$ $\binds$ `fun $\framebox{0}$ -> $\framebox{0}$`; ...]
 \end{lstlisting}
 
-\begin{comment}
-\subsection{Вывод типов Хиндли-Милнера}
+In this query we supplied an \emph{incomplete} term with a hole ($\Box$) and some type, and as result we've got a term to plug into the hole 
+in order for the complete term to have that type. Note, the term we've got as a result can not be typed in STLC, since the variable \lstinline|f|
+is applied there twice with different types of arguments.
 
-Данный алгоритм по лямбда-терму вычисляет наиболее общий тип этого терма.
+A final observation: we do not claim to solve the problem of relational implementation of Hindley-Milner type system completely. Even though our converted
+relational implementation behaves as expected, it still far from elegance and relational nativeness~--- indeed, in functional 
+implementation we had to implement unification on types, which does not make use of built-in unification in miniKanren and, to some extent, doubles the
+work. We therefore do not consider this approach as an ideal solution.
 
-Для описания используемой системы типов были написаны алгебраические типы $lambda\_type$ и $gen\_type$. Первый тип определяет две типовые контстанты $TInt$ и $TBool$, типовые именовынные переменные, а также объединение пары типов $a$ и $b$ в функциональный тип $a \rightarrow b$. Тип $gen\_type$ является полиморфным замыканием типа по списку имен типовых переменных.
+\subsection{miniKanren with Disequality Constraints}
 
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-type ('var, 'lambda_type) lambda_type =
- | TInt
- | TBool
- | TVar of 'var
- | TFun of 'lambda_type * 'lambda_type
+Our final example is implementation of miniKanren in miniKanren. Although there are already exist a few similar implementations, written directly in miniKanren, 
+our version is different since it supports disequality constraints. We consider this as an important distinction~--- first, the presence of disequality
+constraints makes the language much more expressible, and, next, implementing disequality constraints directly in miniKanren is a very tedious
+and error-prone task. On the other hand, providing relationally converted version amounts only to repeating a well-known and rather compact original 
+implementation~\cite{CKanren}.
 
-type ('list, 'lambda_type) gen_type =
- | Gen of 'list * 'lambda_type
+The signatures for functional and relational miniKanren implementations are as follows:
+
+\begin{lstlisting}[basicstyle=\small]
+   val mk  : goal -> substitution list
+   val mk$^o$ : (goal$^o$ -> $\G$) -> (substitution llist)$^o$ -> $\G$
 \end{lstlisting}
 
-Синтаксис языка (типы $literal$ и $lambda$) состоит из констат, переменных, применения, абстакции и конструкции $let$. 
+Here \lstinline|goal| stands for the type, representing the goals, \lstinline|substitution|~--- for the type of substitutions. Again, 
+our relational miniKanren interpreter works in both directions. As a more interesting query we consdier the following:
 
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-type literal =
- | LInt of int
- | LBool of bool
-
-type ('var, 'literal, 'lambda) lambda =
- | Var  of 'var
- | Lit  of 'literal
- | App  of 'lambda * 'lambda
- | Abst of 'var * 'lambda
- | Let  of 'var * 'lambda * 'lambda
+\begin{lstlisting}[basicstyle=\small]
+   mk$^o$
+     (=== 
+        'let rec add a b c =
+           ((a === Z) $\wedge$ (b ===  c)) $\vee$
+           (fresh (a$_0$ c$_0$)
+             (a === S a$_0$) $\wedge$
+             $\Box$ $\wedge$
+             (add a$_0$ b c$_0$)
+           )
+        in fresh (x y z) (add x y z)') ([[x='1'; y='1'; z='2']])  $\leadsto$   
+     [$\Box$ $\binds$ `c ===$\;$ S c$_0$`; ...]
 \end{lstlisting}
 
-Итоговая функция $type\_inference$ имеет следующий тип:
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-type lambda_type$_0$ = (num, lambda_type$_0$) lambda_type
-type lambda$_0$ = (list, literal, lambda$_0$) lambda
+Here we specified an incomplete relational program (specifically, a relational addition of numbers in Peano form). The hole ($\Box$) replaces
+one of the branches, and expected substitution describes the results of addition. Our relational interpreter, converted from functional
+implementation, turned out to be capable of finding the correct subgoal~--- ``\lstinline|c === S c$_0$|''~--- to be placed into the hole.
 
-type_inference ::
-  'a ->('a ->'a) ->'b lambda$_0$ ->'a lambda_type$_0$ option
-\end{lstlisting}
-Данная функция абстрагируется от типа имен типовых переменных с помощью первого и второго аргумента, а именно имени первой свободной типовой переменной, а также функции-генеретора следующей свободной переменной по предыдущей.
 
-Например, если в качестве имен типовых переменных использовать числа Пеано, получим:
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-let nat_type_inference term = type_inference Z (fun n -> S n) term
-\end{lstlisting}
-
-Полученное с помощью реляционного преобразования отношение можо использовать для
-\begin{itemize}
-\item вычисления типа терма;
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-run (q) 1 (nat_type_inference (=== Abst ("x", Var "x")) q)
-
-==> {
-q=Just (TFun (TVar Z, TVar Z)); 
-}
-\end{lstlisting}
-\item проверки населенности типа с помощью генерации термов, которые имеют данный тип.
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-run (q) 5 (nat_type_inference ((===) q) (Just TBool))
-
-==> {}
-q=Lit (LBool _.24); 
-q=Let (_.18, Lit (LInt _.32), Lit (LBool _.80)); 
-q=Let (_.18, Lit (LBool _.32), Lit (LBool _.80)); 
-q=Let (_.89, Lit (LBool _.32), Var _.89); 
-q=Let (_.18, Abst (_.26, Lit LInt (_.48)), Lit (LBool _.149)); 
-}
-\end{lstlisting}
-\end{itemize}
-
-Полученное отношение также абстрагировано от типа имен типовых переменных.
-
-\subsection{Интерпретатор пожмножества языка Scheme}
-Входным языком данного call-by-value интерпретатора является нетипизированное лямда-исчисление, дополненное конструктором списков и оператором цитирования. Оператор цитирования возвращает входной терм, не изменяя его.
-
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-type 'var ident = 
-  | Lambda 
-  | Quote 
-  | List 
-  | Var of 'var
-
-type ('terms, 'ident) term = 
-  | Ident of 'ident 
-  | Seq of 'terms
-\end{lstlisting}
-
-Результатом выполнения входной программы является либо вычисленное значение, либо замыкание функции.
-
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-type ('term, 'ident, 'env) result = 
-  | Val of 'term 
-  | Closure of 'ident * 'term * 'env
-\end{lstlisting}
-
-Итоговый функциональный интерпретатор $eval$ имеет представленную ниже сингатуру.
-
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-type term$_0$ = (term$_0$ list, string ident) term
-type env = (string * term$_0$) list
-type result$_0$ = (term$_0$, string ident, env) result
-
-eval :: term$_0$ ->env ->result$_0$
-\end{lstlisting}
-
-Реляционная форма данного интерпретатора помимо интерпретирования входной программы позволяет находидить квайны произвольного порядка. Например, для вычисления квайна первого порядка достаточно запросить запросить программу, результатом вычисления которой в пустом окружении является она сама.
-
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-run (q) 1 (eval (=== q) (===[]) (Val q))
-
-==> {
-q=Seq [
-  Seq [Ident Lambda; Seq [Ident (_.253 [=/= List; =/= Quote])]; 
-    Seq [Ident List; Ident (_.253 [=/= List; =/= Quote]); 
-      Seq [Ident List; Seq [Ident Quote; Ident Quote];
-        Ident (_.253 [=/= List; =/= Quote])]]];
-    Seq [Ident Quote; 
-      Seq [Ident Lambda; Seq [Ident (_.253 [=/= List; =/= Quote])]; 
-        Seq [Ident List; Ident (_.253 [=/= List; =/= Quote]); 
-          Seq [Ident List; Seq [Ident Quote; Ident Quote]; 
-          Ident (_.253 [=/= List; =/= Quote])]]]]];
-}
-\end{lstlisting}
-Если полученный результат представить в синтаксисе Scheme и подставить вместо семантической переменной $(\_.253)$ переменную $x$, получим
-\begin{lstlisting}[language=ocaml,mathescape=true,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-((lambda(x) (list x (list (quote quote) x)))
- (lambda(x) (list x (list (quote quote) x))))
-\end{lstlisting}
-
-Полученная программа является квайном, что было проверено с помощью функциональной программы.
-
-\section{Обозримый пример 1}
-
-\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Функция map},captionpos=b]
-  let rec map = funf.funl.
-    match l with
-    | Nil          -> Nil
-    | Cons (x, xs) -> Cons (f x, map f xs)
-\end{lstlisting}
-
-\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Отношение map},captionpos=b]
-  let rec map = funf.funl.funq.
-    fresh (q$_1$) ((l q$_1$) &&&
-      (((q$_1$ === Nil) &&& ((funq$_2$.q$_2$ === Nil) q)) |||
-      (fresh (q$_3$ q$_4$)
-        (q$_1$ === Cons (q$_3$, q$_4$)) &&&
-        (funx.funxs.(funq$_5$.
-          (fresh(q$_6$ q$_7$) 
-            (f x q$_6$) &&&
-            (map f xs q$_7$) &&&
-            (q$_5$ === Cons(q$_6$, q$_7$)))) q
-        ) ((===) q$_3$) ((===) q$_4$))))
-\end{lstlisting}
-
-\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Отношение map после бета-редукций},captionpos=b]
-  let rec map = funf.funl.funq.z
-    fresh (q$_1$) ((l q$_1$) &&&
-      (((q$_1$ === Nil) &&& (q === Nil)) |||
-      (fresh (q$_3$ q$_4$)
-        (q$_1$ === Cons (q$_3$, q$_4$))
-          (fresh(q$_6$ q$_7$)
-            (f ((===) q$_3$) q$_6$) &&&
-            (map f ((===) q$_4$) q$_7$) &&&
-            (q === Cons(q$_6$, q$_7$))))))
-\end{lstlisting}
-
-\section{Обозримый пример 2}
-Здесь не описаны функции $index\_subst$ и $hole\_subst$.
-
-\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Функция eval},captionpos=b]
-  let rec eval =funbeta_finder.funterm.
-    match beta_finder term with
-    | Beta (hole, body, arg) -> 
-      let new_body = index_subst body Z arg in
-      let new_term = hole_subst hole new_body in
-      eval beta_finder new_term
-    | Nothing -> term  
-\end{lstlisting}
-
-\begin{lstlisting}[language=ocaml,mathescape=true,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt,caption={Отношение eval после бета-редукций},captionpos=b]
-  let rec eval=funbeta_finder.funterm.funq.
-    fresh (q$_1$) ((term q$_1$) &&&
-      (fresh (q$_2$ q$_3$ q$_4$) 
-        (q$_1$ === Beta (q$_2$, q$_3$, q$_4$)) &&&
-        (let new_body = index_subst ((===)q$_3$) ((===)Z) ((===)q$_4$) in
-         let new_term = hole_subst ((===)q$_2$) new_body in
-         eval funbeta_finder new_term)) |||
-      (q$_1$ === Nothing) &&& (term q))
-  
-\end{lstlisting}
-\end{comment}
