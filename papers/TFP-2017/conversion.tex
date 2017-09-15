@@ -5,7 +5,7 @@
 Before we describe the relational conversion itself, we formulate some limitations for the source
 programs. Functional programs tend to operate with higher-order values, while miniKanren is
 limited by first-order unification. Therefore, it would be unreasonable to expect, that arbitrary
-functional program can be converted into relational form (atleast using reasonably simple 
+functional program can be converted into relational form (at least using reasonably simple 
 transformations). 
 
 First, we introduce the set of ground types $\mathcal G$:
@@ -81,7 +81,7 @@ In case of constructor we know, that all expressions $e_i$ have ground types. Th
 functions. We create a set of fresh variables (one for each expression) and pass them as arguments to these functions to associate
 them with the values of the expressions. The result of conversion for the constructor application itself has to be a 
 goal-returning function as well. We surround expression constructed so far with abstraction and unify its argument $q$ with the
-constructor, applied to corresponding logical variables. We also apply logical constuctor $\uparrow$ to respect typing rule
+constructor, applied to corresponding logical variables. We also apply logical constructor $\uparrow$ to respect typing rule
 for unification.
 
 The rule for pattern-matching conversion operates similarly. First, the scrutinee must have a ground type (since it is matched against
@@ -99,6 +99,10 @@ relational specifications.
 Another observation is that our transformation is compositional (a relational image of application is application of relational
 images). This means, that relational conversion is compatible with separate compilation~--- multiple source files can be
 converted independently without losing the possibility to function properly when combined.
+
+Then, it is interesting, that the result of relational conversion runs in a forward direction
+deterministically. Thus, relational conversion imposes only a constant-time slowdown in a forward
+direction.
 
 Finally, we formulate the following properties for relational conversion:
 

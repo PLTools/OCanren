@@ -179,7 +179,7 @@ In a reverse direction relational type inferencer is capable of finding the inha
 
 Note, the first query diverges, providing no results (which is rather expected since the type is un-inhabited). This is a long-time known phenomenon of
 miniKanren~--- the search can diverge, when no answers exist; relational specifications, which always stop in this case, are called
-\emph{refutationally complete}~\cite{WillThesis}. Given example demonstrates, that our derived relational specification is not refulationally
+\emph{refutationally complete}~\cite{WillThesis}. Given example demonstrates, that our derived relational specification is not refutationally
 complete, which is not a rarity in the relational world; making it refutationally complete is a separate task.
 
 It may appear at first glance, that using relational Hindley-Milner inferencer for solving inhabitance problem is superfluous since the inhabitance for
@@ -216,7 +216,7 @@ The signatures for functional and relational miniKanren implementations are as f
 \end{lstlisting}
 
 Here \lstinline|goal| stands for the type, representing the goals, \lstinline|substitution|~--- for the type of substitutions. Again, 
-our relational miniKanren interpreter works in both directions. As a more interesting query we consdier the following:
+our relational miniKanren interpreter works in both directions. As a more interesting query we consider the following:
 
 \begin{lstlisting}[basicstyle=\small]
    mk$^o$

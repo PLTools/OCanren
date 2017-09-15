@@ -275,7 +275,7 @@ programs at compile-time.
 Our extension for the type system introduces one interpreted datatype constructor $\Box^o$ with one data constructor $\uparrow$~--- a polymorphic type and
 a constructor for logical terms. In addition we introduce interpreted type of goals $\G$, which is distinct from all other types. The typing rules for the relational 
 extension are shown on Figure~\ref{relational_typing}. These rules describe rather expected typing: in unification and disequality constraints only
-terms of the same logical type can be used, and conjuction and disjunction can only be taken for goals. Note, in our extension a term can be calculated as
+terms of the same logical type can be used, and conjunction and disjunction can only be taken for goals. Note, in our extension a term can be calculated as
 a result of arbitrary expression in initial functional language (as long as this expression has expected logical type), but such ``higher-order'' terms will
 never appear as a result of relational conversion, so, in fact, relational extension we describe here defines a richer language, than we actually need.
 
@@ -476,7 +476,7 @@ longer be violated. We remove $\theta^-$ from $\Theta^-$ and continue with the n
 disequality constraint, represented by $\theta^-$, is violated. The check stops, and the whole top-level 
 unification fails.
 \item The unification succeeds with a non-empty substitution $\theta^{\prime-}$. This means, that in order not to 
-voilate the disequality constraint, represented by $\theta^-$, $\theta^{\prime-}$ has to be respected. We replace
+violate the disequality constraint, represented by $\theta^-$, $\theta^{\prime-}$ has to be respected. We replace
 $\theta^-$ with $\theta^{\prime-}$ in $\Theta^-$ and continue with the next disequality constraint.
 \end{enumerate}
 
