@@ -12,9 +12,13 @@ OCaml in performed in a top-down manner (and, thus, there can be more than one p
 therefore trust an end user to apply relational conversion only to programs, for which these differences play
 no role.
 
-Our preliminary evaluation has shown, that the converter generates a lot of abstractions, many of which can be applied immediately.
-So we additionally implemented an optimization pass, which performs administrative reductions where possible. This optimization
-greatly improves the performance of the converted program in terms of both readability and performance.
+Our preliminary evaluation discovered two problems. First, the converter generated a lot of abstractions, 
+many of which could be applied immediately. We additionally implemented an optimization pass, which performs 
+administrative reductions where possible. This optimization greatly improves the performance of the converted 
+program in terms of both readability and performance. Next, in our initial implementation too many values were
+functionalized and, as a result, massively recalculated with essential performance degradation. We improved
+the implementation by identifying important specific case and handling it with a little different 
+transformation.
 
 As the first example of the conversion we consider the implementation of concatenation function for lists:
 

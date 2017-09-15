@@ -251,12 +251,6 @@ $$}
 \subsection{Relational Extension}
 \label{relational_extension}
 
-The relational extension adds five conventional miniKanren expressions for constructing goals; the syntax is shown on Figure~\ref{relational_syntax}.
-Since relational constructs are added to regular functional ones, it becomes possible to construct expressions like \lstinline|fun x.(x ||| fun y.y)| etc.
-In order to rule such pathological expressions out we devised an extension for the type system of source language. In fact, this approach follows the
-actual implementation for OCaml, where a careful choice of types for representing terms and goals made it possible to reject the majority of non-well-formed
-programs at compile-time.
-
 \begin{wrapfigure}{r}{0.5\textwidth}
 \centering
 $$
@@ -272,6 +266,11 @@ $$
 \label{relational_syntax}
 \end{wrapfigure}
 
+The relational extension adds five conventional miniKanren expressions for constructing goals; the syntax is shown on Figure~\ref{relational_syntax}.
+Since relational constructs are added to regular functional ones, it becomes possible to construct expressions like \lstinline|fun x.(x ||| fun y.y)| etc.
+In order to rule such pathological expressions out we devised an extension for the type system of source language. In fact, this approach follows the
+actual implementation for OCaml, where a careful choice of types for representing terms and goals made it possible to reject the majority of non-well-formed
+programs at compile-time.
 
 Our extension for the type system introduces one interpreted datatype constructor $\Box^o$ with one data constructor $\uparrow$~--- a polymorphic type and
 a constructor for logical terms. In addition we introduce interpreted type of goals $\G$, which is distinct from all other types. The typing rules for the relational 

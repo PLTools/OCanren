@@ -99,3 +99,17 @@ relational specifications.
 Another observation is that our transformation is compositional (a relational image of application is application of relational
 images). This means, that relational conversion is compatible with separate compilation~--- multiple source files can be
 converted independently without losing the possibility to function properly when combined.
+
+Finally, we formulate the following properties for relational conversion:
+
+\begin{itemize}
+\item Static correctness: if expression $e$ has a type $t$ in the source language, then $\sembr{e}^c$ has a 
+type $\sembr{t}^t$ in relational extension. In other words, relational conversion transforms properly typed
+programs into properly typed. Proof by structural induction.
+\item Partial semantic correctness: if expression $e$ has a ground type $t$ and $\sembr{e}^f=v$ for some
+  value $v$, then $\sembr{\lstinline|fresh(x)$\sembr{e}^c\;$x|}^r=(\theta,\Theta^-)$, and $\theta(x)=v$. Proof
+by induction on the length of derivation sequence (a number of lemmas have to be justified on the way).
+\end{itemize}
+
+In order to prove complete correctness we need some means to interpret the results of relational 
+derivation with free variables in functional case. This is a subject of future research.
