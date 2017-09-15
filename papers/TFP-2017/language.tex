@@ -1,17 +1,23 @@
 \section{The Source Language and Relational Extension}
 
+Our development of relational conversion based on idea of transforming a program in a functional
+language into a program in \emph{relational extension} of that language. In the context on 
+miniKanren this approach looks quite natural since miniKanren itself, as a DSL, reuses 
+many important features (for example, function definitions) from a host language.
+
 In this section we present a formal description of a small functional language, taken as a source
 for relational conversion. We describe its syntax, typing rules and semantics, and then extend it
-with relational constructs. Thus, relational conversion maps a program in the source language into 
-the program in extended. We specify the typing rules and semantics for the extension as well.
+with relational constructs. We specify the typing rules and semantics for the extension as well.
 
 \subsection{The Source Language}
 \label{source_language}
 
 The syntax of our source functional language is shown on Figure~\ref{functional_syntax}. It consists of a lambda calculus, 
-enriched with constructors with fixed arities $C^n$, patterns $p$ and pattern-matching constructs. Among constructors
-we distinguish two nullary interpreted constructors \lstinline|true| and \lstinline|false|, and we add a boolean equality
-operator ``$=$'' and expressions for recursive/non recursive let-bindings. In a pattern matching we only allow shallow
+enriched with constructors with fixed arities $C^n$, patterns $p$ and pattern-matching constructs, and  
+expressions for recursive/non recursive let-bindings.
+%Among constructors we distinguish two nullary interpreted constructors \lstinline|true| and \lstinline|false|, and we add a boolean equality
+%operator ``$=$'' and expressions for recursive/non recursive let-bindings. 
+In a pattern matching we only allow shallow
 patterns (which is not an essential limitation) and do not allow wildcards (which is important~--- converting 
 wildcard pattern matching into relational form would require essentially different projections). This choice of language may 
 look quite a restrictive. However, in terms of relational programming the language contains virtually everything we would need. Indeed, from
@@ -25,28 +31,28 @@ easily expressed in the language we present.
 %\scalebox{0.9}{
 $$
 \begin{array}{rcl}
-   e &=&x\\
+ \mathcal E &=&x\\
      & &\lambda x.e\\
      & &e_1\;e_2\\
      & &C^n(e_1,\dots, e_n)\\
-     & &\lstinline|true|\\
-     & &\lstinline|false|\\
+%     & &\lstinline|true|\\
+%     & &\lstinline|false|\\
      & &\lstinline|let $x$ = $e_1$ in $e_2$|\\
      & &\lstinline|let rec $f$ = $\lambda x.e_1$ in $e_2$|\\
-     & &e_1\,=\,e_2\\
+%     & &e_1\,=\,e_2\\
      & &\lstinline|match $e$ with $\{p_i$ -> $e_i\}$|\\
      & &\\
-   p &=&C^n(x_1,\dots,x_n)\\
+ \mathcal P &=&C^n(x_1,\dots,x_n)\\
 \end{array}
 $$
 %}
-\caption{The syntax of the source language}
+\caption{The syntax of source language}
 \label{functional_syntax}
 \end{wrapfigure}
 
 Our language is equipped with Hidley-Milner type system, and we present the typing rules in conventional syntax-directed form 
-on Figure~\ref{functional_typing}. Besides primitive boolean type, type variables and function types our system contains
-a number of implicitly defined algebraic datatypes $T^k$, and we stipulate, that each constructor $C^n$ belongs to exactly one
+on Figure~\ref{functional_typing}. Besides type variables and function types our system contains a number of implicitly defined 
+algebraic datatypes $T^k$, and we stipulate, that each constructor $C^n$ belongs to exactly one
 datatype. In rule \textsc{Constr$_T$} we assume, that type $t^C$ has the form $T^k(t_1,\dots,t_k)$, where each of the types
 $t_i$ is recovered from the types $t_i^C$ of arguments of constructor $C^n$ and, moreover, these types are agree in the sense of
 constructor application. Similarly, in rule \textsc{Match$_T$} the types of all $C_i^{k_i}(x^i_1,\dots,x^i_{k_i})$ are expected
@@ -60,26 +66,26 @@ to be equal $t^C$, and $t^{C_i}_j$ is a type of $j$-th argument of constructor $
 {\bf Types:}
 $$
 \begin{array}{rcll}
-  \mathcal X &=&\alpha, \beta, \dots                                            &\mbox{\supp{(type variables)}}\\
-  \mathcal D &=&T^n,...                                                         &\mbox{\supp{(datatype constructors)}}\\
-  \mathcal T &=&\lstinline|bool|\mid\alpha\mid T^k(t_1,\dots,t_k)\mid t_1\to t_2 &\mbox{\supp{(types)}}\\
-  \mathcal S &=&\forall\bar{\alpha}.t                                           &\mbox{\supp{(type schemas)}}
+  \mathcal X &=&\alpha, \beta, \dots                            &\mbox{\supp{(type variables)}}\\
+  \mathcal D &=&T^n,...                                         &\mbox{\supp{(datatype constructors)}}\\
+  \mathcal T &=&\alpha\mid T^k(t_1,\dots,t_k)\mid t_1\to t_2 &\mbox{\supp{(types)}}\\
+  \mathcal S &=&\forall\bar{\alpha}.t                           &\mbox{\supp{(type schemas)}}
 \end{array}
 $$
 {\bf Typing rules:}
 \def\arraystretch{0}
 \begin{tabular}{p{7cm}p{7cm}}
-$$
-\typed{\Gamma}{\lstinline|true|,\;\lstinline|false|}{\lstinline|bool|}
-\ruleno{Bool$_T$}
-$$ 
-&
-$$
-\trule{\typed{\Gamma}{e_1}{t}\;\;\;\;\typed{\Gamma}{e_2}{t}}
-      {\typed{\Gamma}{e_1=e_2}{\lstinline|bool|}}
-\ruleno{Eq$_T$}
-$$
-\\
+%$$
+%\typed{\Gamma}{\lstinline|true|,\;\lstinline|false|}{\lstinline|bool|}
+%\ruleno{Bool$_T$}
+%$$ 
+%&
+%$$
+%\trule{\typed{\Gamma}{e_1}{t}\;\;\;\;\typed{\Gamma}{e_2}{t}}
+%      {\typed{\Gamma}{e_1=e_2}{\lstinline|bool|}}
+%\ruleno{Eq$_T$}
+%$$
+%\\
 $$
 \trule{\typed{\Gamma}{e_i}{t^C_i}}
       {\typed{\Gamma}{C^n(e_1,\dots,e_n)}{t^C}}
@@ -122,7 +128,7 @@ $$
 \ruleno{Match$_T$}
 $$}
 \end{tabular}
-\caption{Typing rules for the source language}
+\caption{Typing rules for source language}
 \label{functional_typing}
 \end{figure}
 
@@ -145,13 +151,13 @@ This form of semantic description originates from Felleisen-style~\cite{Felleise
 chosen it since it can be naturally extended for relational case.
 
 Our semantics describes call-by-value left-to-right evaluation; in the rules $\textsc{Beta}$, $\textsc{Mu}$, $\textsc{LetVal}$,
-$\textsc{LetRec}$ and $\textsc{MatchVal}$ we perform capture-avoiding substitutions, which respect the names in abstractions and let-bindings,
-and in the rules $\textsc{EqTrue}$ and  $\textsc{EqFalse}$ we assume, that values being compared do not contain subvalues of the 
-form $\lambda x.e$ or $\mu f\lambda x.e$. Finally, in the rule $\textsc{MatchVal}$ we assume, that at most one pattern matches the 
-scrutinee~--- this is an important distinction with usual semantics of pattern matching, when the patterns are examined in a top-down 
-manner until the match succeeds.
+$\textsc{LetRec}$ and $\textsc{MatchVal}$ we perform capture-avoiding substitutions, which respect the names in abstractions and let-bindings.
+%and in the rules $\textsc{EqTrue}$ and  $\textsc{EqFalse}$ we assume, that values being compared do not contain subvalues of the 
+%form $\lambda x.e$ or $\mu f\lambda x.e$. 
+In the rule $\textsc{MatchVal}$ we assume, that at most one pattern matches the scrutinee~--- this is an important distinction with usual 
+semantics of pattern matching, when the patterns are examined in a top-down manner until the match succeeds.
 
-Finally, for a closed expression $e$ and a value $v$ we write $\sembr{e}=v$, iff 
+Finally, for a closed expression $e$ and a value $v$ we write $\sembr{e}^f=v$, iff 
 
 $$\inbr{\epsilon,e}\to^*\inbr{\epsilon,v}$$
 
@@ -161,14 +167,11 @@ $$\inbr{\epsilon,e}\to^*\inbr{\epsilon,v}$$
 \centering
 {\bf Values:}
 $$
-\mathcal V = \lstinline|true|\mid\lstinline|false|\mid C^n(v_1,\dots,v_n)\mid\lambda x.e\mid\mu f\lambda x.e
+\mathcal V = C^n(v_1,\dots,v_n)\mid\lambda x.e\mid\mu f\lambda x.e
 $$
 {\bf Contexts:}
 $$
-\mathcal C = \Box\;e\mid v\;\Box\mid\lstinline|let $x$ = $\Box$ in $e$|\mid\lstinline|match $\;\Box\;$ with $\{p_i$->$e_i\}$|\mid C^n(\bar{v},\Box,\bar{e})\mid\Box=e\mid v=\Box 
-$$
-$$
-C[e]\mbox{\supp{~--- a context $C$ with an expression $e$ plugged into a hole}}
+\mathcal C = \Box\;e\mid v\;\Box\mid\lstinline|let $x$ = $\Box$ in $e$|\mid\lstinline|match $\;\Box\;$ with $\{p_i$->$e_i\}$|\mid C^n(\bar{v},\Box,\bar{e})
 $$
 {\bf Stack of contexts:}
 $$
@@ -186,75 +189,89 @@ $$
 \multicolumn{2}{p{14cm}}{
 $$
 \step{C:\mathcal S,\, v}{\mathcal S,\, C[v]}\ruleno{Value}
-$$}\\
+$$}\\[-4mm]
 $$
 \step{\mathcal S,\, f\;e}{\Box\;e:\mathcal S,\, f}\ruleno{AppL}
 $$&
 $$
 \step{\mathcal S,\, v\;e_2}{v\;\Box:\mathcal S,\, e_2}\ruleno{AppR}
-$$\\
-$$
-\step{\mathcal S,\,e_1=e_2}{\Box=e_2:\mathcal S,\,e_1}\ruleno{EqL}
-$$&
-$$
-\step{\mathcal S,\,v=e}{v=\Box:\mathcal S,\,e}\ruleno{EqR}
-$$\\
-\multicolumn{2}{p{14cm}}{
-$$
-\step{C:\mathcal S,\,v=v}{\mathcal S,\,C[\lstinline|true|]}\ruleno{EqTrue}
-$$}\\
-\multicolumn{2}{p{14cm}}{
-$$
-\step{C:\mathcal S,\,v_1=v_2}{\mathcal S,\,C[\lstinline|false|]},\;v_1\ne v_2\ruleno{EqFalse}
-$$}\\
+$$\\[-4mm]
+%$$
+%\step{\mathcal S,\,e_1=e_2}{\Box=e_2:\mathcal S,\,e_1}\ruleno{EqL}
+%$$&
+%$$
+%\step{\mathcal S,\,v=e}{v=\Box:\mathcal S,\,e}\ruleno{EqR}
+%$$\\
+%\multicolumn{2}{p{14cm}}{
+%$$
+%\step{C:\mathcal S,\,v=v}{\mathcal S,\,C[\lstinline|true|]}\ruleno{EqTrue}
+%$$}\\
+%\multicolumn{2}{p{14cm}}{
+%$$
+%\step{C:\mathcal S,\,v_1=v_2}{\mathcal S,\,C[\lstinline|false|]},\;v_1\ne v_2\ruleno{EqFalse}
+%$$}\\
 \multicolumn{2}{p{14cm}}{
 $$
 \step{\mathcal S,\, (\lambda x.e)\;v}{\mathcal S,\, e[x\gets v]}\ruleno{Beta}
-$$}\\
+$$}\\[-4mm]
 \multicolumn{2}{p{14cm}}{
 $$
 \step{\mathcal S,\, (\mu f\lambda x.e)\;v}{\mathcal S,\, e[f\gets\mu f\lambda x.e,\, x\gets v]}\ruleno{Mu}
-$$}\\
+$$}\\[-4mm]
 \multicolumn{2}{p{14cm}}{
 $$
 \step{\mathcal S,\, C^n(v_1,\dots,v_{k-1},e_k,\dots,e_n)}{C^n(v_1,\dots,v_{k-1},\Box,\dots,e_n):\mathcal S,\, e_k}\ruleno{Constr}
-$$}\\
+$$}\\[-4mm]
 \multicolumn{2}{p{14cm}}{
 $$
 \step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;e_1\;$ in $\;e_2$|}{\lstinline|let $\;x\;$ = $\;\Box\;$ in $\;e_2$|:\mathcal S,\, e_1}\ruleno{Let}
-$$}\\
+$$}\\[-4mm]
 \multicolumn{2}{p{14cm}}{
 $$
 \step{\mathcal S,\, \lstinline|let $\;x\;$ = $\;v\;$ in $\;e$|}{\mathcal S,\,e[x\gets v]}\ruleno{LetVal}
-$$}\\
+$$}\\[-4mm]
 \multicolumn{2}{p{14cm}}{
 $$
 \step{\mathcal S,\, \lstinline|let rec $\;f\;$ = $\;\lambda x.e_1\;$ in $\;e_2$|}{\mathcal S,\, e_2[f\gets\mu f\lambda x.e_1]}\ruleno{LetRec}
-$$}\\
+$$}\\[-4mm]
 \multicolumn{2}{p{14cm}}{
 $$
 \step{\mathcal S,\,\lstinline|match $\;e\;$ with $\;\{p_i$->$e_i\}$|}{\lstinline|match $\;\Box\;$ with $\;\{p_i$->$e_i\}$|:\mathcal S,\, e}\ruleno{Match}
-$$}\\
+$$}\\[-4mm]
 \multicolumn{2}{p{14cm}}{
 $$
 \step{\mathcal S,\,\lstinline|match $\;C_k^{n_k}(v_1,\dots,v_{n_k})\;$ with $\;\{C_i^{n_i}(x^i_1,\dots,x^i_{n_i})\to e_i\}$|}{\mathcal S,\,e_k[x^k_j\gets v_j]}\ruleno{MatchVal}
 $$}
 \end{tabular}
 \egroup
-\caption{Semantics for the source language}
+\caption{Semantics for source language}
 \label{functional_semantics}
 \end{figure}
-
-\FloatBarrier
 
 \subsection{Relational Extension}
 \label{relational_extension}
 
 The relational extension adds five conventional miniKanren expressions for constructing goals; the syntax is shown on Figure~\ref{relational_syntax}.
-Since relational constructs are added to regular functional ones, it becomes possible to construct expressions like \lstinline|fun x.x = (true === fun y.y)| etc.
+Since relational constructs are added to regular functional ones, it becomes possible to construct expressions like \lstinline|fun x.(x ||| fun y.y)| etc.
 In order to rule such pathological expressions out we devised an extension for the type system of source language. In fact, this approach follows the
 actual implementation for OCaml, where a careful choice of types for representing terms and goals made it possible to reject the majority of non-well-formed
 programs at compile-time.
+
+\begin{wrapfigure}{r}{0.5\textwidth}
+\centering
+$$
+\begin{array}{rl}
+\mathcal E\mathrel{{+}{=}}&\lstinline|fresh ($x$) $\;e$|\\
+                    &e_1\equiv e_2\\
+                    &e_1\not\equiv e_2\\
+                    &e_1\vee e_2\\
+                    &e_1\wedge e_2
+\end{array}
+$$
+\caption{Syntax of relational extension}
+\label{relational_syntax}
+\end{wrapfigure}
+
 
 Our extension for the type system introduces one interpreted datatype constructor $\Box^o$ with one data constructor $\uparrow$~--- a polymorphic type and
 a constructor for logical terms. In addition we introduce interpreted type of goals $\G$, which is distinct from all other types. The typing rules for the relational 
@@ -263,20 +280,25 @@ terms of the same logical type can be used, and conjuction and disjunction can o
 a result of arbitrary expression in initial functional language (as long as this expression has expected logical type), but such ``higher-order'' terms will
 never appear as a result of relational conversion, so, in fact, relational extension we describe here defines a richer language, than we actually need.
 
-\begin{wrapfigure}{r}{0.5\textwidth}
-\centering
-$$
-\begin{array}{rl}
-   e\mathrel{{+}{=}}&\lstinline|fresh ($x$) $\;e$|\\
-                    &e_1\equiv e_2\\
-                    &e_1\not\equiv e_2\\
-                    &e_1\vee e_2\\
-                    &e_1\wedge e_2
-\end{array}
-$$
-\caption{Syntax of the relational extension}
-\label{relational_syntax}
-\end{wrapfigure}
+The semantics of extended language is shown on Figure~\ref{relational_semantics}. First, the state is extended: besides the stack of contexts and
+current expression it now contains a set of used \emph{semantic variables} $\Sigma$ and a \emph{logical state} $\sigma$. 
+Semantic variables are allocated and substituted for syntactic logic variable occurrences when \lstinline|fresh| expression is evaluated 
+(see rule \textsc{Fresh}). Logical states are affected when unification or disequality constraint is evaluated; we explain them
+in details below. All existing rules for the initial language are considered rewritten to propagate newly added components of states unchanged.
+Then, we modify the substitution to respect names, bounded in \lstinline|fresh| as well. 
+Next, we consider two new kinds of values: a semantic variable and a special value \lstinline|success|. The former is a result of evaluation for
+a free logic variable, the latter~--- the result of evaluation for a succeeded goal.
+
+We also extend the definition of context to handle new kinds of expressions. In unification and disequality constraint the terms are evaluated left-to right.
+Conjunction and disjunction, however, evaluate nondeterministically: in disjunction only one subgoal is chosen (see rules \textsc{DisjL} and \textsc{DisjR}),
+a conjunction can evaluate either left, or right subgoal first (see rules \textsc{ConjStartL} and \textsc{ConjStartR}). When chosen subgoal is evaluated
+to a value \lstinline|success|, the other subgoal starts its evaluation (rules \textsc{ConjL} and \textsc{ConjR}).
+We have chosen a nondeterministic variant for the semantics since different existing miniKanren implementations use (a little bit) different search, and we do 
+not want to depend on implementation details. An opposite side of this solution is that for a concrete program and a concrete miniKanren implementation 
+the result of evaluation might not coincide with that, prescribed by the semantics: in concrete implementation a program can diverge, while
+nondeterministic semantics may still define a certain scenario to complete with a result. We argue, that in this case it will always be possible to
+rewrite a program or/and interpreter to converge according to that scenario.
+
 
 \setarrow{:}
 \begin{figure}[t]
@@ -284,7 +306,7 @@ $$
 {\bf Types:}
 $$
 \begin{array}{rcl}
- \mathcal L &=               &\alpha^o \mid\lstinline|bool|^o\mid (T^n(l_1,\dots,l_n))^o\\
+ \mathcal L &=               &\alpha^o \mid (T^n(l_1,\dots,l_n))^o\\
  \mathcal T &\mathrel{{+}{=}}&\G
 \end{array}
 $$
@@ -318,7 +340,7 @@ $$
 \ruleno{Disjunction$_T$}
 $$
 \end{tabular}
-\caption{Typing rules for the relational extension}
+\caption{Typing rules for relational extension}
 \label{relational_typing}
 \end{figure}
 
@@ -388,28 +410,11 @@ $$
 \step{\Sigma,\,\mathcal S,\,e\wedge\lstinline|success|,\,\sigma}{\Sigma,\,\mathcal S,\,e,\,\sigma}\ruleno{ConjR}
 $$
 \end{tabular}}
-\caption{Semantics for the relational extension}
+\caption{Semantics for relational extension}
 \label{relational_semantics}
 \end{figure}
 
-The semantics of extended language is shown on Figure~\ref{relational_semantics}. First, the state is extended: besides the stack of contexts and
-current expression it now contains a set of used \emph{semantic variables} $\Sigma$ and a \emph{logical state} $\sigma$. 
-Semantic variables are allocated and substituted for syntactic logic variable occurrences when \lstinline|fresh| expression is evaluated 
-(see rule \textsc{Fresh}). Logical states are affected when unification or disequality constraint is evaluated; we explain them
-in details below. All existing rules for the initial language are considered rewritten to propagate newly added components of states unchanged.
-Then, we modify the substitution to respect names, bounded in \lstinline|fresh| as well. 
-Next, we consider two new kinds of values: a semantic variable and a special value \lstinline|success|. The former is a result of evaluation for
-a free logic variable, the latter~--- the result of evaluation for a succeeded goal.
-
-We also extend the definition of context to handle new kinds of expressions. In unification and disequality constraint the terms are evaluated left-to right.
-Conjunction and disjunction, however, evaluate nondeterministically: in disjunction only one subgoal is chosen (see rules \textsc{DisjL} and \textsc{DisjR}),
-a conjunction can evaluate either left, or right subgoal first (see rules \textsc{ConjStartL} and \textsc{ConjStartR}). When chosen subgoal is evaluated
-to a value \lstinline|success|, the other subgoal starts its evaluation (rules \textsc{ConjL} and \textsc{ConjR}).
-We have chosen a nondeterministic variant for the semantics since different existing miniKanren implementations use (a little bit) different search, and we do 
-not want to depend on implementation details. An opposite side of this solution is that for a concrete program and a concrete miniKanren implementation 
-the result of evaluation might not coincide with that, prescribed by the semantics: in concrete implementation a program can diverge, while
-nondeterministic semantics may still define a certain scenario to complete with a result. We argue, that in this case it will always be possible to
-rewrite a program or/and interpreter to converge according to that scenario.
+\FloatBarrier
 
 Finally, we describe the structure of a logical state and the implementation of unification and disequality constraint. The development is mainly based on the existing implementation~\cite{CKanren} and standard approaches for implementing unification~\cite{Unification}. We therefore assume the familiarity of the reader with the following notions:
 
@@ -490,7 +495,6 @@ $$
 
 First, an $mgu\,(t_1\,\theta,t_2\,\theta)$ is calculated. Again, there are three
 possible cases:
-\FloatBarrier
 
 \begin{enumerate}
 \item The unification fails. This means, that disequality constraint succeeds.
@@ -515,8 +519,6 @@ $$
 $$
  
 \noindent where ``$\leadsto^*$'' is a reflexive-transitive closure of ``$\leadsto$''. 
-
-%\subsection{Adequacy of Relational Semantics}
 
 
 

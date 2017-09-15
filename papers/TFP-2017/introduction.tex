@@ -4,12 +4,12 @@
 Relational programming is an attractive technique, based on the idea of constructing programs as relations.
 While in general some relational effects can be reproduced with a number of languages for logic programming, such as
 Prolog, Mercury\footnote{\url{https://mercurylang.org}}, or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}}, in
-a narrow sense relational programming amounts to writing relational specifications in \miniKanren~\cite{TRS}. \miniKanren\footnote{\url{http://minikanren.org}},
+a narrow sense relational programming amounts to writing relational specifications in \miniKanren~\cite{TRS,MicroKanren}. \miniKanren\footnote{\url{http://minikanren.org}},
 initially designed as a small relational DSL, embedded in Scheme/Racket, now implemented for a number of general-purpose host languages,
 including Scala, Haskell, Standard ML and OCaml.
 
 With relational approach, it becomes possible to give simple and elegant solutions for the problems, otherwise
-considered as tricky, tough, tedious, or boring. For example, relational interpreters can be used to derive
+considered as tricky, tough, tedious, or boring~\cite{unified}. For example, relational interpreters can be used to derive
 \emph{quines}~--- programs, which reduce to itself, as well as \emph{twines} or \emph{thrines} (a pairs or triples of
 programs, reducing to each other)~\cite{Untagged}; a straightforward relational description of
 simply typed lambda calculus~\cite{Lambda} inference rules works both as type inferencer and inhabitation problem solver~\cite{WillThesis};

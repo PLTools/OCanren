@@ -26,7 +26,7 @@ As the first example of the conversion we consider the implementation of concate
      | Cons (h, t) -> Cons (h, append t y)
 \end{lstlisting}
 
-In Section~\ref{ocanren} we already saw the canonical version of relational concatenation. The result of conversion, however,
+In Section~\ref{ocanren} we already saw the canonical version of relational concatenation. The result of relational conversion, however,
 is slightly different:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -40,16 +40,12 @@ is slightly different:
            (q2 === ^(Cons (q3, q4))) /\
            (fresh (q6 q7)
              (q6 === q3) /\             
-             (q1 === ^(Cons q6 q7)) /\
+             (q1 === ^(Cons (q6, q7))) /\
              (append$^o$ (=== q4) b q7))))
 \end{lstlisting}
 
-The main difference comes from the functionalization of primitive values. Thus, while conventional \lstinline|append$^o$| operates
-on logical lists, the converted variant uses a goal-returning functions. In particular, argument \lstinline|a| here is a function, 
-which takes a logical list and returns a goal. What does this goal do? It just tries to make the argument respect a certain contract.
-As the argument can have some variable occurrences, the goal tries to substitute these variables with some values in order to respect
-the contract this goal represents. For example, if we want to set the first argument of \lstinline{append$^o$} to \lstinline{Nil}, we just 
-have to construct a \lstinline{Nil}-ensuring goal: \lstinline{(===^Nil)}. Thus, the conventional \lstinline{append$^o$} for arguments
+The main difference comes from the functionalization of primitive values: while conventional \lstinline|append$^o$| operates
+on logical lists, the converted variant uses a goal-returning functions. Thus, the conventional \lstinline{append$^o$} for arguments
 \lstinline|x|, \lstinline|y| and \lstinline|q| can be expressed using the converted one as \lstinline{append$^o$ (===x) (===y) q}.
 
 With this observation in mind, it is rather easy to understand the rest of the code. First, the value of the first argument is
