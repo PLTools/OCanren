@@ -12,6 +12,8 @@
 \usepackage{stmaryrd}
 \usepackage{xspace}
 \usepackage{comment}
+\usepackage{wrapfig}
+\usepackage{placeins}
 
 \sloppy
 
@@ -54,7 +56,7 @@ identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,
 fontadjust=true,
-literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {&&&}{{$\wedge$}}2 {|||}{{$\vee$}}2 {^}{{$\uparrow$}}1,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {|||}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
 morecomment=[s]{(*}{*)}
 }
 
@@ -125,6 +127,7 @@ the subset of OCaml and evaluate it on a number of realistic examples.
 
 \input{introduction.tex}
 \input{ocanren.tex}
+\input{language.tex}
 \input{evaluation.tex}
 %\input{conclusion.tex}
 

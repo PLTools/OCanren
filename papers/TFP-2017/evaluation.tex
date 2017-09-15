@@ -5,7 +5,12 @@ We implemented relational conversion for the subset of OCaml language, using the
 original compiler. In its current form the converter takes the whole file and converts every definition into relational form, 
 but in future we consider to implement a more flexible approach when only some definitions are converted, being attributed
 for this purpose in some way. Our converter rewrites the original abstract syntax tree, annotated with the types, inferred by the compiler, 
-into relational form, using the set of combinators from \ocanren.  
+into relational form, using the set of combinators from \ocanren. Note, the semantics of OCaml is different from the 
+semantics of source language we presented in Section~\ref{source_language}: in OCaml, the order of reductions in
+application and binary operators in unspecified (unlike left-to-right in our case), pattern-matching in
+OCaml in performed in a top-down manner (and, thus, there can be more than one pattern matching the scrutinee), etc. We
+therefore trust an end user to apply relational conversion only to programs, for which these differences play
+no role.
 
 Our preliminary evaluation has shown, that the converter generates a lot of abstractions, many of which can be applied immediately.
 So we additionally implemented an optimization pass, which performs administrative reductions where possible. This optimization
@@ -28,14 +33,14 @@ is slightly different:
    val append$^o$ : (($\alpha$ llist)$^o$ -> $\G$) -> (($\alpha$ llist)$^o$ -> $\G$) -> 
                  ($\alpha$ llist)$^o$ -> $\G$
    let rec append$^o$ a b q1 =
-     fresh (q2) &&&
-       (a q2) &&&
-       (((q2 === ^Nil) &&& (b q1)) |||
+     fresh (q2) /\
+       (a q2) /\
+       (((q2 === ^Nil) /\ (b q1)) |||
          (fresh (q3 q4)
-           (q2 === ^(Cons (q3, q4))) &&&
+           (q2 === ^(Cons (q3, q4))) /\
            (fresh (q6 q7)
-             (q6 === q3) &&&             
-             (q1 === ^(Cons q6 q7)) &&&
+             (q6 === q3) /\             
+             (q1 === ^(Cons q6 q7)) /\
              (append$^o$ (=== q4) b q7))))
 \end{lstlisting}
 

@@ -26,8 +26,8 @@ The simplest expression of logic type is a variable, bound in \lstinline|fresh|.
 \begin{lstlisting}
    val is_zero$^o$ : int$^o$ -> bool$^o$ -> $\G$
    let is_zero$^o$ n b = 
-     (n === ^0 &&& b === ^true) |||
-     (n =/= ^0 &&& b === ^false)
+     (n === ^0 /\ b === ^true) |||
+     (n =/= ^0 /\ b === ^false)
 \end{lstlisting}
 
 Function \lstinline|is_zero$^o$| implements a binary relation between integers and booleans; when called with specific arguments, it returns a goal, which can be executed or combined with another goals. In former case, a stream of \emph{answers} is returned. An element of the stream contains the description of certain constraints for logical variables, which have to be respected in order for the relation to hold. We denote running primitive ``$\leadsto$'', so
@@ -57,37 +57,6 @@ Running
 
 \noindent returns a stream with two elements, which represents all possible pairs in the relation.
 
-\begin{comment}
-As more interesting example consider the following definition:
-
-\begin{lstlisting}
-   val eq$^o$ : $\alpha^o$ -> $\alpha^o$ -> bool$^o$ -> $\G$
-   let eq$^o$ x y b = 
-     (x === y &&& b === ^true) ||| 
-     (x =/= y &&& b === ^false)
-\end{lstlisting}
-
-The interesting part here is polymorphism: both 
-
-\begin{lstlisting}
-   eq$^o$ ^3 q ^true $\leadsto$ [q$\binds$3]
-\end{lstlisting}
-
-and 
-
-\begin{lstlisting}
-   eq$^o$ ^false q ^true $\leadsto$ [q$\binds$false]
-\end{lstlisting}
-
-\noindent work, giving expected results. However, an application 
-
-\begin{lstlisting}
-   eq$^o$ ($\lambda$x.x) ($\lambda$y.y) q
-\end{lstlisting}
-
-\noindent ends with a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well, as it deals only with first-order syntactic unification~\cite{Unification}. This example demostrates, that, unlike pure OCaml, the typing in OCanren is somewhat weak~--- some well-typed programs can do wrong. In order to restore the strong typing some of type variables have to be bounded to range over only non-functional types. The lack of direct support for bounded polymorphism in OCaml makes this step problematic. Our experience, however, shows, that in practice this deficiency rarely gets in the way. In the following development we assume, that in polymorphic types some type variables may be implicitly bounded to only non-function types, and these boundings are respected in all instantiations of those type variables.
-\end{comment}
-
 Other types (pairs, lists, user-defined algebraic datatypes, etc.) can be used in relational specifications as well, being injected by the same primitive. For example, expression \lstinline{^(1, "abc")} has type \lstinline{(int * string)$^o$}, \lstinline{^[1; 2; 3]}~--- type \lstinline{(int list)$^o$}, etc. The subtle part is that (since the unification only works for logical types) the placement of ``$^o$'' determines the granularity of unification. Indeed, a logical variable can only be placed where logical type is expected. Thus, in unification one can use a value of type \lstinline{(int * int)$^o$} as \emph{a whole}, but in order to control the \emph{contents} of the pair relationally the type \lstinline{(int$^o$, int$^o$)$^o$} is required. This makes it impossible to reuse some built-in or standard types in relational code~--- for example, predefined list type is not flexible enough, since it does not allow the tail of the list to be logical. Instead, logical list type has to be introduced:
 
 \begin{lstlisting}
@@ -99,10 +68,10 @@ With logical list type, we can implement relations for lists:
 \begin{lstlisting}
    val append : $\alpha$ llist$^o$ -> $\alpha$ llist$^o$ -> $\alpha$ llist$^o$ -> $\G$
    let rec append$^o$ x y xy =
-     (x === ^Nil &&& xy === y) |||
+     (x === ^Nil /\ xy === y) |||
      (fresh (h t ty)
-        x  === ^(Cons (h, t)) &&&
-        xy === ^(Cons (h, ty)) &&&
+        x  === ^(Cons (h, t)) /\
+        xy === ^(Cons (h, ty)) /\
         append$^o$ t y ty
      ) 
 \end{lstlisting}
@@ -122,9 +91,8 @@ As it can be seen from the type, relational concatenation is polymorphic, like i
 
 \noindent ends with a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well, as it deals only with first-order syntactic unification~\cite{Unification}. This example demostrates, that, unlike pure OCaml, the typing in OCanren is somewhat weak. In order to restore the strong typing some of type variables have to be bounded to range over only non-functional types. The lack of direct support for bounded polymorphism in OCaml makes this step problematic. Our experience, however, shows, that in practice this deficiency rarely gets in the way. In the following development we assume, that in polymorphic types some type variables may be implicitly bounded to only non-function types, and these boundings are respected in all instantiations of those type variables.
 
-\begin{comment}
-Finally, we describe the unnesting technique, used for relational conversion of first-order functions. As an example we take
-list concatenation:
+Finally, we describe the unnesting technique~\cite{TRS}, which was described as a method for manually transform
+a functional program into relational form. As an example we take list concatenation:
 
 \begin{lstlisting}
    let rec append x y =
@@ -133,7 +101,7 @@ list concatenation:
      | Cons (h, t) -> Cons (h, append t y)
 \end{lstlisting}
 
-The unnesting technique introduces a new name for each nested function call; in our case there is only one nested call, namely,
+The unnesting introduces a new name for each nested function call; in our case there is only one nested call, namely,
 the recursive call to \lstinline|append| itself, so the unnested function looks like
 
 \begin{lstlisting}
@@ -141,16 +109,16 @@ the recursive call to \lstinline|append| itself, so the unnested function looks 
      match x with 
      | Nil -> y
      | Cons (h, t) -> 
-       let ty = append t y in
-       h :: ty
+        let ty = append t y in
+        Cons (h, ty)
 \end{lstlisting}
 
-Now the conversion is straightforward: the pattern-matching construct is transformed into a disjunction, and new names, 
-introduced in via bindings in patterns and unnestings, are transformed into \lstinline|fresh| variables:
+Now the conversion is straightforward: the pattern-matching construct is transformed into a disjunction, and new names,
+introduced in pattern bindings and unnestings, are transformed into \lstinline|fresh| variables:
 
 \begin{lstlisting}
    let rec append$^o$ x y xy =
-     (t === ^Nil &&& xy === y) |||
+     (t === ^Nil /\ xy === y) |||
      (fresh (h t ty)
         (x  === ^Cons (h, t)) |||
         (xy === ^Cons (h, ty)) |||
@@ -158,13 +126,11 @@ introduced in via bindings in patterns and unnestings, are transformed into \lst
      )
 \end{lstlisting}
 
-However, not every definition can be converted to the relational form directly by unnesting, since lambda abstraction
-can be used as a result. In order to apply unnesting all definitions has to be transformed into $\eta$-long form. In
-untyped case, however, it can not be done automatically. Shifting this work into an end-user, however, would ruin 
-the flavor of functional programming; it would be very unreasonable to encourage this style of programming in order 
-for relational conversion to work. In our approach $\eta$-expansion is blended with the conversion algorithm and 
-performed on-demand invisibly for the end-user.
-\end{comment}
+However, not every definition can be converted to a relational form by unnesting. Being local and purely syntactic
+transformation, unnesting can not handle, for example, partial applications. In order to apply unnesting all 
+definitions has to be transformed into $\eta$-long form. We stress, that our relational conversion, described in 
+Section~\ref{conversion}, is essentially different from unnesting (in particular, we do not use $\eta$-long transformation).
+
 
 
 
