@@ -101,7 +101,7 @@ by the conversion, are shown below:
 Note, due to the compositionality of the conversion the type of functions, representing reduction orders, still corresponds to the type of the first 
 argument of the interpreter.
 
-The interpreter, constructed by our tool, can be ran in a forward direction (for readability purposes we use here a symbolic quoted representation of
+The interpreter, constructed by our tool, can be run in a forward direction (for readability purposes we use here a symbolic quoted representation of
 the terms instead of concrete datatype constructor-based):
 
 \begin{lstlisting}[basicstyle=\small]
@@ -112,7 +112,7 @@ the terms instead of concrete datatype constructor-based):
    eval$^o$ call_by_value$^o$ (=== `$\dbi{0}$ ((fun $\dbi{0}$) $\dbi{1}$)`) q $\leadsto$ [q $\binds$ `$\dbi{0}$ $\dbi{1}$`] 
 \end{lstlisting}
 
-As it is expected from relational interpreter, it is equally can be ran in the opposite direction, returning for a term (potentially infinite) stream
+As it is expected from relational interpreter, it is equally can be run in the opposite direction, returning for a term (potentially infinite) stream
 of terms, reducing to it:
 
 \begin{lstlisting}[basicstyle=\small]

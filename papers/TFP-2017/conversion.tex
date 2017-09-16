@@ -44,7 +44,8 @@ of this function is to make its argument respect a certain contract. As the argu
 the goal tries to substitute these variables with some values in order to respect the contract this goal represents. 
 For example, a constant \lstinline|Nil| is converted into a function \lstinline|fun $q$.$q$===^Nil|.
 
-The conversion itself is described in terms of transformation $\sembr{\bullet}^c$, see Figure~\ref{conversion}. The first five rules
+The conversion itself is described in terms of transformation $\sembr{\bullet}^c$, see Figure~7.%\ref{relational_conversion}. 
+The first five rules
 simply propagate the conversion through the expression; the last two actually do the work. These rules themselves may look complicated,
 but the idea is rather simple.
 

@@ -3,7 +3,7 @@
 
 In the context of this paper we will use a certain concrete implementation of \miniKanren~--- a shallow DSL for Objective 
 Caml\footnote{https://github.com/dboulytchev/ocanren}, called \ocanren~\cite{ocanren}. \ocanren corresponds to \miniKanren with
-disequality constraints~\cite{CKanren}, and (modulo typing) follows the original implementation. Here we describe the external view 
+disequality constraints~\cite{CKanren}, and (modulo typing) follows the original implementation~\cite{MicroKanren}. Here we describe the external view 
 on \ocanren, giving only intuitive meaning of its constructs; the formal description will be presented in Section~\ref{relational_extension}.
 We also use a simplified syntax, which is a little bit different from the concrete syntax in actual implementation, but assumed to
 be easier to read.
@@ -43,7 +43,7 @@ Running
    iz_zero$^o$ q ^true $\leadsto$ [q$\binds$0]
 \end{lstlisting}
 
-\noindent (where \lstinline|q| is a fresh logical variable) returns a stream, which represents the single expected answer. Goal
+\noindent (where \lstinline|q| is a fresh logical variable) returns a stream, which represents the single expected answer. The goal
 
 \begin{lstlisting}
    iz_zero$^o$ q ^false $\leadsto$ [q$\binds\free{0}$ (=/= 0)]
@@ -63,10 +63,10 @@ Other types (pairs, lists, user-defined algebraic datatypes, etc.) can be used i
    type $\alpha$ llist = Nil | Cons of $\alpha^o$ * ($\alpha$ llist)$^o$
 \end{lstlisting}
 
-With logical list type, we can implement relations for lists:
+With logical list type, we can implement some relations for lists:
 
 \begin{lstlisting}
-   val append : $\alpha$ llist$^o$ -> $\alpha$ llist$^o$ -> $\alpha$ llist$^o$ -> $\G$
+   val append : ($\alpha$ llist)$^o$ -> ($\alpha$ llist)$^o$ -> ($\alpha$ llist)$^o$ -> $\G$
    let rec append$^o$ x y xy =
      (x === ^Nil /\ xy === y) |||
      (fresh (h t ty)
@@ -76,7 +76,7 @@ With logical list type, we can implement relations for lists:
      ) 
 \end{lstlisting}
 
-Here we defined relational list concatenation \lstinline{append$^o$}, a canonical example in the field. This definition takes three logical lists \lstinline{x}, \lstinline{y} and \lstinline{xy} as arguments, and constructs a goal, which, being ran, finds all bindings for free variables in the lists (if any), trying to satisfy the desired relation. The search is described in terms of case analysis and recursion:
+Here we defined relational list concatenation \lstinline{append$^o$}, a canonical example in the field. This definition takes three logical lists \lstinline{x}, \lstinline{y} and \lstinline{xy} as arguments, and constructs a goal, which, being run, finds all bindings for free variables in the lists (if any), trying to satisfy the desired relation. The search is described in terms of case analysis and recursion:
 
 \begin{enumerate}
 \item If the first list is empty, then the second and the third lists must be equal.
