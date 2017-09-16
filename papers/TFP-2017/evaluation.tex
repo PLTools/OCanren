@@ -14,8 +14,8 @@ no role.
 
 Our preliminary evaluation discovered two problems. First, the converter generated a lot of abstractions, 
 many of which could be applied immediately. We additionally implemented an optimization pass, which performs 
-administrative reductions where possible. This optimization greatly improves the performance of the converted 
-program in terms of both readability and performance. Next, in our initial implementation too many values were
+administrative reductions where possible. This optimization greatly improves the performance of converted 
+programs in terms of both readability and performance. Next, in our initial implementation too many values were
 functionalized and, as a result, massively recalculated with essential performance degradation. We improved
 the implementation by identifying important specific case and handling it with a little different 
 transformation.
@@ -112,7 +112,7 @@ the terms instead of concrete datatype constructor-based):
    eval$^o$ call_by_value$^o$ (=== `$\dbi{0}$ ((fun $\dbi{0}$) $\dbi{1}$)`) q $\leadsto$ [q $\binds$ `$\dbi{0}$ $\dbi{1}$`] 
 \end{lstlisting}
 
-As it is expected from relational interpreter, it is equally can be run in the opposite direction, returning for a term (potentially infinite) stream
+As it is expected from relational interpreter, it is equally can be run in the opposite direction, returning for a term a (potentially infinite) stream
 of terms, reducing to it:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -196,7 +196,7 @@ in order for the complete term to have that type. Note, the term we've got as a 
 is applied there twice with different types of arguments.
 
 A final observation: we do not claim to solve the problem of relational implementation of Hindley-Milner type system completely. Even though our converted
-relational implementation behaves as expected, it still far from elegance and relational nativeness~--- indeed, in functional 
+relational implementation behaves as expected, it still not ideal~--- indeed, in functional 
 implementation we had to implement unification on types, which does not make use of built-in unification in miniKanren and, to some extent, doubles the
 work. We therefore do not consider this approach as an ideal solution.
 
