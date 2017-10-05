@@ -843,6 +843,7 @@ module Disequality :
         type t
 
         val empty     : t
+        val is_empty  : t -> bool
         val add       : int -> Disjunction.t -> t -> t
         val get       : int -> t -> Disjunction.t list
         val replace   : int -> Disjunction.t list -> t -> t
@@ -853,6 +854,7 @@ module Disequality :
         type t = Disjunction.t list M.t
 
         let empty           = M.empty
+        let is_empty        = M.is_empty
         let get k m         = try M.find k m with Not_found -> []
         let add k v m       = M.add k (v::get k m) m
         let replace k vs m  = M.add k vs (M.remove k m)
@@ -891,9 +893,11 @@ module Disequality :
               with Disequality_fulfilled -> (stayed, rebound)
             )
       in
+      if Index.is_empty cstore then cstore
+      else
       ListLabels.fold_left prefix ~init:cstore
         ~f:(fun cstore cnt ->
-          let var_idx = cnt.Subst.var.index in
+          let var_idx = cnt.Subst.var.Var.index in
           let conj = Index.get var_idx cstore in
           let stayed1, rebound1 = revisit_conjuncts var_idx conj in
           let cstore, rebound2 = match Env.var env cnt.Subst.term with
