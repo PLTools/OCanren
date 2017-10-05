@@ -425,7 +425,7 @@ module Env :
     type t
 
     val empty     : unit -> t
-    val fresh     : ?name:string -> scope:Var.scope -> t -> 'a * t
+    val fresh     : (*?name:string -> *)scope:Var.scope -> t -> 'a
     val var       : t -> 'a -> int option
     val is_var    : t -> 'a -> bool
     val free_vars : t -> 'a -> VarSet.t
@@ -440,10 +440,10 @@ module Env :
       incr last_anchor;
       {anchor = !last_anchor; next = 10}
 
-    let fresh ?name ~scope e =
+    let fresh (*?name *) ~scope e =
       let v = !!!(Var.make ~env:e.anchor ~scope e.next) in
       e.next <- 1 + e.next;
-      (!!!v, e)
+      !!!v
 
     let var_tag, var_size =
       let index = 0 in (* dummy index *)
@@ -1007,16 +1007,17 @@ module State =
       ; scope = Var.new_scope ()
       }
 
-    let env   {env;} = env
-    let subst {subst;} = subst
-    let constraints {ctrs;} = ctrs
+    let env   {env} = env
+    let subst {subst} = subst
+    let constraints {ctrs} = ctrs
+    let scope {scope} = scope
 
     let new_var {env; scope} =
-      let (x,_) = Env.fresh ~scope env in
-      let i = (!!!x : Var.t).index in
+      let x = Env.fresh ~scope env in
+      let i = (!!!x : Var.t).Var.index in
       (x,i)
 
-    let incr_scope {scope} as st = {st with scope = Var.new_scope ()}
+    let incr_scope st = {st with scope = Var.new_scope ()}
 
     let merge
       {env=env1; subst=subst1; ctrs=ctrs1; scope=scope1}
@@ -1051,12 +1052,12 @@ let success st = Stream.Internal.single st
 let failure _  = Stream.Internal.nil
 
 let call_fresh f =
-  let open State in fun {env; scope} as st ->
-    let x, env' = Env.fresh ~scope env in
-    f x {st with env=env'}
+  let open State in fun ({env; scope} as st) ->
+  let x = Env.fresh ~scope env in
+  f x st
 
 let (===) (x: _ injected) y =
-  let open State in fun {env; subst; ctrs; scope} as st ->
+  let open State in fun ({env; subst; ctrs; scope} as st) ->
   LOG[perf] (Log.unify#enter);
   let result =
     match Subst.unify env x y scope subst with
@@ -1071,7 +1072,7 @@ let (===) (x: _ injected) y =
   result
 
 let (=/=) x y =
-  let open State in fun {env; subst; ctrs; scope} as st ->
+  let open State in fun ({env; subst; ctrs; scope} as st) ->
   match Subst.unify env x y Var.non_local_scope subst with
   | None         -> Stream.Internal.single st
   | Some ([], _) -> Stream.Internal.nil
@@ -1096,6 +1097,7 @@ let (?|) gs st =
   let rec inner = function
   | [g]   -> g
   | g::gs -> disj_base g (inner gs)
+  | [] -> failwith "Wrong argument of (?!)"
   in
   inner gs |> (fun g -> Stream.Internal.inc (fun () -> g st))
 
@@ -1108,6 +1110,15 @@ module Fresh =
     let zero  f = f
     let one   f = succ zero f
     let two   f = succ one f
+
+    (* N.B. Manual inlining of numerals will speed-up OCanren a bit (mainly because of less memory consumption) *)
+    (* let two   g = fun st ->
+      let scope = State.scope st in
+      let env = State.env st in
+      let q = Env.fresh ~scope env in
+      let r = Env.fresh ~scope env in
+      g q r st *)
+
     let three f = succ two f
     let four  f = succ three f
     let five  f = succ four f
