@@ -65,4 +65,4 @@ let runL n = runR glam_reifier show_rlam show_llam n
 let _withFree =
   runL 1     q   qh (REPR (fun q     -> evalo (app q (v varX)) (v varX)             ));
   runL 1    qr  qrh (REPR (fun q r   -> evalo (app r q)        (v varX)             ));
-  runL 2   qrs qrsh (REPR (fun q r s -> a_la_quine q r s                            ))
+  runL 2    qrs qrsh (REPR (fun q r s -> a_la_quine q r s                            ))

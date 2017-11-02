@@ -7,12 +7,12 @@ but in future we consider to implement a more flexible approach when only some d
 for this purpose in some way. Our converter rewrites the original abstract syntax tree, annotated with the types, inferred by the compiler, 
 into relational form, using the set of combinators from \ocanren. Note, the semantics of OCaml is different from the 
 semantics of source language we presented in Section~\ref{source_language}: in OCaml, the order of reductions in
-application and binary operators in unspecified (unlike left-to-right in our case), pattern-matching in
+application and binary operators is unspecified (unlike left-to-right in our case), pattern-matching in
 OCaml in performed in a top-down manner (and, thus, there can be more than one pattern matching the scrutinee), etc. We
 therefore trust an end user to apply relational conversion only to programs, for which these differences play
 no role.
 
-Our preliminary evaluation discovered two problems. First, the converter generated a lot of abstractions, 
+Our preliminary evaluation discovered two problems. First, the converter used to generate a lot of abstractions, 
 many of which could be applied immediately. We additionally implemented an optimization pass, which performs 
 administrative reductions where possible. This optimization greatly improves the performance of converted 
 programs in terms of both readability and performance. Next, in our initial implementation too many values were
@@ -53,7 +53,7 @@ on logical lists, the converted variant uses a goal-returning functions. Thus, t
 \lstinline|x|, \lstinline|y| and \lstinline|q| can be expressed using the converted one as \lstinline{append$^o$ (===x) (===y) q}.
 
 With this observation in mind, it is rather easy to understand the rest of the code. First, the value of the first argument is
-associated with the fresh variable \lstinline|q2|, and a case analysis is performed. If the first argument is an empty list, then the 
+associated with the fresh variable \lstinline|q2|, and case analysis is performed. If the first argument is empty list, then the 
 value of the third argument is associated with the value of the second (by applying \lstinline|b| to \lstinline|q1|). Otherwise, the first
 argument is split into the head \lstinline|q3| and the tail \lstinline|q4|, the tail is functionalized and passed to the recursive
 call. The result \lstinline|q7| is consed with the head \lstinline|q3| of the original list and unified with the result \lstinline|q1|. One extra
@@ -195,10 +195,9 @@ In this query we supplied an \emph{incomplete} term with a hole ($\Box$) and som
 in order for the complete term to have that type. Note, the term we've got as a result can not be typed in STLC, since the variable \lstinline|f|
 is applied there twice with different types of arguments.
 
-A final observation: we do not claim to solve the problem of relational implementation of Hindley-Milner type system completely. Even though our converted
-relational implementation behaves as expected, it still not ideal~--- indeed, in functional 
-implementation we had to implement unification on types, which does not make use of built-in unification in miniKanren and, to some extent, doubles the
-work. We therefore do not consider this approach as an ideal solution.
+A final observation: we do not claim to completely solve the problem of relational implementation of Hindley-Milner type system. Even though our converted
+relational implementation behaves as expected, it still not ideal~--- indeed, in functional implementation we had to implement unification on types, 
+which does not make use of built-in unification in miniKanren and, to some extent, doubles the work. We therefore do not consider this approach as an ideal solution.
 
 \subsection{miniKanren with Disequality Constraints}
 

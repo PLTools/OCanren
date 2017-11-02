@@ -56,7 +56,7 @@ algebraic datatypes $T^k$, and we stipulate, that each constructor $C^n$ belongs
 datatype. In rule \textsc{Constr$_T$} we assume, that type $t^C$ has the form $T^k(t_1,\dots,t_k)$, where each of the types
 $t_i$ is recovered from the types $t_i^C$ of arguments of constructor $C^n$ and, moreover, these types are agree in the sense of
 constructor application. Similarly, in rule \textsc{Match$_T$} the types of all $C_i^{k_i}(x^i_1,\dots,x^i_{k_i})$ are expected
-to be equal $t^C$, and $t^{C_i}_j$ is a type of $j$-th argument of constructor $C_i$, used in a pattern.
+to be equal $t^C$, and $t^{C_i}_j$ is a type of $j$-th argument of constructor $C_i$, used in the pattern.
 
 \setarrow{:}
 \newcommand{\typed}[3]{\withenv{#1}{\trans{#2}{}{#3}}}
@@ -128,7 +128,7 @@ $$
 \ruleno{Match$_T$}
 $$}
 \end{tabular}
-\caption{Typing rules for source language}
+\caption{Typing rules for the source language}
 \label{functional_typing}
 \end{figure}
 
@@ -217,7 +217,7 @@ $$
 $$}
 \end{tabular}
 \egroup
-\caption{Semantics for source language}
+\caption{Semantics for the source language}
 \label{functional_semantics}
 \end{figure}
 
@@ -233,7 +233,7 @@ a new stack $\mathcal S^\prime$ and a new expression $e^\prime$. A context is an
 a stack of contexts describes a path in the expression being evaluated from the topmost construct to the point, where the evaluation 
 currently is taking place. For a context $C$ and an expression $e$ we denote by $C[e]$ a complete expression with no holes, which is 
 obtained by plugging $e$ into the unique hole of $C$. From each state $\inbr{C_1:C_2:\dots:C_k,e}$ we can build an 
-expression $C_k[\dots[C_2[C_1[e]]\dots]$, which represents an intermediate result of evaluation according to a small-step semantics. 
+expression $C_k[\dots[C_2[C_1[e]]]\dots]$, which represents an intermediate result of evaluation according to a small-step semantics. 
 This form of semantic description originates from Felleisen-style~\cite{Felleisen} approach for small-step semantics, and we've
 chosen it since it can be naturally extended for relational case.
 
@@ -270,7 +270,7 @@ $$
                     &e_1\wedge e_2
 \end{array}
 $$
-\caption{Syntax of relational extension}
+\caption{The syntax of relational extension}
 \label{relational_syntax}
 \end{wrapfigure}
 
@@ -343,7 +343,7 @@ $$
 \ruleno{Disjunction$_T$}
 $$
 \end{tabular}
-\caption{Typing rules for relational extension}
+\caption{Typing rules for the relational extension}
 \label{relational_typing}
 \end{figure}
 
@@ -413,7 +413,7 @@ $$
 \step{\Sigma,\,\mathcal S,\,e\wedge\lstinline|success|,\,\sigma}{\Sigma,\,\mathcal S,\,e,\,\sigma}\ruleno{ConjR}
 $$
 \end{tabular}}
-\caption{Semantics for relational extension}
+\caption{Semantics for the relational extension}
 \label{relational_semantics}
 \end{figure}
 

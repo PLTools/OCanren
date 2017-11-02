@@ -30,7 +30,7 @@ The simplest expression of logic type is a variable, bound in \lstinline|fresh|.
      (n =/= ^0 /\ b === ^false)
 \end{lstlisting}
 
-Function \lstinline|is_zero$^o$| implements a binary relation between integers and booleans; when called with specific arguments, it returns a goal, which can be executed or combined with another goals. In former case, a stream of \emph{answers} is returned. An element of the stream contains the description of certain constraints for logical variables, which have to be respected in order for the relation to hold. We denote running primitive ``$\leadsto$'', so
+Function \lstinline|is_zero$^o$| implements a binary relation between integers and booleans; when called with specific arguments, it returns a goal, which can be executed or combined with another goals. In the former case, a stream of \emph{answers} is returned. An element of the stream contains the description of certain constraints for logical variables, which have to be respected in order for the relation to hold. We denote running primitive ``$\leadsto$'', so
 
 \begin{lstlisting}
    iz_zero$^o$ ^0 ^true $\leadsto$ [()]
