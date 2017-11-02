@@ -1156,7 +1156,7 @@ let helper_of_state st =
 class type ['a,'b] reified = object
   method is_open : bool
   method prj     : 'a
-  method reify   : (helper -> ('a, 'b) injected -> 'b) -> inj:('a -> 'b) -> 'b
+  method reify   : (helper -> ('a, 'b) injected -> 'b) -> 'b
 end
 
 let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) reified =
@@ -1167,7 +1167,7 @@ let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) reified =
   object (self)
     method is_open            = is_open
     method prj                = if self#is_open then raise Not_a_value else !!!ans
-    method reify reifier ~inj = if self#is_open then reifier c ans else inj ans
+    method reify reifier      = reifier c ans
   end
 
 let prj x = let rr = make_rr x @@ State.empty () in rr#prj

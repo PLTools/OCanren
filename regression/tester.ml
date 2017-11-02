@@ -30,7 +30,7 @@ let run_gen onOK onFree n num handler (repr, goal) =
         | [],_ -> raise NoMoreAnswers
         | [rr],tl ->
           if rr#is_open
-          then onFree i name (fun r -> rr#reify r ~inj:(fun _ -> assert false))
+          then onFree i name rr#reify
           else onOK i name rr#prj;
           (name,tl)
         | _ -> assert false
