@@ -10,7 +10,7 @@ when considered as queries to some relational specification~\cite{WillThesis}. T
 number of appealing examples confirming this observation: a type checker 
 for simply typed lambda calculus (and, at the same time, a type inferencer and solver 
 for the inhabitation problem), an interpreter (capable of generating ``quines''~--- 
-programs, producing themselves as a result)~\cite{Untagged}, list sorting (capable of 
+programs producing themselves as a result)~\cite{Untagged}, list sorting (capable of 
 producing all permutations), etc. 
 
 Many logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
@@ -26,8 +26,8 @@ This paper addresses the problem of embedding \miniKanren into OCaml\footnote{\u
 a rich type system. A statically-typed implementation would bring us a number of benefits. First, as always, 
 we expect typing to provide a certain level of correctness guarantees, ruling out some pathological programs, which
 otherwise would provide pathological results. In the context of relational programming, however, typing would additionally 
-help us to interpret the results of queries. Often an answer of relational query contains a number of
-free variables, which supposed to take arbitrary values. In the typed case these variables become typed,  
+help us to interpret the results of queries. Often an answer of a relational query contains a number of
+free variables, which are supposed to take arbitrary values. In the typed case these variables become typed,
 facilitating the understanding of the answers, especially those with multiple free variables. Next, a number of \miniKanren 
 applications require additional constraints to be implemented. In the untyped setting, when everything can be anything, 
 some symbols or data structures tend to percolate into undesirable contexts~\cite{Untagged}. In order to prevent this from happening, some 
@@ -35,7 +35,7 @@ auxiliary constraints (``\lstinline{absent$^o$}'', ``\lstinline{symbol$^o$}'', e
 a weak dynamic type system, cutting undesirable answers out at runtime. Conversely, in a typed language this work can be
 entrusted to the type checker (at the price of enforcing an end user to write properly typed specifications), not only improving the
 performance of the system, but also reducing the number of constraints which have to be implemented. Finally, it is rather natural
-to expect better performance of statically-typed implementation.
+to expect better performance of a statically-typed implementation.
 
 We present an implementation of a set of relational combinators and syntax extensions for 
 OCaml\footnote{The source code of our implementation is accessible from \url{https://github.com/dboulytchev/OCanren}.}, 
@@ -67,9 +67,9 @@ The rest of the paper is organized as follows: in the next section we provide a 
 works. Then we briefly introduce \miniKanren in
 its original form to establish some notions; we do not intend to describe the language in its full bloom (interested readers can
 refer to~\cite{TRS}). In Section~\ref{sec:goals} we describe some basic constructs behind a \miniKanren implementation, this time 
-in OCaml. In Section \ref{sec:unification} we discuss polymorphic unification, and show that unification with 
+in OCaml. In Section~\ref{sec:unification} we discuss polymorphic unification, and show that unification with 
 triangular substitution respects typing. Then we present our approach to handle user-defined types by injecting them 
-into the logic domain; we consider a simple approach and more elaborate and efficient tagless variant (see Section~\ref{sec:injection}). 
+into the logic domain; we consider a simple approach and a more elaborate and efficient tagless variant (see Section~\ref{sec:injection}). 
 Section~\ref{sec:reification} describes top-level primitives and addresses the problem of relational and functional code integration. 
 Then, in Section~\ref{sec:examples} we present a set of relational examples, written with the aid of our 
 library. Section~\ref{sec:evaluation} contains the results of a performance evaluation and a comparison of our implementations 

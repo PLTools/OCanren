@@ -13,7 +13,7 @@ two given terms, the goal is considered satisfied, a most general unifier is kep
 of current branch continues. Otherwise the current branch backtracks.
 
 \item Disequality constraint~\cite{CKanren} in the form \lstinline[language=scheme]{($\not\equiv$ $t_1$ $t_2$)}, where
-$t_1$, $t_2$ are some terms; a disequality constraint prevents all branches (starting from the current), in which the 
+$t_1$, $t_2$ are some terms; a disequality constraint prevents all branches (starting from the current), in which the
 specified terms are equal (w.r.t. the search state), from being considered.
 
 \item Conditional construct in the form 
@@ -28,7 +28,7 @@ specified terms are equal (w.r.t. the search state), from being considered.
 \end{lstlisting}
 
 where each $g^i_j$ is a goal. A \lstinline{conde} goal considers each collection of subgoals, surrounded by square brackets, as
-implicit conjunction (so \lstinline[language=scheme]{[$g^i_1\;\;g^i_2\;\;\dots\;\;g^i_{k_i}$]} is considered as a 
+implicit conjunction (so \lstinline[language=scheme]{[$g^i_1\;\;g^i_2\;\;\dots\;\;g^i_{k_i}$] } is considered as a 
 conjunction of all $g^i_j$) and tries to satisfy each of them independently~--- in other words, operates on them
 as a disjunction.
 
@@ -64,8 +64,8 @@ of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$
 We interpret the relation ``\lstinline{append$^o$ x y xy}'' as ``the concatenation of \lstinline{x} and \lstinline{y} 
 equals \lstinline{xy}''. Indeed, if the list \lstinline{x} is empty, then (regardless the content of \lstinline{y}) in order for the relation to hold 
 the value for \lstinline{xy} should by equal to that of \lstinline{y}~--- hence line 3. Otherwise, \lstinline{x} can be decomposed into the head 
-\lstinline{h} and the tail \lstinline{t}~--- so we need some fresh variables. We also need additional variable \lstinline{ty} to designate the list, 
-being in the relation \lstinline{append$^o$} with \lstinline{t} and \lstinline{y}. Trivial relational reasonings complete the implementation (lines 5-7).
+\lstinline{h} and the tail \lstinline{t}~--- so we need some fresh variables. We also need the additional variable \lstinline{ty} to designate the list 
+that is in the relation \lstinline{append$^o$} with \lstinline{t} and \lstinline{y}. Trivial relational reasonings complete the implementation (lines 5-7).
 
 A goal, built with the aid of the aforementioned constructs, can be run by the following primitive:
 
