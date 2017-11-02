@@ -10,11 +10,14 @@ In our case we want to preserve both strong typing and type inference. Since we 
 unification, it is undesirable to represent logical variables of different types differently (while technically 
 possible, it would compromise the lightweight approach we used so far). This means that terms with logical
 variables have to be typed differently, than user-defined data~--- otherwise it would be possible to use
-terms in contexts, where logical variables are not handled properly. At the same time we do not want term types
-to be completely different from user-defined~--- for example, we would like to reuse user-defined constructors, etc.
+terms in contexts where logical variables are not handled properly. At the same time we do not want term types
+to be completely different from user-defined types --- for example, we would like to reuse user-defined constructors, etc.
 This considerations boil down to the idea of \emph{logical representation} for a user-defined type. Informally, 
 a logical representation for the type $t$ is a type $\rho_t$ with a couple of conversion functions:
-    
+
+% TODO: Может быть тут стоит сослать на статью по Х-ю, где они заводили в каждом конструкторе места для логических переменных.
+% Нам эту статью упомянули, когда мы подавались на конфу. 
+
 $$
 \begin{array}{rcl}
    \uparrow  \;: t \to \rho_t & - & \mbox{injection}\\
@@ -58,7 +61,7 @@ corresponds to a logical representation of the type $\alpha$:
 
 Informally speaking, any value of type $[\alpha]$ is either a value of type $\alpha$, or a free
 logic variable. Note, the constructors of this type cannot be disclosed to an end user, since the only possible way to create a logic variable 
-should still be by using the ``\lstinline{fresh}'' construct; thus the logic type is made abstract in the interface.
+should still be by using the ``\lstinline{fresh}'' construct; thus the logic type is abstract in the interface.
 Now, we may redefine the signature of abstraction, unification and disequality primitives in the
 following manner
 
@@ -140,7 +143,7 @@ variables by their tags only and, thus, cannot simply use pattern matching. In o
 as follows:
 
 \begin{itemize}
-\item in an environment, we additionally keep some unique boxed value~--- \emph{anchor}~--- created by \lstinline{run} at the moment of initial
+\item in an environment, we additionally keep some unique boxed value~--- the \emph{anchor}~--- created by \lstinline{run} at the moment of initial
 state generation; the anchor is inherited unchanged in all derived environments during the search session;
 \item we change the logic type definition into
 
@@ -176,7 +179,7 @@ the substitution in the state until no occurrences of bound variables are left. 
 not polymorphic, \lstinline{reify} is also implemented in an unsafe manner. However, it is easy to see that \lstinline{reify}
 does not produce ill-typed terms. Indeed, all original types of variables are preserved in a substitution; unification does not
 change unified terms, so all terms bound in a substitution are well-typed. Hence, \lstinline{reify} always substitutes
-some subterms in a well-typed term with another terms of the corresponding types, which preserves the well-typedness.
+some subterms in a well-typed term with other terms of the corresponding types, which preserves the well-typedness.
 
 In addition to performing substitutions, \lstinline{reify} also reifies disequality constraints. Constraint reification
 attaches to each free variable in a reified term a list of reified terms, describing the disequality constraints for that
@@ -242,7 +245,7 @@ stage. However, this scenario raises the following question: what would the type
 anymore since $[\alpha]$ now equals $\alpha$. We \emph{want}, however, it be something like
 
 \begin{lstlisting}
-   val reify : state -> $[\alpha]$ -> $(\mbox{``tagged'' }[\alpha])$
+   val reify : state -> $[\alpha]$ -> $(\mbox{``tagged'' } [\alpha])$
 \end{lstlisting}
 
 If $\alpha$ is not a parametric type, we can simply test if the value is a variable, and if yes, tag it with the constructor \lstinline{Var};

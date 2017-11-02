@@ -118,9 +118,9 @@ Here \lstinline{Stream.hd} is a function which takes a head from a lazy stream o
 
 It is interesting, that since \lstinline{sort$^o$} is
 relational, it can be used to calculate the list of all \emph{permutations}
-for a given list. Indeed, each permutation, being sorted, results in the same list.
+for a given list. Indeed, sorting each permutation results in the same list.
 So, the problem of finding all permutations can be relationally reformulated into
-the problem of finding all lists, which are converted by sorting into the given one:
+the problem of finding all lists which are converted by sorting into the given one:
 
 \begin{lstlisting}
 let perm l = map (fun a -> a#prj |> from_nat_list) @@

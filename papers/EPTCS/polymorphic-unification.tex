@@ -64,7 +64,7 @@ representation for terms and types:
     val unify : term -> term -> subst option -> subst option
 \end{lstlisting}
 
-\noindent where ``\lstinline{term}'' stands for the type, representing typed terms, ``\lstinline{subst}'' stands for the type of
+\noindent where ``\lstinline{term}'' stands for the type representing typed terms, and ``\lstinline{subst}'' stands for the type of
 substitution (a partial mapping from logic variables to terms). Unification can fail (hence ``\lstinline{option}'' in the result type),
 is performed in the context of existing substitution (hence ``\lstinline{subst}'' in the third argument) and can be
 chained (hence ``\lstinline{option}'' in the third argument).
