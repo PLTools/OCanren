@@ -506,7 +506,7 @@ module Env :
 
     val empty     : unit -> t
     val create    : anchor:Var.env -> t
-    val fresh     : (*?name:string ->*) scope:Var.scope -> t -> 'a * t
+    val fresh     : (*?name:string ->*) scope:Var.scope -> t -> 'a
     val var       : t -> 'a -> int option
     val is_var    : t -> 'a -> bool
     val free_vars : t -> 'a -> VarSet.t
@@ -659,7 +659,7 @@ module Subst :
           try
             Obj.repr @@ VarTbl.find mapping var
           with Not_found ->
-            let new_var, _ = Env.fresh ~scope dst_env in
+            let new_var = Env.fresh ~scope dst_env in
             VarTbl.add mapping var !!!new_var;
             Obj.repr @@ new_var
       in
@@ -1154,7 +1154,7 @@ module Disequality :
           try
             VarTbl.find mapping var
           with Not_found ->
-            let new_var, _ = Env.fresh ~scope dst_env in
+            let new_var = Env.fresh ~scope dst_env in
             VarTbl.add mapping var new_var;
             new_var
         in
