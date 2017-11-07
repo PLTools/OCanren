@@ -1608,18 +1608,34 @@ module Tabling =
     let four  () = succ three ()
     let five  () = succ four ()
 
+    let tabled' tbl g args st =
+      let key = Table.abstract args st in
+      try
+        Table.slave tbl key args st
+      with Not_found ->
+        Table.master tbl key args (g args) st
+
     let tabled n g =
       let tbl = Table.create () in
       let currier, uncurrier, ext = n () in
       currier (
         fun tup ->
           let x, st = ext tup in
-          let args = Table.abstract x st in
-          try
-            Table.slave tbl args x st
-          with Not_found ->
-            Table.master tbl args x (uncurrier g x) st
+          tabled' tbl (uncurrier g) x st
       )
+
+    let tabledrec n g_norec =
+      let tbl = Table.create () in
+      let currier, uncurrier, ext = n () in
+      let g = ref (fun _ -> assert false) in
+      let g_rec args = uncurrier (g_norec !g) args in
+      let g_tabled = tabled' tbl g_rec in
+      g := currier (
+        fun tup ->
+          let x, st = ext tup in
+          g_tabled x st
+      );
+      !g
 end
 
 (* Tracing/debugging stuff *)
