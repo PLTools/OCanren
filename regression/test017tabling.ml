@@ -1,25 +1,16 @@
 open MiniKanren
 open Tester
 
-let rec patho arco x y = conde [
+let patho_norec arco po x y = conde [
   arco x y;
   Fresh.one (fun z ->
-    (arco x z) &&& (patho arco z y)
-  )
+    (arco x z) &&& (po z y)
+  );
 ]
 
-let patho_tabled arco =
-  let patho_norec po x y = conde [
-    arco x y;
-    Fresh.one (fun z ->
-      (arco x z) &&& (po z y)
-    );
-  ] in
-  let patho = ref (fun x y -> assert false) in
-  let patho_rec x y = patho_norec !patho x y in
-  let patho_tabled = Tabling.(tabled two) patho_rec in
-  patho := patho_tabled;
-  patho_tabled
+let rec patho arco = patho_norec arco (fun x y -> delay @@ fun () -> patho arco x y)
+
+let patho_tabled arco = Tabling.(tabledrec two) (patho_norec arco)
 
 let show s = s
 let showl = GT.show(logic) (show)

@@ -339,6 +339,23 @@ val qrst : unit ->
      (('x, 'y) reified Stream.t)))) *
    ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) -> ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1)
 
+ (** Tabling primitives.
+     Tabling allows to cache answers of the goal between different queries.
+
+    Usage:
+      General form : [Tabling.tabled/tabledrec n g] where [n] is the number of parameters and [g] is the goal.
+      Returns modified `tabled` goal.
+
+      1) For non-recursive goals:
+
+        [let g = Tabling.(tabled two) (fun q r -> q === r)]
+
+      2) For recursive goals:
+        In this case it is necessery to `abstract` from recursive calls.
+        The goal should take additional (first) argument [grec] and use it instead of recursive calls to itself.
+
+        [let g = Tabling.(tabledrec one) (fun grec q -> (q === O) ||| (fresh (n) (q === S n) &&& (grec n)))]
+ *)
 module Tabling :
   sig
     val succ : (unit ->
@@ -374,6 +391,8 @@ module Tabling :
       ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) -> ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1)
 
     val tabled : (unit -> (('a -> State.t Stream.internal) -> 'b) * ('c -> 'd -> goal) * ('a -> 'd * State.t)) -> 'c -> 'b
+
+    val tabledrec : (unit -> (('a -> State.t Stream.internal) -> 'b -> 'c) * ('d -> 'e -> goal) * ('a -> 'e * State.t)) -> (('b -> 'c) -> 'd) -> 'b -> 'c
   end
 
 (** {2 Building reifiers for a custom type compositionally} *)
