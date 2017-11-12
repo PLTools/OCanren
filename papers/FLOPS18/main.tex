@@ -1,0 +1,194 @@
+\documentclass{llncs}
+
+\usepackage{makeidx}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{indentfirst}
+\usepackage{verbatim}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{stmaryrd}
+\usepackage{xspace}
+\usepackage{comment}
+\usepackage{wrapfig}
+\usepackage[caption=false]{subfig}
+%\usepackage{subcaption}
+\usepackage{placeins}
+\usepackage{tabularx}
+\usepackage{ragged2e}
+
+\def\transarrow{\xrightarrow}
+\newcommand{\setarrow}[1]{\def\transarrow{#1}}
+
+\newcommand{\trule}[2]{\frac{#1}{#2}}
+\newcommand{\crule}[3]{\frac{#1}{#2},\;{#3}}
+\newcommand{\withenv}[2]{{#1}\vdash{#2}}
+\newcommand{\trans}[3]{{#1}\transarrow{#2}{#3}}
+\newcommand{\ctrans}[4]{{#1}\transarrow{#2}{#3},\;{#4}}
+\newcommand{\llang}[1]{\mbox{\lstinline[mathescape]|#1|}}
+\newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
+\newcommand{\inbr}[1]{\left<{#1}\right>}
+\newcommand{\highlight}[1]{\color{red}{#1}}
+\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
+\newcommand{\rulename}[1]{\textsc{#1}}
+\newcommand{\inmath}[1]{\mbox{$#1$}}
+\newcommand{\lfp}[1]{fix_{#1}}
+\newcommand{\gfp}[1]{Fix_{#1}}
+\newcommand{\vsep}{\vspace{-2mm}}
+\newcommand{\supp}[1]{\scriptsize{#1}}
+\newcommand{\G}{\mathfrak G}
+\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\cd}[1]{\texttt{#1}}
+\newcommand{\miniKanren}{miniKanren\xspace}
+\newcommand{\ocanren}{OCanren\xspace}
+\newcommand{\free}[1]{\boxed{#1}}
+\newcommand{\binds}{\;\mapsto\;}
+\newcommand{\dbi}[1]{\mbox{\bf{#1}}}
+\newcommand{\sv}[1]{\mbox{\textbf{#1}}}
+\newcommand{\bnd}[2]{{#1}\mkern-9mu\binds\mkern-9mu{#2}}
+
+\newcommand{\meta}[1]{{\cal{#1}}}
+
+\lstdefinelanguage{ocanren}{
+keywords={fresh, let, in, match, with, when, class, type,
+object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+true, false},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\ttfamily\underbar,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+fontadjust=true,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
+morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+mathescape=true,
+%basicstyle=\small,
+identifierstyle=\ttfamily,
+keywordstyle=\bfseries,
+commentstyle=\scriptsize\rmfamily,
+basewidth={0.5em,0.5em},
+fontadjust=true,
+language=ocanren
+}
+
+\usepackage{letltxmacro}
+\newcommand*{\SavedLstInline}{}
+\LetLtxMacro\SavedLstInline\lstinline
+\DeclareRobustCommand*{\lstinline}{%
+  \ifmmode
+    \let\SavedBGroup\bgroup
+    \def\bgroup{%
+      \let\bgroup\SavedBGroup
+      \hbox\bgroup
+    }%
+  \fi
+  \SavedLstInline
+}
+\addtolength{\parskip}{-2pt}
+
+\begin{document}
+
+\mainmatter
+
+\title{Improving Refutational Completeness\\
+of Relational Search via Divergence Test}
+
+\author{
+  Dmitri Rozplokhas\inst{1} \and Dmitri Boulytchev\inst{2}
+}
+
+\institute{
+\email{rozplokhas@gmail.com}\\
+St.Petersburg Academic University
+\and
+\email{dboulytchev@math.spbu.ru}\\
+St.Petersburg State University\\
+JetBrains Research
+}
+
+\maketitle
+
+\begin{abstract}
+Abstract goes here
+\end{abstract}
+
+\input{introduction.tex}
+\input{language.tex}
+
+\begin{thebibliography}{99}
+\bibitem{TRS}
+Daniel P. Friedman, William E.Byrd, Oleg Kiselyov. The Reasoned Schemer. The MIT
+Press, 2005.
+
+\bibitem{MicroKanren}
+Jason Hemann, Daniel P. Friedman. $\mu$Kanren: A Minimal Core for Relational Programming //
+Proceedings of the 2013 Workshop on Scheme and Functional Programming (Scheme '13).
+
+\bibitem{alphaKanren}
+William E. Byrd, Daniel P. Friedman. alphaKanren: A Fresh Name in Nominal Logic Programming //
+Proceedings of the 2007 Workshop on Scheme and Functional Programming (Scheme '07).
+
+\bibitem{CKanren}
+Claire E. Alvis, Jeremiah J. Willcock, Kyle M. Carter, William E. Byrd, Daniel P. Friedman.
+cKanren: miniKanren with Constraints //
+Proceedings of the 2011 Workshop on Scheme and Functional Programming (Scheme '11).
+
+\bibitem{Untagged}
+William E. Byrd, Eric Holk, Daniel P. Friedman.
+miniKanren, Live and Untagged: Quine Generation via Relational Interpreters (Programming Pearl) //
+Proceedings of the 2012 Workshop on Scheme and Functional Programming (Scheme '12).
+
+\bibitem{Kumar}
+Ramana Kumar. Mechanising Aspects of miniKanren in HOL. Bachelor Thesis, The Australian National University, 2010.
+
+\bibitem{Unification}
+Franz Baader, Wayne Snyder. Uniﬁcation theory. In John Alan Robinsonand Andrei Voronkov, editors,
+Handbook of Automated Reasoning. Elsevier and MIT Press, 2001.
+
+\bibitem{UnificationRevisited}
+J.-L. Lassez, M.J. Maher, K. Marriott. Unification Revisited // Foundations of Deductive Databases and Logic Programming, 
+Morgan Kaufmann Publishers Inc., 1988.
+
+\bibitem{Lambda}
+Henk Barendregt. Lambda Calculi with Types, Handbook of Logic in Computer Science (Vol.~2), 1992.
+
+\bibitem{WillThesis}
+William E. Byrd. Relational Programming in miniKanren: Techniques, Applications, and Implementations. PhD Thesis,
+Indiana University, Bloomington, IN, September 30, 2009.
+
+\bibitem{OCanren}
+Dmitry Kosarev, Dmitry Boulytchev. Typed Embedding of a Relational Language in OCaml // International Workshop on ML, 2016.
+
+\bibitem{RelConversion}
+Petr Lozov, Andrei Vyatkin, Dmitry Boulytchev. Typed Relational Conversion // International Symposium on Trends in Funtional
+Programming, 2017.
+
+\bibitem{Types}
+Benjamin Pierce. Types and Programming Languages. MIT Press, 2002.
+
+\bibitem{Felleisen}
+Andrew Wright, Matthias Felleisen. A Syntactic Approach to Type Soundness // Information and Computation, Vol.~115, No.~1, 1994.
+
+\bibitem{cardelli}
+Luca Cardelli, Peter Wegner. On Understanding Types, Data Abstraction, and Polymorphism // ACM Computing Surveys, Vol.~17, No.~4, 1985.
+
+\bibitem{unified}
+William E. Byrd, Michael Ballantyne, Gregory Rosenblatt, Matthew Might. A Unified Approach to Solving Seven Programming Problems // 
+Proceedings of the International Conference on Functional Programming, 2017.
+
+\bibitem{WillOnHM}
+William E. Byrd. Personal communications.
+
+\end{thebibliography}
+
+\end{document}
+
