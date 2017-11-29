@@ -21,19 +21,19 @@ $$
 \label{syntax}
 \end{figure}
 
-In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. This description to some extent can be considered as
+In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent this description serves as
 a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs, 
-which deliver a finite set of answers, while in the reality of relational programming the result often is an infinite stream, from which we can take answers incrementally. 
-However, in the context of this paper the finite version of the semantics is just what we need since the programs, returning infinite number of answers, are
+which deliver a finite set of answers, while in the reality of relational programming the result often is an infinite stream, from which answers can be taken incrementally. 
+However, in the context of this paper the finite version of the semantics is just what we need since the programs, returning an infinite number of answers, are
 refutationally complete by definition. %Nevertheless we will provide some remark on the way to 
 
 The syntax of our relational language is shown on Fig.~\ref{syntax}. First, we introduce the alphabet of constructors $\meta{C}$, each of which is equipped with a 
 non-negative arity. Then we in a conventional fasion inductively define the set of all terms $\meta{T}(X)$, parameterized by the set of variables $X$. We need this parameterization 
 since later we will be dealing with two sorts of variables~--- \emph{syntactic} and \emph{semantic}, and, therefore, two sorts of terms. Next, we choose the set of syntactic variables
 $\meta{V}$ and the set of \emph{relational symbols} $\meta{R}$ with arities, which will be used as names for relational definitions. We also inroduce a shortcut
-$\meta{T_V}$ for the set of terms over syntactic variables since it will be used in all other syntactic definitions.
+$\meta{T_V}$ for the set of all terms over syntactic variables since it will be used in all other syntactic definitions.
 
-The core syntax category in the language is \emph{goal}. There are five types of goals: unification of two terms, conjunction and disjunction of two
+The core syntax category in the language is a \emph{goal}. There are five types of goals: unification of two terms, conjunction and disjunction of two
 goals, fresh variable introduction and a call of some relational definition. We stipulate, that the calls of relational definitions respect their arities; we 
 will also use a shortcut form \lstinline|fresh ($x$ $y$ $z$ ...) ...| instead of \lstinline|fresh($x$) (fresh ($y$) (fresh ($z$) ...)| where needed.
 
@@ -62,14 +62,14 @@ $$
 \trule{\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1}{S_1},\;\;\;\;
        \otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_2}{S_2}
       }
-      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1\vee g_2}{S_1\uplus S_2}}\ruleno{Disj}
+      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1\vee g_2}{S_1\cup S_2}}\ruleno{Disj}
 $$
 
 $$
 \trule{\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1}{\{(\sigma_i,\,\delta_i)\}},\;\;\;\;
        \otrans{\Gamma,\,\iota}{(\sigma_i,\,\delta_i)}{g_2}{S_i}
       }
-      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1\wedge g_2}{\biguplus_i S_i}}\ruleno{Conj}
+      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1\wedge g_2}{\bigcup_i S_i}}\ruleno{Conj}
 $$
 
 $$
@@ -98,7 +98,7 @@ $
   \hline
   \multicolumn{2}{c}{\otrans{[\bnd{q}{\sv{0}}]}{(\epsilon,\,\{\sv{0}\})}{\lstinline|append$^o$ (Cons (A, Nil)) Nil $\;q$|}{...}}\\
   \hline
-  \multicolumn{2}{c}{\otrans{[\bnd{q}{\sv{0}},\,\bnd{x}{\lstinline|Cons(A, Nil)|},\,\bnd{y}{\lstinline|Nil|},\,\bnd{xy}{\sv{0}}]}{(\dots)}{\lstinline|(...) $\vee$ (...)|}{...}}\\
+  \multicolumn{2}{c}{\otrans{[\bnd{x}{\lstinline|Cons(A, Nil)|},\,\bnd{y}{\lstinline|Nil|},\,\bnd{xy}{\sv{0}}]}{(\dots)}{\lstinline|(...) $\vee$ (...)|}{...}}\\
   \hline
   \otrans{\dots}{(\dots)}{\lstinline|($x\;$ === $\;$Nil) $\wedge$ (...)|}{\emptyset} & \multirow{2}*{Fig.~\ref{appendo_eval_b}}\\
   \cline{1-1}
@@ -109,7 +109,7 @@ $
 \subfloat[\label{appendo_eval_b}]{
 $
 \begin{array}{c|c}
-\multicolumn{2}{c}{\otrans{[\bnd{q}{\sv{0}},\,\bnd{x}{\lstinline|Cons(A, Nil)|},\,\bnd{y}{\lstinline|Nil|},\,\bnd{xy}{\sv{0}}]}{(\epsilon,\,\{\sv{0}\})}{\lstinline|fresh($h\;t\;ty$) ...|}{...}}\\
+\multicolumn{2}{c}{\otrans{[\bnd{x}{\lstinline|Cons(A, Nil)|},\,\bnd{y}{\lstinline|Nil|},\,\bnd{xy}{\sv{0}}]}{(\epsilon,\,\{\sv{0}\})}{\lstinline|fresh($h\;t\;ty$) ...|}{...}}\\
 \hline
 \multicolumn{2}{c}{\otrans{[\dots,\,\bnd{h}{\sv{1}},\,\bnd{t}{\sv{2}},\,\bnd{ty}{\sv{3}}]}{(\epsilon,\,\{\sv{0}..\sv{3}\})}{\lstinline|($x\;$ === $\;$Cons ($h$, $\;t$)) $\wedge$ (...)|}{...}}\\
 \hline
@@ -126,7 +126,7 @@ $
 \multicolumn{2}{c|}{\otrans{\dots}{(\dots)}{\lstinline|append$^o$ $\;t\;$ $y\;$ $ty$|}{...}} & 
 \multirow{4}*{Fig.~\ref{appendo_eval_d}} \\
 \cline{1-2}
-\multicolumn{2}{c|}{\otrans{[\dots,\,\bnd{x}{\lstinline|Nil|},\,\bnd{y}{\lstinline|Nil|},\,\bnd{xy}{\sv{3}}]}{(\epsilon,\,\{\sv{0}..\sv{3}\})}{\lstinline|(...) $\vee$ (...)|}{...}} & \\
+\multicolumn{2}{c|}{\otrans{[\bnd{x}{\lstinline|Nil|},\,\bnd{y}{\lstinline|Nil|},\,\bnd{xy}{\sv{3}}]}{(\epsilon,\,\{\sv{0}..\sv{3}\})}{\lstinline|(...) $\vee$ (...)|}{...}} & \\
 \cline{1-2}
 \multicolumn{2}{c|}{\otrans{\dots}{(\dots)}{\lstinline|($x\;$ === $\;$Nil) $\wedge$ ($xy\;$ === $\;y$)|}{...}} &  \\
 \cline{1-2}
@@ -140,7 +140,7 @@ $
 \otrans{\dots}{([\bnd{\sv{1}}{\lstinline|A|},\,\bnd{\sv{2}}{\lstinline|Nil|},\,\bnd{\sv{3}}{\lstinline|Nil|}],\,\{\sv{0}..\sv{3}\})}{\lstinline|$xy\;$ === $\;$Cons ($h$, $\;ty$)|}{\{([\dots,\,\bnd{\sv{0}}{\lstinline|Cons (A, Nil)|}],\,\{\sv{0}..\sv{3}\})\}}
 \end{array}
 $}
-\caption{Example of relational evaluation}
+\caption{An example of relational evaluation}
 \label{appendo_eval}
 \end{figure}
 
@@ -177,24 +177,24 @@ $$
 $$
 
 \noindent where $\Gamma$ is as environment, which binds relational symbols to their definitions, $\iota$~--- an interpretation, $\sigma$~--- a substitution, 
-$\delta$~--- a set of allocated semantic variables, $g$~--- a goal, and $S$~--- a multiset of pairs $(\sigma^\prime,\,\delta^\prime)$, where $\sigma^\prime$ and
+$\delta$~--- a set of allocated semantic variables, $g$~--- a goal, and $S$~--- a set of pairs $(\sigma^\prime,\,\delta^\prime)$, where $\sigma^\prime$ and
 $\delta^\prime$~--- a substitution and a set of allocated semantic variables respectively. Informally speaking, we interpret a goal $g$ in the context of
 relational definitions $\Gamma$, current interpretation $\iota$, current substitution $\sigma$ and current set of allocated semantic variables $\sigma$. As a 
-result, we obtain a (possibly empty) multiset of answers. Each answer consists of a new substitution, accumulated through the execution of $g$, and a new set of
-allocated semantic variables. Note, a goal can produce the same answer multiple number of times, hence multisets.
+result, we obtain a (possibly empty) set of answers. Each answer consists of a new substitution, accumulated through the execution of $g$, and a new set of
+allocated semantic variables (note, in original miniKanren a goal can produce the same answer multiple number of times, but this property is not important
+in our case).
 
 The inference rules themselves are shown on Fig.~\ref{semantics}. The first two rules handle two possible outcomes of the unification. Note, we use here the most 
 general unifier ($mgu$) of two semantic terms; we assume ``occurs check'' to be incorporated in the unification algorithm. Since the unification goal is built of 
-syntactic terms, we have to interpret them first (by applying $\iota$), and take into accout the current substitution $\sigma$.
+syntactic terms, we have to interpret them first (by applying $\iota$), and take into accout current substitution $\sigma$.
 
-The rule for the disjunction first interprets the constituents of the disjunction in the same state, and then combines the outcomes using the multiset
-union operation ``$\biguplus$''. 
+The rule for the disjunction first interprets the constituents of the disjunction in the same state, and then combines the outcomes.
+% using the multiset union operation ``$\biguplus$''. 
 
 The rule for the conjunction threads the execution of its subgoals in a left-to-right successive manner: first the
-left conjunct is evaluated, providing a multiset $\{(\sigma_i,\,\delta_i)\}$. Then the second conjunct is evaluated for each element of the multiset, and the
+left conjunct is evaluated, providing a set $\{(\sigma_i,\,\delta_i)\}$. Then the second conjunct is evaluated for each element of the set, and the
 results are eventually combined. Note, the evaluation of both conjuncts is performed under the \emph{same} interpretation $\iota$ since both of them occur in the 
-\emph{same} bounding context; in some sense this way of handling the interpretation models the behavior of call stack in conventional languages. 
-The substitution and the set of allocated semantic variables, on the other hand, are inherited from left to right since the evaluation 
+\emph{same} bounding context. The substitution and the set of allocated semantic variables, on the other hand, are inherited from left to right since the evaluation 
 of the right conjunct has to be performed in context of the results, provided by the left one. 
 
 The rule for the \lstinline|fresh| construct allocates arbitrary semantic variable, not taken before, and evaluates the unique subgoal in the updated interpretation, which
@@ -203,7 +203,8 @@ associates the syntactic variable, bound in this \lstinline|fresh|, with taken s
 Finally, the rule for relational definition invocation describes its evaluation in a few steps. First, the body of the definition is found, using the environment $\Gamma$. 
 Then, the terms $t_i$, specified as the arguments of the invocation, are converted into their semantic forms $v_i$ using current interpretation $\iota$ and current 
 substitution $\sigma$. Next, the body of the definition is evaluated in the context of \emph{empty} substitution $\epsilon$ and an interpretation, containing nothing
-else, than the bindings for the formal parameters of the definition. Finally, the result substitutions are composed with the original one\footnote{We could use the original
+else, than the bindings for the formal parameters of the definition. This way of handling interpretation models the behavior of call stack in conventional languages
+with no nested functions. Finally, the result substitutions are composed with the original one\footnote{We could use the original
 subsitution instead of the empty one without the need to use composition; however we found the approach we took more proof-friendly, since each relational definition is evaluated
 in initially empty substitution.}. 
 
@@ -214,7 +215,7 @@ $$
 \otrans{\Gamma_s,\,\bot}{(\epsilon,\,\emptyset)}{g}{S_s}
 $$
 
-\noindent obtaining the multiset of results $S_s$; here we use empty (everywhere undefined) interpretation $\bot$ and empty substitution $\epsilon$ as a starting point. 
+\noindent obtaining the set of results $S_s$; here we use empty (everywhere undefined) interpretation $\bot$ and empty substitution $\epsilon$ as a starting point. 
 Finally, we choose all substitutions from $S_s$. 
 
 Our semantics is almost deterministic~--- the only source of ambiguity is the rule for the \lstinline|fresh| construct, where we choose a new semantic variable
@@ -225,7 +226,7 @@ then during the evaluation all syntactic variables are properly interpreted~--- 
 finishes with some results.
 
 We illustrate the evaluation, determined by this semantics, by the canonical example for relational programming~--- list concatenation relation \lstinline|append$^o$| 
-(we respect here a convention to add the ``$^o$'' suffix to all names of relational entities):
+(we respect here the convention to add the ``$^o$'' suffix to all names of relational entities):
 
 \begin{lstlisting}  
    append$^o$ $\binds$ $\lambda\;x\;y\;xy$ . 
@@ -248,7 +249,7 @@ of derivation tree (the components in the left side of ``$\Rightarrow$'' are inh
 
 We start from the top-level goal and first apply the rule $\rulename{Fresh}$ (see Fig.~\ref{appendo_eval_a}). Since 
 we did not use any semantic variables yet, we allocate the first one ($\sv{0}$), update the interpretation and the set of used semantic variables and continue. The next construct
-is the call for \lstinline|append$^o$|, so we unfold its definition, update the interpretation of syntactic variables by adding the bindings for the formal parameters, and 
+is the call for \lstinline|append$^o$|, so we unfold its definition, replace the interpretation of syntactic variables by the bindings for the formal parameters, and 
 evaluate the body w.r.t. the empty substitution (which has no difference from the current one yet). The body of \lstinline|append$^o$| definition is a disjunction, so we
 take its left constituent, which is a conjunction, so we in turn take its left consituent, which is a unification \lstinline|$x\;$ === $\;$Nil|. This unification clearly fails, as
 current interpretation binds $x$ to \lstinline|Cons (A, Nil)|. This completes the whole branch for the first disjunct of \lstinline|append$^o$| with empty result.

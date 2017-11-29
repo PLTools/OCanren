@@ -1,0 +1,37 @@
+\section{Refutational Incompleteness}
+
+We demonstrate the effect of refutational incompleteness on the very simple example. Let us take the
+definition of \lstinline{append$^o$} from the previous section and try to evaluate the following query:
+
+\begin{lstlisting}
+   fresh ($p\;q$) (append$^o$ $p$ $q$ Nil)
+\end{lstlisting}
+
+We would expect this query to converge to the single answer \mbox{$p=\lstinline|Nil|$}, \mbox{$q=\lstinline|Nil|$};
+however, in reality the query diverges. We sketch here the explanation, omitting some non-essential technical
+details such as semantic variables allocation etc.:
+
+\begin{itemize}
+\item First we evaluate the first disjunct of \lstinline|append$^o$|'s body and unify $p$ with \lstinline|Nil| (successfully)
+and \lstinline|Nil| with $q$ (successfully), which gives us the first (expected) answer.
+
+\item Then we proceed to the second disjunct, which is a conjunction of three simpler goals:
+
+  \begin{itemize} 
+     \item in the first one we unify $p$ with \lstinline|Cons ($h$, $t$)| (successfully);
+     \item in the second we encounter a recursive call \lstinline|append$^o$ $t$ $q$ Nil|; since this call is merely a renaming of
+the enclosing one, we repeat from the top and never get any results.
+  \end{itemize} 
+\end{itemize}
+
+The problem is that the semantics of conjunction in fact is not commutative: when the first conjunct diverges and the second fails, the whole
+conjunction diverges. We stress, that this is not a deviation of our semantics, but a well-known phenomenon, manifesting itself in all known
+miniKanren implementations. In our example switching two last conjuncts in the definition of \lstinline|append$^o$| solves the problem~---
+now the whole search stops after the unsuccessfull attempt to unify \lstinline|Nil| and \lstinline|Cons ($h$, $ty$)| with no recursive call.
+This, improved version of \lstinline|append$^o$|, is known to be refutationally complete. In fact, there is a conventional ``rule of thumb''
+for miniKanren programming to place the recursive call as far as possible in a list of conjuncts. This convention, however, cannot be
+always respected since there can be more than one recursive call in a conjunction. 
+
+
+
+
