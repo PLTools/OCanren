@@ -4,8 +4,8 @@
 
 Before we describe the relational conversion itself, we formulate some limitations for the source
 programs. Functional programs tend to operate with higher-order values, while miniKanren is
-limited by first-order unification. Therefore, it would be unreasonable to expect, that arbitrary
-functional program can be converted into relational form (at least using reasonably simple 
+limited by a first-order unification. Therefore, it would be unreasonable to expect, that arbitrary
+functional program can be converted into a relational form (at least using reasonably simple 
 transformations). 
 
 First, we introduce the set of ground types $\mathcal G$:
@@ -14,18 +14,30 @@ $$
 \mathcal G=\alpha \mid T^k(g_1,\dots,g_k)
 $$
 
-Informally, a value of ground type can not contain closures. We formulate then the following limitations for
-the programs to be converted into relational form:
+Informally, a value of a ground type can not contain closures. We formulate then the following limitations for
+the programs to be converted into a relational form:
 
 \begin{itemize}
   \item all constructor parameter types must be type variables;
-  \item constructors can be applied only to values of ground types.
+  \item constructors and polymorphic equality can only be applied to the values of ground types;
+  \item all \lstinline|match|-expressions must by of ground types.
 \end{itemize}
 
 The first condition means, that all algebraic datatypes (which we consider defined implicitly, see Section~\ref{source_language}) 
-have to be fully-polymorphic. These two limitations allow us to specify the polymorphism restriction for 
+have to be fully-polymorphic. The first two limitations then allow us to specify the polymorphism restriction for 
 relational programs, which we mentioned informally in Section~\ref{ocanren}: all type variables are bounded to
 range only over ground types (this condition, of course, is sufficient, but not necessary).
+
+The third limitation is not essential and introduced only to simplify the presentation. If a \lstinline|match|-expression does not
+have a ground type, it can always be transformed to have one by applying $\eta$-expansion:
+
+\begin{lstlisting}
+   match $e$ with {$p_i$ -> $e_i$} $\leadsto$ fun $\bar{x}$.match $e$ with {$p_i$ -> $e_i\,\bar{x}$}
+\end{lstlisting}
+
+\noindent where $\bar{x}$ is a vector of new variables, different from those in $e$, $e_i$, and $p_i$. In fact, our implementation,
+described in Section~\ref{evaluation}, performs this expansion as long as a non-ground type \lstinline|match|-expression is encountered. 
+This is the single case, when we actually use types and perform $\eta$-expansion.
 
 The general idea behind the conversion can be illustrated on a type level: an expression of type $t$ in the source
 language is transformed into the expression of type $\sembr{t}^t$ in relational extension, where
@@ -46,7 +58,7 @@ For example, a constant \lstinline|Nil| is converted into a function \lstinline|
 
 The conversion itself is described in terms of transformation $\sembr{\bullet}^c$, see Figure~7.%\ref{relational_conversion}. 
 The first five rules
-simply propagate the conversion through the expression; the last two actually do the work. These rules themselves may look complicated,
+simply propagate the conversion through the expression; the last three actually do the work. These rules themselves may look complicated,
 but the idea is rather simple.
 
 \begin{figure}[t]
@@ -63,7 +75,7 @@ but the idea is rather simple.
   ...
   ($\sembr{e_k}^c\; q_k$) /\
   ($q$ === $\;\uparrow(C^n (q_1, \dots, q_k)$))
-\end{lstlisting}\\
+\end{lstlisting}\\[-2mm]
      $\sembr{\lstinline|match $\;e\;$ with \{$C^{n_i}_i(x^i_1,\dots,x^i_{n_i})\;$ -> $\;e_i$\}|}^c$&=&\lstinline|fun $q$.fresh ($q_e$)|
 \begin{lstlisting}
     ($\sembr{e}^c\;q_e$) /\
@@ -72,6 +84,14 @@ but the idea is rather simple.
            (fun $x^i_1\dots x^i_{n_i}$.$\sembr{e_i}^c$) ($\equiv q^i_1$) ... ($\equiv q^i_{n_i}$) $q$
      ) 
     )
+\end{lstlisting}\\[-2mm]
+     $\sembr{\lstinline|$e_1\,$=$\,e_2$|}^c$&=&\lstinline|fun $q$.fresh ($q_1\,q_2$)|
+\begin{lstlisting}
+  $\sembr{e_1}^c\,q_1$ /\
+  $\sembr{e_2}^c\,q_2$ /\
+  (($q_1$ === $\;q_2$ /\ $q$ === $\;$^true) |||
+   ($q_1$ =/= $\;q_2$ /\ $q$ === $\;$^false)
+  )
 \end{lstlisting}
   \end{tabular}
 \label{relational_conversion}
@@ -93,7 +113,11 @@ is an expression with free variables, corresponding to those in the pattern. We,
 lambdas, closing all these variables. To pass the bindings $q^i_j$ for pattern variables to the body we apply this function to
 a goal-returning functions $(\equiv q^i_j)$. This, again, gives us a goal-returning function, which we apply to the topmost result variable $q$.
 
-An interesting property of relational conversion is that it does not change terms, which do not use constructors and pattern-matching. Thus,
+The last rule follows the same pattern: both arguments of polymorphic equality are transformed into goal-returning functions, and we know, that
+the arguments of these functions are of some ground type. We apply these functions to fresh variables and perform case analysis. Note, this is
+the only case, when we actually use disequality consraints.
+
+An interesting property of relational conversion is that it does not change terms, which do not use constructors, equality, and pattern-matching. Thus,
 a lot of useful higher-order functions~--- application, composition, fixed point, etc.~--- are already relational and can be used in
 relational specifications.
 

@@ -15,16 +15,8 @@ with relational constructs. We specify the typing rules and semantics for the ex
 The syntax of our source functional language is shown on Figure~\ref{functional_syntax}. It consists of a lambda calculus, 
 enriched with constructors with fixed arities $C^n$, patterns $p$ and pattern-matching constructs, and  
 expressions for recursive/non-recursive let-bindings.
-%Among constructors we distinguish two nullary interpreted constructors \lstinline|true| and \lstinline|false|, and we add a boolean equality
-%operator ``$=$'' and expressions for recursive/non recursive let-bindings. 
-In a pattern matching we only allow shallow patterns (which is not an essential limitation) and do not allow wildcards (which is 
-important~--- converting wildcard pattern matching into relational form would require essentially different projections). 
-This choice of language may 
-look quite a restrictive. However, in terms of relational programming the language contains virtually everything one would need. Indeed, from
-relational conversion standpoint the standard built-in integer arithmetics, for example, is of no use~--- 
-there is simply no way to convert integer expression into relational form, using integer expressions. In order to use relational 
-arithmetics one needs to reimplement everything from scratch, using, for example, Peano encoding; but Peano arithmetics can be
-easily expressed in the language we present.
+Among constructors we distinguish two nullary interpreted constructors \lstinline|true| and \lstinline|false|, and add a boolean equality
+operator ``$=$''. 
 
 \begin{wrapfigure}{r}{0.5\textwidth}
 \centering
@@ -35,11 +27,11 @@ $$
      & &\lambda x.e\\
      & &e_1\;e_2\\
      & &C^n(e_1,\dots, e_n)\\
-%     & &\lstinline|true|\\
-%     & &\lstinline|false|\\
+     & &\lstinline|true|\\
+     & &\lstinline|false|\\
      & &\lstinline|let $x$ = $e_1$ in $e_2$|\\
      & &\lstinline|let rec $f$ = $\lambda x.e_1$ in $e_2$|\\
-%     & &e_1\,=\,e_2\\
+     & &e_1\,=\,e_2\\
      & &\lstinline|match $e$ with $\{p_i$ -> $e_i\}$|\\
      & &\\
  \mathcal P &=&C^n(x_1,\dots,x_n)\\
@@ -49,6 +41,15 @@ $$
 \caption{The syntax of source language}
 \label{functional_syntax}
 \end{wrapfigure}
+
+In a pattern matching we only allow shallow patterns (which is not an essential limitation) and do not allow wildcards (which is 
+important~--- converting wildcard pattern matching into relational form would require essentially different projections). 
+This choice of language may 
+look quite a restrictive. However, in terms of relational programming the language contains virtually everything one would need. Indeed, from
+relational conversion standpoint the standard built-in integer arithmetics, for example, is of no use~--- 
+there is simply no way to convert integer expression into relational form, using integer expressions. In order to use relational 
+arithmetics one needs to reimplement everything from scratch, using, for example, Peano encoding; but Peano arithmetics can be
+easily expressed in the language we present.
 
 Our language is equipped with Hidley-Milner type system, and we present the typing rules in conventional syntax-directed form 
 on Figure~\ref{functional_typing}. Besides type variables and function types our system contains a number of implicitly defined 
@@ -67,7 +68,7 @@ to be equal $t^C$, and $t^{C_i}_j$ is a type of $j$-th argument of constructor $
 $$
 \begin{array}{rcll}
   \mathcal X &=&\alpha, \beta, \dots                            &\mbox{\supp{(type variables)}}\\
-  \mathcal D &=&T^n,...                                         &\mbox{\supp{(datatype constructors)}}\\
+  \mathcal D &=&\lstinline|bool|,\,T^n,...                      &\mbox{\supp{(datatype constructors)}}\\
   \mathcal T &=&\alpha\mid T^k(t_1,\dots,t_k)\mid t_1\to t_2 &\mbox{\supp{(types)}}\\
   \mathcal S &=&\forall\bar{\alpha}.t                           &\mbox{\supp{(type schemas)}}
 \end{array}
@@ -75,17 +76,17 @@ $$
 {\bf Typing rules:}
 \def\arraystretch{0}
 \begin{tabular}{p{7cm}p{7cm}}
-%$$
-%\typed{\Gamma}{\lstinline|true|,\;\lstinline|false|}{\lstinline|bool|}
-%\ruleno{Bool$_T$}
-%$$ 
-%&
-%$$
-%\trule{\typed{\Gamma}{e_1}{t}\;\;\;\;\typed{\Gamma}{e_2}{t}}
-%      {\typed{\Gamma}{e_1=e_2}{\lstinline|bool|}}
-%\ruleno{Eq$_T$}
-%$$
-%\\
+$$
+\typed{\Gamma}{\lstinline|true|,\;\lstinline|false|}{\lstinline|bool|}
+\ruleno{Bool$_T$}
+$$ 
+&
+$$
+\trule{\typed{\Gamma}{e_1}{t}\;\;\;\;\typed{\Gamma}{e_2}{t}}
+      {\typed{\Gamma}{e_1=e_2}{\lstinline|bool|}}
+\ruleno{Eq$_T$}
+$$
+\\
 $$
 \trule{\typed{\Gamma}{e_i}{t^C_i}}
       {\typed{\Gamma}{C^n(e_1,\dots,e_n)}{t^C}}
@@ -140,11 +141,11 @@ $$}
 \centering
 {\bf Values:}
 $$
-\mathcal V = C^n(v_1,\dots,v_n)\mid\lambda x.e\mid\mu f\lambda x.e
+\mathcal V = C^n(v_1,\dots,v_n)\mid\lambda x.e\mid\mu f\lambda x.e\mid\lstinline|true|\mid\lstinline|false|
 $$
 {\bf Contexts:}
 $$
-\mathcal C = \Box\;e\mid v\;\Box\mid\lstinline|let $x$ = $\Box$ in $e$|\mid\lstinline|match $\;\Box\;$ with $\{p_i$->$e_i\}$|\mid C^n(\bar{v},\Box,\bar{e})
+\mathcal C = \Box\;e\mid v\;\Box\mid\lstinline|let $x$ = $\Box$ in $e$|\mid\lstinline|match $\;\Box\;$ with $\{p_i$->$e_i\}$|\mid C^n(\bar{v},\Box,\bar{e})\mid\Box\lstinline|=e|\mid\lstinline|v=|\Box
 $$
 {\bf Stack of contexts:}
 $$
@@ -169,20 +170,20 @@ $$&
 $$
 \step{\mathcal S,\, v\;e_2}{v\;\Box:\mathcal S,\, e_2}\ruleno{AppR}
 $$\\[-4mm]
-%$$
-%\step{\mathcal S,\,e_1=e_2}{\Box=e_2:\mathcal S,\,e_1}\ruleno{EqL}
-%$$&
-%$$
-%\step{\mathcal S,\,v=e}{v=\Box:\mathcal S,\,e}\ruleno{EqR}
-%$$\\
-%\multicolumn{2}{p{14cm}}{
-%$$
-%\step{C:\mathcal S,\,v=v}{\mathcal S,\,C[\lstinline|true|]}\ruleno{EqTrue}
-%$$}\\
-%\multicolumn{2}{p{14cm}}{
-%$$
-%\step{C:\mathcal S,\,v_1=v_2}{\mathcal S,\,C[\lstinline|false|]},\;v_1\ne v_2\ruleno{EqFalse}
-%$$}\\
+$$
+\step{\mathcal S,\,e_1=e_2}{\Box=e_2:\mathcal S,\,e_1}\ruleno{EqL}
+$$&
+$$
+\step{\mathcal S,\,v=e}{v=\Box:\mathcal S,\,e}\ruleno{EqR}
+$$\\[-4mm]
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\,v=v}{\mathcal S,\,\lstinline|true|}\ruleno{EqTrue}
+$$}\\[-4mm]
+\multicolumn{2}{p{14cm}}{
+$$
+\step{\mathcal S,\,v_1=v_2}{\mathcal S,\,\lstinline|false|},\;v_1\ne v_2\ruleno{EqFalse}
+$$}\\[-4mm]
 \multicolumn{2}{p{14cm}}{
 $$
 \step{\mathcal S,\, (\lambda x.e)\;v}{\mathcal S,\, e[x\gets v]}\ruleno{Beta}
@@ -221,7 +222,6 @@ $$}
 \label{functional_semantics}
 \end{figure}
 
-\FloatBarrier
 We describe the semantics of our language in the form of transition system. The transition relation
 
 $$
@@ -351,64 +351,64 @@ $$
 \def\arraystretch{0}
 \begin{figure}[t]
 \centering
-{\bf Semantic variables:}
+{\bf Semantic variables:}\vspace{-2mm}
 \begin{gather*}
 \mathfrak S = \mathfrak s_1, \mathfrak s_2, \dots\\[-2mm]
 \Sigma, \Sigma^\prime\dots \subset 2^{\mathcal S}\;\mbox{\supp{(sets of allocated semantics variables)}}\\[-1mm]
-\inbr{\Sigma^\prime, \mathfrak s}\gets\lstinline|new|\;\Sigma,\;\Sigma^\prime=\Sigma\cup\{\mathfrak s\},\;{\mathfrak s}\notin\Sigma\;\mbox{\supp{(allocation of a new semantic variable)}}
+\inbr{\Sigma^\prime, \mathfrak s}\gets\lstinline|new|\;\Sigma,\;\Sigma^\prime=\Sigma\cup\{\mathfrak s\},\;{\mathfrak s}\notin\Sigma\;\mbox{\supp{(allocation of a new semantic variable)}}\vspace{-2mm}
 \end{gather*}
-{\bf Values:}
+{\bf Values:}\vspace{-2mm}
 $$
 \mathcal V \mathrel{{+}{=}} \lstinline|success|\mid\mathfrak s
-$$
-{\bf Contexts:}
+$$\vspace{-2mm}
+{\bf Contexts:}\vspace{-2mm}
 $$
 \mathcal C \mathrel{{+}{=}}\Box\equiv e\mid v\equiv\Box\mid\Box\not\equiv e\mid v\not\equiv\Box\mid\Box\wedge e\mid e\wedge\Box
-$$
-{\bf States:}
+$$\vspace{-2mm}
+{\bf States:}\vspace{-2mm}
 \begin{gather*}
 \inbr{\Sigma,\mathcal S,e,\sigma}\mbox{\supp{(set of allocated semantic variables, stack of contexts, expression, logical state)}}\\[-1mm]
 \inbr{\emptyset,\epsilon,e,\iota}\mbox{\supp{(initial state)}}
-\end{gather*}
+\end{gather*}\vspace{-2mm}
 {\bf Transitions:}
 {\def\arraystretch{0}
 \begin{tabular}{p{14cm}}
 $$
 \step{\Sigma,\,\mathcal S,\,\lstinline|fresh($x$) $\;e$|,\,\sigma}{\Sigma^\prime,\,\mathcal S,\,e[x\gets\mathfrak s],\,\sigma},\,\inbr{\Sigma^\prime,\mathfrak s}\gets\lstinline|new|\;\Sigma\ruleno{Fresh}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,e_1\equiv e_2,\,\sigma}{\Sigma,\,\Box\equiv e_2:\mathcal S,\,e_1,\,\sigma}\ruleno{UnifyL}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,v\equiv e,\,\sigma}{\Sigma,\,v\equiv\Box:\mathcal S,\,e,\,\sigma}\ruleno{UnifyR}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,v_1\equiv v_2,\,\sigma}{\Sigma,\,\mathcal S,\,\lstinline|success|,\,\sigma^\prime},\,{\bf unify}\,(\sigma,\,v_1,\,v_2)=\sigma^\prime\ruleno{Unify}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,e_1\not\equiv e_2,\,\sigma}{\Sigma,\,\Box\not\equiv e_2:\mathcal S,\,e_1,\,\sigma}\ruleno{DisEqL}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,v\not\equiv e,\,\sigma}{\Sigma,\,v\not\equiv\Box:\mathcal S,\,e,\,\sigma}\ruleno{DisEqR}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,v_1\not\equiv v_2,\,\sigma}{\Sigma,\,\mathcal S,\,\lstinline|success|,\,\sigma^\prime},\,{\bf diseq}\,(\sigma,\,v_1,\,v_2)=\sigma^\prime\ruleno{DisEq}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,e_1\vee e_2,\,\sigma}{\Sigma,\,\mathcal S,\,e_1,\,\sigma}\ruleno{DisjL}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,e_1\vee e_2,\,\sigma}{\Sigma,\,\mathcal S,\,e_2,\,\sigma}\ruleno{DisjR}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,e_1\wedge e_2,\,\sigma}{\Sigma,\,\Box\wedge e_2:\mathcal S,\,e_1,\,\sigma}\ruleno{ConjStartL}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,e_1\wedge e_2,\,\sigma}{\Sigma,\,e_1\wedge\Box:\mathcal S,\,e_2,\,\sigma}\ruleno{ConjStartR}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,\lstinline|success|\wedge e,\,\sigma}{\Sigma,\,\mathcal S,\,e,\,\sigma}\ruleno{ConjL}
-$$\\
+$$\\[-4mm]
 $$
 \step{\Sigma,\,\mathcal S,\,e\wedge\lstinline|success|,\,\sigma}{\Sigma,\,\mathcal S,\,e,\,\sigma}\ruleno{ConjR}
 $$
@@ -426,7 +426,6 @@ Finally, we describe the structure of a logical state and the implementation of 
   \item most general unifier of two terms ($mgu\,(t_1, t_2)$).
 \end{itemize}
  
-\FloatBarrier
 As it can be seen from the semantics and typing rules, a unification (or disequality constraint) can only
 be applied to equally-typed logical values, and we consider substitutions to be partial functions from
 semantic variables ($\mathfrak S$) to logical values.
