@@ -16,8 +16,11 @@
 \usepackage{placeins}
 \usepackage{tabularx}
 \usepackage{ragged2e}
-\usepackage{natbib}
-\bibliographystyle{authoryear}
+
+
+\usepackage [style = gost-numeric, sorting = none] {biblatex}
+
+\addbibresource {main.bib}
 
 \def\transarrow{\xrightarrow}
 \newcommand{\setarrow}[1]{\def\transarrow{#1}}
@@ -579,6 +582,9 @@ $$}
 \end{figure}
 \end{comment}
 
+\printbibliography
+
+\begin{comment}
 \begin{thebibliography}{99}
 \bibitem{TRS}
 Daniel P. Friedman, William E.Byrd, Oleg Kiselyov. The Reasoned Schemer. The MIT
@@ -670,6 +676,7 @@ Proceedings of the International Conference on Functional Programming, 2017.
 William E. Byrd. Personal communications.
 
 \end{thebibliography}
+\end{comment}
 
 \end{document}
 
