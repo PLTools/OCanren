@@ -72,7 +72,7 @@ In our case we generalize this idea a little bit: we build a relational interpre
 various reduction orders. The construction of this interpreter was inspired by Felleisen-style semantic description~\cite{Felleisen}. 
 Our interpreter takes as its first argument a function, which decomposes a term, passed as a second argument, into a redex and a context (if possible). 
 After the decomposition the interpreter performs beta-reduction on the redex and reconstructs the term by plugging the result back into the context. 
-These steps are repeated until the decomposition is possible (or infinitely). This approach brings us a few benefits: first, various reduction orders can be 
+These steps are repeated until the decomposition is no longer possible (or infinitely). This approach brings us a few benefits: first, various reduction orders can be 
 expressed by changing only the decomposition function and, next, we demonstrate the applicability of our technique for higher-order case.
 
 The signatures of relevant functions are

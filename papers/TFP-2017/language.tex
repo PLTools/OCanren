@@ -17,9 +17,9 @@ enriched with constructors with fixed arities $C^n$, patterns $p$ and pattern-ma
 expressions for recursive/non-recursive let-bindings.
 %Among constructors we distinguish two nullary interpreted constructors \lstinline|true| and \lstinline|false|, and we add a boolean equality
 %operator ``$=$'' and expressions for recursive/non recursive let-bindings. 
-In a pattern matching we only allow shallow
-patterns (which is not an essential limitation) and do not allow wildcards (which is important~--- converting 
-wildcard pattern matching into relational form would require essentially different projections). This choice of language may 
+In a pattern matching we only allow shallow patterns (which is not an essential limitation) and do not allow wildcards (which is 
+important~--- converting wildcard pattern matching into relational form would require essentially different projections). 
+This choice of language may 
 look quite a restrictive. However, in terms of relational programming the language contains virtually everything one would need. Indeed, from
 relational conversion standpoint the standard built-in integer arithmetics, for example, is of no use~--- 
 there is simply no way to convert integer expression into relational form, using integer expressions. In order to use relational 
@@ -244,7 +244,7 @@ $\textsc{LetRec}$ and $\textsc{MatchVal}$ we perform capture-avoiding substituti
 In the rule $\textsc{MatchVal}$ we assume, that at most one pattern matches the scrutinee~--- this is an important difference from the usual 
 semantics of pattern matching, when the patterns are examined in a top-down manner until the match succeeds.
 
-Finally, for a closed expression $e$ and a value $v$ we write $\sembr{e}^f=v$, iff 
+Finally, for a closed expression $e$ and a value $v$ we write $e \leadsto^f v$, iff 
 
 $$\inbr{\epsilon,e}\to^*\inbr{\epsilon,v}$$
 
@@ -309,7 +309,7 @@ rewrite a program or/and interpreter to converge according to that scenario.
 {\bf Types:}
 $$
 \begin{array}{rcl}
- \mathcal L &=               &\alpha^o \mid (T^n(l_1,\dots,l_n))^o\\
+ \mathcal L &=               &\alpha^o \mid (T^n(l_1,\dots,l_n))^o\;\;\mbox{\supp{(logical types)}}\\
  \mathcal T &\mathrel{{+}{=}}&\G
 \end{array}
 $$
@@ -514,7 +514,7 @@ $$
 {\bf diseq}\,((\theta,\Theta^-),\,t_1,\,t_2)=(\theta,\Theta^{\prime-})
 $$
 
-Finally, for a closed goal $g$ and a logical state $\sigma$ we define $\sembr{g}^r=\sigma$, iff
+Finally, for a closed goal $g$ and a logical state $\sigma$ we define $g \leadsto^r \sigma$, iff
 
 $$
 \inbr{\emptyset,\epsilon,g,\iota}\leadsto^*\inbr{\Sigma,\epsilon,\lstinline|success|,\sigma}\mbox{ for some $\Sigma$}
