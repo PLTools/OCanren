@@ -431,13 +431,47 @@ As it can be seen from the semantics and typing rules, a unification (or disequa
 be applied to equally-typed logical values, and we consider substitutions to be partial functions from
 semantic variables ($\mathfrak S$) to logical values.
 
+Before giving the detailed description, we consider the following example, which is called to reveal the essence of unification and
+disequality constraint coexistence. Note, only these two kinds of goals deliver new information~--- all other kinds (conjunction, disjunction, etc.) are rather needed to
+put them in a right context or order. Let us have the following sequence of goals, which we have to evaluate one after another (we assume all logical 
+variables are already properly allocated):
+
+$$
+\def\arraystretch{1}
+\begin{array}{rcl}
+x&\not\equiv&y\\
+z&\not\equiv&y\\
+y&\equiv&\lstinline|A|\\
+x&\equiv&\lstinline|B|\\
+z&\equiv&\lstinline|A|
+\end{array}
+$$
+
+Since we know nothing, we are unable to determine, if the first goal~--- \mbox{$x\not\equiv y$}~--- succeeds or fails right now. All we can do is to
+remember the substitution \mbox{$[x\binds y]$} with the note, that we \emph{do not want} to allow it. We call this kind of substitutions \emph{negative}. Similarly,
+after the next goal we have two negative substitutions: \mbox{$[x\binds y]$}, \mbox{$[z\binds y]$}. 
+
+The next goal is the unification \mbox{$y\equiv\lstinline|A|$}. Obviously, it provides us with the substitution \mbox{$[y\binds\lstinline|A|]$}. What effect (if any)
+should it have on the set of negative substitutions? Since the unification completely eliminates the variable $y$, replacing negative substitutions with
+\mbox{$[x\binds\lstinline|A|]$}, \mbox{$[z\binds\lstinline|A|]$} looks reasonable.
+
+The next goal is \mbox{$x\equiv\lstinline|B|$}. It extends the current substitution, making it \mbox{$[y\binds\lstinline|A|,\,x\binds\lstinline|B|]$}. Now we may
+note, that since $x$ already became \lstinline|B|, it can never be \lstinline|A| anymore. Thus, we can drop \mbox{$[x\binds\lstinline|A|]$} from the set of
+negative substitutions.
+
+Finally, we unify $z$ with \lstinline|A|. This, however, gets us a substitution \mbox{$[z\binds\lstinline|A|]$}, which we have to disallow since it
+matches with the negative one.
+
+In other words, disequality constraints may not succeed or fail right away, and the results of unification have to be additionally matched against the set of 
+previously encountered disequality constraints, which, in turn, can be altered by an unification or another disequality constraint. Now we can continue.
+
 A logical state contains two components
 
 $$
 \sigma=(\theta,\Theta^-)
 $$
 
-\noindent where $\theta$ is a substitution, $\Theta^-$~--- a set of substitutions describing disequality constraints, 
+\noindent where $\theta$ is a substitution, $\Theta^-$~--- a set of negative substitutions describing disequality constraints, 
 which can potentially be violated. The initial state contains undefined substitution and empty set:
 
 $$
@@ -470,16 +504,16 @@ t_r&=&(\rho(\mathfrak s_1),\dots,\rho(\mathfrak s_k))
 $$
 
 \noindent where $\{\mathfrak s_i\}=dom\,(\rho)$. We pick every substitution $\theta^-\in\Theta^-$ and calculate 
-$mgu\,(t_l\,\theta^-,t_r\,\theta^-)$. There are three possible outcomes:
+the $mgu\,(t_l\,\theta^-,t_r\,\theta^-)$. There are three possible outcomes:
 
 \begin{enumerate}
 \item The unification fails. This means, that disequality constraint, represented by $\theta^-$, can no
 longer be violated. We remove $\theta^-$ from $\Theta^-$ and continue with the next disequality constraint.
-\item The unification succeeds with an empty substitution. This means, that the
+\item The unification succeeds with the empty substitution. This means, that 
 disequality constraint, represented by $\theta^-$, is violated. The check stops, and the whole top-level 
 unification fails.
 \item The unification succeeds with a non-empty substitution $\theta^{\prime-}$. This means, that in order not to 
-violate the disequality constraint, represented by $\theta^-$, $\theta^{\prime-}$ has to be respected. We replace
+violate disequality constraint, represented by $\theta^-$, $\theta^{\prime-}$ has to be respected. We replace
 $\theta^-$ with $\theta^{\prime-}$ in $\Theta^-$ and continue with the next disequality constraint.
 \end{enumerate}
 
@@ -495,19 +529,19 @@ $$
 {\bf diseq}\,(\sigma,\,t_1,\,t_2)={\bf diseq}\,((\theta,\Theta^-),\,t_1,\,t_2)
 $$
 
-First, an $mgu\,(t_1\,\theta,t_2\,\theta)$ is calculated. Again, there are three
+First, the $mgu\,(t_1\,\theta,t_2\,\theta)$ is calculated. Again, there are three
 possible cases:
 
 \begin{enumerate}
 \item The unification fails. This means, that disequality constraint is satisfied.
-\item The unification succeeds with an empty substitution. This means, that disequality
+\item The unification succeeds with the empty substitution. This means, that disequality
 constraint is violated.
 \item The unification succeeds with a non-empty substitution $\theta^{\prime-}$. This means, that 
-this substitution describes the disequality constraint, which have to be respected in
+this substitution describes the disequality constraint, which has to be respected in
 the future, so we add it to $\Theta^-$. 
 \end{enumerate}
 
-If disequality constraint succeeds, we obtain (potentially) modified set $\Theta^{\prime-}$, and we
+If disequality constraint succeeds, we obtain a (potentially) modified set $\Theta^{\prime-}$, and we
 assume
 
 $$
