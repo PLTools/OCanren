@@ -1,8 +1,8 @@
 \section{Relational Programming in \miniKanren}
 \label{ocanren}
 
-In the context of this paper we will use a certain concrete implementation of \miniKanren~--- a shallow DSL for Objective 
-Caml\footnote{https://github.com/dboulytchev/ocanren}, called \ocanren~\cite{ocanren}. \ocanren corresponds to \miniKanren with
+In the context of this paper we will use a certain concrete implementation of \miniKanren~--- a shallow DSL for 
+OCaml\footnote{https://github.com/dboulytchev/ocanren}, called \ocanren~\cite{ocanren}. \ocanren corresponds to \miniKanren with
 disequality constraints~\cite{CKanren}, and (modulo typing) follows the original implementation~\cite{MicroKanren}. Here we describe the external view 
 on \ocanren, giving only intuitive meaning of its constructs; the formal description will be presented in Section~\ref{relational_extension}.
 We also use a simplified syntax, which is a little bit different from the concrete syntax in actual implementation, but assumed to
@@ -80,7 +80,7 @@ Here we defined relational list concatenation \lstinline{append$^o$}, a canonica
 
 \begin{enumerate}
 \item If the first list is empty, then the second and the third lists must be equal.
-\item Otherwise, the first list can be split into a head and a tail, and two fresh variables \lstinline{h} and \lstinline{t} are needed to denote them. We also need a fresh variable \lstinline{ty} to denote the list, such, that appending \lstinline{y} to \lstinline{t} equals \lstinline{ty}. To ensure this property we use a recursive call to \lstinline{append$^o$}. Finally, we acquire the final result by consing \lstinline{h} and \lstinline{ty}. 
+\item Otherwise, the first list can be split into a head and a tail, and two fresh variables \lstinline{h} and \lstinline{t} are needed to denote them. We also need a fresh variable \lstinline{ty} to denote the list, such that appending \lstinline{y} to \lstinline{t} equals \lstinline{ty}. To ensure this property we use a recursive call to \lstinline{append$^o$}. Finally, we acquire the final result by consing \lstinline{h} and \lstinline{ty}. 
 \end{enumerate}
 
 As it can be seen from the type, relational concatenation is polymorphic, like its functional counterpart. However, the query

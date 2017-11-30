@@ -37,7 +37,7 @@ is slightly different:
    val append$^o$ : (($\alpha$ llist)$^o$ -> $\G$) -> (($\alpha$ llist)$^o$ -> $\G$) -> 
                  ($\alpha$ llist)$^o$ -> $\G$
    let rec append$^o$ a b q1 =
-     fresh (q2) /\
+     fresh (q2) 
        (a q2) /\
        (((q2 === ^Nil) /\ (b q1)) |||
          (fresh (q3 q4)
@@ -85,7 +85,7 @@ The signatures of relevant functions are
    val normal_order  : term -> split
 \end{lstlisting}
 
-\noindent where \lstinline|term| and \lstinline|split| are the types of the terms (in De Bruijn form) and context-term pairs respectively; \lstinline|eval| 
+\noindent where \lstinline|term| and \lstinline|split| are the types of the terms (in de Bruijn form) and context-term pairs respectively; \lstinline|eval| 
 is a higher-order interpreter, all other functions define corresponding reduction orders. Relational counterparts for these definitions, provided 
 by the conversion, are shown below:
 
