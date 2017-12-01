@@ -9,6 +9,7 @@ In this section, we present a formal description of a small functional language,
 for relational conversion. We describe its syntax, typing rules, and semantics, and then extend it
 with relational constructs. We specify the typing rules and semantics for the extension as well.
 
+
 \subsection{The Source Language}
 \label{source_language}
 
@@ -53,7 +54,7 @@ easily expressed in the language we present.
 
 Our language is equipped with Hindley-Milner type system, and we present the typing rules in a conventional syntax-directed form 
 on Figure~\ref{functional_typing}. Besides type variables and function types our system contains a number of implicitly defined 
-algebraic datatypes $T^k$, and we stipulate, that each constructor $C^n$ belongs to exactly one
+algebraic datatypes $T^k$, and we stipulate, that each constructor $C^n$ belongs to the exactly one
 datatype. In the rule \textsc{Constr$_T$} we assume, that type $t^C$ has the form $T^k(t_1,\dots,t_k)$, where each of the types
 $t_i$ is recovered from the types $t_i^C$ of arguments of constructor $C^n$ and, moreover, these types are agree in the sense of
 constructor application. Similarly, in the rule \textsc{Match$_T$} the types of all $C_i^{k_i}(x^i_1,\dots,x^i_{k_i})$ are expected
@@ -245,13 +246,14 @@ $\textsc{LetRec}$ and $\textsc{MatchVal}$ we perform capture-avoiding substituti
 %form $\lambda x.e$ or $\mu f\lambda x.e$. 
 In the rule $\textsc{MatchVal}$ we assume, that at most one pattern matches the scrutinee~--- this is an important difference from the usual 
 semantics of pattern matching, when the patterns are examined in a top-down manner until the match succeeds. In the rules $\textsc{EqTrue}$
-and $\textsc{EqFalse}$ we assume, that values $v$, $v_1$, $v_2$ do not have forms $\lambda x\dots$ or $\mu f\dots$.
+and $\textsc{EqFalse}$ we assume, that the values $v$, $v_1$, $v_2$ do not have the forms $\lambda x\dots$ or $\mu f\dots$.
 
 Finally, for a closed expression $e$ and a value $v$ we write $e \leadsto^f v$, iff 
 
 $$\inbr{\epsilon,e}\to^*\inbr{\epsilon,v}$$
 
-\noindent where $\epsilon$~--- an empty stack, and ``$\to^*$'' is a reflexive-transitive closure of ``$\to$''.
+\noindent where $\epsilon$~--- an empty stack, and ``$\to^*$'' is a reflexive-transitive closure of ``$\to$''. 
+
 
 \subsection{Relational Extension}
 \label{relational_extension}
@@ -276,7 +278,6 @@ $$
 \caption{The syntax of relational extension}
 \label{relational_syntax}
 \end{wrapfigure}
-
 
 Our extension for the type system introduces one interpreted datatype constructor $\Box^o$ with one data constructor $\uparrow$~--- a polymorphic type and
 a constructor for logical terms. In addition, we introduce an interpreted type of goals $\G$, which is distinct from all other types. The typing rules for the relational 
@@ -419,7 +420,7 @@ $$
 \label{relational_semantics}
 \end{figure}
 
-Finally, we describe the structure of a logical state and the implementation of unification and disequality constraint. The development is mainly based on the existing implementation~\cite{CKanren} and standard approaches for implementing unification~\cite{Unification, UnificationRevisited}. We, therefore, assume the familiarity of the reader with the following notions:
+Finally, we describe the structure of a logical state and the implementation of unification and disequality constraint. The development is mainly based on the existing implementation~\cite{CKanren} and standard approaches for implementing unification~\cite{Unification,UnificationRevisited}. We, therefore, assume the familiarity of the reader with the following notions:
 
 \begin{itemize}
   \item substitution ($\theta$);
@@ -557,6 +558,11 @@ $$
  
 \noindent where ``$\leadsto^*$'' is a reflexive-transitive closure of ``$\leadsto$''. 
 
+One may notice, that the typing rules for the relational extension add nothing more, than some
+interpreted types and symbols w.r.t. the type system of the substrate language. Thus, it 
+is rather expected, that the relational extension inherits all its useful properties (like progress and
+type preservation). Surprisingly, this is not completely so; we postpone the discussion to the 
+Appendix~\ref{appendix}.  
 
 
 

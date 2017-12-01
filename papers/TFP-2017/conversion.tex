@@ -102,7 +102,7 @@ In the case of constructor we know, that all expressions $e_i$ have ground types
 functions. We create a set of fresh variables (one for each expression) and pass them as arguments to these functions to associate
 them with the values of the expressions. The result of conversion for the constructor application itself has to be a 
 goal-returning function as well. We surround expression constructed so far with abstraction and unify its argument $q$ with the
-constructor, applied to corresponding logical variables. We also apply logical constructor $\uparrow$ to respect typing rule
+constructor, applied to corresponding logical variables. We also apply logical constructor $\uparrow$ to respect the typing rule
 for unification.
 
 The rule for pattern-matching conversion operates similarly. First, the scrutinee must have a ground type (since it is matched against
@@ -134,10 +134,12 @@ Finally, we formulate the following properties for relational conversion:
 \begin{itemize}
 \item Static correctness: if an expression $e$ has a type $t$ in the source language, then $\sembr{e}^c$ has a 
 type $\sembr{t}^t$ in relational extension. In other words, relational conversion transforms properly typed
-programs into properly typed. Proof is by structural induction.
+programs into properly typed. Proof is by structural induction (and trivial).
 \item Partial semantic correctness: if an expression $e$ has a ground type $t$ and $e \leadsto^f v$ for some
-  value $v$, then $\lstinline|fresh($x$)($\sembr{e}^c\;x$)| \leadsto^r (\theta,\emptyset)$, and $\theta(x)=v$. Proof
-is by induction on the length of derivation sequence (a number of lemmas have to be justified on the way).
+  value $v$, then $\lstinline|fresh($x$)($\sembr{e}^c\;x$)| \leadsto^r (\theta,\emptyset)$, and $\theta(x)=v$. 
+  The essential part of the proof is given in the Appendix~\ref{appendix}.
+%Proof
+%is by induction on the length of derivation sequence (a number of lemmas have to be justified on the way).
 \end{itemize}
 
 In order to prove the complete correctness, we need some means to interpret the results of relational 
