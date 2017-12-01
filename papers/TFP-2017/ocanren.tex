@@ -1,14 +1,14 @@
 \section{Relational Programming in \miniKanren}
 \label{ocanren}
 
-In the context of this paper we will use a certain concrete implementation of \miniKanren~--- a shallow DSL for 
+In the context of this paper, we will use a certain concrete implementation of \miniKanren~--- a shallow DSL for 
 OCaml\footnote{https://github.com/dboulytchev/ocanren}, called \ocanren~\cite{ocanren}. \ocanren corresponds to \miniKanren with
-disequality constraints~\cite{CKanren}, and (modulo typing) follows the original implementation~\cite{MicroKanren}. Here we describe the external view 
+disequality constraints~\cite{CKanren}, and (modulo typing) follows the original implementation~\cite{MicroKanren, SmallEmbedding}. Here we describe the external view 
 on \ocanren, giving only intuitive meaning of its constructs; the formal description will be presented in Section~\ref{relational_extension}.
 We also use a simplified syntax, which is a little bit different from the concrete syntax in actual implementation, but assumed to
 be easier to read.
 
-The central notion of \miniKanren is \emph{goal}; in \ocanren a goal can be arbitrary expression of reserved goal type, which we denote $\G$.
+The central notion of \miniKanren is \emph{goal}; in \ocanren a goal can be an arbitrary expression of reserved goal type, which we denote $\G$.
 There are only five syntactic forms of goals (denoted below as $g, g_1, g_2$, etc.):
 
 \begin{itemize}
@@ -19,7 +19,7 @@ There are only five syntactic forms of goals (denoted below as $g, g_1, g_2$, et
   \item disequality constraint $t_1\;\not\equiv\;t_2$.
 \end{itemize}
 
-Two last forms of goals constitute a basis for goal construction; here $t_1$ and $t_2$ are \emph{terms}. In \ocanren a term is arbitrary expression of polymorphic logic type $\alpha^o$. The postfix notation $\Box^o$ is a traditional way to denote relational entities, and we will use it for types as well\footnote{In the real implementation the terms have more complex two-parametric type, which encodes tagging, needed to be performed when the results of relational program are returned into the functional word; these details, however, are irrelevant to the objectives of the paper, and we stick with the simplified version.}.
+Two last forms of goals constitute a basis for goal construction; here $t_1$ and $t_2$ are \emph{terms}. In \ocanren a term is an arbitrary expression of polymorphic logic type $\alpha^o$. The postfix notation $\Box^o$ is a traditional way to denote relational entities, and we will use it for types as well\footnote{In the real implementation the terms have more complex two-parametric type, which encodes a tagging, needed to be performed when the results of relational program are returned into the functional word; these details, however, are irrelevant to the objectives of the paper, and we stick with the simplified version.}.
 
 The simplest expression of logic type is a variable, bound in \lstinline|fresh|. Another example is a primitive value, \emph{injected} into the logic domain with a built-in primitive ``$\uparrow$'', such as $\uparrow\!3$ (of type \lstinline|int$^o$|) or \lstinline|$\uparrow$true| (of type \lstinline|bool$^o$|). With these simplest forms some relational programs can already be written:
 
@@ -30,7 +30,7 @@ The simplest expression of logic type is a variable, bound in \lstinline|fresh|.
      (n =/= ^0 /\ b === ^false)
 \end{lstlisting}
 
-Function \lstinline|is_zero$^o$| implements a binary relation between integers and booleans; when called with specific arguments, it returns a goal, which can be executed or combined with another goals. In the former case, a stream of \emph{answers} is returned. An element of the stream contains the description of certain constraints for logical variables, which have to be respected in order for the relation to hold. We denote running primitive ``$\leadsto$'', so
+Function \lstinline|is_zero$^o$| implements a binary relation between integers and booleans; when called with specific arguments, it returns a goal, which can be executed or combined with another goal. In the former case, a stream of \emph{answers} is returned. An element of the stream contains the description of certain constraints for logical variables, which have to be respected in order for the relation to hold. We denote running primitive ``$\leadsto$'', so
 
 \begin{lstlisting}
    iz_zero$^o$ ^0 ^true $\leadsto$ [()]
@@ -49,7 +49,7 @@ Running
    iz_zero$^o$ q ^false $\leadsto$ [q$\binds\free{0}$ (=/= 0)]
 \end{lstlisting}
 
-\noindent provides a stream, which can be interpreted as ``\lstinline|q| can be arbitrary integer as long as it is different from zero'' ($\free{0}$, $\free{1}$, etc. denote free logical variables). Finally, the goal
+\noindent provides a stream, which can be interpreted as ``\lstinline|q| can be an arbitrary integer as long as it is different from zero'' ($\free{0}$, $\free{1}$, etc. denote free logical variables). Finally, the goal
 
 \begin{lstlisting}
    iz_zero$^o$ q p $\leadsto$ [(q$\binds$0, p$\binds$true); (q$\binds\free{0}$ (=/= 0), p$\binds$false)]
@@ -89,7 +89,7 @@ As it can be seen from the type, relational concatenation is polymorphic, like i
    append$^o$ ^(Cons (^$\lambda$x.x, ^Nil)) q ^(Cons (^$\lambda$y.y, ^Nil))  
 \end{lstlisting}
 
-\noindent ends with a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well, as it deals only with first-order syntactic unification~\cite{Unification}. This example demonstrates, that, unlike pure OCaml, the typing in OCanren is somewhat weak. In order to restore the strong typing some of type variables have to be bounded to range over only non-functional types. The lack of direct support for bounded polymorphism~\cite{cardelli} in OCaml makes this step problematic. Our experience, however, shows, that in practice this deficiency rarely gets in the way. In the following development we assume, that in polymorphic types some type variables may be implicitly bounded to only non-function types, and these boundings are respected in all instantiations of those type variables.
+\noindent ends with a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well, as it deals only with first-order syntactic unification~\cite{Unification}. This example demonstrates, that, unlike pure OCaml, the typing in OCanren is somewhat weak. In order to restore the strong typing, some of type variables have to be bounded to range over only non-functional types. The lack of direct support for bounded polymorphism~\cite{cardelli} in OCaml makes this step problematic. Our experience, however, shows, that in practice this deficiency rarely gets in the way. In the following development, we assume, that in polymorphic types some type variables may be implicitly bounded to only non-function types, and these boundings are respected in all instantiations of those type variables.
 
 Finally, we describe the unnesting technique~\cite{TRS}, which was introduced as a method for manual transformation
 of functional programs into relational form. As an example we take list concatenation:
@@ -101,7 +101,7 @@ of functional programs into relational form. As an example we take list concaten
      | Cons (h, t) -> Cons (h, append t y)
 \end{lstlisting}
 
-Unnesting introduces a new name for each nested function call; in our case there is only one nested call, namely,
+Unnesting introduces a new name for each nested function call; in our case, there is only one nested call, namely,
 the recursive call to \lstinline|append| itself, so the unnested function looks like
 
 \begin{lstlisting}
@@ -148,7 +148,7 @@ Unnesting would transform this program into the following form
 needs to $\eta$-expand the definition of $g$, making the functional nature of its return type syntactically visible.
 
 We stress, that relational conversion, described in Section~\ref{conversion}, is essentially different from unnesting. In particular, 
-we use $\eta$-expansion in a very limited manner (only in one case), and for the aforementioned example the result of relational
+we use $\eta$-expansion in a very limited manner (only in one case) and for the aforementioned example the result of relational
 conversion looks as follows:
 
 \begin{lstlisting}

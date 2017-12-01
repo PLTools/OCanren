@@ -3,13 +3,12 @@
 
 We implemented relational conversion for the subset of OCaml language, using the infrastructure of the 
 original compiler. In its current form the converter takes the whole file and converts every definition into relational form, 
-but in future we consider to implement a more flexible approach when only some definitions are converted, being attributed
+but in future, we consider to implement a more flexible approach when only some definitions are converted, being attributed
 for this purpose in some way. Our converter rewrites the original abstract syntax tree, annotated with the types, inferred by the compiler, 
 into relational form, using the set of combinators from \ocanren. Note, the semantics of OCaml is different from the 
 semantics of source language we presented in Section~\ref{source_language}: in OCaml, the order of reductions in
 application and binary operators is unspecified (unlike left-to-right in our case), pattern-matching in
-OCaml in performed in a top-down manner (and, thus, there can be more than one pattern matching the scrutinee), etc. We
-therefore trust an end user to apply relational conversion only to programs, for which these differences play
+OCaml in performed in a top-down manner (and, thus, there can be more than one pattern matching the scrutinee), etc. We, therefore, trust an end user to apply relational conversion only to programs, for which these differences play
 no role.
 
 Our preliminary evaluation discovered two problems. First, the converter used to generate a lot of abstractions, 
@@ -17,7 +16,7 @@ many of which could be applied immediately. We additionally implemented an optim
 administrative reductions where possible. This optimization greatly improves the performance of converted 
 programs in terms of both readability and performance. Next, in our initial implementation too many values were
 functionalized and, as a result, massively recalculated with essential performance degradation. We improved
-the implementation by identifying important specific case and handling it with a little different 
+the implementation by identifying the important specific case and handling it with a little different 
 transformation.
 
 As the first example of the conversion we consider the implementation of concatenation function for lists:
@@ -53,27 +52,27 @@ on logical lists, the converted variant uses a goal-returning functions. Thus, t
 \lstinline|x|, \lstinline|y| and \lstinline|q| can be expressed using the converted one as \lstinline{append$^o$ (===x) (===y) q}.
 
 With this observation in mind, it is rather easy to understand the rest of the code. First, the value of the first argument is
-associated with the fresh variable \lstinline|q2|, and case analysis is performed. If the first argument is empty list, then the 
+associated with the fresh variable \lstinline|q2|, and case analysis is performed. If the first argument is an empty list, then the 
 value of the third argument is associated with the value of the second (by applying \lstinline|b| to \lstinline|q1|). Otherwise, the first
 argument is split into the head \lstinline|q3| and the tail \lstinline|q4|, the tail is functionalized and passed to the recursive
 call. The result \lstinline|q7| is consed with the head \lstinline|q3| of the original list and unified with the result \lstinline|q1|. One extra
 unification \lstinline|q6 === q3| is an artifact of conversion implementation.
 
-In the next subsections we consider more elaborated and interesting examples. From now on we refrain from presenting the complete source and
+In the next subsections, we consider more elaborated and interesting examples. From now on we refrain from presenting the complete source and
 converted code and consider only the signatures and some interesting queries. 
 
 \subsection{Higher-order Lambda Interpreter}
 
-As we mentioned in Section~\ref{intro}, one of the important application domains for miniKanren is implementation of relational interpreters~\cite{WillThesis,unified,Untagged}. 
-Writing relational interpreter as a rule amounts to a careful rewriting of functional implementation in miniKanren. In this regard obtaining a relational
+As we mentioned in Section~\ref{intro}, one of the important application domains for miniKanren is the implementation of relational interpreters~\cite{WillThesis,unified,Untagged}. 
+Writing relational interpreter, as a rule, amounts to a careful rewriting of functional implementation in miniKanren. In this regard obtaining a relational
 interpreter automatically from a functional specification looks a natural idea.
 
 In our case we generalize this idea a little bit: we build a relational interpreter for a family of languages~--- essentially, the lambda calculus with
 various reduction orders. The construction of this interpreter was inspired by Felleisen-style semantic description~\cite{Felleisen}. 
 Our interpreter takes as its first argument a function, which decomposes a term, passed as a second argument, into a redex and a context (if possible). 
-After the decomposition the interpreter performs beta-reduction on the redex and reconstructs the term by plugging the result back into the context. 
+After the decomposition, the interpreter performs beta-reduction on the redex and reconstructs the term by plugging the result back into the context. 
 These steps are repeated until the decomposition is no longer possible (or infinitely). This approach brings us a few benefits: first, various reduction orders can be 
-expressed by changing only the decomposition function and, next, we demonstrate the applicability of our technique for higher-order case.
+expressed by changing only the decomposition function and, next, we demonstrate the applicability of our technique for a higher-order case.
 
 The signatures of relevant functions are
 
@@ -141,12 +140,12 @@ reproduced.
 \subsection{Hindley-Milner Type Inference}
 
 Our next example is the type inference for Hindley-Milner type system~\cite{Types}. Interestingly enough, that while typing rules for
-STLC can be directly expressed in relational terms, providing the solutions for type inference, type checking and type inhabitation
+STLC can be directly expressed in relational terms, providing the solutions for type inference, type checking, and type inhabitation
 problems at the same time, for not so different Hindley-Milner system with let-polymorphism the problem becomes much
 harder. The most robust existing relational solution requires the extension of miniKanren with nominal constructs~\cite{alphaKanren}, while
 the correctness of other implementations in conventional miniKanren is still a matter of discussion~\cite{WillOnHM}.
 
-On the other hand, in terms of functional programming this task is rather a textbook exercise. We implemented a simple version of
+On the other hand, in terms of functional programming, this task is rather a textbook exercise. We implemented a simple version of
 syntax-directed type inference and converted it into the relational form; the signatures for the original and converted
 implementations are shown below:
 
@@ -155,14 +154,14 @@ implementations are shown below:
    val type_inference$^o$ : (term$^o$ -> $\G$) -> typ$^o$ -> $\G$
 \end{lstlisting}
 
-For this example we use a conventional representation of terms with named variables. In a forward direction our relational implementation works, 
-as expected, as type inferencer~--- given a term it infers its type:
+For this example, we use a conventional representation of terms with named variables. In a forward direction, our relational implementation works, 
+as expected, as a type inferencer~--- given a term it infers its type:
 
 \begin{lstlisting}[basicstyle=\small]
    type_inference$^o$ (=== `$\lambda x \to x$`) q $\leadsto$ [q $\binds$ `$a\to a$`]
 \end{lstlisting}
 
-In a reverse direction relational type inferencer is capable of finding the inhabitants of specified type:
+In a reverse direction relational type inferencer is capable of finding the inhabitants of a specified type:
 
 \begin{lstlisting}[basicstyle=\small]
    type_inference$^o$ (=== q) '$a$' $\leadsto$ $\bot$
@@ -191,17 +190,17 @@ both pure inference and pure inhabitance:
      [$\Box$ $\binds$ `fun $\framebox{0}$ -> $\framebox{0}$`; ...]
 \end{lstlisting}
 
-In this query we supplied an \emph{incomplete} term with a hole ($\Box$) and some type, and as result we've got a term to plug into the hole 
-in order for the complete term to have that type. Note, the term we've got as a result can not be typed in STLC, since the variable \lstinline|f|
+In this query, we supplied an \emph{incomplete} term with a hole ($\Box$) and some type, and as a result, we've got a term to plug into the hole 
+in order for the complete term to have that type. Note, the term we've got as a result cannot be typed in STLC, since the variable \lstinline|f|
 is applied there twice with different types of arguments.
 
 A final observation: we do not claim to completely solve the problem of relational implementation of Hindley-Milner type system. Even though our converted
 relational implementation behaves as expected, it still not ideal~--- indeed, in functional implementation we had to implement unification on types, 
-which does not make use of built-in unification in miniKanren and, to some extent, doubles the work. We therefore do not consider this approach as an ideal solution.
+which does not make use of built-in unification in miniKanren and, to some extent, doubles the work. We, therefore, do not consider this approach as an ideal solution.
 
 \subsection{miniKanren with Disequality Constraints}
 
-Our final example is implementation of miniKanren in miniKanren. Although there are already exist a few similar implementations, written directly in miniKanren, 
+Our final example is an implementation of miniKanren in miniKanren. Although there are already exist a few similar implementations, written directly in miniKanren, 
 our version is different since it supports disequality constraints. We consider this as an important distinction~--- first, the presence of disequality
 constraints makes the language much more expressible, and, next, implementing disequality constraints directly in miniKanren is a very tedious
 and error-prone task. On the other hand, providing relationally converted version amounts only to repeating a well-known and rather compact original 
@@ -232,7 +231,7 @@ our relational miniKanren interpreter works in both directions. As a more intere
 \end{lstlisting}
 
 Here we specified an incomplete relational program (specifically, a relational addition of numbers in Peano form). The hole ($\Box$) replaces
-one of the branches, and expected substitution describes the results of addition. Our relational interpreter, converted from functional
+one of the branches and expected substitution describes the results of addition. Our relational interpreter, converted from functional
 implementation, turned out to be capable of finding the correct subgoal~--- ``\lstinline|c === S c$_0$|''~--- to be placed into the hole.
 
 

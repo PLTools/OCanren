@@ -8,7 +8,7 @@ a narrow sense relational programming amounts to writing relational specificatio
 initially designed as a small relational DSL, embedded in Scheme/Racket, was later implemented for a number of general-purpose host languages,
 including Scala, Haskell, Standard ML and OCaml.
 
-With relational approach, it becomes possible to give simple and elegant solutions for the problems, otherwise
+With the relational approach, it becomes possible to give simple and elegant solutions for the problems, otherwise
 considered as tricky, tough, tedious, or boring~\cite{unified}. For example, relational interpreters can be used to derive
 \emph{quines}~--- programs, which reduce to itself, as well as \emph{twines} or \emph{thrines} (a pairs or triples of
 programs, reducing to each other)~\cite{Untagged}; a straightforward relational description of
@@ -23,9 +23,9 @@ programs and was never implemented.
 
 We present a generalized form of relational conversion, which can be applied to typed terms in general form. We study the relational conversion 
 for a small ML-like language (essentially, a certain subset of OCaml), equipped with Hindley-Milner type system with let-polymorphism~\cite{Types}. 
-We start from retelling the syntax, typing rules and operational semantics, and then extend the source language with conventional set of 
+We start from retelling the syntax, typing rules, and operational semantics, and then extend the source language with a conventional set of 
 relational constructs. This set corresponds to existing typed embedding of \miniKanren into OCaml~\cite{ocanren}. We then present typing rules and 
-develop operational semantics for this relational extension; to our knowledge this is the first attempt to specify formal semantics for
+develop operational semantics for this relational extension; to our knowledge, this is the first attempt to specify formal semantics for
 \miniKanren. Next, we develop formal rules for relational conversion and prove, that these rules respect both typing and
-semantics. Finally, we describe the implementation of relational converter and demonstrate its application for a number of problems, for some
-of which we present relational solution for the first time.
+semantics. Finally, we describe the implementation of a relational converter and demonstrate its application for a number of problems, for some
+of which we present a relational solution for the first time.
