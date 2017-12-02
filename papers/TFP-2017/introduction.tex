@@ -10,15 +10,15 @@ including Scala, Haskell, Standard ML and OCaml.
 
 With the relational approach, it becomes possible to give simple and elegant solutions for the problems, otherwise
 considered as tricky, tough, tedious, or boring~\cite{unified}. For example, relational interpreters can be used to derive
-\emph{quines}~--- programs, which reduce to itself, as well as \emph{twines} or \emph{thrines} (a pairs or triples of
+\emph{quines}~--- programs, which reduce to itself, as well as \emph{twines} or \emph{thrines} (pairs or triples of
 programs, reducing to each other)~\cite{Untagged}; a straightforward relational description of
 simply typed lambda calculus~\cite{Lambda} inference rules works both as type inferencer and inhabitation problem solver~\cite{WillThesis};
 relational list sorting can be used to generate all permutations~\cite{ocanren}, etc. 
 
 On the other hand, writing relational specifications can sometimes be a tricky and error-prone task. Fortunately, many 
-specifications can be written systematically by ``generalizing'' a certain functional program. From the very beginning 
+specifications can be written systematically by ``generalizing'' a certain functional program. From the very beginning, 
 the conversion from functional to relational form was considered as an element of relational programming thesaurus~\cite{TRS}. However,
-the traditional approach~--- \emph{unnesting}~--- was formulated for untyped case, worked only for specifically written
+the traditional approach~--- \emph{unnesting}~--- was formulated for an untyped case, worked only for specifically written
 programs and was never implemented.
 
 We present a generalized form of relational conversion, which can be applied to typed terms in general form. We study the relational conversion 
