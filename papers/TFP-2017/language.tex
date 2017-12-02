@@ -561,8 +561,11 @@ $$
 One may notice, that the typing rules for the relational extension add nothing more, than some
 interpreted types and symbols w.r.t. the type system of the substrate language. Thus, it 
 is rather expected, that the relational extension inherits all its useful properties (like progress and
-type preservation). Surprisingly, this is not completely so; we postpone the discussion to the 
-Appendix~\ref{appendix}.  
+type preservation). Surprisingly, this is not completely so. Indeed, the only value for goals is
+\lstinline|success|, but, obviously, not every goal succeeds (for example, \lstinline|A === B| always
+fails). Thus, our relational extension lacks the progress property~--- a decently typed non-value
+goal sometimes cannot make a step. This makes no harm in the context of the paper; in any case
+a failure value for goals can be added to the language together with the failure propagation rules. 
 
 
 

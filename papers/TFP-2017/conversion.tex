@@ -135,8 +135,10 @@ Finally, we formulate the following properties for relational conversion:
 \item Static correctness: if an expression $e$ has a type $t$ in the source language, then $\sembr{e}^c$ has a 
 type $\sembr{t}^t$ in relational extension. In other words, relational conversion transforms properly typed
 programs into properly typed. Proof is by structural induction (and trivial).
-\item Partial semantic correctness: if an expression $e$ has a ground type $t$ and $e \leadsto^f v$ for some
-  value $v$, then $\lstinline|fresh($x$)($\sembr{e}^c\;x$)| \leadsto^r (\theta,\emptyset)$, and $\theta(x)=v$. 
+\item Partial semantic correctness: if an expression $e$ has a ground type $t$ and \mbox{$e \leadsto^f v$} for some
+  value $v$, then \mbox{$\lstinline|fresh($x$)($\sembr{e}^c\;x$)| \leadsto^r (\theta,\emptyset)$}, and 
+\mbox{$\theta(\mathfrak{s})=v$}, where $\mathfrak{s}$ is a semantic variable, associated with $x$ on the
+first step of the relational evaluation.
   The essential part of the proof is given in the Appendix~\ref{appendix}.
 %Proof
 %is by induction on the length of derivation sequence (a number of lemmas have to be justified on the way).
