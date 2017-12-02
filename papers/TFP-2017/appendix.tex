@@ -24,7 +24,7 @@ $x$ on the first step of the relational evaluation.
 \end{theorem}
   
 We first comment on the empty set as the set of negative substitutions. A disequality constraint can
-come only from polymorphic equality, which is applied when both its operands are reduced to
+come only from a polymorphic equality, which is applied when both its operands are reduced to
 values. In the relational counterpart, being run in a forward direction, this corresponds to the evaluation of disequality constraints for
 closed terms only, which, in turn, means, that they will immediately succeed or fail. Both cases
 add nothing to the set of negative substitutions, which is initially empty. 
@@ -40,7 +40,7 @@ $$
 \noindent for arbitrary $p$ of any type. This claim, however, turned out to be false~--- a term
 \lstinline|C ((fun x.x) A)| can be taken as an example.  
 
-The origin of the problem is that we \emph{functionalize} the constructors, \lstinline|match| and
+The origin of the problem is that we \emph{functionalize} the constructors, \lstinline|match|, and
 equality expressions, and, hence, change the order of reductions in the relational counterpart in 
 comparison with the original functional program. Thus, we need to take this change into account.
 
@@ -352,7 +352,7 @@ $\hat{\mathcal S}$ and $\theta$. The proof is by case analysis on $e$, using Lem
 \begin{lemma} 
 \label{connection}
 \normalfont Let \mbox{$s_1 \to s_2$}~--- a single evaluation step w.r.t. the deferred semantics,
-$\hat{s_1}$~--- a state of the relational semantics, such, that $s_1$ and $\hat{s_1}$ are connected, then
+$\hat{s_1}$~--- a state of the relational semantics, such, that $s_1$ and $\hat{s_1}$ are connected. Then
 there exists a sequence of steps in the relational semantics \mbox{$\hat{s_1}\leadsto^*\hat{s_2}$}, such, 
 that $s_2$ and $\hat{s_2}$ are connected. The proof is by case analysis and definition of connection
 relation, using Lemmas~\ref{substitution},~\ref{constructor},~\ref{evaluation_lemma}. 
@@ -389,7 +389,7 @@ $$
 $$
 
 \noindent and \mbox{$\left<\epsilon,\,v\right>$} and $\hat{s^\prime}$ are connected. By the definition of
-connection relation, $\hat{s^\prime}$ has one of the following forms:
+the connection relation, $\hat{s^\prime}$ has one of the following forms:
 
 $$
 \left<\Sigma,\,\epsilon,\,{\mathfrak s}_0\equiv\lstinline|C$^k$(${\mathfrak s}^\prime_1$,...,${\mathfrak s}^\prime_k$)|,\,(\theta,\,\emptyset)\right>,\,\theta({\mathfrak s}^\prime_i)=v_i
@@ -398,8 +398,8 @@ $$
 \noindent or
 
 $$
-\left<\Sigma,\,\epsilon,\,{\mathfrak s}_0\equiv q,\,(\theta,\,\emptyset)\right>,\,\theta({\mathfrak s}^\prime)=v
+\left<\Sigma,\,\epsilon,\,{\mathfrak s}_0\equiv {\mathfrak s}^\prime,\,(\theta,\,\emptyset)\right>,\,\theta({\mathfrak s}^\prime)=v
 $$
 
-\noindent where ${\mathfrak s}_0$ is the first semantic variable, added to $\Sigma$ and \mbox{${\mathfrak s}_0\not\in dom(\theta)$}. In
+\noindent where ${\mathfrak s}_0$ is the first semantic variable, added to $\Sigma$, and \mbox{${\mathfrak s}_0\not\in dom(\theta)$}. In
 both cases, we can make the one last step in the relational semantics, which completes the proof. 
