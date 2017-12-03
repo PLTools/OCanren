@@ -10,9 +10,9 @@ the new syntax.
 
 With this implementation, we became capable to evaluate a number of useful, but refutationally 
 incomplete miniKanren relations, including those considered earlier. In all cases the 
-improved search managed to discover the divergence and fix the incompleteness; moreover, 
-the performance of some queries was improved significantly. In the following subsections
-we consider some interesting cases.
+improved search managed to discover the divergence and fix the incompleteness, caused by
+the non-commutativity of conjuction; moreover, the performance of some queries was improved 
+significantly. In the following subsections we consider some interesting cases.
 
 \subsection{Relations on lists}
 
@@ -40,13 +40,36 @@ dynamic invocation order.
 Another example we've already looked at is relational sorting/permutations. 
 With the improved search, both queries \lstinline|fresh ($q$) (perm$^o$ l $q$)| and 
 \lstinline|fresh ($q$) (perm$^o$ $q$ l)| terminate for any list \lstinline|l| of a reasonable 
-length (7, 8, etc.), and work in a reasonable time. Moreover, now
+length (7, 8, etc.), and now work in a reasonable time. Moreover, now
 relational permutations can be used as a (we admit, somewhat exotic) way to calculate 
 the number of permutations with repetitions.
 
 \subsection{Arithmetic}
 
-Implementation of relational arithmetic is known problem, since it might be used as a primitive in eleborate relational programs. For acceptable performance it is preferably to use binary numbers, not comfy peano numbers, which makes this problem more complicated. As demonstrated in~\cite{WillThesis} naive implementation of binary arithmetic can't be considered appropriate and problems are on different levels. It requires a lot of additional conditions, excess on the first glance, to ensure non-overlapping of cases and correctness of numbers representation. And still, improved relation will diverge on some usual queries with one order, and on others queries with another. To overcome this problem, version of arithmetic used in standart miniKanren implementation~\cite{TRS} is based on usage of digital logic and advanced technique of bounding of sizes of the terms, both described in~\cite{KiselyovArithmetic}, and is hard to understand without without proper preparations. At the same time, it is exacly the kind of problem caused by non-commutativity of conjunction, that we meet ususally. So, as expected, improved search strategy allows to use refutationally incomplete versions of binary arithmetic relations (for addition, multiplication, comparisons, division with a reminder) without these complicated optimisations and still get the desired behaviour. As the brightest example, for division with reminder instead of very complicated recursive definition of 20 LOC (not including the auxiliary functions), one can just right down the definition:
+The implementation of a relational arithmetic is an important problem, since it is required
+in a number of elaborated relational specifications. For performance reasons, it is 
+preferrable to use binary numbers, not comfy Peano encoding, which makes the problem 
+more complicated. As it is shown in~\cite{WillThesis}, the naive implementation of 
+binary arithmetic is inapproptiate due to multiple problems. 
+
+Fixing these problems take a lot of efforts: it requires some additional conditions, 
+excess on the first glance, to be introduced in the specification to ensure the non-overlapping 
+of cases and correctness of number representation. And still, even with all these 
+improvements, arithmetic relations diverge for some routine queries with one order of 
+consituents, and for others with another. To overcome this problem, 
+arithmetics in the standard miniKanren implementation~\cite{TRS} uses digital logic and 
+some advanced techniques of bounding the sizes of the terms~\cite{KiselyovArithmetic}. 
+As a result, the implementation is quite complicated and takes time to understand.
+
+At the same time, all these problems are exactly the consequences of the non-commutativity 
+of conjunction. So, as expected, the improved search 
+strategy allows to use refutationally incomplete versions of binary arithmetic relations (for addition, 
+multiplication, comparisons, division with a reminder) without these complicated optimisations and still 
+get the desired behaviour. 
+
+As the brightest example, for the division with reminder, instead of a very complicated recursive definition 
+from~\cite{TRS} (20 lines of code, not including auxiliary functions), one can just right down the 
+following definition
 
 \begin{lstlisting}
    div$^o$ $\binds$ $\lambda\;x\;y\;q\;r$ . 
@@ -57,7 +80,7 @@ Implementation of relational arithmetic is known problem, since it might be used
      )
 \end{lstlisting}
 
-\noindent and for all natural queries, such as these (there $\overline{n}$ denotes binary representation of number $n$):
+\noindent and for all queries
 
 \begin{lstlisting}
    fresh ($q$ $r$) (div$^o$ $\overline{23}$ $\overline{5}$ $q$ $r$)
@@ -65,7 +88,8 @@ Implementation of relational arithmetic is known problem, since it might be used
    fresh ($x$ $r$) (div$^o$ $x$ $\overline{17}$ $\overline{4}$ $r$)
 \end{lstlisting}
 
-\noindent search terminates and shows comparable with optimised version performance under improved search strategy.
+\noindent the search terminates and shows the preformance, comparable with the advanced version 
+(here $\overline{n}$ denotes a binary representation of the number $n$).
 
 \subsection{Binary trees}
 
