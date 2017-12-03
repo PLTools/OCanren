@@ -90,9 +90,12 @@ omit it due to the space considerations (an interested reader can refer to~\cite
 is that it is obviously recursive and not refutationally complete, and it is being evaluated 
 in \emph{both} directions within the body of \lstinline|perm$^o$|. So, \lstinline|perm$^o$| is expected 
 to perform poorly regardless the order of recursive calls in \lstinline|sort$^o$| implementation; it, 
-indeed, does. First, if we request all solutions, both \lstinline|fresh ($q$) (perm$^o$ l $q$)| and \lstinline|fresh ($q$) (perm$^o$ $q$ l)| diverge for arbitrary non-empty list \lstinline|l| regardless the implementation of \lstinline|sort$^o$|; second, even if we request only a first few existing solutions, it does not provide any results in a reasonable time even for very small list lengths (4, 5, etc.).
-
-Finally, refutational incompleteness prevents us from discovering the number of solutions, which can 
-itself be an objective for writing a relational specification (we provide some examples in Section~\ref{evaluation}).
+indeed, does. First, if we request all solutions, both \lstinline|fresh ($q$) (perm$^o$ l $q$)| and \lstinline|fresh ($q$) (perm$^o$ $q$ l)| diverge for arbitrary non-empty list \lstinline|l| regardless the implementation of \lstinline|sort$^o$|; second, even if we request only a first few existing solutions, it does not provide any results in a reasonable time even for very small list lengths (4, 5, etc.). Interesting, that if we interested in all solutions,
+we have to accurately precompute their number in order not to request more, than exists. For some problems
+it may be not so simple, as it looks at a first glance (for example, the number of all permutations is
+not a factorial, but a number of permutations with repetitions). Finally, getting the number of solutions can 
+itself be an objective for writing a relational specification (we provide some examples in Section~\ref{evaluation}),
+and without refutational completeness requesting all solutions to calculate their number is out of
+reach. 
 
 

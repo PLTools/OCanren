@@ -93,7 +93,6 @@ $$
 \begin{figure}[t]
 \arraycolsep=5pt
 \def\arraystretch{2.2}
-
 \subfloat[\label{appendo_eval_a}]{
 $
 \begin{array}{c|c}
@@ -250,6 +249,7 @@ The evaluation is illustrated on Fig.~\ref{appendo_eval}; here we use numbers in
 make the illustration observable we do not show the binding environment for relational definitions and as a rule denote by ellipses the inherited components
 of derivation tree (the components in the left side of ``$\Rightarrow$'' are inherited top-down, in the right side~--- bottom-up).
 
+\FloatBarrier
 We start from the top-level goal and first apply the rule $\rulename{Fresh}$ (see Fig.~\ref{appendo_eval_a}). Since 
 we did not use any semantic variables yet, we allocate the first one ($\sv{0}$), update the interpretation and the set of used semantic variables and continue. The next construct
 is the call for \lstinline|append$^o$|, so we unfold its definition, replace the interpretation of syntactic variables by the bindings for the formal parameters, and 
