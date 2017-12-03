@@ -1,13 +1,15 @@
 \section{Appendix}
+\label{appendix}
 
-The proof of divergence in this case is based on the following definitions and
-lemmas.
+The proof of correctness of used divergence criterion is based on the following definitions and lemmas.
 
 \begin{definition}
 \normalfont
 A semantic variable $v$ is \emph{reachable} w.r.t. the intrepretation $\iota$ and substitution $\sigma$, if there exists 
 a syntactic variable $x$, such that \mbox{$v \in FV(\iota(x) \sigma)$}.
 \end{definition}
+
+These are the semantic variables that occur in values binded with syntactic variables bounded in this point of evaluation. [ Since all syntactic terms primarily are interpreted using $\iota$ and $\sigma$, they are the only semantic variables we can see, before new fresh variables are introduced. ]
 
 \begin{definition}
 \normalfont
@@ -20,11 +22,19 @@ $$
 \noindent is \emph{well-formed}, if \mbox{$dom(\sigma) \subseteq \delta$}, and any semantic variable, reachable w.r.t. $\iota$ and $\sigma$, belongs to $\delta$.  
 \end{definition}
 
+The informal meaning of $\delta$ is the set of all semantic variables we meet somehow so far. But in proofs we only need these two kind of variables to belong to $\delta$. The initial semantic statement is always well-formed, since $\iota = \bot$ and $\sigma = \epsilon$.
+
+Next lemma ensures that these properties are preserving during the search, so we can treat any semantic statement inside as well-formed.
+
 \begin{lemma}
 \label{one}
 \normalfont
  For a well-formed semantic statement, every statement in its derivation tree is also well-formed.
 \end{lemma}
+
+The proof is by induction on derivation tree and for it we need to generalize the statement of the lemma, adding that two properties of well-formedness regarding $\iota$, $\sigma$ and $\delta$ also hold for $\iota$, $\sigma_r$, $\delta_r$ for any $(\sigma_r, \delta_r) \in S$.
+
+Next lemma ensures that information in substitution only increases (in the sense of composition) and all variables involved in aditional information are either reachable at this point of execution or fresh variables, that will be introduced later.
 
 \begin{lemma}
 \label{two}
@@ -42,6 +52,10 @@ $$
  or does not belong to $\delta$.
   \end{enumerate}   
 \end{lemma}
+
+The proof is by induction on derivation tree and for it we need to generalize the statement of the lemma, adding that set of allocated semantic variables $\delta$ only increases during the evaluation.
+
+The final lemma formalizes intuitive considerations, that evaluation on more general state can't fail, if evaluation on more specific state doesn't fail, therefore any way of execution that is traversed with the some state, would be traversed with more general state.
 
 \begin{lemma}
 \label{three}
@@ -62,3 +76,27 @@ for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime = \iota(x) \
 derivation tree of the first statement has greater or equal height, then the derivation 
 tree of the second statement.
 \end{lemma}
+
+The proof is by induction on derivation tree of the second statement and for it we need to generalize the statement of the lemma, adding that for any substitution $s^\prime_r$ in result of the second statement there will be substitution $s_r$ in the result of the first statement which creates more general state (there exists substitution $\tau_r$, such that for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime_r = \iota(x) \sigma_r \tau_r$}). In the cases of $Fresh$ and $Invoke$ rules, some semantic variables stop being reachable and there we need to define substitution $\tau_r$ separately for this ``forgotten'' variables and those, that remain reachable, for which Lemma~\ref{two} is used.
+
+Now we are ready to state divergence criterion.
+
+\begin{theorem}[Divergence criterion]
+\normalfont
+For any well-formed semantic statement 
+
+$$
+\otrans{\Gamma,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{S}
+$$ 
+
+if its proper derivation subtree has a semantic statement 
+
+$$
+\otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{r^k\,t^\prime_1\dots t^\prime_k}{S^\prime}
+$$
+
+then $\overline{t^\prime_i \iota^\prime \sigma^\prime} \not \succeq \overline{t^{\phantom{\prime}}_i \iota \sigma}$. 
+\end{theorem}
+\begin{proof}
+By contradiction: if such situation happens, we can apply Lemma~\ref{three} to bodies of these calls (body of recursive call is well-formed statement by Lemma~\ref{one}) and discover that proper subtree of this derivation tree has greater or equal height. ~$\Box$
+\end{proof} 

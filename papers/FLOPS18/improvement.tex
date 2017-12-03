@@ -16,12 +16,12 @@ the divergence of the first one is detected. More specifically:
 
 \begin{itemize}
 \item during the search, we keep the track of all conjunctions being performed;
-\item when we detect the divergence, we roll back to the nearest conjunction, switch their
-constituents, and rerun the search.
+\item when we detect the divergence, we roll back to the nearest conjunction, switch its
+constituents, and rerun the search from that conjunction.
 \end{itemize}
 
 We also need to pay a special attention to make it possible to enumerate all orders of all conjuncts in
-compound conjunctions, not only immediate one; thus, in \mbox{$(g_1\wedge g_2)\wedge g_3$} we should
+compound conjunctions, not only immediate ones; thus, in \mbox{$(g_1\wedge g_2)\wedge g_3$} we should
 be able to try not only \mbox{$(g_1\wedge g_2)\wedge g_3$} and \mbox{$g_3 \wedge(g_1\wedge g_2)$}, but, 
 for example, \mbox{$(g_2\wedge g_1)\wedge g_3$}, etc. Moreover, all orders, tried so far, have to be
 memorized. When we tried out every one, we need to proceed to the next enclosing conjunction (if any).
@@ -41,7 +41,8 @@ is a query $Q^\prime$, which is refutationally incomplete w.r.t. $A$ and refutat
 w.r.t. $B$. 
 
 We are going the present now a sufficient test for a divergency, and prove, that our modification of
-the search constitutes a (limited) refutational improvement for queries, returning only a finite number of answers.
+the search constitutes a (limited) refutational improvement for queries, returning only a finite 
+number of answers.
 
 Our divergence test is based on the following notion:
 
@@ -51,26 +52,13 @@ We say, that a vector of terms $\overline{a^{\phantom{x}}_i}$ is more general, t
 $\overline{a^{\phantom{x}}_i}\succeq\overline{b^{\phantom{x}}_i}$), if there is a substitution $\tau$, such that for $\forall i\;b_i = a_i \tau$.
 \end{definition}
 
-The idea of the test is rather simple: it identifies a recursive call with more general arguments, 
-than (some) enclosing one. 
+The idea of the divergence test is rather simple: it identifies a recursive call with more general arguments, 
+than (some) enclosing one. In the Appendix~\ref{appendix} we provide a formal proof, that, indeed,
+this test constitutes a sufficient condition for divergence.
 
-
-\begin{theorem}[Divergence criterion]
-\normalfont
-For any well-formed semantic statement 
-
-$$
-\otrans{\Gamma,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{S}
-$$ 
-
-if its proper derivation subtree has a semantic statement 
-
-$$
-\otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{r^k\,t^\prime_1\dots t^\prime_k}{S^\prime}
-$$
-
-then $\overline{t^\prime_i \iota^\prime \sigma^\prime} \not \succeq \overline{t^{\phantom{\prime}}_i \iota \sigma}$. 
-\end{theorem}
-\begin{proof}
-Immediately follows from Lemmas~\ref{one},~\ref{three}.~$\Box$
-\end{proof}
+Now it is sufficient to present a query, which is not refutationally complete w.r.t. to the semantics, 
+but becomes refutationally complete w.r.t. to the improvement. For such query we can take 
+\mbox{\lstinline|fresh ($p\;q$) (append$^o\;p\;q\;$ Nil)|}~--- indeed, from Section~\ref{incompleteness} we
+already know, that it diverges. We also remember, that the reason of the divergence is the infinite
+sequence of recursive calls with renamed arguments~--- but this means, that the divergence test is satisfied.
+Finally, switching the recursive call to \lstinline|append$^o$| with the preceding conjunct makes the query converge~--- this is exactly, what the improvement does.
