@@ -44,13 +44,13 @@ length (7, 8, etc.), and now work in a reasonable time. Moreover, now
 relational permutations can be used as a (we admit, somewhat exotic) way to calculate 
 the number of permutations with repetitions.
 
-\subsection{Arithmetic}
+\subsection{Binary arithmetics}
 
-The implementation of a relational arithmetic is an important problem, since it is required
+The implementation of a relational arithmetics is an important problem, since it is required
 in a number of elaborated relational specifications. For performance reasons, it is 
 preferrable to use binary numbers, not comfy Peano encoding, which makes the problem 
 more complicated. As it is shown in~\cite{WillThesis}, the naive implementation of 
-binary arithmetic is inapproptiate due to multiple problems. 
+binary arithmetics is inapproptiate due to multiple problems. 
 
 Fixing these problems take a lot of efforts: it requires some additional conditions, 
 excess on the first glance, to be introduced in the specification to ensure the non-overlapping 
@@ -62,10 +62,9 @@ some advanced techniques of bounding the sizes of the terms~\cite{KiselyovArithm
 As a result, the implementation is quite complicated and takes time to understand.
 
 At the same time, all these problems are exactly the consequences of the non-commutativity 
-of conjunction. So, as expected, the improved search 
-strategy allows to use refutationally incomplete versions of binary arithmetic relations (for addition, 
-multiplication, comparisons, division with a reminder) without these complicated optimisations and still 
-get the desired behaviour. 
+of conjunction. So, as expected, the improved search makes it possible to stick with
+the naive version (for addition, multiplication, comparisons, division with a reminder)
+without all these complicated optimisations. 
 
 As the brightest example, for the division with reminder, instead of a very complicated recursive definition 
 from~\cite{TRS} (20 lines of code, not including auxiliary functions), one can just right down the 
@@ -93,7 +92,9 @@ following definition
 
 \subsection{Binary trees}
 
-For natural representation of binary trees using two constructors: \lstinline|Leaf| and \lstinline|Node($l$, $r$)| it is easy to construct relation counting number of leaves in it (using addition relation from arithmetic):
+For a natural representation of binary trees using two constructors \lstinline|Leaf| and 
+\lstinline|Node($l$, $r$)| it is easy to implement the relation to count the number of 
+leaves in a tree (using arithmetic relation \lstinline|plus$^o$| for addition):
 
 \begin{lstlisting}
    siz$^o$ $\binds$ $\lambda\;t\;s$ .
@@ -106,21 +107,31 @@ For natural representation of binary trees using two constructors: \lstinline|Le
      )
 \end{lstlisting}
 
-By running this relation ``bacwards'':
+By running this relation backwards
 
 \begin{lstlisting}
    fresh ($q$) (siz$^o$ $q$ $\overline{n}$)
 \end{lstlisting}
 
-\noindent we are able to generate all binary trees with given number of leaves $n$. Improved search strategy ensures termination of this query (as long, as \lstinline|plus$^o$| terminates in both directions), and the number of discovered answers is the number of such trees, so this relational program may be seen as a freaky way of calculation Catalan numbers.
+\noindent it becomes possible to generate all binary trees with given number of leaves $n$. 
+The improved search provides the termination of this query, and the number of discovered 
+answers corresponds to the number of such trees, so this relational program may be seen 
+as (an exotic) way of calculating the Catalan numbers.
 
 \subsection{Interpreters}
 
-Program synthesis with relational interpreters are some of the most useful applications of miniKanren. The construction of relational interpreter for small Scheme-like language is considered 
-in detail in~\cite{Untagged}. This simple interpreter also has some problems with non-commutativity, however. For example, such obviously contradictory queries as
+Program synthesis with relational interpreters is one of the most useful applications of miniKanren. 
+The construction of a relational interpreter for a small Scheme-like language is considered 
+in details in~\cite{Untagged}. However, this simple interpreter also has some problems, caused by 
+the non-commutativity. For example, the following obviously contradictory query
 
 \begin{lstlisting}
    fresh ($e1$ $e2$ $r1$ $r2$) (eval$^o$ (list $e_1$ 3 $e_2$) Nil ($r_1$ 4 $r_2$))
 \end{lstlisting}
 
-\noindent will lead to divergence under coventional search strategy (no simple reordering can fix it). Under improved search strategy conradiction will be found and search will terminate. Relational interpreters used in practice for complex problems~\cite{unified} include lots of optimisations and take significant effort to implement. We hope, that some performance problems with them are caused by non-commutativity and can be fixed automatically by improved search strategy.
+\noindent leads to a divergence under the coventional search (and no simple reordering can fix it). 
+Under the improved search, however, the conradiction is found and  the query terminates with
+no answers. Relational interpreters, used in practice for more complex problems~\cite{unified}, 
+include a lot of optimisations and take significant effort to implement. We hope, that some 
+performance problems with them are caused by the non-commutativity and can be fixed automatically 
+with the improved search.
