@@ -118,7 +118,13 @@ JetBrains Research
 \maketitle
 
 \begin{abstract}
-Abstract goes here
+We describe a search optimization technique for implementation of relational programming language
+miniKanren which makes more queries to converge. Our technique is based on a certain 
+divergence criterion, which we use to force a dynamic reordering of subgoals. We present a formal semantics of
+miniKanren-like language, and prove, that our optimization does not compromise already
+converging programs, thus being a proper improvement. We also present the prototype
+implementation of improved search, and demonstrate its application for a number of
+useful specifications.
 \end{abstract}
 
 \input{introduction.tex}
@@ -191,6 +197,27 @@ Proceedings of the International Conference on Functional Programming, 2017.
 
 \bibitem{WillOnHM}
 William E. Byrd. Personal communications.
+
+\bibitem{Guided}
+Cameron Swords, Daniel P. Friedman. rKanren: Guided Search in miniKanren //
+Proceedings of the 2013 Workshop on Scheme and Functional Programming (Scheme '13). 
+
+\bibitem{AlphaKanren}
+William E. Byrd, Daniel P. Friedman. alphaKanren: A Fresh Name in Nominal Logic Programming //
+Proceedings of the 2007 Workshop on Scheme and Functional Programming (Scheme '07).
+
+\bibitem{2016}
+Jason Hemann, Daniel P. Friedman, William E. Byrd, Matthew Might.
+A Small Embedding of Logic Programming with a Simple Complete Search //
+Proceedings of the 12th Symposium on Dynamic Languages (DLS 2016).
+
+\bibitem{CKanren1}
+Jason Hemann, Daniel P. Friedman. A Framework for Extending microKanren with Constraints //
+Proceedings of the 2015 Workshop on Scheme and Functional Programming (Scheme '15).
+
+\bibitem{Search}
+Oleg Kiselyov, Chung-chieh Shan, Daniel P. Friedman, Amr Sabry. Backtracking, Interleaving, and Terminating Monad Transformers (functional pearl) //
+Proceedings of the 10th ACM SIGPLAN International Conference on Functional Programming (ICFP '05).
 
 \end{thebibliography}
 

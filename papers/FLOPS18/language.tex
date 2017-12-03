@@ -1,6 +1,14 @@
 \section{The Syntax and Semantics of Relational Language}
 \label{language}
 
+In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent this description serves as
+a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs, 
+which deliver a finite set of answers, while in the reality of relational programming the result is represented as an infinite stream, from which any number of answers can be requested, and the request of a non-existing answer can
+lead to a divergence. Our semantics, thus, corresponds to the scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating infinite number
+of answers, from those diverging with no results at all.   
+However, we consider the finite version of the semantics as an important case, which is justified by the evaluation, presented in Section~\ref{evaluation}.
+
+
 \begin{figure}[t]
 $$
 \begin{array}{rcll}
@@ -21,13 +29,6 @@ $$
 \caption{The syntax of source language}
 \label{syntax}
 \end{figure}
-
-In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent this description serves as
-a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs, 
-which deliver a finite set of answers, while in the reality of relational programming the result is represented as an infinite stream, from which any number of answers can be requested, and the request of a non-existing answer can
-lead to a divergence. Our semantics, thus, corresponds to the scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating infinite number
-of answers, from those diverging with no results at all.   
-However, we consider the finite version of the semantics as an important case, which is justified by the evaluation, presented in Section~\ref{evaluation}.
 
 The syntax of our relational language is shown on Fig.~\ref{syntax}. First, we introduce the alphabet of constructors $\meta{C}$, each of which is equipped with a 
 non-negative arity. Then we in a conventional fasion inductively define the set of all terms $\meta{T}(X)$, parameterized by the set of variables $X$. We need this parameterization 
