@@ -13,7 +13,7 @@ the divergence in the case of solution absense does not seem to be a severe prob
 we see shortly, refutational incompleteness leads to many observable negative effects in numerous
 practically important cases. 
 
-We demonstrate the effect of refutational incompleteness on the very simple example. Let us take the
+We demonstrate the effect of refutational incompleteness on a very simple example. Let us take the
 definition of \lstinline{append$^o$} from the previous section and try to evaluate the following query:
 
 \begin{lstlisting}
@@ -32,8 +32,7 @@ and \lstinline|Nil| with $q$ (successfully), which gives us the first (expected)
 
   \begin{itemize} 
      \item in the first one we unify $p$ with \lstinline|Cons ($h$, $t$)| (successfully);
-     \item in the second we encounter a recursive call \lstinline|append$^o$ $t$ $q$ Nil|; since this call is merely a renaming of
-the enclosing one, we repeat from the top and never get any results.
+     \item in the second we encounter a recursive call \lstinline|append$^o$ $t$ $q$ Nil|; since its arguments are merely renamings of the enclosing one, we repeat from the top and never stop.
   \end{itemize} 
 \end{itemize}
 
