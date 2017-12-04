@@ -10,6 +10,7 @@ However, we consider the finite version of the semantics as an important case, w
 
 
 \begin{figure}[t]
+\small
 $$
 \begin{array}{rcll}
 \meta{C}    & = & \{C^k,\dots\}                                        & \;\;\mbox{\emph{(constructors)}}\\
@@ -53,6 +54,7 @@ do not impose such a limitation; extending our approach for the higher-order cas
 \newcommand{\cotrans}[5]{\withenv{#1}{\ctrans{#2}{\mbox{$#3$}}{#4}{#5}}}
  
 \begin{figure}[t]
+\small
 $$
 \cotrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{t_1\equiv t_2}{\emptyset}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \bot}\ruleno{UnifyFail}
 $$
@@ -161,7 +163,7 @@ it binds relational parameters to their values~--- terms over semantic variables
 $t\iota$ the result of substitution of all syntactic variables in $t$ by their interpretations according to $\iota$; we assume $t\iota$ to be defined 
 only when $\iota$ is defined for all variables in $t$. Thus, $t\iota$, if defined, is always an element of $\meta{T}(\meta{W})$.
 
-Then, we borrow some conventional machinery from unification theory~\cite{Unification,UnificationRevisited}. Namely, we define a substitution $\sigma$ to
+Then, we borrow some conventional machinery from unification theory~\cite{Unification}. Namely, we define a substitution $\sigma$ to
 be a partial mapping between semantic variables and semantic terms:
 
 $$
