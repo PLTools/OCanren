@@ -39,13 +39,34 @@ The idea of the divergence test is rather simple: it identifies a recursive call
 than (some) enclosing one. In the Appendix~\ref{appendix} we provide a formal proof, that, indeed,
 this test constitutes a sufficient condition for divergence.
 
-An efficient reordering of the conjuncts also requires a special treatment. First, we need a way to detect 
-a situation, when we give up on current conjunction and proceed to the next enclosing one (if any). 
-Next, we have to represent nested conjunctions in a uniform way: indeed, simply switching any two operands of, for example, 
-\mbox{$(g_1\wedge g_2)\wedge g_3$}, would not allow us to try \mbox{$(g_1\wedge g_3)\wedge g_2$}. Finally,
-it may seem at the first glance, that the number of orderings to try is exponential on the number of conjuncts; we are
-going to show, that this is, fortunately, not the case.
+An efficient reordering of the conjuncts also requires a special treatment. First, we have to represent immediately nested conjunctions in a 
+uniform way: indeed, simply switching any two operands of, for example, \mbox{$(g_1\wedge g_2)\wedge g_3$}, would not 
+allow us to try \mbox{$(g_1\wedge g_3)\wedge g_2$}. Thus, we have to flatten each ``cluster'' of nested conjunctions into a list of conjuncts\mbox{$\bigwedge g_i$}, 
+where none of the goals $g_i$ is a conjunction. Then, it may seem at the first glance, that the number of orderings to try 
+is exponential on the number of conjuncts; we are going to show, that, fortunately, this is not the case. 
 
+Indeed, consider a diverging conjunction \mbox{$g_1\wedge g_2\wedge g_3$}, and assume, that \mbox{$g_1\wedge g_2$} converges. 
+Does it make any sense to switch the first two conjuncts? Obviously, \mbox{$g_2\wedge g_1$} either diverges, or converges with the same 
+result as \mbox{$g_1\wedge g_2$} (up to the renaming of semantic variables). Anyway, switching the first two conjuncts is
+unnecessary. This observation can be easily generalized: if we have a converging prefix $\omega$ in a list of conjuncts $\omega\rho$, making
+any permutations inside $\omega$ is pointless.
+
+Next, suppose we already have a list of conjuncts \mbox{$\omega\dots g_1\dots g_2\dots$}, where $\omega$ is a converging prefix, and
+$g_1$ and $g_2$~--- two goals, which, being placed immediately afer $\omega$, converge (if there are no such
+goals, the whole list, obviously, diverges). Do we need to try both cases ($g_1$ or $g_2$ immediately after $\omega$)? 
+It is rather easy to see, that \mbox{$\omega g_1$} delivers no less information, that \mbox{$\omega$}; since
+$g_2$ converges immedeately after $\omega$, it will converge after \mbox{$\omega g_1$}. Thus, we may apply a greedy approach: each
+time we have a converging prefix of conjuncts (possibly empty), and some tail. We try to put each conjunct from the tail 
+immediately after the prefix. If we find a converging conjunct, we attach it to the prefix and continue; if no, then the list of 
+conjuncts diverges. Thus, we can find a converging order (if any) in a quadratic time.
+
+% (Lemma~\ref{three} from Appendix~\ref{appendix}
+%can be used to justifu this claim). Thus, we do not to try two cases.
+
+
+\begin{comment}
+First, we need a way to detect 
+a situation, when we give up on current conjunction and proceed to the next enclosing one (if any).
 We represent a cluster of nested conjunctions as a state \mbox{$([p_i], n, [s_i])$}, where $[p_i]$, $[s_i]$ are lists of
 non-conjunction goals, $n$~--- some natural number. We call $[p_i]$ a prefix, $[s_i]$~--- a suffix, and $n$~--- a position. 
 Initially, the prefix is empty, $n=0$, and the suffix consists of the list of all conjuncts.
@@ -59,16 +80,6 @@ change the state into \mbox{$[p_i], n+1, [s_{n+1},\dots,s_n=s_1,\dots]$} (in oth
 $s_{n+1}$).
 \item The evaluation diverges without detectiong. Nothing can be done in this case.
 \end{enumerate}
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -96,7 +107,6 @@ proceed to the next enclosing conjunction (if any). Note, in this approach we mo
 according to their dynamic evaluation order, not static scoping. 
 
 
-\begin{comment}
 Now it is sufficient to present a query, which is not refutationally complete w.r.t. to the semantics, 
 but becomes refutationally complete w.r.t. to the improvement. For such query we can take 
 \mbox{\lstinline|fresh ($p\;q$) (append$^o\;p\;q\;$ Nil)|}~--- indeed, from Section~\ref{incompleteness} we
