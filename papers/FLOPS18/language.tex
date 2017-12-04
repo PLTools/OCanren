@@ -31,9 +31,9 @@ $$
 \end{figure}
 
 The syntax of our relational language is shown on Fig.~\ref{syntax}. First, we introduce the alphabet of constructors $\meta{C}$, each of which is equipped with a 
-non-negative arity. Then we in a conventional fasion inductively define the set of all terms $\meta{T}(X)$, parameterized by the set of variables $X$. We need this parameterization 
+non-negative arity. Then we in a conventional fashion inductively define the set of all terms $\meta{T}(X)$, parameterized by the set of variables $X$. We need this parameterization 
 since later we will be dealing with two sorts of variables~--- \emph{syntactic} and \emph{semantic}, and, therefore, two sorts of terms. Next, we choose the set of syntactic variables
-$\meta{V}$ and the set of \emph{relational symbols} $\meta{R}$ with arities, which will be used as names for relational definitions. We also inroduce a shortcut
+$\meta{V}$ and the set of \emph{relational symbols} $\meta{R}$ with arities, which will be used as names for relational definitions. We also introduce a shortcut
 $\meta{T_V}$ for the set of all terms over syntactic variables since it will be used in all other syntactic definitions.
 
 The core syntax category in the language is a \emph{goal}. There are five types of goals: unification of two terms, conjunction and disjunction of two
@@ -188,7 +188,7 @@ in our case).
 
 The inference rules themselves are shown on Fig.~\ref{semantics}. The first two rules handle two possible outcomes of the unification. Note, we use here the most 
 general unifier ($mgu$) of two semantic terms; we assume ``occurs check'' to be incorporated in the unification algorithm. Since the unification goal is built of 
-syntactic terms, we have to interpret them first (by applying $\iota$), and take into accout current substitution $\sigma$.
+syntactic terms, we have to interpret them first (by applying $\iota$), and take into account current substitution $\sigma$.
 
 The rule for the disjunction first interprets the constituents of the disjunction in the same state, and then combines the outcomes.
 % using the multiset union operation ``$\biguplus$''. 
@@ -207,7 +207,7 @@ Then, the terms $t_i$, specified as the arguments of the invocation, are convert
 substitution $\sigma$. Next, the body of the definition is evaluated in the context of \emph{empty} substitution $\epsilon$ and an interpretation, containing nothing
 else, than the bindings for the formal parameters of the definition. This way of handling interpretation models the behavior of call stack in conventional languages
 with no nested functions. Finally, the result substitutions are composed with the original one\footnote{We could use the original
-subsitution instead of the empty one without the need to use composition; however we found the approach we took more proof-friendly, since each relational definition is evaluated
+substitution instead of the empty one without the need to use composition; however we found the approach we took more proof-friendly, since each relational definition is evaluated
 in initially empty substitution.}. 
 
 Given this big-step evaluation relation for goals, we can describe the evaluation for the top-level specification $s=d_1,\dots,d_k;g$. First, we construct the associated environment
@@ -254,7 +254,7 @@ We start from the top-level goal and first apply the rule $\rulename{Fresh}$ (se
 we did not use any semantic variables yet, we allocate the first one ($\sv{0}$), update the interpretation and the set of used semantic variables and continue. The next construct
 is the call for \lstinline|append$^o$|, so we unfold its definition, replace the interpretation of syntactic variables by the bindings for the formal parameters, and 
 evaluate the body w.r.t. the empty substitution (which has no difference from the current one yet). The body of \lstinline|append$^o$| definition is a disjunction, so we
-take its left constituent, which is a conjunction, so we in turn take its left consituent, which is a unification \lstinline|$x\;$ === $\;$Nil|. This unification clearly fails, as
+take its left constituent, which is a conjunction, so we in turn take its left constituent, which is a unification \lstinline|$x\;$ === $\;$Nil|. This unification clearly fails, as
 current interpretation binds $x$ to \lstinline|Cons (A, Nil)|. This completes the whole branch for the first disjunct of \lstinline|append$^o$| with empty result.
 
 The evaluation of the second disjunct is shown on Fig.~\ref{appendo_eval_b}. Its top-level construct is \lstinline|fresh ($h\;t\;ty$)|, so we allocate three successive 
