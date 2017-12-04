@@ -16,17 +16,10 @@ the divergence of the first one is detected. More specifically:
 
 \begin{itemize}
 \item during the search, we keep the track of all conjunctions being performed;
-\item when we detect the divergence, we roll back to the nearest conjunction, switch its
-constituents, and rerun the search from that conjunction.
+\item when we detect the divergence, we roll back to the nearest conjunction, for which 
+we did not tried all orders of constituents yet, switch its constituents, and rerun 
+the search from that conjunction.
 \end{itemize}
-
-We also need to pay a special attention to make it possible to enumerate all orders of all conjuncts in
-compound conjunctions, not only immediate ones; thus, in \mbox{$(g_1\wedge g_2)\wedge g_3$} we should
-be able to try not only \mbox{$(g_1\wedge g_2)\wedge g_3$} and \mbox{$g_3 \wedge(g_1\wedge g_2)$}, but, 
-for example, \mbox{$(g_2\wedge g_1)\wedge g_3$}, etc. Moreover, all orders, tried so far, have to be
-memorized. When we tried out every one, we need to proceed to the next enclosing conjunction (if any).
-Note, in this approach we modify the conjunctions according to their dynamic evaluation order, not static
-scoping. 
 
 The important detail is the divergence test. Of course, due to the fundamental results in computability
 theory, there is no hope to find a \emph{precise} computable test, which constitutes the necessary and 
@@ -34,15 +27,19 @@ sufficient condition of divergence. However, in our case a sufficient condition 
 a sufficient condition identifies a case, when the search, being continued, will lead to an incompleteness 
 (since a divergence in our semantics always means incompleteness). Thus, it is no harm to try some other way. 
 
+\begin{comment}
 We can introduce the following notion to compare two search strategies w.r.t. refutational completeness: 
 we say, that a strategy $B$ is a \emph{refutational improvement} of a strategy $A$, if arbitrary
 query $Q$, refutationally complete w.r.t. $A$, it is also refutationally complete w.r.t. $B$, and there
 is a query $Q^\prime$, which is refutationally incomplete w.r.t. $A$ and refutationally complete
 w.r.t. $B$. 
+\end{comment}
 
-We are going the present now a sufficient test for a divergency, and prove, that our modification of
+\begin{comment}
+We are going the present now a sufficient test for divergency, and prove, that our modification of
 the search constitutes a (limited) refutational improvement for queries, returning only a finite 
 number of answers.
+\end{comment}
 
 Our divergence test is based on the following notion:
 
@@ -56,9 +53,35 @@ The idea of the divergence test is rather simple: it identifies a recursive call
 than (some) enclosing one. In the Appendix~\ref{appendix} we provide a formal proof, that, indeed,
 this test constitutes a sufficient condition for divergence.
 
+We also need to pay a special attention to make it possible to enumerate all orders of all conjuncts in
+compound conjunctions, not only immediate ones; thus, in \mbox{$(g_1\wedge g_2)\wedge g_3$} we should
+be able to try not only \mbox{$(g_1\wedge g_2)\wedge g_3$} and \mbox{$g_3 \wedge(g_1\wedge g_2)$}, but, 
+for example, \mbox{$(g_2\wedge g_1)\wedge g_3$}, etc. It can be easily achieved by flattening all nested
+conjunctions to a \emph{cluster} $\bigwedge g_i$, where none of $g_i$ is a conjunction. 
+
+In may seem at a first glance, that in the worst case an exponential number of conjunct orders have to
+be tried. This is, actually, not true, because we do not need to try different orders in the
+converging prefix of conjuncts. We present the following discipline of reordering:
+
+\begin{itemize}
+\item We associate a natural number $n$ with each cluster of conjuncts; initailly this
+number is $0$. Informally, the non-zero value $k$ says, that we reordered the cluster by
+putting $k$-th conjuncts in the first place.
+\item    
+\end{itemize}
+
+
+
+Moreover, all orders, tried so far, have to be memorized. When we tried out every one, we need to 
+proceed to the next enclosing conjunction (if any). Note, in this approach we modify the conjunctions 
+according to their dynamic evaluation order, not static scoping. 
+
+
+\begin{comment}
 Now it is sufficient to present a query, which is not refutationally complete w.r.t. to the semantics, 
 but becomes refutationally complete w.r.t. to the improvement. For such query we can take 
 \mbox{\lstinline|fresh ($p\;q$) (append$^o\;p\;q\;$ Nil)|}~--- indeed, from Section~\ref{incompleteness} we
 already know, that it diverges. We also remember, that the reason of the divergence is the infinite
 sequence of recursive calls with renamed arguments~--- but this means, that the divergence test is satisfied.
 Finally, switching the recursive call to \lstinline|append$^o$| with the preceding conjunct makes the query converge~--- this is exactly, what the improvement does.
+\end{comment}

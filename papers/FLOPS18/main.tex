@@ -21,6 +21,8 @@
 \usepackage{tabularx}
 \usepackage{ragged2e}
 
+\setlength{\parskip}{-1pt}
+
 \def\transarrow{\xrightarrow}
 \newcommand{\setarrow}[1]{\def\transarrow{#1}}
 
@@ -52,6 +54,7 @@
 \newcommand{\bnd}[2]{{#1}\mkern-9mu\binds\mkern-9mu{#2}}
 
 \newcommand{\meta}[1]{{\cal{#1}}}
+\renewcommand{\emptyset}{\varnothing}
 
 \lstdefinelanguage{ocanren}{
 keywords={fresh, let, in, match, with, when, class, type,
@@ -71,7 +74,7 @@ morecomment=[s]{(*}{*)}
 
 \lstset{
 mathescape=true,
-%basicstyle=\small,
+basicstyle=\small,
 identifierstyle=\ttfamily,
 keywordstyle=\bfseries,
 commentstyle=\scriptsize\rmfamily,
