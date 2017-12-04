@@ -3,13 +3,13 @@
 
 The language, defined in the previous section, is expected to allow defining computable relations in a 
 very concise and declarative form. In particular, it is expected (and desirable), that a relational 
-specification should exibit the same behavior, regardless the order of conjunction/disjunction 
+specification should exhibit the same behavior, regardless the order of conjunction/disjunction 
 constituents. Regretfully, in general this is not true, and one of the most important
-manifestations of this deficience is \emph{refutational incompleteness}.  
+manifestations of this deficiency is \emph{refutational incompleteness}.  
 
 In the context of relational programming, refutational completeness~\cite{WillThesis} is understood as 
-a capability of a program to discover the absence of a solution and stop. At the first glance
-the divergence in the case of solution absense does not seem to be a severe problem. However, as
+a capability of a program to discover the absence of a solution and stop. At the first glance,
+the divergence in the case of solution absence does not seem to be a severe problem. However, as
 we see shortly, refutational incompleteness leads to many observable negative effects in numerous
 practically important cases. 
 
@@ -36,10 +36,10 @@ and \lstinline|Nil| with $q$ (successfully), which gives us the first (expected)
   \end{itemize} 
 \end{itemize}
 
-The problem is, that the semantics of conjunction in fact is not commutative: when the first conjunct diverges and the second fails, the whole
+The problem is, that the semantics of conjunction, in fact, is not commutative: when the first conjunct diverges and the second fails, the whole
 conjunction diverges. We stress, that this is not a deviation of our semantics, but a well-known phenomenon, manifesting itself in all known
 miniKanren implementations. In our example switching two last conjuncts in the definition of \lstinline|append$^o$| solves the problem~---
-now the whole search stops after the unsuccessfull attempt to unify \lstinline|Nil| and \lstinline|Cons ($h$, $ty$)| with no recursive call.
+now the whole search stops after the unsuccessful attempt to unify \lstinline|Nil| and \lstinline|Cons ($h$, $ty$)| with no recursive call.
 This, improved version of \lstinline|append$^o$|, is known to be refutationally complete. In fact, there is a conventional ``rule of thumb''
 for miniKanren programming to place the recursive call as far as possible in a list of conjuncts. 
 
@@ -91,11 +91,9 @@ is that it is obviously recursive and not refutationally complete, and it is bei
 in \emph{both} directions within the body of \lstinline|perm$^o$|. So, \lstinline|perm$^o$| is expected 
 to perform poorly regardless the order of recursive calls in \lstinline|sort$^o$| implementation; it, 
 indeed, does. First, if we request all solutions, both \lstinline|fresh ($q$) (perm$^o$ l $q$)| and \lstinline|fresh ($q$) (perm$^o$ $q$ l)| diverge for arbitrary non-empty list \lstinline|l| regardless the implementation of \lstinline|sort$^o$|; second, even if we request only a first few existing solutions, it does not provide any results in a reasonable time even for very small list lengths (4, 5, etc.). Interesting, that if we interested in all solutions,
-we have to accurately precompute their number in order not to request more, than exists. For some problems
+we have to accurately precompute their number in order not to request more, than exists. For some problems,
 it may be not so simple, as it looks at a first glance (for example, the number of all permutations is
 not a factorial, but a number of permutations with repetitions). Finally, getting the number of solutions can 
 itself be an objective for writing a relational specification (we provide some examples in Section~\ref{evaluation}),
 and without refutational completeness requesting all solutions to calculate their number is out of
-reach. 
-
-
+reach.

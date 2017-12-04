@@ -1,7 +1,7 @@
 \section{Appendix}
 \label{appendix}
 
-In this appendix we present the correctness proof for the divergence criterion.
+In this appendix, we present the correctness proof for the divergence criterion.
 The proof is based on a number of definitions and lemmas.
 
 \begin{definition}
@@ -32,7 +32,7 @@ Note, the root semantic statement \mbox{$\otrans{\Gamma,\bot}{(\epsilon,\,\empty
 The proof is by induction on derivation tree. Note, we need to generalize the statement of the lemma, adding the well-formedness
 condition w.r.t. $\iota$, $\sigma_r$, $\delta_r$ for any $(\sigma_r, \delta_r) \in S$.
 
-The next lemma ensures, that any substitution in the rhs of a semantic statement is a correct refinement of that in the lhs:
+The next lemma ensures, that any substitution in the RHS of a semantic statement is a correct refinement of that in the LHS:
 
 \begin{lemma}
 \label{two}
@@ -55,7 +55,7 @@ The proof is by induction on derivation tree; we as well need to generalize the 
 set of all allocated semantic variables $\delta$ can only grow during the evaluation.
 
 The final lemma formalizes the intuitive considerations, that the evaluation for a more general state cannot fail, if the evaluation 
-for more specific state doesn't fail:
+for the more specific state doesn't fail:
 
 \begin{lemma}
 \label{three}
@@ -78,7 +78,7 @@ tree of the second statement.
 \end{lemma}
 
 The proof is by induction on the derivation tree for the second statement. We need to generalize the statement of the lemma, adding the requirement, that 
-for any substitution $s^\prime_r$ in the rhs of the second statement, there has to be a substitution $s_r$ in the rhs of the first statement,
+for any substitution $s^\prime_r$ in the RHS of the second statement, there has to be a substitution $s_r$ in the RHS of the first statement,
 such that there exists a substitution $\tau_r$, such that for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime_r = \iota(x) \sigma_r \tau_r$}. 
 In the cases of $\textsc{Fresh}$ and $\textsc{Invoke}$ rules, some semantic variables can become non-observable, and we need to define a substitution $\tau_r$ 
 separately for these ``forgotten'' variables and those, which remain observable, using Lemma~\ref{two}.
@@ -113,11 +113,11 @@ $$
 \otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{r^k\,t^\prime_1\dots t^\prime_k}{S^\prime}
 $$
 
-\noindent has greater or equal height, than that for
+\noindent has greater or equal height than that for
 
 $$
 \otrans{\Gamma,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{S}
 $$ 
 
 \noindent which contradicts the theorem condition.~$\Box$
-\end{proof} 
+\end{proof}
