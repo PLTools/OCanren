@@ -9,9 +9,9 @@ visible for the interpreter. Programs in OCanren can be easily converted to resp
 the new syntax.
 
 With this implementation, we became capable to evaluate a number of useful, but refutationally 
-incomplete miniKanren relations, including those considered earlier. In all cases the 
+incomplete miniKanren relations, including those considered earlier. In all cases, the 
 improved search managed to discover the divergence and fix the incompleteness, caused by
-the non-commutativity of conjuction; moreover, the performance of some queries was improved 
+the non-commutativity of conjunction; moreover, the performance of some queries was improved 
 significantly. In the following subsections we consider some interesting cases.
 
 \subsection{Relations on lists}
@@ -22,7 +22,7 @@ relation to be refutationally complete. Specifically for \lstinline|append$^o$|,
 the divergence is discovered and refutational incompleteness is fixed regardless the position of 
 the recursive call.
 
-As a more interesting example we consider the \lstinline|revers$^o$| relation. As we've
+As a more interesting example, we consider the \lstinline|revers$^o$| relation. As we've
 seen, in order for different queries to work it requires different orders of conjuncts 
 to be used in the implementation. Again, the improved search lifts this requirement.
 Even more interesting, that, for example, in the query 
@@ -46,11 +46,11 @@ the number of permutations with repetitions.
 
 \subsection{Binary arithmetics}
 
-The implementation of a relational arithmetics is an important problem, since it is required
+The implementation of a relational arithmetics is an important problem since it is required
 in a number of elaborated relational specifications. For performance reasons, it is 
 preferrable to use binary numbers, not comfy Peano encoding, which makes the problem 
 more complicated. As it is shown in~\cite{WillThesis}, the naive implementation of 
-binary arithmetics is inapproptiate due to multiple problems. 
+binary arithmetics is inappropriate due to multiple problems. 
 
 Fixing these problems take a lot of efforts: it requires some additional conditions, 
 excess on the first glance, to be introduced in the specification to ensure the non-overlapping 
@@ -64,7 +64,7 @@ As a result, the implementation is quite complicated and takes time to understan
 At the same time, all these problems are exactly the consequences of the non-commutativity 
 of conjunction. So, as expected, the improved search makes it possible to stick with
 the naive version (for addition, multiplication, comparisons, division with a reminder)
-without all these complicated optimisations. 
+without all these complicated optimizations. 
 
 As the brightest example, for the division with reminder, instead of a very complicated recursive definition 
 from~\cite{TRS} (20 lines of code, not including auxiliary functions), one can just right down the 
@@ -87,7 +87,7 @@ following definition
    fresh ($x$ $r$) (div$^o$ $x$ $\overline{17}$ $\overline{4}$ $r$)
 \end{lstlisting}
 
-\noindent the search terminates and shows the preformance, comparable with the advanced version 
+\noindent the search terminates and shows the performance, comparable with the advanced version 
 (here $\overline{n}$ denotes a binary representation of the number $n$).
 
 \subsection{Binary trees}
@@ -114,7 +114,7 @@ By running this relation backwards
 \end{lstlisting}
 
 \noindent it becomes possible to generate all binary trees with given number of leaves $n$. 
-The improved search provides the termination of this query, and the number of discovered 
+The improved search provides the termination of this query and the number of discovered 
 answers corresponds to the number of such trees, so this relational program may be seen 
 as (an exotic) way of calculating the Catalan numbers.
 
@@ -129,8 +129,8 @@ the non-commutativity. For example, the following obviously contradictory query
    fresh ($e1$ $e2$ $r1$ $r2$) (eval$^o$ (list $e_1$ 3 $e_2$) Nil ($r_1$ 4 $r_2$))
 \end{lstlisting}
 
-\noindent leads to a divergence under the coventional search (and no simple reordering can fix it). 
-Under the improved search, however, the conradiction is found and  the query terminates with
+\noindent leads to a divergence under the conventional search (and no simple reordering can fix it). 
+Under the improved search, however, the contradiction is found and the query terminates with
 no answers. Relational interpreters, used in practice for more complex problems~\cite{unified}, 
 include a lot of optimisations and take significant effort to implement. We hope, that some 
 performance problems with them are caused by the non-commutativity and can be fixed automatically 

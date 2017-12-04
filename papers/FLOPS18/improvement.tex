@@ -7,7 +7,7 @@ can sometimes improve the results; there is, however, no certain static order,
 beneficial in all cases. Thus, we can make the following observations:
 
 \begin{itemize}
-\item the conjuction to change has to be properly identified;
+\item the conjunction to change has to be properly identified;
 \item the order of conjuncts has to be a subject of a \emph{dynamic} choice.
 \end{itemize}
 
@@ -17,7 +17,7 @@ the divergence of the first one is detected. More specifically:
 \begin{itemize}
 \item during the search, we keep the track of all conjunctions being performed;
 \item when we detect the divergence, we roll back to the nearest conjunction, for which 
-we did not tried all orders of constituents yet, switch its constituents, and rerun 
+we did not try all orders of constituents yet, switch its constituents, and rerun 
 the search from that conjunction.
 \end{itemize}
 
@@ -35,7 +35,7 @@ We say, that a vector of terms $\overline{a^{\phantom{x}}_i}$ is more general, t
 $\overline{a^{\phantom{x}}_i}\succeq\overline{b^{\phantom{x}}_i}$), if there is a substitution $\tau$, such that for $\forall i\;b_i = a_i \tau$.
 \end{definition}
 
-The idea of the divergence test is rather simple: it identifies a recursive call with more general arguments, 
+The idea of the divergence test is rather simple: it identifies a recursive call with more general arguments 
 than (some) enclosing one. In the Appendix~\ref{appendix} we provide a formal proof, that, indeed,
 this test constitutes a sufficient condition for divergence.
 
@@ -52,16 +52,16 @@ unnecessary. This observation can be easily generalized: if we have a converging
 any permutations inside $\omega$ is pointless.
 
 Next, suppose we already have a list of conjuncts \mbox{$\omega\dots g_1\dots g_2\dots$}, where $\omega$ is a converging prefix, and
-$g_1$ and $g_2$~--- two goals, which, being placed immediately afer $\omega$, converge (if there are no such
+$g_1$ and $g_2$~--- two goals, which, being placed immediately after $\omega$, converge (if there are no such
 goals, the whole list, obviously, diverges). Do we need to try both cases ($g_1$ or $g_2$ immediately after $\omega$)? 
 It is rather easy to see, that \mbox{$\omega g_1$} delivers no less information, that \mbox{$\omega$}; since
-$g_2$ converges immedeately after $\omega$, it will converge after \mbox{$\omega g_1$}. Thus, we may apply a greedy approach: each
+$g_2$ converges immediately after $\omega$, it will converge after \mbox{$\omega g_1$}. Thus, we may apply a greedy approach: each
 time we have a converging prefix of conjuncts (possibly empty), and some tail. We try to put each conjunct from the tail 
 immediately after the prefix. If we find a converging conjunct, we attach it to the prefix and continue; if no, then the list of 
 conjuncts diverges. Thus, we can find a converging order (if any) in a quadratic time.
 
 % (Lemma~\ref{three} from Appendix~\ref{appendix}
-%can be used to justifu this claim). Thus, we do not to try two cases.
+%can be used to justify this claim). Thus, we do not to try two cases.
 
 
 \begin{comment}
@@ -94,7 +94,7 @@ be tried. This is, actually, not true, because we do not need to try different o
 converging prefix of conjuncts. We present the following discipline of reordering:
 
 \begin{itemize}
-\item We associate a natural number $n$ with each cluster of conjuncts; initailly this
+\item We associate a natural number $n$ with each cluster of conjuncts; initially this
 number is $0$. Informally, the non-zero value $k$ says, that we reordered the cluster by
 putting $k$-th conjuncts in the first place.
 \item    
@@ -102,7 +102,7 @@ putting $k$-th conjuncts in the first place.
 
 
 
-Moreover, all orders, tried so far, have to be memorized. When we tried out every one, we need to 
+Moreover, all orders tried so far, have to be memorized. When we tried out every one, we need to 
 proceed to the next enclosing conjunction (if any). Note, in this approach we modify the conjunctions 
 according to their dynamic evaluation order, not static scoping. 
 
@@ -110,7 +110,7 @@ according to their dynamic evaluation order, not static scoping.
 Now it is sufficient to present a query, which is not refutationally complete w.r.t. to the semantics, 
 but becomes refutationally complete w.r.t. to the improvement. For such query we can take 
 \mbox{\lstinline|fresh ($p\;q$) (append$^o\;p\;q\;$ Nil)|}~--- indeed, from Section~\ref{incompleteness} we
-already know, that it diverges. We also remember, that the reason of the divergence is the infinite
+already know, that it diverges. We also remember that the reason of the divergence is the infinite
 sequence of recursive calls with renamed arguments~--- but this means, that the divergence test is satisfied.
 Finally, switching the recursive call to \lstinline|append$^o$| with the preceding conjunct makes the query converge~--- this is exactly, what the improvement does.
 \end{comment}

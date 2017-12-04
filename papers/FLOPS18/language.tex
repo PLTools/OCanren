@@ -4,7 +4,7 @@
 In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent this description serves as
 a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs, 
 which deliver a finite set of answers, while in the reality of relational programming the result is represented as an infinite stream, from which any number of answers can be requested, and the request of a non-existing answer can
-lead to a divergence. Our semantics, thus, corresponds to the scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating infinite number
+lead to a divergence. Our semantics, thus, corresponds to the scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating the infinite number 
 of answers, from those diverging with no results at all.   
 However, we consider the finite version of the semantics as an important case, which is justified by the evaluation, presented in Section~\ref{evaluation}.
 
@@ -45,8 +45,8 @@ we assume, that all parameter variables are pairwise distinct. Finally, the top-
 of some relational definitions. 
 
 Note, we define here a language with first-order relations; in particular, we do not allow partial application. As we see later, our approach critically depends
-on recursive call identification, which is a trivial task in first-order case. Some existing frameworks for relational programming~\cite{OCanren,RelConversion}
-do not impose such a limitation; extending our approach for higher-order case is a subject of future research.
+on recursive call identification, which is a trivial task in the first-order case. Some existing frameworks for relational programming~\cite{OCanren,RelConversion}
+do not impose such a limitation; extending our approach for the higher-order case is a subject of future research.
 
 \setarrow{\xRightarrow}
 \newcommand{\otrans}[4]{\withenv{#1}{\trans{#2}{\mbox{$#3$}}{#4}}}
@@ -168,7 +168,7 @@ $$
 \sigma : \meta{W} \to \meta{T}(\meta{W})
 $$
 
-For any substitution $\sigma$ we assume, that the set of all free variables of all terms in the range of $\sigma$ has empty intersection with the
+For any substitution $\sigma$ we assume, that the set of all free variables of all terms in the range of $\sigma$ has an empty intersection with the
 domain of $\sigma$, and we denote by $\sigma\circ\theta$ the composition of substitutions, defined in a usual way. For arbitrary $t\in\meta{T}(\meta{W})$ and
 a substitution $\sigma$ we denote the result of application of $\sigma$ to $t$ as $t\sigma$.
 
@@ -178,7 +178,7 @@ $$
 \otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
 $$
 
-\noindent where $\Gamma$ is as environment, which binds relational symbols to their definitions, $\iota$~--- an interpretation, $\sigma$~--- a substitution, 
+\noindent where $\Gamma$ is an environment, which binds relational symbols to their definitions, $\iota$~--- an interpretation, $\sigma$~--- a substitution, 
 $\delta$~--- a set of allocated semantic variables, $g$~--- a goal, and $S$~--- a set of pairs $(\sigma^\prime,\,\delta^\prime)$, where $\sigma^\prime$ and
 $\delta^\prime$~--- a substitution and a set of allocated semantic variables respectively. Informally speaking, we interpret a goal $g$ in the context of
 relational definitions $\Gamma$, current interpretation $\iota$, current substitution $\sigma$ and current set of allocated semantic variables $\sigma$. As a 
@@ -190,14 +190,14 @@ The inference rules themselves are shown on Fig.~\ref{semantics}. The first two 
 general unifier ($mgu$) of two semantic terms; we assume ``occurs check'' to be incorporated in the unification algorithm. Since the unification goal is built of 
 syntactic terms, we have to interpret them first (by applying $\iota$), and take into account current substitution $\sigma$.
 
-The rule for the disjunction first interprets the constituents of the disjunction in the same state, and then combines the outcomes.
+The rule for the disjunction first interprets the constituents of the disjunction in the same state and then combines the outcomes.
 % using the multiset union operation ``$\biguplus$''. 
 
 The rule for the conjunction threads the execution of its subgoals in a left-to-right successive manner: first the
 left conjunct is evaluated, providing a set $\{(\sigma_i,\,\delta_i)\}$. Then the second conjunct is evaluated for each element of the set, and the
 results are eventually combined. Note, the evaluation of both conjuncts is performed under the \emph{same} interpretation $\iota$ since both of them occur in the 
 \emph{same} bounding context. The substitution and the set of allocated semantic variables, on the other hand, are inherited from left to right since the evaluation 
-of the right conjunct has to be performed in context of the results, provided by the left one. 
+of the right conjunct has to be performed in the context of the results, provided by the left one. 
 
 The rule for the \lstinline|fresh| construct allocates arbitrary semantic variable, not taken before, and evaluates the unique subgoal in the updated interpretation, which
 associates the syntactic variable, bound in this \lstinline|fresh|, with taken semantic one.
@@ -207,7 +207,7 @@ Then, the terms $t_i$, specified as the arguments of the invocation, are convert
 substitution $\sigma$. Next, the body of the definition is evaluated in the context of \emph{empty} substitution $\epsilon$ and an interpretation, containing nothing
 else, than the bindings for the formal parameters of the definition. This way of handling interpretation models the behavior of call stack in conventional languages
 with no nested functions. Finally, the result substitutions are composed with the original one\footnote{We could use the original
-substitution instead of the empty one without the need to use composition; however we found the approach we took more proof-friendly, since each relational definition is evaluated
+substitution instead of the empty one without the need to use composition; however we found the approach we took more proof-friendly since each relational definition is evaluated
 in initially empty substitution.}. 
 
 Given this big-step evaluation relation for goals, we can describe the evaluation for the top-level specification $s=d_1,\dots,d_k;g$. First, we construct the associated environment
@@ -223,8 +223,8 @@ Finally, we choose all substitutions from $S_s$.
 Our semantics is almost deterministic~--- the only source of ambiguity is the rule for the \lstinline|fresh| construct, where we choose a new semantic variable
 arbitrarily. If we fix the order, in which semantic variables are allocated, the semantics becomes completely deterministic. It is also easy to see, that if each
 relational symbol is unambiguously defined in the specification and called with a proper number of parameters, and all goals in all relational definitions and the 
-top-level goal are closed (i.e. each variable occurrence is bound either in some \lstinline|fresh| construct or in a parameter list of enclosing definition), 
-then during the evaluation all syntactic variables are properly interpreted~--- in other words, the execution can not break down halfway through and either diverges or 
+top-level goal are closed (i.e. each variable occurrence is bound either in some \lstinline|fresh| constructor in a parameter list of enclosing definition), 
+then during the evaluation all syntactic variables are properly interpreted~--- in other words, the execution cannot break down halfway through and either diverges or 
 finishes with some results.
 
 We illustrate the evaluation, determined by this semantics, by the canonical example for relational programming~--- list concatenation relation \lstinline|append$^o$| 
@@ -277,7 +277,3 @@ interpret the last conjunct of the second disjunct of \lstinline|append$^o$|~---
 final substitution \mbox{$[\bnd{\sv{1}}{\lstinline|A|},\,\bnd{\sv{2}}{\lstinline|Nil|},\,\bnd{\sv{3}}{\lstinline|Nil|},\,\bnd{\sv{0}}{\lstinline|Cons (A, Nil)|}]$}. Now, we
 have to remember, that the topmost bound variable of the top-level goal is $q$, and corresponding semantic variable is $\sv{0}$. Thus, the answer is 
 \mbox{$q\;=\;\lstinline|Cons (A, Nil)|$}, which is rather expected.
-
-
-
-

@@ -20,7 +20,7 @@ are capable of providing programs, delivering specified results~\cite{Untagged}.
 
 Despite being quite simple and easy to use by the design, in implementation \miniKanren introduces some subtleties. Under the hood, \miniKanren 
 uses complete interleaving search~\cite{Search}. This search is guaranteed to find all existing solutions; however, it can diverge, when no 
-solution exists. In reality this amounts to a divergence in a number of important cases~--- for example, when a program is asked to 
+solution exists. In reality, this amounts to a divergence in a number of important cases~--- for example, when a program is asked to 
 return \emph{all} existing solutions, or when the number of requested solutions exceeds the number of existing ones. Often, for a 
 concrete query, it is possible to refactor the specification to avoid the divergence, but this means, that the specification has to be adjusted for every 
 execution ``direction'' of interest, which to some extent compromises the idea of fully declarative relational programming. 
