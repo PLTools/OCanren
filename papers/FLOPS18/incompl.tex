@@ -8,7 +8,7 @@ constituents. Regretfully, in general this is not true, and one of the most impo
 manifestations of this deficiency is \emph{refutational incompleteness}.  
 
 In the context of relational programming, refutational completeness~\cite{WillThesis} is understood as 
-a capability of a program to discover the absence of a solution and stop. At the first glance,
+a capability of a program to discover the absence of solutions and stop. At the first glance,
 the divergence in the case of solution absence does not seem to be a severe problem. However, as
 we see shortly, refutational incompleteness leads to many observable negative effects in numerous
 practically important cases. 
@@ -38,7 +38,7 @@ and \lstinline|Nil| with $q$ (successfully), which gives us the first (expected)
 
 The problem is, that the semantics of conjunction, in fact, is not commutative: when the first conjunct diverges and the second fails, the whole
 conjunction diverges. We stress, that this is not a deviation of our semantics, but a well-known phenomenon, manifesting itself in all known
-miniKanren implementations. In our example switching two last conjuncts in the definition of \lstinline|append$^o$| solves the problem~---
+miniKanren implementations. In our example, switching two last conjuncts in the definition of \lstinline|append$^o$| solves the problem~---
 now the whole search stops after the unsuccessful attempt to unify \lstinline|Nil| and \lstinline|Cons ($h$, $ty$)| with no recursive call.
 This, improved version of \lstinline|append$^o$|, is known to be refutationally complete. In fact, there is a conventional ``rule of thumb''
 for miniKanren programming to place the recursive call as far as possible in a list of conjuncts. 

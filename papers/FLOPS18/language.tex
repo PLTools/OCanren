@@ -41,8 +41,8 @@ The core syntax category in the language is a \emph{goal}. There are five types 
 goals, fresh variable introduction and a call of some relational definition. We stipulate, that the calls of relational definitions respect their arities; we 
 will also use a shortcut form \lstinline|fresh ($x$ $y$ $z$ ...) ...| instead of \lstinline|fresh($x$) (fresh ($y$) (fresh ($z$) ...)| where needed.
 
-Next, \emph{relational definition} $\meta{D}$ binds some relational symbol to a parameterized goal; the number of parameters corresponds to the arity of the symbol, and
-we assume, that all parameter variables are pairwise distinct. Finally, the top-level syntax category is \emph{specification} $\meta{S}$~--- a goal in the context 
+Next, a \emph{relational definition} $\meta{D}$ binds some relational symbol to a parameterized goal; the number of parameters corresponds to the arity of the symbol, and
+we assume, that all parameter variables are pairwise distinct. Finally, the top-level syntax category is a \emph{specification} $\meta{S}$~--- a goal in the context 
 of some relational definitions. 
 
 Note, we define here a language with first-order relations; in particular, we do not allow partial application. As we see later, our approach critically depends
@@ -225,11 +225,11 @@ Finally, we choose all substitutions from $S_s$.
 Our semantics is almost deterministic~--- the only source of ambiguity is the rule for the \lstinline|fresh| construct, where we choose a new semantic variable
 arbitrarily. If we fix the order, in which semantic variables are allocated, the semantics becomes completely deterministic. It is also easy to see, that if each
 relational symbol is unambiguously defined in the specification and called with a proper number of parameters, and all goals in all relational definitions and the 
-top-level goal are closed (i.e. each variable occurrence is bound either in some \lstinline|fresh| constructor in a parameter list of enclosing definition), 
+top-level goal are closed (i.e. each variable occurrence is bound either in some \lstinline|fresh| construct or in a parameter list of enclosing definition), 
 then during the evaluation all syntactic variables are properly interpreted~--- in other words, the execution cannot break down halfway through and either diverges or 
 finishes with some results.
 
-We illustrate the evaluation, determined by this semantics, by the canonical example for relational programming~--- list concatenation relation \lstinline|append$^o$| 
+We illustrate the evaluation, determined by this semantics, by a canonical example for relational programming~--- list concatenation relation \lstinline|append$^o$| 
 (we respect here the convention to add the ``$^o$'' suffix to all names of relational entities):
 
 \begin{lstlisting}  
@@ -244,7 +244,7 @@ We illustrate the evaluation, determined by this semantics, by the canonical exa
 \end{lstlisting}
 
 For the simplicity we omitted the arities of constructors \lstinline|A|, \lstinline|Cons|, \lstinline|Nil| and relational symbol \lstinline|append$^o$|. Since we require the 
-top-level goal to be closed, from now on we conventionalize the use of the top-level \lstinline|fresh| construct as a binder for the variables whose values we are 
+top-level goal to be closed, from now on we conventionalize the use of the top-level \lstinline|fresh| construct as a binder for the variables, whose values we are 
 interested in (in this particular example $q$).
 
 The evaluation is illustrated on Fig.~\ref{appendo_eval}; here we use numbers in bold font to denote semantic variables. For the sake of brevity and in order to
@@ -267,7 +267,7 @@ substitution \mbox{$[\bnd{\sv{1}}{\lstinline{A}},\,\bnd{\sv{2}}{\lstinline|Nil|}
 
 \FloatBarrier
 The first one is a recursive call to \lstinline|append$^o$|. We evaluate the actual parameters~--- $t$, $y$ and $ty$~--- in current interpretation and substitution, 
-obtaining \lstinline|Nil|, \lstinline|Nil| and $\sv{3}$ respectively, update the interpretation to bind formal parameters to these values, and recurse to the body with
+obtaining \lstinline|Nil|, \lstinline|Nil| and $\sv{3}$ respectively, replace the interpretation to bind formal parameters to these values, and recurse to the body with
 empty current substitution. Again, we have the disjunction, and the first disjunct is a conjunction \mbox{\lstinline|($x\;$ === $\;$Nil) $\wedge$ ($xy\;$ === $\;y$)|}.
 Now \mbox{\lstinline|$x\;$ === $\;$Nil|} succeeds, as $x$ is already bound to \lstinline|Nil| by the interpretation, and \mbox{\lstinline|$xy\;$ === $\;y$|} succeeds
 as well, providing a new substitution \mbox{$[\bnd{\sv{3}}{\lstinline|Nil|}]$}. We omit the detailed evaluation of the second top-level disjunct of \lstinline|append$^o$| since
