@@ -5,7 +5,7 @@ This section describes a top-level framework for our implementation. Even though
 nothing more than a reiteration of the original implementation~\cite{MicroKanren, CKanren}
 in OCaml, we still need some notions to be properly established.
 
-The search itself is implemented using a backtracking lazy stream monad:
+The search itself is implemented using a backtracking lazy stream monad\cite{KiselyovBacktracking}:
 
 \begin{lstlisting}
    type $\alpha$ stream
@@ -32,8 +32,16 @@ to an \emph{environment}, which contains some supplementary information (in part
 correctly allocate fresh variables), type \lstinline{subst} describes a substitution, which keeps current bindings
 for some logical variables, and, finally, type \lstinline{constraints} represents disequality constraints,
 which have to be respected. In the simplest case \lstinline{env} is just a counter for the number of the next free
-variable, \lstinline{subst} is a map-like structure and \lstinline{constraints} is a list of substitutions. In our
-case, the environment contains some extra information to make it possible to identify variables in constant time.
+variable, \lstinline{subst} is a map-like structure and \lstinline{constraints} is a list of substitutions.
+
+In our case, the environment contains some extra information to make it possible to identify variables
+in a constant time. This check is not needed in faster-miniKanren or any other untyped approach to implement
+relational DSL. In case of \textit{Ocanren} it is dangerous to allow reification of a logic variable
+(attributed by a type one the first state) in the context of an another state where it is attributed by another type.
+Cases like this one can trigger undefined behavior. In the current implementation of logical variables created in the foreign
+state are not treated as logic variables. This restriction is difficult to express in types, so the check was moved
+from compile-time to runtime. This design decision is unfortunate, however this check doesn't affect perfomance in
+any significant way and we don't know any useful program where such a mistake can happen.
 
 The next cornerstone element is the \emph{goal} type, which is considered as a transformer of a state into
 a lazy stream of states:
