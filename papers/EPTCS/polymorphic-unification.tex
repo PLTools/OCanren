@@ -57,7 +57,7 @@ $$
 \end{comment}
 
 In this formulation we do not consider any structure over the set of types besides type equality, and we assume all terms are explicitly
-attributed by their types at runtime. We employ this property to implement a unification algorithm in regular OCaml, using some
+attributed to their types at runtime. We employ this property to implement a unification algorithm in regular OCaml, using some
 representation for terms and types:
 
 \begin{lstlisting}[mathescape=true]
@@ -97,40 +97,40 @@ The following snippet presents the implementation:
 We remind the reader that all superscripts correspond to type attributes, which we consider here as
 parts of values being manipulated. For example, line 1 means that we apply \lstinline{unify}
 to terms $t_1$ and $t_2$, and expect their types to be equal $\tau$. We assume that
-at the top level unification is always applied to some terms of the same type, and that any
+at the top level unification is always applied to some terms of the same type and that any
 substitution can only be acquired from the empty one by a sequence of unifications.
 
 We are going to show that under these assumptions all type attributes are superfluous~--- they
 do not affect the execution of \lstinline{unify} and can be removed. Note that the only place where we
-were incapable of providing an explicit type attribute was in the line 4, where the result of
+were incapable of providing an explicit type attribute was in line 4, where the result of
 substitution application was returned. However, we can prove by induction that any substitution
 respects the following property: if a substitution $s$ is defined for a variable $x^\tau$,
 then $s\;\;x^\tau$ is attributed with the type $\tau$ (and, consequently, \lstinline{walk $s$ $t^\tau$} always
 returns a term of type $\tau$).
 
 Indeed, this property vacuously holds for the empty substitution. Let $s$ be some substitution, for which the
-property holds. In the line 11 we return an unchanged substitution; in line 10 we perform two calls~---
+property holds. In the 11 we return an unchanged substitution; in line 10 we perform two calls~---
 \lstinline{walk $s$ $t_1^\tau$} and \lstinline{walk $s$ $t_2^\tau$} and match their results. However,
-by our induction hypothesis these results are again attributed by the type $\tau$, which justifies the
+by our induction hypothesis these results are again attributed to the type $\tau$, which justifies the
 pattern matching. In line 11 we return the substitution unchanged, in lines 12 and 13 we extend the
-existing substitution, but preserve the property of interest. Finally, in line 15 we chain a few
+existing substitution but preserve the property of interest. Finally, in line 15 we chain a few
 applications of \lstinline{unify}; note that, again, all these calls are performed for terms of equal
 types, starting from a substitution possessing the property of interest. A simple induction on the
 chain length completes the proof.
 
 So, type attributes are inessential~--- they are never analyzed and never restrict pattern matching; hence,
-they can be erased completely. 
-We can notice now that for the representation of terms we can use OCaml's native runtime representation. 
-It can not be done, however, using regular OCaml~--- we have to utilize the low-level, unsafe interface \lstinline{Obj}. 
+they can be erased completely.
+We can notice now that for the representation of terms we can use OCaml's native runtime representation.
+It can not be done, however, using regular OCaml~--- we have to utilize the low-level, unsafe interface \lstinline{Obj}.
 Note also, we need some way to identify the occurrences of logical variables inside the terms (in the original \miniKanren
-implementation the ambiguity between variable and non-variable datum representation is resolved by a convention~--- a luxury 
-we cannot afford).  We postpone the discussion of this subject until the next section.
+implementation the ambiguity between variable and non-variable datum representation is resolved by a convention~--- a luxury
+we cannot afford).  We postpone the discussion on this subject until the next section.
 
 
 %the correctness our of implementation is based on
 %the following convention about logical variables: the representation of a logical variable $x^\tau$ must
 %correspond to a representation of some value of type $\tau$. This, in turn, makes it somewhat problematic
-%to detect a variable occurrence in a term. We postpone the discussion of this subject until Section~\ref{sec:injection}.
+%to detect a variable occurrence in a term. We postpone the discussion on this subject until Section~\ref{sec:injection}.
 
 We call our implementation \emph{polymorphic}, since at the top level it is defined as
 
@@ -139,6 +139,6 @@ We call our implementation \emph{polymorphic}, since at the top level it is defi
 \end{lstlisting}
 
 The type of substitution is not polymorphic, which means that the compiler completely loses track
-of types for values stored in a substitution. These types are recovered later during the reification-of-answers phase (see Section~\ref{sec:reification}).
+of types of values stored in a substitution. These types are recovered later during the reification-of-answers phase (see Section~\ref{sec:reification}).
 Outside the unification the compiler maintains typing, which means that all terms, subterms, and variables agree in their types
 in all contexts.

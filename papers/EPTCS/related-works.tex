@@ -1,45 +1,45 @@
 \section{Related Works}
 \label{sec:relworks}
 
-There is a predictable glitch in implementing \miniKanren for a strongly typed language. 
-Designed in the metaprogramming-friendly and dynamically typed realm of Scheme/Racket, the original 
-\miniKanren implementation pays very little attention to what has a significant importance in (specifically) 
-ML or Haskell. In particular, one of the capstone constructs of \miniKanren~--- unification~--- has to work for 
-different data structures, which may have types different beyond parametricity. 
+There is a predictable glitch in implementing \miniKanren for a strongly typed language.
+Designed in the metaprogramming-friendly and dynamically typed realm of Scheme/Racket, the original
+\miniKanren implementation pays very little attention to what has a significant importance in (specifically)
+ML or Haskell. In particular, one of the capstone constructs of \miniKanren~--- unification~--- has to work for
+different data structures, which may have types different beyond parametricity.
 
 There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
 provide unification for some concrete type, rich enough to represent any reasonable data structures.
 Some Haskell \miniKanren libraries\footnote{\url{https://github.com/JaimieMurdock/HK}, \url{https://github.com/rntz/ukanren}}
-as well as the previous OCaml implementation\footnote{\url{https://github.com/lightyang/minikanren-ocaml}} take this approach. 
+as well as the previous OCaml implementation\footnote{\url{https://github.com/lightyang/minikanren-ocaml}} take this approach.
 As a result, the original implementation can be retold with all its elegance; the relational specifications, however,
 become weakly typed. The similar approach was taken in early works on embedding Prolog into Haskell~\cite{PrologInHaskell}.
 
-Another approach is to utilize the \emph{ad hoc} polymorphism and provide a type-specific unification for each ``interesting'' type. 
-Some \miniKanren implementations, such as Molog\footnote{\url{https://github.com/acfoltzer/Molog}} and 
-MiniKanrenT\footnote{\url{https://github.com/jvranish/MiniKanrenT}}, both for Haskell, can be mentioned as examples. 
-While preserving strong typing, this approach requires a lot of ``boilerplate'' 
+Another approach is to utilize the \emph{ad hoc} polymorphism and provide a type-specific unification for each ``interesting'' type.
+Some \miniKanren implementations, such as Molog\footnote{\url{https://github.com/acfoltzer/Molog}} and
+MiniKanrenT\footnote{\url{https://github.com/jvranish/MiniKanrenT}}, both for Haskell, can be mentioned as examples.
+While preserving strong typing, this approach requires a lot of ``boilerplate''
 code to be written, so some automation, for example, using Template Haskell\footnote{\url{https://wiki.haskell.org/Template_Haskell}},
-is desirable. In~\cite{TypedLogicalVariables} a separate type class was introduced to both perform the unification 
+is desirable. In~\cite{TypedLogicalVariables} a separate type class was introduced to both perform the unification
 and detect free logical variables in an end-user data structures. The requirement for an end user to provide a way to represent
 logical variables in custom data structures looks a bit obtrusive for us since these logical variables would require a proper
-handling in the rest of the code outside the logical programming subsystem. 
+handling in the rest of the code outside the logical programming subsystem.
 
 There is, actually, another potential approach, but we do not know if anybody has tried
-it: to implement unification for a generic representation of types as sum-of-products and fixpoints of 
+it: to implement unification for a generic representation of types as sum-of-products and fixpoints of
 functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any types for which a representation
 is provided. We assume that implementing this representation would require less boilerplate code to be written.
 
 As follows from this exposition, a typed embedding of \miniKanren in OCaml can be done with
-a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a 
+a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are a
 number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
-for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power to Haskell 
+for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power to Haskell
 type classes, and even though sometimes the object-oriented layer of the language can be used to mimic
-desirable behavior, the result as a rule is far from satisfactory. Existing proposals (for example, 
+desirable behavior, the result, as a rule, is far from satisfactory. Existing proposals (for example,
 modular implicits~\cite{Implicits}) require patching the compiler, which we tend to avoid.
-The approach we take here is to use a purely \emph{ad hoc} approach for implementing the unification, since the features 
+The approach we take here is to use a purely \emph{ad hoc} approach for implementing the unification, since the features
 which would provide a less \emph{ad hoc} solution are not yet well integrated into the language. To deal
-with user-defined types in the relational subsystem we propose to use their logical representations, which free an end user
-from the burden to maintain logical variables, and we use generic programming to build conversions from and to logical 
+with user-defined types in the relational subsystem, we propose to use their logical representations, which free an end user
+from the burden to maintain logical variables, and we use generic programming to build conversions from and to logical
 representations almost effortlessly.
 
 

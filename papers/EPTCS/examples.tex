@@ -1,10 +1,10 @@
 \section{Examples}
 \label{sec:examples}
 
-In this section we present some examples of relational specification, written with the aid of our library.
+In this section we present some examples of a relational specification, written with the aid of our library.
 Besides \miniKanren combinators themselves, our implementation contains two syntax extensions~--- one
 for \lstinline{fresh} construct and another for \emph{inverse-$\eta$-delay}~\cite{MicroKanren}, which is
-sometimes necessary to delay recursive calls in order to prevent infinite looping. In addition we included a
+sometimes necessary to delay recursive calls in order to prevent infinite looping. In addition, we included a
 small relational library of data structures like lists, numbers, booleans, etc. This library is written
 completely on the user level using techniques described in Section~\ref{sec:injection} with no utilization
 of any unsafe features. The examples given below illustrate the usage of all these elements as well.
@@ -54,7 +54,7 @@ believe, would look too foreign here.
 \subsection{Relational Sorting and Permutations}
 
 For the next example we take list sorting; specifically, we present a sorting for lists of natural numbers
-in Peano form since our library already contains built-in support for them. However our example can be
+in Peano form since our library already contains built-in support for them. However, our example can be
 easily extended for arbitrary (but linearly ordered) types.
 
 List sorting can be implemented in \miniKanren in a variety of ways~--- virtually any existing algorithm can
@@ -137,7 +137,7 @@ would result in an infinite search for non-existing answers.
 
 \subsection{Type Inference for STLC}
 
-Our final example is a type inferencer for Simply Typed Lambda Calculus~\cite{Lambda}. The problem and
+Our final example is a type inference for Simply Typed Lambda Calculus~\cite{Lambda}. The problem and
 solution themselves are rather textbook examples again~\cite{TRS, WillThesis}; however, with this example
 we show once again the utilization of generic programming techniques we described in Section~\ref{sec:injection}.
 As a supplementary generic programming library here we used object-oriented generic transformers\footnote{\url{https://github.com/dboulytchev/GT}};
