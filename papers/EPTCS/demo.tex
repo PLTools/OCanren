@@ -1,22 +1,22 @@
 \section{\miniKanren~--- a Short Presentation}
 \label{sec:demo}
 
-In this section we briefly describe \miniKanren in its original form, using a canonical example. 
-\miniKanren is organized as a set of combinators and macros for Scheme/Racket, designated to describe 
-a search for the solution of a certain \emph{goal}. There are four domain-specific constructs 
+In this section we briefly describe \miniKanren in its original form, using a canonical example.
+\miniKanren is organized as a set of combinators and macros for Scheme/Racket, designated to describe
+a search for the solution of a certain \emph{goal}. There are four domain-specific constructs
 to build \emph{goals}:
 
 \begin{itemize}
 \item Syntactic unification~\cite{Unification} in the form \lstinline[language=scheme]{(== $t_1$ $t_2$)}, where $t_1$, $t_2$ are
 some \emph{terms}; unification establishes a syntactic basis for all other goals. If there is a unifier for
 two given terms, the goal is considered satisfied, a most general unifier is kept as a partial solution, and the execution
-of current branch continues. Otherwise the current branch backtracks.
+of current branch continues. Otherwise, the current branch backtracks.
 
 \item Disequality constraint~\cite{CKanren} in the form \lstinline[language=scheme]{($\not\equiv$ $t_1$ $t_2$)}, where
 $t_1$, $t_2$ are some terms; a disequality constraint prevents all branches (starting from the current), in which the
 specified terms are equal (w.r.t. the search state), from being considered.
 
-\item Conditional construct in the form 
+\item Conditional construct in the form
 
 \begin{lstlisting}[language=scheme]
    (conde
@@ -28,7 +28,7 @@ specified terms are equal (w.r.t. the search state), from being considered.
 \end{lstlisting}
 
 where each $g^i_j$ is a goal. A \lstinline{conde} goal considers each collection of subgoals, surrounded by square brackets, as
-implicit conjunction (so \lstinline[language=scheme]{[$g^i_1\;\;g^i_2\;\;\dots\;\;g^i_{k_i}$] } is considered as a 
+implicit conjunction (so \lstinline[language=scheme]{[$g^i_1\;\;g^i_2\;\;\dots\;\;g^i_{k_i}$] } is considered as a
 conjunction of all $g^i_j$) and tries to satisfy each of them independently~--- in other words, operates on them
 as a disjunction.
 
@@ -48,12 +48,12 @@ tries to satisfy the conjunction of all subgoals $g_1\;\;g_2\;\;\dots\;\;g_n$ (t
 introduced fresh variables).
 \end{itemize}
 
-As an example consider a list concatenation relation; by a well-established tradition, the names 
-of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$}: 
+As an example consider a list concatenation relation; by a well-established tradition, the names
+of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$}:
 
 \begin{lstlisting}[mathescape=true,language=scheme,numbers=left,numberstyle=\small,stepnumber=1,numbersep=-5pt]
-   (define (append$^o$ x y xy) 
-      (conde 
+   (define (append$^o$ x y xy)
+      (conde
          [(== '() x) (== y xy)]
          [(fresh (h t ty)
             (== `(,h . ,t) x)
@@ -61,10 +61,10 @@ of relational objects are superscripted by ``$^o$'', hence \lstinline{append$^o$
             (append$^o$ t y ty))]))
 \end{lstlisting}
 
-We interpret the relation ``\lstinline{append$^o$ x y xy}'' as ``the concatenation of \lstinline{x} and \lstinline{y} 
-equals \lstinline{xy}''. Indeed, if the list \lstinline{x} is empty, then (regardless the content of \lstinline{y}) in order for the relation to hold 
-the value for \lstinline{xy} should by equal to that of \lstinline{y}~--- hence line 3. Otherwise, \lstinline{x} can be decomposed into the head 
-\lstinline{h} and the tail \lstinline{t}~--- so we need some fresh variables. We also need the additional variable \lstinline{ty} to designate the list 
+We interpret the relation ``\lstinline{append$^o$ x y xy}'' as ``the concatenation of \lstinline{x} and \lstinline{y}
+equals \lstinline{xy}''. Indeed, if the list \lstinline{x} is empty, then (regardless the content of \lstinline{y}) in order for the relation to hold
+the value for \lstinline{xy} should by equal to that of \lstinline{y}~--- hence line 3. Otherwise, \lstinline{x} can be decomposed into the head
+\lstinline{h} and the tail \lstinline{t}~--- so we need some fresh variables. We also need the additional variable \lstinline{ty} to designate the list
 that is in the relation \lstinline{append$^o$} with \lstinline{t} and \lstinline{y}. Trivial relational reasonings complete the implementation (lines 5-7).
 
 A goal, built with the aid of the aforementioned constructs, can be run by the following primitive:
@@ -74,15 +74,15 @@ A goal, built with the aid of the aforementioned constructs, can be run by the f
 \end{lstlisting}
 
 Here $n$ is the number of requested answers (or ``*'' for all answers), $q_i$ are fresh query variables, and $G$ is a goal, which can
-contain these variables. 
+contain these variables.
 
-The \lstinline{run} construct initiates the search for answers for a given goal and returns a (finite or infinite) list 
+The \lstinline{run} construct initiates the search for answers for a given goal and returns a (finite or infinite) list
 of answers~--- the bindings for query variables, which represent individual solutions for that query. For example,
 
 \begin{lstlisting}[mathescape=true,language=scheme]
-   run 1 (q) (append$^o$ '(1 2) '(3 4) q) 
+   run 1 (q) (append$^o$ '(1 2) '(3 4) q)
 \end{lstlisting}
 
 \noindent returns a list \lstinline{((1 2 3 4))}, which constitutes the answer for query variable $q$. The process of constructing
-the answers from internal data structures of miniKanren interpreter is called \emph{reification}~\cite{WillThesis}. 
+the answers from internal data structures of miniKanren interpreter is called \emph{reification}~\cite{WillThesis}.
 

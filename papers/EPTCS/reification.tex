@@ -2,11 +2,11 @@
 \label{sec:reification}
 
 In Section~\ref{sec:goals} we presented a top-level function \lstinline{run}, which
-runs a goal and returns a stream of states. To acquire answers for the query, 
+runs a goal and returns a stream of states. To acquire answers to the query,
 represented by that goal, its free variables have to be reified in these states, and
-we described the reification primitives in Section~\ref{sec:injection}. However, 
+we described the reification primitives in Section~\ref{sec:injection}. However,
 the states keep answers in an untyped form, and the types of answers are
-recovered solely on the basis of the types of variables being reified. So, the 
+recovered solely on the basis of the types of variables being reified. So, the
 type safety of the reification critically depends on the requirement to
 reify each variable only in those states, which are descendants (w.r.t. the search tree)
 of the state, in which that variable was created. In this section we describe a set of
@@ -65,6 +65,6 @@ There are a few predefined numerals for one, two, etc. arguments (called, tradit
 can be applied to existing numeral to increment the number of expected arguments. The
 implementation technique generally follows~\cite{Unparsing, DoWeNeed}.
 
-Thus, the search and reification are tightly coupled; it is simply impossible to perform the reification 
+Thus, the search and reification are tightly coupled; it is simply impossible to perform the reification
 for arbitrarily-taken state and variable. This solution both guarantees the type safety and frees an end
 user from the necessity to call reification primitives manually.

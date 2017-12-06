@@ -33,7 +33,7 @@ correctly allocate fresh variables), type \lstinline{subst} describes a substitu
 for some logical variables, and, finally, type \lstinline{constraints} represents disequality constraints,
 which have to be respected. In the simplest case \lstinline{env} is just a counter for the number of the next free
 variable, \lstinline{subst} is a map-like structure and \lstinline{constraints} is a list of substitutions. In our
-case the environment contains some extra information to make it possible to identify variables in constant time.
+case, the environment contains some extra information to make it possible to identify variables in constant time.
 
 The next cornerstone element is the \emph{goal} type, which is considered as a transformer of a state into
 a lazy stream of states:
@@ -73,7 +73,7 @@ The first one is unification, while the other is the disequality constraint. Her
 the type of terms $t$ abstract; it will be instantiated later.
 
 In the implementation of \miniKanren both of these goals are implemented using unification~\cite{CKanren}; this
-is true for us as well. However, due to a drastic difference in host languages the implementation of
+is true for us as well. However, due to a drastic difference in host languages, the implementation of
 efficient polymorphic unification itself leads to a number of tricks with typing and data representation
 absent in the original version.
 
@@ -88,10 +88,10 @@ various solutions for the goal. As the stream is constructed lazily, taking elem
 the search progress.
 
 To discover concrete answers, the state has to be queried for its contents. As a rule, a few variables
-are reified in a state, i.e. their bindings in the corresponding substitution are retrieved. For free
-variables their disequality constraints have to be reified additionally (e.g. represented as a list of
-``forbidden'' terms). As forbidden terms can in turn contain free variables, the constraint reification
+are reified in a state, i.e. their bindings in the corresponding substitution are retrieved.
+Disequality constraints for free variables have to be reified additionally (e.g. represented as a list of
+``forbidden'' terms). As forbidden terms can contain free variables, the constraint reification
 process is recursive.
 
-In our case the reification is a subtle part, since, as we will see shortly, it can not be implemented in a 
+In our case, the reification is a subtle part, since, as we will see shortly, it can not be implemented in a
 type-safe fragment of the language.

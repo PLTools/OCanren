@@ -3,20 +3,20 @@
 
 Polymorphic unification, considered in the previous section, works for the values of any type under the assumption that we
 are capable of identifying logical variables. The latter depends on the term representation. In the original
-implementation all terms are represented as the conventional S-expressions, while logical variables (in a simplest case)~--- as one-element vectors; it's an end user responsibility to respect this convention and refrain from operating 
+implementation all terms are represented as the conventional S-expressions, while logical variables (in a simplest case)~--- as one-element vectors; it's an end user responsibility to respect this convention and refrain from operating
 with vectors as a user data.
 
-In our case we want to preserve both strong typing and type inference. Since we have chosen to use polymorphic 
-unification, it is undesirable to represent logical variables of different types differently (while technically 
+In our case we want to preserve both strong typing and type inference. Since we have chosen to use polymorphic
+unification, it is undesirable to represent logical variables of different types differently (while technically
 possible, it would compromise the lightweight approach we used so far). This means that terms with logical
-variables have to be typed differently, than user-defined data~--- otherwise it would be possible to use
+variables have to be typed differently from user-defined data~--- otherwise it would be possible to use
 terms in contexts where logical variables are not handled properly. At the same time we do not want term types
 to be completely different from user-defined types --- for example, we would like to reuse user-defined constructors, etc.
-This considerations boil down to the idea of \emph{logical representation} for a user-defined type. Informally, 
+This considerations boil down to the idea of \emph{logical representation} for a user-defined type. Informally,
 a logical representation for the type $t$ is a type $\rho_t$ with a couple of conversion functions:
 
 % TODO: Может быть тут стоит сослать на статью по Х-ю, где они заводили в каждом конструкторе места для логических переменных.
-% Нам эту статью упомянули, когда мы подавались на конфу. 
+% Нам эту статью упомянули, когда мы подавались на конфу.
 
 $$
 \begin{array}{rcl}
@@ -25,14 +25,14 @@ $$
 \end{array}
 $$
 
-Type $\rho_t$ repeats the structure of $t$, but can contain logic variables. So, the injection is total, 
-while the projection is partial. 
+Type $\rho_t$ repeats the structure of $t$, but can contain logic variables. So, the injection is total,
+while the projection is partial.
 
-It is important to design representations as instances of some generic scheme~--- otherwise \miniKanren combinators
-could not be properly typed. In addition it is desirable to provide a generic way to build
+It is important to design representations as instances of some generic scheme. \miniKanren combinators
+could not be properly typed otherwise. In addition it is desirable to provide a generic way to build
 injection/projection pair in a uniform manner (and, even better, automatically) to lift the burden of
 their implementation off the end user shoulders and improve the reliability of the solution. Finally,
-representation must provide a way to detect logic variable occurrences. 
+the representation must provide a way to detect logic variable occurrences.
 
 
 %Unification, considered in Section~\ref{sec:unification}, works for values of any types. However, it
@@ -43,16 +43,16 @@ representation must provide a way to detect logic variable occurrences.
 %ground type for each logical variable explicitly, which would throw our implementation into a non-polymorphic
 %realm with no type inference.
 
-In this part we consider two approaches to implementing logical representations.  The first is rather easy to 
-develop and implement; unfortunately, the implementation demonstrates a poor performance for a number of 
-important applications. In order to fix this deficiency, we develop a more elaborate technique which 
+In this part we consider two approaches to implementing logical representations.  The first is rather easy to
+develop and implement; unfortunately, the implementation demonstrates a poor performance for a number of
+important applications. In order to fix this deficiency, we develop a more elaborate technique which
 nevertheless reuses some components from the previous one. In Section~\ref{sec:evaluation}
 we present the results of performance evaluation for both approaches.
 
 \subsection{Tagged Logical Values}
 
 The first natural solution is to use tagging for representing logical representations.
-We introduce the following polymorphic type $[\alpha]$\footnote{In concrete syntax called ``$\alpha\;$\lstinline{logic}''}, which 
+We introduce the following polymorphic type $[\alpha]$\footnote{In concrete syntax called ``$\alpha\;$\lstinline{logic}''}, which
 corresponds to a logical representation of the type $\alpha$:
 
 \begin{lstlisting}
@@ -60,7 +60,7 @@ corresponds to a logical representation of the type $\alpha$:
 \end{lstlisting}
 
 Informally speaking, any value of type $[\alpha]$ is either a value of type $\alpha$, or a free
-logic variable. Note, the constructors of this type cannot be disclosed to an end user, since the only possible way to create a logic variable 
+logic variable. Note, the constructors of this type cannot be disclosed to an end user, since the only possible way to create a logic variable
 should still be by using the ``\lstinline{fresh}'' construct; thus the logic type is abstract in the interface.
 Now, we may redefine the signature of abstraction, unification and disequality primitives in the
 following manner
@@ -89,21 +89,21 @@ for these purposes
 
 \noindent which can be used to perform a \emph{shallow} injection/projection. As expected, the injection is total, while the projection is partial.
 
-Shallow pair works well for primitive types; to implement injection/projection for arbitrary types we exploit the 
+The shallow pair works well for primitive types; to implement injection/projection for arbitrary types we exploit the
 idea of representing regular types as fixed points of functors~\cite{ALaCarte}. For our purposes it is desirable to make
 the functors fully polymorphic~--- thus a type, in which we can place a logical variable into arbitrary position,
 can be easily manufactured. In addition this approach makes it possible to refactor the existing code to use relational
 programming with only minor changes.
 
 To illustrate this approach, we consider an iconic example~--- the list type. Let us have a conventional definition
-for regular polymorphic list in OCaml:
+for a regular polymorphic list in OCaml:
 
 \begin{lstlisting}
    type $\alpha$ list = Nil | Cons of $\alpha$ * $\alpha$ list
-\end{lstlisting} 
+\end{lstlisting}
 
 For this type we can only place a logical variable in the position of a list element, but not of the tail, since the tail
-always has the type \lstinline{$\alpha$ list}, fixed in the definition of constructor \lstinline{Cons}. In order to create 
+always has the type \lstinline{$\alpha$ list}, fixed in the definition of constructor \lstinline{Cons}. In order to create
 a full-fledged logical representation, we first have to abstract the type into a fully-polymorphic functor:
 
 \begin{lstlisting}
@@ -174,7 +174,7 @@ function:
    val reify : state -> $[\alpha]$ -> $[\alpha]$
 \end{lstlisting}
 
-This function takes a state and a logical value and recursively substitutes all logical variables in that value w.r.t.
+This function takes a state and a logic value and recursively substitutes all logic variables in that value w.r.t.
 the substitution in the state until no occurrences of bound variables are left. Since in our implementation the type of a substitution is
 not polymorphic, \lstinline{reify} is also implemented in an unsafe manner. However, it is easy to see that \lstinline{reify}
 does not produce ill-typed terms. Indeed, all original types of variables are preserved in a substitution; unification does not
@@ -223,7 +223,7 @@ a drastic measure:
 \end{lstlisting}
 
 What consequences would this have? Of course, we would not be able to create logical variables in a conventional way. However,
-we still could have a separate type for variables
+we still could have a separate type of variables
 
 \begin{lstlisting}
    type var = Var of int * anchor
@@ -249,7 +249,7 @@ anymore since $[\alpha]$ now equals $\alpha$. We \emph{want}, however, it be som
 \end{lstlisting}
 
 If $\alpha$ is not a parametric type, we can simply test if the value is a variable, and if yes, tag it with the constructor \lstinline{Var};
-otherwise we tag it with \lstinline{Value}, and we're done. This trick, however, would not work for parametric types. Consider, for example,
+we tag it with \lstinline{Value} otherwise, and we're done. This trick, however, would not work for parametric types. Consider, for example,
 the reification of a value of type \lstinline{$[[$int$]$ list$]$}. The (hypothetical) approach being described would return a value of
 type \lstinline{$(\mbox{``tagged'' }[[$int$]$ list$])$}, i.e. tagged only on the top level; we need to repeat the procedure
 recursively. In other words, we need the following (meta) type for the reification primitive:
@@ -273,7 +273,7 @@ Of course, this type is kept abstract at the end-user level. Informally speaking
 injection of a tagless type $\alpha$ into a tagged type $\beta$; the value itself is kept in the tagless form, but
 the tagged type can be used during the reify stage as a constraint, which would allow us to reify a tagless
 representation only to a feasible tagged one. In other words, we record the injection steps using the second
-type parameter of the type ``\{,\}'', performing the bookkeping on the type level rather than on the value level.
+type parameter of the type ``\{,\}'', performing the bookkeeping on the type level rather than on the value level.
 
 We introduce the following primitives for the type $\{\alpha,\;\beta\}$:
 
@@ -286,7 +286,7 @@ We introduce the following primitives for the type $\{\alpha,\;\beta\}$:
 \end{lstlisting}
 
 The function \lstinline{lift} puts a value into the ``bookkeeping injection'' domain for the first time, while
-\lstinline{inj} plays the role of injection itself. Their composition is analogous to what was
+\lstinline{inj} plays the role of the injection itself. Their composition is analogous to what was
 called ``$\uparrow_\forall$'' in the previous implementation:
 
 \begin{lstlisting}
@@ -339,7 +339,7 @@ In other words, we can in a very systematic manner define logic representations 
 of types of interest. These representations can be used in the relational code, providing a well-bookkept
 typing~--- for each logical type we would be able to reconstruct its original, tagless preimage.
 
-With the new implementation, the types for basic goal constructors have to be adjusted:
+With the new implementation, the types of basic goal constructors have to be adjusted:
 
 \begin{lstlisting}
    val (===) : $\{\alpha,\;[\beta]\}$ -> $\{\alpha,\;[\beta]\}$ -> goal
@@ -350,7 +350,7 @@ As always, we require both arguments of unification and disequality constraint t
 we require the injected part of the type to be logical.
 
 During the reification stage the bindings for ``interesting'' variables, reconstructed using the final
-substitution, have to be properly tagged. This process as well is implemented in a datatype-generic manner:
+substitution, have to be properly tagged. This process is implemented in a datatype-generic manner as well:
 first, we have reifiers for all primitive types:
 
 \begin{lstlisting}
