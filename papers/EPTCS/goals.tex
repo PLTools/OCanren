@@ -36,7 +36,7 @@ variable, \lstinline{subst} is a map-like structure and \lstinline{constraints} 
 
 In our case, the environment contains some extra information to make it possible to identify variables
 in a constant time. This check is not needed in faster-miniKanren or any other untyped approach to implement
-relational DSL. In case of \textit{Ocanren} it is dangerous to allow reification of a logic variable
+relational DSL. In case of OCanren it is dangerous to allow reification of a logic variable
 (attributed by a type one the first state) in the context of an another state where it is attributed by another type.
 Cases like this one can trigger undefined behavior. In the current implementation of logical variables created in the foreign
 state are not treated as logic variables. This restriction is difficult to express in types, so the check was moved
