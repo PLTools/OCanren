@@ -318,12 +318,10 @@ all type's constructors. For example, for standard type \lstinline{$\alpha$ opti
 \lstinline{None} and \lstinline{Some} the implementation looks like as follows:
 
 \begin{lstlisting}
-   module FOption = FMap
-     (struct
-        type $\alpha$ t = $\alpha$ option
-        let fmap = fmap$_{\mbox{\texttt{option}}}$
-      end
-     )
+   module FOption = FMap (struct
+     type $\alpha$ t = $\alpha$ option
+     let fmap = fmap$_{\mbox{\texttt{option}}}$
+   end)
 
    val some : $\{\alpha, \beta\}$ -> $\{\alpha\mbox{\texttt{ option}},\;\beta\mbox{\texttt{ option}}\}$
    val none : unit  -> $\{\alpha\mbox{\texttt{ option}},\;\beta\mbox{\texttt{ option}}\}$

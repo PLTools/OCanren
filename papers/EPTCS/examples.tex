@@ -19,9 +19,10 @@ original \miniKanren in Section~\ref{sec:demo}. In our case, the implementation 
    let rec append$^o$ x y xy =
      (x === nil ()) &&& (y === xy) |||
      (fresh (h t)
-       (x === h % t) &&&
+       (x === h % t)
        (fresh (ty)
-         (h % ty === xy) &&& (append$^o$ t y ty)
+         (h % ty === xy)
+         (append$^o$ t y ty)
        )
      )
 
@@ -29,9 +30,10 @@ original \miniKanren in Section~\ref{sec:demo}. In our case, the implementation 
      conde [
        (a === nil ()) &&& (b === nil ());
        (fresh (h t)
-         (a === h % t) &&&
+         (a === h % t)
          (fresh (a')
-           (append$^o$ a' !< h b) &&& (revers$^o$ t a')
+            (append$^o$ a' !< h b)
+            (revers$^o$ t a')
          )
        )
      ]
@@ -84,9 +86,9 @@ list of all its remaining elements''. Now, \lstinline{smallest$^o$} can be imple
      conde [
        (l === s % nil ()) &&& (l' === nil ());
        fresh (h t s' t' max)
-         (l' === max % t') &&&
-         (l === h % t) &&&
-         (minmax$^o$ h s' s max) &&&
+         (l' === max % t')
+         (l === h % t)
+         (minmax$^o$ h s' s max)
          (smallest$^o$ t s' t')
      ]
 \end{lstlisting}
@@ -146,48 +148,44 @@ we presume, however, that any other framework could equally be used.
 We first describe the type of lambda terms and their logic representation:
 
 \begin{lstlisting}
-   module Term =
-     struct
-       module T =
-         struct
-           @type ('varname, 'self) t =
-           | V   of 'varname
-           | App of 'self    * 'self
-           | Abs of 'varname * 'self
-           with gmap
+   module Term = struct
+     module T = struct
+       @type ('varname, 'self) t =
+       | V   of 'varname
+       | App of 'self    * 'self
+       | Abs of 'varname * 'self
+       with gmap
 
-           let fmap f g x = gmap(t) f g x
-         end
+       let fmap f g x = gmap(t) f g x
+     end
 
      include T
      include FMap2(T)
 
-     let v   s   = inj @@ distrib @@ V s
-     let app x y = inj @@ distrib @@ App (x, y)
-     let abs x y = inj @@ distrib @@ Abs (x, y)
+     let v   s   = inj (distrib (V s))
+     let app x y = inj (distrib (App (x, y)))
+     let abs x y = inj (distrib (Abs (x, y)))
    end
 \end{lstlisting}
 
 Now we have to repeat the work for the type of simple types:
 
 \begin{lstlisting}
-   module Type =
-     struct
-       module T =
-         struct
-           @type ('a, 'b) t =
-           | P   of 'a
-           | Arr of 'b * 'b
-           with gmap
+     module Type = struct
+       module T = struct
+         @type ('a, 'b) t =
+         | P   of 'a
+         | Arr of 'b * 'b
+         with gmap
 
-          let fmap f g x = gmap(t) f g x
-        end
+         let fmap f g x = gmap(t) f g x
+       end
 
        include T
        include FMap2(T)
 
-       let p   s   = inj @@ distrib @@ P s
-       let arr x y = inj @@ distrib @@ Arr (x, y)
+       let p   s   = inj (distrib (P s))
+       let arr x y = inj (distrib (Arr (x, y)))
      end
 \end{lstlisting}
 
@@ -201,7 +199,7 @@ counterparts:
 \begin{lstlisting}
    let rec lookup$^o$ a g t =
      fresh (a' t' tl)
-       (g === (inj_pair a' t') % tl) &&&
+       (g === (inj_pair a' t') % tl)
        (conde [
          (a' === a) &&& (t' === t);
          (a' =/= a) &&& (lookup$^o$ a tl t)
@@ -211,15 +209,15 @@ counterparts:
      let rec infer$^o$ gamma expr typ =
        conde [
          fresh (x)
-           (expr === v x) &&&
+           (expr === v x)
            (lookupo x gamma typ);
          fresh (m n t)
-           (expr === app m n) &&&
-           (infer$^o$ gamma m (arr t typ)) &&&
+           (expr === app m n)
+           (infer$^o$ gamma m (arr t typ))
            (infer$^o$ gamma n t);
          fresh (x l t t')
-           (expr === abs x l) &&&
-           (typ  === arr t t') &&&
+           (expr === abs x l)
+           (typ  === arr t t')
            (infer$^o$ ((inj_pair x t) % gamma) l t')
        ]
      in
