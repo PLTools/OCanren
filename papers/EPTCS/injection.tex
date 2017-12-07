@@ -291,7 +291,7 @@ called ``$\uparrow_\forall$'' in the previous implementation:
 
 \begin{lstlisting}
    val $\uparrow_\forall$ : $\alpha$ -> $\{\alpha,\;[\alpha]\}$
-   let $\uparrow_\forall$ x = lift x |> inj
+   let $\uparrow_\forall$ x = inj (lift x)
 \end{lstlisting}
 
 In order to deal with parametric types, we can again utilize generic programming. To handle the types with
@@ -331,8 +331,8 @@ all type's constructors. For example, for standard type \lstinline{$\alpha$ opti
    val some : $\{\alpha, \beta\}$ -> $\{\alpha\mbox{\texttt{ option}},\;\beta\mbox{\texttt{ option}}\}$
    val none : unit  -> $\{\alpha\mbox{\texttt{ option}},\;\beta\mbox{\texttt{ option}}\}$
 
-   let some x  = FOption.distrib (Some x) |> inj
-   let none () = FOption.distrib None     |> inj
+   let some x  = inj (FOption.distrib (Some x))
+   let none () = inj (FOption.distrib None)
 \end{lstlisting}
 
 In other words, we can in a very systematic manner define logic representations for all constructors
