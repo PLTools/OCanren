@@ -15,9 +15,6 @@ to be completely different from user-defined types --- for example, we would lik
 This considerations boil down to the idea of \emph{logical representation} for a user-defined type. Informally,
 a logical representation for the type $t$ is a type $\rho_t$ with a couple of conversion functions:
 
-% TODO: Может быть тут стоит сослать на статью по Х-ю, где они заводили в каждом конструкторе места для логических переменных.
-% Нам эту статью упомянули, когда мы подавались на конфу.
-
 $$
 \begin{array}{rcl}
    \uparrow  \;: t \to \rho_t & - & \mbox{injection}\\
@@ -349,7 +346,7 @@ With the new implementation, the types of basic goal constructors have to be adj
 As always, we require both arguments of unification and disequality constraint to be of the same type; in addition
 we require the injected part of the type to be logical.
 
-During the reification stage the bindings for ``interesting'' variables, reconstructed using the final
+During the reification stage the bindings for the top-level variables, reconstructed using the final
 substitution, have to be properly tagged. This process is implemented in a datatype-generic manner as well:
 first, we have reifiers for all primitive types:
 

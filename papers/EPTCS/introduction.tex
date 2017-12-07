@@ -54,7 +54,7 @@ compromise type safety.
 
 \item We describe a uniform and scalable pattern for using types for relational programming, which
 helps in converting typed data to and from the relational domain. With this pattern, only one
-generic feature (``\lstinline{map/morphism/Functor}'') is needed, and thus virtually any generic
+generic feature (``\lstinline{Functor}'') is needed, and thus virtually any generic
 framework for OCaml can be used. Although being rather a pragmatic observation, this pattern, we
 believe, would lead to a more regular and easy way to maintain relational specifications.
 
@@ -69,7 +69,8 @@ its original form to establish some notions; we do not intend to describe the la
 refer to~\cite{TRS}). In Section~\ref{sec:goals} we describe some basic constructs behind a \miniKanren implementation, this time
 in OCaml. In Section~\ref{sec:unification} we discuss polymorphic unification, and show that unification with
 triangular substitution respects typing. Then we present our approach to handle user-defined types by injecting them
-into the logic domain; we consider a simple approach and a more elaborate and efficient tagless variant (see Section~\ref{sec:injection}).
+into the logic domain, and describe a convenient generic programming pattern, which can be used to implement the conversions from/to logic
+domain. We also consider a simple approach and a more elaborate and efficient tagless variant (see Section~\ref{sec:injection}).
 Section~\ref{sec:reification} describes top-level primitives and addresses the problem of relational and functional code integration.
 Then, in Section~\ref{sec:examples} we present a set of relational examples, written with the aid of our
 library. Section~\ref{sec:evaluation} contains the results of a performance evaluation and a comparison of our implementations

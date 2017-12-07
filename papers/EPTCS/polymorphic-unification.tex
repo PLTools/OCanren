@@ -70,7 +70,8 @@ is performed in the context of existing substitution (hence ``\lstinline{subst}'
 chained (hence ``\lstinline{option}'' in the third argument).
 
 We use exactly the same unification algorithm with triangular substitution as in the reference implementation~\cite{MicroKanren}. We
-omit here some not-so-important details (like ``occurs check'') and refrain from discussing the nature and properties of the algorithm
+omit here some not-so-important details (like ``occurs check''), which are kept in the actual implementaion, and refrain from discussing 
+the nature and properties of the algorithm
 itself (an excellent description, including a certified correctness proof, can be found in~\cite{Kumar}).
 
 The following snippet presents the implementation:
