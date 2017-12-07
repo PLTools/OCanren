@@ -28,10 +28,8 @@ what faster-miniKanren does.
 For the set of benchmarks we took the following problems:
 
 \begin{itemize}
-%\item \textbf{sorto, permo}~--- sorting and permutation for lists of Peano numbers (shown as example in Section~\ref{sec:examples}).
-%The concrete tests are the sorting of the list \lstinline{[3; 2; 1; 0]} and taking all permutations of the list \lstinline{[0; 1; 2; 3; 4; 5; 6; 7]}.
 \item \textbf{pow, logo}~--- exponentiation and logarithm for integers in binary form. The concrete tests relationally computed
-$3^5$ (which is 243) and $log_3 243$ (which is, conversely, 5).
+$3^5$ (which is 243) and $log_3 243$ (which is, conversely, 5). The implementaion was adopted from~\cite{KiselyovArithm}.
 \item \textbf{quines, twines, trines}~--- self/co-evaluating program synthesis problems from~\cite{Untagged}. The
 concrete tests took the first 100, 15 and 2 answers for these problems respectively.
 \end{itemize}
