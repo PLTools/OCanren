@@ -51,7 +51,7 @@ a lazy stream of states:
 \end{lstlisting}
 
 In terms of the search, a goal nondeterministically performs one step of the search: for a given
-node in a search tree it produces its immediate descendants. On the user level type \lstinline{goal}
+node in a search tree it produces its immediate descendants. On the user level the type \lstinline{goal}
 is abstract, and states are completely hidden.
 
 Next to last, there are a number of predefined combinators:
@@ -77,12 +77,12 @@ Finally, there are two primitive goal constructors:
    val (=/=) : $t$ -> $t$ -> goal
 \end{lstlisting}
 
-The first one is unification, while the other is the disequality constraint. Here, we again left
+The first one is a unification, while the other is a disequality constraint. Here, we again left
 the type of terms $t$ abstract; it will be instantiated later.
 
 In the implementation of \miniKanren both of these goals are implemented using unification~\cite{CKanren}; this
-is true for us as well. However, due to a drastic difference in host languages, the implementation of
-efficient polymorphic unification itself leads to a number of tricks with typing and data representation
+is true for us as well. However, due to a drastic difference between the host languages, the implementation of
+efficient polymorphic unification itself leads to a number of tricks with typing and data representation, which are
 absent in the original version.
 
 In this setting, the run primitive is represented by the following function:

@@ -113,11 +113,11 @@ Having relational \lstinline{sort$^o$}, we can implement sorting for regular int
 \end{lstlisting}
 
 Here \lstinline{Stream.hd} is a function which takes a head from a lazy stream of answers,
-\lstinline{inj_nat_list}~--- injection from regular integer lists into logical lists of logical Peano numbers,
-\lstinline{from_nat_list}~--- projection from lists of Peano numbers to lists of integers.
+\lstinline{inj_nat_list}~--- an injection from regular integer lists into logical lists of logical Peano numbers,
+\lstinline{from_nat_list}~--- a projection from lists of Peano numbers to lists of integers.
 
 It is interesting, that since \lstinline{sort$^o$} is
-relational, it can be used to calculate the list of all \emph{permutations}
+relational, it can be used to calculate a list of all \emph{permutations}
 for a given list. Indeed, sorting each permutation results in the same list.
 So, the problem of finding all permutations can be relationally reformulated into
 the problem of finding all lists which are converted by sorting into the given one:

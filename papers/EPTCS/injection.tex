@@ -3,7 +3,7 @@
 
 Polymorphic unification, considered in the previous section, works for the values of any type under the assumption that we
 are capable of identifying logical variables. The latter depends on the term representation. In the original
-implementation all terms are represented as the conventional S-expressions, while logical variables (in a simplest case)~--- as one-element vectors; it's an end user responsibility to respect this convention and refrain from operating
+implementation all terms are represented as a conventional S-expressions, while logical variables (in a simplest case)~--- as one-element vectors; it's an end user responsibility to respect this convention and refrain from operating
 with vectors as a user data.
 
 In our case we want to preserve both strong typing and type inference. Since we have chosen to use polymorphic
@@ -25,11 +25,11 @@ $$
 \end{array}
 $$
 
-Type $\rho_t$ repeats the structure of $t$, but can contain logic variables. So, the injection is total,
+The type $\rho_t$ repeats the structure of $t$, but can contain logic variables. So, the injection is total,
 while the projection is partial.
 
-It is important to design representations as instances of some generic scheme. \miniKanren combinators
-could not be properly typed otherwise. In addition it is desirable to provide a generic way to build
+It is important to design representations as instances of some generic scheme (otherwise, \miniKanren combinators
+could not be properly typed). In addition it is desirable to provide a generic way to build
 injection/projection pair in a uniform manner (and, even better, automatically) to lift the burden of
 their implementation off the end user shoulders and improve the reliability of the solution. Finally,
 the representation must provide a way to detect logic variable occurrences.
