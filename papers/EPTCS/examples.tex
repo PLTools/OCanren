@@ -108,8 +108,8 @@ Having relational \lstinline{sort$^o$}, we can implement sorting for regular int
 
 \begin{lstlisting}
    let sort l =
-     run q (sort$^o$ @@ inj_nat_list l)
-           (fun qs -> from_nat_list @@ (Stream.hd qs)#prj)
+     run q (sort$^o$ (inj_nat_list l))
+           (fun qs -> from_nat_list ((Stream.hd qs)#prj) )
 \end{lstlisting}
 
 Here \lstinline{Stream.hd} is a function which takes a head from a lazy stream of answers,
@@ -123,12 +123,12 @@ So, the problem of finding all permutations can be relationally reformulated int
 the problem of finding all lists which are converted by sorting into the given one:
 
 \begin{lstlisting}
-let perm l = map (fun a -> a#prj |> from_nat_list) @@
-  run q (fun q -> fresh (r)
-                    (sort$^o$ (inj_nat_list l) r)
-                    (sort$^o$ q r)
-        )
-        (Stream.take ~n:(fact @@ length l))
+let perm l = map (fun a -> from_nat_list a#prj)
+  (run q (fun q -> fresh (r)
+                     (sort$^o$ (inj_nat_list l) r)
+                     (sort$^o$ q r)
+         )
+         (Stream.take ~n:(fact @@ length l)))
 \end{lstlisting}
 
 Note, for sorting the original list we used exactly the same primitive. Note also,
