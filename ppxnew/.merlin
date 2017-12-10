@@ -1,0 +1,3 @@
+PKG ppx_core
+S .
+B ../_build/ppxnew

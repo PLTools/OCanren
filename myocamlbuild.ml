@@ -155,11 +155,13 @@ let init_js_of_ocaml () =
 ;;
 open Command;;
 
-let () = dispatch (function
- | Before_rules ->
+let () = dispatch (fun hook ->
+  Ppx_driver_ocamlbuild.dispatch hook;
+  match hook with
+  | Before_rules ->
      ()
 
- | After_rules ->
+  | After_rules ->
      ocaml_lib "src/MiniKanren";
      init_js_of_ocaml ();
      (* miniKanren related stuff*)
@@ -178,6 +180,8 @@ let () = dispatch (function
      (*   ); *)
 
      flag ["ocaml";"compile";"native";"keep_asm"] (S[A"-S"]);
+     flag ["ocaml";"byte";  "link";"make_pp_distrib"] (S[A"ppxnew/ppx_distrib.cma"]);
+     flag ["ocaml";"native";"link";"make_pp_distrib"] (S[A"ppxnew/ppx_distrib.cmxa"]);
 
      (* cppo-related stuff *)
      let cppo_rules ext =

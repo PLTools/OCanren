@@ -3,7 +3,8 @@ CP    ?= cp
 
 .NOTPARALLEL :
 
-OB=ocamlbuild -use-ocamlfind -plugin-tag "package(str)" -classic-display
+OB=ocamlbuild -use-ocamlfind -plugin-tag "package(str,ppx_driver.ocamlbuild)" \
+	-classic-display
 ifdef OBV
 OB += -verbose 6
 endif
@@ -17,7 +18,7 @@ TESTS_ENVIRONMENT=./test.sh
 JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
 .PHONY: all celan clean clean_tests install uninstall tests test regression promote_all \
-	ppx doc \
+	ppx ppxnew ppx_tests doc \
 	only-toplevel toplevel minikanren_stuff tester bundle plugin
 
 .DEFAULT_GOAL: all
@@ -31,6 +32,12 @@ ppx:
 	$(OB) -Is src ppx/ppx_repr_bin.cmxa ppx/pa_minikanren_bin.cmxa \
 	  ppx/ppx_ocanren_all.cma ppx/ppx_ocanren_all.cmxa ppx/ppx_ocanren_all.cmxs \
 		ppx/ppx_ocanren_all.native
+
+ppx_tests: ppxnew
+	$(OB) -Is src,regression regression_ppx/test004peano.native
+
+ppxnew:
+	$(OB) -Is src ppxnew/ppx_distrib.cma ppxnew/ppx_distrib.cmxa ppxnew/pp_distrib.native
 
 plugin:
 	$(OB) camlp5/pa_minikanren.cmo
