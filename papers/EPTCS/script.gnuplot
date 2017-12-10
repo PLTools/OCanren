@@ -9,6 +9,7 @@ set auto x
 set boxwidth 0.9
 set xtics format ""
 set grid ytics
+set ylabel "Time in seconds"
 
 # Comment/uncomment to switch logscale off/on
 #set logscale y
