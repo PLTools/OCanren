@@ -13,6 +13,34 @@ Inductive Forall4 {A B C D : Type} (R : A -> B -> C -> D -> Prop) : list A -> li
 | Forall3Nil : Forall4 R [] [] [] []
 | Forall3Cons : forall w x y z ws xs ys zs, R w x y z -> Forall4 R ws xs ys zs -> Forall4 R (w::ws) (x::xs) (y::ys) (z::zs).
 
+Lemma Forall_app : forall (A : Type) (P : A -> Prop) (xs ys : list A),
+  Forall P xs -> Forall P ys -> Forall P (xs ++ ys).
+Proof.
+  induction xs.
+  - intros. assumption.
+  - intros. inversion H. simpl. constructor.
+    + assumption.
+    + apply IHxs; assumption.
+Qed.
+
+Lemma Forall_app_left : forall (A : Type) (P : A -> Prop) (xs ys : list A),
+   Forall P (xs ++ ys) -> Forall P xs.
+Proof.
+  intros A P xs ys. induction xs.
+  - intros. constructor.
+  - intros. simpl in H. inversion H. constructor.
+    + assumption.
+    + apply IHxs. assumption.
+Qed.
+
+Lemma Forall_app_right : forall (A : Type) (P : A -> Prop) (xs ys : list A),
+   Forall P (xs ++ ys) -> Forall P ys.
+Proof.
+  intros A P xs ys. induction xs.
+  - intros. assumption.
+  - intros. simpl in H. inversion H. apply IHxs. assumption.
+Qed.
+
 
 
 Inductive var : Type :=
@@ -39,7 +67,6 @@ Definition add : var -> var_set -> var_set := ListSet.set_add var_eq_dec.
 
 Definition subset (s : var_set) (S : var_set) : Prop := Forall (fun x => In x S) s.
 
-SearchAbout In.
 
 Lemma subset_trans : forall s1 s2 s3, subset s1 s2 -> subset s2 s3 -> subset s1 s3.
 Proof.
@@ -49,14 +76,14 @@ Proof.
   auto.
 Qed.
 
-Lemma subset_app_right : forall s1 s2 s3, subset s1 s2 -> subset s1 (s2 ++ s3).
+Lemma subset_app_left : forall s1 s2 s3, subset s1 s2 -> subset s1 (s2 ++ s3).
 Proof.
   intros. assert (forall x : var, In x s1 -> In x s2).
   { apply Forall_forall. assumption. }
   apply Forall_forall. intros. apply H0 in H1. apply in_or_app. left. assumption.
 Qed.
 
-Lemma subset_app_left : forall s1 s2 s3, subset s1 s2 -> subset s1 (s3 ++ s2).
+Lemma subset_app_right : forall s1 s2 s3, subset s1 s2 -> subset s1 (s3 ++ s2).
 Proof.
   intros. assert (forall x : var, In x s1 -> In x s2).
   { apply Forall_forall. assumption. }
@@ -65,6 +92,24 @@ Qed.
 
 Lemma subset_refl : forall s, subset s s.
 Proof. intros. apply Forall_forall. intros. assumption. Qed.
+
+Lemma union_empty_R : forall s, s = union s [].
+Proof. admit. Admitted.
+
+Lemma subset_in : forall x s S, subset s S -> In x s -> In x S.
+Proof. admit. Admitted.
+
+Lemma union_subset : forall s1 s2 S, subset s1 S -> subset s2 S -> subset (union s1 s2) S.
+Proof. admit. Admitted.
+
+Lemma app_subset : forall s1 s2 S, subset s1 S -> subset s2 S -> subset (s1 ++ s2) S.
+Proof. admit. Admitted.
+
+Lemma app_subset_left : forall s1 s2 S, subset (s1 ++ s2) S -> subset s1 S.
+Proof. admit. Admitted.
+
+Lemma app_subset_right : forall s1 s2 S, subset (s1 ++ s2) S -> subset s2 S.
+Proof. admit. Admitted.
 
 
 
@@ -280,8 +325,43 @@ Inductive bs_derivation_tree : environment -> state -> goal -> list state -> nat
     bs_derivation_tree (G, i) (s, d) (Invoke r ts) (map (fun p => (comp s (fst p), snd p)) rs) (S h) ((r, ts, i, s, d, S(h))::cl).
 
 
-
 Definition reachable_vars (i : subst) (s : subst) : var_set := flat_map (fun '(_, t) => vars (app t s)) i.
+
+Lemma reachable_vars_lemma : forall (i : subst) (s : subst) (t : term),
+  subset (vars t) (dom i) -> subset (vars (app (app t i) s)) (reachable_vars i s).
+Proof.
+  intros i s t. remember (fun t => subset (vars t) (dom i) ->
+                            subset (vars (app (app t i) s)) (reachable_vars i s)) as P.
+  assert (P t).
+  {
+    apply term_induction.
+    - subst P. induction i.
+      + simpl. intros. inversion H. inversion H2.
+      + destruct a. simpl. intros. destruct (var_eq_dec v v0).
+        * apply subset_app_left. apply subset_refl.
+        * apply subset_app_right. apply IHi. simpl. constructor.
+          {
+            inversion H. destruct H2. 
+            - exfalso. apply n. assumption.
+            - assumption.
+          }
+          { constructor. }
+    - subst P. intros ts c. induction ts.
+      + intros. simpl. constructor.
+      + intros. simpl. apply app_subset.
+        * apply H.
+          { left. reflexivity. }
+          { simpl in H0. eapply app_subset_left. eassumption. }
+        * apply IHts.
+          {
+            intros. apply H.
+            - right. assumption.
+            - assumption.
+          }
+          { eapply app_subset_right. eassumption. }
+  }
+  subst P. assumption.
+Qed.
 
 Lemma first_lemma : forall G i s d g rs h cl,
   bs_derivation_tree (G, i) (s, d) g rs h cl -> 
@@ -290,9 +370,49 @@ Lemma first_lemma : forall G i s d g rs h cl,
                 dr = union d dd /\
                 forall v, (In v (dom ds) \/ In v (v_ran ds)) ->
                           (~(In v d) \/ In v (reachable_vars i s))) rs.
-Proof. admit. Admitted.
+Proof.
+  intros. remember (G, i). remember (s, d).
+  generalize dependent Heqp. generalize dependent Heqp0.
+  revert s d G i. induction H;
+  intros; inversion Heqp0; inversion Heqp;
+  clear Heqp0; clear Heqp; subst.
+  - constructor.
+  - constructor.
+    + exists m. exists []. split.
+      * reflexivity.
+      * split.
+        { apply union_empty_R. }
+        {
+          intros. right. inversion H1. destruct H2.
+          - eapply subset_in.
+            + eapply subset_trans. apply H3. apply union_subset;
+              apply reachable_vars_lemma; assumption.
+            + assumption.
+          - eapply subset_in.
+            + eapply subset_trans. apply H4. apply union_subset;
+              apply reachable_vars_lemma; assumption.
+            + assumption.
+        }
+    + constructor.
+  - apply Forall_app.
+    + eapply IHbs_derivation_tree1; reflexivity.
+    + eapply IHbs_derivation_tree2; reflexivity.
+  - admit.
+  - apply Forall_forall. intros [sr dr] inH.
+    assert (indH : Forall (fun '(sr, dr) =>
+                          exists (ds : subst) (dd : var_set),
+                            sr = comp ((x, Var a) :: s0) ds /\
+                            dr = union (add a d0) dd /\
+                            (forall v : var,
+                             In v (dom ds) \/ In v (v_ran ds) ->
+                             ~ In v (add a d0) \/ In v (reachable_vars i0 ((x, Var a) :: s0)))) rs).
+    { eapply IHbs_derivation_tree; reflexivity. }
+    admit.
+  - admit.
 
+Admitted.
 
+SearchAbout Forall.
 
 Lemma second_lemma : forall G i i' s s' d d' g rs rs' h h' cl cl',
   dom i = dom i' ->
@@ -324,34 +444,6 @@ Proof. admit. Admitted.
 
 
 Definition more_general (gts sts : list term) : Prop := exists (s : subst), Forall2 (fun gt st => app gt s = st) gts sts.
-
-Lemma Forall_app : forall (A : Type) (P : A -> Prop) (xs ys : list A),
-  Forall P xs -> Forall P ys -> Forall P (xs ++ ys).
-Proof.
-  induction xs.
-  - intros. assumption.
-  - intros. inversion H. simpl. constructor.
-    + assumption.
-    + apply IHxs; assumption.
-Qed.
-
-Lemma Forall_app_left : forall (A : Type) (P : A -> Prop) (xs ys : list A),
-   Forall P (xs ++ ys) -> Forall P xs.
-Proof.
-  intros A P xs ys. induction xs.
-  - intros. constructor.
-  - intros. simpl in H. inversion H. constructor.
-    + assumption.
-    + apply IHxs. assumption.
-Qed.
-
-Lemma Forall_app_right : forall (A : Type) (P : A -> Prop) (xs ys : list A),
-   Forall P (xs ++ ys) -> Forall P ys.
-Proof.
-  intros A P xs ys. induction xs.
-  - intros. assumption.
-  - intros. simpl in H. inversion H. apply IHxs. assumption.
-Qed.
 
 Theorem divergence_criterion : forall G i s d r ts rs h nr cl,
   subset (reachable_vars i s) d ->
@@ -392,8 +484,8 @@ Proof.
             - intros. inversion H. subst. clear H H3. induction i.
               + inversion H2.
               + destruct a. simpl. destruct (var_eq_dec v0 v).
-                * apply subset_app_right. apply subset_refl.
-                * apply subset_app_left. apply IHi. inversion H2.
+                * apply subset_app_left. apply subset_refl.
+                * apply subset_app_right. apply IHi. inversion H2.
                   { simpl in H. exfalso. apply n. assumption. }
                   { assumption. }
             - intros. simpl. simpl in H0. generalize dependent H.
