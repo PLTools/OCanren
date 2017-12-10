@@ -1,4 +1,4 @@
-.PHONY: ocanren.pdf 
+.PHONY: ocanren.pdf clean
 
 all: ocanren.pdf
 
@@ -12,4 +12,6 @@ ocanren.pdf: $(OCANREN_TEX)
 	pdflatex $<
 	pdflatex $<
 
+clean:
+	$(RM) *.bak *.out
 
