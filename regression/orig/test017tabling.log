@@ -83,22 +83,22 @@ q=a;
 q=_.11;
 }
 fun q -> patho arco3 ((!!) "a") q, 10 answers {
-q=_.10 [=/= b; =/= a];
+q=_.10 [=/= a; =/= b];
 q=a;
-q=_.10 [=/= b; =/= a];
+q=_.10 [=/= a; =/= b];
 q=a;
-q=_.10 [=/= b; =/= a];
+q=_.10 [=/= a; =/= b];
 q=a;
-q=_.10 [=/= b; =/= a];
+q=_.10 [=/= a; =/= b];
 q=a;
-q=_.10 [=/= b; =/= a];
-q=a;
-}
-fun q -> patho_tabled ((!!) "a") q, 10 answers {
-q=_.10 [=/= b; =/= a];
+q=_.10 [=/= a; =/= b];
 q=a;
 }
 fun q -> patho_tabled ((!!) "a") q, 10 answers {
+q=_.10 [=/= a; =/= b];
 q=a;
-q=_.11 [=/= b; =/= a];
+}
+fun q -> patho_tabled ((!!) "a") q, 10 answers {
+q=a;
+q=_.11 [=/= a; =/= b];
 }
