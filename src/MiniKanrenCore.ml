@@ -791,9 +791,7 @@ module Disequality :
      *)
     val of_conj : Env.t -> Subst.content list -> t
 
-    (* [to_cnf env subst diseq] - refines disequality in [subst] and returns
-     *   new disequality in cnf representation
-     *)
+    (* [to_cnf env subst diseq] - returns new disequality in cnf representation *)
     val to_cnf : Env.t -> Subst.t -> t -> cnf
 
     (* [of_cnf env diseq] - builds efficient representation of disequalities from cnf representation *)
@@ -1046,39 +1044,12 @@ module Disequality :
 
     let merge env = Index.merge
 
-    (* [refine env subst diseqs] - takes a [subst] and refines it w.r.t [diseqs].
-     *   For each disequality substitution in constraint's store this function tries to unify
-     *   disequality substitution with [subst].
-     *   If unification succeeds the unification prefix along with refined substitution is added to the result list.
-     *   Function returns a list of tuples [(delta, delta-subst, subst)] where
-     *     1) delta - unification prefix
-     *     2) delta-subst - unification prefix as substitution
-     *     3) subst - refined substitution
-     *   This function is used in two cases:
-     *     1) For `negation` of a state of search.
-     *     2) For answer reification.
-     *   See Disjunction.refine for details.
-     *)
-    let refine env subst t =
+    let to_cnf env subst t =
       Index.fold (fun acc disj ->
         match Disjunction.refine env subst disj with
         | None -> acc
-        | Some (delta, s) ->
-          let delta_subst = Subst.of_list delta in
-          let is_subsumed = ListLabels.exists acc
-            ~f:(fun _,delta_subst',_ -> Subst.is_subsumed env delta_subst delta_subst')
-          in
-          if is_subsumed
-          then acc
-          else
-            let acc = ListLabels.filter acc
-              ~f:(fun _,delta_subst',_ -> not @@ Subst.is_subsumed env delta_subst' delta_subst)
-            in
-            (delta, delta_subst, s)::acc
+        | Some (delta, _) -> delta::acc
       ) [] t
-
-    let to_cnf env subst t =
-      refine env subst t |> List.map (fun delta,_,_ -> delta)
 
     let of_cnf env cs =
       ListLabels.fold_left cs ~init:empty ~f:(
@@ -1127,12 +1098,13 @@ module Disequality :
           (VarSet.mem var fv) ||
           (match Env.var env term with Some _ -> VarSet.mem (!!!term) fv | None -> false)
         in
-        (* filter irrelevant binding in each disjunction *)
+        (* left those disjuncts that contains binding only for variables from [fv] *)
         let cs' = ListLabels.fold_left cs ~init:[]
           ~f:(fun acc disj ->
-            match List.filter (is_relevant fv) disj with
-            | []   -> acc
-            | disj -> disj::acc
+            if List.for_all (is_relevant fv) disj then
+              disj::acc
+            else
+              acc
           )
         in
         (* obtain a set of free variables from terms mentioned in disequalities *)
@@ -1145,7 +1117,22 @@ module Disequality :
         then cs'
         else helper fv'
       in
-      helper fv
+      let remove_subsumed cs =
+        ListLabels.fold_left cs ~init:[] ~f:(fun acc disj ->
+          let subst = Subst.of_list disj in
+          let is_subsumed = ListLabels.exists acc
+            ~f:(fun _,subst' -> Subst.is_subsumed env subst subst')
+          in
+          if is_subsumed
+          then acc
+          else
+            let acc = ListLabels.filter acc
+              ~f:(fun _,subst' -> not @@ Subst.is_subsumed env subst' subst)
+            in
+            (disj, subst)::acc
+        ) |> List.map fst
+      in
+      remove_subsumed @@ helper fv
 
     let refresh ?(mapping = VarTbl.create 31) ~scope dst_env src_env subst cs =
       let refresh_binding =

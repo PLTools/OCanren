@@ -40,7 +40,8 @@ let _ =
   runIList      (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; !1] =/= !![!2; y])(x === !2)(y === !9)(!![x; y] === q))           ));
   runIList      (-1) q qh (REPR (fun q -> (fresh (a d)(!![a; d] === q)(q =/= !![!5; !6])(a === !5)(d === !6))                  ));
   runIList      (-1) q qh (REPR (fun q -> (fresh (x y)(!![x; !1] =/= !![!2; y])(x === !2)(y === !1)(!![x; y] === q))           ));
-  runIList      (-1) q qh (REPR (fun q -> (fresh (a x z)(a =/= !![x; !1])(a === !![z; !1])(x === z))                           ))
+  runIList      (-1) q qh (REPR (fun q -> (fresh (a x z)(a =/= !![x; !1])(a === !![z; !1])(x === z))                           ));
+  runInt        (-1) q qh (REPR (fun x -> fresh (y) (!![x; y] =/= !![!5; !6]) ))
 
 let _ =
   runIList      (-1) q qh (REPR (fun q -> (fresh (a x z)(a =/= !![x; !1])(a === !![z; !1])(x === !5)(!![x; z] === q))         ))
