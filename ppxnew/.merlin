@@ -1,3 +1,5 @@
 PKG ppx_core
+PKG ppx_driver
+PKG ppx_metaquot
 S .
 B ../_build/ppxnew

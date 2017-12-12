@@ -1,1 +1,2 @@
-Ppx_driver.standalone ();
+
+let () = Ppx_driver.standalone ()

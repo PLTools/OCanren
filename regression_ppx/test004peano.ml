@@ -6,7 +6,7 @@ module Fmap1 = Fmap
 
 module Peano = struct
 
-  type 'a t = O | S of 'a [@@deriving distrib]
+  type 'a t = O | S of 'a [@@distrib]
 
   (* include T *)
   (* include Fmap (T) *)
@@ -18,75 +18,107 @@ module Peano = struct
   type lt = lt T.t logic        (* reified     *)
   type ft = (rt, lt) injected (* injected    *)
 
-  let rec show_ln n = show(logic) (show(t) show_ln) n
-  let rec show_rn n = show(t) show_rn n
+  (* let rec show_ln n = show(logic) (show(t) show_ln) n
+   * let rec show_rn n = show(t) show_rn n *)
 
 end
 
-let rec peano_reifier c x = Peano.reify peano_reifier c x
+module Fuck = struct
+  type term =
+    | V of string
+    | App of term * term
+    | Abs of string * term
+             [@@distrib]
 
-let runN n = runR peano_reifier Peano.show_rn Peano.show_ln n
+  end
 
-let o      = Peano.o ()
-let s prev = Peano.s prev
+(* module Fuck = struct
+ *   type ('reg, 'loc, 'value, 'mo, 'op, 't) t =
+ *           | Const    of 'value
+ *           | Var      of 'reg
+ *           | Binop    of 'op * 't * 't
+ *           | Asgn     of 't * 't
+ *           | Pair     of 't * 't
+ *           | If       of 't * 't * 't
+ *           | Repeat   of 't
+ *           | While    of 't * 't
+ *           | Read     of 'mo * 'loc
+ *           | Write    of 'mo * 'loc * 't
+ *           | Cas      of 'mo * 'mo * 'loc * 't * 't
+ *           | Seq      of 't * 't
+ *           | Spw      of 't * 't
+ *           | Par      of 't * 't
+ *           | Skip
+ *           | Stuck
+ *             [@@deriving distrib]
+ * 
+ *   end *)
 
-let rec addo x y z =
-  conde [
-    (x === o) &&& (z === y);
-    Fresh.two (fun x' z' ->
-      (x === s x') &&&
-      (z === s z') &&&
-      (addo x' y z')
-    )
-  ]
 
-let rec mulo x y z =
-  conde [
-    (x === o) &&& (z === o);
-    Fresh.two (fun x' z' ->
-      (x === s x') &&&
-      (addo y z' z) &&&
-      (mulo x' y z')
-    )
-  ]
-
-let () =
-  runN  1    q   qh (REPR (fun q   -> addo o (s o) q                   ));
-  runN  1    q   qh (REPR (fun q   -> addo (s o) (s o) q               ));
-  runN  2    q   qh (REPR (fun q   -> addo o (s o) q                   ));
-  runN  2    q   qh (REPR (fun q   -> addo (s o) (s o) q               ));
-  runN  1    q   qh (REPR (fun q   -> addo q (s o) (s o)               ));
-  runN  1    q   qh (REPR (fun q   -> addo (s o) q (s o)               ));
-  runN  2    q   qh (REPR (fun q   -> addo q (s o) (s o)               ));
-  runN  2    q   qh (REPR (fun q   -> addo (s o) q (s o)               ));
-  runN (-1) qr  qrh (REPR (fun q r -> addo q r (s (s (s (s o))))       ));
-
-  runN  1    q   qh (REPR (fun q   -> mulo o (s o) q                   ));
-  runN  1    q   qh (REPR (fun q   -> mulo (s (s o)) (s (s o)) q       ));
-  runN  2    q   qh (REPR (fun q   -> mulo o (s o) q                   ));
-  runN  1    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s o))       ));
-  runN  1    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s (s o)))   ));
-  runN  2    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s o))       ));
-  runN  2    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s (s o)))   ));
-
-  runN  1    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s o))      ));
-  runN  1    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s (s o)))  ));
-  runN  2    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s o))      ));
-  runN  2    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s (s o)))  ));
-
-  runN  1   qr  qrh (REPR (fun q r -> mulo q (s o) r                  ));
-  runN 10   qr  qrh (REPR (fun q r -> mulo q (s o) r                  ));
-
-  runN  1   qr  qrh (REPR (fun q r -> mulo (s o) q r                  ));
-  runN 10   qr  qrh (REPR (fun q r -> mulo (s o) q r                  ));
-
-  runN  1   (succ q) (*qr*)  qrh (REPR (fun q r -> mulo q r (s o)                  ));
-
-  runN  1    q   qh (REPR (fun q   -> mulo (s o) (s o) q              ));
-  runN  1   qr  qrh (REPR (fun q r -> mulo q r (s (s (s (s o))))      ));
-  runN  3   qr  qrh (REPR (fun q r -> mulo q r (s (s (s (s o))))      ))
-
-let () =
-  runN   1   qr  qrh (REPR (fun q r   -> mulo q r o                   ));
-  runN   3  qrs qrsh (REPR (fun p q r -> mulo p q r                   ));
-  runN  10  qrs qrsh (REPR (fun q r s -> mulo q r s                   ))
+(* let rec peano_reifier c x = Peano.reify peano_reifier c x
+ * 
+ * let runN n = runR peano_reifier Peano.show_rn Peano.show_ln n
+ * 
+ * let o      = Peano.o ()
+ * let s prev = Peano.s prev
+ * 
+ * let rec addo x y z =
+ *   conde [
+ *     (x === o) &&& (z === y);
+ *     Fresh.two (fun x' z' ->
+ *       (x === s x') &&&
+ *       (z === s z') &&&
+ *       (addo x' y z')
+ *     )
+ *   ]
+ * 
+ * let rec mulo x y z =
+ *   conde [
+ *     (x === o) &&& (z === o);
+ *     Fresh.two (fun x' z' ->
+ *       (x === s x') &&&
+ *       (addo y z' z) &&&
+ *       (mulo x' y z')
+ *     )
+ *   ]
+ * 
+ * let () =
+ *   runN  1    q   qh (REPR (fun q   -> addo o (s o) q                   ));
+ *   runN  1    q   qh (REPR (fun q   -> addo (s o) (s o) q               ));
+ *   runN  2    q   qh (REPR (fun q   -> addo o (s o) q                   ));
+ *   runN  2    q   qh (REPR (fun q   -> addo (s o) (s o) q               ));
+ *   runN  1    q   qh (REPR (fun q   -> addo q (s o) (s o)               ));
+ *   runN  1    q   qh (REPR (fun q   -> addo (s o) q (s o)               ));
+ *   runN  2    q   qh (REPR (fun q   -> addo q (s o) (s o)               ));
+ *   runN  2    q   qh (REPR (fun q   -> addo (s o) q (s o)               ));
+ *   runN (-1) qr  qrh (REPR (fun q r -> addo q r (s (s (s (s o))))       ));
+ * 
+ *   runN  1    q   qh (REPR (fun q   -> mulo o (s o) q                   ));
+ *   runN  1    q   qh (REPR (fun q   -> mulo (s (s o)) (s (s o)) q       ));
+ *   runN  2    q   qh (REPR (fun q   -> mulo o (s o) q                   ));
+ *   runN  1    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s o))       ));
+ *   runN  1    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s (s o)))   ));
+ *   runN  2    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s o))       ));
+ *   runN  2    q   qh (REPR (fun q   -> mulo q (s (s o)) (s (s (s o)))   ));
+ * 
+ *   runN  1    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s o))      ));
+ *   runN  1    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s (s o)))  ));
+ *   runN  2    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s o))      ));
+ *   runN  2    q   qh (REPR (fun q   -> mulo (s (s o)) q (s (s (s o)))  ));
+ * 
+ *   runN  1   qr  qrh (REPR (fun q r -> mulo q (s o) r                  ));
+ *   runN 10   qr  qrh (REPR (fun q r -> mulo q (s o) r                  ));
+ * 
+ *   runN  1   qr  qrh (REPR (fun q r -> mulo (s o) q r                  ));
+ *   runN 10   qr  qrh (REPR (fun q r -> mulo (s o) q r                  ));
+ * 
+ *   runN  1   (succ q) (\*qr*\)  qrh (REPR (fun q r -> mulo q r (s o)                  ));
+ * 
+ *   runN  1    q   qh (REPR (fun q   -> mulo (s o) (s o) q              ));
+ *   runN  1   qr  qrh (REPR (fun q r -> mulo q r (s (s (s (s o))))      ));
+ *   runN  3   qr  qrh (REPR (fun q r -> mulo q r (s (s (s (s o))))      ))
+ * 
+ * let () =
+ *   runN   1   qr  qrh (REPR (fun q r   -> mulo q r o                   ));
+ *   runN   3  qrs qrsh (REPR (fun p q r -> mulo p q r                   ));
+ *   runN  10  qrs qrsh (REPR (fun q r s -> mulo q r s                   )) *)

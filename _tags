@@ -22,8 +22,8 @@ true: short_paths
 <regression/test0*.ml> : use_pa_minikanren, package(GT.syntax.all)
 
 ####################################################################
-<ppxnew/pp_distrib.*>:  package(ppx_driver,ppx_type_conv), make_pp_distrib, linkall
-<ppxnew/ppx_distrib.*>: package(ppx_core,ppx_type_conv)
+<ppxnew/pp_distrib.*>:  package(ppx_driver), make_pp_distrib, linkall
+<ppxnew/ppx_distrib.*>: package(ppx_core,ppx_driver)
 <ppxnew/ppx_distrib_expander.*>: package(ppx_core,ppx_metaquot)
 
 <regression_ppx/test*.*>: package(GT), predicates(custom_ppx), ppx(ppxnew/pp_distrib.native --as-ppx)

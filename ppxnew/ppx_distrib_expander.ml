@@ -1625,9 +1625,8 @@ let prepare_distribs ~loc tdecl fmap_decl =
      ~expr:(pmod_apply ~loc
         (pmod_ident ~loc (mknoloc @@ Lident (match tdecl.ptype_params with [] -> "Fmap" | xs -> sprintf "Fmap%d" (List.length xs)) ))
         (pmod_ident ~loc (mknoloc @@ Lident "T")) )
-  ; pstr_value ~loc Asttypes.Nonrecursive @@ List.map ~f:(fun {pcd_name; pcd_args} ->
-      let names = get_param_names pcd_args in
-      (* let open Exp in *)
+  ] @ (List.map constructors ~f:(fun {pcd_name; pcd_args} ->
+      let names = get_param_names pcd_args |> List.mapi ~f:(fun i _ -> sprintf "a%d" i) in
       let body =
         let constr_itself args = econstruct (constructor_declaration ~loc ~name:(mknoloc pcd_name.txt) ~res:None ~args:pcd_args) args in
         match names with
@@ -1637,12 +1636,14 @@ let prepare_distribs ~loc tdecl fmap_decl =
             constr_itself (Some (pexp_tuple ~loc @@ List.map ~f:(fun name -> pexp_ident ~loc @@ mknoloc (Lident name)) xs))
       in
       let body = [%expr inj [%e pexp_apply ~loc (pexp_ident ~loc distrib_lid) [nolabel, body] ] ] in
+      pstr_value ~loc Asttypes.Nonrecursive [
       value_binding ~loc ~pat:(ppat_var ~loc @@ lower_lid pcd_name)
         ~expr:(match names with
         | [] -> pexp_fun ~loc nolabel None (ppat_construct ~loc (mknoloc (Lident "()")) None) body
         | names -> List.fold_right ~f:(fun name acc -> pexp_fun ~loc nolabel None (ppat_var ~loc @@ mknoloc name) acc) names ~init:body)
-    ) constructors
-  ]
+    ]
+    )
+    )
 
 let prepare_fmap ~loc tdecl =
   let open Location in
@@ -1740,39 +1741,32 @@ let revisit_adt ~loc tdecl ctors =
   (match functor_typ with Some functor_typ -> [ pstr_type ~loc Nonrecursive [functor_typ]] | None -> [])
    @ typ_to_add
 
+let has_to_gen_attr (xs: attributes) =
+  try let _ = List.find ~f:(fun (name,_) -> String.equal name.Location.txt "distrib") xs in
+      true
+  with Not_found -> false
 
-module Sexp_of = struct
-  (* let type_extension ty = Sig_generate_sexp_of.type_of_sexp_of ~loc:ty.ptyp_loc ty *)
-  (* let core_type ty = *)
-  (*   Str_generate_sexp_of.sexp_of_type Renaming.identity ty *)
-  (*   |> Fun_or_match.expr ~loc:ty.ptyp_loc *)
-  (* ;; *)
+let suitable_tydecl_wrap ~on_ok ~on_fail tdecl =
+  match tdecl.ptype_kind with
+  | Ptype_variant cs when Option.is_none tdecl.ptype_manifest &&
+                          has_to_gen_attr tdecl.ptype_attributes ->
+    Attribute.explicitly_drop#type_declaration tdecl;
+    on_ok cs { tdecl with ptype_attributes = [] }
+  | _ -> on_fail ()
 
-  (* let sig_type_decl = Sig_generate_sexp_of.mk_sig *)
-  (* let sig_exception = Sig_generate_sexp_of.mk_sig_exn *)
+let suitable_tydecl =
+  suitable_tydecl_wrap ~on_ok:(fun _ _ -> true) ~on_fail:(fun () -> false)
 
-  let str_type_decl ~loc ~path (flg,tdls) =
-    let wrap_tydecls loc ts =
-      let f tdecl =
-        match tdecl.ptype_kind with
-        | Ptype_variant cs when Option.is_none tdecl.ptype_manifest ->
-            revisit_adt ~loc tdecl cs
-        | _ -> failwith "Only variant types without manifest are supported"
-      in
-      List.concat (List.map ~f ts)
+let str_type_decl ~loc (flg,tdls) =
+  let wrap_tydecls loc ts =
+    let f tdecl =
+      suitable_tydecl_wrap tdecl
+        ~on_ok:(fun cs tdecl -> revisit_adt ~loc tdecl cs)
+        ~on_fail:(fun () ->
+            failwith "Only variant types without manifest are supported")
     in
+    List.concat (List.map ~f ts)
+  in
+  wrap_tydecls loc tdls
 
-    (* Str_generate_sexp_of.sexp_of_tds *)
-    [ (* pstr_type ~loc flg tdls *)
-    ] @ (wrap_tydecls loc tdls)
 
-  (* let str_exception = Str_generate_sexp_of.sexp_of_exn *)
-end
-
-(* module Of_sexp = struct *)
-(*   let type_extension ty = Sig_generate_of_sexp.type_of_of_sexp ~loc:ty.ptyp_loc ty *)
-(*   let core_type = Str_generate_of_sexp.type_of_sexp *)
-
-(*   let sig_type_decl = Sig_generate_of_sexp.mk_sig *)
-(*   let str_type_decl = Str_generate_of_sexp.tds_of_sexp *)
-(* end *)
