@@ -10,7 +10,6 @@ let () =
           let m = object(self)
             inherit Ast_traverse.map as super
             method! structure ss =
-              print_endline "pizda";
               List.concat @@ List.map ~f:(self#do_structure_item) ss
 
             method do_structure_item si =
@@ -25,7 +24,6 @@ let () =
                     )
               | _ -> [super#structure_item si]
           end in
-        print_endline "WTF";
         m#structure ss
       )
 

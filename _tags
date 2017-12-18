@@ -13,7 +13,7 @@ true: short_paths
 <src/*.ml*>: package(GT)
 
 <regression/orig/*>: traverse
-<regression/test*.native> or <regression/test*.byte>: package(unix),package(str)
+<regression/test*.native> or <regression/test*.byte>: package(unix,str)
 <regression/stlc.*>: syntax(camlp5o), package(GT.syntax.all)
 
 <regression/test0*.*>: package(GT,GT.syntax.all), syntax(camlp5o)
@@ -22,11 +22,13 @@ true: short_paths
 <regression/test0*.ml> : use_pa_minikanren, package(GT.syntax.all)
 
 ####################################################################
-<ppxnew/pp_distrib.*>:  package(ppx_driver), make_pp_distrib, linkall
-<ppxnew/ppx_distrib.*>: package(ppx_core,ppx_driver)
-<ppxnew/ppx_distrib_expander.*>: package(ppx_core,ppx_metaquot)
+<ppxnew/pp_distrib.*>:  package(ppx_driver,GT.expander), make_pp_distrib, linkall
+<ppxnew/ppx_distrib.*>: package(ppx_core,ppx_driver,GT.expander)
+<ppxnew/ppx_distrib_expander.*>: package(ppx_core,ppx_metaquot,GT.expander)
+
 
 <regression_ppx/test*.*>: package(GT), predicates(custom_ppx), ppx(ppxnew/pp_distrib.native --as-ppx)
+<regression_ppx/*.native>: package(unix)
 
 ####################################################################
 # JSOO toplevel related stuff

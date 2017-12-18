@@ -1,5 +1,7 @@
 PKG ppx_core
 PKG ppx_driver
 PKG ppx_metaquot
+PKG GT.expander
+
 S .
 B ../_build/ppxnew

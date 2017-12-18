@@ -34,10 +34,12 @@ ppx:
 		ppx/ppx_ocanren_all.native
 
 ppx_tests: ppxnew
-	$(OB) -Is src,regression regression_ppx/test004peano.native
+	$(OB) -Is src,regression regression_ppx/test004peano.native \
+		regression_ppx/test005lang.native
 
 ppxnew:
-	$(OB) -Is src ppxnew/ppx_distrib.cma ppxnew/ppx_distrib.cmxa ppxnew/pp_distrib.native
+	$(OB) -Is src ppxnew/ppx_distrib.cma ppxnew/ppx_distrib.cmxa \
+		ppxnew/pp_distrib.native
 
 plugin:
 	$(OB) camlp5/pa_minikanren.cmo
