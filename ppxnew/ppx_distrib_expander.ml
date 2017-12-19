@@ -83,6 +83,7 @@ let lower_lid lid = Location.{lid with txt = mangle_construct_name lid.Location.
 module Location = struct
   include Location
   let mknoloc txt = { txt; loc = none }
+  let map_loc ~f l = {l with txt = f l.txt}
 end
 
 let prepare_distribs ~loc tdecl fmap_decl =
@@ -199,7 +200,7 @@ let revisit_adt ~loc tdecl ctors =
     then
       let fmap_for_typ = prepare_fmap ~loc full_t in
       let show_stuff = Ppx_gt_expander.str_type_decl ~loc ~path:"" (Recursive, [tdecl]) true false in
-      None, (pstr_type ~loc Nonrecursive [full_t]) :: show_stuff @ (prepare_distribs ~loc full_t fmap_for_typ)
+      [], (pstr_type ~loc Nonrecursive [full_t]) :: show_stuff @ (prepare_distribs ~loc full_t fmap_for_typ)
     else
       let functor_typ =
         let extra_params = FoldInfo.map mapa
@@ -209,23 +210,43 @@ let revisit_adt ~loc tdecl ctors =
         {full_t with ptype_params = full_t.ptype_params @ extra_params;
                      ptype_name = { full_t.ptype_name with txt = "g" ^ full_t.ptype_name.txt }}
       in
+
       let fmap_for_typ = prepare_fmap ~loc functor_typ in
       let show_stuff = Ppx_gt_expander.str_type_decl ~loc ~path:"" (Recursive, [functor_typ]) true false in
-      (Some functor_typ), (show_stuff @ [fmap_for_typ] @ (prepare_distribs ~loc functor_typ fmap_for_typ))
-  in
-(*      let non_logic_typ =
+
+      let ground_typ =
         let alias_desc =
-          let old_params = List.map fst tdecl.ptype_params  in
+          let old_params = List.map ~f:fst tdecl.ptype_params  in
           let extra_params = FoldInfo.map ~f:(fun {FoldInfo.rtyp} -> rtyp)  mapa in
           Ptyp_constr (Location.mknoloc (Longident.Lident functor_typ.ptype_name.Asttypes.txt), old_params @ extra_params)
         in
-        str_type_ ~loc Recursive
+        pstr_type ~loc Recursive
           [ { tdecl with ptype_kind = Ptype_abstract
             ; ptype_manifest = Some { ptyp_loc = Location.none; ptyp_attributes = []; ptyp_desc = alias_desc}
             } ]
-     in*)
-  (match functor_typ with Some functor_typ -> [ pstr_type ~loc Nonrecursive [functor_typ]] | None -> [])
-   @ typ_to_add
+      in
+      (* let logic_typ =
+       *   let alias_desc =
+       *     let old_params = List.map ~f:fst tdecl.ptype_params  in
+       *     let extra_params = FoldInfo.map ~f:(fun {FoldInfo.ltyp} -> ltyp)  mapa in
+       *     ptyp_constr ~loc (Located.lident ~loc "logic")
+       *       [ Ptyp_constr (Location.mknoloc (Longident.Lident functor_typ.ptype_name.Asttypes.txt), old_params @ extra_params)
+       *       ]
+       *   in
+       *   pstr_type ~loc Recursive
+       *     [ { tdecl with
+       *         ptype_kind = Ptype_abstract
+       *       ; ptype_manifest = Some { ptyp_loc = Location.none; ptyp_attributes = []; ptyp_desc = alias_desc}
+       *       ; ptype_name = Location.map_loc ~f:((^)"l") tdecl.ptype_name
+       *       } ]
+       * in *)
+      let generated_types =
+        let functor_typ = pstr_type ~loc Nonrecursive [functor_typ] in
+        [ functor_typ; ground_typ (*; logic_typ *) ]
+      in
+      (generated_types), (show_stuff @ [fmap_for_typ] @ (prepare_distribs ~loc functor_typ fmap_for_typ))
+  in
+  functor_typ @ typ_to_add
 
 let has_to_gen_attr (xs: attributes) =
   try let _ = List.find ~f:(fun (name,_) -> String.equal name.Location.txt "distrib") xs in
