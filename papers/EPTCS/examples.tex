@@ -130,7 +130,7 @@ let perm l = map (fun a -> from_nat_list a#prj)
                      (sort$^o$ (inj_nat_list l) r)
                      (sort$^o$ q r)
          )
-         (Stream.take ~n:(fact @@ length l)))
+         (Stream.take ~n:(fact (length l))))
 \end{lstlisting}
 
 Note, for sorting the original list we used exactly the same primitive. Note also,
