@@ -18,7 +18,8 @@ Another approach is to utilize \emph{ad hoc} polymorphism and provide a type-spe
 Some \miniKanren implementations, such as Molog\footnote{\url{https://github.com/acfoltzer/Molog}} and
 MiniKanrenT\footnote{\url{https://github.com/jvranish/MiniKanrenT}}, both for Haskell, can be mentioned as examples.
 While preserving strong typing, this approach requires a lot of ``boilerplate''
-code to be written, so some automation --- for example, using Template Haskell\footnote{\url{https://wiki.haskell.org/Template_Haskell}} ---
+code to be written, so some automation --- for example, using 
+Template Haskell\footnote{\url{https://wiki.haskell.org/Template_Haskell}}~\cite{SheardTMH}---
 is desirable. In~\cite{TypedLogicalVariables} a separate type class was introduced to both perform the unification
 and detect free logical variables in end-user data structures. The requirement for end user to provide a way to represent
 logical variables in custom data structures looks a bit superfluous for us\footnote{make stronger} since these logical variables would require proper
