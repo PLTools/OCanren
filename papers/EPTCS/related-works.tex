@@ -1,7 +1,7 @@
 \section{Related Works}
 \label{sec:relworks}
 
-There is a predictable glitch in implementing \miniKanren for a strongly typed language.
+There is a predictable difficulty in implementing \miniKanren for a strongly typed language.
 Designed in the metaprogramming-friendly and dynamically typed realm of Scheme/Racket, the original
 \miniKanren implementation pays very little attention to what has a significant importance in (specifically)
 ML or Haskell. In particular, one of the capstone constructs of \miniKanren~--- unification~--- has to work for
@@ -21,26 +21,26 @@ While preserving strong typing, this approach requires a lot of ``boilerplate''
 code to be written, so some automation --- for example, using Template Haskell\footnote{\url{https://wiki.haskell.org/Template_Haskell}} ---
 is desirable. In~\cite{TypedLogicalVariables} a separate type class was introduced to both perform the unification
 and detect free logical variables in end-user data structures. The requirement for end user to provide a way to represent
-logical variables in custom data structures looks a bit superfluous for us\footnote{make stronger} since these logical variables would require proper
+logical variables in custom data structures looks superfluous for us since these logical variables would require proper
 handling in the rest of the code outside the logical programming subsystem.
 
 There is, actually, another potential approach, but we do not know if anybody has tried
 it: implementing unification for a generic representation of types as sum-of-products and fixpoints of
 functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any type for which a representation
-is provided. We assume that implementing this representation would require less boilerplate code to be written.
+is provided. We believe that implementing this representation would require less boilerplate code to be written.
 
 As follows from this exposition, a typed embedding of \miniKanren in OCaml can be done with
 a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are 
-number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
+a number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
 for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power to Haskell
 type classes, and even though sometimes the object-oriented layer of the language can be used to mimic
 desirable behavior, the result, as a rule, is far from satisfactory. Existing proposals for \emph{ad hoc} polymorphism (for example,
 modular implicits~\cite{Implicits}) require patching the compiler, which we want to avoid. Therefore, we 
-take a different approach, implementing polymorphic unification once and for all logical types~---~a purely \emph{ad hoc} 
+take a different approach, implementing polymorphic unification once and for all logical types~--- a purely \emph{ad hoc} 
 approach, since the features which would provide a less \emph{ad hoc} solution are not yet well integrated into the language. To deal
-with user-defined types in the relational subsystem, we propose to use their logical representations\footnote{mention the right section here}, which free an end user
-from the burden to maintain logical variables, and we use generic programming to build conversions from and to logical
-representations almost effortlessly\footnote{make stronger}.
+with user-defined types in the relational subsystem, we propose to use their logical representations (see Section~\ref{sec:injection}), 
+which free an end user from the burden of maintaining logical variables, and we use generic programming to build conversions from and to logical
+representations in a systematic manner.
 
 
 
