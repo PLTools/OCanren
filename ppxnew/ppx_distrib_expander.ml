@@ -166,24 +166,34 @@ let prepare_fmap ~loc tdecl =
       ) param_names ~init:(Exp.function_ cases) ] ]
 
 
-
+let mangle_string s = s ^ "_ltyp"
 let mangle_lident lident =
-  let suffix s = s ^ "_ltyp" in
   let rec helper = function
-    | Lident s -> Lident (suffix s)
-    | Ldot (l, s) -> Ldot (l, suffix s)
+    | Lident s -> Lident (mangle_string s)
+    | Ldot (l, s) -> Ldot (l, mangle_string s)
     | Lapply (l, r) -> Lapply (l, helper r)
   in
   helper lident
 
 let mangle_core_type typ =
   let rec helper typ =
-    typ
+    let loc = typ.ptyp_loc in
+    match typ with
+    | [%type: _] -> assert false
+    | [%type: string] -> [%type: string logic]
+    | _ ->
+        match typ.ptyp_desc with
+        | Ptyp_var s -> typ
+        | Ptyp_constr ({txt; loc}, params) ->
+            ptyp_constr ~loc {loc; txt = mangle_lident txt} @@
+            List.map ~f:helper params
+        | _ -> failwith "should not happen"
   in
-  assert false
+  helper typ
 
 let revisit_adt ~loc tdecl ctors =
   let der_typ_name = tdecl.ptype_name.Asttypes.txt in
+
   (* Let's forget about mutal recursion for now *)
   (* For every constructor argument we need to put ground types to parameters *)
   let mapa, full_t =
@@ -199,7 +209,11 @@ let revisit_adt ~loc tdecl ctors =
                     | Some {FoldInfo.param_name } ->
                       (n, map, (ptyp_var ~loc param_name)::args)
                     | None ->
-                      (* We need to mangle whole constructor *)
+                        (* We need to mangle whole constructor *)
+                        let ltyp = mangle_core_type typ in
+                        let new_name = sprintf "a%d" n in
+                        (n+1, FoldInfo.extend new_name typ ltyp map,
+                         (ptyp_var ~loc new_name)::args)
                   end
                   | _ ->
                     match FoldInfo.param_for_rtyp typ map with
@@ -221,12 +235,27 @@ let revisit_adt ~loc tdecl ctors =
       |> (fun (_, mapa, cs) -> mapa, {tdecl with ptype_kind = Ptype_variant cs})
   in
   (* now we need to add some parameters if we collected ones *)
-  let functor_typ, typ_to_add =
+  let ans =
     if FoldInfo.is_empty mapa
     then
       let fmap_for_typ = prepare_fmap ~loc full_t in
-      let show_stuff = Ppx_gt_expander.str_type_decl ~loc ~path:"" (Recursive, [tdecl]) true false in
-      [], (pstr_type ~loc Nonrecursive [full_t]) :: show_stuff @ (prepare_distribs ~loc full_t fmap_for_typ)
+      let show_stuff = Ppx_gt_expander.str_type_decl ~loc ~path:""
+          (Recursive, [tdecl]) true false
+      in
+      let ltyp =
+        pstr_type ~loc Recursive
+          [ { tdecl with
+              ptype_kind = Ptype_abstract
+            ; ptype_name = Located.mk ~loc (mangle_string der_typ_name)
+            ; ptype_manifest = Some
+                  (ptyp_constr ~loc (Located.lident ~loc "logic")
+                     [ ptyp_constr ~loc (Located.lident ~loc der_typ_name) @@
+                       List.map ~f:fst tdecl.ptype_params
+
+                     ])
+            } ]
+      in
+      (pstr_type ~loc Nonrecursive [full_t]) :: show_stuff @ (prepare_distribs ~loc full_t fmap_for_typ) @ [ltyp]
     else
       let functor_typ =
         let extra_params = FoldInfo.map mapa
@@ -264,16 +293,16 @@ let revisit_adt ~loc tdecl ctors =
           [ { tdecl with
               ptype_kind = Ptype_abstract
             ; ptype_manifest = Some { ptyp_loc = Location.none; ptyp_attributes = []; ptyp_desc = alias_desc.ptyp_desc}
-            ; ptype_name = Location.map_loc ~f:((^)"l") tdecl.ptype_name
+            ; ptype_name = Location.map_loc ~f:mangle_string tdecl.ptype_name
             } ]
       in
-      let generated_types =
-        let functor_typ = pstr_type ~loc Nonrecursive [functor_typ] in
-        [ functor_typ; ground_typ; logic_typ ]
-      in
-      (generated_types), (show_stuff @ [fmap_for_typ] @ (prepare_distribs ~loc functor_typ fmap_for_typ))
+      let distribs = prepare_distribs ~loc functor_typ fmap_for_typ in
+      let functor_typ = pstr_type ~loc Nonrecursive [functor_typ] in
+      [ functor_typ; fmap_for_typ] @ show_stuff @
+      distribs @
+      [ground_typ; logic_typ ]
   in
-  functor_typ @ typ_to_add
+  ans
 
 let has_to_gen_attr (xs: attributes) =
   try let _ = List.find ~f:(fun (name,_) -> String.equal name.Location.txt "distrib") xs in
