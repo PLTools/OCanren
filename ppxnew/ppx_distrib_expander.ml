@@ -165,6 +165,23 @@ let prepare_fmap ~loc tdecl =
       | name -> pexp_fun ~loc nolabel None (ppat_var ~loc @@ mknoloc ("f"^name))
       ) param_names ~init:(Exp.function_ cases) ] ]
 
+
+
+let mangle_lident lident =
+  let suffix s = s ^ "_ltyp" in
+  let rec helper = function
+    | Lident s -> Lident (suffix s)
+    | Ldot (l, s) -> Ldot (l, suffix s)
+    | Lapply (l, r) -> Lapply (l, helper r)
+  in
+  helper lident
+
+let mangle_core_type typ =
+  let rec helper typ =
+    typ
+  in
+  assert false
+
 let revisit_adt ~loc tdecl ctors =
   let der_typ_name = tdecl.ptype_name.Asttypes.txt in
   (* Let's forget about mutal recursion for now *)
@@ -173,16 +190,25 @@ let revisit_adt ~loc tdecl ctors =
     List.fold_right
       ~f:(fun cd (n, acc_map,cs) ->
           let n,map2,new_args = List.fold_right
-            ~f:(fun typ (n, map,args) ->
-                  match typ with
-                  | [%type: _] -> assert false
-                  | {ptyp_desc = Ptyp_var s; _} -> (n, map, typ::args)
-                  | arg ->
-                      match FoldInfo.param_for_rtyp arg map with
-                      | Some {param_name; } -> (n, map, (ptyp_var ~loc param_name)::args)
-                      | None ->
-                          let new_name = sprintf "a%d" n in
-                          (n+1, FoldInfo.extend new_name arg arg map, (ptyp_var ~loc new_name)::args)
+            ~f:(fun typ (n,map,args) ->
+                  match typ.ptyp_desc with
+                  | Ptyp_any -> assert false
+                  | Ptyp_var s -> (n, map, typ::args)
+                  | Ptyp_constr ({txt;loc}, params) -> begin
+                    match FoldInfo.param_for_rtyp typ map with
+                    | Some {FoldInfo.param_name } ->
+                      (n, map, (ptyp_var ~loc param_name)::args)
+                    | None ->
+                      (* We need to mangle whole constructor *)
+                  end
+                  | _ ->
+                    match FoldInfo.param_for_rtyp typ map with
+                    | Some {FoldInfo.param_name } ->
+                      (n, map, (ptyp_var ~loc param_name)::args)
+                    | None ->
+                      let new_name = sprintf "a%d" n in
+                      (n+1, FoldInfo.extend new_name typ typ map,
+                       (ptyp_var ~loc new_name)::args)
               )
             (match cd.pcd_args with Pcstr_tuple tt -> tt | Pcstr_record _ -> assert false)
             ~init:(n, acc_map,[])
@@ -225,24 +251,25 @@ let revisit_adt ~loc tdecl ctors =
             ; ptype_manifest = Some { ptyp_loc = Location.none; ptyp_attributes = []; ptyp_desc = alias_desc}
             } ]
       in
-      (* let logic_typ =
-       *   let alias_desc =
-       *     let old_params = List.map ~f:fst tdecl.ptype_params  in
-       *     let extra_params = FoldInfo.map ~f:(fun {FoldInfo.ltyp} -> ltyp)  mapa in
-       *     ptyp_constr ~loc (Located.lident ~loc "logic")
-       *       [ Ptyp_constr (Location.mknoloc (Longident.Lident functor_typ.ptype_name.Asttypes.txt), old_params @ extra_params)
-       *       ]
-       *   in
-       *   pstr_type ~loc Recursive
-       *     [ { tdecl with
-       *         ptype_kind = Ptype_abstract
-       *       ; ptype_manifest = Some { ptyp_loc = Location.none; ptyp_attributes = []; ptyp_desc = alias_desc}
-       *       ; ptype_name = Location.map_loc ~f:((^)"l") tdecl.ptype_name
-       *       } ]
-       * in *)
+      let logic_typ =
+        let alias_desc =
+          let old_params = List.map ~f:fst tdecl.ptype_params  in
+          let extra_params = FoldInfo.map ~f:(fun {FoldInfo.ltyp} -> ltyp) mapa in
+          ptyp_constr ~loc (Located.lident ~loc "logic")
+            [ ptyp_constr ~loc (Located.lident ~loc functor_typ.ptype_name.Asttypes.txt)
+                (old_params @ extra_params)
+            ]
+        in
+        pstr_type ~loc Recursive
+          [ { tdecl with
+              ptype_kind = Ptype_abstract
+            ; ptype_manifest = Some { ptyp_loc = Location.none; ptyp_attributes = []; ptyp_desc = alias_desc.ptyp_desc}
+            ; ptype_name = Location.map_loc ~f:((^)"l") tdecl.ptype_name
+            } ]
+      in
       let generated_types =
         let functor_typ = pstr_type ~loc Nonrecursive [functor_typ] in
-        [ functor_typ; ground_typ (*; logic_typ *) ]
+        [ functor_typ; ground_typ; logic_typ ]
       in
       (generated_types), (show_stuff @ [fmap_for_typ] @ (prepare_distribs ~loc functor_typ fmap_for_typ))
   in
