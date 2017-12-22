@@ -38,8 +38,8 @@ ppx_tests: ppxnew
 		regression_ppx/test005lang.native
 
 ppxnew:
-	$(OB) -Is src ppxnew/ppx_distrib.cma ppxnew/ppx_distrib.cmxa \
-		ppxnew/pp_distrib.native
+	$(OB) -Is src ppxnew/ppx_distrib.cma ppxnew/ppx_distrib.cmxa ppxnew/ppx_noinjected.cmxa \
+		ppxnew/pp_distrib.native ppxnew/pp_noinjected.native
 
 plugin:
 	$(OB) camlp5/pa_minikanren.cmo

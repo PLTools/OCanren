@@ -182,6 +182,8 @@ let () = dispatch (fun hook ->
      flag ["ocaml";"compile";"native";"keep_asm"] (S[A"-S"]);
      flag ["ocaml";"byte";  "link";"make_pp_distrib"] (S[A"ppxnew/ppx_distrib.cma"]);
      flag ["ocaml";"native";"link";"make_pp_distrib"] (S[A"ppxnew/ppx_distrib.cmxa"]);
+     flag ["ocaml";"byte";  "link";"make_pp_noinjected"] (S[A"ppxnew/ppx_noinjected.cma"]);
+     flag ["ocaml";"native";"link";"make_pp_noinjected"] (S[A"ppxnew/ppx_noinjected.cmxa"]);
 
      (* cppo-related stuff *)
      let cppo_rules ext =
