@@ -27,7 +27,7 @@ module TypeNameMap = Map.M(String)
 
 module FoldInfo = struct
   (* using fields of structure below we can generate ground type and the logic type *)
-  type item = {param_name:string; rtyp: core_type; ltyp: core_type}
+  type item = {param_name:string; rtyp: core_type; ltyp: core_type;}
   exception ItemFound of item
   type t = item list
 
@@ -86,12 +86,15 @@ module Location = struct
   let map_loc ~f l = {l with txt = f l.txt}
 end
 
+let the_functor_name tdecl = "For_" ^ tdecl.ptype_name.txt
+
 let prepare_distribs ~loc tdecl fmap_decl =
   let open Location in
   let open Longident in
   let Ptype_variant constructors = tdecl.ptype_kind in
 
-  let gen_module_str = Location.mknoloc @@ "For_" ^ tdecl.ptype_name.txt in
+  let gen_module_str = Location.mknoloc @@ the_functor_name tdecl in
+
   let distrib_lid = mknoloc Longident.(Ldot (Lident gen_module_str.txt, "distrib")) in
   [ pstr_module ~loc @@ module_binding ~loc ~name:(Location.mknoloc "T")
      ~expr:(pmod_structure ~loc
@@ -167,13 +170,15 @@ let prepare_fmap ~loc tdecl =
 
 
 let mangle_string s = s ^ "_ltyp"
-let mangle_lident lident =
+let map_deepest_lident ~f lident =
   let rec helper = function
-    | Lident s -> Lident (mangle_string s)
-    | Ldot (l, s) -> Ldot (l, mangle_string s)
+    | Lident s -> Lident (f s)
+    | Ldot (l, s) -> Ldot (l, f s)
     | Lapply (l, r) -> Lapply (l, helper r)
   in
   helper lident
+
+let mangle_lident lident = map_deepest_lident ~f:mangle_string lident
 
 let mangle_core_type typ =
   let rec helper typ =
@@ -187,6 +192,24 @@ let mangle_core_type typ =
         | Ptyp_constr ({txt; loc}, params) ->
             ptyp_constr ~loc {loc; txt = mangle_lident txt} @@
             List.map ~f:helper params
+        | _ -> failwith "should not happen"
+  in
+  helper typ
+
+let mangle_reifier typ =
+  let rec helper typ =
+    let loc = typ.ptyp_loc in
+    match typ with
+    | [%type: _] -> assert false
+    | [%type: string] -> [%expr MiniKanren.reify]
+    | _ ->
+        match typ.ptyp_desc with
+        | Ptyp_var s -> pexp_ident ~loc @@ Located.lident ~loc ("f" ^ s)
+        | Ptyp_constr ({txt; loc}, params) ->
+          (* ptyp_constr ~loc {loc; txt = mangle_lident txt} @@ *)
+          pexp_apply ~loc
+            (pexp_ident ~loc @@ Located.mk ~loc (map_deepest_lident ~f:(fun s -> s^"_reify") txt))  @@
+            List.map ~f:(fun typ -> Nolabel, helper typ) params
         | _ -> failwith "should not happen"
   in
   helper typ
@@ -298,9 +321,25 @@ let revisit_adt ~loc tdecl ctors =
       in
       let distribs = prepare_distribs ~loc functor_typ fmap_for_typ in
       let functor_typ = pstr_type ~loc Nonrecursive [functor_typ] in
+      let the_reifier =
+        let reifiers = FoldInfo.map ~f:(fun {FoldInfo.rtyp} -> mangle_reifier rtyp) mapa in
+        pstr_value ~loc Recursive
+          [ value_binding ~loc ~pat:(ppat_var ~loc @@ Located.mk ~loc (der_typ_name ^ "_reify"))
+              ~expr:[%expr fun h ->
+                [%e
+                   pexp_apply ~loc
+                     (pexp_ident ~loc @@ Location.mknoloc Longident.(Ldot (Lident (the_functor_name tdecl), "reify")))
+                     (List.map ~f:(fun t -> (Nolabel,t)) (reifiers @ [[%expr h]]))
+                ]
+              ]
+          ]
+
+      in
+
+
       [ functor_typ; fmap_for_typ] @ show_stuff @
       distribs @
-      [ground_typ; logic_typ ]
+      [ground_typ; logic_typ; the_reifier ]
   in
   ans
 
