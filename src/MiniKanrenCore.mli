@@ -228,6 +228,31 @@ object
   method reify: (helper -> ('a, 'b) injected -> 'b) -> 'b
 end
 
+module RunCurried : sig
+  (** {3 Predefined numerals (one to five)} *)
+  val one : unit ->
+           ((('a, 'b) injected -> goal) ->
+            State.t -> ('a, 'b) injected * State.t Stream.internal) *
+           (('c, 'd) injected -> State.t -> ('c, 'd) reified) * ('e -> 'e)
+
+  (** Successor function *)
+  val succ : (unit ->
+            ('a -> State.t -> 'b) * ('c -> State.t -> 'd) * ('e -> 'f * 'g)) ->
+           unit ->
+           ((('h, 'i) injected -> 'a) -> State.t -> ('h, 'i) injected * 'b) *
+           (('j, 'k) injected * 'c -> State.t -> ('j, 'k) reified * 'd) *
+           ('l * 'e -> ('l * 'f) * 'g)
+
+
+  val run :
+           (unit ->
+            ('a -> State.t -> 'b) * ('c -> State.t -> 'd) *
+            ('b -> 'c * State.t Stream.internal)) ->
+           'a -> (Timings.t -> 'd Stream.t -> 'e) -> 'e
+
+end
+
+
 (** Successor function *)
 val succ : (unit ->
             ('a -> 'b goal') * ('c -> 'd -> 'e) * (State.t Stream.t -> 'f -> 'g) * ('h -> 'i * 'j)) ->

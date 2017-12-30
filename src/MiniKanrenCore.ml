@@ -372,11 +372,10 @@ module Var =
 module VarSet = Set.Make(Var)
 module VarTbl = Hashtbl.Make(Var)
 
+type helper = < isVar : 'a . 'a -> bool >
+
+include (struct
 type ('a, 'b) injected = 'a
-
-external lift : 'a -> ('a, 'a) injected                      = "%identity"
-external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
-
 module type T1 =
   sig
     type 'a t
@@ -412,8 +411,6 @@ module type T6 =
     type ('a, 'b, 'c, 'd, 'e, 'f) t
     val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
   end
-
-type helper = < isVar : 'a . 'a -> bool >
 
 let to_var (c : helper) x r =
   if c#isVar x
@@ -481,10 +478,105 @@ module Fmap6 (T : T6) = struct
     else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) (r6 c) x)
 end
 
-let rec reify (c : helper) n =
+end : sig
+  type ('a, 'b) injected
+
+  val to_var: helper -> (('a,'b) injected as 'l) -> (helper -> 'l -> 'b) -> 'b
+module type T1 =
+  sig
+    type 'a t
+    val fmap : ('a -> 'b) -> 'a t -> 'b t
+  end
+
+module type T2 =
+  sig
+    type ('a, 'b) t
+    val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
+  end
+
+module type T3 =
+  sig
+    type ('a, 'b, 'c) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
+  end
+
+module type T4 =
+  sig
+    type ('a, 'b, 'c, 'd) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
+  end
+
+module type T5 =
+  sig
+    type ('a, 'b, 'c, 'd, 'e) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
+  end
+
+module type T6 =
+  sig
+    type ('a, 'b, 'c, 'd, 'e, 'f) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
+  end
+
+module Fmap (T : T1) :
+  sig
+    val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
+    val reify : (helper -> ('a,'b) injected -> 'b) -> helper -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap2 (T : T2) :
+  sig
+    val distrib : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> helper -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap3 (T : T3) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
+                helper -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap4 (T : T4) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
+                       (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected
+
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) ->
+                (helper -> ('e, 'f) injected -> 'f) -> (helper -> ('g, 'h) injected -> 'h) ->
+                helper -> (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap5 (T : T5) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
+                       (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected
+
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
+                (helper -> ('g, 'h) injected -> 'h) -> (helper -> ('i, 'j) injected -> 'j) ->
+                helper -> (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap6 (T : T6) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) T.t ->
+                       (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected
+
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
+                (helper -> ('g, 'h) injected -> 'h) -> (helper -> ('i, 'j) injected -> 'j) -> (helper -> ('k, 'l) injected -> 'l) ->
+                helper -> (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t logic as 'r) injected -> 'r
+  end
+
+end)
+
+external lift : 'a -> ('a, 'a) injected                      = "%identity"
+external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
+
+
+let rec reify (c : helper) (n: ('a,'a logic) injected)  =
   if c#isVar n
   then to_var c n reify
-  else Value n
+  else Value !!!n
 
 exception Not_a_value
 exception Occurs_check
@@ -1434,6 +1526,59 @@ let run n goalish f =
     printf "Run report:\n%s" @@ Log.report ()
   );
   result
+
+module ApplyAsStream = struct
+  (* There we have a tuple of logic variables and a stream
+   * and we want to make a stream of tuples
+   **)
+
+  (* every numeral is a function from tuple -> state -> reified_tuple *)
+  let one tup state = make_rr tup state
+
+  let succ prev (h,tl) state = (make_rr h state, prev tl state)
+
+  (* Usage: let reified_tuple_stream = wrap ((s s s 1) tuple) stream in ... *)
+  let wrap = Stream.map
+end
+
+module RunCurried =
+  struct
+
+    let one () =
+      (LogicAdder.(succ zero)), ApplyAsStream.one, ExtractDeepest.ext2
+    let succ n () =
+      let adder, app, ext = n () in
+      (LogicAdder.succ adder, ApplyAsStream.succ app, ExtractDeepest.succ ext)
+    let two () = succ one ()
+    let three () = succ two ()
+
+    let run n goalish f =
+      let adder, appN, ext = n () in
+      Log.clear ();
+      LOG[perf] (Log.run#enter);
+      let timings = Timings.make ~enabled:false in
+
+      let helper tup =
+        let args, stream = ext tup in
+        (* we normalize stream before reification *)
+        let stream =
+          Stream.Internal.bind stream (fun st -> Stream.Internal.of_list @@ State.normalize st args)
+        in
+        f timings @@ ApplyAsStream.wrap (appN args) (Stream.of_mkstream stream)
+      in
+      let result = helper (adder goalish @@ State.empty ()) in
+      LOG[perf] (
+        Log.run#leave;
+        printf "Run report:\n%s" @@ Log.report ()
+      );
+      result
+
+
+  (* let () = *)
+  (*   run (succ @@ succ one) *)
+  (*     (fun q r s -> (q === !!5) &&& (s === r)  &&& (q === r)) *)
+  (*     (fun _timings ss -> ss) *)
+end
 
 (** ************************************************************************* *)
 (** Tabling primitives                                                        *)
