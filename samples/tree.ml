@@ -19,6 +19,7 @@
 open Printf
 open GT
 open MiniKanren
+open MiniKanren.Std
 
 module Tree = struct
   module X = struct
@@ -53,7 +54,7 @@ module Tree = struct
 
   (* Injection *)
   let rec inj_tree : inttree -> ftree = fun tree ->
-     inj @@ distrib @@ GT.(gmap t inj_nat inj_tree tree)
+     inj @@ distrib @@ GT.(gmap t nat inj_tree tree)
 
   (* Projection *)
   let rec prj_tree : rtree -> inttree =
@@ -77,7 +78,7 @@ let rec inserto a t t' = conde [
 
 (* Top-level wrapper for insertion --- takes and returns non-logic data *)
 let insert : int -> inttree -> inttree = fun a t ->
-  run q (fun q  -> inserto (inj_nat a) (inj_tree t) q)
+  run q (fun q  -> inserto (nat a) (inj_tree t) q)
         (fun qs -> prj_tree (Stream.hd qs)#prj)
 
 (* Top-level wrapper for "inverse" insertion --- returns an integer, which
