@@ -22,10 +22,10 @@ true: short_paths
 <regression/test0*.ml> : use_pa_minikanren, package(GT.syntax.all)
 
 ####################################################################
-<ppxnew/pp_distrib.*>:    package(ppx_driver,GT.expander), make_pp_distrib, linkall
-<ppxnew/pp_noinjected.*>: package(ppx_driver), make_pp_noinjected, linkall
-<ppxnew/ppx_distrib.*>: package(ppx_core,ppx_driver,GT.expander)
-<ppxnew/ppx_noinjected.*>: package(ppx_core,ppx_driver,ppx_metaquot)
+<ppxnew/pp_distrib.*>:    package(ppx_driver,GT.expander), make_pp_distrib
+<ppxnew/pp_noinjected.*>: package(ppx_driver), make_pp_noinjected
+<ppxnew/ppx_distrib.*>: package(ppx_core,ppx_driver,GT.expander), linkall
+<ppxnew/ppx_noinjected.*>: package(ppx_core,ppx_driver,ppx_metaquot), linkall
 <ppxnew/ppx_distrib_expander.*>: package(ppx_core,ppx_metaquot,GT.expander)
 
 

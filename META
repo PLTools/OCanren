@@ -4,6 +4,39 @@ requires = "GT,unix"
 archive(byte) = "MiniKanren.cma"
 archive(native) = "MiniKanren.cmxa"
 
+package "distrib" (
+  requires(ppx_driver) = "base
+                          base.caml
+                          compiler-libs.common
+                          ppx_core
+                          ppx_driver
+                          GT.expander
+                          "
+
+  archive(ppx_driver,byte)   = "ppx_distrib.cma"
+  archive(ppx_driver,native) = "ppx_distrib.cmxa"
+  plugin(ppx_driver,byte)    = "ppx_distrib.cma"
+  plugin(ppx_driver,native)  = "ppx_distrib.cmxs"
+
+  # This is what jbuilder uses to find out the runtime dependencies of
+  # a preprocessor
+  ppx_runtime_deps = "GT.expander"
+
+  # This line makes things transparent for people mixing preprocessors
+  # and normal dependencies
+  requires(-ppx_driver) = ""
+)
+
+package "noinjected" (
+  requires(ppx_driver) = "base
+                          base.caml
+                          compiler-libs.common
+                          ppx_core
+                          ppx_driver
+                          "
+# TODO
+)
+
 package "ppx" (
   description = "PPX syntax extensionon top of ppx_deriving"
   #requires(-ppx_driver) = "ppx_deriving"

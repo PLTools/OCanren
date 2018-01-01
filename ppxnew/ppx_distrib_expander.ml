@@ -3,26 +3,6 @@ open Ast_builder.Default
 open Printf
 let (@@) = Caml.(@@)
 
-module Attrs = struct
-  let default =
-    Attribute.declare "sexp.default"
-      Attribute.Context.label_declaration
-      Ast_pattern.(pstr (pstr_eval __ nil ^:: nil))
-      (fun x -> x)
-
-  let drop_default =
-    Attribute.declare "sexp.sexp_drop_default"
-      Attribute.Context.label_declaration
-      Ast_pattern.(pstr nil)
-      ()
-
-  let drop_if =
-    Attribute.declare "sexp.sexp_drop_if"
-      Attribute.Context.label_declaration
-      Ast_pattern.(pstr (pstr_eval __ nil ^:: nil))
-      (fun x -> x)
-end
-
 module TypeNameMap = Map.M(String)
 
 module FoldInfo = struct
