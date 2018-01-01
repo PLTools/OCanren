@@ -3,7 +3,7 @@ CP    ?= cp
 
 .NOTPARALLEL :
 
-OB=ocamlbuild -use-ocamlfind -plugin-tag "package(str)" -classic-display
+OB=ocamlbuild -use-ocamlfind -classic-display
 ifdef OBV
 OB += -verbose 6
 endif
