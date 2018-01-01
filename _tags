@@ -21,18 +21,4 @@ true: short_paths
 <regression/test*.ml> : syntax(camlp5o), package(logger.syntax)
 <regression/test0*.ml> : use_pa_minikanren, package(GT.syntax.all)
 
-####################################################################
-# JSOO toplevel related stuff
-#<jsoo_runner/jsoo_runner.*>: package(js_of_ocaml.ppx,js_of_ocaml.tyxml), use_MiniKanren
 
-# toplevel related stuff
-#<toplevel/toplevel.cppo.cmo>: package(js_of_ocaml.ppx,base64)
-<toplevel/toplevel.ml> or <toplevel/colorize.ml> or <toplevel/indent.ml>: package(js_of_ocaml.ppx,tyxml)
-<toplevel/toplevel.cmo>: cppo,package(js_of_ocaml.ppx,compiler-libs.common,base64), js_of_ocaml
-<toplevel/colorize.cm*>: package(js_of_ocaml.tyxml)
-<toplevel/indent.mli> or <toplevel/colorize.mli>: package(js_of_ocaml.tyxml)
-<toplevel/toplevel.byte>: cppo, pretty, package(js_of_ocaml.tyxml,js_of_ocaml.toplevel),export_package(lwt)
-<toplevel/toplevel.js>: export_package(lwt),export_package(js_of_ocaml),export_package(js_of_ocaml.toplevel),package(ppx_tools)
-<toplevel/toplevel.js>: jsopt(+toplevel.js),jsopt(+dynlink.js),jsopt(+nat.js),jsopt(+weak.js)
-<toplevel/toplevel.js>: package(compiler-libs.common)
-<toplevel/*>:  not_hygienic
