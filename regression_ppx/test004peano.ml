@@ -10,15 +10,15 @@ module Peano = struct
   type 'a t = O | S of 'a [@@distrib]
 
 
-  type ground = ground T.t
-  type lnat = lnat T.t logic
-
-  type rt = rt T.t              (* normal type *)
-  type lt = lt T.t logic        (* reified     *)
-  type ft = (rt, lt) injected (* injected    *)
-
-  let rec show_ln n = show(logic) (show(t) show_ln) n
-  let rec show_rn n = show(t) show_rn n
+  (* type ground = ground T.t
+   * type lnat = lnat T.t logic
+   *
+   * type rt = rt T.t              (\* normal type *\)
+   * type lt = lt T.t logic        (\* reified     *\)
+   * type ft = (rt, lt) injected (\* injected    *\)
+   *
+   * let rec show_ln n = show(logic) (show(t) show_ln) n
+   * let rec show_rn n = show(t) show_rn n *)
 
 end
 

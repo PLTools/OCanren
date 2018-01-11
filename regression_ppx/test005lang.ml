@@ -6,14 +6,13 @@ open GT
 module Fmap1 = Fmap
 
 
-module Fuck = struct
-  type term =
-    | V of string
-    | App of term * term
-    | Abs of string * term
-             [@@distrib]
+type term =
+  | V of string
+  | App of term * term
+  | Abs of string * term
+[@@distrib]
 
-  end
+
 
 (* module Fuck = struct
  *   type ('reg, 'loc, 'value, 'mo, 'op, 't) t =
