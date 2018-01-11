@@ -66,7 +66,7 @@ module Location = struct
   let map_loc ~f l = {l with txt = f l.txt}
 end
 
-let the_functor_name tdecl = "For_g" ^ tdecl.ptype_name.txt
+let the_functor_name tdecl = "F" ^ tdecl.ptype_name.txt
 
 let prepare_distribs ~loc tdecl fmap_decl =
   let open Location in
@@ -177,19 +177,20 @@ let access_mod postfix t =
   | Ldot (l,s) -> Ldot ( Ldot (l, to_capital s), postfix)
   | Lapply (_,_) -> assert false
 
-  let mangle_core_type ~isself typ =
+  let mangle_core_type ~islogic ~isself typ =
     let rec helper typ =
       let loc = typ.ptyp_loc in
       match typ with
       | [%type: _] -> assert false
-      | [%type: string] -> [%type: string logic]
+      | [%type: string] -> if islogic then [%type: string logic] else [%type: string]
       | _ ->
         match typ.ptyp_desc with
         | Ptyp_var s -> typ
         | Ptyp_constr ({txt; loc}, params) ->
+          let typname = if islogic then "lt" else "gt" in
           let ident =
-            if isself then {loc; txt=Lident "lt"}
-            else {loc; txt = access_mod "lt" txt}
+            if isself then {loc; txt=Lident typname}
+            else {loc; txt = access_mod typname txt}
           in
           ptyp_constr ~loc ident @@
           List.map ~f:helper params
@@ -308,12 +309,19 @@ let revisit_adt ~loc tdecl ctors =
       let ground_typ =
         let alias_desc =
           let old_params = List.map ~f:fst tdecl.ptype_params  in
-          let extra_params = FoldInfo.map ~f:(fun {FoldInfo.rtyp} -> rtyp)  mapa in
+          let extra_params = FoldInfo.map mapa ~f:(fun {FoldInfo.rtyp} ->
+              let isself = match rtyp.ptyp_desc with
+                  | Ptyp_constr ({txt}, _) when Caml.(=) txt (Lident der_typ_name) -> true
+                  | _ -> false
+                  in
+                  mangle_core_type ~islogic:false ~isself rtyp
+            ) in
           Ptyp_constr (Location.mknoloc (Longident.Lident functor_typ.ptype_name.Asttypes.txt), old_params @ extra_params)
         in
         pstr_type ~loc Recursive
           [ { tdecl with ptype_kind = Ptype_abstract
             ; ptype_manifest = Some { ptyp_loc = Location.none; ptyp_attributes = []; ptyp_desc = alias_desc}
+            ; ptype_name = Location.mknoloc "gt"
             } ]
       in
       let distribs,mlid = prepare_distribs ~loc functor_typ fmap_for_typ in
@@ -321,14 +329,14 @@ let revisit_adt ~loc tdecl ctors =
         let alias_desc =
           let old_params = List.map ~f:fst tdecl.ptype_params in
           let extra_params = FoldInfo.map mapa
-              ~f:(fun {rtyp} ->
+              ~f:(fun {FoldInfo.rtyp} ->
                   let isself = match rtyp.ptyp_desc with
                   | Ptyp_constr ({txt}, _) when Caml.(=) txt (Lident der_typ_name) -> true
                   | _ -> false
                   in
-                  mangle_core_type ~isself rtyp
+                  mangle_core_type ~islogic:true ~isself rtyp
                 ) in
-          ptyp_constr ~loc (Located.lident ~loc "logic")
+          ptyp_constr ~loc (Located.mk ~loc @@ Ldot (Lident "MiniKanren", "logic"))
             [ ptyp_constr ~loc (Located.lident ~loc functor_typ.ptype_name.Asttypes.txt)
                 (old_params @ extra_params)
             ]
@@ -340,6 +348,7 @@ let revisit_adt ~loc tdecl ctors =
             ; ptype_name = Location.mknoloc "lt"
             } ]
       in
+      let inj_typ = [%stri type it = (gt, lt) MiniKanren.injected] in
       let functor_typ = pstr_type ~loc Nonrecursive [functor_typ] in
       let the_reifier =
         let reifiers = FoldInfo.map mapa ~f:(fun fi ->
@@ -365,7 +374,7 @@ let revisit_adt ~loc tdecl ctors =
       [
       [ functor_typ; fmap_for_typ] @ show_stuff @
       distribs @
-      [ground_typ; logic_typ; the_reifier ]
+      [ground_typ; logic_typ; inj_typ; the_reifier ]
       |> (fun s -> pstr_module ~loc @@ module_binding ~loc
              ~name:(Location.mknoloc @@ String.mapi der_typ_name
                       ~f:(function
