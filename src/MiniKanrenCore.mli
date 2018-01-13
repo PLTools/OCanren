@@ -52,7 +52,11 @@ module Stream :
     (** [iter f s] iterates function [f] over the stream [s] *)
     val iter : ('a -> unit) -> 'a t -> unit
 
+    (** [zip f g] returns a strem of corresponding pairs of [f] and [g]; fails for the streams of different lengths *)
     val zip : 'a t -> 'b t -> ('a * 'b) t
+
+    (** [filter p g] filters the stream [g] using the predicate [p] (leaves only those elements [x], for which [p x = true]) *)
+    val filter : ('a -> bool) -> 'a t -> 'a t                                    
   end
 
 (** {3 States and goals} *)

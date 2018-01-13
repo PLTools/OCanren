@@ -285,6 +285,11 @@ module Stream =
       | Lazy s      , _            -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
       | Nil, _      | _, Nil       -> failwith "OCanren fatal (Stream.zip): streams have different lengths"
 
+    let rec filter f = function
+      | Nil          -> Nil
+      | Cons (x, xs) -> if f x then filter f xs else Cons (x, filter f xs)
+      | Lazy s       -> Lazy (Lazy.from_fun (fun () -> filter f @@ Lazy.force s))
+
   end
 ;;
 
