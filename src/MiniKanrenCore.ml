@@ -287,7 +287,7 @@ module Stream =
 
     let rec filter f = function
       | Nil          -> Nil
-      | Cons (x, xs) -> if f x then filter f xs else Cons (x, filter f xs)
+      | Cons (x, xs) -> if f x then Cons (x, filter f xs) else filter f xs
       | Lazy s       -> Lazy (Lazy.from_fun (fun () -> filter f @@ Lazy.force s))
 
   end

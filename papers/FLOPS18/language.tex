@@ -185,7 +185,7 @@ $\delta$~--- a set of allocated semantic variables, $g$~--- a goal, and $S$~--- 
 $\delta^\prime$~--- a substitution and a set of allocated semantic variables respectively. Informally speaking, we interpret a goal $g$ in the context of
 relational definitions $\Gamma$, current interpretation $\iota$, current substitution $\sigma$ and current set of allocated semantic variables $\sigma$. As a 
 result, we obtain a (possibly empty) set of answers. Each answer consists of a new substitution, accumulated through the execution of $g$, and a new set of
-allocated semantic variables (note, in original miniKanren a goal can produce the same answer multiple number of times, but this property is not important
+allocated semantic variables (note, in the original miniKanren a goal can produce the same answer multiple number of times, but this property is not important
 in our case).
 
 The inference rules themselves are shown on Fig.~\ref{semantics}. The first two rules handle two possible outcomes of the unification. Note, we use here the most 
@@ -207,7 +207,7 @@ associates the syntactic variable, bound in this \lstinline|fresh|, with taken s
 Finally, the rule for relational definition invocation describes its evaluation in a few steps. First, the body of the definition is found, using the environment $\Gamma$. 
 Then, the terms $t_i$, specified as the arguments of the invocation, are converted into their semantic forms $v_i$ using current interpretation $\iota$ and current 
 substitution $\sigma$. Next, the body of the definition is evaluated in the context of \emph{empty} substitution $\epsilon$ and an interpretation, containing nothing
-else, than the bindings for the formal parameters of the definition. This way of handling interpretation models the behavior of call stack in conventional languages
+else, than the bindings for the formal parameters of the definition. This way of handling interpretation models the behavior of a call stack in conventional languages
 with no nested functions. Finally, the result substitutions are composed with the original one\footnote{We could use the original
 substitution instead of the empty one without the need to use composition; however we found the approach we took more proof-friendly since each relational definition is evaluated
 in initially empty substitution.}. 
