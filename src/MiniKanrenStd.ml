@@ -330,7 +330,7 @@ module Nat =
     let geo x y b = leo y x b
 
     let (<=) x y = leo x y Bool.truo
-    let (>=) x y = geo x y Bool.falso
+    let (>=) x y = geo x y Bool.truo
 
     let rec gto x y b = conde
       [ (x =/= o) &&& (y === o) &&& (b === Bool.truo)
