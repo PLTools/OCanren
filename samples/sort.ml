@@ -1,4 +1,4 @@
-(*
+1(*
  * Sort: relational sorting.
  * Copyright (C) 2016
  * Dmitri Boulytchev, Dmitrii Kosarev
