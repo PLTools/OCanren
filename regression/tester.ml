@@ -5,10 +5,25 @@ open MiniKanren
 
 (** {3 Helper functions to provide names for top-level variables } *)
 
-let qh    = fun qs          -> ["q", qs]
-let qrh   = fun qs rs       -> ["q", qs; "r", rs]
-let qrsh  = fun qs rs ss    -> ["q", qs; "r", rs; "s", ss]
-let qrsth = fun qs rs ss ts -> ["q", qs; "r", rs; "s", ss; "t", ts]
+(* let qh    = fun qs          -> ["q", qs] *)
+(* let qrh   = fun qs rs       -> ["q", qs; "r", rs] *)
+
+let wrap onOK onFree i (name, x) =
+  if x#is_open
+  then onFree i name x#reify
+  else onOK i name x#prj
+
+let qh onOK onFree = fun q () ->
+  List.iteri (wrap onOK onFree) @@ ["q", q]
+
+let qrh onOK onFree = fun q r () ->
+  List.iteri (wrap onOK onFree) @@ ["q", q; "r", r]
+
+let qrsh onOK onFree = fun q r s () ->
+  List.iteri (wrap onOK onFree) @@ ["q", q; "r", r; "s", s]
+
+let qrsth onOK onFree = fun q r s t () ->
+  List.iteri (wrap onOK onFree) @@ ["q", q; "r", r; "s", s; "t", t]
 
 let make_title n msg =
   printf "%s, %s answer%s {\n%!"
@@ -20,26 +35,19 @@ exception NoMoreAnswers
 
 let run_gen onOK onFree n num handler (repr, goal) =
   make_title n repr;
-  let rec loop pairs = function
-  | 0 -> ()
+  let rec loop st = function
+  | k when (k > n) && (n >= 0) -> ()
   | k ->
-    let new_pairs =
-      List.mapi (fun i (name,st) ->
-        (* TODO: invent retrieve_hd function *)
-        match Stream.retrieve ~n:1 st with
-        | [],_ -> raise NoMoreAnswers
-        | [rr],tl ->
-          if rr#is_open
-          then onFree i name rr#reify
-          else onOK i name rr#prj;
-          (name,tl)
-        | _ -> assert false
-      ) pairs
-    in
-    printf "\n%!";
-    loop new_pairs (k-1)
+    match Stream.retrieve ~n:1 st with
+    | [],_ -> raise NoMoreAnswers
+    | [f],tl ->
+      f ();
+      printf "\n%!";
+      loop tl (k+1)
+    | _ -> assert false
   in
-  let () = try loop (MiniKanren.run num goal handler) n with NoMoreAnswers -> () in
+  let handler = handler onOK onFree in
+  let () = try loop (MiniKanren.run num goal handler) 1 with NoMoreAnswers -> () in
   printf "}\n%!"
 
 (**

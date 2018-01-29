@@ -1492,41 +1492,6 @@ module LogicAdder :
     let succ prev f = call_fresh (fun logic st -> (logic, prev (f logic) st))
   end
 
-let succ n () =
-  let adder, currier, app, ext = n () in
-  (LogicAdder.succ adder, Uncurry.succ currier, ApplyTuple.succ app, ExtractDeepest.succ ext)
-
-let one   () = (fun x -> LogicAdder.(succ zero) x), Uncurry.one, ApplyTuple.one, ExtractDeepest.ext2
-let two   () = succ one   ()
-let three () = succ two   ()
-let four  () = succ three ()
-let five  () = succ four  ()
-
-let q     = one
-let qr    = two
-let qrs   = three
-let qrst  = four
-let pqrst = five
-
-let run n goalish f =
-  let adder, currier, app, ext = n () in
-  Log.clear ();
-  LOG[perf] (Log.run#enter);
-  let helper tup =
-    let args, stream = ext tup in
-    (* we normalize stream before reification *)
-    let stream =
-      Stream.Internal.bind stream (fun st -> Stream.Internal.of_list @@ State.normalize st args)
-    in
-    currier f @@ app (Stream.of_mkstream stream) args
-  in
-  let result = helper (adder goalish @@ State.empty ()) in
-  LOG[perf] (
-    Log.run#leave;
-    printf "Run report:\n%s" @@ Log.report ()
-  );
-  result
-
 module ApplyAsStream = struct
   (* There we have a tuple of logic variables and a stream
    * and we want to make a stream of tuples
@@ -1541,44 +1506,42 @@ module ApplyAsStream = struct
   let wrap = Stream.map
 end
 
-module RunCurried =
-  struct
+let succ n () =
+  let adder, app, ext, uncurr = n () in
+  (LogicAdder.succ adder, ApplyAsStream.succ app, ExtractDeepest.succ ext, Uncurry.succ uncurr)
 
-    let one () =
-      (LogicAdder.(succ zero)), ApplyAsStream.one, ExtractDeepest.ext2
-    let succ n () =
-      let adder, app, ext = n () in
-      (LogicAdder.succ adder, ApplyAsStream.succ app, ExtractDeepest.succ ext)
-    let two () = succ one ()
-    let three () = succ two ()
+let one   () = (LogicAdder.(succ zero)), ApplyAsStream.one, ExtractDeepest.ext2, Uncurry.one
+let two   () = succ one   ()
+let three () = succ two   ()
+let four  () = succ three ()
+let five  () = succ four  ()
 
-    let run n goalish f =
-      let adder, appN, ext = n () in
-      Log.clear ();
-      LOG[perf] (Log.run#enter);
-      let timings = Timings.make ~enabled:false in
+let q     = one
+let qr    = two
+let qrs   = three
+let qrst  = four
+let qrstu = five
 
-      let helper tup =
-        let args, stream = ext tup in
-        (* we normalize stream before reification *)
-        let stream =
-          Stream.Internal.bind stream (fun st -> Stream.Internal.of_list @@ State.normalize st args)
-        in
-        f timings @@ ApplyAsStream.wrap (appN args) (Stream.of_mkstream stream)
-      in
-      let result = helper (adder goalish @@ State.empty ()) in
-      LOG[perf] (
-        Log.run#leave;
-        printf "Run report:\n%s" @@ Log.report ()
-      );
-      result
+let run n goalish f =
+  Log.clear ();
+  LOG[perf] (Log.run#enter);
 
+  let adder, appN, ext, uncurr = n () in
+  let helper tup =
+    let args, stream = ext tup in
+    (* we normalize stream before reification *)
+    let stream =
+      Stream.Internal.bind stream (fun st -> Stream.Internal.of_list @@ State.normalize st args)
+    in
+    Stream.map (uncurr f) @@ ApplyAsStream.wrap (appN args) (Stream.of_mkstream stream)
+  in
+  let result = helper (adder goalish @@ State.empty ()) in
 
-  (* let () = *)
-  (*   run (succ @@ succ one) *)
-  (*     (fun q r s -> (q === !!5) &&& (s === r)  &&& (q === r)) *)
-  (*     (fun _timings ss -> ss) *)
-end
+  LOG[perf] (
+    Log.run#leave;
+    printf "Run report:\n%s" @@ Log.report ()
+  );
+  result
 
 (** ************************************************************************* *)
 (** Tabling primitives                                                        *)
