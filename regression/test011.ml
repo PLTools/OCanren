@@ -74,8 +74,7 @@ let _ =
   runIList           (-1) q qh (REPR (fun q -> (fresh (x y)(x%y === q)(x%y =/= !![!1; x])(y === !![!2]))));
 
 
-  let xsh xs = ["xs", xs] in
-  runIList (-1) q xsh (REPR (fun x -> (fresh (y z)(x =/= !![y; !2])(x === !![z; !2]))))
+  runIList (-1) q qh (REPR (fun x -> (fresh (y z)(x =/= !![y; !2])(x === !![z; !2]))))
 
 
 let () =
