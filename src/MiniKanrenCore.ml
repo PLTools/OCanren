@@ -129,161 +129,136 @@ let copy handler x =
 
 module Stream =
   struct
-    module Internal =
-      struct
-        type 'a t =
-          | Nil
-          | Thunk  of 'a thunk
-          | Single of 'a
-          | Choice of 'a * ('a t)
-          | Waiting of 'a suspended list
-        and 'a thunk =
-          unit -> 'a t
-        and 'a suspended =
-          {check: unit -> bool; thunk: 'a thunk}
+    type 'a t =
+      | Nil
+      | Single of 'a
+      | Choice of 'a * ('a t)
+      | Thunk  of 'a thunk
+      | Waiting of 'a suspended list
+    and 'a thunk =
+      unit -> 'a t
+    and 'a suspended =
+      {check: unit -> bool; thunk: 'a thunk}
 
-        let nil        = Nil
-        let single x   = Single x
-        let choice a f = Choice (a, f)
-        let inc    f   = Thunk f
-        let from_fun   = inc
+    let nil        = Nil
+    let single x   = Single x
+    let choice a f = Choice (a, f)
+    let inc    f   = Thunk f
+    let from_fun   = inc
 
-        let waiting ~check ~thunk = Waiting [{check; thunk}]
+    let waiting ~check ~thunk = Waiting [{check; thunk}]
 
-        let rec is_empty = function
-        | Nil      -> true
-        | Thunk f  -> is_empty @@ f ()
-        | _        -> false
+    let force = function
+    | Thunk f -> f ()
+    | fs      -> fs
 
-        let force = function
-        | Thunk f -> f ()
-        | fs      -> fs
+    let rec mplus fs gs =
+      match fs with
+      | Nil            -> force gs
+      | Single  a      -> choice a gs
+      | Choice (a, hs) -> choice a (from_fun @@ fun () -> mplus (force gs) hs)
+      | Thunk   _      -> inc (fun () -> mplus (force gs) fs)
+      | Waiting ss    ->
+        let gs = force gs in
+        (* handling waiting streams is tricky *)
+        match unwrap_suspended ss, gs with
+        (* if [fs] has no ready streams and [gs] is also a waiting stream then we merge them  *)
+        | Waiting ss, Waiting ss' -> Waiting (ss @ ss')
+        (* if [fs] has no ready streams but [gs] is not a waiting stream then we swap them,
+           pushing waiting stream to the back of the new stream *)
+        | Waiting ss, _           -> mplus gs @@ from_fun (fun () -> fs)
+        (* if [fs] has ready streams then [fs'] contains some lazy stream that is ready to produce new answers *)
+        | fs', _ -> mplus fs' gs
 
-        let rec mplus fs gs =
-          match fs with
-          | Nil            -> force gs
-          | Thunk   _      -> inc (fun () -> mplus (force gs) fs)
-          | Single  a      -> choice a gs
-          | Choice (a, hs) -> choice a (from_fun @@ fun () -> mplus (force gs) hs)
-          | Waiting ss    ->
-            let gs = force gs in
-            (* handling waiting streams is tricky *)
-            match unwrap_suspended ss, gs with
-            (* if [fs] has no ready streams and [gs] is also a waiting stream then we merge them  *)
-            | Waiting ss, Waiting ss' -> Waiting (ss @ ss')
-            (* if [fs] has no ready streams but [gs] is not a waiting stream then we swap them,
-               pushing waiting stream to the back of the new stream *)
-            | Waiting ss, _           -> mplus gs @@ from_fun (fun () -> fs)
-            (* if [fs] has ready streams then [fs'] contains some lazy stream that is ready to produce new answers *)
-            | fs', _ -> mplus fs' gs
+    and unwrap_suspended ss =
+      let rec find_ready prefix = function
+        | ({check; thunk} as s)::ss ->
+          if check ()
+          then Some (from_fun thunk), (List.rev prefix) @ ss
+          else find_ready (s::prefix) ss
+        | [] -> None, List.rev prefix
+      in
+      match find_ready [] ss with
+        | Some s, [] -> s
+        | Some s, ss -> mplus (force s) @@ Waiting ss
+        | None , ss  -> Waiting ss
 
-        and unwrap_suspended ss =
-            let rec find_ready prefix = function
-              | ({check; thunk} as s)::ss ->
-                if check ()
-                then Some (from_fun thunk), (List.rev prefix) @ ss
-                else find_ready (s::prefix) ss
-              | [] -> None, List.rev prefix
-            in
-            match find_ready [] ss with
-              | Some s, [] -> s
-              | Some s, ss -> mplus (force s) @@ Waiting ss
-              | None , ss  -> Waiting ss
+    let map_suspended f ss =
+      let update_thunk {thunk=z} as s =
+        {s with thunk = fun () -> f @@ z ()}
+      in
+      List.map update_thunk ss
 
-        let map_suspended f ss =
-          let update_thunk {thunk=z} as s =
-            {s with thunk = fun () -> f @@ z ()}
-          in
-          List.map update_thunk ss
-
-        let rec bind xs g =
-          match xs with
-          | Nil           -> Nil
-          | Thunk   f     -> inc (fun () -> bind (f ()) g)
-          | Single  c     -> g c
-          | Choice (c, f) -> mplus (g c) (from_fun (fun () -> bind (force f) g))
-          | Waiting ss    ->
-            match unwrap_suspended ss with
-            | Waiting ss -> Waiting (map_suspended (fun s -> bind s g) ss)
-            | xs'        -> bind xs' g
-
-        let rec of_list = function
-          | []    -> Nil
-          | x::[] -> Single x
-          | x::xs -> Choice (x, of_list xs)
-
-        let rec map f = function
-        | Nil             -> Nil
-        | Single x        -> Single (f x)
-        | Choice (x, xs)  -> Choice (f x, map f xs)
-        | Thunk thunk     -> from_fun (fun () -> map f @@ thunk ())
-        | Waiting ss      -> Waiting (map_suspended (map f) ss)
-
-        let rec fold f acc = function
-        | Nil             -> Lazy.force acc
-        | Single x        -> f x acc
-        | Choice (x, xs)  -> f x @@ Lazy.from_fun (fun () -> fold f acc xs)
-        | Thunk thunk     -> fold f acc @@ thunk ()
-        | Waiting ss      ->
-          match unwrap_suspended ss with
-          | Waiting ss -> Lazy.force acc
-          | xs'        -> fold f acc xs'
-      end
-
-    type 'a internal = 'a Internal.t
-    type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t
-
-    let from_fun (f: unit -> 'a t) : 'a t = Lazy (Lazy.from_fun f)
-
-    let nil = Nil
-
-    let cons h t = Cons (h, t)
-
-    let rec of_mkstream = function
-    | Internal.Nil -> Nil
-    | Internal.Thunk f -> from_fun (fun () -> of_mkstream @@ f ())
-    | Internal.Single a -> Cons (a, Nil)
-    | Internal.Choice (a, f) -> Cons (a, from_fun (fun () -> of_mkstream @@ Internal.force f))
-    | Internal.Waiting ss   ->
-      match Internal.unwrap_suspended ss with
-      | Internal.Waiting ss -> Nil
-      | s'         -> of_mkstream s'
+    let rec bind xs g =
+      match xs with
+      | Nil           -> Nil
+      | Single  c     -> g c
+      | Choice (c, f) -> mplus (g c) (from_fun (fun () -> bind (force f) g))
+      | Thunk   f     -> inc (fun () -> bind (f ()) g)
+      | Waiting ss    ->
+        match unwrap_suspended ss with
+        | Waiting ss -> Waiting (map_suspended (fun s -> bind s g) ss)
+        | xs'        -> bind xs' g
 
     let rec is_empty = function
-    | Nil    -> true
-    | Lazy s -> is_empty @@ Lazy.force s
-    | _      -> false
+    | Nil         -> true
+    | Thunk f     -> is_empty @@ f ()
+    | Waiting ss  ->
+      begin match unwrap_suspended ss with
+      | Waiting ss -> true
+      | s          -> is_empty s
+      end
+    | _        -> false
+
+    let rec of_list = function
+      | []    -> Nil
+      | x::[] -> Single x
+      | x::xs -> Choice (x, of_list xs)
+
+    let rec map f = function
+    | Nil             -> Nil
+    | Single x        -> Single (f x)
+    | Choice (x, xs)  -> Choice (f x, map f xs)
+    | Thunk zzz       -> from_fun (fun () -> map f @@ zzz ())
+    | Waiting ss      -> Waiting (map_suspended (map f) ss)
+
+    let rec iter f = function
+    | Nil             -> ()
+    | Single x        -> f x
+    | Choice (x, xs)  -> f x; iter f xs
+    | Thunk zzz       -> iter f (zzz ())
+    | Waiting ss      ->
+      match unwrap_suspended ss with
+      | Waiting ss -> ()
+      | xs'        -> iter f xs'
+
+    let rec fold f acc = function
+    | Nil             -> Lazy.force acc
+    | Single x        -> f x acc
+    | Choice (x, xs)  -> f x @@ Lazy.from_fun (fun () -> fold f acc xs)
+    | Thunk thunk     -> fold f acc @@ thunk ()
+    | Waiting ss      ->
+      match unwrap_suspended ss with
+      | Waiting ss -> Lazy.force acc
+      | xs'        -> fold f acc xs'
 
     let rec retrieve ?(n=(-1)) s =
       if n = 0
       then [], s
       else match s with
-      | Nil          -> [], s
-      | Cons (x, xs) -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
-      | Lazy  z      -> retrieve ~n (Lazy.force z)
+      | Nil             -> [], Nil
+      | Single x        -> [x], Nil
+      | Choice (x, xs)  -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
+      | Thunk f         -> retrieve ~n (f ())
+      | Waiting ss      ->
+        match unwrap_suspended ss with
+        | Waiting ss -> [], Nil
+        | s'         -> retrieve ~n s'
 
     let take ?(n=(-1)) s = fst @@ retrieve ~n s
 
     let hd s = List.hd @@ take ~n:1 s
     let tl s = snd @@ retrieve ~n:1 s
-
-    let rec map f = function
-    | Nil          -> Nil
-    | Cons (x, xs) -> Cons (f x, map f xs)
-    | Lazy s       -> Lazy (Lazy.from_fun (fun () -> map f @@ Lazy.force s))
-
-    let rec iter f = function
-    | Nil          -> ()
-    | Cons (x, xs) -> f x; iter f xs
-    | Lazy s       -> iter f @@ Lazy.force s
-
-    let rec zip fs gs =
-      match (fs, gs) with
-      | Nil         , Nil          -> Nil
-      | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
-      | _           , Lazy s       -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
-      | Lazy s      , _            -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
-      | Nil, _      | _, Nil       -> failwith "OCanren fatal (Stream.zip): streams have different lengths"
 
   end
 ;;
@@ -1340,10 +1315,10 @@ module State =
   end
 
 type 'a goal' = State.t -> 'a
-type goal = State.t Stream.internal goal'
+type goal = State.t Stream.t goal'
 
-let success st = Stream.Internal.single st
-let failure _  = Stream.Internal.nil
+let success st = Stream.single st
+let failure _  = Stream.nil
 
 let call_fresh f =
   let open State in fun ({env; scope} as st) ->
@@ -1352,23 +1327,23 @@ let call_fresh f =
 
 let (===) x y st =
   match State.unify x y st with
-  | None   -> Stream.Internal.nil
-  | Some s -> Stream.Internal.single s
+  | None   -> Stream.nil
+  | Some s -> Stream.single s
 
 let (=/=) x y st =
   match State.disunify x y st with
-  | None   -> Stream.Internal.nil
-  | Some s -> Stream.Internal.single s
+  | None   -> Stream.nil
+  | Some s -> Stream.single s
 
-let delay g st = Stream.Internal.from_fun (fun () -> g () st)
+let delay g st = Stream.from_fun (fun () -> g () st)
 
-let conj f g st = Stream.Internal.bind (f st) g
+let conj f g st = Stream.bind (f st) g
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
 
-let disj_base f g st = Stream.Internal.mplus (f st) (Stream.Internal.from_fun (fun () -> g st))
+let disj_base f g st = Stream.mplus (f st) (Stream.from_fun (fun () -> g st))
 
-let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> Stream.Internal.inc (fun () -> g st))
+let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> Stream.inc (fun () -> g st))
 
 let (|||) = disj
 
@@ -1379,7 +1354,7 @@ let (?|) gs st =
   | g::gs -> disj_base g (inner gs)
   | [] -> failwith "Wrong argument of (?!)"
   in
-  inner gs |> (fun g -> Stream.Internal.inc (fun () -> g st))
+  inner gs |> (fun g -> Stream.inc (fun () -> g st))
 
 let conde = (?|)
 
@@ -1531,9 +1506,9 @@ let run n goalish f =
     let args, stream = ext tup in
     (* we normalize stream before reification *)
     let stream =
-      Stream.Internal.bind stream (fun st -> Stream.Internal.of_list @@ State.normalize st args)
+      Stream.bind stream (fun st -> Stream.of_list @@ State.normalize st args)
     in
-    Stream.map (uncurr f) @@ ApplyAsStream.wrap (appN args) (Stream.of_mkstream stream)
+    Stream.map (uncurr f) @@ ApplyAsStream.wrap (appN args) stream
   in
   let result = helper (adder goalish @@ State.empty ()) in
 
@@ -1612,7 +1587,7 @@ module Table :
               let check () = seen != !cache  in
               (* delayed thunk starts to consume unseen part of cache  *)
               let thunk () = helper !cache seen in
-              Stream.Internal.waiting ~check ~thunk
+              Stream.waiting ~check ~thunk
             else
               (* consume one answer term from cache *)
               let answ_env, answ_term, answ_ctrs = List.hd iter in
@@ -1628,8 +1603,8 @@ module Table :
                   try
                     (* check answ_ctrs against external substitution *)
                     let ctrs = Disequality.check ~prefix:(Subst.split subst) env subst' answ_ctrs in
-                    let f = Stream.Internal.from_fun @@ fun () -> helper tail seen in
-                    Stream.Internal.choice {st' with ctrs = Disequality.merge env ctrs' ctrs} f
+                    let f = Stream.from_fun @@ fun () -> helper tail seen in
+                    Stream.choice {st' with ctrs = Disequality.merge env ctrs' ctrs} f
                   with Disequality_violated -> helper tail seen
                   end
                 | None -> helper tail seen
@@ -1897,7 +1872,7 @@ let unitrace ?loc shower x y = fun st ->
   (* printf "%d: unify '%s' and '%s'" !logged_unif_counter (shower (helper_of_state st) x) (shower (helper_of_state st) y);
   (match loc with Some l -> printf " on %s" l | None -> ());
 
-  if Stream.Internal.is_nil ans then printfn "  -"
+  if Stream.is_nil ans then printfn "  -"
   else  printfn "  +"; *)
   ans
 
@@ -1907,7 +1882,7 @@ let diseqtrace shower x y = fun st ->
   (* printf "%d: (=/=) '%s' and '%s'" !logged_diseq_counter
     (shower (helper_of_state st) x)
     (shower (helper_of_state st) y);
-  if Stream.Internal.is_nil ans then printfn "  -"
+  if Stream.is_nil ans then printfn "  -"
   else  printfn "  +"; *)
   ans;;
 

@@ -22,9 +22,6 @@
 
 module Stream :
   sig
-    (** Internal stream type *)
-    type 'a internal
-
     (** Stream type *)
     type 'a t
 
@@ -52,7 +49,7 @@ module Stream :
     (** [iter f s] iterates function [f] over the stream [s] *)
     val iter : ('a -> unit) -> 'a t -> unit
 
-    val zip : 'a t -> 'b t -> ('a * 'b) t
+    (* val zip : 'a t -> 'b t -> ('a * 'b) t *)
   end
 
 (** {3 States and goals} *)
@@ -66,7 +63,7 @@ module State :
 
 (** Goal converts a state into a lazy stream of states *)
 type 'a goal' = State.t -> 'a
-type goal = State.t Stream.internal goal'
+type goal = State.t Stream.t goal'
 
 (** {3 Logic values} *)
 
@@ -200,7 +197,7 @@ module Fresh :
 *)
 val run : (unit ->
             ('a -> State.t -> 'b) * ('c -> State.t -> 'd) *
-            ('b -> 'c * State.t Stream.internal) * ('e -> 'd -> 'f)) ->
+            ('b -> 'c * State.t Stream.t) * ('e -> 'd -> 'f)) ->
            'a -> 'e -> 'f Stream.t
 
 (** The primitive [delay] helps to construct recursive goals, which depend on themselves. For example,
@@ -234,7 +231,7 @@ end
   (** {3 Predefined numerals (one to five)} *)
   val one : unit ->
            ((('a, 'b) injected -> goal) ->
-            State.t -> ('a, 'b) injected * State.t Stream.internal) *
+            State.t -> ('a, 'b) injected * State.t Stream.t) *
            (('c, 'd) injected -> State.t -> ('c, 'd) reified) * ('e -> 'e)
 
   (** Successor function *)
@@ -249,7 +246,7 @@ end
   val run :
            (unit ->
             ('a -> State.t -> 'b) * ('c -> State.t -> 'd) *
-            ('b -> 'c * State.t Stream.internal)) ->
+            ('b -> 'c * State.t Stream.t)) ->
            'a -> ('d Stream.t -> 'e) -> 'e
 
 end *)
@@ -267,14 +264,14 @@ val succ : (unit ->
 (** {3 Predefined numerals (one to five)} *)
 val one : unit ->
            ((('a, 'b) injected -> goal) ->
-            State.t -> ('a, 'b) injected * State.t Stream.internal) *
+            State.t -> ('a, 'b) injected * State.t Stream.t) *
            (('c, 'd) injected -> State.t -> ('c, 'd) reified) * ('e -> 'e) *
            (('f -> 'g) -> 'f -> 'g)
 
 val two : unit ->
            ((('a, 'b) injected -> ('c, 'd) injected -> goal) ->
             State.t ->
-            ('a, 'b) injected * (('c, 'd) injected * State.t Stream.internal)) *
+            ('a, 'b) injected * (('c, 'd) injected * State.t Stream.t)) *
            (('e, 'f) injected * ('g, 'h) injected ->
             State.t -> ('e, 'f) reified * ('g, 'h) reified) *
            ('i * ('j * 'k) -> ('i * 'j) * 'k) *
@@ -286,7 +283,7 @@ val three : unit ->
             State.t ->
             ('a, 'b) injected *
             (('c, 'd) injected *
-             (('e, 'f) injected * State.t Stream.internal))) *
+             (('e, 'f) injected * State.t Stream.t))) *
            (('g, 'h) injected * (('i, 'j) injected * ('k, 'l) injected) ->
             State.t ->
             ('g, 'h) reified * (('i, 'j) reified * ('k, 'l) reified)) *
@@ -301,7 +298,7 @@ val four : unit ->
             ('a, 'b) injected *
             (('c, 'd) injected *
              (('e, 'f) injected *
-              (('g, 'h) injected * State.t Stream.internal)))) *
+              (('g, 'h) injected * State.t Stream.t)))) *
            (('i, 'j) injected *
             (('k, 'l) injected * (('m, 'n) injected * ('o, 'p) injected)) ->
             State.t ->
@@ -320,7 +317,7 @@ val five : unit ->
             (('c, 'd) injected *
              (('e, 'f) injected *
               (('g, 'h) injected *
-               (('i, 'j) injected * State.t Stream.internal))))) *
+               (('i, 'j) injected * State.t Stream.t))))) *
            (('k, 'l) injected *
             (('m, 'n) injected *
              (('o, 'p) injected * (('q, 'r) injected * ('s, 't) injected))) ->
@@ -336,14 +333,14 @@ val five : unit ->
 (** {3 The same numerals with conventional names} *)
 val q : unit ->
            ((('a, 'b) injected -> goal) ->
-            State.t -> ('a, 'b) injected * State.t Stream.internal) *
+            State.t -> ('a, 'b) injected * State.t Stream.t) *
            (('c, 'd) injected -> State.t -> ('c, 'd) reified) * ('e -> 'e) *
            (('f -> 'g) -> 'f -> 'g)
 
 val qr : unit ->
            ((('a, 'b) injected -> ('c, 'd) injected -> goal) ->
             State.t ->
-            ('a, 'b) injected * (('c, 'd) injected * State.t Stream.internal)) *
+            ('a, 'b) injected * (('c, 'd) injected * State.t Stream.t)) *
            (('e, 'f) injected * ('g, 'h) injected ->
             State.t -> ('e, 'f) reified * ('g, 'h) reified) *
            ('i * ('j * 'k) -> ('i * 'j) * 'k) *
@@ -355,7 +352,7 @@ val qrs : unit ->
             State.t ->
             ('a, 'b) injected *
             (('c, 'd) injected *
-             (('e, 'f) injected * State.t Stream.internal))) *
+             (('e, 'f) injected * State.t Stream.t))) *
            (('g, 'h) injected * (('i, 'j) injected * ('k, 'l) injected) ->
             State.t ->
             ('g, 'h) reified * (('i, 'j) reified * ('k, 'l) reified)) *
@@ -370,7 +367,7 @@ val qrst : unit ->
             ('a, 'b) injected *
             (('c, 'd) injected *
              (('e, 'f) injected *
-              (('g, 'h) injected * State.t Stream.internal)))) *
+              (('g, 'h) injected * State.t Stream.t)))) *
            (('i, 'j) injected *
             (('k, 'l) injected * (('m, 'n) injected * ('o, 'p) injected)) ->
             State.t ->
@@ -389,7 +386,7 @@ val qrstu : unit ->
             (('c, 'd) injected *
              (('e, 'f) injected *
               (('g, 'h) injected *
-               (('i, 'j) injected * State.t Stream.internal))))) *
+               (('i, 'j) injected * State.t Stream.t))))) *
            (('k, 'l) injected *
             (('m, 'n) injected *
              (('o, 'p) injected * (('q, 'r) injected * ('s, 't) injected))) ->
@@ -453,9 +450,9 @@ module Tabling :
       (('h -> 'i -> 'j -> 'k -> 'l -> 'm) -> 'h * ('i * ('j * ('k * 'l))) -> 'm) *
       ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) -> ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1)
 
-    val tabled : (unit -> (('a -> State.t Stream.internal) -> 'b) * ('c -> 'd -> goal) * ('a -> 'd * State.t)) -> 'c -> 'b
+    val tabled : (unit -> (('a -> State.t Stream.t) -> 'b) * ('c -> 'd -> goal) * ('a -> 'd * State.t)) -> 'c -> 'b
 
-    val tabledrec : (unit -> (('a -> State.t Stream.internal) -> 'b -> 'c) * ('d -> 'e -> goal) * ('a -> 'e * State.t)) -> (('b -> 'c) -> 'd) -> 'b -> 'c
+    val tabledrec : (unit -> (('a -> State.t Stream.t) -> 'b -> 'c) * ('d -> 'e -> goal) * ('a -> 'e * State.t)) -> (('b -> 'c) -> 'd) -> 'b -> 'c
   end
 
 (** {2 Building reifiers for a custom type compositionally} *)
