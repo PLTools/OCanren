@@ -25,11 +25,30 @@ module Stream :
     (** Stream type *)
     type 'a t
 
+    (** Constructors *)
+
+    val nil : 'a t
+
+    val single : 'a -> 'a t
+
+    val cons : 'a -> 'a t -> 'a t
+
+    val from_fun : (unit -> 'a t) -> 'a t
+
+    val of_list : 'a list -> 'a t
+
     (** Emptiness test *)
     val is_empty : 'a t -> bool
 
-    (** Constructor *)
-    val from_fun : (unit -> 'a t) -> 'a t
+    (** [map f s] maps function [f] over the stream [s] *)
+    val map : ('a -> 'b) -> 'a t -> 'b t
+
+    (** [iter f s] iterates function [f] over the stream [s] *)
+    val iter : ('a -> unit) -> 'a t -> unit
+
+    val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
+
+    val zip : 'a t -> 'b t -> ('a * 'b) t
 
     (** [retrieve ~n:n s] returns the list of [n]-first elements of [s] and the rest of the stream *)
     val retrieve : ?n:int -> 'a t -> 'a list * 'a t
@@ -42,14 +61,6 @@ module Stream :
 
     (** [hd s] gets a tail of the stream *)
     val tl : 'a t -> 'a t
-
-    (** [map f s] maps function [f] over the stream [s] *)
-    val map : ('a -> 'b) -> 'a t -> 'b t
-
-    (** [iter f s] iterates function [f] over the stream [s] *)
-    val iter : ('a -> unit) -> 'a t -> unit
-
-    (* val zip : 'a t -> 'b t -> ('a * 'b) t *)
   end
 
 (** {3 States and goals} *)
