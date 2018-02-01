@@ -18,11 +18,11 @@ JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
 .PHONY: all celan clean clean_tests install uninstall tests test regression promote_all \
 	ppx doc \
-	only-toplevel toplevel minikanren_stuff tester bundle plugin
+	only-toplevel toplevel minikanren_stuff tester bundle plugin samples
 
 .DEFAULT_GOAL: all
 
-all: minikanren_stuff plugin bundle
+all: minikanren_stuff plugin bundle samples
 
 minikanren_stuff:
 	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
@@ -88,7 +88,8 @@ clean_tests:
 
 promote:
 
-
+samples: bundle
+	$(MAKE) -C samples
 
 tests: plugin minikanren_stuff compile_tests run_tests
 regression: tests
