@@ -545,7 +545,6 @@ end)
 external lift : 'a -> ('a, 'a) injected                      = "%identity"
 external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
 
-
 let rec reify (c : helper) (n: ('a,'a logic) injected)  =
   if c#isVar n
   then to_var c n reify
