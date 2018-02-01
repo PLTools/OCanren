@@ -284,7 +284,7 @@ fun x ->
     (fun y z ->
        delay
          (fun () -> conj ((=/=) x ((!!) [y; !2])) ((===) x ((!!) [z; !2])))), all answers {
-xs=[_.12 [=/= _.11]; 2];
+q=[_.12 [=/= _.11]; 2];
 }
 fun q -> distincto ((%) !2 ((%<) !3 q)), all answers {
 q=_.35 [=/= 2; =/= 3];

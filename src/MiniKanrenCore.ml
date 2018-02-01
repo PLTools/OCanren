@@ -129,166 +129,134 @@ let copy handler x =
 
 module Stream =
   struct
-    module Internal =
-      struct
-        type 'a t =
-          | Nil
-          | Thunk  of 'a thunk
-          | Single of 'a
-          | Choice of 'a * ('a t)
-          | Waiting of 'a suspended list
-        and 'a thunk =
-          unit -> 'a t
-        and 'a suspended =
-          {check: unit -> bool; thunk: 'a thunk}
+    type 'a t =
+      | Nil
+      | Cons of 'a * ('a t)
+      | Thunk  of 'a thunk
+      | Waiting of 'a suspended list
+    and 'a thunk =
+      unit -> 'a t
+    and 'a suspended =
+      {is_ready: unit -> bool; zz: 'a thunk}
 
-        let nil        = Nil
-        let single x   = Single x
-        let choice a f = Choice (a, f)
-        let inc    f   = Thunk f
-        let from_fun   = inc
+    let nil         = Nil
+    let single x    = Cons (x, Nil)
+    let cons x s    = Cons (x, s)
+    let from_fun zz = Thunk zz
 
-        let waiting ~check ~thunk = Waiting [{check; thunk}]
+    let suspend ~is_ready f = Waiting [{is_ready; zz=f}]
 
-        let rec is_empty = function
-        | Nil      -> true
-        | Thunk f  -> is_empty @@ f ()
-        | _        -> false
+    let rec of_list = function
+    | []    -> Nil
+    | x::xs -> Cons (x, of_list xs)
 
-        let force = function
-        | Thunk f -> f ()
-        | fs      -> fs
+    let force = function
+    | Thunk zz  -> zz ()
+    | xs        -> xs
 
-        let rec mplus fs gs =
-          match fs with
-          | Nil            -> force gs
-          | Thunk   _      -> inc (fun () -> mplus (force gs) fs)
-          | Single  a      -> choice a gs
-          | Choice (a, hs) -> choice a (from_fun @@ fun () -> mplus (force gs) hs)
-          | Waiting ss    ->
-            let gs = force gs in
-            (* handling waiting streams is tricky *)
-            match unwrap_suspended ss, gs with
-            (* if [fs] has no ready streams and [gs] is also a waiting stream then we merge them  *)
-            | Waiting ss, Waiting ss' -> Waiting (ss @ ss')
-            (* if [fs] has no ready streams but [gs] is not a waiting stream then we swap them,
-               pushing waiting stream to the back of the new stream *)
-            | Waiting ss, _           -> mplus gs @@ from_fun (fun () -> fs)
-            (* if [fs] has ready streams then [fs'] contains some lazy stream that is ready to produce new answers *)
-            | fs', _ -> mplus fs' gs
+    let rec mplus xs ys =
+      match xs with
+      | Nil           -> force ys
+      | Cons (x, xs)  -> cons x (from_fun @@ fun () -> mplus (force ys) xs)
+      | Thunk   _     -> from_fun (fun () -> mplus (force ys) xs)
+      | Waiting ss    ->
+        let ys = force ys in
+        (* handling waiting streams is tricky *)
+        match unwrap_suspended ss, ys with
+        (* if [xs] has no ready streams and [ys] is also a waiting stream then we merge them  *)
+        | Waiting ss, Waiting ss' -> Waiting (ss @ ss')
+        (* if [xs] has no ready streams but [ys] is not a waiting stream then we swap them,
+           pushing waiting stream to the back of the new stream *)
+        | Waiting ss, _           -> mplus ys @@ from_fun (fun () -> xs)
+        (* if [xs] has ready streams then [xs'] contains some lazy stream that is ready to produce new answers *)
+        | xs', _ -> mplus xs' ys
 
-        and unwrap_suspended ss =
-            let rec find_ready prefix = function
-              | ({check; thunk} as s)::ss ->
-                if check ()
-                then Some (from_fun thunk), (List.rev prefix) @ ss
-                else find_ready (s::prefix) ss
-              | [] -> None, List.rev prefix
-            in
-            match find_ready [] ss with
-              | Some s, [] -> s
-              | Some s, ss -> mplus (force s) @@ Waiting ss
-              | None , ss  -> Waiting ss
+    and unwrap_suspended ss =
+      let rec find_ready prefix = function
+        | ({is_ready; zz} as s)::ss ->
+          if is_ready ()
+          then Some (from_fun zz), (List.rev prefix) @ ss
+          else find_ready (s::prefix) ss
+        | [] -> None, List.rev prefix
+      in
+      match find_ready [] ss with
+        | Some s, [] -> s
+        | Some s, ss -> mplus (force s) @@ Waiting ss
+        | None , ss  -> Waiting ss
 
-        let map_suspended f ss =
-          let update_thunk {thunk=z} as s =
-            {s with thunk = fun () -> f @@ z ()}
-          in
-          List.map update_thunk ss
+    let rec bind s f =
+      match s with
+      | Nil           -> Nil
+      | Cons (x, s)   -> mplus (f x) (from_fun (fun () -> bind (force s) f))
+      | Thunk zz      -> from_fun (fun () -> bind (zz ()) f)
+      | Waiting ss    ->
+        match unwrap_suspended ss with
+        | Waiting ss ->
+          let helper {zz} as s = {s with zz = fun () -> bind (zz ()) f} in
+          Waiting (List.map helper ss)
+        | s          -> bind s f
 
-        let rec bind xs g =
-          match xs with
-          | Nil           -> Nil
-          | Thunk   f     -> inc (fun () -> bind (f ()) g)
-          | Single  c     -> g c
-          | Choice (c, f) -> mplus (g c) (from_fun (fun () -> bind (force f) g))
-          | Waiting ss    ->
-            match unwrap_suspended ss with
-            | Waiting ss -> Waiting (map_suspended (fun s -> bind s g) ss)
-            | xs'        -> bind xs' g
+    let rec msplit = function
+    | Nil           -> None
+    | Cons (x, xs)  -> Some (x, xs)
+    | Thunk zz      -> msplit @@ zz ()
+    | Waiting ss    ->
+      match unwrap_suspended ss with
+      | Waiting _ -> None
+      | xs        -> msplit xs
 
-        let rec of_list = function
-          | []    -> Nil
-          | x::[] -> Single x
-          | x::xs -> Choice (x, of_list xs)
-
-        let rec map f = function
-        | Nil             -> Nil
-        | Single x        -> Single (f x)
-        | Choice (x, xs)  -> Choice (f x, map f xs)
-        | Thunk thunk     -> from_fun (fun () -> map f @@ thunk ())
-        | Waiting ss      -> Waiting (map_suspended (map f) ss)
-
-        let rec fold f acc = function
-        | Nil             -> Lazy.force acc
-        | Single x        -> f x acc
-        | Choice (x, xs)  -> f x @@ Lazy.from_fun (fun () -> fold f acc xs)
-        | Thunk thunk     -> fold f acc @@ thunk ()
-        | Waiting ss      ->
-          match unwrap_suspended ss with
-          | Waiting ss -> Lazy.force acc
-          | xs'        -> fold f acc xs'
-      end
-
-    type 'a internal = 'a Internal.t
-    type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t
-
-    let from_fun (f: unit -> 'a t) : 'a t = Lazy (Lazy.from_fun f)
-
-    let nil = Nil
-
-    let cons h t = Cons (h, t)
-
-    let rec of_mkstream = function
-    | Internal.Nil -> Nil
-    | Internal.Thunk f -> from_fun (fun () -> of_mkstream @@ f ())
-    | Internal.Single a -> Cons (a, Nil)
-    | Internal.Choice (a, f) -> Cons (a, from_fun (fun () -> of_mkstream @@ Internal.force f))
-    | Internal.Waiting ss   ->
-      match Internal.unwrap_suspended ss with
-      | Internal.Waiting ss -> Nil
-      | s'         -> of_mkstream s'
-
-    let rec is_empty = function
-    | Nil    -> true
-    | Lazy s -> is_empty @@ Lazy.force s
-    | _      -> false
-
-    let rec retrieve ?(n=(-1)) s =
-      if n = 0
-      then [], s
-      else match s with
-      | Nil          -> [], s
-      | Cons (x, xs) -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
-      | Lazy  z      -> retrieve ~n (Lazy.force z)
-
-    let take ?(n=(-1)) s = fst @@ retrieve ~n s
-
-    let hd s = List.hd @@ take ~n:1 s
-    let tl s = snd @@ retrieve ~n:1 s
+    let is_empty s =
+      match msplit s with
+      | Some _  -> false
+      | None    -> true
 
     let rec map f = function
     | Nil          -> Nil
     | Cons (x, xs) -> Cons (f x, map f xs)
-    | Lazy s       -> Lazy (Lazy.from_fun (fun () -> map f @@ Lazy.force s))
+    | Thunk zzz    -> from_fun (fun () -> map f @@ zzz ())
+    | Waiting ss   ->
+      let helper {zz} as s = {s with zz = fun () -> map f (zz ())} in
+      Waiting (List.map helper ss)
 
-    let rec iter f = function
-    | Nil          -> ()
-    | Cons (x, xs) -> f x; iter f xs
-    | Lazy s       -> iter f @@ Lazy.force s
+    let rec iter f s =
+      match msplit s with
+      | Some (x, s) -> f x; iter f s
+      | None        -> ()
 
-    let rec zip fs gs =
-      match (fs, gs) with
-      | Nil         , Nil          -> Nil
-      | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
-      | _           , Lazy s       -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
-      | Lazy s      , _            -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
-      | Nil, _      | _, Nil       -> failwith "OCanren fatal (Stream.zip): streams have different lengths"
+    let rec filter p s =
+      match msplit s with
+      | Some (x, s) -> let s = filter p s in if p x then Cons (x, s) else s
+      | None        -> Nil 
 
-    let rec filter f = function
-      | Nil          -> Nil
-      | Cons (x, xs) -> if f x then Cons (x, filter f xs) else filter f xs
-      | Lazy s       -> Lazy (Lazy.from_fun (fun () -> filter f @@ Lazy.force s))
+    let rec fold f acc s =
+      match msplit s with
+      | Some (x, s) -> fold f (f acc x) s
+      | None        -> acc
+
+    let rec zip xs ys =
+      match msplit xs, msplit ys with
+      | None,         None          -> Nil
+      | Some (x, xs), Some (y, ys)  -> Cons ((x, y), zip xs ys)
+      | _                           -> invalid_arg "OCanren fatal (Stream.zip): streams have different lengths"
+
+    let hd s =
+      match msplit s with
+      | Some (x, _) -> x
+      | None        -> invalid_arg "OCanren fatal (Stream.hd): empty stream"
+
+    let tl s =
+      match msplit s with
+      | Some (_, xs) -> xs
+      | None         -> Nil
+
+    let rec retrieve ?(n=(-1)) s =
+      if n = 0
+      then [], s
+      else match msplit s with
+      | None          -> [], Nil
+      | Some (x, s)  -> let xs, s = retrieve ~n:(n-1) s in x::xs, s
+
+    let take ?n s = fst @@ retrieve ?n s
 
   end
 ;;
@@ -377,11 +345,10 @@ module Var =
 module VarSet = Set.Make(Var)
 module VarTbl = Hashtbl.Make(Var)
 
+type helper = < isVar : 'a . 'a -> bool >
+
+include (struct
 type ('a, 'b) injected = 'a
-
-external lift : 'a -> ('a, 'a) injected                      = "%identity"
-external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
-
 module type T1 =
   sig
     type 'a t
@@ -417,8 +384,6 @@ module type T6 =
     type ('a, 'b, 'c, 'd, 'e, 'f) t
     val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
   end
-
-type helper = < isVar : 'a . 'a -> bool >
 
 let to_var (c : helper) x r =
   if c#isVar x
@@ -486,10 +451,105 @@ module Fmap6 (T : T6) = struct
     else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) (r6 c) x)
 end
 
-let rec reify (c : helper) n =
+end : sig
+  type ('a, 'b) injected
+
+  val to_var: helper -> (('a,'b) injected as 'l) -> (helper -> 'l -> 'b) -> 'b
+module type T1 =
+  sig
+    type 'a t
+    val fmap : ('a -> 'b) -> 'a t -> 'b t
+  end
+
+module type T2 =
+  sig
+    type ('a, 'b) t
+    val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
+  end
+
+module type T3 =
+  sig
+    type ('a, 'b, 'c) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
+  end
+
+module type T4 =
+  sig
+    type ('a, 'b, 'c, 'd) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
+  end
+
+module type T5 =
+  sig
+    type ('a, 'b, 'c, 'd, 'e) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
+  end
+
+module type T6 =
+  sig
+    type ('a, 'b, 'c, 'd, 'e, 'f) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
+  end
+
+module Fmap (T : T1) :
+  sig
+    val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
+    val reify : (helper -> ('a,'b) injected -> 'b) -> helper -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap2 (T : T2) :
+  sig
+    val distrib : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> helper -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap3 (T : T3) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
+                helper -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap4 (T : T4) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
+                       (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected
+
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) ->
+                (helper -> ('e, 'f) injected -> 'f) -> (helper -> ('g, 'h) injected -> 'h) ->
+                helper -> (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap5 (T : T5) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
+                       (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected
+
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
+                (helper -> ('g, 'h) injected -> 'h) -> (helper -> ('i, 'j) injected -> 'j) ->
+                helper -> (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t logic as 'r) injected -> 'r
+  end
+
+module Fmap6 (T : T6) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) T.t ->
+                       (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected
+
+    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
+                (helper -> ('g, 'h) injected -> 'h) -> (helper -> ('i, 'j) injected -> 'j) -> (helper -> ('k, 'l) injected -> 'l) ->
+                helper -> (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t logic as 'r) injected -> 'r
+  end
+
+end)
+
+external lift : 'a -> ('a, 'a) injected                      = "%identity"
+external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
+
+
+let rec reify (c : helper) (n: ('a,'a logic) injected)  =
   if c#isVar n
   then to_var c n reify
-  else Value n
+  else Value !!!n
 
 exception Not_a_value
 exception Occurs_check
@@ -1253,10 +1313,10 @@ module State =
   end
 
 type 'a goal' = State.t -> 'a
-type goal = State.t Stream.internal goal'
+type goal = State.t Stream.t goal'
 
-let success st = Stream.Internal.single st
-let failure _  = Stream.Internal.nil
+let success st = Stream.single st
+let failure _  = Stream.nil
 
 let call_fresh f =
   let open State in fun ({env; scope} as st) ->
@@ -1265,23 +1325,23 @@ let call_fresh f =
 
 let (===) x y st =
   match State.unify x y st with
-  | None   -> Stream.Internal.nil
-  | Some s -> Stream.Internal.single s
+  | None   -> Stream.nil
+  | Some s -> Stream.single s
 
 let (=/=) x y st =
   match State.disunify x y st with
-  | None   -> Stream.Internal.nil
-  | Some s -> Stream.Internal.single s
+  | None   -> Stream.nil
+  | Some s -> Stream.single s
 
-let delay g st = Stream.Internal.from_fun (fun () -> g () st)
+let delay g st = Stream.from_fun (fun () -> g () st)
 
-let conj f g st = Stream.Internal.bind (f st) g
+let conj f g st = Stream.bind (f st) g
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
 
-let disj_base f g st = Stream.Internal.mplus (f st) (Stream.Internal.from_fun (fun () -> g st))
+let disj_base f g st = Stream.mplus (f st) (Stream.from_fun (fun () -> g st))
 
-let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> Stream.Internal.inc (fun () -> g st))
+let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> Stream.from_fun (fun () -> g st))
 
 let (|||) = disj
 
@@ -1292,7 +1352,7 @@ let (?|) gs st =
   | g::gs -> disj_base g (inner gs)
   | [] -> failwith "Wrong argument of (?!)"
   in
-  inner gs |> (fun g -> Stream.Internal.inc (fun () -> g st))
+  inner gs |> (fun g -> Stream.from_fun (fun () -> g st))
 
 let conde = (?|)
 
@@ -1405,11 +1465,25 @@ module LogicAdder :
     let succ prev f = call_fresh (fun logic st -> (logic, prev (f logic) st))
   end
 
-let succ n () =
-  let adder, currier, app, ext = n () in
-  (LogicAdder.succ adder, Uncurry.succ currier, ApplyTuple.succ app, ExtractDeepest.succ ext)
+module ApplyAsStream = struct
+  (* There we have a tuple of logic variables and a stream
+   * and we want to make a stream of tuples
+   **)
 
-let one   () = (fun x -> LogicAdder.(succ zero) x), Uncurry.one, ApplyTuple.one, ExtractDeepest.ext2
+  (* every numeral is a function from tuple -> state -> reified_tuple *)
+  let one tup state = make_rr tup state
+
+  let succ prev (h,tl) state = (make_rr h state, prev tl state)
+
+  (* Usage: let reified_tuple_stream = wrap ((s s s 1) tuple) stream in ... *)
+  let wrap = Stream.map
+end
+
+let succ n () =
+  let adder, app, ext, uncurr = n () in
+  (LogicAdder.succ adder, ApplyAsStream.succ app, ExtractDeepest.succ ext, Uncurry.succ uncurr)
+
+let one   () = (LogicAdder.(succ zero)), ApplyAsStream.one, ExtractDeepest.ext2, Uncurry.one
 let two   () = succ one   ()
 let three () = succ two   ()
 let four  () = succ three ()
@@ -1419,21 +1493,23 @@ let q     = one
 let qr    = two
 let qrs   = three
 let qrst  = four
-let pqrst = five
+let qrstu = five
 
 let run n goalish f =
-  let adder, currier, app, ext = n () in
   Log.clear ();
   LOG[perf] (Log.run#enter);
+
+  let adder, appN, ext, uncurr = n () in
   let helper tup =
     let args, stream = ext tup in
     (* we normalize stream before reification *)
     let stream =
-      Stream.Internal.bind stream (fun st -> Stream.Internal.of_list @@ State.normalize st args)
+      Stream.bind stream (fun st -> Stream.of_list @@ State.normalize st args)
     in
-    currier f @@ app (Stream.of_mkstream stream) args
+    Stream.map (uncurr f) @@ ApplyAsStream.wrap (appN args) stream
   in
   let result = helper (adder goalish @@ State.empty ()) in
+
   LOG[perf] (
     Log.run#leave;
     printf "Run report:\n%s" @@ Log.report ()
@@ -1506,10 +1582,9 @@ module Table :
               (* update `seen` - pointer to already seen part of cache *)
               let seen = !cache in
               (* delayed check that current head of cache is not equal to head of seen part *)
-              let check () = seen != !cache  in
+              let is_ready () = seen != !cache  in
               (* delayed thunk starts to consume unseen part of cache  *)
-              let thunk () = helper !cache seen in
-              Stream.Internal.waiting ~check ~thunk
+              Stream.suspend ~is_ready @@ fun () -> helper !cache seen
             else
               (* consume one answer term from cache *)
               let answ_env, answ_term, answ_ctrs = List.hd iter in
@@ -1525,8 +1600,8 @@ module Table :
                   try
                     (* check answ_ctrs against external substitution *)
                     let ctrs = Disequality.check ~prefix:(Subst.split subst) env subst' answ_ctrs in
-                    let f = Stream.Internal.from_fun @@ fun () -> helper tail seen in
-                    Stream.Internal.choice {st' with ctrs = Disequality.merge env ctrs' ctrs} f
+                    let f = Stream.from_fun @@ fun () -> helper tail seen in
+                    Stream.cons {st' with ctrs = Disequality.merge env ctrs' ctrs} f
                   with Disequality_violated -> helper tail seen
                   end
                 | None -> helper tail seen
@@ -1794,7 +1869,7 @@ let unitrace ?loc shower x y = fun st ->
   (* printf "%d: unify '%s' and '%s'" !logged_unif_counter (shower (helper_of_state st) x) (shower (helper_of_state st) y);
   (match loc with Some l -> printf " on %s" l | None -> ());
 
-  if Stream.Internal.is_nil ans then printfn "  -"
+  if Stream.is_nil ans then printfn "  -"
   else  printfn "  +"; *)
   ans
 
@@ -1804,7 +1879,7 @@ let diseqtrace shower x y = fun st ->
   (* printf "%d: (=/=) '%s' and '%s'" !logged_diseq_counter
     (shower (helper_of_state st) x)
     (shower (helper_of_state st) y);
-  if Stream.Internal.is_nil ans then printfn "  -"
+  if Stream.is_nil ans then printfn "  -"
   else  printfn "  +"; *)
   ans;;
 
