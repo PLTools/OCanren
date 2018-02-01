@@ -226,7 +226,7 @@ module Stream =
     let rec filter p s =
       match msplit s with
       | Some (x, s) -> let s = filter p s in if p x then Cons (x, s) else s
-      | None        -> Nil 
+      | None        -> Nil
 
     let rec fold f acc s =
       match msplit s with
@@ -1312,6 +1312,7 @@ module State =
   end
 
 type 'a goal' = State.t -> 'a
+
 type goal = State.t Stream.t goal'
 
 let success st = Stream.single st
@@ -1664,10 +1665,11 @@ module Table :
 module Tabling =
   struct
     let succ n () =
-      let currier, uncurrier, ext = n () in
-      (Curry.succ currier, Uncurry.succ uncurrier, ExtractDeepest.succ ext)
+      let currier, uncurrier = n () in
+      let sc = (Curry.succ : (('a -> 'b) -> 'c) -> ((((_, _) injected as 'k) * 'a -> 'b) -> 'k -> 'c)) in
+      (sc currier, Uncurry.succ uncurrier)
 
-    let one () = (Curry.(succ one), Uncurry.one, ExtractDeepest.ext2)
+    let one () = ((Curry.(one) : ((_, _) injected -> _) as 'x -> 'x), Uncurry.one)
 
     let two   () = succ one ()
     let three () = succ two ()
@@ -1683,23 +1685,19 @@ module Tabling =
 
     let tabled n g =
       let tbl = Table.create () in
-      let currier, uncurrier, ext = n () in
-      currier (
-        fun tup ->
-          let x, st = ext tup in
-          tabled' tbl (uncurrier g) x st
+      let currier, uncurrier = n () in
+      currier (fun tup ->
+        tabled' tbl (uncurrier g) tup
       )
 
     let tabledrec n g_norec =
       let tbl = Table.create () in
-      let currier, uncurrier, ext = n () in
+      let currier, uncurrier = n () in
       let g = ref (fun _ -> assert false) in
       let g_rec args = uncurrier (g_norec !g) args in
       let g_tabled = tabled' tbl g_rec in
-      g := currier (
-        fun tup ->
-          let x, st = ext tup in
-          g_tabled x st
+      g := currier (fun tup ->
+        g_tabled tup
       );
       !g
 end
