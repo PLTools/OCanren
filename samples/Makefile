@@ -1,6 +1,8 @@
+BUILD=ocamlbuild -use-ocamlfind 
 all:
-	OCAMLPATH=`pwd`/../_build/bundle ocamlfind opt -rectypes -o sort -syntax camlp5o -package ocanren,ocanren.syntax,GT -linkpkg sort.ml
-	OCAMLPATH=`pwd`/../_build/bundle ocamlfind opt -rectypes -o tree -syntax camlp5o -package ocanren,ocanren.syntax,GT,GT.syntax.all -linkpkg tree.ml
+	OCAMLPATH=`pwd`/../_build/bundle $(BUILD) sorting.native tree.native \
+		  lorry.native WGC.native
 
 clean:
-	$(RM) *.cm[oix] *.o sort tree
+	$(RM) -r _build *.native
+

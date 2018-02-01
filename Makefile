@@ -18,13 +18,13 @@ JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
 .PHONY: all celan clean clean_tests install uninstall tests test regression promote_all \
 	ppx doc \
-	only-toplevel toplevel minikanren_stuff tester bundle plugin samples
+	only-toplevel toplevel lib tester bundle plugin samples
 
 .DEFAULT_GOAL: all
 
-all: minikanren_stuff plugin bundle samples
-
-minikanren_stuff:
+all: bundle samples
+bundle: lib plugin
+lib:
 	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
 
 ppx:
@@ -91,10 +91,29 @@ promote:
 samples: bundle
 	$(MAKE) -C samples
 
-tests: plugin minikanren_stuff compile_tests run_tests
+tests: plugin lib compile_tests run_tests
 regression: tests
 test: tests
 
+######################## Samples stuff #######################################
+SAMPLES_CASES=tree sorting WGC lorry
+.PHONY: compile_samples test_samples
+compile_samples:
+	$(MAKE) -C samples all
+test_samples:
+clean: clean_samples	
+clean_samples: 
+	$(MAKE) -C samples clean
+
+define SAMPLESRULES
+.PHONY: test_sample_$(1)
+test_samples: test_sample_$(1)
+test_sample_$(1):
+	cd samples && $(TESTS_ENVIRONMENT) ./$(1).native; \
+	if [ $$$$? -ne 0 ] ; then echo "$(1) FAILED"; else echo "$(1) PASSED"; fi
+
+endef
+$(foreach i,$(SAMPLES_CASES),$(eval $(call SAMPLESRULES,$(i)) ) )
 ######################## Installation related stuff ##########################
 INSTALL_TARGETS=META \
 	$(wildcard _build/regression/tester.cmi) \
@@ -112,26 +131,12 @@ INSTALL_TARGETS=META \
 	$(wildcard _build/src/MiniKanren.[oa]) \
 	$(wildcard _build/camlp5/pa_minikanren.cm[oi]) \
 
-
-MAYBE_INSTALL_TARGETS=\
-	_build/jsoo_runner/jsoo_runner.cmi \
-	_build/jsoo_runner/jsoo_runner.cma \
-
-define MAYBE_ADD_TARGET
-ifneq (,$(wildcard $(1)))
-INSTALL_TARGETS += $(1)
-endif
-endef
-
-$(foreach i,$(MAYBE_INSTALL_TARGETS),$(eval $(call MAYBE_ADD_TARGET,$(i)) ) )
-
 BUNDLEDIR=_build/bundle/ocanren
 
 define MAKE_BUNDLE_RULE
 $(BUNDLEDIR)/$(notdir $(1)): $(1)
-	cp $(1) $(BUNDLEDIR)
+	@cp $(1) $(BUNDLEDIR)
 MAKE_BUNDLE_TARGETS += $(BUNDLEDIR)/$(notdir $(1))
-
 endef
 $(foreach i,$(INSTALL_TARGETS),$(eval $(call MAKE_BUNDLE_RULE,$(i)) ) )
 
@@ -143,7 +148,6 @@ $(BUNDLEDIR):
 
 bundle: rmbundledir $(BUNDLEDIR)
 	$(MAKE) really_make_bundle
-	#cp _build/ppx/ppx_ocanren_all $(BUNDLEDIR)/
 
 really_make_bundle: $(MAKE_BUNDLE_TARGETS)
 
