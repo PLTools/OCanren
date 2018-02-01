@@ -7,6 +7,10 @@ open Printf
 let ilist xs = list (!!) xs 
 let just_a a = a === !!5
 
+let occurs x =
+  (x === List.conso !!1 x)
+
+let two_vars x y = x===y
 let a_and_b a =
   call_fresh (fun b ->
       (a === !!7) &&&
@@ -56,7 +60,9 @@ let _ =
   run_exn show_int_list  1  q qh (REPR (fun q   -> reverso (ilist [1]) q                           ));
   run_exn show_int       1  q qh (REPR (fun q   -> a_and_b q                                       ));
   run_exn show_int       2  q qh (REPR (fun q   -> a_and_b' q                                      ));
-  run_exn show_int      10  q qh (REPR (fun q   -> fives q                                         ))
+  run_exn show_int      10  q qh (REPR (fun q   -> fives q                                         ));
+  run_exn show_int_list  1  q qh (REPR (fun q   -> occurs q                                        ));
+  ()
 
 let _withFree =
   runL          1  q  qh (REPR (fun q   -> reverso (ilist []) (ilist [])                ));
@@ -65,4 +71,6 @@ let _withFree =
   runL          1  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL          2  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL          3  q  qh (REPR (fun q   -> reverso q q                                  ));
-  runL         10  q  qh (REPR (fun q   -> reverso q q                                  ))
+  runL         10  q  qh (REPR (fun q   -> reverso q q                                  ));
+  runL          1 qr qrh (REPR (fun q r -> two_vars q r                                 ));
+  ()

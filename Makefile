@@ -75,10 +75,10 @@ $(foreach i,$(REGRES_CASES),$(eval $(call TESTRULES,$(i)) ) )
 
 .PHONY: compile_tests_native compile_tests_byte compile_tests run_tests
 
-compile_tests_native: $(TEST_MLS)
+compile_tests_native: plugin $(TEST_MLS)
 	$(OB) -Is src $(NATIVE_TEST_EXECUTABLES)
 
-compile_tests_byte: $(TEST_MLS)
+compile_tests_byte: plugin $(TEST_MLS)
 	$(OB) -Is src $(BYTE_TEST_EXECUTABLES)
 
 compile_tests: compile_tests_native
