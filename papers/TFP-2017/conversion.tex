@@ -8,7 +8,7 @@ limited by a first-order unification. Therefore, it would be unreasonable to exp
 functional program can be converted into a relational form (at least using reasonably simple 
 transformations). 
 
-First, we introduce the set of ground types $\mathcal G$:
+We introduce the set of ground types $\mathcal G$:
 
 $$
 \mathcal G=\alpha \mid T^k(g_1,\dots,g_k)
@@ -23,7 +23,7 @@ the programs to be converted into a relational form:
   \item all \lstinline|match|-expressions must by of ground types.
 \end{itemize}
 
-The first condition means, that all algebraic datatypes (which we consider defined implicitly, see Section~\ref{source_language}) 
+The first condition means, that all algebraic datatypes (which we consider as defined implicitly, see Section~\ref{source_language}) 
 have to be fully-polymorphic. The first two limitations then allow us to specify the polymorphism restriction for 
 relational programs, which we mentioned informally in Section~\ref{ocanren}: all type variables are bounded to
 range only over ground types (this condition, of course, is sufficient, but not necessary).
@@ -37,7 +37,7 @@ have a ground type, it can always be transformed to have one by applying $\eta$-
 
 \noindent where $\bar{x}$ is a vector of new variables, different from those in $e$, $e_i$, and $p_i$. In fact, our implementation,
 described in Section~\ref{evaluation}, performs this expansion as long as a non-ground type \lstinline|match|-expression is encountered. 
-This is the single case when we actually use types and perform $\eta$-expansion.
+This is the single case when we actually inspect types and perform $\eta$-expansion.
 
 The general idea behind the conversion can be illustrated on a type level: an expression of type $t$ in the source
 language is transformed into the expression of type $\sembr{t}^t$ in relational extension, where
@@ -56,7 +56,7 @@ of this function is to make its argument respect a certain contract. As the argu
 the goal tries to substitute these variables with some values in order to respect the contract this goal represents. 
 For example, a constant \lstinline|Nil| is converted into a function \lstinline|fun $q$ . $q\,$=== ^Nil|.
 
-The conversion itself is described in terms of transformation $\sembr{\bullet}^c$, see Figure~7.%\ref{relational_conversion}. 
+The conversion itself is described in terms of transformation $\sembr{\bullet}^c$, see Fig.~7. %\ref{relational_conversion}. 
 The first five rules
 simply propagate the conversion through the expression; the last three actually do the work. These rules themselves may look complicated,
 but the idea is rather simple.

@@ -19,44 +19,59 @@ functionalized and, as a result, massively recalculated with essential performan
 the implementation by identifying the important specific case and handling it with a little different 
 transformation.
 
-As the first example of the conversion we consider the implementation of concatenation function for lists:
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.4\textwidth}
+    \begin{lstlisting}[basicstyle=\small]
+val append : $\alpha$ list ->
+             $\alpha$ list ->
+             $\alpha$ list
+let rec append = fun x.fun y.
+  match x with
+  | Nil         -> y
+  | Cons (h, t) ->
+      Cons (h, append t y)
+    \end{lstlisting}
+    \vskip1.5cm
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.6\textwidth}    
+    \begin{lstlisting}[basicstyle=\small]
+val append$^o$ : (($\alpha$ llist)$^o$ -> $\G$) ->
+              (($\alpha$ llist)$^o$ -> $\G$) -> 
+              ($\alpha$ llist)$^o$ -> $\G$
+let rec append$^o$ a b q1 =
+  fresh (q2) 
+    (a q2) /\
+    (((q2 === ^Nil) /\ (b q1)) |||
+      (fresh (q3 q4)
+        (q2 === ^(Cons (q3, q4))) /\
+        (fresh (q6 q7)
+          (q6 === q3) /\             
+          (q1 === ^(Cons (q6, q7))) /\
+          (append$^o$ (=== q4) b q7))))
+    \end{lstlisting}
+    \vskip-4mm
+    \caption{}
+  \end{subfigure}
+  \vskip5mm
+  \caption{An example of relational conversion}
+  \label{relational_conversion_example}
+\end{figure}
 
-\begin{lstlisting}[basicstyle=\small]
-   val append : $\alpha$ list -> $\alpha$ list -> $\alpha$ list
-   let rec append = fun x.fun y.
-     match x with
-     | Nil         -> y
-     | Cons (h, t) -> Cons (h, append t y)
-\end{lstlisting}
-
-In Section~\ref{ocanren} we already saw the canonical version of relational concatenation. The result of relational conversion, however,
-is slightly different:
-
-\begin{lstlisting}[basicstyle=\small]
-   val append$^o$ : (($\alpha$ llist)$^o$ -> $\G$) -> (($\alpha$ llist)$^o$ -> $\G$) -> 
-                 ($\alpha$ llist)$^o$ -> $\G$
-   let rec append$^o$ a b q1 =
-     fresh (q2) 
-       (a q2) /\
-       (((q2 === ^Nil) /\ (b q1)) |||
-         (fresh (q3 q4)
-           (q2 === ^(Cons (q3, q4))) /\
-           (fresh (q6 q7)
-             (q6 === q3) /\             
-             (q1 === ^(Cons (q6, q7))) /\
-             (append$^o$ (=== q4) b q7))))
-\end{lstlisting}
-
-The main difference comes from the functionalization of primitive values: while conventional \lstinline|append$^o$| operates
+As the first example of the conversion we consider the implementation of concatenation function for lists (see Fig.~\ref{relational_conversion_example}a).
+In Section~\ref{ocanren} we already saw the canonical version of relational concatenation. The result of relational conversion, however, is slightly different
+(see Fig.~\ref{relational_conversion_example}b). The main difference comes from the functionalization of primitive values: while conventional \lstinline|append$^o$| operates
 on logical lists, the converted variant uses a goal-returning functions. Thus, the conventional \lstinline{append$^o$} for arguments
 \lstinline|x|, \lstinline|y| and \lstinline|q| can be expressed using the converted one as \lstinline{append$^o$ (===x) (===y) q}.
 
+\begin{comment}
 With this observation in mind, it is rather easy to understand the rest of the code. First, the value of the first argument is
 associated with the fresh variable \lstinline|q2|, and case analysis is performed. If the first argument is an empty list, then the 
 value of the third argument is associated with the value of the second (by applying \lstinline|b| to \lstinline|q1|). Otherwise, the first
 argument is split into the head \lstinline|q3| and the tail \lstinline|q4|, the tail is functionalized and passed to the recursive
 call. The result \lstinline|q7| is consed with the head \lstinline|q3| of the original list and unified with the result \lstinline|q1|. One extra
 unification \lstinline|q6 === q3| is an artifact of conversion implementation.
+\end{comment}
 
 In the next subsections, we consider more elaborated and interesting examples. From now on we refrain from presenting the complete source and
 converted code and consider only the signatures and some interesting queries. 
@@ -78,7 +93,6 @@ The signatures of relevant functions are
 
 \begin{lstlisting}[basicstyle=\small]
    val eval : (term -> split) -> term -> term
-
    val call_by_name  : term -> split
    val call_by_value : term -> split
    val normal_order  : term -> split
@@ -91,7 +105,6 @@ by the conversion, are shown below:
 \begin{lstlisting}[basicstyle=\small]
    val eval$^o$ : ((term$^o$ -> $\G$) -> split$^o$ -> $\G$) -> (term$^o$ -> $\G$) -> 
                term$^o$ -> $\G$
-
    val call_by_name$^o$   : (term$^o$ -> $\G$) -> split$^o$ -> $\G$
    val call_by_value$^o$ : (term$^o$ -> $\G$) -> split$^o$ -> $\G$
    val normal_order$^o$   : (term$^o$ -> $\G$) -> split$^o$ -> $\G$
@@ -104,10 +117,8 @@ The interpreter, constructed by our tool, can be run in a forward direction (for
 the terms instead of concrete datatype constructor-based):
 
 \begin{lstlisting}[basicstyle=\small]
-   eval$^o$ normal_order$^o$ (=== `(fun $\dbi{0}$) $\dbi{1}$`) q $\leadsto$ [q $\binds$ `$\dbi{1}$`]
-   
+   eval$^o$ normal_order$^o$ (=== `(fun $\dbi{0}$) $\dbi{1}$`) q $\leadsto$ [q $\binds$ `$\dbi{1}$`]   
    eval$^o$ call_by_name$^o$ (=== `$\dbi{0}$ ((fun $\dbi{0}$) $\dbi{1}$)`) q $\leadsto$ [q $\binds$ `$\dbi{0}$ ((fun $\dbi{0}$) $\dbi{1}$)`]   
-
    eval$^o$ call_by_value$^o$ (=== `$\dbi{0}$ ((fun $\dbi{0}$) $\dbi{1}$)`) q $\leadsto$ [q $\binds$ `$\dbi{0}$ $\dbi{1}$`] 
 \end{lstlisting}
 
@@ -115,23 +126,16 @@ As it is expected from relational interpreter, it is equally can be run in the o
 of terms, reducing to it:
 
 \begin{lstlisting}[basicstyle=\small]
-   eval$^o$ normal_order$^o$ (=== q) (`fun $\dbi{0}$`) $\leadsto$ 
-     [
+   eval$^o$ normal_order$^o$ (=== q) (`fun $\dbi{0}$`) $\leadsto$ [
        q $\binds$ `fun $\dbi{0}$`; 
        q $\binds$ `(fun $\dbi{0}$) (fun $\dbi{0}$)`; 
        q $\binds$ `fun ((fun $\dbi{1}$) $\framebox{0}$)`; 
-       q $\binds$ `(fun $\dbi{0}$) ((fun $\dbi{0}$) (fun $\dbi{0}$))`;  
-       ...
-     ] 
-
-   eval$^o$ call_by_name$^o$ (=== q) (`fun $\dbi{0}$`) $\leadsto$ 
-     [
+       q $\binds$ `(fun $\dbi{0}$) ((fun $\dbi{0}$) (fun $\dbi{0}$))`; ...] 
+   eval$^o$ call_by_name$^o$ (=== q) (`fun $\dbi{0}$`) $\leadsto$ [
        q $\binds$ `fun $\dbi{0}$`; 
        q $\binds$ `(fun $\dbi{0}$) (fun $\dbi{0}$)`; 
        q $\binds$ `(fun $\dbi{0}$) ((fun $\dbi{0}$) (fun $\dbi{0}$))`; 
-       q $\binds$ `(fun fun $\;\dbi{0}$) $\dbi{0}$`; 
-       ...
-     ] 
+       q $\binds$ `(fun fun $\;\dbi{0}$) $\dbi{0}$`; ...] 
 \end{lstlisting}
 
 This interpreter can be extended to the subset of Scheme, with which the quines/twines/thrines benchmarks~\cite{Untagged} can be
@@ -165,15 +169,11 @@ In a reverse direction relational type inferencer is capable of finding the inha
 
 \begin{lstlisting}[basicstyle=\small]
    type_inference$^o$ (=== q) '$a$' $\leadsto$ $\bot$
-
-   type_inference$^o$ (=== q) '$a$ -> $a$' $\leadsto$ 
-     [
+   type_inference$^o$ (=== q) '$a$ -> $a$' $\leadsto$ [
        q $\binds$ 'fun $\framebox{0}$ -> $\framebox{0}$'; 
        q $\binds$ 'fun $\framebox{0}$ -> (fun $\framebox{1}$ -> $\framebox{1}$) $\framebox{0}$'; 
        q $\binds$ 'fun $\framebox{0}$ -> let $\framebox{1}$ = $\framebox{2}$ in $\framebox{0}$' ($\framebox{0}$ =/= $\;\;\framebox{1}$);
-       q $\binds$ '(fun $\framebox{0}$ -> $\framebox{0}$) (fun $\framebox{1}$ -> $\framebox{1}$)';
-       ...
-     ]
+       q $\binds$ '(fun $\framebox{0}$ -> $\framebox{0}$) (fun $\framebox{1}$ -> $\framebox{1}$)'; ...]
 \end{lstlisting}
 
 Note, the first query diverges, providing no results (which is rather expected since the type is un-inhabited). This is a long-time known phenomenon of
@@ -221,11 +221,7 @@ our relational miniKanren interpreter works in both directions. As a more intere
      (=== 
         'let rec add a b c =
            ((a === Z) $\wedge$ (b ===  c)) $\vee$
-           (fresh (a$_0$ c$_0$)
-             (a === S a$_0$) $\wedge$
-             $\Box$ $\wedge$
-             (add a$_0$ b c$_0$)
-           )
+           (fresh (a$_0$ c$_0$) (a === S a$_0$) $\wedge$ $\Box$ $\wedge$ (add a$_0$ b c$_0$))
         in fresh (x y z) (add x y z)') ([[x='1'; y='1'; z='2']])  $\leadsto$   
      [$\Box$ $\binds$ `c ===$\;$ S c$_0$`; ...]
 \end{lstlisting}
