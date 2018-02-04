@@ -11,3 +11,5 @@ main.pdf: $(OCANREN_TEX)
 	pdflatex main.tex
 
 
+clean:
+	rm -rf *~ *.log *.bak *.aux
