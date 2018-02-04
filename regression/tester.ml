@@ -10,8 +10,8 @@ open MiniKanren
 
 let wrap onOK onFree i (name, x) =
   if x#is_open
-  then onFree i name x#reify
-  else onOK i name x#prj
+  then onFree i name x
+  else onOK i name x
 
 let qh onOK onFree = fun q () ->
   List.iteri (wrap onOK onFree) @@ ["q", q]
@@ -55,7 +55,7 @@ let run_gen onOK onFree n num handler (repr, goal) =
   (i.e. reification is not required)
 *)
 let run_exn printer = run_gen
-  (fun i name x -> printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printer x) )
+  (fun i name x -> printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printer x#prj) )
   (fun _ _ _ -> failwith "Free logic variables in the answer")
 
 (**
@@ -64,8 +64,16 @@ let run_exn printer = run_gen
   reification using [reifier] and prints the result wit [print_ibjected]
 *)
 let runR reifier printerNoFree printerR = run_gen
-  (fun i name x -> printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printerNoFree x) )
+  (fun i name x -> printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printerNoFree x#prj) )
   (fun i name func ->
-    let ans = func reifier in
+    let ans = func#reify reifier in
     printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printerR ans)
     )
+
+let run_prjc reifier printer = run_gen
+  (fun i name x ->
+     printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printer x#prj) )
+  (fun i name func ->
+    let ans = func#prjc reifier in
+    printf "%s%s=%s;%!" (if i<>0 then " " else "") name (printer ans)
+  )

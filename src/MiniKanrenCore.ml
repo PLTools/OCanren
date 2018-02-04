@@ -396,6 +396,12 @@ module Fmap (T : T1) =
   struct
     external distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected = "%identity"
 
+    let rec prjc r1 of_int (h: helper) x =
+      if h#isVar x
+      then let x : Var.t = !!!x in
+           of_int x.index (List.map (!!!(prjc r1 of_int)) x.constraints)
+      else T.fmap (r1 h) x
+
     let rec reify r (c : helper) x =
       if c#isVar x
       then to_var c x (reify r)
@@ -405,6 +411,12 @@ module Fmap (T : T1) =
 module Fmap2 (T : T2) =
   struct
     external distrib : (('a,'b) injected, ('c, 'd) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected = "%identity"
+
+    let rec prjc r1 r2 of_int (h: helper) x =
+      if h#isVar x
+      then let x : Var.t = !!!x in
+           of_int x.index (List.map (!!!(prjc r1 r2 of_int)) x.constraints)
+      else T.fmap (r1 h) (r2 h) x
 
     let rec reify r1 r2 (c : helper) x =
       if c#isVar x
@@ -416,6 +428,12 @@ module Fmap3 (T : T3) =
   struct
     external distrib : (('a, 'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected = "%identity"
 
+    let rec prjc r1 r2 r3 of_int (h: helper) x =
+      if h#isVar x
+      then let x : Var.t = !!!x in
+           of_int x.index (List.map (!!!(prjc r1 r2 r3 of_int)) x.constraints)
+      else T.fmap (r1 h) (r2 h) (r3 h) x
+
     let rec reify r1 r2 r3 (c : helper) x =
       if c#isVar x then to_var c x (reify r1 r2 r3)
       else Value (T.fmap (r1 c) (r2 c) (r3 c) x)
@@ -424,6 +442,12 @@ end
 module Fmap4 (T : T4) = struct
   external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
                      (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected = "%identity"
+
+  let rec prjc r1 r2 r3 r4 of_int (h: helper) x =
+    if h#isVar x
+    then let x : Var.t = !!!x in
+         of_int x.index (List.map (!!!(prjc r1 r2 r3 r4 of_int)) x.constraints)
+    else T.fmap (r1 h) (r2 h) (r3 h) (r4 h) x
 
   let rec reify r1 r2 r3 r4 (c : helper) x =
     if c#isVar x
@@ -434,6 +458,12 @@ end
 module Fmap5 (T : T5) = struct
   external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
                      (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected = "%identity"
+
+  let rec prjc r1 r2 r3 r4 r5 of_int (h: helper) x =
+    if h#isVar x
+    then let x : Var.t = !!!x in
+         of_int x.index (List.map (!!!(prjc r1 r2 r3 r4 r5 of_int)) x.constraints)
+    else T.fmap (r1 h) (r2 h) (r3 h) (r4 h) (r5 h) x
 
   let rec reify r1 r2 r3 r4 r5 (c : helper) x =
     if c#isVar x
@@ -495,12 +525,19 @@ module Fmap (T : T1) :
   sig
     val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
     val reify : (helper -> ('a,'b) injected -> 'b) -> helper -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
+    val prjc  : (helper -> ('a,'b) injected -> 'a) ->
+      (int -> 'r list -> ('a T.t as 'r)) ->
+      helper -> ('r, 'b T.t logic) injected -> 'r
   end
 
 module Fmap2 (T : T2) :
   sig
     val distrib : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
     val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> helper -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
+    val prjc  : (helper -> ('a, 'b) injected -> 'a) ->
+      (helper -> ('c, 'd) injected -> 'c) ->
+      (int -> 'r list -> (('a,'c) T.t as 'r) ) ->
+      helper -> ('r, ('b,'d) T.t logic) injected -> 'r
   end
 
 module Fmap3 (T : T3) :
@@ -508,6 +545,11 @@ module Fmap3 (T : T3) :
     val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected
     val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
                 helper -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
+    val prjc  : (helper -> ('a, 'b) injected -> 'a) ->
+      (helper -> ('c, 'd) injected -> 'c) ->
+      (helper -> ('e, 'f) injected -> 'e) ->
+      (int -> 'r list -> 'r) ->
+      helper -> (('a,'c,'e) T.t as 'r, ('b,'d,'f) T.t logic) injected -> 'r
   end
 
 module Fmap4 (T : T4) :
@@ -515,9 +557,17 @@ module Fmap4 (T : T4) :
     val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
                        (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected
 
-    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) ->
-                (helper -> ('e, 'f) injected -> 'f) -> (helper -> ('g, 'h) injected -> 'h) ->
-                helper -> (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t logic as 'r) injected -> 'r
+    val reify :
+      (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) ->
+      (helper -> ('e, 'f) injected -> 'f) -> (helper -> ('g, 'h) injected -> 'h) ->
+      helper -> (('a, 'c, 'e, 'g) T.t, 'r) injected ->
+      (('b, 'd, 'f, 'h) T.t logic as 'r)
+
+    val prjc  :
+      (helper -> ('a, 'b) injected -> 'a) -> (helper -> ('c, 'd) injected -> 'c) ->
+      (helper -> ('e, 'f) injected -> 'e) -> (helper -> ('g, 'h) injected -> 'g) ->
+      (int -> 'r list -> 'r) ->
+      helper -> ('r, ('b,'d,'f,'h) T.t logic) injected -> (('a,'c,'e,'g) T.t as 'r)
   end
 
 module Fmap5 (T : T5) :
@@ -528,6 +578,14 @@ module Fmap5 (T : T5) :
     val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> (helper -> ('e, 'f) injected -> 'f) ->
                 (helper -> ('g, 'h) injected -> 'h) -> (helper -> ('i, 'j) injected -> 'j) ->
                 helper -> (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t logic as 'r) injected -> 'r
+
+    val prjc  :
+      (helper -> ('a, 'b) injected -> 'a) -> (helper -> ('c, 'd) injected -> 'c) ->
+      (helper -> ('e, 'f) injected -> 'e) -> (helper -> ('g, 'h) injected -> 'g) ->
+      (helper -> ('i, 'j) injected -> 'i) ->
+      (int -> 'r list -> 'r) ->
+      helper -> ('r, ('b,'d,'f,'h,'j) T.t logic) injected ->
+      (('a,'c,'e,'g,'i) T.t as 'r)
   end
 
 module Fmap6 (T : T6) :
@@ -549,6 +607,14 @@ let rec reify (c : helper) (n: ('a,'a logic) injected)  =
   if c#isVar n
   then to_var c n reify
   else Value !!!n
+
+let prjc : (int -> 'a) -> helper -> ('a,'b) injected -> 'a = fun f c x ->
+  if c#isVar x
+  then
+    let x : Var.t = !!!x in
+    f x.index
+  else (!!!x : 'a)
+
 
 exception Not_a_value
 exception Occurs_check
@@ -1405,6 +1471,7 @@ class type ['a,'b] reified = object
   method is_open : bool
   method prj     : 'a
   method reify   : (helper -> ('a, 'b) injected -> 'b) -> 'b
+  method prjc    : (helper -> ('a, 'b) injected -> 'a) -> 'a
 end
 
 let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) reified =
@@ -1416,6 +1483,7 @@ let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) reified =
     method is_open            = is_open
     method prj                = if self#is_open then raise Not_a_value else !!!ans
     method reify reifier      = reifier c ans
+    method prjc  onvar        = onvar   c ans
   end
 
 let prj x = let rr = make_rr x @@ State.empty () in rr#prj
