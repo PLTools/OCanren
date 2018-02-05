@@ -11,7 +11,7 @@ module GTyp =
     module T =
       struct
         @type ('a, 'b) t =
-	| P   of 'a      (* primitive *)
+        | P   of 'a      (* primitive *)
         | Arr of 'b * 'b (* arrow *)
         with gmap, show
 
