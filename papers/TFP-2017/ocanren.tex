@@ -19,10 +19,10 @@ There are only five syntactic forms of goals (denoted below as $g, g_1, g_2$, et
   \item disequality constraint $t_1\;\not\equiv\;t_2$.
 \end{itemize}
 
-Two last forms of goals constitute a basis for goal construction; here $t_1$ and $t_2$ are \emph{terms}. In \ocanren a term is an arbitrary expression of polymorphic logic type $\alpha^o$. The postfix notation $\Box^o$ is a traditional way to denote relational entities, and we will use it for types as well\footnote{In the real implementation the terms have a more complex two-parametric type, which encodes a tagging, needed to be performed when the results of the relational program are returned into the functional word; these details, however, are irrelevant to the objectives of the paper, and we stick with the simplified version.}.
+Two last forms of goals constitute a basis for goal construction; here $t_1$ and $t_2$ are \emph{terms}. In \ocanren a term is an arbitrary expression of polymorphic logic type $\alpha^o$. The postfix notation $\Box^o$ is a traditional way to denote relational entities, and we will use it for types as well\footnote{In the real implementation the terms have a more complex two-parametric type, which encodes a tagging, needed to be performed when the results of the relational program are returned into the functional world; these details, however, are irrelevant to the objectives of the paper, and we stick with the simplified version.}.
 
 The simplest expression of logic type is a variable, bound in \lstinline|fresh|. Another example is a primitive value, \emph{injected} into the logic domain with a built-in primitive ``$\uparrow$'', such as $\uparrow\!3$ (of type \lstinline|int$^o$|) or \lstinline|$\uparrow$true| (of type \lstinline|bool$^o$|).
-Other types (pairs, lists, user-defined algebraic datatypes, etc.) can be used in relational specifications as well, being injected by the same primitive. For example, expression \lstinline{^(1, "abc")} has the type \lstinline{(int * string)$^o$}, \lstinline{^[1; 2; 3]}~--- the type \lstinline{(int list)$^o$}, etc. The subtle part is that (since the unification only works for logical types) the placement of ``$^o$'' determines the granularity of unification. Indeed, a logical variable can only be placed where logical type is expected. Thus, in unification one can use a value of type \lstinline{(int * int)$^o$} as \emph{a whole}, but in order to control the \emph{contents} of the pair relationally the type \lstinline{(int$^o$, int$^o$)$^o$} is required. This makes it impossible to reuse some built-in or standard types in relational code~--- for example, predefined list type is not flexible enough, since it does not allow the tail of the list to be logical. Instead, logical list type has to be introduced:
+Other types (pairs, lists, user-defined algebraic datatypes, etc.) can be used in relational specifications as well, being injected by the same primitive. For example, expression \lstinline{^(1, "abc")} has the type \lstinline{(int * string)$^o$}, \lstinline{^[1; 2; 3]}~--- the type \lstinline{(int list)$^o$}, etc. The subtle part is that (since the unification only works for logical types) the placement of ``$^o$'' determines the granularity of unification. Indeed, a logical variable can only be placed where logical type is expected. Thus, in unification one can use a value of type \lstinline{(int * int)$^o$} as \emph{a whole}, but in order to control the \emph{contents} of the pair relationally, the type \lstinline{(int$^o$, int$^o$)$^o$} is required. This makes it impossible to reuse some built-in or standard types in relational code~--- for example, predefined list type is not flexible enough, since it does not allow the tail of the list to be logical. Instead, logical list type has to be introduced:
 
 \begin{lstlisting}
    type $\alpha$ llist = Nil | Cons of $\alpha^o$ * ($\alpha$ llist)$^o$
@@ -48,7 +48,7 @@ using case analysis and recursion:
 \item If the first list is empty, then the second and the third lists must be equal.
 \item Otherwise, the first list can be split into a head and a tail, and two fresh variables \lstinline{h} and \lstinline{t} are needed to denote them.
 We also need a fresh variable \lstinline{ty} to denote the list, such that appending \lstinline{y} to \lstinline{t} equals \lstinline{ty}. To ensure this
-property we use a recursive call to \lstinline{append$^o$}. Finally, we acquire the final result by consing \lstinline{h} and \lstinline{ty}. 
+property, we use a recursive call to \lstinline{append$^o$}. Finally, we acquire the final result by consing \lstinline{h} and \lstinline{ty}. 
 \end{enumerate}
 
 The definition of \lstinline{append$^o$} takes three logical lists \lstinline{x}, \lstinline{y} and \lstinline{xy} as arguments, and constructs a goal,
@@ -73,7 +73,12 @@ As it can be seen from the type, relational concatenation is polymorphic, like i
    append$^o$ ^(Cons (^$\lambda$x.x, ^Nil)) q ^(Cons (^$\lambda$y.y, ^Nil))  
 \end{lstlisting}
 
-\noindent ends with a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well, as it deals only with first-order syntactic unification~\cite{Unification}. This example demonstrates, that, unlike pure OCaml, the typing in OCanren is somewhat weak. In order to restore the strong typing, some of the type variables have to be bounded to range over only non-functional types. The lack of direct support for bounded polymorphism~\cite{cardelli} in OCaml makes this step problematic. Our experience, however, shows, that in practice this deficiency rarely gets in the way. In the following development, we assume, that in polymorphic types some type variables may be implicitly bounded to only non-function types, and these boundings are respected in all instantiations of those type variables.
+\noindent ends with a run-time error due to inability to unify closures. This is a fundamental limitation in original \miniKanren as well,
+as it deals only with first-order syntactic unification~\cite{Unification}. This example demonstrates, that, unlike pure OCaml, the typing
+in OCanren is somewhat weak. In order to restore the strong typing, some of the type variables have to be bounded to range over only non-functional
+types. The lack of direct support for bounded polymorphism~\cite{cardelli} in OCaml makes this step problematic. Our experience, however, shows, that
+in practice this deficiency rarely gets in the way. In the following development, we assume, that in polymorphic types some type variables may be
+implicitly bounded by the set of non-function types, and these boundings are respected in all instantiations of those type variables.
 
 \begin{figure}[t]
   \centering
@@ -124,7 +129,7 @@ let rec append$^o$ x y xy =
 
 Finally, we describe the unnesting technique~\cite{TRS}, which was introduced as a method for manual transformation
 of functional programs into relational form. Unnesting introduces a new name for each nested subexpression; now, when the value of
-each subexpression is bounded to a certain variable, the conversion is straightforward: each pattern-matching construct is
+each subexpression is bound to a certain variable, the conversion is straightforward: each pattern-matching construct is
 transformed into a disjunction, new names, introduced in pattern bindings and unnestings, are transformed into \lstinline|fresh| variables, and
 each converted function is supplied with the additional argument, unified with the result. As a result we consider, again, the list
 concatenation function (see Fig.~\ref{unnesting_example}a). The result of unnesting is shown on Fig.~\ref{unnesting_example}b, while the
@@ -161,7 +166,7 @@ let bar$^o$ y r =
 \end{figure}
 
 However, not every definition can be converted to a relational form by unnesting. Consider, for example, the definition on Fig.~\ref{unnesting_invalid}a.
-Unnesting would transform this program into the form, shown on Fig.~\ref{unnesting_invalid}b, which is obviously invalid since it unifies a
+Unnesting would transform this program into the form, shown on Fig.~\ref{unnesting_invalid}b, which is obviously invalid, since it unifies a
 function $f$ with a logical variable $r$. In order to apply unnesting, one needs to $\eta$-expand the definition of $g$, making the functional nature of
 its return type syntactically visible.
 We stress, that relational conversion, described in Section~\ref{conversion}, is essentially different from unnesting. In particular, 
