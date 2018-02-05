@@ -61,8 +61,7 @@ let rec sorto x y =
 
 let _ =
   run four  (fun q1 q2 q3 p -> sorto (q1 % (q2 % (q3 % nil ()))) p)
-            (fun _  _  _  p ->
-              Stream.take ~n:10 p |> List.iter (fun rr ->
+            (fun _  _  _  rr ->
                 printf "%s\n%!"  @@ (if rr#is_open
                 then
                   GT.(show List.logic (show Nat.logic)) @@
@@ -70,14 +69,14 @@ let _ =
                 else
                   GT.(show List.ground (show Nat.ground) rr#prj)
                 )
-              )
             )
 
 (* Making regular sorting from relational one *)
 let sort l =
   List.to_list Nat.to_int @@
+  Stream.hd @@
   run q (sorto @@ nat_list l)
-        (fun qs -> Stream.hd qs |> (fun rr -> rr#prj))
+        (fun rr -> rr#prj)
 
 (* Veeeeery straightforward implementation of factorial *)
 let rec fact = function 0 -> 1 | n -> n * fact (n-1)
@@ -86,18 +85,16 @@ let rec fact = function 0 -> 1 | n -> n * fact (n-1)
 (* Making permutations from relational sorting *)
 let perm l =
   List.map (List.to_list Nat.to_int) @@
+  Stream.take ~n:(fact @@ List.length l) @@
   run q (fun q -> sorto q @@ nat_list (List.sort Pervasives.compare l))
-        (fun qs ->
-          qs |> Stream.take ~n:(fact @@ List.length l) |>
-          List.map (fun rr -> rr#prj))
+        (fun rr -> rr#prj)
 
 (* More hardcore version: no standard sorting required *)
 let perm' l =
   List.map (List.to_list Nat.to_int) @@
+  Stream.take ~n:(fact @@ List.length l) @@
   run q (fun q -> fresh (r) (sorto (nat_list l) r) (sorto q r))
-        (fun qs ->
-          qs |> Stream.take ~n:(fact @@ List.length l)
-          |> List.map (fun rr -> rr#prj))
+        (fun rr -> rr#prj)
 
 (* Entry point *)
 let _ =

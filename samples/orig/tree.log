@@ -1,0 +1,9 @@
+Inserting 1 into Nil () makes Node (1, Nil (), Nil ())
+Inserting 2 into Node (1, Nil (), Nil ()) makes Node (1, Nil (), Node (2, Nil (), Nil ()))
+Inserting 3 into Node (1, Nil (), Node (2, Nil (), Nil ())) makes Node (1, Nil (), Node (2, Nil (), Node (3, Nil (), Nil ())))
+Inserting 4 into Node (1, Nil (), Node (2, Nil (), Node (3, Nil (), Nil ()))) makes Node (1, Nil (), Node (2, Nil (), Node (3, Nil (), Node (4, Nil (), Nil ()))))
+Inserting 3 into Nil () makes Node (3, Nil (), Nil ())
+Inserting 2 into Node (3, Nil (), Nil ()) makes Node (3, Node (2, Nil (), Nil ()), Nil ())
+Inserting 4 into Node (3, Node (2, Nil (), Nil ()), Nil ()) makes Node (3, Node (2, Nil (), Nil ()), Node (4, Nil (), Nil ()))
+Inserting 1 into Node (3, Node (2, Nil (), Nil ()), Node (4, Nil (), Nil ())) makes Node (3, Node (2, Node (1, Nil (), Nil ()), Nil ()), Node (4, Nil (), Nil ()))
+Inverse insert: 8
