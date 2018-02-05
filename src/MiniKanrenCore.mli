@@ -77,7 +77,7 @@ module State :
   end
 
 (** Goal converts a state into a lazy stream of states *)
-type 'a goal' = State.t -> 'a
+type 'a goal'
 type goal = State.t Stream.t goal'
 
 (** {3 Logic values} *)
@@ -408,41 +408,54 @@ val qrstu : unit ->
  *)
 module Tabling :
   sig
-    val succ : (unit ->
-                (('a -> 'b) -> 'c) * ('d -> 'e -> 'f) * ('h -> 'i * 'j)) ->
-               unit ->
-               (('k * 'a -> 'b) -> 'k -> 'c) *
-               (('m -> 'd) -> 'm * 'e -> 'f) *
-               ('p * 'h -> ('p * 'i) * 'j)
+    val succ : (unit -> (('a -> 'b) -> 'c) * ('d -> 'e -> 'f)) ->
+           unit ->
+           ((('g, 'h) injected * 'a -> 'b) -> ('g, 'h) injected -> 'c) *
+           (('i -> 'd) -> 'i * 'e -> 'f)
 
     val one : unit ->
-      (('a * 'b -> 'c) -> 'a -> 'b -> 'c) *
-      (('d -> 'e) -> 'd -> 'e) *
-      ('h -> 'h)
+         ((('a, 'b) injected -> 'c) -> ('a, 'b) injected -> 'c) *
+         (('d -> 'e) -> 'd -> 'e)
 
     val two : unit ->
-      (('a * ('b * 'c) -> 'd) -> 'a -> 'b -> 'c -> 'd) *
-      (('e -> 'f -> 'g) -> 'e * 'f -> 'g) *
-      ('m * ('n * 'o) -> ('m * 'n) * 'o)
+         ((('a, 'b) injected * ('c, 'd) injected -> 'e) ->
+          ('a, 'b) injected -> ('c, 'd) injected -> 'e) *
+         (('f -> 'g -> 'h) -> 'f * 'g -> 'h)
 
     val three : unit ->
-      (('a * ('b * ('c * 'd)) -> 'e) -> 'a -> 'b -> 'c -> 'd -> 'e) *
-      (('f -> 'g -> 'h -> 'i) -> 'f * ('g * 'h) -> 'i) *
-      ('r * ('s * ('t * 'u)) -> ('r * ('s * 't)) * 'u)
+           ((('a, 'b) injected * (('c, 'd) injected * ('e, 'f) injected) ->
+             'g) ->
+            ('a, 'b) injected -> ('c, 'd) injected -> ('e, 'f) injected -> 'g) *
+           (('h -> 'i -> 'j -> 'k) -> 'h * ('i * 'j) -> 'k)
 
-    val four : unit ->
-      (('a * ('b * ('c * ('d * 'e))) -> 'f) -> 'a -> 'b -> 'c -> 'd -> 'e -> 'f) *
-      (('g -> 'h -> 'i -> 'j -> 'k) -> 'g * ('h * ('i * 'j)) -> 'k) *
-      ('b1 * ('c1 * ('d1 * ('e1 * 'f1))) -> ('b1 * ('c1 * ('d1 * 'e1)))  * 'f1)
+    val four :  unit ->
+           ((('a, 'b) injected *
+             (('c, 'd) injected * (('e, 'f) injected * ('g, 'h) injected)) ->
+             'i) ->
+            ('a, 'b) injected ->
+            ('c, 'd) injected -> ('e, 'f) injected -> ('g, 'h) injected -> 'i) *
+           (('j -> 'k -> 'l -> 'm -> 'n) -> 'j * ('k * ('l * 'm)) -> 'n)
 
     val five : unit ->
-      (('a * ('b * ('c * ('d * ('e * 'f)))) -> 'g) -> 'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'g) *
-      (('h -> 'i -> 'j -> 'k -> 'l -> 'm) -> 'h * ('i * ('j * ('k * 'l))) -> 'm) *
-      ('b1 * ('c1 * ('d1 * ('e1 * ('f1 * 'g1)))) -> ('b1 * ('c1 * ('d1 * ('e1 * 'f1)))) * 'g1)
+           ((('a, 'b) injected *
+             (('c, 'd) injected *
+              (('e, 'f) injected * (('g, 'h) injected * ('i, 'j) injected))) ->
+             'k) ->
+            ('a, 'b) injected ->
+            ('c, 'd) injected ->
+            ('e, 'f) injected -> ('g, 'h) injected -> ('i, 'j) injected -> 'k) *
+           (('l -> 'm -> 'n -> 'o -> 'p -> 'q) ->
+            'l * ('m * ('n * ('o * 'p))) -> 'q)
 
-    val tabled : (unit -> (('a -> State.t Stream.t) -> 'b) * ('c -> 'd -> goal) * ('a -> 'd * State.t)) -> 'c -> 'b
+    val tabled : (unit ->
+            (('a -> State.t Stream.t goal') -> 'b) *
+            ('c -> 'a -> State.t Stream.t goal')) ->
+           'c -> 'b
 
-    val tabledrec : (unit -> (('a -> State.t Stream.t) -> 'b -> 'c) * ('d -> 'e -> goal) * ('a -> 'e * State.t)) -> (('b -> 'c) -> 'd) -> 'b -> 'c
+    val tabledrec : (unit ->
+       (('a -> State.t Stream.t goal') -> 'b -> 'c) *
+       ('d -> 'a -> State.t Stream.t goal')) ->
+      (('b -> 'c) -> 'd) -> 'b -> 'c
   end
 
 (** {2 Building reifiers for a custom type compositionally} *)
