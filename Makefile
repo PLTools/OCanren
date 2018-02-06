@@ -67,7 +67,7 @@ test_$(1):
 	if [ $$$$? -ne 0 ] ; then echo "$(1) FAILED"; else echo "$(1) PASSED"; fi
 
 promote_all: promote_$(1)
-promite_test$(1): promote_$(1)
+promote_test$(1): promote_$(1)
 promote_$(1):
 	./test$(1).native > regression/orig/test$(1).log
 
@@ -102,8 +102,8 @@ SAMPLES_CASES=tree sorting WGC lorry
 compile_samples:
 	$(MAKE) -C samples all
 test_samples:
-clean: clean_samples	
-clean_samples: 
+clean: clean_samples
+clean_samples:
 	$(MAKE) -C samples clean
 
 define SAMPLESRULES
