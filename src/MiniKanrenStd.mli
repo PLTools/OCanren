@@ -33,7 +33,7 @@ open MiniKanrenCore
 | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 (** {3 Relational pairs} *)
-module Pair : 
+module Pair :
   sig
 
     (** Type synonym to prevent toplevel [logic] from being hidden *)
@@ -82,12 +82,12 @@ module Pair :
     val pair : ('a, 'b) injected -> ('c, 'd) injected -> ('a, 'b, 'c, 'd) groundi
 
     (** Reifier *)
-    val reify : (helper -> ('a, 'b) injected -> 'b) -> (helper -> ('c, 'd) injected -> 'd) -> helper -> ('a, 'b, 'c, 'd) groundi -> ('b, 'd) logic
+    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> Env.t -> ('a, 'b, 'c, 'd) groundi -> ('b, 'd) logic
 
   end
 
 (** {3 Relational [option]} *)
-module Option : 
+module Option :
   sig
 
     (** Type synonym to prevent toplevel [logic] from being hidden *)
@@ -136,7 +136,7 @@ module Option :
     val option : ('a, 'b) injected ground -> ('a, 'b) groundi
 
     (** Reifier *)
-    val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a, 'b) groundi -> 'b logic
+    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> Env.t -> ('a, 'b) groundi -> 'b logic
 
     (** Injection counterpart for constructors *)
     val some : ('a, 'b) injected -> ('a, 'b) groundi
@@ -152,7 +152,7 @@ module Bool :
 
     (** Synonym for boolean type *)
     type t = bool
-    
+
     (** Ground boolean (the regular one) *)
     type ground = bool
 
@@ -190,7 +190,7 @@ module Bool :
     type groundi = (ground, logic) injected
 
     (** Reifier *)
-    val reify : helper -> groundi -> logic
+    val reify : Env.t -> groundi -> logic
 
     (** Constants *)
     val falso : groundi
@@ -231,8 +231,8 @@ module Nat :
     type 'a logic' = 'a logic
 
     (** Synonym for abstract nat type *)
-    type 'a t = 'a nat    
-    
+    type 'a t = 'a nat
+
     (** Ground nat are ismorphic for regular one *)
     type ground = ground t
 
@@ -270,7 +270,7 @@ module Nat :
     type groundi = (ground, logic) injected
 
     (** Reifier *)
-    val reify : helper -> groundi -> logic
+    val reify : Env.t -> groundi -> logic
 
     (** [of_int n] converts integer [n] into [ground]; negative integers become [O] *)
     val of_int : int -> ground
@@ -371,7 +371,7 @@ module List :
     val list : ('a, 'b) injected GT.list -> ('a, 'b) groundi
 
     (** Reifier *)
-    val reify : (helper -> ('a, 'b) injected -> 'b) -> helper -> ('a ground, 'b logic) injected -> 'b logic
+    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> Env.t -> ('a ground, 'b logic) injected -> 'b logic
 
     (** Constructor *)
     val conso : ('a, 'b) injected -> ('a, 'b) groundi -> ('a, 'b) groundi
