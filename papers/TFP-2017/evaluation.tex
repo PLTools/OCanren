@@ -25,11 +25,11 @@ transformation.
 val append : $\alpha$ list ->
              $\alpha$ list ->
              $\alpha$ list
-let rec append = fun x.fun y.
-  match x with
-  | Nil         -> y
+let rec append = fun a.fun b.
+  match a with
+  | Nil         -> b
   | Cons (h, t) ->
-      Cons (h, append t y)
+      Cons (h, append t b)
     \end{lstlisting}
     \vskip1.5cm
     \caption{}
@@ -221,7 +221,7 @@ our relational miniKanren interpreter works in both directions. As a more intere
      (=== 
         'let rec add a b c =
            ((a === Z) $\wedge$ (b ===  c)) $\vee$
-           (fresh (a$_0$ c$_0$) (a === S a$_0$) $\wedge$ $\Box$ $\wedge$ (add a$_0$ b c$_0$))
+           (fresh (a$_0$ c$_0$) (a ===$\;$ S a$_0$) $\wedge$ $\Box$ $\wedge$ (add a$_0$ b c$_0$))
         in fresh (x y z) (add x y z)') ([[x='1'; y='1'; z='2']])  $\leadsto$   
      [$\Box$ $\binds$ `c ===$\;$ S c$_0$`; ...]
 \end{lstlisting}
