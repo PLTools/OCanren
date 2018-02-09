@@ -2,7 +2,7 @@
 
 Our development of relational conversion is based on the idea of transforming a program in a functional
 language into a program in \emph{relational extension} of that language. In the context of 
-miniKanren this approach looks quite natural since miniKanren itself, as a DSL, reuses 
+miniKanren, this approach looks quite natural, since miniKanren itself, as a DSL, reuses 
 many important features (for example, function definitions) from a host language.
 
 In this section, we present a formal description of a small functional language, taken as a source
@@ -16,7 +16,7 @@ with relational constructs. We specify the typing rules and semantics for the ex
 The syntax of our source functional language is shown on Figure~\ref{functional_syntax}. It consists of a lambda calculus, 
 enriched with constructors with fixed arities $C^n$, patterns $p$ and pattern-matching constructs, and  
 expressions for recursive/non-recursive let-bindings.
-Among then constructors we distinguish two nullary interpreted constructors \lstinline|true| and \lstinline|false|, and add a boolean equality
+Among the constructors we distinguish two nullary interpreted constructors \lstinline|true| and \lstinline|false|, and add a boolean equality
 operator ``$=$''. 
 
 \begin{wrapfigure}{r}{0.5\textwidth}
@@ -44,22 +44,25 @@ $$
 \end{wrapfigure}
 
 In a pattern matching, we only allow shallow patterns (which is not an essential limitation) and do not allow wildcards (which is 
-important~--- converting wildcard pattern matching into relational form would require essentially different projections). 
+important~--- converting wildcard pattern matching into relational form would require essentially different projections).
+
+\begin{comment}
 This choice of a language may 
 look quite a restrictive. However, in terms of relational programming, the language contains virtually everything one would need. Indeed, from
 a relational conversion standpoint the standard built-in integer arithmetics, for example, is of no use~--- 
 there is simply no way to convert integer expression into relational form, using integer expressions. In order to use relational 
 arithmetics, one needs to reimplement everything from scratch, using, for example, Peano encoding; but Peano arithmetics can be
 easily expressed in the language we present.
+\end{comment}
 
 Our language is equipped with Hindley-Milner type system, and we present the typing rules in a conventional syntax-directed form 
-on Figure~\ref{functional_typing}. Besides type variables and function types our system contains a number of implicitly defined 
+on Fig.~\ref{functional_typing}. Besides type variables and function types, our system contains a number of implicitly defined 
 algebraic datatypes $T^k$, and we stipulate, that each constructor $C^n$ belongs to the exactly one
-datatype. In the rule \textsc{Constr$_T$} we assume, that type $t^C$ has the form $T^k(t_1,\dots,t_k)$, where each of the types
-$t_i$ is recovered from the types $t_i^C$ of arguments of constructor $C^n$ and, moreover, these types are agree in the sense of
-constructor application. Similarly, in the rule \textsc{Match$_T$} the types of all $C_i^{k_i}(x^i_1,\dots,x^i_{k_i})$ are expected
+datatype. In the rule \textsc{Constr$_T$}, we assume that type $t^C$ has the form $T^k(t_1,\dots,t_k)$, where each of the types
+$t_i$ is recovered from the types $t_i^C$ of arguments of constructor $C^n$ and, moreover, these types agree in the sense of
+constructor application. Similarly, in the rule \textsc{Match$_T$}, the types of all $C_i^{k_i}(x^i_1,\dots,x^i_{k_i})$ are expected
 to be equal $t^C$, and $t^{C_i}_j$ is a type of $j$-th argument of constructor $C_i$, used in the pattern. The rule \textsc{Eq$_T$}
-specifies, that both operands of equality operator must have the same (but arbitrary) type. Thus, we can call this operator
+specifies that both operands of equality operator must have the same (but arbitrary) type. Thus, we can call this operator
 ``polymorphic equality''.
 
 \setarrow{:}
@@ -234,19 +237,19 @@ $$
 \noindent describes a one step of evaluation of expression $e$ with a stack of contexts $\mathcal S$, which results in
 a new stack $\mathcal S^\prime$ and a new expression $e^\prime$. A context is an expression with a unique hole; informally speaking, 
 a stack of contexts describes a path in the expression being evaluated from the topmost construct to the point, where the evaluation 
-currently is taking place. For a context $C$ and an expression $e$ we denote by $C[e]$ a complete expression with no holes, which is 
+currently is taking place. For a context $C$ and an expression $e$, we denote by $C[e]$ a complete expression with no holes, which is 
 obtained by plugging $e$ into the unique hole of $C$. From each state $\inbr{C_1:C_2:\dots:C_k,e}$ we can build an 
 expression $C_k[\dots[C_2[C_1[e]]]\dots]$, which represents an intermediate result of evaluation according to a small-step semantics. 
 This form of semantic description originates from Felleisen-style~\cite{Felleisen} approach for small-step semantics, and we've
 chosen it since it can be naturally extended for a relational case.
 
 Our semantics describes call-by-value left-to-right evaluation; in the rules $\textsc{Beta}$, $\textsc{Mu}$, $\textsc{LetVal}$,
-$\textsc{LetRec}$ and $\textsc{MatchVal}$ we perform capture-avoiding substitutions, which respect the names in abstractions and let-bindings.
+$\textsc{LetRec}$ and $\textsc{MatchVal}$, we perform capture-avoiding substitutions, which respect the names in abstractions and let-bindings.
 In the rule $\textsc{MatchVal}$ we assume, that at most one pattern matches the scrutinee~--- this is an important difference from the usual 
-semantics of pattern matching, when the patterns are examined in a top-down manner until the match succeeds. In the rules $\textsc{EqTrue}$
+semantics of pattern matching, when the patterns are examined in a top-down manner until the matching succeeds. In the rules $\textsc{EqTrue}$
 and $\textsc{EqFalse}$ we assume, that the values $v$, $v_1$, $v_2$ do not have the forms $\lambda x\dots$ or $\mu f\dots$.
 
-Finally, for a closed expression $e$ and a value $v$ we write $e \leadsto^f v$, iff 
+Finally, for a closed expression $e$ and a value $v$, we write $e \leadsto^f v$, iff 
 
 $$\inbr{\epsilon,e}\to^*\inbr{\epsilon,v}$$
 
@@ -256,53 +259,54 @@ $$\inbr{\epsilon,e}\to^*\inbr{\epsilon,v}$$
 \subsection{Relational Extension}
 \label{relational_extension}
 
-The relational extension adds five conventional miniKanren expressions for constructing goals; the syntax is shown on Figure~\ref{relational_syntax}.
+The relational extension adds five conventional miniKanren expressions for constructing goals; the syntax is shown on Fig.~\ref{relational_syntax}.
 Since relational constructs are added to regular functional ones, it becomes possible to construct expressions like \lstinline|fun x.(x /\ fun y.y)|, etc.
-In order to rule such pathological expressions out we devised an extension for the type system of the source language. In fact, this approach follows the
+In order to rule such pathological expressions out, we devised an extension for the type system of the source language. In fact, this approach follows the
 actual implementation for OCaml, where a careful choice of types for representing terms and goals made it possible to reject the majority of non-well-formed
 programs at compile-time.
 
-\begin{wrapfigure}{r}{0.5\textwidth}
-\centering
-$$
-\begin{array}{rl}
-\mathcal E\mathrel{{+}{=}}&\lstinline|fresh ($x$) $\;e$|\\
-                    &e_1\equiv e_2\\
-                    &e_1\not\equiv e_2\\
-                    &e_1\vee e_2\\
-                    &e_1\wedge e_2
-\end{array}
-$$
-\caption{The syntax of relational extension}
-\label{relational_syntax}
-\end{wrapfigure}
-
 Our extension for the type system introduces one interpreted datatype constructor $\Box^o$ with one data constructor $\uparrow$~--- a polymorphic type and
 a constructor for logical terms. In addition, we introduce an interpreted type of goals $\G$, which is distinct from all other types. The typing rules for the relational 
-extension are shown on Figure~\ref{relational_typing}. These rules describe rather expected typing: in unification and disequality constraints only
+extension are shown on Fig.~\ref{relational_typing}. These rules describe rather expected typing: in unification and disequality constraints only
 terms of the same logical type can be used, and conjunction and disjunction can only be taken for goals. Note, in our extension a term can be calculated as
 a result of arbitrary expression in initial functional language (as long as this expression has expected logical type), but such ``higher-order'' terms will
 never appear as a result of relational conversion, so, in fact, relational extension we describe here defines a richer language, than we actually need.
 
-The semantics of extended language is shown on Figure~\ref{relational_semantics}. First, the state is extended: besides the stack of contexts and
+The semantics of extended language is shown on Fig.~\ref{relational_semantics}. First, the state is extended: besides the stack of contexts and
 current expression it now contains a set of used \emph{semantic variables} $\Sigma$ and a \emph{logical state} $\sigma$. 
-Semantic variables are allocated and substituted for syntactic logic variable occurrences when \lstinline|fresh| expression is evaluated 
-(see rule \textsc{Fresh}). Logical states are affected when unification or disequality constraint is evaluated; we explain them
+Semantic variables are allocated and substituted for syntactic logic variable occurrences, when \lstinline|fresh| expression is evaluated 
+(see rule \textsc{Fresh}). Logical states are affected, when unification or disequality constraint is evaluated; we explain them
 in details below. All existing rules for the initial language are considered rewritten to propagate newly added components of states unchanged.
-Then, we modify the substitution to respect names, bounded in \lstinline|fresh| as well. 
+Then, we modify the substitution to respect names, bound in \lstinline|fresh| as well. 
 Next, we consider two new kinds of values: a semantic variable and a special value \lstinline|success|. The former is a result of evaluation for
 a free logic variable, the latter~--- the result of evaluation for a succeeded goal.
 
-We also extend the definition of context to handle new kinds of expressions. In unification and disequality constraint, the terms are evaluated left-to-right.
+\begin{wrapfigure}[11]{r}{0.5\textwidth}  
+  \centering
+  \vspace{-11pt}
+  $$
+  \begin{array}{rl}
+    \mathcal E\mathrel{{+}{=}}&\lstinline|fresh ($x$) $\;e$|\\
+    &e_1\equiv e_2\\
+    &e_1\not\equiv e_2\\
+    &e_1\vee e_2\\
+    &e_1\wedge e_2
+  \end{array}
+  $$
+  \caption{The syntax of relational extension}
+  \label{relational_syntax}
+\end{wrapfigure}
+
+We also extend the definition of context to handle the new kinds of expressions. In unification and disequality constraint, the terms are evaluated left-to-right.
 Conjunction and disjunction, however, evaluate nondeterministically: in disjunction only one subgoal is chosen (see rules \textsc{DisjL} and \textsc{DisjR}),
 a conjunction can evaluate either left, or right subgoal first (see rules \textsc{ConjStartL} and \textsc{ConjStartR}). When chosen subgoal is evaluated
 to the value \lstinline|success|, the other subgoal starts its evaluation (rules \textsc{ConjL} and \textsc{ConjR}).
-We have chosen a nondeterministic variant for the semantics since different existing miniKanren implementations use (a little bit) different search, and we do 
-not want to depend on implementation details. An opposite side of this solution is that for a concrete program and a concrete miniKanren implementation,
-the result of evaluation might not coincide with that, prescribed by the semantics: in concrete implementation a program can diverge, while
+We have chosen a nondeterministic variant for the semantics, since different existing miniKanren implementations use (a little bit) different search, and we do 
+not want to depend on the implementation details. An opposite side of this solution is that for a concrete program and a concrete miniKanren implementation,
+the result of the evaluation might not coincide with that, prescribed by the semantics: in some concrete implementation a program can diverge, while
 nondeterministic semantics may still define a certain scenario to complete with a result. We argue, that in this case, it will always be possible to
 rewrite a program or/and interpreter to converge according to that scenario.
-
+\FloatBarrier
 
 \setarrow{:}
 \begin{figure}[t]
@@ -426,7 +430,9 @@ Finally, we describe the structure of a logical state and the implementation of 
   \item composition of substitutions ($\theta\theta^\prime$);
   \item most general unifier of two terms ($mgu\,(t_1, t_2)$).
 \end{itemize}
- 
+
+\begin{comment}
+
 As it can be seen from the semantics and typing rules, a unification (or disequality constraint) can only
 be applied to equally-typed logical values, and we consider substitutions to be partial functions from
 semantic variables ($\mathfrak S$) to logical values.
@@ -464,6 +470,7 @@ matches with the negative one.
 
 In other words, disequality constraints may not succeed or fail right away, and the results of unification have to be additionally matched against the set of 
 previously encountered disequality constraints, which, in turn, can be altered by a unification or another disequality constraint. Now we can continue.
+\end{comment}
 
 A logical state contains two components
 
@@ -471,7 +478,7 @@ $$
 \sigma=(\theta,\Theta^-)
 $$
 
-\noindent where $\theta$ is a substitution, $\Theta^-$~--- a set of negative substitutions describing disequality constraints, 
+\noindent where $\theta$ is a substitution, $\Theta^-$~--- a set of negative substitutions, describing disequality constraints, 
 which can potentially be violated. The initial state contains undefined substitution and empty set:
 
 $$
@@ -490,7 +497,7 @@ $$
 \rho=mgu\,(t_1\,\theta,t_2\,\theta)
 $$
 
-If there is no such $\rho$ the unification fails, and the evaluation terminates unsuccessfully. Otherwise,
+If there is no such $\rho$, the unification fails, and the evaluation terminates unsuccessfully. Otherwise,
 $\rho$ has to be checked against the disequality constraints, represented by $\Theta^-$ (if $\Theta^-$ is empty, the
 check succeeds immediately).
 
@@ -548,7 +555,7 @@ $$
 {\bf diseq}\,((\theta,\Theta^-),\,t_1,\,t_2)=(\theta,\Theta^{\prime-})
 $$
 
-Finally, for a closed goal $g$ and a logical state $\sigma$ we define $g \leadsto^r \sigma$, iff
+Finally, for a closed goal $g$ and a logical state $\sigma$, we define $g \leadsto^r \sigma$, iff
 
 $$
 \inbr{\emptyset,\epsilon,g,\iota}\leadsto^*\inbr{\Sigma,\epsilon,\lstinline|success|,\sigma}\mbox{ for some $\Sigma$}

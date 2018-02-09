@@ -1,0 +1,1 @@
+true: rectypes, debug, syntax(camlp5o), package(GT.syntax.all,ocanren,ocanren.syntax)

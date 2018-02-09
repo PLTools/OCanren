@@ -82,213 +82,136 @@ module Log =
 
   end
 
-let (!!!) = Obj.magic
-
-type w = Unboxed of Obj.t | Boxed of int * int * (int -> Obj.t) | Invalid of int
-
-let is_valid_tag t =
-  Obj.(
-    not (List.mem t
-      [lazy_tag    ; closure_tag; object_tag; infix_tag    ; forward_tag    ; no_scan_tag;
-       abstract_tag; custom_tag ; custom_tag; unaligned_tag; out_of_heap_tag
-      ])
-  )
-
-let rec wrap x =
-  Obj.(
-    let is_unboxed obj =
-      is_int obj ||
-      (fun t -> t = string_tag || t = double_tag) (tag obj)
-    in
-    if is_unboxed x
-    then Unboxed x
-    else
-      let t = tag x in
-      if is_valid_tag t
-      then
-        let f = if t = double_array_tag then !!! double_field else field in
-        Boxed (t, size x, f x)
-      else Invalid t
-    )
-
-let copy handler x =
-  match wrap x with
-  | Unboxed _ -> x
-  | Boxed (tag, sx, fx) ->
-    let copy = Obj.dup x in
-    let sf =
-      if tag = Obj.double_array_tag
-      then !!!Obj.set_double_field
-      else Obj.set_field
-    in
-    for i = 0 to sx-1 do
-      sf copy i @@ !!!(handler !!!(fx i))
-    done;
-    copy
-  | Invalid n -> failwith (sprintf "OCanren fatal (copy): invalid value (%d)" n)
-
 module Stream =
   struct
-    module Internal =
-      struct
-        type 'a t =
-          | Nil
-          | Thunk  of 'a thunk
-          | Single of 'a
-          | Choice of 'a * ('a t)
-          | Waiting of 'a suspended list
-        and 'a thunk =
-          unit -> 'a t
-        and 'a suspended =
-          {check: unit -> bool; thunk: 'a thunk}
+    type 'a t =
+      | Nil
+      | Cons of 'a * ('a t)
+      | Thunk  of 'a thunk
+      | Waiting of 'a suspended list
+    and 'a thunk =
+      unit -> 'a t
+    and 'a suspended =
+      {is_ready: unit -> bool; zz: 'a thunk}
 
-        let nil        = Nil
-        let single x   = Single x
-        let choice a f = Choice (a, f)
-        let inc    f   = Thunk f
-        let from_fun   = inc
+    let nil         = Nil
+    let single x    = Cons (x, Nil)
+    let cons x s    = Cons (x, s)
+    let from_fun zz = Thunk zz
 
-        let waiting ~check ~thunk = Waiting [{check; thunk}]
+    let suspend ~is_ready f = Waiting [{is_ready; zz=f}]
 
-        let rec is_empty = function
-        | Nil      -> true
-        | Thunk f  -> is_empty @@ f ()
-        | _        -> false
+    let rec of_list = function
+    | []    -> Nil
+    | x::xs -> Cons (x, of_list xs)
 
-        let force = function
-        | Thunk f -> f ()
-        | fs      -> fs
+    let force = function
+    | Thunk zz  -> zz ()
+    | xs        -> xs
 
-        let rec mplus fs gs =
-          match fs with
-          | Nil            -> force gs
-          | Thunk   _      -> inc (fun () -> mplus (force gs) fs)
-          | Single  a      -> choice a gs
-          | Choice (a, hs) -> choice a (from_fun @@ fun () -> mplus (force gs) hs)
-          | Waiting ss    ->
-            let gs = force gs in
-            (* handling waiting streams is tricky *)
-            match unwrap_suspended ss, gs with
-            (* if [fs] has no ready streams and [gs] is also a waiting stream then we merge them  *)
-            | Waiting ss, Waiting ss' -> Waiting (ss @ ss')
-            (* if [fs] has no ready streams but [gs] is not a waiting stream then we swap them,
-               pushing waiting stream to the back of the new stream *)
-            | Waiting ss, _           -> mplus gs @@ from_fun (fun () -> fs)
-            (* if [fs] has ready streams then [fs'] contains some lazy stream that is ready to produce new answers *)
-            | fs', _ -> mplus fs' gs
+    let rec mplus xs ys =
+      match xs with
+      | Nil           -> force ys
+      | Cons (x, xs)  -> cons x (from_fun @@ fun () -> mplus (force ys) xs)
+      | Thunk   _     -> from_fun (fun () -> mplus (force ys) xs)
+      | Waiting ss    ->
+        let ys = force ys in
+        (* handling waiting streams is tricky *)
+        match unwrap_suspended ss, ys with
+        (* if [xs] has no ready streams and [ys] is also a waiting stream then we merge them  *)
+        | Waiting ss, Waiting ss' -> Waiting (ss @ ss')
+        (* if [xs] has no ready streams but [ys] is not a waiting stream then we swap them,
+           pushing waiting stream to the back of the new stream *)
+        | Waiting ss, _           -> mplus ys @@ from_fun (fun () -> xs)
+        (* if [xs] has ready streams then [xs'] contains some lazy stream that is ready to produce new answers *)
+        | xs', _ -> mplus xs' ys
 
-        and unwrap_suspended ss =
-            let rec find_ready prefix = function
-              | ({check; thunk} as s)::ss ->
-                if check ()
-                then Some (from_fun thunk), (List.rev prefix) @ ss
-                else find_ready (s::prefix) ss
-              | [] -> None, List.rev prefix
-            in
-            match find_ready [] ss with
-              | Some s, [] -> s
-              | Some s, ss -> mplus (force s) @@ Waiting ss
-              | None , ss  -> Waiting ss
+    and unwrap_suspended ss =
+      let rec find_ready prefix = function
+        | ({is_ready; zz} as s)::ss ->
+          if is_ready ()
+          then Some (from_fun zz), (List.rev prefix) @ ss
+          else find_ready (s::prefix) ss
+        | [] -> None, List.rev prefix
+      in
+      match find_ready [] ss with
+        | Some s, [] -> s
+        | Some s, ss -> mplus (force s) @@ Waiting ss
+        | None , ss  -> Waiting ss
 
-        let map_suspended f ss =
-          let update_thunk {thunk=z} as s =
-            {s with thunk = fun () -> f @@ z ()}
-          in
-          List.map update_thunk ss
+    let rec bind s f =
+      match s with
+      | Nil           -> Nil
+      | Cons (x, s)   -> mplus (f x) (from_fun (fun () -> bind (force s) f))
+      | Thunk zz      -> from_fun (fun () -> bind (zz ()) f)
+      | Waiting ss    ->
+        match unwrap_suspended ss with
+        | Waiting ss ->
+          let helper {zz} as s = {s with zz = fun () -> bind (zz ()) f} in
+          Waiting (List.map helper ss)
+        | s          -> bind s f
 
-        let rec bind xs g =
-          match xs with
-          | Nil           -> Nil
-          | Thunk   f     -> inc (fun () -> bind (f ()) g)
-          | Single  c     -> g c
-          | Choice (c, f) -> mplus (g c) (from_fun (fun () -> bind (force f) g))
-          | Waiting ss    ->
-            match unwrap_suspended ss with
-            | Waiting ss -> Waiting (map_suspended (fun s -> bind s g) ss)
-            | xs'        -> bind xs' g
+    let rec msplit = function
+    | Nil           -> None
+    | Cons (x, xs)  -> Some (x, xs)
+    | Thunk zz      -> msplit @@ zz ()
+    | Waiting ss    ->
+      match unwrap_suspended ss with
+      | Waiting _ -> None
+      | xs        -> msplit xs
 
-        let rec of_list = function
-          | []    -> Nil
-          | x::[] -> Single x
-          | x::xs -> Choice (x, of_list xs)
-
-        let rec map f = function
-        | Nil             -> Nil
-        | Single x        -> Single (f x)
-        | Choice (x, xs)  -> Choice (f x, map f xs)
-        | Thunk thunk     -> from_fun (fun () -> map f @@ thunk ())
-        | Waiting ss      -> Waiting (map_suspended (map f) ss)
-
-        let rec fold f acc = function
-        | Nil             -> Lazy.force acc
-        | Single x        -> f x acc
-        | Choice (x, xs)  -> f x @@ Lazy.from_fun (fun () -> fold f acc xs)
-        | Thunk thunk     -> fold f acc @@ thunk ()
-        | Waiting ss      ->
-          match unwrap_suspended ss with
-          | Waiting ss -> Lazy.force acc
-          | xs'        -> fold f acc xs'
-      end
-
-    type 'a internal = 'a Internal.t
-    type 'a t = Nil | Cons of 'a * 'a t | Lazy of 'a t Lazy.t
-
-    let from_fun (f: unit -> 'a t) : 'a t = Lazy (Lazy.from_fun f)
-
-    let nil = Nil
-
-    let cons h t = Cons (h, t)
-
-    let rec of_mkstream = function
-    | Internal.Nil -> Nil
-    | Internal.Thunk f -> from_fun (fun () -> of_mkstream @@ f ())
-    | Internal.Single a -> Cons (a, Nil)
-    | Internal.Choice (a, f) -> Cons (a, from_fun (fun () -> of_mkstream @@ Internal.force f))
-    | Internal.Waiting ss   ->
-      match Internal.unwrap_suspended ss with
-      | Internal.Waiting ss -> Nil
-      | s'         -> of_mkstream s'
-
-    let rec is_empty = function
-    | Nil    -> true
-    | Lazy s -> is_empty @@ Lazy.force s
-    | _      -> false
-
-    let rec retrieve ?(n=(-1)) s =
-      if n = 0
-      then [], s
-      else match s with
-      | Nil          -> [], s
-      | Cons (x, xs) -> let xs', s' = retrieve ~n:(n-1) xs in x::xs', s'
-      | Lazy  z      -> retrieve ~n (Lazy.force z)
-
-    let take ?(n=(-1)) s = fst @@ retrieve ~n s
-
-    let hd s = List.hd @@ take ~n:1 s
-    let tl s = snd @@ retrieve ~n:1 s
+    let is_empty s =
+      match msplit s with
+      | Some _  -> false
+      | None    -> true
 
     let rec map f = function
     | Nil          -> Nil
     | Cons (x, xs) -> Cons (f x, map f xs)
-    | Lazy s       -> Lazy (Lazy.from_fun (fun () -> map f @@ Lazy.force s))
+    | Thunk zzz    -> from_fun (fun () -> map f @@ zzz ())
+    | Waiting ss   ->
+      let helper {zz} as s = {s with zz = fun () -> map f (zz ())} in
+      Waiting (List.map helper ss)
 
-    let rec iter f = function
-    | Nil          -> ()
-    | Cons (x, xs) -> f x; iter f xs
-    | Lazy s       -> iter f @@ Lazy.force s
+    let rec iter f s =
+      match msplit s with
+      | Some (x, s) -> f x; iter f s
+      | None        -> ()
 
-    let rec zip fs gs =
-      match (fs, gs) with
-      | Nil         , Nil          -> Nil
-      | Cons (x, xs), Cons (y, ys) -> Cons ((x, y), zip xs ys)
-      | _           , Lazy s       -> Lazy (Lazy.from_fun (fun () -> zip fs (Lazy.force s)))
-      | Lazy s      , _            -> Lazy (Lazy.from_fun (fun () -> zip (Lazy.force s) gs))
-      | Nil, _      | _, Nil       -> failwith "OCanren fatal (Stream.zip): streams have different lengths"
+    let rec filter p s =
+      match msplit s with
+      | Some (x, s) -> let s = filter p s in if p x then Cons (x, s) else s
+      | None        -> Nil
 
-    let rec filter f = function
-      | Nil          -> Nil
-      | Cons (x, xs) -> if f x then Cons (x, filter f xs) else filter f xs
-      | Lazy s       -> Lazy (Lazy.from_fun (fun () -> filter f @@ Lazy.force s))
+    let rec fold f acc s =
+      match msplit s with
+      | Some (x, s) -> fold f (f acc x) s
+      | None        -> acc
+
+    let rec zip xs ys =
+      match msplit xs, msplit ys with
+      | None,         None          -> Nil
+      | Some (x, xs), Some (y, ys)  -> Cons ((x, y), zip xs ys)
+      | _                           -> invalid_arg "OCanren fatal (Stream.zip): streams have different lengths"
+
+    let hd s =
+      match msplit s with
+      | Some (x, _) -> x
+      | None        -> invalid_arg "OCanren fatal (Stream.hd): empty stream"
+
+    let tl s =
+      match msplit s with
+      | Some (_, xs) -> xs
+      | None         -> Nil
+
+    let rec retrieve ?(n=(-1)) s =
+      if n = 0
+      then [], s
+      else match msplit s with
+      | None          -> [], Nil
+      | Some (x, s)  -> let xs, s = retrieve ~n:(n-1) s in x::xs, s
+
+    let take ?n s = fst @@ retrieve ?n s
 
   end
 ;;
@@ -362,6 +285,17 @@ module Var =
       scope;
     }
 
+    let dummy =
+      let env   = 0 in
+      let scope = 0 in
+      make ~env ~scope 0
+
+    let valid_anchor anchor =
+      anchor == global_anchor
+
+    let reify r {index; constraints} =
+      (index, List.map (fun x -> r @@ Obj.obj x) constraints)
+
     let equal x y =
       assert (x.env = y.env);
       x.index = y.index
@@ -371,151 +305,208 @@ module Var =
       x.index - y.index
 
     let hash x = Hashtbl.hash x.index
-
   end
 
 module VarSet = Set.Make(Var)
+module VarMap = Map.Make(Var)
 module VarTbl = Hashtbl.Make(Var)
 
-type ('a, 'b) injected = 'a
-
-external lift : 'a -> ('a, 'a) injected                      = "%identity"
-external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
-
-module type T1 =
+(* [Term] - encapsulates unsafe operations on OCaml's values extended with logic variables;
+ *   provides set of functions to traverse these values
+ *)
+module Term :
   sig
-    type 'a t
-    val fmap : ('a -> 'b) -> 'a t -> 'b t
+    type t
+
+    type tag = int
+
+    val repr : 'a -> t
+
+    (* [var x] if [x] is logic variable returns it, otherwise returns [None] *)
+    val var : 'a -> Var.t option
+
+    (* [is_valid_tag t] checks that tag is correct;
+     *   (some OCaml's tags such as [closure_tag] are forbidden because
+     *    the unification of such values is not supported currently)
+     *)
+    val is_valid_tag : tag -> bool
+
+    (* [map ~fvar ~fval x] map over OCaml's value extended with logic variables;
+     *   handles primitive types with the help of [fval] and logic variables with the help of [fvar]
+     *)
+    val map : fvar:(Var.t -> t) -> fval:(tag -> t -> t) -> t -> t
+
+    (* [iter ~fvar ~fval x] iteration over OCaml's value extended with logic variables;
+     *   handles primitive types with the help of [fval] and logic variables with the help of [fvar]
+     *)
+    val iter : fvar:(Var.t -> unit) -> fval:(tag -> t -> unit) -> t -> unit
+
+    (* [fold ~fvar ~fval ~init x] fold over OCaml's value extended with logic variables;
+     *   handles primitive types with the help of [fval] and logic variables with the help of [fvar]
+     *)
+    val fold : fvar:('a -> Var.t -> 'a) -> fval:('a -> tag -> t -> 'a) -> init:'a -> t -> 'a
+
+    exception Different_shape
+
+    (* [fold ~fvar ~fval ~fvarval ~init x y] folds two OCaml's value extended with logic variables simultaneously;
+     *   handles primitive types with the help of [fval] and logic variables with the help of [fvar];
+     *   if it finds logic variable in one term but regular value in another in same place,
+     *   it calls [fvarval];
+     *   if two terms cannot be traversed simultaneously raises exception [Different_shape]
+     *)
+    val fold2 :
+      fvar:('a -> Var.t -> Var.t -> 'a) ->
+      fval:('a -> tag -> t -> t -> 'a)  ->
+      fvarval:('a -> Var.t -> tag -> t -> 'a) ->
+      init:'a -> t -> t -> 'a
+
+    val equal   : t -> t -> bool
+    val compare : t -> t -> int
+    val hash    : t -> int
+  end = struct
+    type t = Obj.t
+    type tag = int
+
+    let repr = Obj.repr
+
+    let var_tag, var_size =
+      let dummy = Obj.repr Var.dummy in
+      Obj.tag dummy, Obj.size dummy
+
+    let is_var tx sx x =
+      if (tx = var_tag) && (sx = var_size) then
+         let anchor = (Obj.obj x : Var.t).Var.anchor in
+         (Obj.is_block @@ Obj.repr anchor) && (Var.valid_anchor anchor)
+      else false
+
+    let is_box t =
+      if (t <= Obj.last_non_constant_constructor_tag) &&
+         (t >= Obj.first_non_constant_constructor_tag)
+      then true
+      else false
+
+    let is_int = (=) Obj.int_tag
+    let is_str = (=) Obj.string_tag
+    let is_dbl = (=) Obj.double_tag
+
+    let is_valid_tag t = (is_box t) || (is_int t) || (is_str t) || (is_dbl t)
+
+    let var x =
+      let x = Obj.repr x in
+      let tx = Obj.tag x in
+      if is_box tx then
+        let sx = Obj.size x in
+        if is_var tx sx x then Some (Obj.magic x) else None
+      else None
+
+    let rec map ~fvar ~fval x =
+      let tx = Obj.tag x in
+      if (is_box tx) then
+        let sx = Obj.size x in
+        if is_var tx sx x then
+          fvar @@ Obj.magic x
+        else
+          let y = Obj.dup x in
+          for i = 0 to sx - 1 do
+            Obj.set_field y i @@ map ~fvar ~fval (Obj.field x i)
+          done;
+          y
+      else
+        fval tx x
+
+    let rec iter ~fvar ~fval x =
+      let tx = Obj.tag x in
+      if (is_box tx) then
+        let sx = Obj.size x in
+        if is_var tx sx x then
+          fvar @@ Obj.magic x
+        else
+          for i = 0 to sx - 1 do
+            iter ~fvar ~fval (Obj.field x i)
+          done;
+      else
+        fval tx x
+
+    let rec fold ~fvar ~fval ~init x =
+      let tx = Obj.tag x in
+      if (is_box tx) then
+        let sx = Obj.size x in
+        if is_var tx sx x then
+          fvar init @@ Obj.magic x
+        else
+          let rec inner i acc =
+            if i < sx then
+              let acc = fold ~fvar ~fval ~init:acc (Obj.field x i) in
+              inner (i+1) acc
+            else acc
+          in
+          inner 0 init
+      else
+        fval init tx x
+
+    exception Different_shape
+
+    let rec fold2 ~fvar ~fval ~fvarval ~init x y =
+      let tx, ty = Obj.tag x, Obj.tag y in
+      match is_box tx, is_box ty with
+      | true, true -> begin
+        let sx, sy = Obj.size x, Obj.size y in
+        match is_var tx sx x, is_var ty sy y with
+        | true, true    -> fvar init (Obj.magic x) (Obj.magic y)
+        | true, false   -> fvarval init (Obj.magic x) ty y
+        | false, true   -> fvarval init (Obj.magic y) tx x
+        | false, false  ->
+          if (tx = ty) && (sx = sy) then
+            let fx, fy = Obj.field x, Obj.field y in
+            let rec inner i acc =
+              if i < sx then
+                let acc = fold2 ~fvar ~fval ~fvarval ~init:acc (fx i) (fy i) in
+                inner (i+1) acc
+              else acc
+            in
+            inner 0 init
+          else raise Different_shape
+        end
+      | true, false ->
+        let sx = Obj.size x in
+        if is_var tx sx x then fvarval init (Obj.magic x) ty y else raise Different_shape
+      | false, true ->
+        let sy = Obj.size y in
+        if is_var ty sy y then fvarval init (Obj.magic y) tx x else raise Different_shape
+      | false, false ->
+        if tx = ty then fval init tx x y else raise Different_shape
+
+    let equal = fold2 ~init:true
+      ~fvar:(fun acc v u -> acc && (Var.equal v u))
+      ~fval:(fun acc _ x y -> acc && (x = y))
+      ~fvarval:(fun _ _ _ _ -> false)
+
+    let compare = fold2 ~init:0
+      ~fvar:(fun acc v u -> if acc <> 0 then acc else (Var.compare v u))
+      ~fval:(fun acc _ x y -> if acc <> 0 then acc else (compare x y))
+      ~fvarval:(fun _ _ _ _ -> -1)
+
+    let hash = fold ~init:1
+      ~fvar:(fun acc v -> Hashtbl.hash (acc, Var.hash v))
+      ~fval:(fun acc _ x -> Hashtbl.hash (acc, Hashtbl.hash x))
   end
 
-module type T2 =
-  sig
-    type ('a, 'b) t
-    val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
-  end
-
-module type T3 =
-  sig
-    type ('a, 'b, 'c) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
-  end
-
-module type T4 =
-  sig
-    type ('a, 'b, 'c, 'd) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
-  end
-
-module type T5 =
-  sig
-    type ('a, 'b, 'c, 'd, 'e) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
-  end
-
-module type T6 =
-  sig
-    type ('a, 'b, 'c, 'd, 'e, 'f) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
-  end
-
-type helper = < isVar : 'a . 'a -> bool >
-
-let to_var (c : helper) x r =
-  if c#isVar x
-  then
-    let x : Var.t = !!!x in
-    !!!(Var (x.index, List.map (!!!(r c)) x.Var.constraints))
-  else failwith "OCanren fatal (to_var): not a logic variable"
-
-module Fmap (T : T1) =
-  struct
-    external distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected = "%identity"
-
-    let rec reify r (c : helper) x =
-      if c#isVar x
-      then to_var c x (reify r)
-      else Value (T.fmap (r c) x)
-  end
-
-module Fmap2 (T : T2) =
-  struct
-    external distrib : (('a,'b) injected, ('c, 'd) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected = "%identity"
-
-    let rec reify r1 r2 (c : helper) x =
-      if c#isVar x
-      then to_var c x (reify r1 r2)
-      else Value (T.fmap (r1 c) (r2 c) x)
-  end
-
-module Fmap3 (T : T3) =
-  struct
-    external distrib : (('a, 'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected = "%identity"
-
-    let rec reify r1 r2 r3 (c : helper) x =
-      if c#isVar x then to_var c x (reify r1 r2 r3)
-      else Value (T.fmap (r1 c) (r2 c) (r3 c) x)
-end
-
-module Fmap4 (T : T4) = struct
-  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
-                     (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected = "%identity"
-
-  let rec reify r1 r2 r3 r4 (c : helper) x =
-    if c#isVar x
-    then to_var c x (reify r1 r2 r3 r4)
-    else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) x)
-end
-
-module Fmap5 (T : T5) = struct
-  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
-                     (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected = "%identity"
-
-  let rec reify r1 r2 r3 r4 r5 (c : helper) x =
-    if c#isVar x
-    then to_var c x (reify r1 r2 r3 r4 r5)
-    else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) x)
-end
-
-module Fmap6 (T : T6) = struct
-  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) T.t ->
-                     (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected = "%identity"
-
-  let rec reify r1 r2 r3 r4 r5 r6 (c : helper) x =
-    if c#isVar x then
-    to_var c x (reify r1 r2 r3 r4 r5 r6)
-    else Value (T.fmap (r1 c) (r2 c) (r3 c) (r4 c) (r5 c) (r6 c) x)
-end
-
-let rec reify (c : helper) n =
-  if c#isVar n
-  then to_var c n reify
-  else Value n
-
-exception Not_a_value
-exception Occurs_check
-
-let to_logic x = Value x
-
-let from_logic = function
-| Value x    -> x
-| Var (_, _) -> raise Not_a_value
-
-let (!!) x = inj (lift x)
-
-module M = Map.Make (struct type t = int let compare = (-) end)
-module Int = struct type t = int let compare = (-) end
+let (!!!) = Obj.magic
 
 module Env :
   sig
     type t
 
-    val empty     : unit -> t
-    val create    : anchor:Var.env -> t
-    val fresh     : (*?name:string ->*) scope:Var.scope -> t -> 'a
-    val var       : t -> 'a -> int option
-    val is_var    : t -> 'a -> bool
-    val free_vars : t -> 'a -> VarSet.t
-    val merge     : t -> t -> t
+    val empty         : unit -> t
+    val create        : anchor:Var.env -> t
+    val fresh         : scope:Var.scope -> t -> 'a
+    val check         : t -> Var.t -> bool
+    val check_exn     : t -> Var.t -> unit
+    val is_var        : t -> 'a -> bool
+    val var           : t -> 'a -> Var.t option
+    val free_vars     : t -> 'a -> VarSet.t
+    val has_free_vars : t -> 'a -> bool
+    val merge         : t -> t -> t
   end =
   struct
     type t = {anchor : Var.env; mutable next : int}
@@ -529,67 +520,81 @@ module Env :
 
     let create ~anchor = {anchor; next = first_var}
 
-    let fresh (*?name *) ~scope e =
+    let fresh ~scope e =
       let v = !!!(Var.make ~env:e.anchor ~scope e.next) in
       e.next <- 1 + e.next;
       !!!v
 
-    let var_tag, var_size =
-      let index = 0 in (* dummy index *)
-      let env   = 0 in (* dummy env token *)
-      let scope = 0 in (* dummy scope *)
-      let v = Var.make ~env ~scope index in
-      Obj.tag !!!v, Obj.size !!!v
+    let check env v = (v.Var.env = env.anchor)
+
+    let check_exn env v =
+      if check env v then () else failwith "OCanren fatal (Env.check): wrong environment"
 
     let var env x =
-      let t = !!! x in
-      if Obj.tag  t = var_tag  &&
-         Obj.size t = var_size &&
-         (let token = (!!!x : Var.t).Var.anchor in (Obj.is_block !!!token) && token == !!!Var.global_anchor)
-      then
-        let q = (!!!x : Var.t).Var.env in
-        if (Obj.is_int !!!q) && q == !!!env.anchor
-        then Some (!!!x : Var.t).index
-        else failwith "OCanren fatal (Env.var): wrong environment"
-      else None
+      match Term.var x with
+      | (Some v) as res -> check_exn env v; res
+      | None            -> None
 
-    let is_var env v = None <> var env v
+    let is_var env x = (var env x) <> None
 
     let free_vars env x =
-      let rec helper fv t =
-        if is_var env t
-        then VarSet.add (!!!t : Var.t) fv
-        else
-          match wrap t with
-          | Unboxed vx -> fv
-          | Boxed (tx, sx, fx) ->
-            let rec inner fv i =
-              if i < sx
-              then inner (helper fv !!!(fx i)) (i+1)
-              else fv
-            in
-            inner fv 0
-          | Invalid n -> failwith (sprintf "OCanren fatal (Env.free_vars): invalid value (%d)" n)
-      in
-      helper VarSet.empty (Obj.repr x)
+      Term.fold (Term.repr x) ~init:VarSet.empty
+        ~fvar:(fun acc v   -> VarSet.add v acc)
+        ~fval:(fun acc t x ->
+          if Term.is_valid_tag t then acc
+          else failwith (sprintf "OCanren fatal (Env.free_vars): invalid value (%d)" t)
+        )
+
+    let has_free_vars env x =
+      not (VarSet.is_empty @@ free_vars env x)
 
     let merge {anchor=anchor1; next=next1} {anchor=anchor2; next=next2} =
       assert (anchor1 == anchor2);
       {anchor=anchor1; next = max next1 next2}
   end
 
+module Binding :
+  sig
+    type t =
+      { var   : Var.t
+      ; term  : Term.t
+      }
+
+    val is_relevant : Env.t -> VarSet.t -> t -> bool
+
+    val equal : t -> t -> bool
+    val compare : t -> t -> int
+    val hash : t -> int
+  end =
+  struct
+    type t =
+      { var   : Var.t
+      ; term  : Term.t
+      }
+
+    let is_relevant env vs {var; term} =
+      (VarSet.mem var vs) ||
+      (match Env.var env term with Some v -> VarSet.mem v vs | None -> false)
+
+    let equal {var=v; term=t} {var=u; term=p} =
+      (Var.equal v u) || (Term.equal t p)
+
+    let compare {var=v; term=t} {var=u; term=p} =
+      let res = Var.compare v u in
+      if res <> 0 then res else Term.compare t p
+
+    let hash {var; term} = Hashtbl.hash (Var.hash var, Term.hash term)
+  end
+
 module Subst :
   sig
     type t
-    type content = {var : Var.t; term : Obj.t }
 
     val empty : t
 
-    val of_list : content list -> t
+    val of_list : Binding.t list -> t
 
-    val split : t -> content list
-
-    val walk  : Env.t -> t -> 'a -> 'a
+    val split : t -> Binding.t list
 
     (* [project env subst x] - performs a deepwalk of term [x],
      *   replacing every variable to relevant binding in [subst];
@@ -617,7 +622,9 @@ module Subst :
      *   Otherwise it returns a pair of prefix and new substituion.
      *   Prefix is a list of pairs (var, term) that were added to the original substituion.
      *)
-    val unify : scope:Var.scope -> Env.t -> t -> 'a -> 'a -> (content list * t) option
+    val unify : scope:Var.scope -> Env.t -> t -> 'a -> 'a -> (Binding.t list * t) option
+
+    val reify : f:(Var.t -> Var.t) -> Env.t -> t -> 'a -> 'a
 
     (* [merge env s1 s2] merges two substituions *)
     val merge : Env.t -> t -> t -> t option
@@ -626,149 +633,196 @@ module Subst :
     val is_subsumed : Env.t -> t -> t -> bool
   end =
   struct
-    type content = {var : Var.t; term : Obj.t }
-    type t       = content M.t
+    type t = Term.t VarMap.t
 
-    let empty = M.empty
+    let empty = VarMap.empty
 
     let of_list =
-      ListLabels.fold_left ~init:empty ~f:(fun subst cnt ->
-        M.add cnt.var.index cnt subst
+      ListLabels.fold_left ~init:empty ~f:(let open Binding in fun subst {var; term} ->
+        VarMap.add var term subst
       )
 
-    let split s = M.fold (fun _ x xs -> x::xs) s []
+    let split s = VarMap.fold (fun var term xs -> Binding.({var; term})::xs) s []
 
-    let rec walk env subst t =
-      if Env.is_var env t
-      then
-        let v = (!!!t : Var.t) in
-        match v.subst with
-        | Some term -> walk env subst !!!term
+    type lterm = Var of Var.t | Value of Term.t
+
+    let rec walk env subst x =
+      (* walk var *)
+      let rec walkv env subst v =
+        Env.check_exn env v;
+        match v.Var.subst with
+        | Some term -> walkt env subst !!!term
         | None ->
-            try walk env subst (Obj.obj (M.find v.index subst).term)
-            with Not_found -> t
-      else t
+            try walkt env subst (VarMap.find v subst)
+            with Not_found -> Var v
+      (* walk term *)
+      and walkt env subst t =
+        match Env.var env t with
+        | Some v -> walkv env subst v
+        | None   -> Value t
+      in
+      walkv env subst x
 
-    let rec project env subst x =
-      let var = walk env subst x in
-      match Env.var env var with
-      | None    -> !!!(copy (project env subst) @@ Obj.repr var)
-      | Some n  -> var
+    (* same as [Term.map] but performs [walk] on the road *)
+    let map ~fvar ~fval env subst x =
+      let rec deepfvar v =
+        Env.check_exn env v;
+        match walk env subst v with
+        | Var v   -> fvar v
+        | Value x -> Term.map x ~fval ~fvar:deepfvar
+      in
+      Term.map x ~fval ~fvar:deepfvar
+
+    (* same as [Term.iter] but performs [walk] on the road *)
+    let iter ~fvar ~fval env subst x =
+      let rec deepfvar v =
+        Env.check_exn env v;
+        match walk env subst v with
+        | Var v   -> fvar v
+        | Value x -> Term.iter x ~fval ~fvar:deepfvar
+      in
+      Term.iter x ~fval ~fvar:deepfvar
+
+    (* same as [Term.fold] but performs [walk] on the road *)
+    let fold ~fvar ~fval ~init env subst x =
+      let rec deepfvar acc v =
+        Env.check_exn env v;
+        match walk env subst v with
+        | Var v   -> fvar acc v
+        | Value x -> Term.fold x ~fval ~fvar:deepfvar ~init:acc
+      in
+      Term.fold x ~init ~fval ~fvar:deepfvar
+
+    exception Occurs_check
+
+    let rec occurs env subst var term =
+      iter env subst term
+        (* ~fvar:(fun acc v -> acc || Var.equal v var) *)
+        ~fvar:(fun v -> if Var.equal v var then raise Occurs_check)
+        ~fval:(fun t x ->
+          if Term.is_valid_tag t then ()
+          else
+            failwith (sprintf "OCanren fatal (Subst.occurs): invalid value (%d)" t)
+        )
+
+    let extend ~scope env subst var term  =
+      (* if occurs env subst var term then raise Occurs_check *)
+      occurs env subst var term;
+        (* assert (Env.var env var <> Env.var env term); *)
+
+      (* It is safe to modify variables destructively if the case of scopes match.
+       * There are two cases:
+       * 1) If we do unification just after a conde, then the scope is already incremented and nothing goes into
+       *    the fresh variables.
+       * 2) If we do unification after a fresh, then in case of failure it doesn't matter if
+       *    the variable is be distructively substituted: we will not look on it in future.
+       *)
+      if scope = var.scope
+      then begin
+        var.subst <- Some (Obj.repr term);
+        subst
+      end
+        else VarMap.add var (Term.repr term) subst
+
+    exception Unification_failed
+
+    let unify ~scope env subst x y =
+      let walk = walk env subst in
+      (* The idea is to do the unification and collect the unification prefix during the process *)
+      let extend var term (prefix, subst) =
+        let subst = extend ~scope env subst var term in
+        (Binding.({var; term})::prefix, subst)
+      in
+      let rec helper x y acc =
+        let open Term in
+        fold2 x y ~init:acc
+          ~fvar:(fun acc x y ->
+            match walk x, walk y with
+            | Var x, Var y      ->
+              if Var.equal x y then acc else extend x (Term.repr y) acc
+            | Var x, Value y    -> extend x y acc
+            | Value x, Var y    -> extend y x acc
+            | Value x, Value y  -> helper x y acc
+          )
+          ~fval:(fun acc t x y ->
+            if Term.is_valid_tag t then
+              if x = y then acc else raise Unification_failed
+            else
+              failwith (sprintf "OCanren fatal (Subst.unify): invalid value (%d)" t)
+          )
+          ~fvarval:(fun acc v t y ->
+            if Term.is_valid_tag t then
+              match walk v with
+              | Var v    -> extend v y acc
+              | Value x  -> helper x y acc
+            else
+              failwith (sprintf "OCanren fatal (Subst.unify): invalid value (%d)" t)
+          )
+      in
+      let x, y = Term.(repr x, repr y) in
+      try
+        Some (helper x y ([], subst))
+      with Term.Different_shape | Unification_failed | Occurs_check -> None
+
+    let reify ~f env subst x = Obj.magic @@
+      map env subst (Term.repr x)
+        ~fvar:(fun v -> Term.repr (f v))
+        ~fval:(fun t x ->
+          if Term.is_valid_tag t then x
+          else failwith (sprintf "OCanren fatal (Subst.reify): invalid value (%d)" t)
+        )
+
+    let project env subst x = Obj.magic @@
+      map env subst (Term.repr x)
+        ~fvar:(fun v -> Term.repr v)
+        ~fval:(fun t x ->
+          if Term.is_valid_tag t then x
+          else failwith (sprintf "OCanren fatal (Subst.project): invalid value (%d)" t)
+        )
 
     let refresh ?(mapping = VarTbl.create 31) ~scope dst_env src_env subst x =
-      let rec helper t =
-        match Env.var src_env t with
-        | None    -> copy helper (Obj.repr t)
-        | Some n  ->
-          let var = (!!!t : Var.t) in
-          try
-            Obj.repr @@ VarTbl.find mapping var
-          with Not_found ->
-            let new_var = Env.fresh ~scope dst_env in
-            VarTbl.add mapping var !!!new_var;
-            Obj.repr @@ new_var
+      let rec helper x = Obj.magic @@
+        map src_env subst (Term.repr x)
+          ~fvar:(fun v ->
+            try
+              Term.repr @@ VarTbl.find mapping v
+            with Not_found ->
+              let new_var = Env.fresh ~scope dst_env in
+              VarTbl.add mapping v !!!new_var;
+              Term.repr @@ new_var
+          )
+          ~fval:(fun t x ->
+            if Term.is_valid_tag t then x
+            else failwith (sprintf "OCanren fatal (Subst.refresh): invalid value (%d)" t)
+          )
       in
-      (mapping, !!!(helper @@ project src_env subst x))
+      mapping, helper x
 
     let free_vars env subst x =
       Env.free_vars env @@ project env subst x
 
-    let is_bound var subst = M.mem var.Var.index subst
+    let is_bound = VarMap.mem
 
-    let rec occurs env xi term subst =
-      let y = walk env subst term in
-      match Env.var env y with
-      | Some yi -> xi = yi
-      | None ->
-         let wy = wrap (Obj.repr y) in
-         match wy with
-         | Invalid n when n = Obj.closure_tag -> false
-         | Unboxed _ -> false
-         | Invalid n -> failwith (sprintf "OCanren fatal (Subst.occurs): invalid value (%d)" n)
-         | Boxed (_, s, f) ->
-            let rec inner i =
-              if i >= s then false
-              else occurs env xi (!!!(f i)) subst || inner (i+1)
-            in
-            inner 0
+    let merge env subst1 subst2 = VarMap.fold (fun var term -> function
+      | Some s  -> begin
+        match unify ~scope:Var.non_local_scope env s !!!var term with
+        | Some (_, s') -> Some s'
+        | None         -> None
+        end
+      | None    -> None
+    ) subst1 (Some subst2)
 
-    let unify ~scope env main_subst x y =
-
-      (* The idea is to do the unification and collect the unification prefix during the process.
-         It is safe to modify variables on the go. There are two cases:
-         * if we do unification just after a conde, then the scope is already incremented and nothing goes into
-           the fresh variables.
-         * if we do unification after a fresh, then in case of failure it doesn't matter if
-           the variable is be distructively substituted: we will not look on it in future.
-      *)
-
-      let extend xi x term (prefix, sub1) =
-        if occurs env xi term sub1 then raise Occurs_check
-        else
-          let cnt = {var = x; term = Obj.repr term} in
-          assert (Env.var env x <> Env.var env term);
-          let sub2 =
-            if scope = x.Var.scope
-            then begin
-              x.subst <- Some (Obj.repr term);
-              sub1
-            end
-            else M.add x.Var.index cnt sub1
-          in
-          Some (cnt::prefix, sub2)
-      in
-      let rec helper x y : (content list * t) option -> _ = function
-        | None -> None
-        | Some ((delta, subs) as pair) as acc ->
-            let x = walk env subs x in
-            let y = walk env subs y in
-            match Env.var env x, Env.var env y with
-            | (Some xi, Some yi) when xi = yi -> acc
-            | (Some xi, Some _) -> extend xi x y pair
-            | Some xi, _        -> extend xi x y pair
-            | _      , Some yi  -> extend yi y x pair
-            | _ ->
-                let wx, wy = wrap (Obj.repr x), wrap (Obj.repr y) in
-                (match wx, wy with
-                 | Unboxed vx, Unboxed vy -> if vx = vy then acc else None
-                 | Boxed (tx, sx, fx), Boxed (ty, sy, fy) ->
-                    if tx = ty && sx = sy
-                    then
-                      let rec inner i = function
-                        | None -> None
-                        | (Some delta) as rez ->
-                          if i < sx
-                          then inner (i+1) (helper (!!!(fx i)) (!!!(fy i)) rez)
-                          else rez
-                      in
-                      inner 0 acc
-                    else None
-                 | Invalid n, _
-                 | _, Invalid n -> failwith (sprintf "OCanren fatal (Subst.unify): invalid value (%d)" n)
-                 | _ -> None
-                )
-      in
-      try helper !!!x !!!y (Some ([], main_subst))
-      with Occurs_check -> None
-
-      let merge env subst1 subst2 = M.fold (fun _ {var; term} -> function
-        | Some s  -> begin
-          match unify ~scope:Var.non_local_scope env s !!!var term with
-          | Some (_, s') -> Some s'
-          | None         -> None
-          end
-        | None    -> None
-      ) subst1 (Some subst2)
-
-      let is_subsumed env subst =
-        M.for_all (fun _ {var; term} ->
-          match unify ~scope:Var.non_local_scope env subst !!!var term with
-          | None          -> false
-          | Some ([], _)  -> true
-          | Some (_ , _)  -> false
-        )
-
+    let is_subsumed env subst =
+      VarMap.for_all (fun var term ->
+        match unify ~scope:Var.non_local_scope env subst !!!var term with
+        | None          -> false
+        | Some ([], _)  -> true
+        | _             -> false
+      )
   end
+
+module Int = struct type t = int let compare = (-) end
+module M = Map.Make(Int)
 
 exception Disequality_violated
 exception Disequality_fulfilled
@@ -789,12 +843,12 @@ module Disequality :
     (* [of_disj env subst] build a disequality constraint store from a list of bindings
      *   Ex. [(x, 5); (y, 6)] --> (x =/= 5) \/ (y =/= 6)
      *)
-    val of_disj : Env.t -> Subst.content list -> t
+    val of_disj : Env.t -> Binding.t list -> t
 
     (* [of_conj env subst] build a disequality constraint store from a list of bindings
      *   Ex. [(x, 5); (y, 6)] --> (x =/= 5) /\ (y =/= 6)
      *)
-    val of_conj : Env.t -> Subst.content list -> t
+    val of_conj : Env.t -> Binding.t list -> t
 
     (* [to_cnf env subst diseq] - returns new disequality in cnf representation *)
     val to_cnf : Env.t -> Subst.t -> t -> cnf
@@ -822,13 +876,13 @@ module Disequality :
      *   This function may rebuild internal representation of constraints and thus it returns new object.
      *   Raises [Disequality_violated].
      *)
-    val check : prefix:Subst.content list -> Env.t -> Subst.t -> t -> t
+    val check : prefix:Binding.t list -> Env.t -> Subst.t -> t -> t
 
     (* [extend ~prefix env diseq] - extends disequality with new bindings.
      *   New bindings are interpreted as formula in DNF.
      *   Ex. [(x, 5); (y, 6)] --> (x =/= 5) \/ (y =/= 6)
      *)
-    val extend : prefix:Subst.content list -> Env.t -> t -> t
+    val extend : prefix:Binding.t list -> Env.t -> t -> t
 
     (* [merge env diseq1 diseq2] - merges two disequality stores *)
     val merge : Env.t -> t -> t -> t
@@ -875,7 +929,7 @@ module Disequality :
         type t
 
         (* [of_list diseqs] build single disjunction from list of disequalities *)
-        val of_list : Subst.content list -> t
+        val of_list : Binding.t list -> t
 
         (* [check env subst disj] - checks that disjunction of disequalities is
          *   not violated in (current) substitution.
@@ -893,7 +947,7 @@ module Disequality :
          *   2) When we want to reify an answer we again try to unify current substitution with disequalities.
          *        Then we look into `disequality` prefix for bindings that should not be met.
          *)
-        val refine : Env.t -> Subst.t -> t -> (Subst.content list * Subst.t) option
+        val refine : Env.t -> Subst.t -> t -> (Binding.t list * Subst.t) option
 
         (* returns an index of variable involved in some disequality inside disjunction *)
         val index : t -> int
@@ -901,7 +955,7 @@ module Disequality :
         val reify : Var.t -> t -> 'a
       end =
       struct
-        type t = { sample : Subst.content; unchecked : Subst.content list }
+        type t = { sample : Binding.t; unchecked : Binding.t list }
 
         let choose_sample unchecked =
           assert (unchecked <> []);
@@ -914,11 +968,11 @@ module Disequality :
         type status =
           | Fulfiled
           | Violated
-          | Refined of Subst.content list * Subst.t
+          | Refined of Binding.t list * Subst.t
 
         let refine' env subst =
-        let open Subst in fun { var; term } ->
-          match unify ~scope:Var.non_local_scope env subst !!!var term with
+        let open Binding in fun { var; term } ->
+          match Subst.unify ~scope:Var.non_local_scope env subst !!!var term with
           | None                  -> Fulfiled
           | Some ([], _)          -> Violated
           | Some (prefix, subst)  -> Refined (prefix, subst)
@@ -950,13 +1004,14 @@ module Disequality :
             result
 
         let reify var {sample; unchecked} =
+          let open Binding in
           if unchecked <> []
           then invalid_arg "OCanren fatal (Disequality.reify): attempting to reify unnormalized disequalities"
           else
-            assert (var.Var.index = sample.Subst.var.Var.index);
-            !!!(sample.Subst.term)
+            assert (Var.equal var sample.var);
+            !!!(sample.term)
 
-        let index {sample} = sample.Subst.var.index
+        let index {sample} = sample.Binding.var.index
       end
 
     module Index :
@@ -978,16 +1033,19 @@ module Disequality :
         let is_empty        = M.is_empty
         let get k m         = try M.find k m with Not_found -> []
         let add k v m       = M.add k (v::get k m) m
-        let replace k vs m  = M.add k vs (M.remove k m)
         let fold f acc m    = M.fold (fun _ disjs acc -> ListLabels.fold_left ~init:acc ~f disjs) m acc
         let merge           = M.union (fun _ d1 d2-> Some (d1 @ d2))
+
+        let replace k vs m =
+          let m = M.remove k m in
+          if vs <> [] then M.add k vs m else m
       end
 
     type t = Index.t
 
-    type cnf = Subst.content list list
+    type cnf = Binding.t list list
 
-    type dnf = Subst.content list list
+    type dnf = Binding.t list list
 
     let empty = Index.empty
 
@@ -1022,11 +1080,12 @@ module Disequality :
       else
       ListLabels.fold_left prefix ~init:cstore
         ~f:(fun cstore cnt ->
-          let var_idx = cnt.Subst.var.Var.index in
+          let var_idx = cnt.Binding.var.Var.index in
           let conj = Index.get var_idx cstore in
           let stayed1, rebound1 = revisit_conjuncts var_idx conj in
-          let cstore, rebound2 = match Env.var env cnt.Subst.term with
-            | Some n ->
+          let cstore, rebound2 = match Env.var env cnt.Binding.term with
+            | Some v ->
+              let n = v.Var.index in
               let stayed2, rebound2 = revisit_conjuncts n @@ Index.get n cstore in
               Index.replace n stayed2 cstore, rebound2
             | None   -> cstore, []
@@ -1062,26 +1121,19 @@ module Disequality :
       )
 
     let normalize cnf =
-      let compare_bindings =
-        let open Subst in fun {var=v1; term=t1} {var=v2; term=t2} ->
-        if Var.equal v1 v2 then
-          compare t1 t2
-        else
-          Var.compare v1 v2
-      in
       let compare_disj ds1 ds2 =
         let rec helper ds1 ds2 =
           match ds1, ds2 with
           | [], [] -> 0
           | (d1::ds1), (d2::ds2) ->
-            let res = compare_bindings d1 d2 in
+            let res = Binding.compare d1 d2 in
             if res <> 0 then res else helper ds1 ds2
         in
         let l1, l2 = List.length ds1, List.length ds2 in
         let res = compare l1 l2 in
         if res <> 0 then res else helper ds1 ds2
       in
-      let sort_disj = List.sort compare_bindings in
+      let sort_disj = List.sort Binding.compare in
       List.sort compare_disj @@ List.map sort_disj cnf
 
     let cnf_to_dnf =
@@ -1098,15 +1150,11 @@ module Disequality :
     let project env subst cs fv =
       (* fixpoint-like computation of disequalities relevant to variables in [fv] *)
       let rec helper fv =
-        let open Subst in
-        let is_relevant fv {var; term} =
-          (VarSet.mem var fv) ||
-          (match Env.var env term with Some _ -> VarSet.mem (!!!term) fv | None -> false)
-        in
+        let open Binding in
         (* left those disjuncts that contains binding only for variables from [fv] *)
         let cs' = ListLabels.fold_left cs ~init:[]
           ~f:(fun acc disj ->
-            if List.for_all (is_relevant fv) disj then
+            if List.for_all (is_relevant env fv) disj then
               disj::acc
             else
               acc
@@ -1141,7 +1189,7 @@ module Disequality :
 
     let refresh ?(mapping = VarTbl.create 31) ~scope dst_env src_env subst cs =
       let refresh_binding =
-        let open Subst in fun {var; term} ->
+        let open Binding in fun {var; term} ->
         let new_var =
           try
             VarTbl.find mapping var
@@ -1231,57 +1279,52 @@ module State =
       | cs -> List.map (fun ctrs -> {env; subst; ctrs; scope}) cs
 
     let reify {env; subst; ctrs} x =
-      let rec helper forbidden t =
-        let var = Subst.walk env subst t in
-        match Env.var env var with
-        | None -> copy (helper forbidden) (Obj.repr var)
-        | Some n when List.mem n forbidden -> Obj.repr var
-        | Some n ->
+      let rec helper forbidden x =
+        Subst.reify env subst x ~f:(fun v ->
+          if List.mem v.Var.index forbidden then v
+          else
             let cs =
-              Disequality.reify env subst ctrs !!!var |>
+              Disequality.reify env subst ctrs v |>
               List.filter (fun t ->
                 match Env.var env t with
-                | Some i  -> not (List.mem i forbidden)
+                | Some v  -> not (List.mem v.Var.index forbidden)
                 | None    -> true
               ) |>
-              List.map (fun t -> !!!(helper (n::forbidden) t))
+              List.map (fun t -> helper (v.Var.index::forbidden) t)
             in
-            Obj.repr {!!!var with Var.constraints = cs}
+            {v with Var.constraints = cs}
+        )
       in
-      !!!(helper [] x)
+      helper [] x
 
   end
 
 type 'a goal' = State.t -> 'a
-type goal = State.t Stream.internal goal'
 
-let success st = Stream.Internal.single st
-let failure _  = Stream.Internal.nil
+type goal = State.t Stream.t goal'
 
-let call_fresh f =
-  let open State in fun ({env; scope} as st) ->
-  let x = Env.fresh ~scope env in
-  f x st
+let success st = Stream.single st
+let failure _  = Stream.nil
 
 let (===) x y st =
   match State.unify x y st with
-  | None   -> Stream.Internal.nil
-  | Some s -> Stream.Internal.single s
+  | None   -> Stream.nil
+  | Some s -> Stream.single s
 
 let (=/=) x y st =
   match State.disunify x y st with
-  | None   -> Stream.Internal.nil
-  | Some s -> Stream.Internal.single s
+  | None   -> Stream.nil
+  | Some s -> Stream.single s
 
-let delay g st = Stream.Internal.from_fun (fun () -> g () st)
+let delay g st = Stream.from_fun (fun () -> g () st)
 
-let conj f g st = Stream.Internal.bind (f st) g
+let conj f g st = Stream.bind (f st) g
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
 
-let disj_base f g st = Stream.Internal.mplus (f st) (Stream.Internal.from_fun (fun () -> g st))
+let disj_base f g st = Stream.mplus (f st) (Stream.from_fun (fun () -> g st))
 
-let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> Stream.Internal.inc (fun () -> g st))
+let disj f g st = let st = State.incr_scope st in disj_base f g |> (fun g -> Stream.from_fun (fun () -> g st))
 
 let (|||) = disj
 
@@ -1292,9 +1335,14 @@ let (?|) gs st =
   | g::gs -> disj_base g (inner gs)
   | [] -> failwith "Wrong argument of (?!)"
   in
-  inner gs |> (fun g -> Stream.Internal.inc (fun () -> g st))
+  inner gs |> (fun g -> Stream.from_fun (fun () -> g st))
 
 let conde = (?|)
+
+let call_fresh f =
+  let open State in fun ({env; scope} as st) ->
+  let x = Env.fresh ~scope env in
+  f x st
 
 module Fresh =
   struct
@@ -1323,40 +1371,312 @@ module Fresh =
     let pqrst = five
   end
 
-exception FreeVarFound
+(* ******************************************************************************* *)
+(* ************************** Reification stuff ********************************** *)
 
-let has_free_vars is_var x =
-  let rec walk x =
-    if is_var x then raise FreeVarFound
-    else
-      match wrap (Obj.repr x) with
-      | Boxed (_tag, size, f) ->
-        for i = 0 to size - 1 do
-          walk (!!!(f i))
-        done
-      | _ -> ()
-  in
-  try walk x; false
-  with FreeVarFound -> true
+include (struct
 
-let helper_of_state st =
-  !!!(object method isVar x = Env.is_var (State.env st) (Obj.repr x) end)
+type ('a, 'b) injected = 'a
+
+module type T1 =
+  sig
+    type 'a t
+    val fmap : ('a -> 'b) -> 'a t -> 'b t
+  end
+
+module type T2 =
+  sig
+    type ('a, 'b) t
+    val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
+  end
+
+module type T3 =
+  sig
+    type ('a, 'b, 'c) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
+  end
+
+module type T4 =
+  sig
+    type ('a, 'b, 'c, 'd) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
+  end
+
+module type T5 =
+  sig
+    type ('a, 'b, 'c, 'd, 'e) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
+  end
+
+module type T6 =
+  sig
+    type ('a, 'b, 'c, 'd, 'e, 'f) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
+  end
+
+let rec reify env x =
+  match Env.var env x with
+  | Some v -> let i, cs = Var.reify (reify env) v in Var (i, cs)
+  | None   -> Value (Obj.magic x)
+
+let rec prjc of_int env x =
+  match Env.var env x with
+  | Some v -> let i, cs = Var.reify (prjc of_int env) v in of_int i cs
+  | None   -> Obj.magic x
+
+module Fmap (T : T1) =
+  struct
+    external distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected = "%identity"
+
+    let rec reify r env x =
+      match Env.var env x with
+      | Some v -> let i, cs = Var.reify (reify r env) v in Var (i, cs)
+      | None   -> Value (T.fmap (r env) x)
+
+    let rec prjc r of_int env x =
+      match Env.var env x with
+      | Some v -> let i, cs = Var.reify (prjc r of_int env) v in of_int i cs
+      | None   -> T.fmap (r env) x
+  end
+
+module Fmap2 (T : T2) =
+  struct
+    external distrib : (('a,'b) injected, ('c, 'd) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected = "%identity"
+
+    let rec reify r1 r2 env x =
+      match Env.var env x with
+      | Some v -> let i, cs = Var.reify (reify r1 r2 env) v in Var (i, cs)
+      | None   -> Value (T.fmap (r1 env) (r2 env) x)
+
+    let rec prjc r1 r2 of_int env x =
+      match Env.var env x with
+      | Some v -> let i, cs = Var.reify (prjc r1 r2 of_int env) v in of_int i cs
+      | None   -> T.fmap (r1 env) (r2 env) x
+  end
+
+module Fmap3 (T : T3) =
+  struct
+    external distrib : (('a, 'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected = "%identity"
+
+    let rec reify r1 r2 r3 env x =
+      match Env.var env x with
+      | Some v -> let i, cs = Var.reify (reify r1 r2 r3 env) v in Var (i, cs)
+      | None   -> Value (T.fmap (r1 env) (r2 env) (r3 env) x)
+
+    let rec prjc r1 r2 r3 of_int env x =
+      match Env.var env x with
+      | Some v -> let i, cs = Var.reify (prjc r1 r2 r3 of_int env) v in of_int i cs
+      | None   -> T.fmap (r1 env) (r2 env) (r3 env) x
+end
+
+module Fmap4 (T : T4) = struct
+  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
+                     (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected = "%identity"
+
+  let rec reify r1 r2 r3 r4 env x =
+    match Env.var env x with
+    | Some v -> let i, cs = Var.reify (reify r1 r2 r3 r4 env) v in Var (i, cs)
+    | None   -> Value (T.fmap (r1 env) (r2 env) (r3 env) (r4 env) x)
+
+  let rec prjc r1 r2 r3 r4 of_int env x =
+    match Env.var env x with
+    | Some v -> let i, cs = Var.reify (prjc r1 r2 r3 r4 of_int env) v in of_int i cs
+    | None   -> T.fmap (r1 env) (r2 env) (r3 env) (r4 env) x
+end
+
+module Fmap5 (T : T5) = struct
+  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
+                     (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected = "%identity"
+
+  let rec reify r1 r2 r3 r4 r5 env x =
+    match Env.var env x with
+    | Some v -> let i, cs = Var.reify (reify r1 r2 r3 r4 r5 env) v in Var (i, cs)
+    | None   -> Value (T.fmap (r1 env) (r2 env) (r3 env) (r4 env) (r5 env) x)
+
+  let rec prjc r1 r2 r3 r4 r5 of_int env x =
+    match Env.var env x with
+    | Some v -> let i, cs = Var.reify (prjc r1 r2 r3 r4 r5 of_int env) v in of_int i cs
+    | None   -> T.fmap (r1 env) (r2 env) (r3 env) (r4 env) (r5 env) x
+end
+
+module Fmap6 (T : T6) = struct
+  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) T.t ->
+                     (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected = "%identity"
+
+  let rec reify r1 r2 r3 r4 r5 r6 env x =
+    match Env.var env x with
+    | Some v -> let i, cs = Var.reify (reify r1 r2 r3 r4 r5 r6 env) v in Var (i, cs)
+    | None   -> Value (T.fmap (r1 env) (r2 env) (r3 env) (r4 env) (r5 env) (r6 env) x)
+
+  let rec prjc r1 r2 r3 r4 r5 r6 of_int env x =
+    match Env.var env x with
+    | Some v -> let i, cs = Var.reify (prjc r1 r2 r3 r4 r5 r6 of_int env) v in of_int i cs
+    | None   -> T.fmap (r1 env) (r2 env) (r3 env) (r4 env) (r5 env) (r6 env) x
+end
+
+end : sig
+  type ('a, 'b) injected
+
+  val reify : Env.t -> ('a, 'a logic) injected -> 'a logic
+
+  val prjc : (int -> 'a list -> 'a) -> Env.t -> ('a, 'a logic) injected -> 'a
+
+module type T1 =
+  sig
+    type 'a t
+    val fmap : ('a -> 'b) -> 'a t -> 'b t
+  end
+
+module type T2 =
+  sig
+    type ('a, 'b) t
+    val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
+  end
+
+module type T3 =
+  sig
+    type ('a, 'b, 'c) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
+  end
+
+module type T4 =
+  sig
+    type ('a, 'b, 'c, 'd) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
+  end
+
+module type T5 =
+  sig
+    type ('a, 'b, 'c, 'd, 'e) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
+  end
+
+module type T6 =
+  sig
+    type ('a, 'b, 'c, 'd, 'e, 'f) t
+    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
+  end
+
+module Fmap (T : T1) :
+  sig
+    val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
+
+    val reify : (Env.t -> ('a,'b) injected -> 'b) -> Env.t -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
+
+    val prjc  : (Env.t -> ('a,'b) injected -> 'a) ->
+      (int -> 'r list -> ('a T.t as 'r)) ->
+      Env.t -> ('r, 'b T.t logic) injected -> 'r
+  end
+
+module Fmap2 (T : T2) :
+  sig
+    val distrib : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
+
+    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> Env.t -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
+
+    val prjc  : (Env.t -> ('a, 'b) injected -> 'a) ->
+      (Env.t -> ('c, 'd) injected -> 'c) ->
+      (int -> 'r list -> (('a,'c) T.t as 'r) ) ->
+      Env.t -> ('r, ('b,'d) T.t logic) injected -> 'r
+  end
+
+module Fmap3 (T : T3) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected
+
+    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> (Env.t -> ('e, 'f) injected -> 'f) ->
+                Env.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
+
+    val prjc  : (Env.t -> ('a, 'b) injected -> 'a) ->
+      (Env.t -> ('c, 'd) injected -> 'c) ->
+      (Env.t -> ('e, 'f) injected -> 'e) ->
+      (int -> 'r list -> 'r) ->
+      Env.t -> (('a,'c,'e) T.t as 'r, ('b,'d,'f) T.t logic) injected -> 'r
+  end
+
+module Fmap4 (T : T4) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
+                       (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected
+
+    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) ->
+                (Env.t -> ('e, 'f) injected -> 'f) -> (Env.t -> ('g, 'h) injected -> 'h) ->
+                Env.t -> (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t logic as 'r) injected -> 'r
+
+    val prjc  :
+      (Env.t -> ('a, 'b) injected -> 'a) -> (Env.t -> ('c, 'd) injected -> 'c) ->
+      (Env.t -> ('e, 'f) injected -> 'e) -> (Env.t -> ('g, 'h) injected -> 'g) ->
+      (int -> 'r list -> 'r) ->
+      Env.t -> ('r, ('b,'d,'f,'h) T.t logic) injected -> (('a,'c,'e,'g) T.t as 'r)
+  end
+
+module Fmap5 (T : T5) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
+                       (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected
+
+    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> (Env.t -> ('e, 'f) injected -> 'f) ->
+                (Env.t -> ('g, 'h) injected -> 'h) -> (Env.t -> ('i, 'j) injected -> 'j) ->
+                Env.t -> (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t logic as 'r) injected -> 'r
+
+    val prjc  :
+      (Env.t -> ('a, 'b) injected -> 'a) -> (Env.t -> ('c, 'd) injected -> 'c) ->
+      (Env.t -> ('e, 'f) injected -> 'e) -> (Env.t -> ('g, 'h) injected -> 'g) ->
+      (Env.t -> ('i, 'j) injected -> 'i) ->
+      (int -> 'r list -> 'r) ->
+      Env.t -> ('r, ('b,'d,'f,'h,'j) T.t logic) injected ->
+      (('a,'c,'e,'g,'i) T.t as 'r)
+  end
+
+module Fmap6 (T : T6) :
+  sig
+    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) T.t ->
+                       (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected
+
+    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> (Env.t -> ('e, 'f) injected -> 'f) ->
+                (Env.t -> ('g, 'h) injected -> 'h) -> (Env.t -> ('i, 'j) injected -> 'j) -> (Env.t -> ('k, 'l) injected -> 'l) ->
+                Env.t -> (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t logic as 'r) injected -> 'r
+
+    val prjc  :
+      (Env.t -> ('a, 'b) injected -> 'a) -> (Env.t -> ('c, 'd) injected -> 'c) ->
+      (Env.t -> ('e, 'f) injected -> 'e) -> (Env.t -> ('g, 'h) injected -> 'g) ->
+      (Env.t -> ('i, 'j) injected -> 'i) -> (Env.t -> ('k, 'l) injected -> 'k) ->
+      (int -> 'r list -> 'r) ->
+      Env.t -> ('r, ('b,'d,'f,'h,'j,'l) T.t logic) injected ->
+      (('a,'c,'e,'g,'i,'k) T.t as 'r)
+  end
+
+end)
+
+external lift : 'a -> ('a, 'a) injected                      = "%identity"
+external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
+
+exception Not_a_value
+
+let to_logic x = Value x
+
+let from_logic = function
+| Value x    -> x
+| Var (_, _) -> raise Not_a_value
+
+let (!!) x = inj (lift x)
 
 class type ['a,'b] reified = object
   method is_open : bool
   method prj     : 'a
-  method reify   : (helper -> ('a, 'b) injected -> 'b) -> 'b
+  method reify   : (Env.t -> ('a, 'b) injected -> 'b) -> 'b
+  method prjc    : (Env.t -> ('a, 'b) injected -> 'a) -> 'a
 end
 
 let make_rr : ('a, 'b) injected -> State.t -> ('a, 'b) reified =
   let open State in fun x ({env; subst; ctrs;} as st) ->
   let ans = !!!(State.reify st (Obj.repr x)) in
-  let is_open = has_free_vars (Env.is_var env) (Obj.repr ans) in
-  let c: helper = helper_of_state st in
+  let is_open = Env.has_free_vars env ans in
   object (self)
     method is_open            = is_open
     method prj                = if self#is_open then raise Not_a_value else !!!ans
-    method reify reifier      = reifier c ans
+    method reify reifier      = reifier env ans
+    method prjc  onvar        = onvar   env ans
   end
 
 let prj x = let rr = make_rr x @@ State.empty () in rr#prj
@@ -1405,11 +1725,25 @@ module LogicAdder :
     let succ prev f = call_fresh (fun logic st -> (logic, prev (f logic) st))
   end
 
-let succ n () =
-  let adder, currier, app, ext = n () in
-  (LogicAdder.succ adder, Uncurry.succ currier, ApplyTuple.succ app, ExtractDeepest.succ ext)
+module ApplyAsStream = struct
+  (* There we have a tuple of logic variables and a stream
+   * and we want to make a stream of tuples
+   **)
 
-let one   () = (fun x -> LogicAdder.(succ zero) x), Uncurry.one, ApplyTuple.one, ExtractDeepest.ext2
+  (* every numeral is a function from tuple -> state -> reified_tuple *)
+  let one tup state = make_rr tup state
+
+  let succ prev (h,tl) state = (make_rr h state, prev tl state)
+
+  (* Usage: let reified_tuple_stream = wrap ((s s s 1) tuple) stream in ... *)
+  let wrap = Stream.map
+end
+
+let succ n () =
+  let adder, app, ext, uncurr = n () in
+  (LogicAdder.succ adder, ApplyAsStream.succ app, ExtractDeepest.succ ext, Uncurry.succ uncurr)
+
+let one   () = (LogicAdder.(succ zero)), ApplyAsStream.one, ExtractDeepest.ext2, Uncurry.one
 let two   () = succ one   ()
 let three () = succ two   ()
 let four  () = succ three ()
@@ -1419,21 +1753,23 @@ let q     = one
 let qr    = two
 let qrs   = three
 let qrst  = four
-let pqrst = five
+let qrstu = five
 
 let run n goalish f =
-  let adder, currier, app, ext = n () in
   Log.clear ();
   LOG[perf] (Log.run#enter);
+
+  let adder, appN, ext, uncurr = n () in
   let helper tup =
     let args, stream = ext tup in
     (* we normalize stream before reification *)
     let stream =
-      Stream.Internal.bind stream (fun st -> Stream.Internal.of_list @@ State.normalize st args)
+      Stream.bind stream (fun st -> Stream.of_list @@ State.normalize st args)
     in
-    currier f @@ app (Stream.of_mkstream stream) args
+    Stream.map (uncurr f) @@ ApplyAsStream.wrap (appN args) stream
   in
   let result = helper (adder goalish @@ State.empty ()) in
+
   LOG[perf] (
     Log.run#leave;
     printf "Run report:\n%s" @@ Log.report ()
@@ -1506,10 +1842,9 @@ module Table :
               (* update `seen` - pointer to already seen part of cache *)
               let seen = !cache in
               (* delayed check that current head of cache is not equal to head of seen part *)
-              let check () = seen != !cache  in
+              let is_ready () = seen != !cache  in
               (* delayed thunk starts to consume unseen part of cache  *)
-              let thunk () = helper !cache seen in
-              Stream.Internal.waiting ~check ~thunk
+              Stream.suspend ~is_ready @@ fun () -> helper !cache seen
             else
               (* consume one answer term from cache *)
               let answ_env, answ_term, answ_ctrs = List.hd iter in
@@ -1525,8 +1860,8 @@ module Table :
                   try
                     (* check answ_ctrs against external substitution *)
                     let ctrs = Disequality.check ~prefix:(Subst.split subst) env subst' answ_ctrs in
-                    let f = Stream.Internal.from_fun @@ fun () -> helper tail seen in
-                    Stream.Internal.choice {st' with ctrs = Disequality.merge env ctrs' ctrs} f
+                    let f = Stream.from_fun @@ fun () -> helper tail seen in
+                    Stream.cons {st' with ctrs = Disequality.merge env ctrs' ctrs} f
                   with Disequality_violated -> helper tail seen
                   end
                 | None -> helper tail seen
@@ -1590,10 +1925,11 @@ module Table :
 module Tabling =
   struct
     let succ n () =
-      let currier, uncurrier, ext = n () in
-      (Curry.succ currier, Uncurry.succ uncurrier, ExtractDeepest.succ ext)
+      let currier, uncurrier = n () in
+      let sc = (Curry.succ : (('a -> 'b) -> 'c) -> ((((_, _) injected as 'k) * 'a -> 'b) -> 'k -> 'c)) in
+      (sc currier, Uncurry.succ uncurrier)
 
-    let one () = (Curry.(succ one), Uncurry.one, ExtractDeepest.ext2)
+    let one () = ((Curry.(one) : ((_, _) injected -> _) as 'x -> 'x), Uncurry.one)
 
     let two   () = succ one ()
     let three () = succ two ()
@@ -1609,23 +1945,19 @@ module Tabling =
 
     let tabled n g =
       let tbl = Table.create () in
-      let currier, uncurrier, ext = n () in
-      currier (
-        fun tup ->
-          let x, st = ext tup in
-          tabled' tbl (uncurrier g) x st
+      let currier, uncurrier = n () in
+      currier (fun tup ->
+        tabled' tbl (uncurrier g) tup
       )
 
     let tabledrec n g_norec =
       let tbl = Table.create () in
-      let currier, uncurrier, ext = n () in
+      let currier, uncurrier = n () in
       let g = ref (fun _ -> assert false) in
       let g_rec args = uncurrier (g_norec !g) args in
       let g_tabled = tabled' tbl g_rec in
-      g := currier (
-        fun tup ->
-          let x, st = ext tup in
-          g_tabled x st
+      g := currier (fun tup ->
+        g_tabled tup
       );
       !g
 end
@@ -1794,7 +2126,7 @@ let unitrace ?loc shower x y = fun st ->
   (* printf "%d: unify '%s' and '%s'" !logged_unif_counter (shower (helper_of_state st) x) (shower (helper_of_state st) y);
   (match loc with Some l -> printf " on %s" l | None -> ());
 
-  if Stream.Internal.is_nil ans then printfn "  -"
+  if Stream.is_nil ans then printfn "  -"
   else  printfn "  +"; *)
   ans
 
@@ -1804,7 +2136,7 @@ let diseqtrace shower x y = fun st ->
   (* printf "%d: (=/=) '%s' and '%s'" !logged_diseq_counter
     (shower (helper_of_state st) x)
     (shower (helper_of_state st) y);
-  if Stream.Internal.is_nil ans then printfn "  -"
+  if Stream.is_nil ans then printfn "  -"
   else  printfn "  +"; *)
   ans;;
 
