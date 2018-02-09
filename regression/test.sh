@@ -36,7 +36,7 @@ PATH=${OLDPATH}
 
 for i in ${CHECKS}; do
     if ! diff -u orig/${i}.log ${i}.log > ${i}.diff; then
-        echo "${TEST}: FAILED (see ${i}.diff)"
+        echo "${TEST}: FAILED (see regression/${i}.diff)"
         ERROR=$((${ERROR} + 1))
     else
         rm -f ${i}.diff

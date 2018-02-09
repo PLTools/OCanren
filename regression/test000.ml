@@ -1,74 +1,51 @@
-open GT
 open MiniKanren
+open Std
 open Tester
+open Printf
+open GT
 
-let just_a a = a === !5
+let show_int       = show(int)
+let show_int_opt   = show(option) (show(int))
+let show_intl      = show(logic)  (show(int))
+let show_intl_optl = show(logic)  (show(option) (show(logic) (show(int))))
 
-let a_and_b a =
-  call_fresh (
-    fun b ->
-      conj (a === !7)
-           (disj (b === !6)
-                 (b === !5)
-           )
+let int_opt_reifier = Option.reify MiniKanren.reify
+
+let _ = Option.(
+    run_exn show_int 1 q qh (REPR(fun q -> q === !!5));
+    runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> q === some !!5));
+    runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> q === none ()));
+    runR MiniKanren.reify show_int     show_intl   1 q qh (REPR(fun q -> some q === some !!5 ));
+    runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> call_fresh (fun w -> q === some w)))
   )
 
-let a_and_b' b =
-  call_fresh (
-    fun a ->
-      conj (a === !7)
-           (disj (b === !6)
-                 (b === !5)
-           )
-  )
+module Result =
+  struct
 
-let rec fives x =
-  disj (x === !5)       
-       (fun st -> Stream.from_fun (fun () -> fives x st))
+    module X =
+      struct
+        @type ('a,'b) t = Ok of 'a | Error of 'b with show, gmap
+        let fmap f g x = gmap(t) f g x
+      end
 
-let rec appendo a b ab =
-  disj
-    (conj (a === !Nil) (b === ab) )
-    (call_fresh (fun h ->
-      (call_fresh (fun t ->
-        (conj (a === h % t)
-           (call_fresh (fun ab' ->
-              conj (h % ab' === ab)
-                   (appendo t b ab')
-           ))
-      )))
-    ))
+  include X
+  include Fmap2 (X)
 
-let rec reverso a b =
-  disj
-    (conj (a === !Nil) (b === !Nil))
-    (call_fresh (fun h ->
-      (call_fresh (fun t ->
-          (conj (a === h % t)
-                (call_fresh (fun a' ->
-                   conj (appendo a' !< h b)
-                        (reverso t a')
-                ))
-        )
-    )
-    )))
+  let ok x    = inj @@ distrib (Ok x)
+  let error x = inj @@ distrib (Error x)
+end
 
-let show_int      = show(logic) (show int)
-let show_int_list = show(List.logic) show_int
+let show1 = show(Result.t) (show(int)) (show(option) (show(int)))
+let show1logic =
+  show(logic) (show(Result.t) (show(logic) (show int)) (show(logic) (show option @@ show(logic) (show int))))
+
+let runResult n = runR (Result.reify MiniKanren.reify int_opt_reifier) show1 show1logic n
 
 let _ =
-  run show_int_list  1  q (REPR (fun q   -> appendo q (inj_list [3; 4]) (inj_list [1; 2; 3; 4]))) qh;
-  run show_int_list  4 qr (REPR (fun q r -> appendo q (inj_list []) r                          )) qrh;
-  run show_int_list  1  q (REPR (fun q   -> reverso q (inj_list [1; 2; 3; 4])                  )) qh;
-  run show_int_list  1  q (REPR (fun q   -> reverso (inj_list []) (inj_list [])                )) qh;
-  run show_int_list  1  q (REPR (fun q   -> reverso (inj_list [1; 2; 3; 4]) q                  )) qh;
-  run show_int_list  1  q (REPR (fun q   -> reverso q q                                        )) qh;
-  run show_int_list  2  q (REPR (fun q   -> reverso q q                                        )) qh;
-  run show_int_list  3  q (REPR (fun q   -> reverso q q                                        )) qh;
-  run show_int_list 10  q (REPR (fun q   -> reverso q q                                        )) qh;
-  run show_int_list  2  q (REPR (fun q   -> reverso q (inj_list [1])                           )) qh;
-  run show_int_list  1  q (REPR (fun q   -> reverso (inj_list [1]) q                           )) qh;
-  run show_int       1  q (REPR (fun q   -> a_and_b q                                          )) qh;
-  run show_int       2  q (REPR (fun q   -> a_and_b' q                                         )) qh;
-  run show_int      10  q (REPR (fun q   -> fives q                                            )) qh
-
+  run_exn show1 1  q qh (REPR(fun q -> q === Result.ok !!5 ));
+  runResult   (-1) q qh (REPR(fun q -> call_fresh (fun r -> (q === Result.ok r) &&& conde [r === !!5; success])));
+  runResult   (-1) q qh (REPR(fun q -> Fresh.two (fun r s -> conde
+                                                                [ (q === Result.ok    s) &&& (s =/= !!4)
+                                                                ; (q === Result.error r)
+                                                                ])
+                        ))

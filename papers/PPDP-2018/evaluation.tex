@@ -1,0 +1,137 @@
+\section{Implementation and Evaluation}
+\label{evaluation}
+
+We implemented the improved version of the search, described in the previous section, 
+as a prototype over existing miniKanren implementation for OCaml, called OCanren~\cite{OCanren}. 
+For the simplicity, we switched to a deep embedding (most miniKanren implementations, 
+including OCanren, use shallow embedding), and changed the syntax to make relational definitions
+visible for the interpreter. Programs in OCanren can be easily converted to respect 
+the new syntax.
+
+With this implementation, we became capable to evaluate a number of useful, but refutationally 
+incomplete miniKanren relations, including those considered earlier. In all cases, the 
+improved search managed to discover the divergence and fix the incompleteness, caused by
+the non-commutativity of conjunction; moreover, the performance of some queries was improved 
+significantly. In the following subsections we consider some interesting cases.
+
+\subsection{Relations on lists}
+
+As we have seen in Section~\ref{incompleteness}, for some simple relations, like \lstinline|append$^o$|,
+a recursive call has to be placed last in the sequence of conjuncts in order for the 
+relation to be refutationally complete. Specifically for \lstinline|append$^o$|, with the improved search 
+the divergence is discovered and refutational incompleteness is fixed regardless the position of 
+the recursive call.
+
+As a more interesting example, we consider the \lstinline|revers$^o$| relation. As we've
+seen, in order for different queries to work it requires different orders of conjuncts 
+to be used in the implementation. Again, the improved search lifts this requirement.
+Even more interesting, that, for example, in the query 
+
+\begin{lstlisting}
+   fresh ($q$) (revers$^o$ (Cons (A, Nil)) $q$)
+\end{lstlisting}
+
+\noindent the divergence is discovered for the recursive call of \lstinline|appendo$^o$|, but,
+as none of conjunct orders within the definition of \lstinline|append$^o$| help, the
+improved search goes even more back and switches the conjuncts within the definition of
+\lstinline|revers$^o$|. This example demonstrates the importance of operating on 
+dynamic invocation order.
+
+Another example we've already looked at is relational sorting/permutations. 
+With the improved search, both queries \lstinline|fresh ($q$) (perm$^o$ l $q$)| and 
+\lstinline|fresh ($q$) (perm$^o$ $q$ l)| terminate for any list \lstinline|l| of a reasonable 
+length (7, 8, etc.), and now work in a reasonable time. Moreover, now
+relational permutations can be used as a (we admit, somewhat exotic) way to calculate 
+the number of permutations with repetitions.
+
+\subsection{Binary arithmetics}
+
+The implementation of a relational arithmetics is an important problem since it is required
+in a number of elaborated relational specifications. For performance reasons, it is 
+preferrable to use binary numbers, not comfy Peano encoding, which makes the problem 
+more complicated. As it is shown in~\cite{WillThesis}, the naive implementation of 
+binary arithmetics is inappropriate due to multiple problems. 
+
+Fixing these problems takes a lot of efforts: it requires some additional conditions, 
+excess on the first glance, to be introduced in the specification to ensure the non-overlapping 
+of cases and correctness of number representation. And still, even with all these 
+improvements, arithmetic relations diverge for some routine queries with one order of 
+consituents, and for others with another. To overcome this problem, 
+arithmetics in the standard miniKanren implementation~\cite{TRS} uses digital logic and 
+some advanced techniques of bounding the sizes of the terms~\cite{KiselyovArithmetic}. 
+As a result, the implementation is quite complicated and takes time to understand.
+
+At the same time, all these problems are exactly the consequences of the non-commutativity 
+of conjunction. So, as expected, the improved search makes it possible to stick with
+the naive version (for addition, multiplication, comparisons, division with a reminder)
+without all these complicated optimizations. 
+
+As the brightest example, for the division with reminder, instead of a very complicated recursive definition 
+from~\cite{TRS} (20 lines of code, not including auxiliary functions), one can just right down the 
+following definition
+
+\begin{lstlisting}
+   div$^o$ $\binds$ $\lambda\;x\;y\;q\;r$ . 
+     (fresh (yq)        
+        (mult$^o$ $y$ $q$ $yq$) /\
+        (plus$^o$ $yq$ $r$ $x$) /\
+        (lt$^o$ $r$ $y$)
+     )
+\end{lstlisting}
+
+\noindent and for all queries
+
+\begin{lstlisting}
+   fresh ($q$ $r$) (div$^o$ $\overline{23}$ $\overline{5}$ $q$ $r$)
+   fresh ($y$ $q$ $r$) (div$^o$ $\overline{19}$ $y$ $q$ $r$)
+   fresh ($x$ $r$) (div$^o$ $x$ $\overline{17}$ $\overline{4}$ $r$)
+\end{lstlisting}
+
+\noindent the search terminates and shows the performance, comparable with the advanced version 
+(here $\overline{n}$ denotes a binary representation of the number $n$).
+
+\subsection{Binary trees}
+
+For a natural representation of binary trees using two constructors \lstinline|Leaf| and 
+\lstinline|Node($l$, $r$)| it is easy to implement the relation to count the number of 
+leaves in a tree (using arithmetic relation \lstinline|plus$^o$| for addition):
+
+\begin{lstlisting}
+   siz$^o$ $\binds$ $\lambda\;t\;s$ .
+     (($t$ === $\;\;$Leaf) /\ ($s$ === $\;\;$$\overline{1}$)) \/
+     (fresh ($l$ $r$ $sl$ $sr$)
+        ($t$ === $\;$Node ($l$, $r$)) /\
+        (siz$^o$ $l$ $sl$) /\
+        (siz$^o$ $r$ $sr$) /\
+        (plus$^o$ $sl$ $sr$ $s$)
+     )
+\end{lstlisting}
+
+By running this relation backwards
+
+\begin{lstlisting}
+   fresh ($q$) (siz$^o$ $q$ $\overline{n}$)
+\end{lstlisting}
+
+\noindent it becomes possible to generate all binary trees with given number of leaves $n$. 
+The improved search provides the termination of this query and the number of discovered 
+answers corresponds to the number of such trees, so this relational program may be seen 
+as (an exotic) way of calculating the Catalan numbers.
+
+\subsection{Interpreters}
+
+Program synthesis with relational interpreters is one of the most useful applications of miniKanren. 
+The construction of a relational interpreter for a small Scheme-like language is considered 
+in details in~\cite{Untagged}. However, this simple interpreter also has some problems, caused by 
+the non-commutativity. For example, the following obviously contradictory query
+
+\begin{lstlisting}
+   fresh ($e1$ $e2$ $r1$ $r2$) (eval$^o$ (list $e_1$ 3 $e_2$) Nil ($r_1$ 4 $r_2$))
+\end{lstlisting}
+
+\noindent leads to a divergence under the conventional search (and no simple reordering can fix it). 
+Under the improved search, however, the contradiction is found and the query terminates with
+no answers. Relational interpreters, used in practice for more complex problems~\cite{unified}, 
+include a lot of optimisations and take significant effort to implement. We hope, that some 
+performance problems with them are caused by the non-commutativity and can be fixed automatically 
+with the improved search.

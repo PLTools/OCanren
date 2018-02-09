@@ -1,0 +1,83 @@
+\section{Introduction}
+\label{intro}
+
+Relational programming~\cite{TRS} is an attractive technique, based on the idea
+of constructing programs as relations.  As a result, relational programs can be
+``queried'' in various ``directions'', making it possible, for example, to simulate
+reversed execution. Apart from being interesting from a purely theoretical standpoint,
+this approach may have a practical value: some problems look much simpler
+when considered as queries to some relational specification~\cite{WillThesis}. There are a
+number of appealing examples confirming this observation: a type checker
+for simply typed lambda calculus (and, at the same time, a type inferencer and solver
+for the inhabitation problem), an interpreter (capable of generating ``quines''~---
+programs producing themselves as a result)~\cite{Untagged}, list sorting (capable of
+producing all permutations), etc.
+
+Many logic programming languages, such as Prolog, Mercury~\cite{MercuryFirstPaper},
+or Curry~\cite{CurryFirstPaper} to some extent
+can be considered relational. We have chosen \miniKanren\footnote{\url{http://minikanren.org}}
+as a model language, because it was specifically designed as a relational DSL, embedded in Scheme/Racket.
+Being rather a minimalistic language, which can be implemented with just a few data structures and
+combinators~\cite{MicroKanren, MuKanrenNew}, \miniKanren found its way into dozens of host languages, including Scala, Haskell and Standard ML.
+The paradigm behind \miniKanren can be described as ``lightweight logic programming''\footnote{An in-depth comparison of \miniKanren
+and Prolog can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
+
+This paper addresses the problem of embedding \miniKanren into OCaml\footnote{\url{http://ocaml.org}}~--- a statically-typed functional language with
+a rich type system. A statically-typed implementation would bring us a number of benefits. First, as always,
+we expect typing to provide a certain level of correctness guarantees, ruling out some pathological programs, which
+otherwise would provide pathological results. In the context of relational programming, however, typing would additionally
+help us to interpret the results of queries. Often an answer to a relational query contains a number of
+free variables, which are supposed to take arbitrary values. In the typed case these variables become typed,
+facilitating the understanding of the answers, especially those with multiple free variables. Next, a number of \miniKanren
+applications require additional constraints to be implemented. In the untyped setting, when everything can be anything,
+some symbols or data structures tend to percolate into undesirable contexts~\cite{Untagged}. In order to prevent this from happening, some
+auxiliary constraints (``\lstinline{absent$^o$}'', ``\lstinline{symbol$^o$}'', etc.) were introduced. These constraints play a role
+of a weak dynamic type system, cutting undesirable answers out at runtime. Conversely, in a typed language this work can be
+entrusted to the type checker (at the price of enforcing an end user to write properly typed specifications), not only improving the
+performance of the system but also reducing the number of constraints which have to be implemented. Finally, it is rather natural
+to expect better performance of a statically-typed implementation.
+
+We present an implementation of a set of relational combinators and syntax extensions for
+OCaml\footnote{The source code of our implementation is accessible from \url{https://github.com/dboulytchev/OCanren}.},
+which, technically speaking, corresponds to $\mu$Kanren~\cite{MicroKanren} with disequality
+constraints~\cite{CKanren}. The contribution of our work is as follows:
+
+\begin{enumerate}
+\item Our embedding allows an end user to enjoy strong static typing and type inference in relational
+specifications; in particular, all type errors are reported at compile time and the types for
+all logical variables are inferred from the context.
+
+\item Our implementation is based on the \emph{polymorphic unification}, which, like the polymorphic comparison,
+can be used for arbitrary types. The implementation of polymorphic unification uses unsafe features and
+relies on the intrinsic knowledge of the runtime representation of values; we show, however, that this does not
+compromise type safety.
+
+\item We describe a uniform and scalable pattern for using types for relational programming, which
+helps in converting typed data to and from the relational domain. With this pattern, only one
+generic feature (``\lstinline{Functor}'') is needed, and thus virtually any generic
+framework for OCaml can be used. Although being rather a pragmatic observation, this pattern, we
+believe, would lead to a more regular and easy way to maintain relational specifications.
+
+\item We provide a simplified way to integrate relational and functional code. Our approach utilizes
+a well-known pattern~\cite{Unparsing, DoWeNeed} for variadic function implementation and makes it
+possible to hide the reification of the answers phase from an end user.
+\end{enumerate}
+
+The rest of the paper is organized as follows: in the next section we provide a short overview of the related
+works. Then we briefly introduce \miniKanren in
+its original form to establish some notions; we do not intend to describe the language in its full bloom (interested readers can
+refer to~\cite{TRS}). In Section~\ref{sec:goals} we describe some basic constructs behind a \miniKanren implementation, this time
+in OCaml. In Section~\ref{sec:unification} we discuss polymorphic unification, and show that unification with
+triangular substitution respects typing. Then we present our approach to handle user-defined types by injecting them
+into the logic domain, and describe a convenient generic programming pattern, which can be used to implement the conversions from/to logic
+domain. We also consider a simple approach and a more elaborate and efficient tagless variant (see Section~\ref{sec:injection}).
+Section~\ref{sec:reification} describes top-level primitives and addresses the problem of relational and functional code integration.
+Then, in Section~\ref{sec:examples} we present a set of relational examples, written with the aid of our
+library. Section~\ref{sec:evaluation} contains the results of a performance evaluation and a comparison of our implementations
+with existing implementation for Scheme. The final section concludes.
+
+The authors would like to express a deep gratitude to the anonymous rewievers for their numerous constructive comments, Michael Ballantyne, Greg Rosenblatt, 
+and the other attendees of the miniKanren Google Hangouts, who helped the authors in understanding the subtleties of the original miniKanren
+implementation, Daniel Friedman for his remarks on the preliminary version of the paper, and William Byrd for all his help and support, which cannot be
+overestimated.
+

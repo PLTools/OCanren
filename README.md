@@ -233,8 +233,12 @@ let insert' t t' =
 ## Installation
 
 OCanren can be installed using [opam](https://opam.ocaml.org):
+Expected workflow: add new test to try something out.
 
-- `opam pin add ocanren https://github.com/dboulytchev/ocanren.git -n -y`	
+- `opam pin add camlp5 https://github.com/kakadu/camlp5.git`
+- `opam pin add GT https://github.com/dboulytchev/GT.git`
+- `opam pin add logger https://github.com/dboulytchev/logger.git`
+- `opam pin add ocanren https://github.com/dboulytchev/ocanren.git -n -y`
 - `opam install ocanren`
 
 # More info

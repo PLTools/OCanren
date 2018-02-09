@@ -1,0 +1,123 @@
+\section{Appendix}
+\label{appendix}
+
+In this appendix, we present the correctness proof for the divergence criterion.
+The proof is based on a number of definitions and lemmas.
+
+\begin{definition}
+\normalfont
+A semantic variable $v$ is \emph{observable} w.r.t. the intrepretation $\iota$ and substitution $\sigma$, if there exists 
+a syntactic variable $x$, such that \mbox{$v \in FV(\iota(x) \sigma)$}.
+\end{definition}
+
+\begin{definition}
+\normalfont
+A semantic statement 
+
+$$
+\otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
+$$ 
+
+\noindent is \emph{well-formed}, if \mbox{$dom(\sigma) \subseteq \delta$}, and any semantic variable, observable w.r.t. $\iota$ and $\sigma$, belongs to $\delta$.  
+\end{definition}
+
+Note, the root semantic statement \mbox{$\otrans{\Gamma,\bot}{(\epsilon,\,\emptyset)}{g}{S}$} is always well-formed.
+
+\begin{lemma}
+\label{one}
+\normalfont
+ For a well-formed semantic statement, every statement in its derivation tree is also well-formed.
+\end{lemma}
+
+The proof is by induction on derivation tree. Note, we need to generalize the statement of the lemma, adding the well-formedness
+condition w.r.t. $\iota$, $\sigma_r$, $\delta_r$ for any $(\sigma_r, \delta_r) \in S$.
+
+The next lemma ensures, that any substitution in the RHS of a semantic statement is a correct refinement of that in the LHS:
+
+\begin{lemma}
+\label{two}
+\normalfont
+For a well-formed semantic statement 
+
+$$
+\otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
+$$ 
+
+\noindent and any result \mbox{$(\sigma_r,\,\delta_r) \in S$}, there exists a substitution $\Delta$, such that:
+  \begin{enumerate}
+    \item \mbox{$\sigma_r = \sigma\circ\Delta$};
+    \item any semantic variable \mbox{$v\in dom(\Delta)\cup ran(\Delta)$} either is observable w.r.t. $\iota$ and $\sigma$,
+ or does not belong to $\delta$ (where \mbox{$ran(\Delta)=\bigcup_{v\in dom(\Delta)}FV(\Delta(v))$}).
+  \end{enumerate}   
+\end{lemma}
+
+The proof is by induction on derivation tree; we as well need to generalize the statement of the lemma, adding the condition, that the 
+set of all allocated semantic variables $\delta$ can only grow during the evaluation.
+
+The final lemma formalizes the intuitive considerations, that the evaluation for a more general state cannot fail, if the evaluation 
+for a more specific state doesn't fail:
+
+\begin{lemma}
+\label{three}
+\normalfont
+Let 
+
+$$
+\otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
+$$ 
+
+and 
+
+$$\otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{g}{S^\prime}
+$$
+
+\noindent are two well-formed semantic statements, and there exists a substitution $\tau$, such that 
+for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime = \iota(x) \sigma \tau$}. Then the 
+derivation tree of the first statement has greater or equal height, then the derivation 
+tree of the second statement.
+\end{lemma}
+
+The proof is by induction on the derivation tree for the second statement. We need to generalize the statement of the lemma, adding the requirement, that 
+for any substitution $s^\prime_r$ in the RHS of the second statement, there has to be a substitution $s_r$ in the RHS of the first statement,
+such that there exists a substitution $\tau_r$, such that for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime_r = \iota(x) \sigma_r \tau_r$}. 
+In the cases of $\textsc{Fresh}$ and $\textsc{Invoke}$ rules, some semantic variables can become non-observable, and we need to define a substitution $\tau_r$ 
+separately for these ``forgotten'' variables and those, which remain observable, using Lemma~\ref{two}.
+
+Now we are ready to state divergence criterion.
+
+\begin{theorem}[Divergence criterion]
+\normalfont
+For any well-formed semantic statement 
+
+$$
+\otrans{\Gamma,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{S}
+$$ 
+
+if its proper derivation subtree has a semantic statement 
+
+$$
+\otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{r^k\,t^\prime_1\dots t^\prime_k}{S^\prime}
+$$
+
+then \mbox{$\overline{t^\prime_i \iota^\prime \sigma^\prime} \not \succeq \overline{t^{\phantom{\prime}}_i \iota \sigma}$}. 
+\end{theorem}
+\begin{proof}
+By contradiction: assume, that \mbox{$\overline{t^\prime_i \iota^\prime \sigma^\prime}\succeq \overline{t^{\phantom{\prime}}_i \iota \sigma}$}. 
+
+By Lemma~\ref{one}, the semantic statement \mbox{$\otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{r^k\,t^\prime_1\dots t^\prime_k}{S^\prime}$} if
+well-formed.
+
+By Lemma~\ref{three}, the derivation tree for
+
+$$
+\otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{r^k\,t^\prime_1\dots t^\prime_k}{S^\prime}
+$$
+
+\noindent has greater or equal height than that for
+
+$$
+\otrans{\Gamma,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{S}
+$$ 
+
+\noindent which contradicts the theorem condition.~$\Box$
+\end{proof}

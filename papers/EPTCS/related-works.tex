@@ -1,0 +1,47 @@
+\section{Related Works}
+\label{sec:relworks}
+
+There is a predictable difficulty in implementing \miniKanren for a strongly typed language.
+Designed in the metaprogramming-friendly and dynamically typed realm of Scheme/Racket, the original
+\miniKanren implementation pays very little attention to what has a significant importance in (specifically)
+ML or Haskell. In particular, one of the capstone constructs of \miniKanren~--- unification~--- has to work for
+different data structures, which may have types different beyond parametricity.
+
+There are a few ways to overcome this problem. The first one is simply to follow the untyped paradigm and
+provide unification for some concrete type, rich enough to represent any reasonable data structures.
+Some Haskell \miniKanren libraries\footnote{\url{https://github.com/JaimieMurdock/HK}, \url{https://github.com/rntz/ukanren}}
+as well as the previous OCaml implementation\footnote{\url{https://github.com/lightyang/minikanren-ocaml}} take this approach.
+As a result, the original implementation can be retold with all its elegance; the relational specifications, however,
+become weakly typed. A similar approach was taken in early works on embedding Prolog into Haskell~\cite{PrologInHaskell}.
+
+Another approach is to utilize \emph{ad hoc} polymorphism and provide a type-specific unification for each ``interesting'' type.
+Some \miniKanren implementations, such as Molog\footnote{\url{https://github.com/acfoltzer/Molog}} and
+MiniKanrenT\footnote{\url{https://github.com/jvranish/MiniKanrenT}}, both for Haskell, can be mentioned as examples.
+While preserving strong typing, this approach requires a lot of ``boilerplate''
+code to be written, so some automation --- for example, using 
+Template Haskell~\cite{SheardTMH}~---
+is desirable. In~\cite{TypedLogicalVariables} a separate type class was introduced to both perform the unification
+and detect free logical variables in end-user data structures. The requirement for end user to provide a way to represent
+logical variables in custom data structures looks superfluous for us since these logical variables would require proper
+handling in the rest of the code outside the logical programming subsystem.
+
+There is, actually, another potential approach, but we do not know if anybody has tried
+it: implementing unification for a generic representation of types as sum-of-products and fixpoints of
+functors~\cite{InstantGenerics, ALaCarte}. Thus, unification would work for any type for which a representation
+is provided. We believe that implementing this representation would require less boilerplate code to be written.
+
+As follows from this exposition, a typed embedding of \miniKanren in OCaml can be done with
+a combination of datatype-generic programming~\cite{DGP} and \emph{ad hoc} polymorphism. There are 
+a number of generic frameworks for OCaml (for example,~\cite{Deriving}). On the other hand, the support
+for \emph{ad hoc} polymorphism in OCaml is weak; there is nothing comparable in power to Haskell
+type classes, and even though sometimes the object-oriented layer of the language can be used to mimic
+desirable behavior, the result, as a rule, is far from satisfactory. Existing proposals for \emph{ad hoc} polymorphism (for example,
+modular implicits~\cite{Implicits}) require patching the compiler, which we want to avoid. Therefore, we 
+take a different approach, implementing polymorphic unification once and for all logical types~--- a purely \emph{ad hoc} 
+approach, since the features which would provide a less \emph{ad hoc} solution are not yet well integrated into the language. To deal
+with user-defined types in the relational subsystem, we propose to use their logical representations (see Section~\ref{sec:injection}), 
+which free an end user from the burden of maintaining logical variables, and we use generic programming to build conversions from and to logical
+representations in a systematic manner.
+
+
+

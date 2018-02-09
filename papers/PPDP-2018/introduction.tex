@@ -1,0 +1,36 @@
+\section{Introduction}
+
+Relational programming is a technique, based on the idea of describing programs not as functions, but 
+as relations, without distinguishing between the arguments and the result value. This technique makes it 
+possible to ``query'' programs in various ways, for example, to execute them ``backwards'', finding
+all sets of arguments for a given result. This behavior can be simulated using a number of
+logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
+or Curry\footnote{\url{http://www-ps.informatik.uni-kiel.de/currywiki}}. 
+There is also a family of embedded DSLs, specifically designed for writing declarative relational
+programs, which originates from \miniKanren~\cite{TRS}. \miniKanren is a minimalistic 
+declarative language, initially developed for Scheme/Racket. The smallest implementation of \miniKanren 
+is reported to comprise of only 40 LOC~\cite{MicroKanren,2016}; there are also more elaborate versions, including
+\miniKanren with constraints~\cite{CKanren,CKanren1}, user-assisted search~\cite{Guided}, nominal unification~\cite{AlphaKanren},
+etc. Due to its simplicity, \miniKanren was implemented for more than 50 other languages, such as
+Haskell, Go, Smalltalk, and OCaml.
+
+\miniKanren has proven to be a useful tool to provide elegant solutions for various problems, otherwise considered as non-trivial~\cite{WillThesis};
+one of the main applications of \miniKanren for now lies is the area of \emph{relational interpreters}~--- the interpreters, which (for a given language)
+are capable of providing programs, delivering specified results~\cite{Untagged}.
+
+Despite being quite simple and easy to use by the design, in implementation \miniKanren introduces some subtleties. Under the hood, \miniKanren 
+uses a complete interleaving search~\cite{Search}. This search is guaranteed to find all existing solutions; however, it can diverge, when no 
+solution exists. In reality, this amounts to a divergence in a number of important cases~--- for example, when a program is asked to 
+return \emph{all} existing solutions, or when the number of requested solutions exceeds the number of existing ones. Often, for a 
+concrete query, it is possible to refactor the specification to avoid the divergence, but this means, that the specification has to be adjusted for every 
+execution ``direction'' of interest, which to some extent compromises the idea of fully declarative relational programming. 
+
+The specifications, which do not diverge even when no solutions exist, are called \emph{refutationally complete}~\cite{WillThesis}. Writing 
+refutationally complete relational specifications nowadays requires the knowledge of \miniKanren implementation intrinsics, and is not always
+possible due to the undecidability of the fundamental computability problems. However, by developing a more advanced search it is possible
+to make more specifications refutationally complete.
+
+In this work we present an optimization technique, which is based on a certain non-termination test. Our optimization is \emph{online} (performed during the
+search), \emph{non-intrusive} (does not introduce new constructs and does not require any changes to be made to the existing specifications), and \emph{conservative} 
+(applied only when the divergence is detected). We prove, that for the queries, which return a finite number of answers, our optimization is non-degrading. 
+We also demonstrate the application of the optimization for a number of interesting and important problems.
