@@ -21,3 +21,4 @@ true: short_paths
 <regression/test*.ml> : syntax(camlp5o), package(logger.syntax)
 <regression/test0*.ml> : use_pa_minikanren, package(GT.syntax.all)
 
+
