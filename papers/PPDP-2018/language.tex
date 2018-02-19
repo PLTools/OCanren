@@ -1,17 +1,10 @@
 \section{The Syntax and Semantics of Relational Language}
 \label{language}
 
-In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent this description serves as
-a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs, 
-which deliver a finite set of answers, while in the reality of relational programming the result is represented as an infinite stream, from which any number of answers can be requested, and the request of a non-existing answer can
-lead to a divergence. Our semantics, thus, corresponds to the scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating the infinite number 
-of answers, from those diverging with no results at all.   
-However, we consider the finite version of the semantics as an important case, which is justified by the evaluation, presented in Section~\ref{evaluation}.
-
-
-\begin{figure}[t]
+\begin{figure*}
 \small
-$$
+\begin{minipage}[t]{\textwidth}
+\[
 \begin{array}{rcll}
 \meta{C}    & = & \{C^k,\dots\}                                        & \;\;\mbox{\emph{(constructors)}}\\
 \meta{T}(X) & = & x\in X \mid C^k\,(t_1,\dots,t_k),\,t_i\in \meta{T}(X) & \;\;\mbox{\emph{(terms)}}\\
@@ -26,10 +19,63 @@ $$
 \meta{D}    & = & r^k\binds\lambda x_1\dots x_k\,.\,g,\,x_i\in\meta{V}  & \;\;\mbox{\emph{(relational definition)}}\\
 \meta{S}    & = & d_1,\dots,\,d_k; g                                    & \;\;\mbox{\emph{(specification)}}
 \end{array}
-$$
-\caption{The syntax of source language}
+\]
+\end{minipage}
+\caption{The syntax of the source language}
 \label{syntax}
-\end{figure}
+\end{figure*}
+
+\setarrow{\xRightarrow}
+\newcommand{\otrans}[4]{\withenv{#1}{\trans{#2}{\mbox{$#3$}}{#4}}}
+\newcommand{\cotrans}[5]{\withenv{#1}{\ctrans{#2}{\mbox{$#3$}}{#4}{#5}}}
+ 
+\begin{figure*}
+\begin{minipage}[t]{\textwidth}
+\small
+\[
+\cotrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{t_1\equiv t_2}{\emptyset}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \bot}\ruleno{UnifyFail}
+\]
+
+\[
+\cotrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{t_1\equiv t_2}{(\sigma\circ\Delta,\,\delta)}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \Delta\ne\bot}\ruleno{UnifySuccess}
+\]
+
+\[
+\trule{\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1}{S_1},\;\;\;\;
+       \otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_2}{S_2}
+      }
+      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1\vee g_2}{S_1\cup S_2}}\ruleno{Disj}
+\]
+
+\[
+\trule{\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1}{\{(\sigma_i,\,\delta_i)\}},\;\;\;\;
+       \otrans{\Gamma,\,\iota}{(\sigma_i,\,\delta_i)}{g_2}{S_i}
+      }
+      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1\wedge g_2}{\bigcup_i S_i}}\ruleno{Conj}
+\]
+
+\[
+\crule{\otrans{\Gamma,\,\iota[x\gets\alpha]}{(\sigma,\,\delta\cup\{\alpha\})}{g}{S}}
+      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{\lstinline|fresh($x$) $\;g$|}{S}}
+      {\alpha\in\meta{W}\setminus\delta}\ruleno{Fresh}
+\]
+
+\[
+\crule{\otrans{\Gamma,\,[x_i\gets v_i]}{(\epsilon,\,\delta)}{g}{\{(\sigma_i,\,\delta_i)\}}}
+      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{\{(\sigma\circ\sigma_i,\,\delta_i)\}}}
+      {\Gamma(r^k)=\lambda x_1\dots x_k.g,\,v_i=t_i\iota\sigma}\ruleno{Invoke}
+\]
+\end{minipage}      
+\caption{Big-step operational semantics}
+\label{semantics}
+\end{figure*}
+
+In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent this description serves as
+a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs, 
+which deliver a finite set of answers, while in the reality of relational programming the result is represented as an infinite stream, from which any number of answers can be requested, and the request of a non-existing answer can
+lead to a divergence. Our semantics, thus, corresponds to the scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating the infinite number 
+of answers, from those diverging with no results at all.   
+However, we consider the finite version of the semantics as an important case, which is justified by the evaluation, presented in Section~\ref{evaluation}.
 
 The syntax of our relational language is shown on Fig.~\ref{syntax}. First, we introduce the alphabet of constructors $\meta{C}$, each of which is equipped with a 
 non-negative arity. Then we in a conventional fashion inductively define the set of all terms $\meta{T}(X)$, parameterized by the set of variables $X$. We need this parameterization 
@@ -49,50 +95,91 @@ Note, we define here a language with first-order relations; in particular, we do
 on recursive call identification, which is a trivial task in the first-order case. Some existing frameworks for relational programming~\cite{OCanren,RelConversion}
 do not impose such a limitation; extending our approach for the higher-order case is a subject of future research.
 
-\setarrow{\xRightarrow}
-\newcommand{\otrans}[4]{\withenv{#1}{\trans{#2}{\mbox{$#3$}}{#4}}}
-\newcommand{\cotrans}[5]{\withenv{#1}{\ctrans{#2}{\mbox{$#3$}}{#4}{#5}}}
- 
-\begin{figure}[t]
-\small
-$$
-\cotrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{t_1\equiv t_2}{\emptyset}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \bot}\ruleno{UnifyFail}
-$$
+
+We describe the semantics of our language using a conventional big-step style inference system. First, we choose an infinite
+set of \emph{semantic variables} $\meta{W}$. As we will see shortly, the \lstinline|fresh($x$)...| construct allocates a fresh variable, not being
+used before, and associates it with the syntactic variable $x$. Thus, in the semantics we will need an infinite supply of fresh variables.
+
+Next, we introduce the \emph{interpretation} of syntactic variables $\iota$ as a (partial) mapping
 
 $$
-\cotrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{t_1\equiv t_2}{(\sigma\circ\Delta,\,\delta)}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \Delta\ne\bot}\ruleno{UnifySuccess}
+\iota : \meta{V} \to \meta{T}(\meta{W})
 $$
 
-$$
-\trule{\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1}{S_1},\;\;\;\;
-       \otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_2}{S_2}
-      }
-      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1\vee g_2}{S_1\cup S_2}}\ruleno{Disj}
-$$
+The role of the interpretation is twofold: first, it binds syntactic variables, used in the \lstinline|fresh| construct, to their semantic counterparts, and second, 
+it binds relational parameters to their values~--- terms over semantic variables. For a syntactic term $t$ and an interpretation $\iota$ we denote
+$t\iota$ the result of substitution of all syntactic variables in $t$ by their interpretations according to $\iota$; we assume $t\iota$ to be defined 
+only when $\iota$ is defined for all variables in $t$. Thus, $t\iota$, if defined, is always an element of $\meta{T}(\meta{W})$.
+
+Then, we borrow some conventional machinery from unification theory~\cite{Unification}. Namely, we define a substitution $\sigma$ to
+be a partial mapping between semantic variables and semantic terms:
 
 $$
-\trule{\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1}{\{(\sigma_i,\,\delta_i)\}},\;\;\;\;
-       \otrans{\Gamma,\,\iota}{(\sigma_i,\,\delta_i)}{g_2}{S_i}
-      }
-      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1\wedge g_2}{\bigcup_i S_i}}\ruleno{Conj}
+\sigma : \meta{W} \to \meta{T}(\meta{W})
 $$
 
-$$
-\crule{\otrans{\Gamma,\,\iota[x\gets\alpha]}{(\sigma,\,\delta\cup\{\alpha\})}{g}{S}}
-      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{\lstinline|fresh($x$) $\;g$|}{S}}
-      {\alpha\in\meta{W}\setminus\delta}\ruleno{Fresh}
-$$
+For any substitution $\sigma$ we assume, that the set of all free variables of all terms in the range of $\sigma$ has an empty intersection with the
+domain of $\sigma$, and we denote by $\sigma\circ\theta$ the composition of substitutions, defined in a usual way. For arbitrary $t\in\meta{T}(\meta{W})$ and
+a substitution $\sigma$ we denote the result of application of $\sigma$ to $t$ as $t\sigma$.
+
+The basic inference relation for our semantics has the form
 
 $$
-\crule{\otrans{\Gamma,\,[x_i\gets v_i]}{(\epsilon,\,\delta)}{g}{\{(\sigma_i,\,\delta_i)\}}}
-      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{\{(\sigma\circ\sigma_i,\,\delta_i)\}}}
-      {\Gamma(r^k)=\lambda x_1\dots x_k.g,\,v_i=t_i\iota\sigma}\ruleno{Invoke}
+\otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
 $$
-\caption{Big-step operational semantics}
-\label{semantics}
-\end{figure}
 
-\begin{figure}[t]
+\noindent where $\Gamma$ is an environment, which binds relational symbols to their definitions, $\iota$~--- an interpretation, $\sigma$~--- a substitution, 
+$\delta$~--- a set of allocated semantic variables, $g$~--- a goal, and $S$~--- a set of pairs $(\sigma^\prime,\,\delta^\prime)$, where $\sigma^\prime$ and
+$\delta^\prime$~--- a substitution and a set of allocated semantic variables respectively. Informally speaking, we interpret a goal $g$ in the context of
+relational definitions $\Gamma$, current interpretation $\iota$, current substitution $\sigma$ and current set of allocated semantic variables $\sigma$. As a 
+result, we obtain a (possibly empty) set of answers. Each answer consists of a new substitution, accumulated through the execution of $g$, and a new set of
+allocated semantic variables (note, in the original miniKanren a goal can produce the same answer multiple number of times, but this property is not important
+in our case).
+
+\FloatBarrier
+
+The inference rules themselves are shown on Fig.~\ref{semantics}. The first two rules handle two possible outcomes of the unification. Note, we use here the most 
+general unifier ($mgu$) of two semantic terms; we assume ``occurs check'' to be incorporated in the unification algorithm. Since the unification goal is built of 
+syntactic terms, we have to interpret them first (by applying $\iota$), and take into account current substitution $\sigma$.
+
+The rule for the disjunction first interprets the constituents of the disjunction in the same state and then combines the outcomes.
+% using the multiset union operation ``$\biguplus$''. 
+
+The rule for the conjunction threads the execution of its subgoals in a left-to-right successive manner: first the
+left conjunct is evaluated, providing a set $\{(\sigma_i,\,\delta_i)\}$. Then the second conjunct is evaluated for each element of the set, and the
+results are eventually combined. Note, the evaluation of both conjuncts is performed under the \emph{same} interpretation $\iota$ since both of them occur in the 
+\emph{same} bounding context. The substitution and the set of allocated semantic variables, on the other hand, are inherited from left to right since the evaluation 
+of the right conjunct has to be performed in the context of the results, provided by the left one. 
+
+The rule for the \lstinline|fresh| construct allocates arbitrary semantic variable, not taken before, and evaluates the unique subgoal in the updated interpretation, which
+associates the syntactic variable, bound in this \lstinline|fresh|, with taken semantic one.
+
+Finally, the rule for relational definition invocation describes its evaluation in a few steps. First, the body of the definition is found, using the environment $\Gamma$. 
+Then, the terms $t_i$, specified as the arguments of the invocation, are converted into their semantic forms $v_i$ using current interpretation $\iota$ and current 
+substitution $\sigma$. Next, the body of the definition is evaluated in the context of \emph{empty} substitution $\epsilon$ and an interpretation, containing nothing
+else, than the bindings for the formal parameters of the definition. This way of handling interpretation models the behavior of a call stack in conventional languages
+with no nested functions. Finally, the result substitutions are composed with the original one\footnote{We could use the original
+substitution instead of the empty one without the need to use composition; however we found the approach we took more proof-friendly since each relational definition is evaluated
+in initially empty substitution.}. 
+
+Given this big-step evaluation relation for goals, we can describe the evaluation for the top-level specification $s=d_1,\dots,d_k;g$. First, we construct the associated environment
+$\Gamma_s$, which properly binds all relational symbols in $s$ to their bodies. Then, we evaluate the top-level goal
+
+$$
+\otrans{\Gamma_s,\,\bot}{(\epsilon,\,\emptyset)}{g}{S_s}
+$$
+
+\noindent obtaining the set of results $S_s$; here we use empty (everywhere undefined) interpretation $\bot$ and empty substitution $\epsilon$ as a starting point. 
+Finally, we choose all substitutions from $S_s$. 
+
+Our semantics is almost deterministic~--- the only source of ambiguity is the rule for the \lstinline|fresh| construct, where we choose a new semantic variable
+arbitrarily. If we fix the order, in which semantic variables are allocated, the semantics becomes completely deterministic. It is also easy to see, that if each
+relational symbol is unambiguously defined in the specification and called with a proper number of parameters, and all goals in all relational definitions and the 
+top-level goal are closed (i.e. each variable occurrence is bound either in some \lstinline|fresh| construct or in a parameter list of enclosing definition), 
+then during the evaluation all syntactic variables are properly interpreted~--- in other words, the execution cannot break down halfway through and either diverges or 
+finishes with some results.
+
+\begin{figure*}[t]
 \arraycolsep=5pt
 \def\arraystretch{2.2}
 \subfloat[\label{appendo_eval_a}]{
@@ -146,88 +233,7 @@ $
 $}
 \caption{An example of relational evaluation}
 \label{appendo_eval}
-\end{figure}
-
-We describe the semantics of our language using a conventional big-step style inference system. First, we choose an infinite
-set of \emph{semantic variables} $\meta{W}$. As we will see shortly, the \lstinline|fresh($x$)...| construct allocates a fresh variable, not being
-used before, and associates it with the syntactic variable $x$. Thus, in the semantics we will need an infinite supply of fresh variables.
-
-Next, we introduce the \emph{interpretation} of syntactic variables $\iota$ as a (partial) mapping
-
-$$
-\iota : \meta{V} \to \meta{T}(\meta{W})
-$$
-
-The role of the interpretation is twofold: first, it binds syntactic variables, used in the \lstinline|fresh| construct, to their semantic counterparts, and second, 
-it binds relational parameters to their values~--- terms over semantic variables. For a syntactic term $t$ and an interpretation $\iota$ we denote
-$t\iota$ the result of substitution of all syntactic variables in $t$ by their interpretations according to $\iota$; we assume $t\iota$ to be defined 
-only when $\iota$ is defined for all variables in $t$. Thus, $t\iota$, if defined, is always an element of $\meta{T}(\meta{W})$.
-
-Then, we borrow some conventional machinery from unification theory~\cite{Unification}. Namely, we define a substitution $\sigma$ to
-be a partial mapping between semantic variables and semantic terms:
-
-$$
-\sigma : \meta{W} \to \meta{T}(\meta{W})
-$$
-
-For any substitution $\sigma$ we assume, that the set of all free variables of all terms in the range of $\sigma$ has an empty intersection with the
-domain of $\sigma$, and we denote by $\sigma\circ\theta$ the composition of substitutions, defined in a usual way. For arbitrary $t\in\meta{T}(\meta{W})$ and
-a substitution $\sigma$ we denote the result of application of $\sigma$ to $t$ as $t\sigma$.
-
-The basic inference relation for our semantics has the form
-
-$$
-\otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
-$$
-
-\noindent where $\Gamma$ is an environment, which binds relational symbols to their definitions, $\iota$~--- an interpretation, $\sigma$~--- a substitution, 
-$\delta$~--- a set of allocated semantic variables, $g$~--- a goal, and $S$~--- a set of pairs $(\sigma^\prime,\,\delta^\prime)$, where $\sigma^\prime$ and
-$\delta^\prime$~--- a substitution and a set of allocated semantic variables respectively. Informally speaking, we interpret a goal $g$ in the context of
-relational definitions $\Gamma$, current interpretation $\iota$, current substitution $\sigma$ and current set of allocated semantic variables $\sigma$. As a 
-result, we obtain a (possibly empty) set of answers. Each answer consists of a new substitution, accumulated through the execution of $g$, and a new set of
-allocated semantic variables (note, in the original miniKanren a goal can produce the same answer multiple number of times, but this property is not important
-in our case).
-
-The inference rules themselves are shown on Fig.~\ref{semantics}. The first two rules handle two possible outcomes of the unification. Note, we use here the most 
-general unifier ($mgu$) of two semantic terms; we assume ``occurs check'' to be incorporated in the unification algorithm. Since the unification goal is built of 
-syntactic terms, we have to interpret them first (by applying $\iota$), and take into account current substitution $\sigma$.
-
-The rule for the disjunction first interprets the constituents of the disjunction in the same state and then combines the outcomes.
-% using the multiset union operation ``$\biguplus$''. 
-
-The rule for the conjunction threads the execution of its subgoals in a left-to-right successive manner: first the
-left conjunct is evaluated, providing a set $\{(\sigma_i,\,\delta_i)\}$. Then the second conjunct is evaluated for each element of the set, and the
-results are eventually combined. Note, the evaluation of both conjuncts is performed under the \emph{same} interpretation $\iota$ since both of them occur in the 
-\emph{same} bounding context. The substitution and the set of allocated semantic variables, on the other hand, are inherited from left to right since the evaluation 
-of the right conjunct has to be performed in the context of the results, provided by the left one. 
-
-The rule for the \lstinline|fresh| construct allocates arbitrary semantic variable, not taken before, and evaluates the unique subgoal in the updated interpretation, which
-associates the syntactic variable, bound in this \lstinline|fresh|, with taken semantic one.
-
-Finally, the rule for relational definition invocation describes its evaluation in a few steps. First, the body of the definition is found, using the environment $\Gamma$. 
-Then, the terms $t_i$, specified as the arguments of the invocation, are converted into their semantic forms $v_i$ using current interpretation $\iota$ and current 
-substitution $\sigma$. Next, the body of the definition is evaluated in the context of \emph{empty} substitution $\epsilon$ and an interpretation, containing nothing
-else, than the bindings for the formal parameters of the definition. This way of handling interpretation models the behavior of a call stack in conventional languages
-with no nested functions. Finally, the result substitutions are composed with the original one\footnote{We could use the original
-substitution instead of the empty one without the need to use composition; however we found the approach we took more proof-friendly since each relational definition is evaluated
-in initially empty substitution.}. 
-
-Given this big-step evaluation relation for goals, we can describe the evaluation for the top-level specification $s=d_1,\dots,d_k;g$. First, we construct the associated environment
-$\Gamma_s$, which properly binds all relational symbols in $s$ to their bodies. Then, we evaluate the top-level goal
-
-$$
-\otrans{\Gamma_s,\,\bot}{(\epsilon,\,\emptyset)}{g}{S_s}
-$$
-
-\noindent obtaining the set of results $S_s$; here we use empty (everywhere undefined) interpretation $\bot$ and empty substitution $\epsilon$ as a starting point. 
-Finally, we choose all substitutions from $S_s$. 
-
-Our semantics is almost deterministic~--- the only source of ambiguity is the rule for the \lstinline|fresh| construct, where we choose a new semantic variable
-arbitrarily. If we fix the order, in which semantic variables are allocated, the semantics becomes completely deterministic. It is also easy to see, that if each
-relational symbol is unambiguously defined in the specification and called with a proper number of parameters, and all goals in all relational definitions and the 
-top-level goal are closed (i.e. each variable occurrence is bound either in some \lstinline|fresh| construct or in a parameter list of enclosing definition), 
-then during the evaluation all syntactic variables are properly interpreted~--- in other words, the execution cannot break down halfway through and either diverges or 
-finishes with some results.
+\end{figure*}
 
 We illustrate the evaluation, determined by this semantics, by a canonical example for relational programming~--- list concatenation relation \lstinline|append$^o$| 
 (we respect here the convention to add the ``$^o$'' suffix to all names of relational entities):
