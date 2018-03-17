@@ -131,7 +131,7 @@ such that there exists a substitution $\tau_r$, such that for any syntactic vari
 In the cases of $\textsc{Fresh}$ and $\textsc{Invoke}$ rules, some semantic variables can become non-observable, and we need to define a substitution $\tau_r$ 
 separately for these ``forgotten'' variables and those, which remain observable, using Lemma~\ref{two}.
 
-This is enough to prove that, indeed, our test constitutes a sufficient condition for divergence.
+This is enough to prove the idea behind suggested divergence test.
 
 \begin{theorem}[Divergence criterion]
 \normalfont
@@ -174,6 +174,8 @@ $$
 
 \noindent which contradicts the theorem condition.
 \end{proof}
+
+Theorem justifies that, indeed, our test constitutes a sufficient condition for divergence: if the execution reach the relation call with more general arguments than those of the previous one, than there is no derivation in our semantics for this execution, so it is not terminating.
 
 \subsection{Conjuncts Reordering}
 
@@ -306,6 +308,24 @@ conjuncts diverges. Thus, we can find a converging order (if any) in a quadratic
 
 See Fig.~\ref{improved-semantics-invoke}, Fig.~\ref{improved-semantics-normal}, Fig.~\ref{improved-semantics-divergence-prop} and Fig.~\ref{improved-semantics-reordering}.
 
+\begin{comment}
+
+\begin{theorem}
+      Для любых $\Gamma$, $\iota$, $\sigma$, $\delta$, $g$, и $S$,
+      
+      \[ \searchRule{\Gamma}{\iota}{\sigma}{\delta}{g}{S} \Rightarrow \extSearchRule{\Gamma}{\iota}{\epsilon}{0}{\sigma}{\delta}{g}{S}, \]
+      где $\epsilon$ --- пустое множество записей о предыдущих вызовах (всюду неопределенная функция).
+\end{theorem}
+\begin{proof}$ $\par\nobreak\ignorespaces
+      Для индукционного доказательства утверждение нужно сформулировать в более общем виде: для любого $h$, если для любого $r^k$, такого что $h(r^k) = (v_1, \dots, v_n)$ для некоторых значений $v_i$, существует дерево вывода утверждения $\searchRule{\Gamma}{\iota'}{\sigma'}{\delta'}{\lstinline|$r^k$ $t_1$ $\dots$ $t_k$|}{S}$ для некоторых $t_i$, таких что $t_i \iota' \sigma' = v_i$, и у этого дерева есть поддерево, в котором выводится утверждение $\searchRule{\Gamma}{\iota}{\sigma}{\delta}{g}{S}$, тогда $\searchRule{\Gamma}{\iota}{\sigma}{\delta}{g}{S} \Rightarrow \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g}{S}$.
+      
+      Это утверждение доказывается идукцией по дереву вывода утверждения в семантике стандартного поиска, строится аналогичное дерево в семантике расширенного поиска.
+      
+      Во всех случаях, кроме вызова отношения можно использовать при построении те же самые правила. В случае вызова отношения необходимо так же знать, что текущие значения аргументов не являются более общими, чем значения аргументов при предыдущем вызове (хранящиеся в $h$), но это следует из корректности критерия (чтобы применить его формально, используется условие на $h$ из формулировки утверждения).
+      
+\end{proof}
+
+\end{comment}
 
 
 
