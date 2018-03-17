@@ -1,4 +1,4 @@
-\section{Search Improvement}
+\section{The Search Improvement}
 \label{improvement}
 
 As we've seen in the previous section, the non-commutativity of conjunction is one of the reasons for
@@ -8,7 +8,7 @@ beneficial in all cases. Thus, we can make the following observations:
 
 \begin{itemize}
 \item the conjunction to change has to be properly identified;
-\item the order of conjuncts has to be a subject of a \emph{dynamic} choice.
+\item the order of conjunct evaluation has to be a subject of a \emph{dynamic} choice.
 \end{itemize}
 
 Our improvement of the search is based on the idea of switching the order of conjuncts only when
@@ -26,6 +26,20 @@ theory, there is no hope to find a \emph{precise} computable test, which constit
 sufficient condition of divergence. However, in our case a sufficient condition is sufficient. Indeed,  
 a sufficient condition identifies a case, when the search, being continued, will lead to an incompleteness 
 (since a divergence in our semantics always means incompleteness). Thus, it is no harm to try some other way. 
+
+Another important question is the discipline of conjunct reordering. Indeed, simply switching any two operands
+of, for example, \mbox{$(g_1\wedge g_2)\wedge g_3$}, would not allow us to try \mbox{$(g_1\wedge g_3)\wedge g_2$}.
+Thus, we have to flatten each ``cluster'' of nested conjunctions into a list of conjuncts\mbox{$\bigwedge g_i$}, 
+where none of the goals $g_i$ is a conjunction. Then, it may seem at the first glance, that the number of orderings to try 
+is exponential on the number of conjuncts; we are going to show, that, fortunately, this is not the case, and
+a quadratic number of orders is suffucient.
+
+In the rest of the section we address all these issues in details: first, we formally present the divergence
+criterion and prove the necessity property; then, we describe an efficient reordering discipline. Finally, we present a
+modified version of the semantics with incorporated divergence test and reordering. This semantics can be
+considered as a modified version of the search, and we prove, that this modification is a proper improvement.
+
+\subsection{The Divergence Test}
 
 Our divergence test is based on the following notion:
 
@@ -161,11 +175,7 @@ $$
 \noindent which contradicts the theorem condition.
 \end{proof}
 
-An efficient reordering of the conjuncts also requires a special treatment. First, we have to represent immediately nested conjunctions in a 
-uniform way: indeed, simply switching any two operands of, for example, \mbox{$(g_1\wedge g_2)\wedge g_3$}, would not 
-allow us to try \mbox{$(g_1\wedge g_3)\wedge g_2$}. Thus, we have to flatten each ``cluster'' of nested conjunctions into a list of conjuncts\mbox{$\bigwedge g_i$}, 
-where none of the goals $g_i$ is a conjunction. Then, it may seem at the first glance, that the number of orderings to try 
-is exponential on the number of conjuncts; we are going to show, that, fortunately, this is not the case. 
+\subsection{Conjuncts Reordering}
 
 Indeed, consider a diverging conjunction \mbox{$g_1\wedge g_2\wedge g_3$}, and assume, that \mbox{$g_1\wedge g_2$} converges. 
 Does it make any sense to switch the first two conjuncts? Obviously, \mbox{$g_2\wedge g_1$} either diverges, or converges with the same 
@@ -176,11 +186,129 @@ any permutations inside $\omega$ is pointless.
 Next, suppose we already have a list of conjuncts \mbox{$\omega\dots g_1\dots g_2\dots$}, where $\omega$ is a converging prefix, and
 $g_1$ and $g_2$~--- two goals, which, being placed immediately after $\omega$, converge (if there are no such
 goals, the whole list, obviously, diverges). Do we need to try both cases ($g_1$ or $g_2$ immediately after $\omega$)? 
-It is rather easy to see, that \mbox{$\omega g_1$} delivers no less information, that \mbox{$\omega$}; since
+It is rather easy to see, that \mbox{$\omega g_1$} delivers no less information, than \mbox{$\omega$}; since
 $g_2$ converges immediately after $\omega$, it will converge after \mbox{$\omega g_1$}. Thus, we may apply a greedy approach: each
 time we have a converging prefix of conjuncts (possibly empty), and some tail. We try to put each conjunct from the tail 
 immediately after the prefix. If we find a converging conjunct, we attach it to the prefix and continue; if no, then the list of 
 conjuncts diverges. Thus, we can find a converging order (if any) in a quadratic time.
+
+\subsection{Improved Search Sematics}
+
+\newcommand{\extSearchRule}[8] {
+  #1, #2, #3, #4 \vdash (#5, #6) \xRightarrow{#7}_{e} #8}
+
+\begin{figure*}
+\begin{minipage}[t]{\textwidth}
+\small
+
+      \[ \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{r^k t_1 \dots t_k}{ \bot },  \quad v_i = t_i \iota \sigma, \quad (v_1, \dots, v_k) \succeq h(r^k)
+          \ruleno{ExtInvokeFail} \]
+          
+      \[ \frac{ \extSearchRule{\Gamma}{\epsilon[x_1 \leftarrow v_1, \dots, x_k \leftarrow v_k]}{h[r^k \leftarrow (v_1, \dots, v_k)]}{0}{\epsilon}{\delta}{g}{ \{(\sigma_1, \delta_1), \dots, (\sigma_n, \delta_n)\} } }
+               { \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{r^k t_1 \dots t_k}{ \{ (\sigma \sigma_1, \delta_1), \dots, (\sigma \sigma_n, \delta_n) \} }},  \]
+      \[            v_i = t_i \iota \sigma, \quad \Gamma(r^k) = \lambda x_1 \dots x_k. g, \quad (v_1, \dots, v_k) \nsucceq h(r^k) 
+         \ruleno{ExtInvokeSuccess}\]
+\end{minipage}      
+\caption{Big-step operational semantics for improved search (relation invocation rules)}
+\label{improved-semantics-invoke}
+\end{figure*}
+
+\begin{figure*}
+\begin{minipage}[t]{\textwidth}
+\small
+
+      \[ \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{t_1 \equiv t_2}{\emptyset}, \quad mgu(t_1 \iota \sigma, t_2 \iota \sigma) = \bot
+           \ruleno{ExtUnifyFail} \]
+       
+       \[ \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{t_1 \equiv t_2}{(\sigma \Delta, \delta)}, \quad mgu(t_1 \iota \sigma, t_2 \iota \sigma) = \Delta \ne \bot
+           \ruleno{ExtUnifySuccess} \]
+       
+       \[ \frac{ \begin{array}{c}
+                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{S_1} \\
+                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_2}{S_2}
+                     \end{array} }
+                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \vee g_2}{S_1 \uplus S_2}}
+           \ruleno{ExtDisj} \]
+         
+       \[ \frac{ \begin{array}{c}
+                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{ \{(\sigma_1, \delta_1), \dots, (\sigma_n, \delta_n)\} } \\
+                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma_i}{\delta_i}{g_2}{S_i}
+                     \end{array} }
+                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \wedge g_2}{\uplus_i S_i}}
+           \ruleno{ExtConj}  \]
+           
+        \[ \frac{ \extSearchRule{\Gamma}{\iota[x \leftarrow \alpha]}{h}{0}{\sigma}{\delta \cup \alpha}{g}{ S } }
+               { \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{\lstinline|fresh ($x$) \ $g$|}{S}},
+                 \alpha \not\in \delta
+            \ruleno{ExtFresh} \]
+\end{minipage}      
+\caption{Big-step operational semantics for improved search (normal evaluation rules)}
+\label{improved-semantics-normal}
+\end{figure*}
+
+\begin{figure*}
+\begin{minipage}[t]{\textwidth}
+\small
+       \[ \frac{ \begin{array}{c}
+                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{\bot}
+                     \end{array} }
+                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \vee g_2}{\bot}}
+           \ruleno{DivDisjLeft} \]
+        
+        \[ \frac{ \begin{array}{c}
+                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_2}{\bot}
+                     \end{array} }
+                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \vee g_2}{\bot}}
+           \ruleno{DivDisjRight} \]
+         
+       \[ \frac{ \begin{array}{c}
+                     \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{ \{(\sigma_1, \delta_1), \dots, (\sigma_n, \delta_n)\} } \\
+                     \exists i: \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma_i}{\delta_i}{g_2}{\bot}
+                     \end{array} }
+                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \wedge g_2}{\bot}} 
+           \ruleno{DivConjRight} \]
+           
+        \[ \frac{ \extSearchRule{\Gamma}{\iota[x \leftarrow \alpha]}{h}{0}{\sigma}{\delta \cup \alpha}{g}{ \bot } }
+               { \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{\lstinline|fresh ($x$) \ $g$|}{\bot}},
+                 \alpha \not\in \delta
+            \ruleno{DivFresh} \]
+        
+        \[ \frac{ \extSearchRule{\Gamma}{\epsilon[x_1 \leftarrow v_1, \dots, x_k \leftarrow v_k]}{h[r^k \leftarrow (v_1, \dots, v_k)]}{0}{\epsilon}{\delta}{g}{ \bot } }
+               { \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{r^k t_1 \dots t_k}{ \bot }},  \]
+      \[            v_i = t_i \iota \sigma, \quad \Gamma(r^k) = \lambda x_1 \dots x_k. g, \quad (v_1, \dots, v_k) \nsucceq h(r^k) 
+         \ruleno{DivInvoke}\]
+\end{minipage}      
+\caption{Big-step operational semantics for improved search (divergence propagation)}
+\label{improved-semantics-divergence-prop}
+\end{figure*}
+
+\begin{figure*}
+\begin{minipage}[t]{\textwidth}
+\small
+       \[ \frac{ \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{ \bot } }
+             {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \wedge g_2}{\bot} },
+        \quad move(p, g_1 \wedge g_2) = \bot 
+        \ruleno{DivConjRight} \]
+                
+    \[ \frac{ \begin{array}{c}
+                    \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{ \bot } \\
+                    \extSearchRule{\Gamma}{\iota}{h}{p + 1}{\sigma}{\delta}{g'}{r}
+                  \end{array} }
+                {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \wedge g_2}{r}},
+        \quad move(p, g_1 \wedge g_2) = g' \ne \bot
+        \ruleno{Reorder} \]
+\end{minipage}      
+\caption{Big-step operational semantics for improved search (conjuncts reordering)}
+\label{improved-semantics-reordering}
+\end{figure*}
+
+
+
+See Fig.~\ref{improved-semantics-invoke}, Fig.~\ref{improved-semantics-normal}, Fig.~\ref{improved-semantics-divergence-prop} and Fig.~\ref{improved-semantics-reordering}.
+
+
+
+
 
 % (Lemma~\ref{three} from Appendix~\ref{appendix}
 %can be used to justify this claim). Thus, we do not to try two cases.
@@ -235,4 +363,7 @@ but becomes refutationally complete w.r.t. to the improvement. For such query we
 already know, that it diverges. We also remember that the reason of the divergence is the infinite
 sequence of recursive calls with renamed arguments~--- but this means, that the divergence test is satisfied.
 Finally, switching the recursive call to \lstinline|append$^o$| with the preceding conjunct makes the query converge~--- this is exactly, what the improvement does.
+
+
+
 \end{comment}
