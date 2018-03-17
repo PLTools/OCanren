@@ -14,11 +14,12 @@ is reported to comprise of only 40 LOC~\cite{MicroKanren,2016}; there are also m
 etc. Due to its simplicity, \miniKanren was implemented for more than 50 other languages, such as
 Haskell, Go, Smalltalk, and OCaml.
 
-\miniKanren has proven to be a useful tool to provide elegant solutions for various problems, otherwise considered as non-trivial~\cite{WillThesis};
-one of the main applications of \miniKanren for now lies is the area of \emph{relational interpreters}~--- the interpreters, which (for a given language)
-are capable of providing programs, delivering specified results~\cite{Untagged}.
+\textbf{\miniKanren has proven to be a useful tool to provide elegant solutions for various problems, otherwise considered as
+non-trivial~\cite{WillThesis};one of the main applications of \miniKanren for now lies is the area of
+\emph{relational interpreters}~--- the interpreters, which (for a given language) are capable of providing
+programs, delivering specified results~\cite{Untagged}.}
 
-Despite being quite simple and easy to use by the design, in implementation \miniKanren introduces some subtleties. Under the hood, \miniKanren 
+\textbf{Despite being quite simple and easy to use by the design, in implementation \miniKanren introduces some subtleties.} Under the hood, \miniKanren 
 uses a complete interleaving search~\cite{Search}. This search is guaranteed to find all existing solutions; however, it can diverge, when no 
 solution exists. In reality, this amounts to a divergence in a number of important cases~--- for example, when a program is asked to 
 return \emph{all} existing solutions, or when the number of requested solutions exceeds the number of existing ones. Often, for a 

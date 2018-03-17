@@ -1,4 +1,4 @@
-\section{Search Improvement}
+\section{The Search Improvement}
 \label{improvement}
 
 As we've seen in the previous section, the non-commutativity of conjunction is one of the reasons for
@@ -8,7 +8,7 @@ beneficial in all cases. Thus, we can make the following observations:
 
 \begin{itemize}
 \item the conjunction to change has to be properly identified;
-\item the order of conjuncts has to be a subject of a \emph{dynamic} choice.
+\item the order of conjunct evaluation has to be a subject of a \emph{dynamic} choice.
 \end{itemize}
 
 Our improvement of the search is based on the idea of switching the order of conjuncts only when
@@ -26,6 +26,20 @@ theory, there is no hope to find a \emph{precise} computable test, which constit
 sufficient condition of divergence. However, in our case a sufficient condition is sufficient. Indeed,  
 a sufficient condition identifies a case, when the search, being continued, will lead to an incompleteness 
 (since a divergence in our semantics always means incompleteness). Thus, it is no harm to try some other way. 
+
+Another important question is the discipline of conjunct reordering. Indeed, simply switching any two operands
+of, for example, \mbox{$(g_1\wedge g_2)\wedge g_3$}, would not allow us to try \mbox{$(g_1\wedge g_3)\wedge g_2$}.
+Thus, we have to flatten each ``cluster'' of nested conjunctions into a list of conjuncts\mbox{$\bigwedge g_i$}, 
+where none of the goals $g_i$ is a conjunction. Then, it may seem at the first glance, that the number of orderings to try 
+is exponential on the number of conjuncts; we are going to show, that, fortunately, this is not the case, and
+a quadratic number of orders is suffucient.
+
+In the rest of the section we address all these issues in details: first, we formally present the divergence
+criterion and prove the necessity property; then, we describe an efficient reordering discipline. Finally, we present a
+modified version of the semantics with incorporated divergence test and reordering. This semantics can be
+considered as a modified version of the search, and we prove, that this modification is a proper improvement.
+
+\subsection{The Divergence Test}
 
 Our divergence test is based on the following notion:
 
@@ -161,11 +175,7 @@ $$
 \noindent which contradicts the theorem condition.
 \end{proof}
 
-An efficient reordering of the conjuncts also requires a special treatment. First, we have to represent immediately nested conjunctions in a 
-uniform way: indeed, simply switching any two operands of, for example, \mbox{$(g_1\wedge g_2)\wedge g_3$}, would not 
-allow us to try \mbox{$(g_1\wedge g_3)\wedge g_2$}. Thus, we have to flatten each ``cluster'' of nested conjunctions into a list of conjuncts\mbox{$\bigwedge g_i$}, 
-where none of the goals $g_i$ is a conjunction. Then, it may seem at the first glance, that the number of orderings to try 
-is exponential on the number of conjuncts; we are going to show, that, fortunately, this is not the case. 
+\subsection{Conjuncts Reordering}
 
 Indeed, consider a diverging conjunction \mbox{$g_1\wedge g_2\wedge g_3$}, and assume, that \mbox{$g_1\wedge g_2$} converges. 
 Does it make any sense to switch the first two conjuncts? Obviously, \mbox{$g_2\wedge g_1$} either diverges, or converges with the same 
@@ -176,7 +186,7 @@ any permutations inside $\omega$ is pointless.
 Next, suppose we already have a list of conjuncts \mbox{$\omega\dots g_1\dots g_2\dots$}, where $\omega$ is a converging prefix, and
 $g_1$ and $g_2$~--- two goals, which, being placed immediately after $\omega$, converge (if there are no such
 goals, the whole list, obviously, diverges). Do we need to try both cases ($g_1$ or $g_2$ immediately after $\omega$)? 
-It is rather easy to see, that \mbox{$\omega g_1$} delivers no less information, that \mbox{$\omega$}; since
+It is rather easy to see, that \mbox{$\omega g_1$} delivers no less information, than \mbox{$\omega$}; since
 $g_2$ converges immediately after $\omega$, it will converge after \mbox{$\omega g_1$}. Thus, we may apply a greedy approach: each
 time we have a converging prefix of conjuncts (possibly empty), and some tail. We try to put each conjunct from the tail 
 immediately after the prefix. If we find a converging conjunct, we attach it to the prefix and continue; if no, then the list of 
