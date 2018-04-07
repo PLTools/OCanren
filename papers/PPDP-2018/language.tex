@@ -93,7 +93,7 @@ of some relational definitions.
 
 Note, we define here a language with first-order relations; in particular, we do not allow partial application. As we see later, our approach critically depends
 on recursive call identification, which is a trivial task in the first-order case. Some existing frameworks for relational programming~\cite{OCanren,RelConversion}
-do not impose such a limitation; extending our approach for the higher-order case is a subject of future research.
+do not impose such a limitation; extending our approach for a higher-order case is a subject of future research.
 
 
 We describe the semantics of our language using a conventional big-step style inference system. First, we choose an infinite
@@ -136,8 +136,6 @@ result, we obtain a (possibly empty) set of answers. Each answer consists of a n
 allocated semantic variables (note, in the original miniKanren a goal can produce the same answer multiple number of times, but this property is not important
 in our case).
 
-\FloatBarrier
-
 The inference rules themselves are shown on Fig.~\ref{semantics}. The first two rules handle two possible outcomes of the unification. Note, we use here the most 
 general unifier ($mgu$) of two semantic terms; we assume ``occurs check'' to be incorporated in the unification algorithm. Since the unification goal is built of 
 syntactic terms, we have to interpret them first (by applying $\iota$), and take into account current substitution $\sigma$.
@@ -151,8 +149,10 @@ results are eventually combined. Note, the evaluation of both conjuncts is perfo
 \emph{same} bounding context. The substitution and the set of allocated semantic variables, on the other hand, are inherited from left to right since the evaluation 
 of the right conjunct has to be performed in the context of the results, provided by the left one. 
 
-The rule for the \lstinline|fresh| construct allocates arbitrary semantic variable, not taken before, and evaluates the unique subgoal in the updated interpretation, which
+The rule for the \lstinline|fresh| construct allocates arbitrary semantic variable, not taken before, and evaluates the single subgoal in the updated interpretation, which
 associates the syntactic variable, bound in this \lstinline|fresh|, with taken semantic one.
+
+\FloatBarrier
 
 Finally, the rule for relational definition invocation describes its evaluation in a few steps. First, the body of the definition is found, using the environment $\Gamma$. 
 Then, the terms $t_i$, specified as the arguments of the invocation, are converted into their semantic forms $v_i$ using current interpretation $\iota$ and current 
@@ -250,11 +250,11 @@ We illustrate the evaluation, determined by this semantics, by a canonical examp
 \end{lstlisting}
 
 For the simplicity we omitted the arities of constructors \lstinline|A|, \lstinline|Cons|, \lstinline|Nil| and relational symbol \lstinline|append$^o$|. Since we require the 
-top-level goal to be closed, from now on we conventionalize the use of the top-level \lstinline|fresh| construct as a binder for the variables, whose values we are 
+top-level goal to be closed, from now on we conventionalize the use of a top-level \lstinline|fresh| construct as a binder for the variables, whose values we are 
 interested in (in this particular example $q$).
 
 The evaluation is illustrated on Fig.~\ref{appendo_eval}; here we use numbers in bold font to denote semantic variables. For the sake of brevity and in order to
-make the illustration observable we do not show the binding environment for relational definitions and as a rule denote by ellipses the inherited components
+make the illustration observable we do not show the binding environment for relational definitions and as a rule denote by ellipses all inherited components
 of derivation tree (the components in the left side of ``$\Rightarrow$'' are inherited top-down, in the right side~--- bottom-up).
 
 \FloatBarrier
@@ -262,7 +262,7 @@ We start from the top-level goal and first apply the rule $\rulename{Fresh}$ (se
 we did not use any semantic variables yet, we allocate the first one ($\sv{0}$), update the interpretation and the set of used semantic variables and continue. The next construct
 is the call for \lstinline|append$^o$|, so we unfold its definition, replace the interpretation of syntactic variables by the bindings for the formal parameters, and 
 evaluate the body w.r.t. the empty substitution (which has no difference from the current one yet). The body of \lstinline|append$^o$| definition is a disjunction, so we
-take its left constituent, which is a conjunction, so we in turn take its left constituent, which is a unification \lstinline|$x\;$ === $\;$Nil|. This unification clearly fails, as
+take its left constituent, which is a conjunction, so we in turn take its left constituent, which is a unification \mbox{\lstinline|$x\;$ === $\;$Nil|}. This unification clearly fails, as
 current interpretation binds $x$ to \lstinline|Cons (A, Nil)|. This completes the whole branch for the first disjunct of \lstinline|append$^o$| with empty result.
 
 The evaluation of the second disjunct is shown on Fig.~\ref{appendo_eval_b}. Its top-level construct is \lstinline|fresh ($h\;t\;ty$)|, so we allocate three successive 
@@ -279,7 +279,7 @@ Now \mbox{\lstinline|$x\;$ === $\;$Nil|} succeeds, as $x$ is already bound to \l
 as well, providing a new substitution \mbox{$[\bnd{\sv{3}}{\lstinline|Nil|}]$}. We omit the detailed evaluation of the second top-level disjunct of \lstinline|append$^o$| since
 it contains a unification \lstinline|$x\;$ === $\;$Cons (_, _)| which, clearly, does not contribute anything.
 
-Finally, we return from the recursive call to \lstinline|append$^o$| and take the composition of substitutions~--- one before the call, and another after~--- which
+Finally, we return from the recursive call to \lstinline|append$^o$| and take the composition of substitutions~--- the one before the call, and another after~--- which
 gives us \mbox{$[\bnd{\sv{1}}{\lstinline|A|},\,\bnd{\sv{2}}{\lstinline|Nil|},\,\bnd{\sv{3}}{\lstinline|Nil|}]$} (see Fig.~\ref{appendo_eval_d}). We only need now to 
 interpret the last conjunct of the second disjunct of \lstinline|append$^o$|~--- \mbox{\lstinline|$xy\;$ === $\;$Cons ($h$, $\;ty$)|}~--- which gives us the
 final substitution \mbox{$[\bnd{\sv{1}}{\lstinline|A|},\,\bnd{\sv{2}}{\lstinline|Nil|},\,\bnd{\sv{3}}{\lstinline|Nil|},\,\bnd{\sv{0}}{\lstinline|Cons (A, Nil)|}]$}. Now, we

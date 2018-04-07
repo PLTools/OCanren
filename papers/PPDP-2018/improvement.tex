@@ -1,10 +1,10 @@
 \section{The Search Improvement}
 \label{improvement}
 
-As we've seen in the previous section, the non-commutativity of conjunction is one of the reasons for
-refutational incompleteness (the other one is recursion). Switching arguments of a certain conjunction
-can sometimes improve the results; there is, however, no certain static order,
-beneficial in all cases. Thus, we can make the following observations:
+As we've seen in the previous section, the non-commutativity of conjunction in the presence of resursion
+is one of the reasons for refutational incompleteness. Switching arguments of a certain conjunction
+can sometimes improve the results; there is, however, no certain static order, beneficial in all cases.
+Thus, we can make the following observations:
 
 \begin{itemize}
 \item the conjunction to change has to be properly identified;
@@ -50,7 +50,7 @@ $\overline{a^{\phantom{x}}_i}\succeq\overline{b^{\phantom{x}}_i}$), if there is 
 \end{definition}
 
 The idea of the divergence test is rather simple: it identifies a recursive call with more general arguments 
-than (some) enclosing one. To state it formally and prove using the semantics from section~\ref{language}, we need several definitions and lemmas.
+than (some) enclosing one. To state it formally and prove it using the semantics from section~\ref{language}, we need several definitions and lemmas.
 
 \begin{definition}
 \normalfont
@@ -77,7 +77,7 @@ Note, the root semantic statement \mbox{$\otrans{\Gamma,\bot}{(\epsilon,\,\empty
  For a well-formed semantic statement, every statement in its derivation tree is also well-formed.
 \end{lemma}
 
-The proof is by induction on derivation tree. Note, we need to generalize the statement of the lemma, adding the well-formedness
+The proof is by induction on the derivation tree. Note, we need to generalize the statement of the lemma, adding the well-formedness
 condition w.r.t. $\iota$, $\sigma_r$, $\delta_r$ for any $(\sigma_r, \delta_r) \in S$.
 
 The next lemma ensures, that any substitution in the RHS of a semantic statement is a correct refinement of that in the LHS:
@@ -95,11 +95,11 @@ $$
   \begin{enumerate}
     \item \mbox{$\sigma_r = \sigma\circ\Delta$};
     \item any semantic variable \mbox{$v\in dom(\Delta)\cup ran(\Delta)$} either is observable w.r.t. $\iota$ and $\sigma$,
- or does not belong to $\delta$ (where $ran(\Delta)=\bigcup_{v\in dom(\Delta)}FV(\Delta(v))$).
+ or does not belong to $\delta$ (where \mbox{$ran(\Delta)=\bigcup_{v\in dom(\Delta)}FV(\Delta(v))$}).
   \end{enumerate}   
 \end{lemma}
 
-The proof is by induction on derivation tree; we as well need to generalize the statement of the lemma, adding the condition, that the 
+The proof is by induction on the derivation tree; we as well need to generalize the statement of the lemma, adding the condition, that the 
 set of all allocated semantic variables $\delta$ can only grow during the evaluation.
 
 The final lemma formalizes the intuitive considerations, that the evaluation for a more general state cannot fail, if the evaluation 
@@ -131,7 +131,7 @@ such that there exists a substitution $\tau_r$, such that for any syntactic vari
 In the cases of $\textsc{Fresh}$ and $\textsc{Invoke}$ rules, some semantic variables can become non-observable, and we need to define a substitution $\tau_r$ 
 separately for these ``forgotten'' variables and those, which remain observable, using Lemma~\ref{two}.
 
-This is enough to prove the idea behind suggested divergence test.
+Now we are ready to claim and prove the divergence criterion.
 
 \begin{theorem}[Divergence criterion]
 \normalfont
@@ -166,16 +166,19 @@ $$
 \otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{r^k\,t^\prime_1\dots t^\prime_k}{S^\prime}
 $$
 
-\noindent has greater or equal height than that for
+\noindent has greater or equal height, than that for
 
 $$
 \otrans{\Gamma,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{S}
 $$ 
 
 \noindent which contradicts the theorem condition.
+
 \end{proof}
 
-Theorem justifies that, indeed, our test constitutes a sufficient condition for divergence: if the execution reach the relation call with more general arguments than those of the previous one, than there is no derivation in our semantics for this execution, so it is not terminating.
+The theorem justifies that, indeed, our test constitutes a sufficient condition for a divergence: if the execution
+reaches a relation call with more general arguments, than those of some enclosing one, then it has no derivation
+in our semantics, and, thus, it is not terminating.
 
 \subsection{Conjuncts Reordering}
 

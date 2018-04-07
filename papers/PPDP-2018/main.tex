@@ -156,6 +156,8 @@ not understand the example of Binary arithmetic as very little code is
 shown.
 \end{comment}
 
+\sloppy
+
 \begin{document}
 
 \title{Improving Refutational Completeness\\
@@ -190,7 +192,7 @@ of Relational Search via Divergence Test}
 \begin{abstract}
 We describe a search optimization technique for implementation of relational programming language
 miniKanren which makes more queries to converge. Our technique is based on a certain 
-divergence criterion, which we use to force a dynamic reordering of subgoals. We present a formal semantics of
+divergence criterion, which we use to trigger a dynamic reordering of subgoals. We present a formal semantics of
 miniKanren-like language, and prove, that our optimization does not compromise already
 converging programs, thus being a proper improvement. We also present the prototype
 implementation of improved search and demonstrate its application for a number of

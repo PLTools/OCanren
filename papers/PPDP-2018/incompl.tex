@@ -2,8 +2,8 @@
 \label{incompleteness}
 
 The language, defined in the previous section, is expected to allow defining computable relations in a 
-very concise and declarative form. In particular, it is expected (and desirable), that a relational 
-specification should exhibit the same behavior, regardless the order of conjunction/disjunction 
+very concise and declarative form. In particular, it is expected from a relational 
+specification to preserve its behavior regardless the order of conjunction/disjunction 
 constituents. Regretfully, in general this is not true, and one of the most important
 manifestations of this deficiency is \emph{refutational incompleteness}.  
 
@@ -32,7 +32,7 @@ and \lstinline|Nil| with $q$ (successfully), which gives us the first (expected)
 
   \begin{itemize} 
      \item in the first one we unify $p$ with \lstinline|Cons ($h$, $t$)| (successfully);
-     \item in the second we encounter a recursive call \lstinline|append$^o$ $t$ $q$ Nil|; since its arguments are merely renamings of the enclosing one, we repeat from the top and never stop.
+     \item in the second we encounter a recursive call \lstinline|append$^o$ $t$ $q$ Nil|; since its arguments are merely the renamings of the enclosing one, we repeat from the top and never stop.
   \end{itemize} 
 \end{itemize}
 
