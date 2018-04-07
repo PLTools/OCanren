@@ -27,7 +27,7 @@ sufficient condition of divergence. However, in our case a sufficient condition 
 a sufficient condition identifies a case, when the search, being continued, will lead to an incompleteness 
 (since a divergence in our semantics always means incompleteness). Thus, it is no harm to try some other way. 
 
-Another important question is the discipline of conjunct reordering. Indeed, simply switching any two operands
+Another important question is the discipline of conjuncts reordering. Indeed, simply switching any two operands
 of, for example, \mbox{$(g_1\wedge g_2)\wedge g_3$}, would not allow us to try \mbox{$(g_1\wedge g_3)\wedge g_2$}.
 Thus, we have to flatten each ``cluster'' of nested conjunctions into a list of conjuncts\mbox{$\bigwedge g_i$}, 
 where none of the goals $g_i$ is a conjunction. Then, it may seem at the first glance, that the number of orderings to try 
@@ -121,8 +121,8 @@ $$
 
 \noindent be two well-formed semantic statements, and let $\tau$ be a substitution, such that 
 for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime = \iota(x) \sigma \tau$}. Then the 
-derivation tree of the first statement has greater or equal height, then the derivation 
-tree of the second statement.
+derivation tree for the first statement has greater or equal height, then the derivation 
+tree for the second statement.
 \end{lemma}
 
 The proof is by induction on the derivation tree for the second statement. We need to generalize the statement of the lemma, adding the requirement, that 
@@ -133,7 +133,9 @@ separately for these ``forgotten'' variables and those, which remain observable,
 
 Now we are ready to claim and prove the divergence criterion.
 
+\setcounter{theorem}{0}
 \begin{theorem}[Divergence criterion]
+\label{criterion}
 \normalfont
 For any well-formed semantic statement 
 
@@ -182,19 +184,46 @@ in our semantics, and, thus, it is not terminating.
 
 \subsection{Conjuncts Reordering}
 
-Indeed, consider a diverging conjunction \mbox{$g_1\wedge g_2\wedge g_3$}, and assume, that \mbox{$g_1\wedge g_2$} converges. 
-Does it make any sense to switch the first two conjuncts? Obviously, \mbox{$g_2\wedge g_1$} either diverges, or converges with the same 
-result as \mbox{$g_1\wedge g_2$} (up to the renaming of semantic variables). Anyway, switching the first two conjuncts is
-unnecessary. This observation can be easily generalized: if we have a converging prefix $\omega$ in a list of conjuncts $\omega\rho$, making
-any permutations inside $\omega$ is pointless.
+In this section we consider the discipline of conjuncts reordering. Recall, we flatten all nested conjunctions in 
+clusters $\wedge g_i$, where none of $g_i$ is a conjunction. To evaluate a cluster, we have to evaluate
+its conjuncts one after another, threading the results, starting from the initial substitution. Each time we
+evaluate a conjunct, we can have three possible outcomes:
 
-Next, suppose we already have a list of conjuncts \mbox{$\omega\dots g_1\dots g_2\dots$}, where $\omega$ is a converging prefix, and
-$g_1$ and $g_2$~--- two goals, which, being placed immediately after $\omega$, converge (if there are no such
-goals, the whole list, obviously, diverges). Do we need to try both cases ($g_1$ or $g_2$ immediately after $\omega$)? 
-It is rather easy to see, that \mbox{$\omega g_1$} delivers no less information, than \mbox{$\omega$}; since
-$g_2$ converges immediately after $\omega$, it will converge after \mbox{$\omega g_1$}. Thus, we may apply a greedy approach: each
-time we have a converging prefix of conjuncts (possibly empty), and some tail. We try to put each conjunct from the tail 
-immediately after the prefix. If we find a converging conjunct, we attach it to the prefix and continue; if no, then the list of 
+\begin{itemize}
+\item The evaluation converges with some result. In this case we can proceed with the next conjunct.
+\item The evaluation diverges undetected. In this case nothing can be done.
+\item A divergence is detected by the test. This is the case when the reordering takes place.
+\end{itemize}
+
+In a general case, for each cluster we can have some converging prefix $\omega$ we've managed to evaluate so far (initially empty),
+and the rest of the conjuncts $g_i$. Since $\omega$ converges, we have some set of substitutions $S_\omega$, which corresponds to the
+result of $\omega$ evaluation.
+
+Suppose none of $g_i$ converges on $S_\omega$ (i.e. there is atleast one substitution in $S_\omega$, on which
+each $g_i$ diverges). We claim, that reordering conjuncts inside $\omega$ would not help. Indeed, with any other order
+of conjuncts $\omega$ either diverges, or converges with the same result (up to the renaming of semantic variables). Thus,
+making any permutations inside $\omega$ is superfluous.
+
+Next, suppose we have two different goals $g_1$ and $g_2$, which both converge on $S_\omega$ (i.e. both converge on each
+substitution in $S_\omega$). Do we need to try both cases ($g_1$ and $g_2$) to extend the converging prefix?
+It is rather easy to see, that if, say, $g_2$ is converges on $S_\omega$, it will as well converge on the result of evaluation
+of $g_1$ on $S_\omega$. In other words, to extend a converging prefix we can choose arbitrary conjunct, which converges immediately
+after this prefix, and this choice will never have to be undone.
+
+Now we can specify the reordering discipline. We attach two natural numbers $i$ and $p$ to each cluster; initially $i=0$, $p=1$.
+Informally speaking, $i$ corresponds to the length of the converging prefix, while $p\ge i$~--- to the number of the conjunct ouside the prefix
+to try next. Given current cluster $\wedge g_1\dots g_k$, current set $S$, and some $i$ and $p$, we proceed as follows:
+
+\begin{enumerate}
+\item\label{reorder:top} If $i>k$, then the whole cluster converges, and $S$~--- the result of its evaluation.
+\item Otherwise, we try to evaluate $g_i$ on $S$. If the evaluation succeeds with the result $S^\prime$, then we increment $i$, assume $p=i+1$ and
+$S=S^\prime$, and continue from step~\ref{reorder:top}.
+\item If a divergence is detected, and $p\le k$, then we switch $g_i$ with $g_p$, increment $p$, and continue from step~\ref{reorder:top}.
+\item Otherwise, we give up and rollback to the enclosing cluster (if any).
+\end{enumerate}
+
+Thus, we apply a greedy approach: each time we have a converging prefix of conjuncts (possibly empty), and some tail. We try to put each conjunct
+from the tail immediately after the prefix. If we find a converging conjunct, we attach it to the prefix and continue; if no, then the list of 
 conjuncts diverges. Thus, we can find a converging order (if any) in a quadratic time.
 
 \subsection{Improved Search Sematics}
