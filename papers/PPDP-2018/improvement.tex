@@ -208,7 +208,7 @@ Next, suppose we have two different goals $g_1$ and $g_2$, which both converge o
 substitution in $S_\omega$). Do we need to try both cases ($g_1$ and $g_2$) to extend the converging prefix?
 It is rather easy to see, that if, say, $g_2$ is converges on $S_\omega$, it will as well converge on the result of evaluation
 of $g_1$ on $S_\omega$. In other words, to extend a converging prefix we can choose arbitrary conjunct, which converges immediately
-after this prefix, and this choice will never have to be undone.
+after this prefix, and this choice will never has to be undone.
 
 Now we can specify the reordering discipline. We attach two natural numbers $i$ and $p$ to each cluster; initially $i=0$, $p=1$.
 Informally speaking, $i$ corresponds to the length of the converging prefix, while $p\ge i$~--- to the number of the conjunct ouside the prefix
@@ -228,117 +228,128 @@ conjuncts diverges. Thus, we can find a converging order (if any) in a quadratic
 
 \subsection{Improved Search Sematics}
 
-\newcommand{\extSearchRule}[8] {
-  #1, #2, #3, #4 \vdash (#5, #6) \xRightarrow{#7}_{e} #8}
+We express the improved search in terms of a big-step operational semantics. This semantics is an extension of the initial one, presented in Section~\ref{language}, which
+incorporates all the components, considered in the previous subsections: the divergence test, conjunct clustering and reordering.
 
+First, we extend the environment, adding three additional components:
+
+See Fig.~\ref{improved-semantics-invoke}, Fig.~\ref{improved-semantics-normal}, Fig.~\ref{improved-semantics-divergence-prop} and Fig.~\ref{improved-semantics-reordering}.
+
+
+\setarrow{\xRightarrow}
+\setsubarrow{_e}
 \begin{figure*}
 \begin{minipage}[t]{\textwidth}
 \small
-
-      \[ \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{r^k t_1 \dots t_k}{ \bot },  \quad v_i = t_i \iota \sigma, \quad (v_1, \dots, v_k) \succeq h(r^k)
-          \ruleno{ExtInvokeFail} \]
-          
-      \[ \frac{ \extSearchRule{\Gamma}{\epsilon[x_1 \leftarrow v_1, \dots, x_k \leftarrow v_k]}{h[r^k \leftarrow (v_1, \dots, v_k)]}{0}{\epsilon}{\delta}{g}{ \{(\sigma_1, \delta_1), \dots, (\sigma_n, \delta_n)\} } }
-               { \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{r^k t_1 \dots t_k}{ \{ (\sigma \sigma_1, \delta_1), \dots, (\sigma \sigma_n, \delta_n) \} }},  \]
-      \[            v_i = t_i \iota \sigma, \quad \Gamma(r^k) = \lambda x_1 \dots x_k. g, \quad (v_1, \dots, v_k) \nsucceq h(r^k) 
-         \ruleno{ExtInvokeSuccess}\]
+\[
+\cotrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{t_1\equiv t_2}{\emptyset}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \bot}\ruleno{UnifyFail$^+$}
+\]
+\[
+\cotrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{t_1\equiv t_2}{(\sigma\circ\Delta,\,\delta)}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \Delta\ne\bot}\ruleno{UnifySuccess$^+$}
+\]
+\[
+\trule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1}{S_1};\quad
+       \otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_2}{S_2}
+      }
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1\vee g_2}{S_1\cup S_2}}\ruleno{Disj$^+$}
+\]
+\[
+\crule{\otrans{\Gamma,\,\iota[x\gets\alpha],\,h}{(\sigma,\,\delta\cup\{\alpha\})}{g}{\mathscr R}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{\lstinline|fresh($x$) $\;g$|}{\mathscr R}}
+      {\alpha\in\meta{W}\setminus\delta}\ruleno{Fresh$^+$}
+\]
 \end{minipage}      
-\caption{Big-step operational semantics for improved search (relation invocation rules)}
-\label{improved-semantics-invoke}
-\end{figure*}
-
-\begin{figure*}
-\begin{minipage}[t]{\textwidth}
-\small
-
-      \[ \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{t_1 \equiv t_2}{\emptyset}, \quad mgu(t_1 \iota \sigma, t_2 \iota \sigma) = \bot
-           \ruleno{ExtUnifyFail} \]
-       
-       \[ \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{t_1 \equiv t_2}{(\sigma \Delta, \delta)}, \quad mgu(t_1 \iota \sigma, t_2 \iota \sigma) = \Delta \ne \bot
-           \ruleno{ExtUnifySuccess} \]
-       
-       \[ \frac{ \begin{array}{c}
-                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{S_1} \\
-                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_2}{S_2}
-                     \end{array} }
-                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \vee g_2}{S_1 \uplus S_2}}
-           \ruleno{ExtDisj} \]
-         
-       \[ \frac{ \begin{array}{c}
-                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{ \{(\sigma_1, \delta_1), \dots, (\sigma_n, \delta_n)\} } \\
-                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma_i}{\delta_i}{g_2}{S_i}
-                     \end{array} }
-                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \wedge g_2}{\uplus_i S_i}}
-           \ruleno{ExtConj}  \]
-           
-        \[ \frac{ \extSearchRule{\Gamma}{\iota[x \leftarrow \alpha]}{h}{0}{\sigma}{\delta \cup \alpha}{g}{ S } }
-               { \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{\lstinline|fresh ($x$) \ $g$|}{S}},
-                 \alpha \not\in \delta
-            \ruleno{ExtFresh} \]
-\end{minipage}      
-\caption{Big-step operational semantics for improved search (normal evaluation rules)}
+\caption{Improved search: inherited rules}
 \label{improved-semantics-normal}
 \end{figure*}
 
 \begin{figure*}
 \begin{minipage}[t]{\textwidth}
 \small
-       \[ \frac{ \begin{array}{c}
-                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{\bot}
-                     \end{array} }
-                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \vee g_2}{\bot}}
-           \ruleno{DivDisjLeft} \]
-        
-        \[ \frac{ \begin{array}{c}
-                       \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_2}{\bot}
-                     \end{array} }
-                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \vee g_2}{\bot}}
-           \ruleno{DivDisjRight} \]
-         
-       \[ \frac{ \begin{array}{c}
-                     \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{ \{(\sigma_1, \delta_1), \dots, (\sigma_n, \delta_n)\} } \\
-                     \exists i: \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma_i}{\delta_i}{g_2}{\bot}
-                     \end{array} }
-                  {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \wedge g_2}{\bot}} 
-           \ruleno{DivConjRight} \]
-           
-        \[ \frac{ \extSearchRule{\Gamma}{\iota[x \leftarrow \alpha]}{h}{0}{\sigma}{\delta \cup \alpha}{g}{ \bot } }
-               { \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{\lstinline|fresh ($x$) \ $g$|}{\bot}},
-                 \alpha \not\in \delta
-            \ruleno{DivFresh} \]
-        
-        \[ \frac{ \extSearchRule{\Gamma}{\epsilon[x_1 \leftarrow v_1, \dots, x_k \leftarrow v_k]}{h[r^k \leftarrow (v_1, \dots, v_k)]}{0}{\epsilon}{\delta}{g}{ \bot } }
-               { \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{r^k t_1 \dots t_k}{ \bot }},  \]
-      \[            v_i = t_i \iota \sigma, \quad \Gamma(r^k) = \lambda x_1 \dots x_k. g, \quad (v_1, \dots, v_k) \nsucceq h(r^k) 
-         \ruleno{DivInvoke}\]
+\[
+   \cotrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\bot}{v_i = t_i \iota \sigma, \; (v_1, \dots, v_k) \succeq h\,r^k}
+   \ruleno{InvokeDiv$^+$}
+\]
+
+\[
+\crule{\otrans{\Gamma,\,\epsilon[x_i\gets v_i],\,h[r^k\gets(v_1, \dots, v_k)]}{(\epsilon,\,\delta)}{g}{\{(\sigma_i,\,\delta_i)\}}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\{(\sigma\circ\sigma_i, \delta_i)\}}}
+      {v_i=t_i\iota\sigma,\;\Gamma\,r^k=\lambda x_1 \dots x_k. g,\; (v_1, \dots, v_k) \nsucceq h\,r^k}
+      \ruleno{Invoke$^+$}
+\]
 \end{minipage}      
-\caption{Big-step operational semantics for improved search (divergence propagation)}
+\caption{Improved search: invocation and divergence detection}
+\label{improved-semantics-invoke}
+\end{figure*}
+
+\begin{figure*}
+\begin{minipage}[t]{\textwidth}
+\small
+\[
+\trule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1}{\bot}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1\vee g_2}{\bot}}\ruleno{DivDisjLeft$^+$}
+\]
+\[
+\trule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_2}{\bot}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1\vee g_2}{\bot}}\ruleno{DivDisjRight$^+$}
+\]
+\[
+\crule{\otrans{\Gamma,\,\epsilon[x_i\gets v_i],\,h[r^k\gets(v_1, \dots, v_k)]}{(\epsilon,\,\delta)}{g}{\bot}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\bot}}
+      {v_i=t_i\iota\sigma,\;\Gamma\,r^k=\lambda x_1 \dots x_k. g,\; (v_1, \dots, v_k) \nsucceq h\,r^k}
+      \ruleno{DivInvoke$^+$}
+\]      
+\end{minipage}      
+\caption{Improved search: divergence propagation}
 \label{improved-semantics-divergence-prop}
 \end{figure*}
 
 \begin{figure*}
 \begin{minipage}[t]{\textwidth}
 \small
-       \[ \frac{ \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{ \bot } }
-             {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \wedge g_2}{\bot} },
-        \quad move(p, g_1 \wedge g_2) = \bot 
-        \ruleno{DivConjRight} \]
-                
-    \[ \frac{ \begin{array}{c}
-                    \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g_1}{ \bot } \\
-                    \extSearchRule{\Gamma}{\iota}{h}{p + 1}{\sigma}{\delta}{g'}{r}
-                  \end{array} }
-                {  \extSearchRule{\Gamma}{\iota}{h}{p}{\sigma}{\delta}{g_1 \wedge g_2}{r}},
-        \quad move(p, g_1 \wedge g_2) = g' \ne \bot
-        \ruleno{Reorder} \]
+\[
+\trule{\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,1}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\mathscr R}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\mathscr R}}
+      \ruleno{ClusterStart$^+$}
+\]
+\vskip3mm
+\[
+\crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\{(\sigma_j,\,\delta_j)\}};\quad
+       \forall j\;:\;\otrans{\Gamma,\,\iota,\,h}{(\sigma_j,\,\delta_j)}{\bigwedge\limits_{i\ne p}g_i}{S_j}
+      }
+      {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\bigcup S_j}}
+      {1 \le p \le n}
+\ruleno{ClusterStep$^+$}
+\]
+\vskip3mm
+\[
+\crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\{(\sigma_j,\,\delta_j)\}};\quad
+       \exists j\;:\;\otrans{\Gamma,\,\iota,\,h}{(\sigma_j,\,\delta_j)}{\bigwedge\limits_{i\ne p}g_i}{\bot}
+      }
+      {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\bot}}
+      {1 \le p \le n}
+\ruleno{ClusterDiv$^+$}
+\]
+\vskip3mm
+\[
+\crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\bot};\quad
+       {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p+1}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\mathscr R}}
+      }
+      {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\mathscr R}}
+      {1 \le p \le n}
+\ruleno{ClusterNext$^+$}
+\]
+\vskip3mm
+\[
+\cotrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\bot}{p>n}
+\ruleno{ClusterStop$^+$}
+\]
 \end{minipage}      
-\caption{Big-step operational semantics for improved search (conjuncts reordering)}
+\caption{Improved search: conjuncts reordering}
 \label{improved-semantics-reordering}
 \end{figure*}
 
 
-
-See Fig.~\ref{improved-semantics-invoke}, Fig.~\ref{improved-semantics-normal}, Fig.~\ref{improved-semantics-divergence-prop} and Fig.~\ref{improved-semantics-reordering}.
 
 \begin{comment}
 

@@ -2,6 +2,8 @@
 
 \usepackage{booktabs} % For formal tables
 \usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
 \usepackage{mathtools}
 \usepackage{multirow}
 \usepackage{listings}
@@ -26,11 +28,17 @@
 \def\transarrow{\xrightarrow}
 \newcommand{\setarrow}[1]{\def\transarrow{#1}}
 
+\def\padding{\phantom{X}}
+\newcommand{\setpadding}[1]{\def\padding{#1}}
+
+\def\subarrow{}
+\newcommand{\setsubarrow}[1]{\def\subarrow{#1}}
+
 \newcommand{\trule}[2]{\frac{#1}{#2}}
 \newcommand{\crule}[3]{\frac{#1}{#2},\;{#3}}
 \newcommand{\withenv}[2]{{#1}\vdash{#2}}
-\newcommand{\trans}[3]{{#1}\transarrow{#2}{#3}}
-\newcommand{\ctrans}[4]{{#1}\transarrow{#2}{#3},\;{#4}}
+\newcommand{\trans}[3]{{#1}\transarrow{\padding#2\padding}\subarrow{#3}}
+\newcommand{\ctrans}[4]{{#1}\transarrow{\padding#2\padding}\subarrow{#3},\;{#4}}
 \newcommand{\llang}[1]{\mbox{\lstinline[mathescape]|#1|}}
 \newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
 \newcommand{\inbr}[1]{\left<{#1}\right>}
