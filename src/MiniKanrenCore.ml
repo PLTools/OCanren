@@ -345,14 +345,15 @@ module Term :
      *)
     val fold : fvar:('a -> Var.t -> 'a) -> fval:('a -> value -> 'a) -> init:'a -> t -> 'a
 
-    exception Different_shape
+    exception Different_shape of int * int
 
     type label = L | R
 
     (* [fold ~fvar ~fval ~fvarval ~init x y] folds two OCaml's value extended with logic variables simultaneously;
      *   handles primitive types with the help of [fval] and logic variables with the help of [fvar];
      *   if it finds logic variable in one term but regular value in another term in same place, it calls [fk];
-     *   if two terms cannot be traversed simultaneously raises exception [Different_shape]
+     *   if two terms cannot be traversed simultaneously raises exception [Different_shape (tx, ty)],
+     *   where [tx] and [ty] are Ocaml tags of disparate values
      *)
     val fold2 :
       fvar:('a -> Var.t -> Var.t -> 'a) ->
@@ -482,7 +483,7 @@ module Term :
         fval init x
       end
 
-    exception Different_shape
+    exception Different_shape of int * int
 
     type label = L | R
 
@@ -505,45 +506,51 @@ module Term :
               else acc
             in
             inner 0 init
-          else raise Different_shape
+          else raise (Different_shape (tx, ty))
         end
       | true, false ->
         is_valid_tag_exn ty;
         let sx = Obj.size x in
-        if is_var tx sx x then fk init L (Obj.magic x) y else raise Different_shape
+        if is_var tx sx x then fk init L (Obj.magic x) y else raise (Different_shape (tx, ty))
       | false, true ->
         is_valid_tag_exn tx;
         let sy = Obj.size y in
-        if is_var ty sy y then fk init R (Obj.magic y) x else raise Different_shape
+        if is_var ty sy y then fk init R (Obj.magic y) x else raise (Different_shape (tx, ty))
       | false, false ->
         is_valid_tag_exn tx;
         is_valid_tag_exn ty;
         if tx = ty then
           fval init x y
-        else raise Different_shape
+        else raise (Different_shape (tx, ty))
 
-    let rec equal x = fold2 x ~init:true
-      ~fvar:(fun acc v u ->
-        acc &&
-        (Var.equal v u) &&
-        (List.length v.Var.constraints = List.length u.Var.constraints) &&
-        (List.for_all2 equal v.Var.constraints u.Var.constraints)
-      )
-      ~fval:(fun acc x y -> acc && (x = y))
-      ~fk:(fun _ _ _ _ -> false)
+    let rec equal x y =
+      try
+        fold2 x y ~init:true
+          ~fvar:(fun acc v u ->
+            acc &&
+            (Var.equal v u) &&
+            (List.length v.Var.constraints = List.length u.Var.constraints) &&
+            (List.for_all2 equal v.Var.constraints u.Var.constraints)
+          )
+          ~fval:(fun acc x y -> acc && (x = y))
+          ~fk:(fun _ _ _ _ -> false)
+      with Different_shape _ -> false
 
     let compare' = compare
 
-    let rec compare x = fold2 x ~init:0
-      ~fvar:(fun acc v u ->
-        if acc <> 0 then acc
-        else
-          let acc = Var.compare v u in
-          if acc <> 0 then acc
-          else List.fold_left2 (fun acc x y -> if acc <> 0 then acc else compare x y) 0 v.Var.constraints u.Var.constraints
-      )
-      ~fval:(fun acc x y -> if acc <> 0 then acc else (compare' x y))
-      ~fk:(fun _ _ _ _ -> -1)
+    let rec compare x y =
+      try
+        fold2 x y ~init:0
+          ~fvar:(fun acc v u ->
+            if acc <> 0 then acc
+            else
+              let acc = Var.compare v u in
+              if acc <> 0 then acc
+              else List.fold_left2 (fun acc x y -> if acc <> 0 then acc else compare x y) 0 v.Var.constraints u.Var.constraints
+          )
+          ~fval:(fun acc x y -> if acc <> 0 then acc else (compare' x y))
+          ~fk:(fun _ _ _ _ -> -1)
+      with Different_shape (tx, ty) -> compare' tx ty
 
     let rec hash x = fold x ~init:1
       ~fvar:(fun acc v -> Hashtbl.hash (Var.hash v, List.fold_left (fun acc x -> Hashtbl.hash (acc, hash x)) acc v.Var.constraints))
@@ -829,7 +836,7 @@ module Subst :
       try
         let x, y = Term.(repr x, repr y) in
         Some (helper x y ([], subst))
-      with Term.Different_shape | Unification_failed | Occurs_check -> None
+      with Term.Different_shape _ | Unification_failed | Occurs_check -> None
 
     let apply env subst x = Obj.magic @@
       map env subst (Term.repr x)
