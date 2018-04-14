@@ -182,7 +182,76 @@ The theorem justifies that, indeed, our test constitutes a sufficient condition 
 reaches a relation call with more general arguments, than those of some enclosing one, then it has no derivation
 in our semantics, and, thus, it is not terminating.
 
+\setarrow{\xRightarrow}
+\setsubarrow{_e}
+\begin{figure*}
+\begin{minipage}[t]{\textwidth}
+\small
+\[
+\cotrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{t_1\equiv t_2}{\emptyset}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \bot}\ruleno{UnifyFail$^+$}
+\]
+\[
+\cotrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{t_1\equiv t_2}{(\sigma\circ\Delta,\,\delta)}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \Delta\ne\bot}\ruleno{UnifySuccess$^+$}
+\]
+\[
+\trule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1}{S_1};\quad
+       \otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_2}{S_2}
+      }
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1\vee g_2}{S_1\cup S_2}}\ruleno{Disj$^+$}
+\]
+\[
+\crule{\otrans{\Gamma,\,\iota[x\gets\alpha],\,h}{(\sigma,\,\delta\cup\{\alpha\})}{g}{S^\dagger}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{\lstinline|fresh($x$) $\;g$|}{S^\dagger}}
+      {\alpha\in\meta{W}\setminus\delta}\ruleno{Fresh$^+$}
+\]
+\end{minipage}      
+\caption{Improved search: inherited rules}
+\label{improved-semantics-normal}
+\end{figure*}
+
+\begin{figure*}
+\begin{minipage}[t]{\textwidth}
+\small
+\[
+   \cotrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\dagger}{v_i = t_i \iota \sigma, \; (v_1, \dots, v_k) \succeq h\,r^k}
+   \ruleno{InvokeDiv$^+$}
+\]
+
+\[
+\crule{\otrans{\Gamma,\,\epsilon[x_i\gets v_i],\,h[r^k\gets(v_1, \dots, v_k)]}{(\epsilon,\,\delta)}{g}{\{(\sigma_i,\,\delta_i)\}}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\{(\sigma\circ\sigma_i, \delta_i)\}}}
+      {v_i=t_i\iota\sigma,\;\Gamma\,r^k=\lambda x_1 \dots x_k. g,\; (v_1, \dots, v_k) \nsucceq h\,r^k}
+      \ruleno{Invoke$^+$}
+\]
+\end{minipage}      
+\caption{Improved search: invocation and divergence detection}
+\label{improved-semantics-invoke}
+\end{figure*}
+
+\begin{figure*}
+\begin{minipage}[t]{\textwidth}
+\small
+\[
+\trule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1}{\dagger}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1\vee g_2}{\dagger}}\ruleno{DivDisjLeft$^+$}
+\]
+\[
+\trule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_2}{\dagger}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1\vee g_2}{\dagger}}\ruleno{DivDisjRight$^+$}
+\]
+\[
+\crule{\otrans{\Gamma,\,\epsilon[x_i\gets v_i],\,h[r^k\gets(v_1, \dots, v_k)]}{(\epsilon,\,\delta)}{g}{\dagger}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\dagger}}
+      {v_i=t_i\iota\sigma,\;\Gamma\,r^k=\lambda x_1 \dots x_k. g,\; (v_1, \dots, v_k) \nsucceq h\,r^k}
+      \ruleno{DivInvoke$^+$}
+\]      
+\end{minipage}      
+\caption{Improved search: divergence propagation}
+\label{improved-semantics-divergence-prop}
+\end{figure*}
+
 \subsection{Conjuncts Reordering}
+\label{sec:reordering}
 
 In this section we consider the discipline of conjuncts reordering. Recall, we flatten all nested conjunctions in 
 clusters $\wedge g_i$, where none of $g_i$ is a conjunction. To evaluate a cluster, we have to evaluate
@@ -206,110 +275,48 @@ making any permutations inside $\omega$ is superfluous.
 
 Next, suppose we have two different goals $g_1$ and $g_2$, which both converge on $S_\omega$ (i.e. both converge on each
 substitution in $S_\omega$). Do we need to try both cases ($g_1$ and $g_2$) to extend the converging prefix?
-It is rather easy to see, that if, say, $g_2$ is converges on $S_\omega$, it will as well converge on the result of evaluation
-of $g_1$ on $S_\omega$. In other words, to extend a converging prefix we can choose arbitrary conjunct, which converges immediately
+It is rather easy to see, that if, say, $g_2$ converges on $S_\omega$, then it will as well converge on the result of evaluation
+of $g_1$ on $S_\omega$. Indeed, for arbitrary \mbox{$\sigma\in S_\omega$} we have
+
+\[
+\otrans{\dots}{(\sigma,\dots)}{g_1}{S^\prime_\omega}
+\]
+
+where each \mbox{$\sigma^\prime\in S^\prime_\omega$} is ``more specific'', than $\sigma$, by Lemma~\ref{two}. By Lemma~\ref{three},
+since $g_2$ converges on $\sigma$, it will converge on each \mbox{$\sigma^\prime\in S^\prime_\omega$} as well.
+
+In other words, to extend a converging prefix we can choose arbitrary conjunct, which converges immediately
 after this prefix, and this choice will never has to be undone.
 
-Now we can specify the reordering discipline. We attach two natural numbers $i$ and $p$ to each cluster; initially $i=0$, $p=1$.
-Informally speaking, $i$ corresponds to the length of the converging prefix, while $p\ge i$~--- to the number of the conjunct ouside the prefix
-to try next. Given current cluster $\wedge g_1\dots g_k$, current set $S$, and some $i$ and $p$, we proceed as follows:
+Now we can specify the reordering discipline. Since we never re-evaluate a converging prefix, we do not
+represent it. Thus, each cluster we consider from now on is a suffix of some initial cluster after
+evaluation of some converging prefix (and, perhaps, after some reorderings performed so far).
+
+Let us have a cluster \mbox{$\bigwedge_{i=1}^k g_i$}. We evaluate it on some substitution $\sigma$ in the context of some integer
+value $p$ (initially $p=1$), which describes, which conjunct we have to try next. We operate as follows:
 
 \begin{enumerate}
-\item\label{reorder:top} If $i>k$, then the whole cluster converges, and $S$~--- the result of its evaluation.
-\item Otherwise, we try to evaluate $g_i$ on $S$. If the evaluation succeeds with the result $S^\prime$, then we increment $i$, assume $p=i+1$ and
-$S=S^\prime$, and continue from step~\ref{reorder:top}.
-\item If a divergence is detected, and $p\le k$, then we switch $g_i$ with $g_p$, increment $p$, and continue from step~\ref{reorder:top}.
+\item\label{reorder:top} We try to evaluate $g_p$ on $\sigma$. If the evaluation succeeds with a result $S^\prime$, we 
+remove $g_p$ from the cluster and evaluate the rest for each substitution in $S^\prime$ and $p=1$.
+  
+\item If a divergence is detected, and $p\le k$, then we switch $g_i$ with $g_p$, increment $p$,
+and repeat from step~\ref{reorder:top}.
+  
 \item Otherwise, we give up and rollback to the enclosing cluster (if any).
 \end{enumerate}
 
-Thus, we apply a greedy approach: each time we have a converging prefix of conjuncts (possibly empty), and some tail. We try to put each conjunct
-from the tail immediately after the prefix. If we find a converging conjunct, we attach it to the prefix and continue; if no, then the list of 
-conjuncts diverges. Thus, we can find a converging order (if any) in a quadratic time.
-
-\subsection{Improved Search Sematics}
-
-We express the improved search in terms of a big-step operational semantics. This semantics is an extension of the initial one, presented in Section~\ref{language}, which
-incorporates all the components, considered in the previous subsections: the divergence test, conjunct clustering and reordering.
-
-First, we extend the environment, adding three additional components:
-
-See Fig.~\ref{improved-semantics-invoke}, Fig.~\ref{improved-semantics-normal}, Fig.~\ref{improved-semantics-divergence-prop} and Fig.~\ref{improved-semantics-reordering}.
-
-
-\setarrow{\xRightarrow}
-\setsubarrow{_e}
-\begin{figure*}
-\begin{minipage}[t]{\textwidth}
-\small
-\[
-\cotrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{t_1\equiv t_2}{\emptyset}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \bot}\ruleno{UnifyFail$^+$}
-\]
-\[
-\cotrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{t_1\equiv t_2}{(\sigma\circ\Delta,\,\delta)}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \Delta\ne\bot}\ruleno{UnifySuccess$^+$}
-\]
-\[
-\trule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1}{S_1};\quad
-       \otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_2}{S_2}
-      }
-      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1\vee g_2}{S_1\cup S_2}}\ruleno{Disj$^+$}
-\]
-\[
-\crule{\otrans{\Gamma,\,\iota[x\gets\alpha],\,h}{(\sigma,\,\delta\cup\{\alpha\})}{g}{\mathscr R}}
-      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{\lstinline|fresh($x$) $\;g$|}{\mathscr R}}
-      {\alpha\in\meta{W}\setminus\delta}\ruleno{Fresh$^+$}
-\]
-\end{minipage}      
-\caption{Improved search: inherited rules}
-\label{improved-semantics-normal}
-\end{figure*}
+Thus, we apply a greedy approach: each time we have a converging prefix of conjuncts (possibly empty), and some tail.
+We try to put each conjunct from the tail immediately after the prefix. If we find a converging conjunct, we attach
+it to the prefix and continue; if no, then the list of conjuncts diverges. Thus, we can find a converging order
+(if any) in a quadratic time. Note, for different substitutions in the result of a converging prefix evaluation
+the order of remaining conjuncts can be different.
 
 \begin{figure*}
 \begin{minipage}[t]{\textwidth}
 \small
 \[
-   \cotrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\bot}{v_i = t_i \iota \sigma, \; (v_1, \dots, v_k) \succeq h\,r^k}
-   \ruleno{InvokeDiv$^+$}
-\]
-
-\[
-\crule{\otrans{\Gamma,\,\epsilon[x_i\gets v_i],\,h[r^k\gets(v_1, \dots, v_k)]}{(\epsilon,\,\delta)}{g}{\{(\sigma_i,\,\delta_i)\}}}
-      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\{(\sigma\circ\sigma_i, \delta_i)\}}}
-      {v_i=t_i\iota\sigma,\;\Gamma\,r^k=\lambda x_1 \dots x_k. g,\; (v_1, \dots, v_k) \nsucceq h\,r^k}
-      \ruleno{Invoke$^+$}
-\]
-\end{minipage}      
-\caption{Improved search: invocation and divergence detection}
-\label{improved-semantics-invoke}
-\end{figure*}
-
-\begin{figure*}
-\begin{minipage}[t]{\textwidth}
-\small
-\[
-\trule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1}{\bot}}
-      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1\vee g_2}{\bot}}\ruleno{DivDisjLeft$^+$}
-\]
-\[
-\trule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_2}{\bot}}
-      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_1\vee g_2}{\bot}}\ruleno{DivDisjRight$^+$}
-\]
-\[
-\crule{\otrans{\Gamma,\,\epsilon[x_i\gets v_i],\,h[r^k\gets(v_1, \dots, v_k)]}{(\epsilon,\,\delta)}{g}{\bot}}
-      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\bot}}
-      {v_i=t_i\iota\sigma,\;\Gamma\,r^k=\lambda x_1 \dots x_k. g,\; (v_1, \dots, v_k) \nsucceq h\,r^k}
-      \ruleno{DivInvoke$^+$}
-\]      
-\end{minipage}      
-\caption{Improved search: divergence propagation}
-\label{improved-semantics-divergence-prop}
-\end{figure*}
-
-\begin{figure*}
-\begin{minipage}[t]{\textwidth}
-\small
-\[
-\trule{\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,1}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\mathscr R}}
-      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\mathscr R}}
+\trule{\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,1}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{S^\dagger}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{S^\dagger}}
       \ruleno{ClusterStart$^+$}
 \]
 \vskip3mm
@@ -324,24 +331,24 @@ See Fig.~\ref{improved-semantics-invoke}, Fig.~\ref{improved-semantics-normal}, 
 \vskip3mm
 \[
 \crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\{(\sigma_j,\,\delta_j)\}};\quad
-       \exists j\;:\;\otrans{\Gamma,\,\iota,\,h}{(\sigma_j,\,\delta_j)}{\bigwedge\limits_{i\ne p}g_i}{\bot}
+       \exists j\;:\;\otrans{\Gamma,\,\iota,\,h}{(\sigma_j,\,\delta_j)}{\bigwedge\limits_{i\ne p}g_i}{\dagger}
       }
-      {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\bot}}
+      {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\dagger}}
       {1 \le p \le n}
 \ruleno{ClusterDiv$^+$}
 \]
 \vskip3mm
 \[
-\crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\bot};\quad
-       {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p+1}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\mathscr R}}
+\crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\dagger};\quad
+       {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p+1}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{S^\dagger}}
       }
-      {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\mathscr R}}
+      {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{S^\dagger}}
       {1 \le p \le n}
 \ruleno{ClusterNext$^+$}
 \]
 \vskip3mm
 \[
-\cotrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\bot}{p>n}
+{\setsubarrow{_r}\cotrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\dagger}{p>n}}
 \ruleno{ClusterStop$^+$}
 \]
 \end{minipage}      
@@ -349,84 +356,72 @@ See Fig.~\ref{improved-semantics-invoke}, Fig.~\ref{improved-semantics-normal}, 
 \label{improved-semantics-reordering}
 \end{figure*}
 
+\subsection{Improved Search Semantics}
 
+Here we combine all observations, presented in the preceding subsections~--- the divergence test, conjunct clustering
+and reordering,~--- and express the improved search in terms of a big-step operational semantics, which is an extension
+of the initial one, presented in Section~\ref{language}.
 
-\begin{comment}
+We denote ``$\xRightarrow{}_e$'' the semantic relation for the improved search, and we add another component to the
+environment~--- a history $h$,~--- which maps a relational sybol to a list of fully interpreted terms as its arguments.
+As we are (sometimes) capable of detecting the divergence, besides a regular set of answers $S$ as a result of evaluation
+we can have a divergence signal, which we denote $\dagger$; we will use the notation $S^\dagger$, when the difference
+between these two possible outcomes is not important.
 
-\begin{theorem}
-      Для любых $\Gamma$, $\iota$, $\sigma$, $\delta$, $g$, и $S$,
-      
-      \[ \searchRule{\Gamma}{\iota}{\sigma}{\delta}{g}{S} \Rightarrow \extSearchRule{\Gamma}{\iota}{\epsilon}{0}{\sigma}{\delta}{g}{S}, \]
-      где $\epsilon$ --- пустое множество записей о предыдущих вызовах (всюду неопределенная функция).
+For the convenience of presentation we split the set of semantic rules into a few groups. The first one is the inherited
+rules (see Fig.~\ref{improved-semantics-normal})~--- those, which did not change (except for the extension in the
+environment and evaluation result). Note, the rule \rulename{Disj$^+$} does not handle the divergence detection
+in either of disjuncts.
+
+The next group describes the invocation and divergence detection (see Fig.~\ref{improved-semantics-invoke}). On
+relation invocation we first consult with the history. If the history indicates, that the invocation is performed in the
+context of the same relation evaluation with more specific arguments, then we raise the divergence signal; otherwise
+we perform normally. Note, the rule \rulename{Invoke$^+$} does not handle the divergence in the \emph{body} of
+invoked relation.
+
+The next group describes the divergence signal propagation (see Fig.~\ref{improved-semantics-divergence-prop}). Here
+the divergence signal, raised in one of disjuncts or in the body of relational definition, is propagated to the upper
+levels of derivation tree.
+
+The final group handles the conjunct reordering (see Fig.~\ref{improved-semantics-reordering}). As we need a reordering
+parameter $p$ (see Section~\ref{sec:reordering}), we introduce another relation ``$\xRightarrow{}_r$'' with environment,
+enriched by $p$.
+
+The rule \rulename{ClusterStart$^+$} describes the case, when we make an attempt to evaluate a cluster. It can happen, when
+we either first encounter an original cluster, or try to evaluate a suffix of some initial cluster past some converging
+prefix. As the reordering starts now, we recurse to the reordering relation with the parameter \mbox{$p=1$} (which means,
+that the first conjunct will be tried to evaluate next).
+
+Two next rules describe the case, when the $p$-th conjunct, being tried to evaluate, succeds with some result. In the rule
+\rulename{ClusterStep$^+$} we handle the case, when all other conjuncts can be evaluated in the context of that result: we
+combine the outcomes, which completes the evaluation of the whole cluster. In the rule \rulename{ClusterDiv$^+$} we consider
+the opposite case: now there is some conjunct $g_j$, which raises a divergence signal, being evaluated in the context of
+the results, delivered by the evaluation of $g_p$. As we argued in Section~\ref{sec:reordering}, nothing can be done, and we
+propagate the divergence signal.
+
+The rule \rulename{ClusterNext$^+$} describes the case, when the $p$-th conjunct raises the divergence signal, and there are
+some other conjuncts to try. We increment $p$ and proceed.
+
+Finally, in the rule \rulename{ClusterStop$^+$} we handle the situation, when all available conjuncts in a cluster were tried to
+evaluate first, and raised the divergence signal. We propagate the signal in this case.
+
+The following theorem is rather easy to prove:
+
+\begin{theorem} For arbitrary $\Gamma$ and $g$ if
+
+  \[{\setsubarrow{}\otrans{\Gamma,\,\bot}{(\epsilon,\,\emptyset)}{g}{S}}\]
+
+  then
+  
+  \[{\setsubarrow{_e}\otrans{\Gamma,\,\bot,\,\bot}{(\epsilon,\,\emptyset)}{g}{S}}\]
+
 \end{theorem}
-\begin{proof}$ $\par\nobreak\ignorespaces
-      Для индукционного доказательства утверждение нужно сформулировать в более общем виде: для любого $h$, если для любого $r^k$, такого что $h(r^k) = (v_1, \dots, v_n)$ для некоторых значений $v_i$, существует дерево вывода утверждения $\searchRule{\Gamma}{\iota'}{\sigma'}{\delta'}{\lstinline|$r^k$ $t_1$ $\dots$ $t_k$|}{S}$ для некоторых $t_i$, таких что $t_i \iota' \sigma' = v_i$, и у этого дерева есть поддерево, в котором выводится утверждение $\searchRule{\Gamma}{\iota}{\sigma}{\delta}{g}{S}$, тогда $\searchRule{\Gamma}{\iota}{\sigma}{\delta}{g}{S} \Rightarrow \extSearchRule{\Gamma}{\iota}{h}{0}{\sigma}{\delta}{g}{S}$.
-      
-      Это утверждение доказывается идукцией по дереву вывода утверждения в семантике стандартного поиска, строится аналогичное дерево в семантике расширенного поиска.
-      
-      Во всех случаях, кроме вызова отношения можно использовать при построении те же самые правила. В случае вызова отношения необходимо так же знать, что текущие значения аргументов не являются более общими, чем значения аргументов при предыдущем вызове (хранящиеся в $h$), но это следует из корректности критерия (чтобы применить его формально, используется условие на $h$ из формулировки утверждения).
-      
-\end{proof}
 
-\end{comment}
+Indeed, due to Theorem~\ref{criterion}, from the condition we can conclude, that the divergence signal is
+never raised during the evaluation, according to ``$\xRightarrow{}_e$''; but in this case the evaluation
+steps coinside with those, according to ``$\xRightarrow{}$''. Thus, the imroved search is non-degrading.
 
 
 
 
-% (Lemma~\ref{three} from Appendix~\ref{appendix}
-%can be used to justify this claim). Thus, we do not to try two cases.
 
-
-\begin{comment}
-First, we need a way to detect 
-a situation, when we give up on current conjunction and proceed to the next enclosing one (if any).
-We represent a cluster of nested conjunctions as a state \mbox{$([p_i], n, [s_i])$}, where $[p_i]$, $[s_i]$ are lists of
-non-conjunction goals, $n$~--- some natural number. We call $[p_i]$ a prefix, $[s_i]$~--- a suffix, and $n$~--- a position. 
-Initially, the prefix is empty, $n=0$, and the suffix consists of the list of all conjuncts.
-
-Let \mbox{$[p_i], n, [s_1,\dots]$} be a state; we try to evaluate $s_1$. There are three possible outcomes:
-
-\begin{enumerate}
-\item The evaluation converges; then we change the state into \mbox{$[p_i,s_1], 0, [s_2\dots]$} and continue.
-\item The evaluation ends with a signal, that a divergence was detected inside the evaluation of $s_1$. We
-change the state into \mbox{$[p_i], n+1, [s_{n+1},\dots,s_n=s_1,\dots]$} (in other words, we switch $s_1$ with 
-$s_{n+1}$).
-\item The evaluation diverges without detectiong. Nothing can be done in this case.
-\end{enumerate}
-
-
-
-We also need to pay a special attention to make it possible to enumerate all orders of all conjuncts in
-compound conjunctions, not only immediate ones; thus, in \mbox{$(g_1\wedge g_2)\wedge g_3$} we should
-be able to try not only \mbox{$(g_1\wedge g_2)\wedge g_3$} and \mbox{$g_3 \wedge(g_1\wedge g_2)$}, but, 
-for example, \mbox{$(g_2\wedge g_1)\wedge g_3$}, etc. It can be easily achieved by flattening all nested
-conjunctions to a \emph{cluster} $\bigwedge g_i$, where none of $g_i$ is a conjunction. 
-
-In may seem at a first glance, that in the worst case an exponential number of conjunct orders have to
-be tried. This is, actually, not true, because we do not need to try different orders in the
-converging prefix of conjuncts. We present the following discipline of reordering:
-
-\begin{itemize}
-\item We associate a natural number $n$ with each cluster of conjuncts; initially this
-number is $0$. Informally, the non-zero value $k$ says, that we reordered the cluster by
-putting $k$-th conjuncts in the first place.
-\item    
-\end{itemize}
-
-
-
-Moreover, all orders tried so far, have to be memorized. When we tried out every one, we need to 
-proceed to the next enclosing conjunction (if any). Note, in this approach we modify the conjunctions 
-according to their dynamic evaluation order, not static scoping. 
-
-
-Now it is sufficient to present a query, which is not refutationally complete w.r.t. to the semantics, 
-but becomes refutationally complete w.r.t. to the improvement. For such query we can take 
-\mbox{\lstinline|fresh ($p\;q$) (append$^o\;p\;q\;$ Nil)|}~--- indeed, from Section~\ref{incompleteness} we
-already know, that it diverges. We also remember that the reason of the divergence is the infinite
-sequence of recursive calls with renamed arguments~--- but this means, that the divergence test is satisfied.
-Finally, switching the recursive call to \lstinline|append$^o$| with the preceding conjunct makes the query converge~--- this is exactly, what the improvement does.
-
-
-
-\end{comment}
