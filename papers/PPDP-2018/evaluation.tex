@@ -3,16 +3,28 @@
 
 We implemented the improved version of the search, described in the previous section, 
 as a prototype over existing miniKanren implementation for OCaml, called OCanren~\cite{OCanren}. 
-For the simplicity, we switched to a deep embedding (most miniKanren implementations, 
-including OCanren, use shallow embedding), and changed the syntax to make relational definitions
-visible for the interpreter. Programs in OCanren can be easily converted to respect 
-the new syntax.
+We added a history support and the divergence test, and changed the syntax to make relational definitions
+visible for the interpreter. Programs in OCanren can be easily converted to respect the new syntax.
+In our implementation the divergence propagation is implemented via exception mechanism, which is
+known to be efficient in OCaml.
 
-With this implementation, we became capable to evaluate a number of useful, but refutationally 
-incomplete miniKanren relations, including those considered earlier. In all cases, the 
-improved search managed to discover the divergence and fix the incompleteness, caused by
-the non-commutativity of conjunction; moreover, the performance of some queries was improved 
-significantly. In the following subsections we consider some interesting cases.
+We evaluated our implementation on a number of benchmarks~--- virtually all available non-refulationally
+complete queries, reported in the literature. With no exceptions, the improved search was capable to
+fix refutational incompeteness. Thus, we do not know any realistic cases, which are not improved
+by our approach. On the other hand, it is reather easy to construct an artificial counterexample. For this
+we can define a relation
+
+\begin{lstlisting}
+   dummy $\;\binds\;\lambda\;x\;$ . dummy (S $\;x$)
+\end{lstlisting}
+
+\noindent and consider a query \lstinline|(dummy O) /\ fail|, where \lstinline|fail|~--- some never
+suceeding goal (like \lstinline|A === B|). Since the argument of the recursive call to \lstinline|dummy| is
+always performed with a more specific argument, the divergence test will never succeed, and the whole
+query will diverge despite the absence of answers. 
+
+In the following subsections we, first, describe the benchmarks in details and, then, present the
+results of a quantitative evaluation.
 
 \subsection{Relations on lists}
 
@@ -22,20 +34,20 @@ relation to be refutationally complete. Specifically for \lstinline|append$^o$|,
 the divergence is discovered and refutational incompleteness is fixed regardless the position of 
 the recursive call.
 
-As a more interesting example, we consider the \lstinline|revers$^o$| relation. As we've
-seen, in order for different queries to work it requires different orders of conjuncts 
+As a more interesting example, consider the \lstinline|revers$^o$| relation (see Section~\ref{incompleteness}
+for the definition). As we've seen, in order for different queries to work it requires different orders of conjuncts 
 to be used in the implementation. Again, the improved search lifts this requirement.
-Even more interesting, that, for example, in the query 
+Even more interesting, in the query 
 
 \begin{lstlisting}
    fresh ($q$) (revers$^o$ (Cons (A, Nil)) $q$)
 \end{lstlisting}
 
-\noindent the divergence is discovered for the recursive call of \lstinline|appendo$^o$|, but,
+\noindent the divergence is discovered for the recursive call of \lstinline|append$^o$|, but,
 as none of conjunct orders within the definition of \lstinline|append$^o$| help, the
 improved search goes even more back and switches the conjuncts within the definition of
 \lstinline|revers$^o$|. This example demonstrates the importance of operating on 
-dynamic invocation order.
+a dynamic invocation order.
 
 Another example we've already looked at is relational sorting/permutations. 
 With the improved search, both queries \lstinline|fresh ($q$) (perm$^o$ l $q$)| and 
@@ -46,15 +58,15 @@ the number of permutations with repetitions.
 
 \subsection{Binary arithmetics}
 
-The implementation of a relational arithmetics is an important problem since it is required
-in a number of elaborated relational specifications. For performance reasons, it is 
+The implementation of a relational arithmetics is an important problem since it is utilized
+in a number of elaborated relational specifications. For the performance reasons, it is 
 preferrable to use binary numbers, not comfy Peano encoding, which makes the problem 
 more complicated. As it is shown in~\cite{WillThesis}, the naive implementation of 
-binary arithmetics is inappropriate due to multiple problems. 
+binary arithmetics turns out to be inappropriate due to multiple problems. 
 
 Fixing these problems takes a lot of efforts: it requires some additional conditions, 
 excess on the first glance, to be introduced in the specification to ensure the non-overlapping 
-of cases and correctness of number representation. And still, even with all these 
+of the cases and the correctness of number representation. And still, even with all these 
 improvements, arithmetic relations diverge for some routine queries with one order of 
 consituents, and for others with another. To overcome this problem, 
 arithmetics in the standard miniKanren implementation~\cite{TRS} uses digital logic and 
@@ -67,7 +79,7 @@ the naive version (for addition, multiplication, comparisons, division with a re
 without all these complicated optimizations. 
 
 As the brightest example, for the division with reminder, instead of a very complicated recursive definition 
-from~\cite{TRS} (20 lines of code, not including auxiliary functions), one can just wright down the 
+from~\cite{TRS} (20 lines of code, not including auxiliary functions), one can just write down the 
 following definition
 
 \begin{lstlisting}
@@ -93,7 +105,7 @@ following definition
 \subsection{Binary trees}
 
 For a natural representation of binary trees using two constructors \lstinline|Leaf| and 
-\lstinline|Node($l$, $r$)| it is easy to implement the relation to count the number of 
+\lstinline|Node ($l$, $r$)| it is easy to implement the relation to count the number of 
 leaves in a tree (using arithmetic relation \lstinline|plus$^o$| for addition):
 
 \begin{lstlisting}
@@ -114,7 +126,7 @@ By running this relation backwards
 \end{lstlisting}
 
 \noindent it becomes possible to generate all binary trees with given number of leaves $n$. 
-The improved search provides the termination of this query and the number of discovered 
+The improved search provides the termination of this query; the number of discovered 
 answers corresponds to the number of such trees, so this relational program may be seen 
 as (an exotic) way of calculating the Catalan numbers.
 
@@ -122,16 +134,80 @@ as (an exotic) way of calculating the Catalan numbers.
 
 Program synthesis with relational interpreters is one of the most useful applications of miniKanren. 
 The construction of a relational interpreter for a small Scheme-like language is considered 
-in details in~\cite{Untagged}. However, this simple interpreter also has some problems, caused by 
-the non-commutativity. For example, the following obviously contradictory query
+in details in~\cite{Untagged}. However, this simple interpreter also reveals some problems, caused by 
+the non-commutativity of conjunction. For example, the following obviously contradictory query
 
 \begin{lstlisting}
    fresh ($e1$ $e2$ $r1$ $r2$) (eval$^o$ (list $e_1$ 3 $e_2$) Nil ($r_1$ 4 $r_2$))
 \end{lstlisting}
 
-\noindent leads to a divergence under the conventional search (and no simple reordering can fix it). 
+\noindent leads to a divergence under the conventional search; no simple reordering can fix it. 
 Under the improved search, however, the contradiction is found and the query terminates with
 no answers. Relational interpreters, used in practice for more complex problems~\cite{unified}, 
 include a lot of optimisations and take significant effort to implement. We hope, that some 
 performance problems with them are caused by the non-commutativity and can be fixed automatically 
 with the improved search.
+
+\subsection{The Quantitative Evaluation}
+
+\begin{figure}[t]
+  \small
+  \begin{tabular}{ c | c | c c c  }
+    relation     & input size & optimistic & improved search & pessimistic \\ 
+    \hline
+    append$^o$   & 100        &  0.091        &  0.111          &  0.305 \\
+                 & 200        &  0.645        &  0.671          &  2.439 \\
+                 & 300        &  2.106        &  2.122          &  8.173 \\
+    \hline
+    revers$^o$   & 30         &  0.032        &  0.059          &  0.301 \\
+                 & 60         &  0.213        &  0.420          &  4.127 \\
+                 & 90         &  0.717        &  1.402          &  20.204 \\
+    \hline
+    sort$^o$     & 2          &  0.003        &  0.005          &  0.003 \\
+                 & 3          &  0.003        &  0.009          &  0.135 \\
+                 & 4          &  0.004        &  0.020          &  --- \\
+                 & 30         &  0.883        &  34.370         &  --- \\
+    \hline
+    perm$^o$     & 2          &  0.003        &  0.006          &  0.004 \\
+                 & 3          &  0.005        &  0.027          &  --- \\
+                 & 6          &  1.091        &  5.969          &  --- \\
+    \hline
+    mult$^o$     & 4          &  0.007        &  0.010          &  0.073 \\
+                 & 5          &  0.017        &  0.021          &  20.650 \\
+                 & 8          &  0.233        &  1.139          &  --- \\
+    \hline
+    div$^o$      & 3          &  0.010        &  0.486          &  0.044 \\
+                 & 4          &  0.027        &  0.486          &  --- \\
+                 & 5          &  0.112        &  4.928          &  --- \\
+    \hline
+    leaves$^o$   & 4          &  0.018        &  0.020          &  0.030 \\
+                 & 5          &  0.064        &  0.082          &  68.841 \\
+                 & 8          &  4.904        &  5.447          &  --- \\
+    \hline
+  \end{tabular}
+  \caption{The results of the quantative evaluation}
+  \label{evaluation_results}
+\end{figure}
+
+While the improved search indeed fixes all considered realistic cases in a qualitative sense, it still introduces some runtime
+overhead when no divergence is detected. In order to assess the overall performance gain we performed a qualitative
+evaluation.
+
+We ran our benchmarks for various input data sizes, and measured the time, needed for them to complete under the improved search. At the same time
+we ran these benchmarks under the standard search in two cases: with ``optimistic'' and ``pessimistic'' orders of arguments in ``important'' conjunctions
+(these conjunctions were determined experimentally). The running time in seconds is shown on Fig.~\ref{evaluation_results}.
+
+For all benchmarks, under the improved search the convergence did not depend neither on the direction of queries, nor on the order of conjuncts; the same was true for
+the running time. The behavior in the pessimistic case allows us to discriminate between two interesting situations:
+
+\begin{itemize}
+\item either in the pessimistic case the standard search was much slower, then the improved one, but still measurable, and the improved search worked with approximately the
+same performance, as the standard search for the optimistic case;
+  
+\item or in the pessimistic case the standard search quickly became non-measurable (indicated ``---''), and the improved seach worked much slower, than the standard one for the
+optimistic case, but still measurable.
+\end{itemize}
+
+We may conclude, that for the wide variety of realistic cases our improvement indeed delivers a fully-automatic and lightweight way to provide refutational completeness. In some cases,
+however, on order to achieve the best performance a relational specification has to be optimized manually.
+
