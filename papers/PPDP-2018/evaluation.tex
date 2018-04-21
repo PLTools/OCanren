@@ -11,7 +11,7 @@ known to be efficient in OCaml.
 We evaluated our implementation on a number of benchmarks~--- virtually all available non-refulationally
 complete queries, reported in the literature, whose incompleteness is caused by conjunction non-commutativity.
 With no exceptions, the improved search was capable to fix refutational incompeteness. Thus, we do not know any
-realistic cases, which are not improved by our approach. On the other hand, it is reather easy to construct
+realistic cases, which are not improved by our approach. On the other hand, it is rather easy to construct
 an artificial counterexample. For this we can define a relation
 
 \begin{lstlisting}
@@ -148,7 +148,7 @@ include a lot of optimisations and take significant effort to implement. We hope
 performance problems with them are caused by the non-commutativity and can be fixed automatically 
 with the improved search.
 
-\subsection{The Quantitative Evaluation}
+\subsection{A Quantitative Evaluation}
 
 \begin{figure}[t]
   \small
@@ -185,12 +185,12 @@ with the improved search.
                  & 8          &  4.904        &  5.447          &  --- \\
     \hline
   \end{tabular}
-  \caption{The results of the quantative evaluation}
+  \caption{The results of a quantitative evaluation}
   \label{evaluation_results}
 \end{figure}
 
 While the improved search indeed fixes all considered realistic cases in a qualitative sense, it still introduces some runtime
-overhead when no divergence is detected. In order to assess the overall performance gain we performed a qualitative
+overhead when no divergence is detected. In order to assess the overall performance gain we performed a quantitative
 evaluation.
 
 We ran our benchmarks for various input data sizes, and measured the time, needed for them to complete under the improved search. At the same time
@@ -201,7 +201,7 @@ For all benchmarks, under the improved search the convergence did not depend nei
 the running time. The behavior in the pessimistic case allows us to discriminate between two interesting situations:
 
 \begin{itemize}
-\item either in the pessimistic case the standard search was much slower, then the improved one, but still measurable, and the improved search worked with approximately the
+\item either in the pessimistic case the standard search was much slower, than the improved one, but still measurable, and the improved search worked with approximately the
 same performance, as the standard search for the optimistic case;
   
 \item or in the pessimistic case the standard search quickly became non-measurable (indicated ``---''), and the improved seach worked much slower, than the standard one for the
