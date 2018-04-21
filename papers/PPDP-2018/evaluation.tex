@@ -9,10 +9,10 @@ In our implementation the divergence propagation is implemented via exception me
 known to be efficient in OCaml.
 
 We evaluated our implementation on a number of benchmarks~--- virtually all available non-refulationally
-complete queries, reported in the literature. With no exceptions, the improved search was capable to
-fix refutational incompeteness. Thus, we do not know any realistic cases, which are not improved
-by our approach. On the other hand, it is reather easy to construct an artificial counterexample. For this
-we can define a relation
+complete queries, reported in the literature, whose incompleteness is caused by conjunction non-commutativity.
+With no exceptions, the improved search was capable to fix refutational incompeteness. Thus, we do not know any
+realistic cases, which are not improved by our approach. On the other hand, it is reather easy to construct
+an artificial counterexample. For this we can define a relation
 
 \begin{lstlisting}
    dummy $\;\binds\;\lambda\;x\;$ . dummy (S $\;x$)

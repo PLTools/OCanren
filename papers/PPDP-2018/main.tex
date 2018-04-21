@@ -141,32 +141,6 @@ language=ocanren
 %\editor{Theo D'Hondt}
 %\editor{Wolfgang De Meuter}
 
-\begin{comment}
-First, the evaluation needs to give more information. How many cases did you try, and where can we download those specifications? Substantiate your claims of comparable or faster performance using quantitative data. What are some cases where the improvement almost works but unfortunately fails? Why restrict your claims to "the queries which return a finite number of answers"?
-
-Second, the improvement should be described using the formal framework already set up in Section 2. That would clarify the description towards the end of Section 4. As it stands, it is not completely clear what "a greedy approach" is -- given the knowledge that "the list of conjuncts diverges", the question remains as to how to reorder the conjuncts and sometimes go "even more back" (as mentioned in Section 5.1). In other words, the paper should show and explain what Figure 2 becomes with the improvement. Only then is the claim of "quadratic time" meaningful.
-
-Chapter 4 continues the discussion on the problem of non-commutativity of conjunctions and proposes the optimization technique progressively. But the completed version of the optimization algorithm is not clearly stated in an individual paragraph. At least a short summary on the core algorithm of this paper should be necessary. A more detailed and formal one would even be better.
-
-The paper talks about the effectiveness of the optimization, however, a reader may be interested in the limitation of this technique. Since the divergence test is sufficient but not necessary, the paper may discuss about when this optimization works and when it does not.
-
-My main problem with this paper is its presentation. Much of the paper
-is devoted to a formal system of syntax and semantics. I find the
-description there long winded, and does not highlight the non-standard
-parts if there is any. To make the matter worse, the formal system is
-not used at all, as no result is presented in the main text. Even if
-space is an issue, at least the main theorem shall be presented.
-
-I also find the section of implementation and evaluation slightly
-disappointing. No detail of the deep embedding is shown, and the a few
-examples are by no means an “evaluation”. I am also confused by the
-very informal nature of the presentation in this section. For example,
-how is the problem with “perm” solved? Since the problem is that the
-evaluation goes both directions, how can reordering help? I also do
-not understand the example of Binary arithmetic as very little code is
-shown.
-\end{comment}
-
 \sloppy
 
 \begin{document}
@@ -202,12 +176,12 @@ of Relational Search via Divergence Test}
 
 \begin{abstract}
 We describe a search optimization technique for implementation of relational programming language
-miniKanren which makes more queries to converge. Our technique is based on a certain 
-divergence criterion, which we use to trigger a dynamic reordering of subgoals. We present a formal semantics of
-miniKanren-like language, and prove, that our optimization does not compromise already
-converging programs, thus being a proper improvement. We also present the prototype
-implementation of improved search and demonstrate its application for a number of
-useful specifications.
+miniKanren which makes more queries to converge. Specifically, we address the problem of conjunction
+non-commutativity. Our technique is based on a certain divergence criterion, which we use to trigger a
+dynamic reordering of conjuncts. We present a formal semantics of miniKanren-like language, and prove,
+that our optimization does not compromise already converging programs, thus being a proper improvement.
+We also present the prototype implementation of improved search and demonstrate its application for a
+number of realistic specifications.
 \end{abstract}
 
 %
