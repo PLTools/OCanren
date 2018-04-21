@@ -109,12 +109,14 @@ For a natural representation of binary trees using two constructors \lstinline|L
 leaves in a tree (using arithmetic relation \lstinline|plus$^o$| for addition):
 
 \begin{lstlisting}
-   siz$^o$ $\binds$ $\lambda\;t\;s$ .
+   leaves$^o$ $\binds$ $\lambda\;t\;s$ .
      (($t$ === $\;\;$Leaf) /\ ($s$ === $\;\;$$\overline{1}$)) \/
      (fresh ($l$ $r$ $sl$ $sr$)
         ($t$ === $\;$Node ($l$, $r$)) /\
-        (siz$^o$ $l$ $sl$) /\
-        (siz$^o$ $r$ $sr$) /\
+        (pos$^o$ $sl$) /\
+        (pos$^o$ $sr$) /\
+        (leaves$^o$ $l$ $sl$) /\
+        (leaves$^o$ $r$ $sr$) /\
         (plus$^o$ $sl$ $sr$ $s$)
      )
 \end{lstlisting}
