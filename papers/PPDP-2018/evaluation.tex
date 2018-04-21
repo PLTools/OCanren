@@ -106,7 +106,8 @@ following definition
 
 For a natural representation of binary trees using two constructors \lstinline|Leaf| and 
 \lstinline|Node ($l$, $r$)| it is easy to implement the relation to count the number of 
-leaves in a tree (using arithmetic relation \lstinline|plus$^o$| for addition):
+leaves in a tree (using arithmetic relations \lstinline|plus$^o$| for addition and \lstinline|pos$^o$|
+for positivity):
 
 \begin{lstlisting}
    leaves$^o$ $\binds$ $\lambda\;t\;s$ .
@@ -124,7 +125,7 @@ leaves in a tree (using arithmetic relation \lstinline|plus$^o$| for addition):
 By running this relation backwards
 
 \begin{lstlisting}
-   fresh ($q$) (siz$^o$ $q$ $\overline{n}$)
+   fresh ($q$) (leaves$^o$ $q$ $\overline{n}$)
 \end{lstlisting}
 
 \noindent it becomes possible to generate all binary trees with given number of leaves $n$. 
