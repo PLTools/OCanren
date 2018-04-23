@@ -108,7 +108,7 @@ following definition
 \subsection{Binary trees}
 
 For a natural representation of binary trees using two constructors \lstinline|Leaf| and 
-\lstinline|Node ($l$, $r$)| it is easy to implement the relation to count the number of 
+\lstinline|Node ($l$, $r$)|, it is easy to implement the relation to count the number of 
 leaves in a tree (using arithmetic relations \lstinline|plus$^o$| for addition and \lstinline|pos$^o$|
 for positivity):
 
@@ -150,50 +150,13 @@ the non-commutativity of conjunction. For example, the following obviously contr
 \noindent leads to a divergence under the conventional search; no simple reordering can fix it. 
 Under the improved search, however, the contradiction is found and the query terminates with
 no answers. Relational interpreters, used in practice for more complex problems~\cite{unified}, 
-include a lot of optimisations and take significant effort to implement. We hope, that some 
+include a lot of optimisations and take significant effort to implement. We hope that some 
 performance problems with them are caused by the non-commutativity and can be fixed automatically 
 with the improved search.
 
 \subsection{A Quantitative Evaluation}
 
-\begin{figure}[t]
-  \small
-  \begin{tabular}{ c | c | c c c  }
-    relation     & input size & optimistic & improved search & pessimistic \\ 
-    \hline
-    append$^o$   & 100        &  0.091        &  0.111          &  0.305 \\
-                 & 200        &  0.645        &  0.671          &  2.439 \\
-                 & 300        &  2.106        &  2.122          &  8.173 \\
-    \hline
-    revers$^o$   & 30         &  0.032        &  0.059          &  0.301 \\
-                 & 60         &  0.213        &  0.420          &  4.127 \\
-                 & 90         &  0.717        &  1.402          &  20.204 \\
-    \hline
-    sort$^o$     & 2          &  0.003        &  0.005          &  0.003 \\
-                 & 3          &  0.003        &  0.009          &  0.135 \\
-                 & 4          &  0.004        &  0.020          &  --- \\
-                 & 30         &  0.883        &  34.370         &  --- \\
-    \hline
-    perm$^o$     & 2          &  0.003        &  0.006          &  0.004 \\
-                 & 3          &  0.005        &  0.027          &  --- \\
-                 & 6          &  1.091        &  5.969          &  --- \\
-    \hline
-    mult$^o$     & 4          &  0.007        &  0.010          &  0.073 \\
-                 & 5          &  0.017        &  0.021          &  20.650 \\
-                 & 8          &  0.233        &  1.139          &  --- \\
-    \hline
-    div$^o$      & 3          &  0.010        &  0.486          &  0.044 \\
-                 & 4          &  0.027        &  0.486          &  --- \\
-                 & 5          &  0.112        &  4.928          &  --- \\
-    \hline
-    leaves$^o$   & 4          &  0.018        &  0.020          &  0.030 \\
-                 & 5          &  0.064        &  0.082          &  68.841 \\
-                 & 8          &  4.904        &  5.447          &  --- \\
-    \hline
-  \end{tabular}
-  \caption{The results of a quantitative evaluation}
-  \label{evaluation_results}
-\end{figure}
+\input{evaluation_table}
 
 While the improved search indeed fixes all considered realistic cases in a qualitative sense, it still introduces some runtime
 overhead when no divergence is detected. In order to assess the overall performance gain we performed a quantitative
@@ -215,6 +178,6 @@ same performance, as the standard search for the optimistic case;
 optimistic case, but still measurable.
 \end{itemize}
 
-We may conclude, that for the wide variety of realistic cases our improvement indeed delivers a fully-automatic and lightweight way to provide refutational completeness. In some cases,
+We may conclude that for the wide variety of realistic cases our improvement indeed delivers a fully-automatic and lightweight way to provide refutational completeness. In some cases,
 however, on order to achieve the best performance a relational specification has to be optimized manually.
 

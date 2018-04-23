@@ -1,7 +1,7 @@
 \section{Introduction}
 
-Relational programming is a technique, based on the idea of describing programs not as functions, but 
-as relations, without distinguishing between arguments and result value. This technique makes it 
+Relational programming is an approach, based on the idea of describing programs not as functions, but 
+as relations, without distinguishing between the arguments and the result value. This technique makes it 
 possible to ``query'' programs in various ways, for example, to execute them ``backwards'', finding
 all sets of arguments for a given result. Relational behavior can be reproduced using a number of
 logic programming languages, such as Prolog, Mercury\footnote{\url{https://mercurylang.org}}, 
@@ -19,12 +19,12 @@ non-trivial~\cite{WillThesis}. One of the most promising areas of application fo
 \emph{relational interpreters}. Such interpreters are capable not only to interpret programs in various directions, but also
 to infer programs on the basis of the expected input-output specification~\cite{Untagged}.
 
-Being quite simple and easy to use by the design, in implementation \miniKanren introduces some subtleties. Under the hood, \miniKanren 
+Being quite simple and easy to use by design, in implementation \miniKanren introduces some subtleties. Under the hood, \miniKanren 
 uses a complete interleaving search~\cite{Search}. This search is guaranteed to find all existing solutions; however, it can diverge, when no 
 solution exists. In reality, this amounts to a divergence in a number of important cases~--- for example, when a program is asked to 
-return \emph{all} existing solutions, or when the number of requested solutions exceeds the number of existing ones. Often, for a 
-concrete query, it is possible to refactor the specification to avoid the divergence, but this means, that the specification has to be adjusted for every 
-execution ``direction'' of interest, which to some extent compromises the idea of fully declarative relational programming. 
+return \emph{all} existing solutions, or when the number of requested solutions exceeds the number of existing ones.
+It is often possible to refactor the specification of a concrete query to avoid the divergence, but this has to be done for every execution
+``direction'' of interest, which compromises the idea of fully declarative relational programming.
 
 The specifications, which do not diverge even when no solutions exist, are called \emph{refutationally complete}~\cite{WillThesis}. Writing 
 refutationally complete relational specifications nowadays requires knowledge of \miniKanren implementation intrinsics, and is not always
@@ -35,5 +35,5 @@ In this work we address one particular problem, which often leads to refutationa
 conjunction. We present an optimization technique, which is based on a certain non-termination test. Our optimization
 is \emph{online} (performed during the search), \emph{non-intrusive} (does not introduce new constructs and does not require
 any changes to be made to the existing specifications), and \emph{conservative} (applied only when the divergence
-is detected). We prove, that for the queries, which return a finite number of answers, our optimization is non-degrading. 
+is detected). We prove that for the queries, which return a finite number of answers, our optimization is non-degrading. 
 We also demonstrate the application of the optimization for a number of interesting and important problems.

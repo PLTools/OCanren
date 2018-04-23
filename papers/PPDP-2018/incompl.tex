@@ -13,7 +13,7 @@ the divergence in the case of solution absence does not seem to be a severe prob
 we see shortly, refutational incompleteness leads to many observable negative effects in numerous
 practically important cases. 
 
-We demonstrate the effect of refutational incompleteness on a very simple example. Let us take the
+We demonstrate the effect of refutational incompleteness with a very simple example. Let us take the
 definition of \lstinline{append$^o$} from the previous section and try to evaluate the following query:
 
 \begin{lstlisting}
@@ -36,8 +36,8 @@ and \lstinline|Nil| with $q$ (successfully), which gives us the first (expected)
   \end{itemize} 
 \end{itemize}
 
-The problem is, that the semantics of conjunction, in fact, is not commutative: when the first conjunct diverges and the second fails, the whole
-conjunction diverges. We stress, that this is not a deviation of our semantics, but a well-known phenomenon, manifesting itself in all known
+The problem is that the semantics of conjunction, in fact, is not commutative: when the first conjunct diverges and the second fails, the whole
+conjunction diverges. We stress that this is not a deviation of our semantics, but a well-known phenomenon, manifesting itself in all known
 miniKanren implementations. In our example, switching two last conjuncts in the definition of \lstinline|append$^o$| solves the problem~---
 now the whole search stops after the unsuccessful attempt to unify \lstinline|Nil| and \lstinline|Cons ($h$, $ty$)| with no recursive call.
 This, improved version of \lstinline|append$^o$|, is known to be refutationally complete. In fact, there is a conventional ``rule of thumb''
@@ -71,7 +71,7 @@ the end. However, the following query
 
 \noindent converges to the expected results. If we switch two last conjuncts in the definition of
 \lstinline|revers$^o$|, the situation reverses: the first query converges, while the second diverges. 
-This example demonstrates, that the position of a recursive call (and, in general, the order of
+This example demonstrates that the position of a recursive call (and, in general, the order of
 conjuncts) depends on the direction, in which the relation of interest is evaluated.
 
 There are, however, some cases, when the same relation is evaluated in both directions, regardless
@@ -90,7 +90,7 @@ omit it due to the space considerations (an interested reader can refer to~\cite
 is that it is obviously recursive and not refutationally complete, and it is being evaluated 
 in \emph{both} directions within the body of \lstinline|perm$^o$|. So, \lstinline|perm$^o$| is expected 
 to perform poorly regardless the order of recursive calls in \lstinline|sort$^o$| implementation; it, 
-indeed, does. First, if we request all solutions, both \lstinline|fresh ($q$) (perm$^o$ l $q$)| and \lstinline|fresh ($q$) (perm$^o$ $q$ l)| diverge for arbitrary non-empty list \lstinline|l| regardless the implementation of \lstinline|sort$^o$|; second, even if we request only a first few existing solutions, it does not provide any results in a reasonable time even for very small list lengths (4, 5, etc.). Interesting, that if we interested in all solutions,
+indeed, does. First, if we request all solutions, both \lstinline|fresh ($q$) (perm$^o$ l $q$)| and \lstinline|fresh ($q$) (perm$^o$ $q$ l)| diverge for arbitrary non-empty list \lstinline|l| regardless the implementation of \lstinline|sort$^o$|; second, even if we request only a first few existing solutions, it does not provide any results in a reasonable time even for very small list lengths (4, 5, etc.). Interesting that if we interested in all solutions,
 we have to accurately precompute their number in order not to request more, than exists. For some problems,
 it may be not so simple, as it looks at a first glance (for example, the number of all permutations is
 not a factorial, but a number of permutations with repetitions). Finally, getting the number of solutions can 

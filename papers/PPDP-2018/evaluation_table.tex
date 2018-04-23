@@ -1,0 +1,40 @@
+\input {evaluation_defs}
+
+\begin{figure}[t]
+  \small
+  \begin{tabular}{ c | c | c c c  }
+    relation     & input size & optimistic & improved search & pessimistic \\ 
+    \hline
+    append$^o$   & 100        & \appendoxIOOxoptimistic & \appendoxIOOximproved & \appendoxIOOxpessimistic \\
+                 & 200        & \appendoxSOOxoptimistic & \appendoxSOOximproved & \appendoxSOOxpessimistic \\
+                 & 300        & \appendoxROOxoptimistic & \appendoxROOximproved & \appendoxROOxpessimistic \\
+    \hline
+    revers$^o$   & 30         & \reversoxROxoptimistic & \reversoxROximproved & \reversoxROxpessimistic \\
+                 & 60         & \reversoxGOxoptimistic & \reversoxGOximproved & \reversoxGOxpessimistic \\
+                 & 90         & \reversoxPOxoptimistic & \reversoxPOximproved & \reversoxPOxpessimistic \\
+    \hline
+    sort$^o$     & 2          & \sortoxSxoptimistic  & \sortoxSximproved  & \sortoxSxpessimistic  \\
+                 & 3          & \sortoxRxoptimistic  & \sortoxRximproved  & \sortoxRxpessimistic  \\
+                 & 4          & \sortoxJxoptimistic  & \sortoxJximproved  & \sortoxJxpessimistic  \\
+                 & 30         & \sortoxROxoptimistic & \sortoxROximproved & \sortoxROxpessimistic \\
+    \hline
+    perm$^o$     & 2          & \permoxSxoptimistic & \permoxSximproved & \permoxSxpessimistic \\
+                 & 3          & \permoxRxoptimistic & \permoxRximproved & \permoxRxpessimistic \\
+                 & 6          & \permoxGxoptimistic & \permoxGximproved & \permoxGxpessimistic \\
+    \hline
+    mult$^o$     & 4          & \multoxJxoptimistic & \multoxJximproved & \multoxJxpessimistic \\ 
+                 & 5          & \multoxBxoptimistic & \multoxBximproved & \multoxBxpessimistic \\
+                 & 8          & \multoxXxoptimistic & \multoxXximproved & \multoxXxpessimistic \\
+    \hline
+    div$^o$      & 3          & \divoxRxoptimistic & \divoxRximproved & \divoxRxpessimistic \\ 
+                 & 4          & \divoxJxoptimistic & \divoxJximproved & \divoxJxpessimistic \\  
+                 & 5          & \divoxBxoptimistic & \divoxBximproved & \divoxBxpessimistic \\ 
+    \hline
+    leaves$^o$   & 4          & \leavesoxJxoptimistic & \leavesoxJximproved & \leavesoxJxpessimistic \\
+                 & 5          & \leavesoxBxoptimistic & \leavesoxBximproved & \leavesoxBxpessimistic \\
+                 & 8          & \leavesoxXxoptimistic & \leavesoxXximproved & \leavesoxXxpessimistic \\
+    \hline
+  \end{tabular}
+  \caption{The results of a quantitative evaluation}
+  \label{evaluation_results}
+\end{figure}

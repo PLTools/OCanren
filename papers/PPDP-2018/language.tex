@@ -84,11 +84,11 @@ $\meta{V}$ and the set of \emph{relational symbols} $\meta{R}$ with arities, whi
 $\meta{T_V}$ for the set of all terms over syntactic variables since it will be used in all other syntactic definitions.
 
 The core syntax category in the language is a \emph{goal}. There are five types of goals: unification of two terms, conjunction and disjunction of two
-goals, fresh variable introduction and a call of some relational definition. We stipulate, that the calls of relational definitions respect their arities; we 
+goals, fresh variable introduction and a call of some relational definition. We stipulate that the calls of relational definitions respect their arities; we 
 will also use a shortcut form \lstinline|fresh ($x$ $y$ $z$ ...) ...| instead of \lstinline|fresh($x$) (fresh ($y$) (fresh ($z$) ...)| where needed.
 
 Next, a \emph{relational definition} $\meta{D}$ binds some relational symbol to a parameterized goal; the number of parameters corresponds to the arity of the symbol, and
-we assume, that all parameter variables are pairwise distinct. Finally, the top-level syntax category is a \emph{specification} $\meta{S}$~--- a goal in the context 
+we assume that all parameter variables are pairwise distinct. Finally, the top-level syntax category is a \emph{specification} $\meta{S}$~--- a goal in the context 
 of some relational definitions. 
 
 Note, we define here a language with first-order relations; in particular, we do not allow partial application. As we see later, our approach critically depends
@@ -118,7 +118,7 @@ $$
 \sigma : \meta{W} \to \meta{T}(\meta{W})
 $$
 
-For any substitution $\sigma$ we assume, that the set of all free variables of all terms in the range of $\sigma$ has an empty intersection with the
+For any substitution $\sigma$ we assume that the set of all free variables of all terms in the range of $\sigma$ has an empty intersection with the
 domain of $\sigma$, and we denote by $\sigma\circ\theta$ the composition of substitutions, defined in a usual way. For arbitrary $t\in\meta{T}(\meta{W})$ and
 a substitution $\sigma$ we denote the result of application of $\sigma$ to $t$ as $t\sigma$.
 
@@ -150,7 +150,7 @@ results are eventually combined. Note, the evaluation of both conjuncts is perfo
 of the right conjunct has to be performed in the context of the results, provided by the left one. 
 
 The rule for the \lstinline|fresh| construct allocates arbitrary semantic variable, not taken before, and evaluates the single subgoal in the updated interpretation, which
-associates the syntactic variable, bound in this \lstinline|fresh|, with taken semantic one.
+associates the syntactic variable, bound in this \lstinline|fresh|, with the chosen semantic one.
 
 \FloatBarrier
 
@@ -173,7 +173,7 @@ $$
 Finally, we choose all substitutions from $S_s$. 
 
 Our semantics is almost deterministic~--- the only source of ambiguity is the rule for the \lstinline|fresh| construct, where we choose a new semantic variable
-arbitrarily. If we fix the order, in which semantic variables are allocated, the semantics becomes completely deterministic. It is also easy to see, that if each
+arbitrarily. If we fix the order, in which semantic variables are allocated, the semantics becomes completely deterministic. It is also easy to see that if each
 relational symbol is unambiguously defined in the specification and called with a proper number of parameters, and all goals in all relational definitions and the 
 top-level goal are closed (i.e. each variable occurrence is bound either in some \lstinline|fresh| construct or in a parameter list of enclosing definition), 
 then during the evaluation all syntactic variables are properly interpreted~--- in other words, the execution cannot break down halfway through and either diverges or 
@@ -283,5 +283,5 @@ Finally, we return from the recursive call to \lstinline|append$^o$| and take th
 gives us \mbox{$[\bnd{\sv{1}}{\lstinline|A|},\,\bnd{\sv{2}}{\lstinline|Nil|},\,\bnd{\sv{3}}{\lstinline|Nil|}]$} (see Fig.~\ref{appendo_eval_d}). We only need now to 
 interpret the last conjunct of the second disjunct of \lstinline|append$^o$|~--- \mbox{\lstinline|$xy\;$ === $\;$Cons ($h$, $\;ty$)|}~--- which gives us the
 final substitution \mbox{$[\bnd{\sv{1}}{\lstinline|A|},\,\bnd{\sv{2}}{\lstinline|Nil|},\,\bnd{\sv{3}}{\lstinline|Nil|},\,\bnd{\sv{0}}{\lstinline|Cons (A, Nil)|}]$}. Now, we
-have to remember, that the topmost bound variable of the top-level goal is $q$, and corresponding semantic variable is $\sv{0}$. Thus, the answer is 
+have to remember that the topmost bound variable of the top-level goal is $q$, and corresponding semantic variable is $\sv{0}$. Thus, the answer is 
 \mbox{$q\;=\;\lstinline|Cons (A, Nil)|$}, which is rather expected.

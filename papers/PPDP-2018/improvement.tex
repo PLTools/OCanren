@@ -30,14 +30,14 @@ a sufficient condition identifies a case, when the search, being continued, will
 Another important question is the discipline of conjuncts reordering. Indeed, simply switching any two operands
 of, for example, \mbox{$(g_1\wedge g_2)\wedge g_3$}, would not allow us to try \mbox{$(g_1\wedge g_3)\wedge g_2$}.
 Thus, we have to flatten each ``cluster'' of nested conjunctions into a list of conjuncts\mbox{$\bigwedge g_i$}, 
-where none of the goals $g_i$ is a conjunction. Then, it may seem at the first glance, that the number of orderings to try 
-is exponential on the number of conjuncts; we are going to show, that, fortunately, this is not the case, and
+where none of the goals $g_i$ is a conjunction. Then, it may seem at the first glance that the number of orderings to try 
+is exponential on the number of conjuncts; we are going to show that, fortunately, this is not the case, and
 a quadratic number of orders is suffucient.
 
 In the rest of the section we address all these issues in details: first, we formally present the divergence
 criterion and prove the necessity property; then, we describe an efficient reordering discipline. Finally, we present a
 modified version of the semantics with incorporated divergence test and reordering. This semantics can be
-considered as a modified version of the search, and we prove, that this modification is a proper improvement.
+considered as a modified version of the search, and we prove that this modification is a proper improvement.
 
 \subsection{The Divergence Test}
 
@@ -45,7 +45,7 @@ Our divergence test is based on the following notion:
 
 \begin{definition}
 \normalfont 
-We say, that a vector of terms $\overline{a^{\phantom{x}}_i}$ is more general, than a vector of terms $\overline{b^{\phantom{x}}_i}$ (notation 
+We say that a vector of terms $\overline{a^{\phantom{x}}_i}$ is more general, than a vector of terms $\overline{b^{\phantom{x}}_i}$ (notation 
 $\overline{a^{\phantom{x}}_i}\succeq\overline{b^{\phantom{x}}_i}$), if there is a substitution $\tau$, such that for $\forall i\;b_i = a_i \tau$.
 \end{definition}
 
@@ -80,7 +80,7 @@ Note, the root semantic statement \mbox{$\otrans{\Gamma,\bot}{(\epsilon,\,\empty
 The proof is by induction on the derivation tree. Note, we need to generalize the statement of the lemma, adding the well-formedness
 condition w.r.t. $\iota$, $\sigma_r$, $\delta_r$ for any $(\sigma_r, \delta_r) \in S$.
 
-The next lemma ensures, that any substitution in the RHS of a semantic statement is a correct refinement of that in the LHS:
+The next lemma ensures that any substitution in the RHS of a semantic statement is a correct refinement of that in the LHS:
 
 \begin{lemma}
 \label{two}
@@ -99,10 +99,10 @@ $$
   \end{enumerate}   
 \end{lemma}
 
-The proof is by induction on the derivation tree; we as well need to generalize the statement of the lemma, adding the condition, that the 
+The proof is by induction on the derivation tree; we as well need to generalize the statement of the lemma, adding the condition that the 
 set of all allocated semantic variables $\delta$ can only grow during the evaluation.
 
-The final lemma formalizes the intuitive considerations, that the evaluation for a more general state cannot fail, if the evaluation 
+The final lemma formalizes the intuitive considerations that the evaluation for a more general state cannot fail, if the evaluation 
 for a more specific state doesn't fail:
 
 \begin{lemma}
@@ -125,7 +125,7 @@ derivation tree for the first statement has greater or equal height, then the de
 tree for the second statement.
 \end{lemma}
 
-The proof is by induction on the derivation tree for the second statement. We need to generalize the statement of the lemma, adding the requirement, that 
+The proof is by induction on the derivation tree for the second statement. We need to generalize the statement of the lemma, adding the requirement that 
 for any substitution $s^\prime_r$ in the RHS of the second statement, there has to be a substitution $s_r$ in the RHS of the first statement,
 such that there exists a substitution $\tau_r$, such that for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime_r = \iota(x) \sigma_r \tau_r$}. 
 In the cases of $\textsc{Fresh}$ and $\textsc{Invoke}$ rules, some semantic variables can become non-observable, and we need to define a substitution $\tau_r$ 
@@ -152,7 +152,7 @@ $$
 then \mbox{$\overline{t^\prime_i \iota^\prime \sigma^\prime} \not \succeq \overline{t^{\phantom{\prime}}_i \iota \sigma}$}. 
 \end{theorem}
 \begin{proof}
-Assume, that \mbox{$\overline{t^\prime_i \iota^\prime \sigma^\prime}\succeq \overline{t^{\phantom{\prime}}_i \iota \sigma}$}. 
+Assume that \mbox{$\overline{t^\prime_i \iota^\prime \sigma^\prime}\succeq \overline{t^{\phantom{\prime}}_i \iota \sigma}$}. 
 
 By Lemma~\ref{one}, the semantic statement
 
@@ -264,18 +264,18 @@ evaluate a conjunct, we can have three possible outcomes:
 \item A divergence is detected by the test. This is the case when the reordering takes place.
 \end{itemize}
 
-In a general case, for each cluster we can have some converging prefix $\omega$ we've managed to evaluate so far (initially empty),
+In a general case, for each cluster there can be some converging prefix $\omega$ we've managed to evaluate so far (initially empty),
 and the rest of the conjuncts $g_i$. Since $\omega$ converges, we have some set of substitutions $S_\omega$, which corresponds to the
 result of $\omega$ evaluation.
 
 Suppose none of $g_i$ converges on $S_\omega$ (i.e. there is atleast one substitution in $S_\omega$, on which
-each $g_i$ diverges). We claim, that reordering conjuncts inside $\omega$ would not help. Indeed, with any other order
-of conjuncts $\omega$ either diverges, or converges with the same result (up to the renaming of semantic variables). Thus,
+each $g_i$ diverges). We claim that reordering conjuncts inside $\omega$ would not help. Indeed, with any other order
+of conjuncts, $\omega$ either diverges, or converges with the same result (up to the renaming of semantic variables). Thus,
 making any permutations inside $\omega$ is superfluous.
 
 Next, suppose we have two different goals $g_1$ and $g_2$, which both converge on $S_\omega$ (i.e. both converge on each
 substitution in $S_\omega$). Do we need to try both cases ($g_1$ and $g_2$) to extend the converging prefix?
-It is rather easy to see, that if, say, $g_2$ converges on $S_\omega$, then it will as well converge on the result of evaluation
+It is rather easy to see that if, say, $g_2$ converges on $S_\omega$, then it will as well converge on the result of evaluation
 of $g_1$ on $S_\omega$. Indeed, for arbitrary \mbox{$\sigma\in S_\omega$} we have
 
 \[
@@ -283,7 +283,7 @@ of $g_1$ on $S_\omega$. Indeed, for arbitrary \mbox{$\sigma\in S_\omega$} we hav
 \]
 
 where each \mbox{$\sigma^\prime\in S^\prime_\omega$} is ``more specific'', than $\sigma$, by Lemma~\ref{two}. By Lemma~\ref{three},
-since $g_2$ converges on $\sigma$, it will converge on each \mbox{$\sigma^\prime\in S^\prime_\omega$} as well.
+since $g_2$ converges on $\sigma$, it converges on each \mbox{$\sigma^\prime\in S^\prime_\omega$} as well.
 
 In other words, to extend a converging prefix we can choose arbitrary conjunct, which converges immediately
 after this prefix, and this choice will never has to be undone.
@@ -374,7 +374,7 @@ environment and evaluation result). Note, the rule \rulename{Disj$^+$} does not 
 in either of disjuncts.
 
 The next group describes the invocation and divergence detection (see Fig.~\ref{improved-semantics-invoke}). On
-relation invocation we first consult with the history. If the history indicates, that the invocation is performed in the
+relation invocation we first consult with the history. If the history indicates that the invocation is performed in the
 context of the same relation evaluation with more specific arguments, then we raise the divergence signal; otherwise
 we perform normally. Note, the rule \rulename{Invoke$^+$} does not handle the divergence in the \emph{body} of
 invoked relation.
@@ -417,7 +417,7 @@ The following theorem is rather easy to prove:
 
 \end{theorem}
 
-Indeed, due to Theorem~\ref{criterion}, from the condition we can conclude, that the divergence signal is
+Indeed, due to Theorem~\ref{criterion}, from the condition we can conclude that the divergence signal is
 never raised during the evaluation, according to ``$\xRightarrow{}_e$''; but in this case the evaluation
 steps coinside with those, according to ``$\xRightarrow{}$''. Thus, the improved search is non-degrading.
 
