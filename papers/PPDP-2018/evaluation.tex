@@ -165,7 +165,8 @@ evaluation.
 We ran our benchmarks for various input data sizes, and measured the time, needed for them to complete under the improved search. At the same time
 we ran these benchmarks under the standard search in two cases: with ``optimistic'' and ``pessimistic'' orders of arguments in ``important'' conjunctions
 (these conjunctions were determined experimentally). The running time in seconds is shown on Fig.~\ref{evaluation_results}; by
-``--'' we marked the cases, when the search did not complete in two minutes.
+``--'' we marked the cases, when the search did not complete in two minutes\footnote{The evaluation repository is available at \url{https://github.com/rozplokhas/OCanren-improved-search}}.
+The workstation configuration was Intel Core i7 CPU M 620, 2.67GHz x 4, 8GB RAM running Ubuntu 16.04.
 
 For all benchmarks, under the improved search the convergence did not depend neither on the direction of queries, nor on the order of conjuncts; the same was true for
 the running time. The behavior in the pessimistic case allows us to discriminate between two interesting situations:
