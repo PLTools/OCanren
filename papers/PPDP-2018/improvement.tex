@@ -1,7 +1,7 @@
 \section{Search Improvement}
 \label{improvement}
 
-As we've seen in the previous section, the non-commutativity of conjunction in the presence of resursion
+As we've seen in the previous section, the non-commutativity of conjunction in the presence of recursion
 is one of the reasons for refutational incompleteness. Switching arguments of a certain conjunction
 can sometimes improve the results; there is, however, no certain static order, beneficial in all cases.
 Thus, we can make the following observations:
@@ -32,7 +32,7 @@ of, for example, \mbox{$(g_1\wedge g_2)\wedge g_3$}, would not allow us to try \
 Thus, we have to flatten each ``cluster'' of nested conjunctions into a list of conjuncts\mbox{$\bigwedge g_i$}, 
 where none of the goals $g_i$ is a conjunction. Then, it may seem at the first glance that the number of orderings to try 
 is exponential on the number of conjuncts; we are going to show that, fortunately, this is not the case, and
-a quadratic number of orders is suffucient.
+a quadratic number of orders is sufficient.
 
 In the rest of the section we address all these issues in details: first, we formally present the divergence
 criterion and prove the necessity property; then, we describe an efficient reordering discipline. Finally, we present a
@@ -268,7 +268,7 @@ In a general case, for each cluster there can be some converging prefix $\omega$
 and the rest of the conjuncts $g_i$. Since $\omega$ converges, we have some set of substitutions $S_\omega$, which corresponds to the
 result of $\omega$ evaluation.
 
-Suppose none of $g_i$ converges on $S_\omega$ (i.e. there is atleast one substitution in $S_\omega$, on which
+Suppose none of $g_i$ converges on $S_\omega$ (i.e. there is at least one substitution in $S_\omega$, on which
 each $g_i$ diverges). We claim that reordering conjuncts inside $\omega$ would not help. Indeed, with any other order
 of conjuncts, $\omega$ either diverges, or converges with the same result (up to the renaming of semantic variables). Thus,
 making any permutations inside $\omega$ is superfluous.
@@ -286,7 +286,7 @@ where each \mbox{$\sigma^\prime\in S^\prime_\omega$} is ``more specific'', than 
 since $g_2$ converges on $\sigma$, it converges on each \mbox{$\sigma^\prime\in S^\prime_\omega$} as well.
 
 In other words, to extend a converging prefix we can choose arbitrary conjunct, which converges immediately
-after this prefix, and this choice will never has to be undone.
+after this prefix, and this choice will never have to be undone.
 
 Now we can specify the reordering discipline. Since we never re-evaluate a converging prefix, we do not
 represent it. Thus, each cluster we consider from now on is a suffix of some initial cluster after
@@ -363,7 +363,7 @@ and reordering,~--- and express the improved search in terms of a big-step opera
 of the initial one, presented in Section~\ref{language}.
 
 We denote ``$\xRightarrow{}_e$'' the semantic relation for the improved search, and we add another component to the
-environment~--- a history $h$,~--- which maps a relational sybol to a list of fully interpreted terms as its arguments.
+environment~--- a history $h$,~--- which maps a relational symbol to a list of fully interpreted terms as its arguments.
 As we are (sometimes) capable of detecting the divergence, besides a regular set of answers $S$ as a result of evaluation
 we can have a divergence signal, which we denote $\dagger$; we will use the notation $S^\dagger$, when the difference
 between these two possible outcomes is not important.
@@ -392,7 +392,7 @@ we either first encounter an original cluster, or try to evaluate a suffix of so
 prefix. As the reordering starts now, we recurse to the reordering relation with the parameter \mbox{$p=1$} (which means,
 that the first conjunct will be tried to evaluate next).
 
-Two next rules describe the case, when the $p$-th conjunct, being tried to evaluate, succeds with some result. In the rule
+Two next rules describe the case, when the $p$-th conjunct, being tried to evaluate, succeeds with some result. In the rule
 \rulename{ClusterStep$^+$} we handle the case, when all other conjuncts can be evaluated in the context of that result: we
 combine the outcomes, which completes the evaluation of the whole cluster. In the rule \rulename{ClusterDiv$^+$} we consider
 the opposite case: now there is some conjunct $g_j$, which raises a divergence signal, being evaluated in the context of
@@ -419,7 +419,7 @@ The following theorem is rather easy to prove:
 
 Indeed, due to Theorem~\ref{criterion}, from the condition we can conclude that the divergence signal is
 never raised during the evaluation, according to ``$\xRightarrow{}_e$''; but in this case the evaluation
-steps coinside with those, according to ``$\xRightarrow{}$''. Thus, the improved search is non-degrading.
+steps coincide with those, according to ``$\xRightarrow{}$''. Thus, the improved search is non-degrading.
 
 
 

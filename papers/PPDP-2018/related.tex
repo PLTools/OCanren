@@ -14,7 +14,7 @@ in~\cite{TRS} a number of relations for binary arithmetics, implemented using th
 presented. In a follow-up paper~\cite{KiselyovArithmetic} this technique is explained in details, and the proof of refutational
 completeness is given. Unfortunately, the specifications, written using this technique, are verbose and
 hard to understand, and the implementation requires insight. Our improvement, on the other hand, makes it possible to stick
-with the simplest definitions, and althought we do not provide a proof of refutational completeness for each case, for the
+with the simplest definitions, and although we do not provide a proof of refutational completeness for each case, for the
 majority of realistic queries they converge and demonstrate the same performance, as those, implemented with advanced methods.
 
 In a broader context of logical programming the problem of search convergence/termination was addressed multiple
@@ -22,7 +22,7 @@ times. However, it is rather hard to establish a direct correspondence between o
 since they were developed for essentially different language. For example, in~\cite{OLDresolution} a tabling-based
 improvement of a resolution-based search~--- OLDT resolution~--- is described, and a complete search strategy is developed.
 However, in miniKanren the original search is already complete, and we address rather a different issue. We can speculate,
-that OLDT resolution roughly corresponds to the miniKanren with tabling and, thus, posesses the same properties, and relates to
+that OLDT resolution roughly corresponds to the miniKanren with tabling and, thus, possesses the same properties, and relates to
 our proposal in a similar manner.
 
 An approach to a static transformation of logic programs is described in~\cite{BoundedNondeterminism}. Given a definitional program and
@@ -30,7 +30,7 @@ a query, the transformation results in a new program and a new query, which is g
 under arbitrary search strategy. The approach is proven to be sound and complete for queries, which deliver a finite number of solutions,
 and utilizes the fact, that all these solutions can be discovered via a complete traversal of SLD-tree up to a finite depth. The
 authors introduce a sufficient condition for the finiteness of the number of solutions by utilizing the notion of level mapping, and
-present a method to calculate the limit for the SLD-tree depth. The important distiction with our proposal is that we perform the
+present a method to calculate the limit for the SLD-tree depth. The important distinction with our proposal is that we perform the
 dynamic analysis; as we argued in Section~\ref{incompleteness}, there are cases, when no concrete static form of a specification can
 guarantee convergence for any query of interest. In addition, our approach detects the divergence rather than the
 convergence of program evaluation.
