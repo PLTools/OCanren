@@ -1438,30 +1438,33 @@ module State :
 
     let reify x {env; subst; ctrs} =
       let answ = Subst.reify env subst x in
-      Disequality.reify env subst ctrs x
-      |> List.map (fun diseq ->
-        let rec helper forbidden t =
-          Term.map t
-            ~fval:(fun x -> Term.repr x)
-            ~fvar:(fun v -> Term.repr @@
-              if List.mem v.Var.index forbidden then v
-              else
-                {v with Var.constraints =
-                  Disequality.Answer.extract diseq v
-                  |> List.filter (fun dt ->
-                    match Env.var env dt with
-                    | Some u  -> not (List.mem u.Var.index forbidden)
-                    | None    -> true
-                  )
-                  |> List.map (fun x -> helper (v.Var.index::forbidden) x)
-                  (* TODO: represent [Var.constraints] as [Set];
-                   * TODO: hide all manipulations on [Var.t] inside [Var] module;
-                   *)
-                  |> List.sort Term.compare
-                }
-            )
-        in
-        Answer.make env (helper [] answ)
+      let diseqs = Disequality.reify env subst ctrs x in
+      if List.length diseqs = 0 then
+        [Answer.make env answ]
+      else
+        ListLabels.map diseqs ~f:(fun diseq ->
+          let rec helper forbidden t =
+            Term.map t
+              ~fval:(fun x -> Term.repr x)
+              ~fvar:(fun v -> Term.repr @@
+                if List.mem v.Var.index forbidden then v
+                else
+                  {v with Var.constraints =
+                    Disequality.Answer.extract diseq v
+                    |> List.filter (fun dt ->
+                      match Env.var env dt with
+                      | Some u  -> not (List.mem u.Var.index forbidden)
+                      | None    -> true
+                    )
+                    |> List.map (fun x -> helper (v.Var.index::forbidden) x)
+                    (* TODO: represent [Var.constraints] as [Set];
+                     * TODO: hide all manipulations on [Var.t] inside [Var] module;
+                     *)
+                    |> List.sort Term.compare
+                  }
+              )
+          in
+          Answer.make env (helper [] answ)
       )
 
   end
