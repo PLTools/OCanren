@@ -1377,42 +1377,13 @@ module Fresh =
 include (struct
 
 type ('a, 'b) injected = 'a
+type ('a, 'b) inj = ('a,'b) injected
+type helper = Env.t
+(* camlp5  doesn't support nonrec, so dirty hack *)
+type 'a logic_ = 'a logic
+type 'a logic = 'a logic_
 
-module type T1 =
-  sig
-    type 'a t
-    val fmap : ('a -> 'b) -> 'a t -> 'b t
-  end
-
-module type T2 =
-  sig
-    type ('a, 'b) t
-    val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
-  end
-
-module type T3 =
-  sig
-    type ('a, 'b, 'c) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
-  end
-
-module type T4 =
-  sig
-    type ('a, 'b, 'c, 'd) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
-  end
-
-module type T5 =
-  sig
-    type ('a, 'b, 'c, 'd, 'e) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
-  end
-
-module type T6 =
-  sig
-    type ('a, 'b, 'c, 'd, 'e, 'f) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
-  end
+include MiniKanrenTypes.Ts
 
 let rec reify env x =
   match Env.var env x with
@@ -1521,130 +1492,11 @@ end : sig
 
   val prjc : (int -> 'a list -> 'a) -> Env.t -> ('a, 'a logic) injected -> 'a
 
-module type T1 =
-  sig
-    type 'a t
-    val fmap : ('a -> 'b) -> 'a t -> 'b t
-  end
+  include module type of struct include MiniKanrenTypes.Ts end
 
-module type T2 =
-  sig
-    type ('a, 'b) t
-    val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
-  end
-
-module type T3 =
-  sig
-    type ('a, 'b, 'c) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
-  end
-
-module type T4 =
-  sig
-    type ('a, 'b, 'c, 'd) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
-  end
-
-module type T5 =
-  sig
-    type ('a, 'b, 'c, 'd, 'e) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
-  end
-
-module type T6 =
-  sig
-    type ('a, 'b, 'c, 'd, 'e, 'f) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
-  end
-
-module Fmap (T : T1) :
-  sig
-    val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
-
-    val reify : (Env.t -> ('a,'b) injected -> 'b) -> Env.t -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
-
-    val prjc  : (Env.t -> ('a,'b) injected -> 'a) ->
-      (int -> 'r list -> ('a T.t as 'r)) ->
-      Env.t -> ('r, 'b T.t logic) injected -> 'r
-  end
-
-module Fmap2 (T : T2) :
-  sig
-    val distrib : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
-
-    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> Env.t -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
-
-    val prjc  : (Env.t -> ('a, 'b) injected -> 'a) ->
-      (Env.t -> ('c, 'd) injected -> 'c) ->
-      (int -> 'r list -> (('a,'c) T.t as 'r) ) ->
-      Env.t -> ('r, ('b,'d) T.t logic) injected -> 'r
-  end
-
-module Fmap3 (T : T3) :
-  sig
-    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected
-
-    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> (Env.t -> ('e, 'f) injected -> 'f) ->
-                Env.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
-
-    val prjc  : (Env.t -> ('a, 'b) injected -> 'a) ->
-      (Env.t -> ('c, 'd) injected -> 'c) ->
-      (Env.t -> ('e, 'f) injected -> 'e) ->
-      (int -> 'r list -> 'r) ->
-      Env.t -> (('a,'c,'e) T.t as 'r, ('b,'d,'f) T.t logic) injected -> 'r
-  end
-
-module Fmap4 (T : T4) :
-  sig
-    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
-                       (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected
-
-    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) ->
-                (Env.t -> ('e, 'f) injected -> 'f) -> (Env.t -> ('g, 'h) injected -> 'h) ->
-                Env.t -> (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t logic as 'r) injected -> 'r
-
-    val prjc  :
-      (Env.t -> ('a, 'b) injected -> 'a) -> (Env.t -> ('c, 'd) injected -> 'c) ->
-      (Env.t -> ('e, 'f) injected -> 'e) -> (Env.t -> ('g, 'h) injected -> 'g) ->
-      (int -> 'r list -> 'r) ->
-      Env.t -> ('r, ('b,'d,'f,'h) T.t logic) injected -> (('a,'c,'e,'g) T.t as 'r)
-  end
-
-module Fmap5 (T : T5) :
-  sig
-    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
-                       (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected
-
-    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> (Env.t -> ('e, 'f) injected -> 'f) ->
-                (Env.t -> ('g, 'h) injected -> 'h) -> (Env.t -> ('i, 'j) injected -> 'j) ->
-                Env.t -> (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t logic as 'r) injected -> 'r
-
-    val prjc  :
-      (Env.t -> ('a, 'b) injected -> 'a) -> (Env.t -> ('c, 'd) injected -> 'c) ->
-      (Env.t -> ('e, 'f) injected -> 'e) -> (Env.t -> ('g, 'h) injected -> 'g) ->
-      (Env.t -> ('i, 'j) injected -> 'i) ->
-      (int -> 'r list -> 'r) ->
-      Env.t -> ('r, ('b,'d,'f,'h,'j) T.t logic) injected ->
-      (('a,'c,'e,'g,'i) T.t as 'r)
-  end
-
-module Fmap6 (T : T6) :
-  sig
-    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) T.t ->
-                       (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected
-
-    val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> (Env.t -> ('e, 'f) injected -> 'f) ->
-                (Env.t -> ('g, 'h) injected -> 'h) -> (Env.t -> ('i, 'j) injected -> 'j) -> (Env.t -> ('k, 'l) injected -> 'l) ->
-                Env.t -> (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t logic as 'r) injected -> 'r
-
-    val prjc  :
-      (Env.t -> ('a, 'b) injected -> 'a) -> (Env.t -> ('c, 'd) injected -> 'c) ->
-      (Env.t -> ('e, 'f) injected -> 'e) -> (Env.t -> ('g, 'h) injected -> 'g) ->
-      (Env.t -> ('i, 'j) injected -> 'i) -> (Env.t -> ('k, 'l) injected -> 'k) ->
-      (int -> 'r list -> 'r) ->
-      Env.t -> ('r, ('b,'d,'f,'h,'j,'l) T.t logic) injected ->
-      (('a,'c,'e,'g,'i,'k) T.t as 'r)
-  end
+  include MiniKanrenTypes.Fmaps with type ('a,'b) inj = ('a,'b) injected
+                                 and type helper = Env.t
+                                 and type 'a logic_ = 'a logic
 
 end)
 
