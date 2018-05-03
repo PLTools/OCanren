@@ -934,31 +934,17 @@ module Disequality :
 
         let empty = VarMap.empty
 
-        let add_cstr_term env term terms =
-          if S.exists (Subst.Answer.subsumed env term) terms then
-            (* we should not add new term if it is subsumed by some other term;
-             * i.g. [x=/=1] should not be added to [x=/=_.0]
-             *)
-            terms
-          else
-            (* remove all terms that are subsumed by newly added;
-             * i.g. after adding [x=/=_.0] to [x=/=1 /\ x=/=2] answer
-             * should be equal to [x=/=_.0]
-             *)
-            S.add term @@ S.filter (fun term' ->
-              not @@ Subst.Answer.subsumed env term' term
-            ) terms
-
         let add env t var term =
           try
-            let terms  = VarMap.find var t in
-            let terms' = add_cstr_term env term terms in
-            if terms != terms' then
-              VarMap.add var terms' @@ VarMap.remove var t
-            else
-              t
+            let terms = S.add term @@ VarMap.find var t in
+            VarMap.add var terms @@ VarMap.remove var t
           with Not_found ->
             VarMap.add var (S.singleton term) t
+
+        let mem env t var term =
+          try
+            S.mem term @@ VarMap.find var t
+          with Not_found -> false
 
         let extract t v =
           try S.elements @@ VarMap.find v t with Not_found -> []
@@ -1230,23 +1216,33 @@ module Disequality :
         let reify env subst t x =
           let fv = Subst.freevars env subst x in
           let t = project env subst t fv in
+          (* here we convert disequality in CNF form into DNF form;
+           * we maintain a list of answers, that is a mapping [var -> term list] ---
+           * list of disequality terms (without duplicates) for each variable
+           *)
           M.fold (fun _ disj acc ->
             match Disjunct.reify env subst disj with
             | None    -> acc
             | Some bs ->
+              (* for each answer we append every atom in disjunct to it,
+               * obtaining a list of new `extended` answers;
+               * then we `concat` these lists into single list
+               *)
               ListLabels.map acc ~f:(fun answ ->
-                ListLabels.fold_left bs ~init:(false, [])
-                  ~f:(let open Binding in fun (flag, answs) {var; term} ->
-                    let answ' = Answer.add env answ var term in
-                    (* if [answ] was not modified and we haven't add unchanged [answ] already ([flag] is [false])
-                     * then we add unchanged [answ]
-                     *)
-                    if (answ == answ') then
-                      if (not flag) then (true, answs) else (false, answs)
-                    else
-                      (flag, answ'::answs)
-                  ) |> snd
-                ) |> List.concat
+                let open Binding in
+                (* it might be the case that some atom in the disjunct
+                 * is a duplicate of some other disequality in the answer;
+                 * in this case we can throw away the whole disjunct (and keep only original answer)
+                 * because it would not produce new extended answers;
+                 * i.g. answer is [(x =/= 1) /\ (y =/= 2)] and the disjunct is [(x =/= 1) \/ (z =/= 3)],
+                 * then extended answers are [(x =/= 1) /\ (y =/= 2)] and [(x =/= 1) /\ (y =/= 2) /\ (z =/= 3)],
+                 * but the second one is subsumed by the first one and can be thrown away
+                 *)
+                if List.exists (fun {var; term} -> Answer.mem env answ var term) bs then
+                  [answ]
+                else
+                  List.map (fun {var; term} -> Answer.add env answ var term) bs
+              ) |> List.concat
           ) t [Answer.empty]
 
       end
