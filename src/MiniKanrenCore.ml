@@ -1011,15 +1011,9 @@ module Disequality :
 
         val subsumed : Env.t -> Subst.t -> t -> t -> bool
 
-        (* [refine env subst disj] - returns `disequality` prefix along with substitution specialized with that prefix.
-         *   It is used in two cases:
-         *   1) When we want to `negate` a state of search we try to unify current substitution with disequalities.
-         *        If unification succeeds we obtain a new specialized state - a counterexample.
-         *        Otherwise the substitution with disequalities forms a tautology and we can skip them.
-         *   2) When we want to reify an answer we again try to unify current substitution with disequalities.
-         *        Then we look into `disequality` prefix for bindings that should not be met.
-         *)
-        val reify : Env.t -> Subst.t -> t -> Binding.t list option
+        val simplify : Env.t -> Subst.t -> t -> t option
+
+        val reify : Env.t -> Subst.t -> t -> Binding.t list
       end =
       struct
         type t = Term.t VarMap.t
@@ -1036,7 +1030,7 @@ module Disequality :
 
         let of_list = update VarMap.empty
 
-        let samplevar t = fst @@ VarMap.choose t
+        let samplevar t = fst @@ VarMap.max_binding t
 
         type status =
           | Fulfiled
@@ -1056,7 +1050,7 @@ module Disequality :
           | Violated      -> raise Disequality_violated
 
         let rec recheck env subst t =
-          let var, term = VarMap.min_binding t in
+          let var, term = VarMap.max_binding t in
           let unchecked = VarMap.remove var t in
           match refine env subst !!!var term with
           | Fulfiled       -> raise Disequality_fulfilled
@@ -1067,23 +1061,25 @@ module Disequality :
             else
               recheck env subst unchecked
 
-        let reify env subst ds =
-          let result = VarMap.fold (fun var term acc ->
-            match acc with
-            | None    -> None
-            | Some bs ->
+        let simplify env subst ds =
+          try
+            let result = VarMap.fold (fun var term acc ->
               match refine env subst !!!var term with
-              | Fulfiled       -> None
+              | Fulfiled       -> raise Disequality_fulfilled
               | Violated       -> acc
-              | Refined delta  -> Some (delta @ bs)
-          ) ds (Some [])
-          in
-          (* We should not get empty substituion delta here,
-           * because it would mean that disequality is violated.
-           * But we had to detect violations during search via `check`.
-           *)
-          assert (match result with Some [] -> false | _ -> true);
-          result
+              | Refined delta  -> delta @ acc
+            ) ds []
+            in
+            (* We should not get empty substituion delta here,
+             * because it would mean that disequality is violated.
+             * But we had to detect violations during search via `check`.
+             *)
+            assert (match result with [] -> false | _ -> true);
+            Some (of_list result)
+          with Disequality_fulfilled -> None
+
+        let reify env subst t =
+          VarMap.fold (fun var term xs -> Binding.({var; term})::xs) t []
 
         let is_relevant env subst t fv =
           (* left those disjuncts that contains binding only for variables from [fv],
@@ -1214,6 +1210,12 @@ module Disequality :
           remove_subsumed env subst @@ helper fv
 
         let reify env subst t x =
+          let t = M.fold (fun id disj acc ->
+            match Disjunct.simplify env subst disj with
+            | Some disj -> M.add id disj acc
+            | None      -> acc
+          ) t M.empty
+          in
           let fv = Subst.freevars env subst x in
           let t = project env subst t fv in
           (* here we convert disequality in CNF form into DNF form;
@@ -1221,14 +1223,12 @@ module Disequality :
            * list of disequality terms (without duplicates) for each variable
            *)
           M.fold (fun _ disj acc ->
-            match Disjunct.reify env subst disj with
-            | None    -> acc
-            | Some bs ->
+            let bs = Disjunct.reify env subst disj in
               (* for each answer we append every atom in disjunct to it,
                * obtaining a list of new `extended` answers;
                * then we `concat` these lists into single list
                *)
-              ListLabels.map acc ~f:(fun answ ->
+            ListLabels.map acc ~f:(fun answ ->
                 let open Binding in
                 (* it might be the case that some atom in the disjunct
                  * is a duplicate of some other disequality in the answer;
@@ -1871,7 +1871,6 @@ module Table :
           if not (Cache.contains cache answ) then begin
             Cache.add cache answ;
             (* TODO: we only need to check diff, i.e. [subst' \ subst] *)
-            (* Printf.printf "subst': %s\n" (Term.(show @@ repr @@ Subst.split subst')); *)
             match Disequality.recheck env subst' ctrs (Subst.split subst') with
             | None      -> failure ()
             | Some ctrs ->
