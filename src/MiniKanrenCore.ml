@@ -705,7 +705,7 @@ module Subst :
         type t = Term.t
 
         (* [subsumed env x y] checks that [x] is subsumed by [y] (i.e. [y] is more general than [x]) *)
-        val subsumed : Env.t -> (*Subst.t -> *) t -> t -> bool
+        val subsumed : Env.t -> t -> t -> bool
       end
 
     val reify : Env.t -> t -> 'a -> Answer.t
@@ -886,35 +886,37 @@ module Subst :
 
   end
 
-exception Disequality_violated
-exception Disequality_fulfilled
-
 module Disequality :
   sig
-    (* Efficient representation for storing and updating disequalities during search *)
     type t
 
+    (* [empty] empty disequality constraint store *)
     val empty  : t
 
+    (* [add env subst diseq x y] adds constraint [x =/= y] into disequality constraint store *)
     val add : Env.t -> Subst.t -> t -> 'a -> 'a -> t option
 
     (* [recheck env subst diseq bindings] - checks that disequality is not violated in refined substitution.
      *   [bindings] is a substitution prefix, i.e. new bindings obtained during unification.
      *   This function may rebuild internal representation of constraints and thus it returns new object.
+     *   If constraint is violated then [None] is returned.
      *)
     val recheck : Env.t -> Subst.t -> t -> Binding.t list -> t option
 
-    (* [project env subst fv diseq] - projects [diseq] into the set of free-variables [fv],
+    (* [project env subst diseq fv] - projects [diseq] into the set of free-variables [fv],
      *   i.e. it extracts only those constraints that are relevant to variables from [fv]
      *)
     val project : Env.t -> Subst.t -> t -> VarSet.t -> t
 
+    (* [merge_disjoint env subst diseq diseq'] merges two disequality constraints *)
     val merge_disjoint : Env.t -> Subst.t -> t -> t -> t
 
     module Answer :
       sig
+        (* [Answer.t] result of reification of disequality constraints *)
         type t
 
+        (* [extract a v] returns list of `forbidden` terms for variable [v] *)
         val extract : t -> Var.t -> Term.t list
 
         val subsumed : Env.t -> t -> t -> bool
@@ -968,6 +970,9 @@ module Disequality :
           ) t'
       end
 
+    exception Disequality_violated
+    exception Disequality_fulfilled
+
     (* Disequality constraints are represented as formula in CNF
      * where each atom is single disequality
      * (i.g. ({x =/= t} \/ {y =/= u}) /\ ({y =/= v} \/ {z =/= w}))
@@ -983,7 +988,7 @@ module Disequality :
      * Because of that we maintain an index - a map from variable index to
      * list of conjuncts for which this variable is a `sample`.
      * When `sample` check fails, we change index.
-     * We choose another `sample` {y =/= u} and add binding to the map for variable {y}.
+     * We choose another `sample` {y =/= u} and add it to the map for variable {y}.
      * There is no need to check previous samples in the future (because its assumption is already broken in current substitution)
     *)
 
@@ -992,9 +997,10 @@ module Disequality :
         (* Disjunction.t is a set of single disequalities joint by disjunction *)
         type t
 
+        (* [make env subst x y] creates new disjunct from the disequality [x =/= y] *)
         val make : Env.t -> Subst.t -> 'a -> 'a -> t
 
-        (* returns an index of variable involved in some disequality inside disjunction *)
+        (* [sample disj] returns an index of variable involved in some disequality inside disjunction *)
         val samplevar : t -> Var.t
 
         (* [recheck env subst disj] - checks that disjunction of disequalities is
@@ -1299,18 +1305,31 @@ end
 
 module Answer :
   sig
+    (* [Answer.t] - a type that represents (untyped) answer to a query *)
     type t
 
+    (* [make env t] creates the answer from the environment and term (with constrainted variables)  *)
     val make : Env.t -> Term.t -> t
 
+    (* [lift env a] lifts the answer into different environment, replacing all variables consistently *)
     val lift : Env.t -> t -> t
 
+    (* [env a] returns an environment of the answer *)
     val env : t -> Env.t
-    val term : t -> Term.t
+
+    (* [unctr_term a] returns a term with unconstrained variables *)
+    val unctr_term : t -> Term.t
+
+    (* [ctr_term a] returns a term with constrained variables *)
     val ctr_term : t -> Term.t
+
+    (* [disequality a] returns all disequality constraints on variables in term as a list of bindings *)
     val disequality : t -> Binding.t list
 
+    (* [equal t t'] syntactic equivalence (not an alpha-equivalence) *)
     val equal : t -> t -> bool
+
+    (* [hash t] hashing that is consistent with syntactic equivalence *)
     val hash : t -> int
   end = struct
     type t = Env.t * Term.t
@@ -1319,7 +1338,7 @@ module Answer :
 
     let env (env, _) = env
 
-    let term (env, t) =
+    let unctr_term (_, t) =
       Term.map t
         ~fval:(fun x -> Term.repr x)
         ~fvar:(fun v -> Term.repr {v with Var.constraints = []})
@@ -1335,7 +1354,7 @@ module Answer :
               ~f:(fun acc ctr_term ->
                 let ctr_term = Term.repr ctr_term in
                 let var = {var with Var.constraints = []} in
-                let term = term @@ (env, ctr_term) in
+                let term = unctr_term @@ (env, ctr_term) in
                 let acc = Binding.({var; term})::acc in
                 helper acc ctr_term
               )
@@ -1791,7 +1810,7 @@ module Table :
          *)
         type t = Answer.t list ref * unit H.t
 
-        let create () = (ref [], H.create 1031)
+        let create () = (ref [], H.create 11)
 
         let add (cache, tbl) answ =
           cache := List.cons answ !cache;
@@ -1821,7 +1840,7 @@ module Table :
             else
               (* consume one answer term from cache and `lift` it to the current environment *)
               let answ, tail = (Answer.lift env @@ List.hd iter), List.tl iter in
-              match State.unify (Obj.repr args) (Answer.term answ) st with
+              match State.unify (Obj.repr args) (Answer.unctr_term answ) st with
                 | None -> helper tail seen
                 | Some ({subst=subst'; ctrs=ctrs'} as st') ->
                   begin
