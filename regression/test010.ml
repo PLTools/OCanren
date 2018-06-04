@@ -35,3 +35,10 @@ let _ =
   runI (-1)  q qh (REPR (fun q   -> (q =/= !5)                                                ));
   runI (-1)  q qh (REPR (fun q   -> ((q =/= !3) &&& (q === !3))                               ));
   runI (-1)  q qh (REPR (fun q   -> ((q === !3) &&& (!3 =/= q))                               ))
+
+let show_bool = show(bool)
+
+let runB n = runR MiniKanren.reify show_bool (show(logic) show_bool) n
+
+let _ =
+  runB (-1) qr qrh (REPR (fun q r -> (q =/= (!!true)) &&& (q =/= r)))
