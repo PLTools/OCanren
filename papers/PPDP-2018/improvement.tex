@@ -59,6 +59,12 @@ a syntactic variable $x$, such that \mbox{$v \in FV(\iota(x) \sigma)$}.
 \end{definition}
 
 \begin{definition}
+A triplet of interpretetion, substitution and a set of allocated semantic variables \mbox{$(\iota,\sigma,\delta)$} is
+called \emph{coherent}, if \mbox{$dom(\sigma) \subseteq \delta$}, and any semantic variable, observable w.r.t. $\iota$ and $\sigma$,
+belongs to $\delta$.  
+\end{definition}
+
+\begin{definition}
 \normalfont
 A semantic statement 
 
@@ -66,7 +72,7 @@ $$
 \otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
 $$ 
 
-\noindent is \emph{well-formed}, if \mbox{$dom(\sigma) \subseteq \delta$}, and any semantic variable, observable w.r.t. $\iota$ and $\sigma$, belongs to $\delta$.  
+\noindent is \emph{well-formed}, if \mbox{$(\iota,\sigma,\delta)$} is a coherent triplet.
 \end{definition}
 
 Note, the root semantic statement \mbox{$\otrans{\Gamma,\bot}{(\epsilon,\,\emptyset)}{g}{S}$} is always well-formed.
@@ -114,11 +120,12 @@ $$
 \otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
 $$ 
 
-\noindent is a well-formed semantic statement, and let $\tau$ be a substitution, such that 
-for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime = \iota(x) \sigma \tau$}. 
-Then
+\noindent be a well-formed semantic statement, \mbox{$(\iota^\prime,\sigma^\prime,\delta^\prime)$} be a coherent triplet,
+and let $\tau$ be a substitution, such that \mbox{$\iota^\prime(x) \sigma^\prime = \iota(x) \sigma \tau$} for any syntactic
+variable $x$. Then
 
-$$\otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{g}{S^\prime}
+$$
+\otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{g}{S^\prime}
 $$
 
 \noindent is well-formed and its derivation heigh is not greater, than that for the first statement.

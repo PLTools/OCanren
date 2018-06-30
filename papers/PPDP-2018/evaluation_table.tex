@@ -2,37 +2,37 @@
 
 \begin{figure}[t]
   \small
-  \begin{tabular}{ c | c | c c c  }
-    relation     & input size & optimistic & improved search & pessimistic \\ 
+  \begin{tabular}{ c | c | c c c c  }
+    relation     & size & optimistic & optimistic$^+$ & pessimistic & pessimistic$^+$  \\ 
     \hline
-    append$^o$   & 100        & \appendoxIOOxoptimistic & \appendoxIOOximproved & \appendoxIOOxpessimistic \\
-                 & 200        & \appendoxSOOxoptimistic & \appendoxSOOximproved & \appendoxSOOxpessimistic \\
-                 & 300        & \appendoxROOxoptimistic & \appendoxROOximproved & \appendoxROOxpessimistic \\
+    append$^o$   & 100        & \appendoxIOOxoptimistic & \appendoxIOOximprovedxopt & \appendoxIOOxpessimistic & \appendoxIOOximprovedxpes \\
+                 & 200        & \appendoxSOOxoptimistic & \appendoxSOOximprovedxopt & \appendoxSOOxpessimistic & \appendoxSOOximprovedxpes \\
+                 & 300        & \appendoxROOxoptimistic & \appendoxROOximprovedxopt & \appendoxROOxpessimistic & \appendoxROOximprovedxpes \\
     \hline
-    revers$^o$   & 30         & \reversoxROxoptimistic & \reversoxROximproved & \reversoxROxpessimistic \\
-                 & 60         & \reversoxGOxoptimistic & \reversoxGOximproved & \reversoxGOxpessimistic \\
-                 & 90         & \reversoxPOxoptimistic & \reversoxPOximproved & \reversoxPOxpessimistic \\
+    revers$^o$   & 30         & \reversoxROxoptimistic & \reversoxROximprovedxopt & \reversoxROxpessimistic & \reversoxROximprovedxpes \\
+                 & 60         & \reversoxGOxoptimistic & \reversoxGOximprovedxopt & \reversoxGOxpessimistic & \reversoxGOximprovedxpes \\
+                 & 90         & \reversoxPOxoptimistic & \reversoxPOximprovedxopt & \reversoxPOxpessimistic & \reversoxPOximprovedxpes \\
     \hline
-    sort$^o$     & 2          & \sortoxSxoptimistic  & \sortoxSximproved  & \sortoxSxpessimistic  \\
-                 & 3          & \sortoxRxoptimistic  & \sortoxRximproved  & \sortoxRxpessimistic  \\
-                 & 4          & \sortoxJxoptimistic  & \sortoxJximproved  & \sortoxJxpessimistic  \\
-                 & 30         & \sortoxROxoptimistic & \sortoxROximproved & \sortoxROxpessimistic \\
+    sort$^o$     & 2          & \sortoxSxoptimistic  & \sortoxSximprovedxopt  & \sortoxSxpessimistic  & \sortoxSximprovedxpes  \\
+                 & 3          & \sortoxRxoptimistic  & \sortoxRximprovedxopt  & \sortoxRxpessimistic  & \sortoxRximprovedxpes  \\
+                 & 4          & \sortoxJxoptimistic  & \sortoxJximprovedxopt  & \sortoxJxpessimistic  & \sortoxJximprovedxpes  \\
+                 & 30         & \sortoxROxoptimistic & \sortoxROximprovedxopt & \sortoxROxpessimistic & \sortoxROximprovedxpes \\
     \hline
-    perm$^o$     & 2          & \permoxSxoptimistic & \permoxSximproved & \permoxSxpessimistic \\
-                 & 3          & \permoxRxoptimistic & \permoxRximproved & \permoxRxpessimistic \\
-                 & 6          & \permoxGxoptimistic & \permoxGximproved & \permoxGxpessimistic \\
+    perm$^o$     & 2          & \permoxSxoptimistic & \permoxSximprovedxopt & \permoxSxpessimistic & \permoxSximprovedxpes \\
+                 & 3          & \permoxRxoptimistic & \permoxRximprovedxopt & \permoxRxpessimistic & \permoxRximprovedxpes \\
+                 & 6          & \permoxGxoptimistic & \permoxGximprovedxopt & \permoxGxpessimistic & \permoxGximprovedxpes \\
     \hline
-    mult$^o$     & 4          & \multoxJxoptimistic & \multoxJximproved & \multoxJxpessimistic \\ 
-                 & 5          & \multoxBxoptimistic & \multoxBximproved & \multoxBxpessimistic \\
-                 & 8          & \multoxXxoptimistic & \multoxXximproved & \multoxXxpessimistic \\
+    mult$^o$     & 4          & \multoxJxoptimistic & \multoxJximprovedxopt & \multoxJxpessimistic & \multoxJximprovedxpes \\ 
+                 & 5          & \multoxBxoptimistic & \multoxBximprovedxopt & \multoxBxpessimistic & \multoxBximprovedxpes \\
+                 & 8          & \multoxXxoptimistic & \multoxXximprovedxopt & \multoxXxpessimistic & \multoxXximprovedxpes \\
     \hline
-    div$^o$      & 3          & \divoxRxoptimistic & \divoxRximproved & \divoxRxpessimistic \\ 
-                 & 4          & \divoxJxoptimistic & \divoxJximproved & \divoxJxpessimistic \\  
-                 & 5          & \divoxBxoptimistic & \divoxBximproved & \divoxBxpessimistic \\ 
+    div$^o$      & 3          & \divoxRxoptimistic & \divoxRximprovedxopt & \divoxRxpessimistic & \divoxRximprovedxpes \\ 
+                 & 4          & \divoxJxoptimistic & \divoxJximprovedxopt & \divoxJxpessimistic & \divoxJximprovedxpes \\  
+                 & 5          & \divoxBxoptimistic & \divoxBximprovedxopt & \divoxBxpessimistic & \divoxBximprovedxpes \\ 
     \hline
-    leaves$^o$   & 4          & \leavesoxJxoptimistic & \leavesoxJximproved & \leavesoxJxpessimistic \\
-                 & 5          & \leavesoxBxoptimistic & \leavesoxBximproved & \leavesoxBxpessimistic \\
-                 & 8          & \leavesoxXxoptimistic & \leavesoxXximproved & \leavesoxXxpessimistic \\
+    leaves$^o$   & 4          & \leavesoxJxoptimistic & \leavesoxJximprovedxopt & \leavesoxJxpessimistic & \leavesoxJximprovedxpes \\
+                 & 5          & \leavesoxBxoptimistic & \leavesoxBximprovedxopt & \leavesoxBxpessimistic & \leavesoxBximprovedxpes \\
+                 & 8          & \leavesoxXxoptimistic & \leavesoxXximprovedxopt & \leavesoxXxpessimistic & \leavesoxXximprovedxpes \\
     \hline
   \end{tabular}
   \caption{The results of a quantitative evaluation}
