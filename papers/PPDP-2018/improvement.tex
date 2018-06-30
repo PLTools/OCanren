@@ -54,12 +54,12 @@ than (some) enclosing one. To state it formally and prove it using the semantics
 
 \begin{definition}
 \normalfont
-A semantic variable $v$ is \emph{observable} w.r.t. the intrepretation $\iota$ and substitution $\sigma$, if there exists 
+A semantic variable $v$ is \emph{observable} w.r.t. the interpretation $\iota$ and substitution $\sigma$, if there exists 
 a syntactic variable $x$, such that \mbox{$v \in FV(\iota(x) \sigma)$}.
 \end{definition}
 
 \begin{definition}
-A triplet of interpretetion, substitution and a set of allocated semantic variables \mbox{$(\iota,\sigma,\delta)$} is
+A triplet of interpretation, substitution and a set of allocated semantic variables \mbox{$(\iota,\sigma,\delta)$} is
 called \emph{coherent}, if \mbox{$dom(\sigma) \subseteq \delta$}, and any semantic variable, observable w.r.t. $\iota$ and $\sigma$,
 belongs to $\delta$.  
 \end{definition}
@@ -128,7 +128,7 @@ $$
 \otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{g}{S^\prime}
 $$
 
-\noindent is well-formed and its derivation heigh is not greater, than that for the first statement.
+\noindent is well-formed and its derivation height is not greater, than that for the first statement.
 \end{lemma}
 
 The proof is by induction on the derivation tree for the first statement. We need to generalize the statement of the lemma, adding the requirement that 

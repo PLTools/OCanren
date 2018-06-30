@@ -172,17 +172,17 @@ the fastest convergence in the optimistic case and the slowest in the pessimisti
 cases provide the efficiency boundaries for a benchmark: when the ``direction'' of a query plays along with the
 order of conjuncts in the specification, the whole specification-query performs as in optimistic case; otherwise
 the pessimistic scenario takes place. Our conjecture was that the improved search would speed up the pessimistic
-cases and slow down the optimistic, thus we've ran the impoved search in all cases and compared the running time
-agains that for the original search. The running time in seconds is shown on Fig.~\ref{evaluation_results} (the results
+cases and slow down the optimistic, thus we've ran the improved search in all cases and compared the running time
+against that for the original search. The running time in seconds is shown on Fig.~\ref{evaluation_results} (the results
 for the improved search are marked by $^+$ superscript); by ``--'' we marked the cases, when the search did not
 complete in two minutes\footnote{The evaluation repository is available at \url{https://github.com/rozplokhas/OCanren-improved-search}}. The workstation configuration was Intel Core i7 CPU M 620, 2.67GHz x 4, 8GB RAM running Ubuntu 16.04. We used a
 native-code OCaml compiler with optimistic settings for the garbage collector to prevent it from interfering and blurring the
 results.
 
 For all benchmarks, under the improved search the convergence did not depend neither on the direction of queries, nor on the
-order of conjuncts. With the expection of a very small imput sizes, the improved search provided a speedup up to
+order of conjuncts. With the exception of a very small input sizes, the improved search provided a speedup up to
 few orders of magnitude in pessimistic cases. At the same time the slowdown of optimistic cases under
-the imporved search did not exceed a factor of 2. The behavior in the pessimistic cases also allows us to discriminate
+the improved search did not exceed a factor of 2. The behavior in the pessimistic cases also allows us to discriminate
 between two interesting situations:
 
 \begin{itemize}
