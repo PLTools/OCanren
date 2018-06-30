@@ -41,7 +41,7 @@ conjunction diverges. We stress that this is not a deviation of our semantics, b
 miniKanren implementations. In our example, switching two last conjuncts in the definition of \lstinline|append$^o$| solves the problem~---
 now the whole search stops after the unsuccessful attempt to unify \lstinline|Nil| and \lstinline|Cons ($h$, $ty$)| with no recursive call.
 This, improved version of \lstinline|append$^o$|, is known to be refutationally complete. In fact, there is a conventional ``rule of thumb''
-for miniKanren programming to place the recursive call as far as possible in a list of conjuncts. 
+for miniKanren programming to place the recursive call as far right as possible in a list of conjuncts. 
 
 This convention, however, does not always help; to tell the truth, it often makes the things worse. Consider 
 as an example yet another relation on lists:
@@ -51,7 +51,7 @@ as an example yet another relation on lists:
      (($x$ === $\;\;$Nil) /\ ($x_r$ === $\;\;$Nil)) \/
      (fresh ($h$ $t$ $t_r$)
         ($x$  === $\;$Cons ($h$, $t$)) /\
-        (append$^o$ $t_r$ $h$ $x_r$) /\
+        (append$^o$ $t_r$ (Cons ($h$, Nil)) $x_r$) /\
         (revers$^o$ $t$ $t_r$)
      )
 \end{lstlisting}
@@ -71,7 +71,7 @@ the end. However, the following query
 
 \noindent converges to the expected results. If we switch two last conjuncts in the definition of
 \lstinline|revers$^o$|, the situation reverses: the first query converges, while the second diverges. 
-This example demonstrates that the position of a recursive call (and, in general, the order of
+This example demonstrates that the desired position of a recursive call (and, in general, the order of
 conjuncts) depends on the direction, in which the relation of interest is evaluated.
 
 There are, however, some cases, when the same relation is evaluated in both directions, regardless
@@ -84,6 +84,12 @@ relational list sorting in both directions:
      fresh ($x_s$) 
        (sort$^o$ $x$ $x_s$) $\wedge$ (sort$^o$ $x_p$ $x_s$) 
 \end{lstlisting}
+
+The idea of this implementation is very simple. Let us want to calculate all permutations of some list $l$.
+We first sort $l$, obtaining the sorted version $l^\prime$; then we ask for all lists which, being sorted,
+become equal to $l^\prime$. Obviously, all such lists are merely a permutations of the original list $l$. The
+important observation is that the existence of a single list sorting relation is sufficient to implement this
+idea.
 
 The concrete definition of a relational list sorting \lstinline|sort$^o$| is not important, so we
 omit it due to the space considerations (an interested reader can refer to~\cite{OCanren}). The important part 

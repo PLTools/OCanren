@@ -141,17 +141,19 @@ as (an exotic) way of calculating the Catalan numbers.
 Program synthesis with relational interpreters is one of the most useful applications of miniKanren. 
 The construction of a relational interpreter for a small Scheme-like language is considered 
 in details in~\cite{Untagged}. However, this simple interpreter also reveals some problems, caused by 
-the non-commutativity of conjunction. For example, the following obviously contradictory query
+the non-commutativity of conjunction. For example, consider the following query:
 
 \begin{lstlisting}
    fresh ($e1$ $e2$ $r1$ $r2$) (eval$^o$ (list $e_1$ 3 $e_2$) Nil ($r_1$ 4 $r_2$))
 \end{lstlisting}
 
-\noindent leads to a divergence under the conventional search; no simple reordering can fix it. 
-Under the improved search, however, the contradiction is found and the query terminates with
-no answers. Relational interpreters, used in practice for more complex problems~\cite{unified}, 
-include a lot of optimizations and take significant effort to implement. We hope that some 
-performance problems with them are caused by the non-commutativity and can be fixed automatically 
+Here the first argument of $eval^o$ is a program (a list of something ($e1$), $3$, and something ($e2$)),
+which is evaluated in an empty environment ($Nil$) into a list of  something ($r1$), $4$, and something ($r2$).
+Clearly, there are no $e1$, $e2$, $r1$, $r2$ to fulfill this contract, yet the evaluation leads to a divergence
+under the conventional search; no simple reordering can fix it. Under the improved search, however, the
+contradiction is found and the query terminates with no answers. Relational interpreters, used in practice for
+more complex problems~\cite{unified}, include a lot of optimizations and take significant effort to implement.
+We hope that some performance problems with them are caused by the non-commutativity and can be fixed automatically 
 with the improved search.
 
 \subsection{A Quantitative Evaluation}
@@ -166,7 +168,8 @@ We ran our benchmarks for various input data sizes, and measured the time, neede
 we ran these benchmarks under the standard search in two cases: with ``optimistic'' and ``pessimistic'' orders of arguments in ``important'' conjunctions
 (these conjunctions were determined experimentally). The running time in seconds is shown on Fig.~\ref{evaluation_results}; by
 ``--'' we marked the cases, when the search did not complete in two minutes\footnote{The evaluation repository is available at \url{https://github.com/rozplokhas/OCanren-improved-search}}.
-The workstation configuration was Intel Core i7 CPU M 620, 2.67GHz x 4, 8GB RAM running Ubuntu 16.04.
+The workstation configuration was Intel Core i7 CPU M 620, 2.67GHz x 4, 8GB RAM running Ubuntu 16.04. We used a native-code OCaml compiler with
+optimistic settings for the garbage collector to prevent it from interfering and blurring the results.
 
 For all benchmarks, under the improved search the convergence did not depend neither on the direction of queries, nor on the order of conjuncts; the same was true for
 the running time. The behavior in the pessimistic case allows us to discriminate between two interesting situations:

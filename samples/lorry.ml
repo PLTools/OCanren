@@ -1,20 +1,9 @@
 open GT
 open MiniKanren
 open Std
-(*
-module Nat =
-  struct
 
-    include Nat
-
-    let show = show(Nat.logic)
-    let reify = Nat.reify
-
-    let notZero n = fresh (x) (n === Nat.succ x)
-  end
-  *)    
 @type 'nat move = Forward of 'nat | Backward of 'nat | Unload of 'nat | Fill of 'nat with show, gmap
-
+                                                                                                  
 module M = Fmap (struct type 'a t = 'a move let fmap f = gmap(move) f end)
 
 let show_move  m = show(logic) (show(move) (show(Nat.logic))) m

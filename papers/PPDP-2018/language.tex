@@ -37,7 +37,7 @@
 \]
 
 \[
-\cotrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{t_1\equiv t_2}{(\sigma\circ\Delta,\,\delta)}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \Delta\ne\bot}\ruleno{UnifySuccess}
+\cotrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{t_1\equiv t_2}{\{(\sigma\circ\Delta,\,\delta)\}}{mgu\,(t_1\iota\sigma,\,t_2\iota\sigma) = \Delta\ne\bot}\ruleno{UnifySuccess}
 \]
 
 \[
@@ -48,7 +48,7 @@
 \]
 
 \[
-\trule{\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1}{\{(\sigma_i,\,\delta_i)\}},\;\;\;\;
+\trule{\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1}{\bigcup_i\{(\sigma_i,\,\delta_i)\}},\;\;\;\;
        \forall i\;:\;\otrans{\Gamma,\,\iota}{(\sigma_i,\,\delta_i)}{g_2}{S_i}
       }
       {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{g_1\wedge g_2}{\bigcup_i S_i}}\ruleno{Conj}
@@ -61,8 +61,8 @@
 \]
 
 \[
-\crule{\otrans{\Gamma,\,[x_i\gets v_i]}{(\epsilon,\,\delta)}{g}{\{(\sigma_i,\,\delta_i)\}}}
-      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{\{(\sigma\circ\sigma_i,\,\delta_i)\}}}
+\crule{\otrans{\Gamma,\,[x_i\gets v_i]}{(\epsilon,\,\delta)}{g}{\bigcup_j\{(\sigma_j,\,\delta_j)\}}}
+      {\otrans{\Gamma,\,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{\bigcup_j\{(\sigma\circ\sigma_j,\,\delta_j)\}}}
       {\Gamma(r^k)=\lambda x_1\dots x_k.g,\,v_i=t_i\iota\sigma}\ruleno{Invoke}
 \]
 \end{minipage}      
@@ -73,7 +73,7 @@
 In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent this description serves as
 a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs, 
 which deliver a finite set of answers, while in the reality of relational programming the result is represented as an infinite stream, from which any number of answers can be requested, and the request of a non-existing answer can
-lead to a divergence. Our semantics, thus, corresponds to the scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating the infinite number 
+lead to a divergence. Our semantics, thus, corresponds to scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating the infinite number 
 of answers, from those diverging with no results at all.   
 However, we consider the finite version of the semantics as an important case, which is justified by the evaluation, presented in Section~\ref{evaluation}.
 
@@ -90,6 +90,19 @@ will also use a shortcut form \lstinline|fresh ($x$ $y$ $z$ ...) ...| instead of
 Next, a \emph{relational definition} $\meta{D}$ binds some relational symbol to a parameterized goal; the number of parameters corresponds to the arity of the symbol, and
 we assume that all parameter variables are pairwise distinct. Finally, the top-level syntax category is a \emph{specification} $\meta{S}$~--- a goal in the context 
 of some relational definitions. 
+
+As an example of a relational program we consider a canonical specification~--- list concatenation relation \lstinline|append$^o$|:
+
+\begin{lstlisting}  
+   append$^o$ $\binds$ $\lambda\;x\;y\;xy$ . 
+     (($x$ === $\;$Nil) /\ ($xy$ === $\;y$)) \/
+     (fresh ($h$ $t$ $ty$)
+        ($x$  === $\;$Cons ($h$, $t$)) /\
+        (append$^o$ $t$ $y$ $ty$) /\
+        ($xy$ === $\;$Cons ($h$, $ty$)))
+\end{lstlisting}
+
+We respect here the convention to add the ``$^o$'' suffix to all names of relational entities; for the simplicity we omit the arities of constructors \lstinline|A|, \lstinline|Cons|, \lstinline|Nil| and relational symbol \lstinline|append$^o$|.
 
 Note, we define here a language with first-order relations; in particular, we do not allow partial application. As we see later, our approach critically depends
 on recursive call identification, which is a trivial task in the first-order case. Some existing frameworks for relational programming~\cite{OCanren,RelConversion}
@@ -235,29 +248,21 @@ $}
 \label{appendo_eval}
 \end{figure*}
 
-We illustrate the evaluation, determined by this semantics, by a canonical example for relational programming~--- list concatenation relation \lstinline|append$^o$| 
-(we respect here the convention to add the ``$^o$'' suffix to all names of relational entities):
+We illustrate the evaluation, determined by this semantics, by the following query:
 
 \begin{lstlisting}  
-   append$^o$ $\binds$ $\lambda\;x\;y\;xy$ . 
-     (($x$ === $\;$Nil) /\ ($xy$ === $\;y$)) \/
-     (fresh ($h$ $t$ $ty$)
-        ($x$  === $\;$Cons ($h$, $t$)) /\
-        (append$^o$ $t$ $y$ $ty$) /\
-        ($xy$ === $\;$Cons ($h$, $ty$)) /\
-     );
    fresh ($q$) (append$^o$ (Cons (A, Nil)) Nil $q$)
 \end{lstlisting}
 
-For the simplicity we omitted the arities of constructors \lstinline|A|, \lstinline|Cons|, \lstinline|Nil| and relational symbol \lstinline|append$^o$|. Since we require the 
+\noindent where \lstinline|append$^o$| is a list concatenation relation, presented earlier in this section. Since we require the 
 top-level goal to be closed, from now on we conventionalize the use of a top-level \lstinline|fresh| construct as a binder for the variables, whose values we are 
 interested in (in this particular example $q$).
 
-The evaluation is illustrated on Fig.~\ref{appendo_eval}; here we use numbers in bold font to denote semantic variables. For the sake of brevity and in order to
+The evaluation is illustrated on Fig.~\ref{appendo_eval}. Note, the derivation is shown in a top-down manner, opposite to the
+direction, prescribed by the inference rules. We use numbers in bold font to denote semantic variables. For the sake of brevity and in order to
 make the illustration observable we do not show the binding environment for relational definitions and as a rule denote by ellipses all inherited components
 of derivation tree (the components in the left side of ``$\Rightarrow$'' are inherited top-down, in the right side~--- bottom-up).
 
-\FloatBarrier
 We start from the top-level goal and first apply the rule $\rulename{Fresh}$ (see Fig.~\ref{appendo_eval_a}). Since 
 we did not use any semantic variables yet, we allocate the first one ($\sv{0}$), update the interpretation and the set of used semantic variables and continue. The next construct
 is the call for \lstinline|append$^o$|, so we unfold its definition, replace the interpretation of syntactic variables by the bindings for the formal parameters, and 
@@ -271,7 +276,6 @@ semantic variables $\sv{1}$, $\sv{2}$ and $\sv{3}$ and save the bindings in the 
 Since $x$, $h$ and $t$ are free in current substitution and $x$ is bound to \lstinline|Cons(A, Nil)| by current interpretation, the unification succeeds with the 
 substitution \mbox{$[\bnd{\sv{1}}{\lstinline{A}},\,\bnd{\sv{2}}{\lstinline|Nil|}]$}. The evaluation of remaining conjuncts is shown on Fig.~\ref{appendo_eval_c}.
 
-\FloatBarrier
 The first one is a recursive call to \lstinline|append$^o$|. We evaluate the actual parameters~--- $t$, $y$ and $ty$~--- in current interpretation and substitution, 
 obtaining \lstinline|Nil|, \lstinline|Nil| and $\sv{3}$ respectively, replace the interpretation to bind formal parameters to these values, and recurse to the body with
 empty current substitution. Again, we have the disjunction, and the first disjunct is a conjunction \mbox{\lstinline|($x\;$ === $\;$Nil) $\wedge$ ($xy\;$ === $\;y$)|}.

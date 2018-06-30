@@ -102,8 +102,8 @@ $$
 The proof is by induction on the derivation tree; we as well need to generalize the statement of the lemma, adding the condition that the 
 set of all allocated semantic variables $\delta$ can only grow during the evaluation.
 
-The final lemma formalizes the intuitive considerations that the evaluation for a more general state cannot fail, if the evaluation 
-for a more specific state doesn't fail:
+The final lemma formalizes the intuitive considerations that the evaluation for a certain state $(\sigma^\prime,\delta^\prime)$ cannot
+diverge, if the evaluation for a more general state $(\sigma,\delta)$ doesn't diverge:
 
 \begin{lemma}
 \label{three}
@@ -114,18 +114,17 @@ $$
 \otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
 $$ 
 
-and 
+\noindent is a well-formed semantic statement, and let $\tau$ be a substitution, such that 
+for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime = \iota(x) \sigma \tau$}. 
+Then
 
 $$\otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{g}{S^\prime}
 $$
 
-\noindent be two well-formed semantic statements, and let $\tau$ be a substitution, such that 
-for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime = \iota(x) \sigma \tau$}. Then the 
-derivation tree for the first statement has greater or equal height, then the derivation 
-tree for the second statement.
+\noindent is well-formed and its derivation heigh is not greater, than that for the first statement.
 \end{lemma}
 
-The proof is by induction on the derivation tree for the second statement. We need to generalize the statement of the lemma, adding the requirement that 
+The proof is by induction on the derivation tree for the first statement. We need to generalize the statement of the lemma, adding the requirement that 
 for any substitution $s^\prime_r$ in the RHS of the second statement, there has to be a substitution $s_r$ in the RHS of the first statement,
 such that there exists a substitution $\tau_r$, such that for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime_r = \iota(x) \sigma_r \tau_r$}. 
 In the cases of $\textsc{Fresh}$ and $\textsc{Invoke}$ rules, some semantic variables can become non-observable, and we need to define a substitution $\tau_r$ 
@@ -218,8 +217,8 @@ in our semantics, and, thus, it is not terminating.
 \]
 
 \[
-\crule{\otrans{\Gamma,\,\epsilon[x_i\gets v_i],\,h[r^k\gets(v_1, \dots, v_k)]}{(\epsilon,\,\delta)}{g}{\{(\sigma_i,\,\delta_i)\}}}
-      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\{(\sigma\circ\sigma_i, \delta_i)\}}}
+\crule{\otrans{\Gamma,\,\epsilon[x_i\gets v_i],\,h[r^k\gets(v_1, \dots, v_k)]}{(\epsilon,\,\delta)}{g}{\bigcup_j\{(\sigma_j,\,\delta_j)\}}}
+      {\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{r^k t_1 \dots t_k}{\bigcup_j\{(\sigma\circ\sigma_j, \delta_j)\}}}
       {v_i=t_i\iota\sigma,\;\Gamma\,r^k=\lambda x_1 \dots x_k. g,\; (v_1, \dots, v_k) \nsucceq h\,r^k}
       \ruleno{Invoke$^+$}
 \]
@@ -276,14 +275,13 @@ making any permutations inside $\omega$ is superfluous.
 Next, suppose we have two different goals $g_1$ and $g_2$, which both converge on $S_\omega$ (i.e. both converge on each
 substitution in $S_\omega$). Do we need to try both cases ($g_1$ and $g_2$) to extend the converging prefix?
 It is rather easy to see that if, say, $g_2$ converges on $S_\omega$, then it will as well converge on the result of evaluation
-of $g_1$ on $S_\omega$. Indeed, for arbitrary \mbox{$\sigma\in S_\omega$} we have
+of $g_1$ on $S_\omega$. Indeed, for arbitrary \mbox{$(\sigma, \delta)\in S_\omega$} we have
 
 \[
-\otrans{\dots}{(\sigma,\dots)}{g_1}{S^\prime_\omega}
+\otrans{\dots}{(\sigma, \delta)}{g_1}{S^\prime_\omega}
 \]
 
-where each \mbox{$\sigma^\prime\in S^\prime_\omega$} is ``more specific'', than $\sigma$, by Lemma~\ref{two}. By Lemma~\ref{three},
-since $g_2$ converges on $\sigma$, it converges on each \mbox{$\sigma^\prime\in S^\prime_\omega$} as well.
+where each $\sigma^\prime$ (such that \mbox{$(\sigma^\prime, \delta^\prime)\in S^\prime_\omega$}) is a ``more specific'', than $\sigma$, by Lemma~\ref{two}. By Lemma~\ref{three}, since $g_2$ converges on \mbox{$(\sigma, \delta)\in S_\omega$}, it converges on each \mbox{$(\sigma^\prime, \delta^\prime)\in S^\prime_\omega$} as well.
 
 In other words, to extend a converging prefix we can choose arbitrary conjunct, which converges immediately
 after this prefix, and this choice will never have to be undone.
@@ -299,8 +297,7 @@ value $p$ (initially $p=1$), which describes, which conjunct we have to try next
 \item\label{reorder:top} We try to evaluate $g_p$ on $\sigma$. If the evaluation succeeds with a result $S^\prime$, we 
 remove $g_p$ from the cluster and evaluate the rest for each substitution in $S^\prime$ and $p=1$.
   
-\item If a divergence is detected, and $p\le k$, then we switch $g_i$ with $g_p$, increment $p$,
-and repeat from step~\ref{reorder:top}.
+\item If a divergence is detected, and $p\le k$, then increment $p$, and repeat from step~\ref{reorder:top} (which will try the next goal).
   
 \item Otherwise, we give up and rollback to the enclosing cluster (if any).
 \end{enumerate}
@@ -321,7 +318,7 @@ the order of remaining conjuncts can be different.
 \]
 \vskip3mm
 \[
-\crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\{(\sigma_j,\,\delta_j)\}};\quad
+\crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\bigcup_j\{(\sigma_j,\,\delta_j)\}};\quad
        \forall j\;:\;\otrans{\Gamma,\,\iota,\,h}{(\sigma_j,\,\delta_j)}{\bigwedge\limits_{i\ne p}g_i}{S_j}
       }
       {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\bigcup S_j}}
@@ -330,7 +327,7 @@ the order of remaining conjuncts can be different.
 \]
 \vskip3mm
 \[
-\crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\{(\sigma_j,\,\delta_j)\}};\quad
+\crule{\otrans{\Gamma,\,\iota,\,h}{(\sigma,\,\delta)}{g_p}{\bigcup_j\{(\sigma_j,\,\delta_j)\}};\quad
        \exists j\;:\;\otrans{\Gamma,\,\iota,\,h}{(\sigma_j,\,\delta_j)}{\bigwedge\limits_{i\ne p}g_i}{\dagger}
       }
       {\setsubarrow{_r}\otrans{\Gamma,\,\iota,\,h,\,p}{(\sigma,\,\delta)}{\bigwedge\limits_{i=1}^n g_i}{\dagger}}
@@ -365,8 +362,8 @@ of the initial one, presented in Section~\ref{language}.
 We denote ``$\xRightarrow{}_e$'' the semantic relation for the improved search, and we add another component to the
 environment~--- a history $h$,~--- which maps a relational symbol to a list of fully interpreted terms as its arguments.
 As we are (sometimes) capable of detecting the divergence, besides a regular set of answers $S$ as a result of evaluation
-we can have a divergence signal, which we denote $\dagger$; we will use the notation $S^\dagger$, when the difference
-between these two possible outcomes is not important.
+we can have a divergence signal, which we denote $\dagger$; $S^\dagger$ ranges over both the set of answers $S$ and the divergence
+signal $\dagger$.
 
 For the convenience of presentation we split the set of semantic rules into a few groups. The first one is the inherited
 rules (see Fig.~\ref{improved-semantics-normal})~--- those, which did not change (except for the extension in the
