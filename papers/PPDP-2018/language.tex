@@ -1,4 +1,4 @@
-\section{The Syntax and Semantics of Relational Language}
+\section{The Syntax and Semantics of a Relational Language}
 \label{language}
 
 \begin{figure*}
@@ -182,7 +182,7 @@ $$
 \otrans{\Gamma_s,\,\bot}{(\epsilon,\,\emptyset)}{g}{S_s}
 $$
 
-\noindent obtaining the set of results $S_s$; here we use empty (everywhere undefined) interpretation $\bot$ and empty substitution $\epsilon$ as a starting point. 
+\noindent obtaining the set of results $S_s$; here we use the empty (everywhere undefined) interpretation $\bot$ and the empty substitution $\epsilon$ as a starting point. 
 Finally, we choose all substitutions from $S_s$. 
 
 Our semantics is almost deterministic~--- the only source of ambiguity is the rule for the \lstinline|fresh| construct, where we choose a new semantic variable
@@ -255,7 +255,7 @@ We illustrate the evaluation, determined by this semantics, by the following que
 \end{lstlisting}
 
 \noindent where \lstinline|append$^o$| is a list concatenation relation, presented earlier in this section. Since we require the 
-top-level goal to be closed, from now on we conventionalize the use of a top-level \lstinline|fresh| construct as a binder for the variables, whose values we are 
+top-level goal to be closed, from now on we conventionalize the use of the top-level \lstinline|fresh| construct as a binder for the variables, whose values we are 
 interested in (in this particular example $q$).
 
 The evaluation is illustrated on Fig.~\ref{appendo_eval}. Note, the derivation is shown in a top-down manner, opposite to the
@@ -273,10 +273,10 @@ current interpretation binds $x$ to \lstinline|Cons (A, Nil)|. This completes th
 The evaluation of the second disjunct is shown on Fig.~\ref{appendo_eval_b}. Its top-level construct is \lstinline|fresh ($h\;t\;ty$)|, so we allocate three successive 
 semantic variables $\sv{1}$, $\sv{2}$ and $\sv{3}$ and save the bindings in the interpretation. The next construct is a conjunction of three goals (assuming
 ``$\wedge$'' is right-associative in the concrete syntax), and we proceed with the first one, which is a unification \mbox{\lstinline|$x\;$ === $\;$Cons($h$, $\;t$)|}. 
-Since $x$, $h$ and $t$ are free in current substitution and $x$ is bound to \lstinline|Cons(A, Nil)| by current interpretation, the unification succeeds with the 
+Since $x$, $h$ and $t$ are free in the current substitution and $x$ is bound to \lstinline|Cons(A, Nil)| by current interpretation, the unification succeeds with the 
 substitution \mbox{$[\bnd{\sv{1}}{\lstinline{A}},\,\bnd{\sv{2}}{\lstinline|Nil|}]$}. The evaluation of remaining conjuncts is shown on Fig.~\ref{appendo_eval_c}.
 
-The first one is a recursive call to \lstinline|append$^o$|. We evaluate the actual parameters~--- $t$, $y$ and $ty$~--- in current interpretation and substitution, 
+The first one is a recursive call to \lstinline|append$^o$|. We evaluate the actual parameters~--- $t$, $y$ and $ty$~--- in the current interpretation and substitution, 
 obtaining \lstinline|Nil|, \lstinline|Nil| and $\sv{3}$ respectively, replace the interpretation to bind formal parameters to these values, and recurse to the body with
 empty current substitution. Again, we have the disjunction, and the first disjunct is a conjunction \mbox{\lstinline|($x\;$ === $\;$Nil) $\wedge$ ($xy\;$ === $\;y$)|}.
 Now \mbox{\lstinline|$x\;$ === $\;$Nil|} succeeds, as $x$ is already bound to \lstinline|Nil| by the interpretation, and \mbox{\lstinline|$xy\;$ === $\;y$|} succeeds

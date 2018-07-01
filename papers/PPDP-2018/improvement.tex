@@ -15,7 +15,7 @@ Our improvement of the search is based on the idea of switching the order of con
 the divergence of the first one is detected. More specifically: 
 
 \begin{itemize}
-\item during the search, we keep the track of all conjunctions being performed;
+\item during the search, we keep track of all conjunctions being performed;
 \item when we detect the divergence, we roll back to the nearest conjunction, for which 
 we did not try all orders of constituents yet, switch its constituents, and rerun 
 the search from that conjunction.

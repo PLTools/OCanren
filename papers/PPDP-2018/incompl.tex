@@ -69,7 +69,7 @@ the end. However, the following query
    fresh ($q$) (revers$^o$ $q$ (Cons (A, Nil)))
 \end{lstlisting}
 
-\noindent converges to the expected results. If we switch two last conjuncts in the definition of
+\noindent converges to the expected results. If we switch the two last conjuncts in the definition of
 \lstinline|revers$^o$|, the situation reverses: the first query converges, while the second diverges. 
 This example demonstrates that the desired position of a recursive call (and, in general, the order of
 conjuncts) depends on the direction, in which the relation of interest is evaluated.
@@ -91,14 +91,14 @@ become equal to $l^\prime$. Obviously, all such lists are merely permutations of
 important observation is that the existence of a single list sorting relation is sufficient to implement this
 idea.
 
-The concrete definition of a relational list sorting \lstinline|sort$^o$| is not important, so we
+The concrete definition of the relational list sorting \lstinline|sort$^o$| is not important, so we
 omit it due to the space considerations (an interested reader can refer to~\cite{OCanren}). The important part 
 is that it is obviously recursive and not refutationally complete, and it is being evaluated 
 in \emph{both} directions within the body of \lstinline|perm$^o$|. So, \lstinline|perm$^o$| is expected 
 to perform poorly regardless the order of recursive calls in \lstinline|sort$^o$| implementation; it, 
 indeed, does. First, if we request all solutions, both \lstinline|fresh ($q$) (perm$^o$ l $q$)| and \lstinline|fresh ($q$) (perm$^o$ $q$ l)| diverge for arbitrary non-empty list \lstinline|l| regardless the implementation of \lstinline|sort$^o$|; second, even if we request only a first few existing solutions, it does not provide any results in a reasonable time even for very small list lengths (4, 5, etc.).
 
-Interesting that if we interested in all solutions,
+Interesting, that if we interested in all solutions,
 we have to accurately precompute their number in order not to request more, than exists. For some problems,
 it may be not so simple, as it looks at a first glance (for example, the number of all permutations is
 not a factorial, but a number of permutations with repetitions). Finally, getting the number of solutions can 
