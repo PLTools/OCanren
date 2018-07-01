@@ -70,7 +70,7 @@
 \label{semantics}
 \end{figure*}
 
-In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent this description serves as
+In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent, this description serves as
 a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs, 
 which deliver a finite set of answers, while in the reality of relational programming the result is represented as an infinite stream, from which any number of answers can be requested, and the request of a non-existing answer can
 lead to a divergence. Our semantics, thus, corresponds to scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating the infinite number 
@@ -102,7 +102,7 @@ As an example of a relational program we consider a canonical specification~--- 
         ($xy$ === $\;$Cons ($h$, $ty$)))
 \end{lstlisting}
 
-We respect here the convention to add the ``$^o$'' suffix to all names of relational entities; for the simplicity we omit the arities of constructors \lstinline|A|, \lstinline|Cons|, \lstinline|Nil| and relational symbol \lstinline|append$^o$|.
+We respect here the convention to add the ``$^o$'' suffix to all names of relational entities; for the simplicity, we omit the arities of constructors \lstinline|A|, \lstinline|Cons|, \lstinline|Nil| and relational symbol \lstinline|append$^o$|.
 
 Note, we define here a language with first-order relations; in particular, we do not allow partial application. As we see later, our approach critically depends
 on recursive call identification, which is a trivial task in the first-order case. Some existing frameworks for relational programming~\cite{OCanren,RelConversion}
@@ -267,7 +267,7 @@ We start from the top-level goal and first apply the rule $\rulename{Fresh}$ (se
 we did not use any semantic variables yet, we allocate the first one ($\sv{0}$), update the interpretation and the set of used semantic variables and continue. The next construct
 is the call for \lstinline|append$^o$|, so we unfold its definition, replace the interpretation of syntactic variables by the bindings for the formal parameters, and 
 evaluate the body w.r.t. the empty substitution (which has no difference from the current one yet). The body of \lstinline|append$^o$| definition is a disjunction, so we
-take its left constituent, which is a conjunction, so we in turn take its left constituent, which is a unification \mbox{\lstinline|$x\;$ === $\;$Nil|}. This unification clearly fails, as
+take its left constituent, which is a conjunction, so we, in turn, take its left constituent, which is a unification \mbox{\lstinline|$x\;$ === $\;$Nil|}. This unification clearly fails, as
 current interpretation binds $x$ to \lstinline|Cons (A, Nil)|. This completes the whole branch for the first disjunct of \lstinline|append$^o$| with empty result.
 
 The evaluation of the second disjunct is shown on Fig.~\ref{appendo_eval_b}. Its top-level construct is \lstinline|fresh ($h\;t\;ty$)|, so we allocate three successive 

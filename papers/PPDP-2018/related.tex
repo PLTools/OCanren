@@ -9,7 +9,7 @@ indeed be used to provide the convergence of some queries, but it deals with the
 and, thus, does not heal the queries, which we do (but heals some other cases, like divergence of path-finding queries for
 graphs with cycles, which we do not). 
 
-For a number of problems some \emph{ad-hoc} refutationally complete solutions were already presented before. For example,
+For a number of problems, some \emph{ad-hoc} refutationally complete solutions were already presented before. For example,
 in~\cite{TRS} a number of relations for binary arithmetics, implemented using the idea of bounding the sizes of terms, are
 presented. In a follow-up paper~\cite{KiselyovArithmetic} this technique is explained in details, and the proof of refutational
 completeness is given. Unfortunately, the specifications, written using this technique, are verbose and
@@ -17,7 +17,7 @@ hard to understand, and the implementation requires insight. Our improvement, on
 with the simplest definitions, and although we do not provide a proof of refutational completeness for each case, for the
 majority of realistic queries they converge and demonstrate the same performance, as those, implemented with advanced methods.
 
-In a broader context of logical programming the problem of search convergence/termination was addressed multiple
+In a broader context of logical programming, the problem of search convergence/termination was addressed multiple
 times. However, it is rather hard to establish a direct correspondence between our proposal and the reported results,
 since they were developed for essentially different language. For example, in~\cite{OLDresolution} a tabling-based
 improvement of a resolution-based search~--- OLDT resolution~--- is described, and a complete search strategy is developed.
@@ -29,7 +29,7 @@ An approach to a static transformation of logic programs is described in~\cite{B
 a query, the transformation results in a new program and a new query, which is guaranteed to converge in a finite number of steps
 under arbitrary search strategy. The approach is proven to be sound and complete for queries, which deliver a finite number of solutions,
 and utilizes the fact, that all these solutions can be discovered via a complete traversal of an SLD-tree up to a finite depth. The
-authors introduce a sufficient condition for the finiteness of the number of solutions by utilizing the notion of level mapping, and
+authors introduce a sufficient condition for the finiteness of the number of solutions by utilizing the notion of level mapping and
 present a method to calculate the limit for the SLD-tree depth. The important distinction with our proposal is that we perform the
 dynamic analysis; as we argued in Section~\ref{incompleteness}, there are cases, when no concrete static form of a specification can
 guarantee convergence for any query of interest. In addition, our approach detects the divergence rather than the

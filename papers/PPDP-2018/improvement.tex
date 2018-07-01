@@ -46,7 +46,7 @@ Our divergence test is based on the following notion:
 \begin{definition}
 \normalfont 
 We say that a vector of terms $\overline{a^{\phantom{x}}_i}$ is more general, than a vector of terms $\overline{b^{\phantom{x}}_i}$ (notation 
-$\overline{a^{\phantom{x}}_i}\succeq\overline{b^{\phantom{x}}_i}$), if there is a substitution $\tau$, such that for $\forall i\;b_i = a_i \tau$.
+$\overline{a^{\phantom{x}}_i}\succeq\overline{b^{\phantom{x}}_i}$), if there is a substitution $\tau$, such that $\forall i\;b_i = a_i \tau$.
 \end{definition}
 
 The idea of the divergence test is rather simple: it identifies a recursive call with more general arguments 
@@ -128,7 +128,7 @@ $$
 \otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{g}{S^\prime}
 $$
 
-\noindent is well-formed and its derivation height is not greater, than that for the first statement.
+\noindent is well-formed and its derivation height is not greater than that for the first statement.
 \end{lemma}
 
 The proof is by induction on the derivation tree for the first statement. We need to generalize the statement of the lemma, adding the requirement that 
@@ -174,7 +174,7 @@ $$
 \otrans{\Gamma,\iota^\prime}{(\sigma^\prime,\,\delta^\prime)}{r^k\,t^\prime_1\dots t^\prime_k}{S^\prime}
 $$
 
-\noindent has greater or equal height, than that for
+\noindent has greater or equal height than that for
 
 $$
 \otrans{\Gamma,\iota}{(\sigma,\,\delta)}{r^k\,t_1\dots t_k}{S}
@@ -265,8 +265,8 @@ its conjuncts one after another, threading the results, starting from the initia
 evaluate a conjunct, we can have three possible outcomes:
 
 \begin{itemize}
-\item The evaluation converges with some result. In this case we can proceed with the next conjunct.
-\item The evaluation diverges undetected. In this case nothing can be done.
+\item The evaluation converges with some result. In this case, we can proceed with the next conjunct.
+\item The evaluation diverges undetected. In this case, nothing can be done.
 \item A divergence is detected by the test. This is the case when the reordering takes place.
 \end{itemize}
 
@@ -276,7 +276,7 @@ result of $\omega$ evaluation.
 
 Suppose none of $g_i$ converges on $S_\omega$ (i.e. there is at least one substitution in $S_\omega$, on which
 each $g_i$ diverges). We claim that reordering conjuncts inside $\omega$ would not help. Indeed, with any other order
-of conjuncts, $\omega$ either diverges, or converges with the same result (up to the renaming of semantic variables). Thus,
+of conjuncts, $\omega$ either diverges or converges with the same result (up to the renaming of semantic variables). Thus,
 making any permutations inside $\omega$ is superfluous.
 
 Next, suppose we have two different goals $g_1$ and $g_2$, which both converge on $S_\omega$ (i.e. both converge on each
@@ -288,7 +288,9 @@ of $g_1$ on $S_\omega$. Indeed, for arbitrary \mbox{$(\sigma, \delta)\in S_\omeg
 \otrans{\dots}{(\sigma, \delta)}{g_1}{S^\prime_\omega}
 \]
 
-where each $\sigma^\prime$ (such that \mbox{$(\sigma^\prime, \delta^\prime)\in S^\prime_\omega$}) is a ``more specific'', than $\sigma$, by Lemma~\ref{two}. By Lemma~\ref{three}, since $g_2$ converges on \mbox{$(\sigma, \delta)\in S_\omega$}, it converges on each \mbox{$(\sigma^\prime, \delta^\prime)\in S^\prime_\omega$} as well.
+where each $\sigma^\prime$ (such that \mbox{$(\sigma^\prime, \delta^\prime)\in S^\prime_\omega$}) is a ``more specific'',
+than $\sigma$, by Lemma~\ref{two}. By Lemma~\ref{three}, since $g_2$ converges on \mbox{$(\sigma, \delta)\in S_\omega$},
+it converges on each \mbox{$(\sigma^\prime, \delta^\prime)\in S^\prime_\omega$} as well.
 
 In other words, to extend a converging prefix we can choose arbitrary conjunct, which converges immediately
 after this prefix, and this choice will never have to be undone.
@@ -378,21 +380,21 @@ environment and evaluation result). Note, the rule \rulename{Disj$^+$} does not 
 in either of disjuncts.
 
 The next group describes the invocation and divergence detection (see Fig.~\ref{improved-semantics-invoke}). On
-relation invocation we first consult with the history. If the history indicates that the invocation is performed in the
+relation invocation, we first consult with the history. If the history indicates that the invocation is performed in the
 context of the same relation evaluation with more specific arguments, then we raise the divergence signal; otherwise
 we perform normally. Note, the rule \rulename{Invoke$^+$} does not handle the divergence in the \emph{body} of
 invoked relation.
 
 The next group describes the divergence signal propagation (see Fig.~\ref{improved-semantics-divergence-prop}). Here
-the divergence signal, raised in one of disjuncts or in the body of relational definition, is propagated to the upper
-levels of derivation tree.
+the divergence signal, raised in one of the disjuncts or in the body of relational definition, is propagated to the upper
+levels of the derivation tree.
 
 The final group handles the conjunct reordering (see Fig.~\ref{improved-semantics-reordering}). As we need a reordering
 parameter $p$ (see Section~\ref{sec:reordering}), we introduce another relation ``$\xRightarrow{}_r$'' with environment,
 enriched by $p$.
 
 The rule \rulename{ClusterStart$^+$} describes the case, when we make an attempt to evaluate a cluster. It can happen, when
-we either first encounter an original cluster, or try to evaluate a suffix of some initial cluster past some converging
+we either first encounter an original cluster or try to evaluate a suffix of some initial cluster past some converging
 prefix. As the reordering starts now, we recurse to the reordering relation with the parameter \mbox{$p=1$} (which means,
 that the first conjunct will be tried to evaluate next).
 
@@ -407,7 +409,7 @@ The rule \rulename{ClusterNext$^+$} describes the case, when the $p$-th conjunct
 some other conjuncts to try. We increment $p$ and proceed.
 
 Finally, in the rule \rulename{ClusterStop$^+$} we handle the situation, when all available conjuncts in a cluster were tried to
-evaluate first, and raised the divergence signal. We propagate the signal in this case.
+evaluate first and raised the divergence signal. We propagate the signal in this case.
 
 The following theorem is rather easy to prove:
 
@@ -424,8 +426,3 @@ The following theorem is rather easy to prove:
 Indeed, due to Theorem~\ref{criterion}, from the condition we can conclude that the divergence signal is
 never raised during the evaluation, according to ``$\xRightarrow{}_e$''; but in this case the evaluation
 steps coincide with those, according to ``$\xRightarrow{}$''. Thus, the improved search is non-degrading.
-
-
-
-
-
