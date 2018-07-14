@@ -165,14 +165,14 @@ evaluation.
 As we've pointed out earlier, the performance of the same specification essentially depends on the ``direction'' of
 the query being evaluated. Moreover, the improved search can be faster than the original for one direction and
 slower for another, which make the quiantitative evaluation problematic. In order to cope with this difficulty we
-considered two important cases for each of the benchmarks ~--- ``optimistic''and ``pessimistic''.
-Both cases were discovered by a careful analysis of each specification-query pair. As a result of the
+considered two important versions for each of the benchmarks ~--- ``optimistic''and ``pessimistic''.
+Both versions were constructed by a careful analysis of each specification-query pair. As a result of the
 analysis, the ``important'' conjunctions were discovered. The order of conjuncts in these conjunctions was adjusted to provide
-the fastest convergence in the optimistic case and the slowest in the pessimistic one. Thus, to some extent these
-cases provide the efficiency boundaries for a benchmark: when the ``direction'' of a query plays along with the
-order of conjuncts in the specification, the whole specification-query performs as in optimistic case; otherwise
+the fastest convergence for the optimistic version and the slowest for the pessimistic one. Thus, to some extent these
+versions provide the efficiency boundaries for a benchmark: when the ``direction'' of a query plays along with the
+order of conjuncts in the specification, the whole specification-query performs as in optimistic version; otherwise
 the pessimistic scenario takes place. Our conjecture was that the improved search would speed up the pessimistic
-cases and slow down the optimistic, thus we've run the improved search in all cases and compared the running time
+cases and slow down the optimistic, thus we've run the improved search for all versions and compared the running time
 against that for the original search. The running time in seconds is shown on Fig.~\ref{evaluation_results} (the results
 for the improved search are marked by ``$^+$'' superscript); by ``--'' we marked the cases, when the search did not
 complete in two minutes\footnote{The evaluation repository is available at \url{https://github.com/rozplokhas/OCanren-improved-search}}. The workstation configuration was Intel Core i7 CPU M 620, 2.67GHz x 4, 8GB RAM running Ubuntu 16.04. We used a
