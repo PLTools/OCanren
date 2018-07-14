@@ -22,7 +22,7 @@ the search from that conjunction.
 \end{itemize}
 
 The important detail is the divergence test. Of course, due to the fundamental results in computability
-theory, there is no hope to find a \emph{precise} computable test, which constitutes the necessary and 
+theory, there is no hope to find a \emph{precise} computable test that constitutes the necessary and 
 sufficient condition of divergence. However, in our case a sufficient condition is sufficient. Indeed,  
 a sufficient condition identifies a case, when the search, being continued, will lead to an incompleteness 
 (since a divergence in our semantics always means incompleteness). Thus, it is no harm to try some other way. 
@@ -37,7 +37,8 @@ a quadratic number of orders is sufficient.
 In the rest of the section we address all these issues in details: first, we formally present the divergence
 criterion and prove the necessity property; then, we describe an efficient reordering discipline. Finally, we present a
 modified version of the semantics with incorporated divergence test and reordering. This semantics can be
-considered as a modified version of the search, and we prove that this modification is a proper improvement.
+considered as a modified version of the search, and we prove that this modification is a proper improvement in terms
+of convergence.
 
 \subsection{The Divergence Test}
 
@@ -271,7 +272,7 @@ evaluate a conjunct, we can have three possible outcomes:
 \end{itemize}
 
 In a general case, for each cluster there can be some converging prefix $\omega$ we've managed to evaluate so far (initially empty),
-and the rest of the conjuncts $g_i$. Since $\omega$ converges, we have some set of substitutions $S_\omega$, which corresponds to the
+and the rest of the conjuncts $g_i$. Since $\omega$ converges, we have some set of substitutions $S_\omega$ that corresponds to the
 result of $\omega$ evaluation.
 
 Suppose none of $g_i$ converges on $S_\omega$ (i.e. there is at least one substitution in $S_\omega$, on which
@@ -365,7 +366,7 @@ the order of remaining conjuncts can be different.
 \subsection{Improved Search Semantics}
 
 Here we combine all observations, presented in the preceding subsections~--- the divergence test, conjunct clustering
-and reordering,~--- and express the improved search in terms of a big-step operational semantics, which is an extension
+and reordering,~--- and express the improved search in terms of a big-step operational semantics that is an extension
 of the initial one, presented in Section~\ref{language}.
 
 We denote ``$\xRightarrow{}_e$'' the semantic relation for the improved search, and we add another component to the
@@ -425,4 +426,4 @@ The following theorem is rather easy to prove:
 
 Indeed, due to Theorem~\ref{criterion}, from the condition we can conclude that the divergence signal is
 never raised during the evaluation, according to ``$\xRightarrow{}_e$''; but in this case the evaluation
-steps coincide with those, according to ``$\xRightarrow{}$''. Thus, the improved search is non-degrading.
+steps coincide with those, according to ``$\xRightarrow{}$''. Thus, the improved search preserves the convergence.

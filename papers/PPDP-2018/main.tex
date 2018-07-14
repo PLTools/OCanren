@@ -104,42 +104,7 @@ language=ocanren
   \fi
   \SavedLstInline
 }
-%\addtolength{\parskip}{-2pt}
 \pagestyle{plain}
-
-
-% Copyright
-%\setcopyright{none}
-%\setcopyright{acmcopyright}
-%\setcopyright{acmlicensed}
-\setcopyright{rightsretained}
-%\setcopyright{usgov}
-%\setcopyright{usgovmixed}
-%\setcopyright{cagov}
-%\setcopyright{cagovmixed}
-
-
-% DOI
-%\acmDOI{10.475/123_4}
-
-% ISBN
-%\acmISBN{123-4567-24-567/08/06}
-
-%Conference
-%\acmConference[WOODSTOCK'97]{ACM Woodstock conference}{July 1997}{El
-%  Paso, Texas USA}
-%\acmYear{1997}
-%\copyrightyear{2016}
-
-
-%\acmArticle{4}
-%\acmPrice{15.00}
-
-% These commands are optional
-%\acmBooktitle{Transactions of the ACM Woodstock conference}
-%\editor{Jennifer B. Sartor}
-%\editor{Theo D'Hondt}
-%\editor{Wolfgang De Meuter}
 
 \sloppy
 
@@ -148,8 +113,8 @@ language=ocanren
 \title{Improving Refutational Completeness\\
 of Relational Search via Divergence Test}
 
-\titlenote{Produces the permission block, and
-  copyright information}
+%\titlenote{Produces the permission block, and
+%  copyright information}
 
 \author{Dmitri Rozplokhas}
 \affiliation{%
@@ -171,13 +136,10 @@ of Relational Search via Divergence Test}
 }
 \email{dboulytchev@math.spbu.ru}
 
-% The default list of authors is too long for headers.
-%\renewcommand{\shortauthors}{B. Trovato et al.}
-
 \begin{abstract}
 We describe a search optimization technique for implementation of relational programming language
 miniKanren which makes more queries converge. Specifically, we address the problem of conjunction
-non-commutativity. Our technique is based on a certain divergence criterion, which we use to trigger a
+non-commutativity. Our technique is based on a certain divergence criterion that we use to trigger a
 dynamic reordering of conjuncts. We present a formal semantics of a miniKanren-like language and prove
 that our optimization does not compromise already converging programs, thus, being a proper improvement.
 We also present the prototype implementation of the improved search and demonstrate its application for a
@@ -214,6 +176,15 @@ number of realistic specifications.
 \ccsdesc[500]{Software and its engineering~Constraint and logic languages}
 
 \keywords{relational programming, refutational completeness, divergence test}
+
+\copyrightyear{2018}
+\acmYear{2018}
+\setcopyright{acmcopyright}
+\acmConference[PPDP '18]{The 20th International Symposium on Principles and Practice of Declarative Programming}{September 3--5, 2018}{Frankfurt am Main, Germany}
+\acmBooktitle{The 20th International Symposium on Principles and Practice of Declarative Programming (PPDP '18), September 3--5, 2018, Frankfurt am Main, Germany}
+\acmPrice{15.00}
+\acmDOI{10.1145/3236950.3236958}
+\acmISBN{978-1-4503-6441-6/18/09}
 
 \maketitle
 

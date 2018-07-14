@@ -2,7 +2,7 @@
 \label{sec:related_works}
 
 The non-commutativity of conjunction evaluation in miniKanren is a well-known problem. In~\cite{WillThesis} some language
-extensions are discussed, which, presumably, can be used to provide the commutativity. They include both simple enumeration
+extensions are discussed that, presumably, can be used to provide the commutativity. They include both simple enumeration
 of conjunct orders and more advanced techniques, based on a combination of tabling, parallel goal evaluation, and continuations.
 However, by now none of these proposals were implemented or evaluated. The tabling technique, described in the same work, can
 indeed be used to provide the convergence of some queries, but it deals with the problems, orthogonal to the non-commutativity,
@@ -26,8 +26,8 @@ that OLDT resolution roughly corresponds to the miniKanren with tabling and, thu
 our proposal in a similar manner.
 
 An approach to a static transformation of logic programs is described in~\cite{BoundedNondeterminism}. Given a definitional program and
-a query, the transformation results in a new program and a new query, which is guaranteed to converge in a finite number of steps
-under arbitrary search strategy. The approach is proven to be sound and complete for queries, which deliver a finite number of solutions,
+a query, the transformation results in a new program and a new query that is guaranteed to converge in a finite number of steps
+under arbitrary search strategy. The approach is proven to be sound and complete for queries that deliver a finite number of solutions,
 and utilizes the fact, that all these solutions can be discovered via a complete traversal of an SLD-tree up to a finite depth. The
 authors introduce a sufficient condition for the finiteness of the number of solutions by utilizing the notion of level mapping and
 present a method to calculate the limit for the SLD-tree depth. The important distinction with our proposal is that we perform a

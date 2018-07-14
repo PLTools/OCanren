@@ -5,15 +5,15 @@ We implemented the improved version of the search, described in the previous sec
 as a prototype over existing miniKanren implementation for OCaml, called OCanren~\cite{OCanren}. 
 We added a history support and the divergence test and changed the syntax to make relational definitions
 visible for the interpreter. Programs in OCanren can be easily converted to respect the new syntax.
-In our implementation the divergence propagation is implemented via exception mechanism, which is
-known to be efficient in OCaml. With our prototype implementation some answers for a certain query, begin
+In our implementation the divergence propagation is implemented via exception mechanism that is
+known to be efficient in OCaml. With our prototype implementation some answers for a certain query, being
 evaluated under the improved search, can be repeated multiple times in comparison with those delivered by the
 original search. While these two situations are indistinguishable w.r.t. our set-theoretic variant of the semantics,
 we consider filtering out the repeating answers as a problem for future work.
 
-We evaluated our implementation on a number of benchmarks~--- virtually all available non-refulationally
+We evaluated our implementation on a number of benchmarks~--- virtually all available non-refutationally
 complete queries reported in the literature, whose incompleteness is caused by conjunction non-commutativity.
-With no exceptions, the improved search was capable to fix refutational incompleteness. Thus, we do not know any
+With no exceptions, the improved search was able to fix refutational incompleteness. Thus, we do not know any
 realistic cases, which are not improved by our approach. On the other hand, it is rather easy to construct
 an artificial counterexample. For this, we can define a relation
 
@@ -48,7 +48,7 @@ Even more interesting, in the query
 
 \noindent the divergence is discovered for the recursive call of \lstinline|append$^o$|, but,
 as none of conjunct orders within the definition of \lstinline|append$^o$| help, the
-improved search goes even more back and switches the conjuncts within the definition of
+improved search goes even further back and switches the conjuncts within the definition of
 \lstinline|revers$^o$|. This example demonstrates the importance of operating on 
 a dynamic invocation order.
 
@@ -60,27 +60,25 @@ somewhat exotic) way to calculate the number of permutations with repetitions.
 
 \subsection{Binary arithmetics}
 
-The implementation of a relational arithmetics is an important problem since it is utilized
-in a number of elaborated relational specifications. For the performance reasons, it is 
-preferrable to use binary numbers, not comfy Peano encoding, which makes the problem 
-more complicated. As it is shown in~\cite{WillThesis}, the naive implementation of 
-binary arithmetics turns out to be inappropriate due to multiple problems. 
+The implementation of a refutationally complete relational arithmetics is an important problem since it is utilized
+in a number of elaborated relational specifications. For the performance reasons, it is preferrable to use binary numbers,
+not comfy Peano encoding, which makes the problem more complicated. As it is shown in~\cite{WillThesis}, the naive
+implementation of binary arithmetics turns out to be inappropriate due to multiple problems. 
 
 Fixing these problems takes a lot of efforts: it requires some additional conditions, 
 excess on the first glance, to be introduced in the specification to ensure the non-overlapping 
 of the cases and the correctness of number representation. And still, even with all these 
 improvements, arithmetic relations diverge for some routine queries with one order of 
-consituents, and for others with another. To overcome this problem, 
-arithmetics in the standard miniKanren implementation~\cite{TRS} uses digital logic and 
-some advanced techniques of bounding the sizes of the terms~\cite{KiselyovArithmetic}. 
-As a result, the implementation is quite complicated and takes time to understand.
+consituents, and for others with another. To overcome this problem, arithmetics in the standard miniKanren
+implementation~\cite{TRS} uses digital logic and some advanced techniques of bounding the sizes of
+the terms~\cite{KiselyovArithmetic}. As a result, the implementation, proven to be refutationaly complete,
+is quite complicated and takes time to understand. 
 
-At the same time, all these problems are exactly the consequences of the non-commutativity 
-of conjunction. So, as expected, the improved search makes it possible to stick with
-the naive version (for addition, multiplication, comparisons, division with a reminder)
-without all these complicated optimizations. 
+At the same time, some of these problems are exactly the consequences of the non-commutativity 
+of conjunction. Thus, the improved search makes it possible to stick with the naive version (for addition,
+multiplication, comparisons, division with a reminder) without complicated optimizations.  
 
-As the brightest example, for the division with a reminder, instead of a very complicated recursive definition 
+As the most impressive example, for the division with a reminder, instead of a very complicated recursive definition 
 from~\cite{TRS} (20 lines of code, not including auxiliary functions), one can just write down the 
 following definition
 
@@ -102,7 +100,8 @@ following definition
 \end{lstlisting}
 
 \noindent the search terminates and shows the performance, comparable with the advanced version 
-(here $\overline{n}$ denotes a binary representation of the number $n$).
+(here $\overline{n}$ denotes a binary representation of the number $n$). However, in this case we do not
+have a proof of refutational completeness.
 
 \subsection{Binary trees}
 

@@ -70,17 +70,16 @@
 \label{semantics}
 \end{figure*}
 
-In this section we describe the syntax and semantics of the language, which is used in the rest of the paper. To some extent, this description serves as
-a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs, 
-which deliver a finite set of answers, while in the reality of relational programming the result is represented as an infinite stream, from which any number of answers can be requested, and the request of a non-existing answer can
+In this section we describe the syntax and semantics of the language that is used in the rest of the paper. To some extent, this description serves as
+a short introduction to miniKanren. The main distinction between ``the real'' miniKanren and our version is that we give a proper semantics only to converging programs that deliver a finite set of answers, while in the reality of relational programming the result is represented as an infinite stream, from which any number of answers can be requested, and the request of a non-existing answer can
 lead to a divergence. Our semantics, thus, corresponds to scenario, when \emph{all} answers are requested from the stream. On the other hand, we do not distinguish programs, calculating the infinite number 
 of answers, from those diverging with no results at all.   
-However, we consider the finite version of the semantics as an important case, which is justified by the evaluation, presented in Section~\ref{evaluation}.
+However, we consider the finite version of the semantics as an important case that is justified by the evaluation, presented in Section~\ref{evaluation}.
 
 The syntax of our relational language is shown on Fig.~\ref{syntax}. First, we introduce the alphabet of constructors $\meta{C}$, each of which is equipped with a 
 non-negative arity. Then we in a conventional fashion inductively define the set of all terms $\meta{T}(X)$, parameterized by the set of variables $X$. We need this parameterization 
 since later we will be dealing with two sorts of variables~--- \emph{syntactic} and \emph{semantic}, and, therefore, two sorts of terms. Next, we choose the set of syntactic variables
-$\meta{V}$ and the set of \emph{relational symbols} $\meta{R}$ with arities, which will be used as names for relational definitions. We also introduce a shortcut
+$\meta{V}$ and the set of \emph{relational symbols} $\meta{R}$ with arities that will be used as names for relational definitions. We also introduce a shortcut
 $\meta{T_V}$ for the set of all terms over syntactic variables since it will be used in all other syntactic definitions.
 
 The core syntax category in the language is a \emph{goal}. There are five types of goals: unification of two terms, conjunction and disjunction of two
@@ -105,7 +104,7 @@ As an example of a relational program we consider a canonical specification~--- 
 We respect here the convention to add the ``$^o$'' suffix to all names of relational entities; for the simplicity, we omit the arities of constructors \lstinline|A|, \lstinline|Cons|, \lstinline|Nil| and relational symbol \lstinline|append$^o$|.
 
 Note, we define here a language with first-order relations; in particular, we do not allow partial application. As we see later, our approach critically depends
-on recursive call identification, which is a trivial task in the first-order case. Some existing frameworks for relational programming~\cite{OCanren,RelConversion}
+on recursive call identification that is a trivial task in the first-order case. Some existing frameworks for relational programming~\cite{OCanren,RelConversion}
 do not impose such a limitation; extending our approach for a higher-order case is a subject of future research.
 
 
@@ -141,7 +140,7 @@ $$
 \otrans{\Gamma,\iota}{(\sigma,\,\delta)}{g}{S}
 $$
 
-\noindent where $\Gamma$ is an environment, which binds relational symbols to their definitions, $\iota$~--- an interpretation, $\sigma$~--- a substitution, 
+\noindent where $\Gamma$ is an environment that binds relational symbols to their definitions, $\iota$~--- an interpretation, $\sigma$~--- a substitution, 
 $\delta$~--- a set of allocated semantic variables, $g$~--- a goal, and $S$~--- a set of pairs $(\sigma^\prime,\,\delta^\prime)$, where $\sigma^\prime$ and
 $\delta^\prime$~--- a substitution and a set of allocated semantic variables respectively. Informally speaking, we interpret a goal $g$ in the context of
 relational definitions $\Gamma$, current interpretation $\iota$, current substitution $\sigma$ and current set of allocated semantic variables $\sigma$. As a 
@@ -162,7 +161,7 @@ results are eventually combined. Note, the evaluation of both conjuncts is perfo
 \emph{same} bounding context. The substitution and the set of allocated semantic variables, on the other hand, are inherited from left to right since the evaluation 
 of the right conjunct has to be performed in the context of the results, provided by the left one. 
 
-The rule for the \lstinline|fresh| construct allocates arbitrary semantic variable, not taken before, and evaluates the single subgoal in the updated interpretation, which
+The rule for the \lstinline|fresh| construct allocates arbitrary semantic variable, not taken before, and evaluates the single subgoal in the updated interpretation that
 associates the syntactic variable, bound in this \lstinline|fresh|, with the chosen semantic one.
 
 \FloatBarrier
@@ -176,7 +175,7 @@ substitution instead of the empty one without the need to use composition; howev
 in initially empty substitution.}. 
 
 Given this big-step evaluation relation for goals, we can describe the evaluation for the top-level specification $s=d_1,\dots,d_k;g$. First, we construct the associated environment
-$\Gamma_s$, which properly binds all relational symbols in $s$ to their bodies. Then, we evaluate the top-level goal
+$\Gamma_s$ that properly binds all relational symbols in $s$ to their bodies. Then, we evaluate the top-level goal
 
 $$
 \otrans{\Gamma_s,\,\bot}{(\epsilon,\,\emptyset)}{g}{S_s}
