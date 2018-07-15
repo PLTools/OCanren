@@ -84,8 +84,8 @@ Note, the root semantic statement \mbox{$\otrans{\Gamma,\bot}{(\epsilon,\,\empty
  For a well-formed semantic statement, every statement in its derivation tree is also well-formed.
 \end{lemma}
 
-The proof is by induction on the derivation tree. Note, we need to generalize the statement of the lemma, adding the well-formedness
-condition w.r.t. $\iota$, $\sigma_r$, $\delta_r$ for any $(\sigma_r, \delta_r) \in S$.
+The proof is by induction on the derivation tree. Note, we need to generalize the statement of the lemma, adding the condition that
+\mbox{$(\iota,\sigma_r,\delta_r)$} is a coherent triplet for any \mbox{$(\sigma_r,\,\delta_r) \in S$}.
 
 The next lemma ensures that any substitution in the RHS of a semantic statement is a correct refinement of that in the LHS:
 
@@ -134,7 +134,7 @@ $$
 
 The proof is by induction on the derivation tree for the first statement. We need to generalize the statement of the lemma, adding the requirement that 
 for any substitution $s^\prime_r$ in the RHS of the second statement, there has to be a substitution $s_r$ in the RHS of the first statement,
-such that there exists a substitution $\tau_r$, such that for any syntactic variable $x$ \mbox{$\iota^\prime(x) \sigma^\prime_r = \iota(x) \sigma_r \tau_r$}. 
+such that there exists a substitution $\tau_r$, such that \mbox{$\iota^\prime(x) \sigma^\prime_r = \iota(x) \sigma_r \tau_r$} for any syntactic variable $x$. 
 In the cases of $\textsc{Fresh}$ and $\textsc{Invoke}$ rules, some semantic variables can become non-observable, and we need to define a substitution $\tau_r$ 
 separately for these ``forgotten'' variables and those, which remain observable, using Lemma~\ref{two}.
 
