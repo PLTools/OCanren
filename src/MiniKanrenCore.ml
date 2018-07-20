@@ -1579,6 +1579,21 @@ let rec prjc of_int env x =
   | Some v -> let i, cs = Var.reify (prjc of_int env) v in of_int i cs
   | None   -> Obj.magic x
 
+module Fmap0 (T : T0) =
+  struct
+    external distrib : T.t -> (T.t, T.t) injected = "%identity"
+
+    let rec reify env x =
+      match Env.var env x with
+      | Some v -> let i, cs = Var.reify (reify env) v in Var (i, cs)
+      | None   -> Value (T.fmap x)
+
+    let rec prjc of_int env x =
+      match Env.var env x with
+      | Some v -> let i, cs = Var.reify (prjc of_int env) v in of_int i cs
+      | None   -> T.fmap x
+  end
+
 module Fmap (T : T1) =
   struct
     external distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected = "%identity"

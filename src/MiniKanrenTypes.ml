@@ -1,4 +1,10 @@
 module Ts = struct
+module type T0 =
+sig
+  type t
+  val fmap :  t -> t
+end
+
 module type T1 =
   sig
     type 'a t
@@ -44,6 +50,13 @@ module type Fmaps = sig
   type helper
   type ('a, 'b) inj
   type 'a logic_
+
+module Fmap0 (T : T0) :
+  sig
+    val distrib : T.t -> (T.t, T.t) inj
+    val reify : helper -> (T.t, T.t logic_ as 'r) inj -> 'r
+    val prjc : (int -> 'r list -> (T.t as 'r)) -> helper -> (T.t, T.t logic_) inj -> 'r
+  end
 
 module Fmap : functor (T : T1) ->
   sig
