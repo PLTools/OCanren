@@ -41,6 +41,7 @@
 \usepackage{euscript}
 \usepackage{mathtools}
 \usepackage{tikz}
+\usepackage{tikz-qtree}
 
 \makeatletter
 \begin{comment}
@@ -92,6 +93,9 @@
 %\setlength{\epigraphwidth}{.55\textwidth}
 
 \definecolor{light-gray}{gray}{0.90}
+\definecolor{dark-green}{rgb}{0.30, 0.60, 0.1}
+\definecolor{dark-red}{rgb}{0.80, 0.1, 0.1}
+
 \newcommand{\graybox}[1]{\colorbox{light-gray}{#1}}
 
 \newcommand{\nredrule}[3]{
@@ -226,44 +230,48 @@ language=ocaml
 
 \begin{frame}{Relational Programming}
 
-Program is a \textcolor{green}{relation}, not a \textcolor{red}{function}
+Program as a \textcolor{dark-green}{\textbf{relation}} \emph{vs.} program as a \textcolor{dark-red}{\textbf{function}}
 
 \vskip10mm
 
 Solution to hard problem from relational solution to (easier) reversed problem:
-  \begin{itemize}
-    \item \textbf{Generation of permutations} by list sorting (Kosarev et al., 2016)
-    \item \textbf{Program synthezis} by program interpretation (Byrd et al., 2012)
-    \item \textbf{Proof search} by proof checking (Near et al., 2008)
-  \end{itemize}
-  
+
+\begin{itemize}
+    \item \textbf{Proof search} from proof checking (Near et al., 2008)
+    \item \textbf{Program synthesis} from program interpretation (Byrd et al., 2012)
+    \item \textbf{Generation of permutations} from list sorting (Kosarev et al., 2016)
+\end{itemize}
+
 \vskip10mm
 
-\emph{MiniKanren} is a minimalistic relational DSL
+\emph{MiniKanren}  (reference? reasoned schemer) is a minimalistic relational DSL
 
 \end{frame}
 
 \begin{frame}[fragile]{MiniKanren in a nutshell}
 
-\textbf{Syntax}
+\begin{center}
+\begin{tabular}{cc}
+  \textbf{Syntax} & \textbf{Semantics} $\llbracket\bullet\rrbracket$ \\[3mm] 
+  $term_1 \equiv term_2$ & $\lambda \theta. [ \theta \circ mgu(term_1 \theta, term_2 \theta) ]$ \\ 
+  $goal_1 \wedge goal_2$ & $\lambda \theta. \llbracket goal_1 \rrbracket \theta \oplus \llbracket goal_2 \rrbracket \theta$ \\
+  $goal_1 \vee goal_2$   & $\lambda \theta. \llbracket goal_1 \rrbracket \theta \gg\!\!= \llbracket goal_2 \rrbracket$ \\[3mm]
+  \multicolumn{2}{l}{+ \lstinline|fresh $\,(x\;y \dots)\;goal$| for introducing existential variables} \\
+  \multicolumn{2}{l}{+ a first order language for definitions and applications}
+\end{tabular}
 
-$\begin{array}{rcl}
-            G  & = & t_1 \equiv t_2  \\ 
-                 & | & g_1 \wedge g_2 \\
-                 & |  & g_1 \vee g_2 \\
-                 & |  & fresh\,(x)\;g   \\
-                 & + & \mbox{first order language of function definitions and calls}
-\end{array}$
-
-\vskip10mm
-
-\textbf{Semantic}
-
-$\llbracket t_1 \equiv t_2 \rrbracket = \lambda s. [ s \circ mgu(t_1 s, t_2 s) ]$
-
-$\llbracket g_1 \vee g_2 \rrbracket = \lambda s. \llbracket g_1 \rrbracket s \oplus \llbracket g_2 \rrbracket s$
-
-$\llbracket g_1 \wedge g_2 \rrbracket = \lambda s. \llbracket g_1 \rrbracket s >>= \llbracket g_2 \rrbracket$
+\begin{figure}
+\begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
+append$^o$ a b ab = 
+  (a === [ ] &&& ab === $\;$b) |||
+  (fresh (h t tb) (
+     (a === h :: t) &&&
+     (append$^o$ t b tb) &&&
+     (ab === h :: tb)
+  ))
+\end{lstlisting}
+\end{figure}
+\end{center}
 
 \end{frame}
 
@@ -389,6 +397,15 @@ Reorder conjuncts
 If relation is called recursively with more general arguments than previous one (i. e. there is a substitution that converts new arguments into old ones) then search for answers will not terminate.
 \end{namedthm}
 
+\end{frame}
+
+\begin{frame}[fragile]
+  Experimental feature:
+
+  \begin{center}
+     \Tree [.S [.NP LaTeX ] [.VP [.V is ] [.NP fun ] ] ]
+  \end{center}
+  
 \end{frame}
 
 \begin{frame}[fragile]{Conjuncts reordering}

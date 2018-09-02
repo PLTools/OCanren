@@ -3,8 +3,8 @@
 
 The non-commutativity of conjunction evaluation in miniKanren is a well-known problem. In~\cite{WillThesis} some language
 extensions are discussed that, presumably, can be used to provide the commutativity. They include both simple enumeration
-of conjunct orders and more advanced techniques, based on a combination of tabling, parallel goal evaluation, and continuations.
-However, by now none of these proposals were implemented or evaluated. The tabling technique, described in the same work, can
+of conjunct orders and more advanced techniques, based on a combination of tabling, parallel goal evaluation, and continuations. 
+However, by now no successful implementations were reported. The tabling technique, described in the same work, can
 indeed be used to provide the convergence of some queries, but it deals with the problems, orthogonal to the non-commutativity,
 and, thus, does not heal the queries, which we do (but heals some other cases, like divergence of path-finding queries for
 graphs with cycles, which we do not). 
