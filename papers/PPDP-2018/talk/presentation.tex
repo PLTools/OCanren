@@ -650,27 +650,48 @@ Fixed relations:
 
 \begin{frame}[fragile]{Simplification of programs}
 
-%\begin{center}
-%\begin{tabular}{cc}
+\begin{center}
+\begin{tabular}{cc}
 
-%Refutationally complete (proven) & Seems to work with  \\
-%but very non-trivial & new search too \\
+Refutationally complete (proven) & Seems to work with  \\
+but very non-trivial & new search too \\
 
-%\begin{figure}
+\\
+
 \newsavebox{\mybox}
 
 \begin{lrbox}{\mybox}
     \begin{lstlisting}[basicstyle=\tiny]
+split$^o$ n r l h =
+  (([ ] === n) &&& ([ ] === h) &&& ([ ] === l)) |||
+  (fresh (b n')
+    ((0 : (b % n')) === n) &&& ([ ] === r) &&&
+    (b : n' === h) &&& ([ ] === l)) |||
+  (fresh (n')
+    (1 : n' === n) &&& ([ ] === r) &&&
+    (n' === h) &&& ([1] === l)) |||
+  (fresh (b n' a r')
+    (0 : b : n' === n) &&& ((a : r') === r) &&&
+    ([ ] === l) &&& (split$^o$ (b : n') r' [ ] h)) |||
+  (fresh (n' a r') &&&
+    (1 : n' === n) &&& (a : r' === r) &&&
+    ([1] === l) &&& (split$^o$ n' r' [ ] h)) |||
+  (fresh (b n' a r' l')
+    (b : n' === n) &&& (a : r' === r) &&&
+    (b : l' === l) &&& (poso l') &&& (split$^o$ n' r' l' h))
+
 div$^o$ n m q r =
   ((r === n) &&& ([ ] === q) &&& (lt$^o$ n m)) |||
-  (([1] === q) &&& (eql$^o$ n m) &&& (plus$^o$ r m n) &&& (lt$^o$ r m)) |||
+  (([1] === q) &&& (eql$^o$ n m) &&&
+   (plus$^o$ r m n) &&& (lt$^o$ r m)) |||
   ((ltl$^o$ m n) &&&
    (lt$^o$ r m) &&&
    (pos$^o$ q) &&&
    fresh (nh hl qh ql qlm qlmr rr rh)
      (split$^o$ n r nl nh) &&&
      (split$^o$ q r ql qh) &&&
-     ((([ ] === nh) &&& ([ ] === qh) &&& (minus$^o$ nl r qlm) &&& (mult$^o$ ql m qlm)) |||
+     ((([ ] === nh) &&& ([ ] === qh) &&&
+       (minus$^o$ nl r qlm) &&& (mult$^o$ ql m qlm)) |||
       ((pos$^o$ nh) &&&
        (mult$^o$ ql m qlm) &&&
        (plus$^o$ qlm r qlmr) &&&
@@ -681,14 +702,11 @@ div$^o$ n m q r =
     \end{lstlisting}
 \end{lrbox}
 
-\scalebox{1}{\usebox{\mybox}}
+\scalebox{0.75}{\usebox{\mybox}}
 
-%\end{figure}
-
-\begin{comment}
 &
 
-\begin{minipage}{.5\textwidth}
+\begin{minipage}{.3\textwidth}
 \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
 div$^o$ n m q r =
   fresh (mq)
@@ -697,9 +715,9 @@ div$^o$ n m q r =
     (lt$^o$ r m)
 \end{lstlisting}
 \end{minipage}
-\end{comment}
-%\end{tabular}
-%\end{center}
+
+\end{tabular}
+\end{center}
 
 \end{frame}
 
