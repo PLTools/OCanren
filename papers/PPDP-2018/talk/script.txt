@@ -1,0 +1,36 @@
+
+    1. Hello. I want to present our work on relational programming.
+
+    2. Relational programing is an approach of describing programs a relations, considering the result value as one more argument. 
+This allows a programmer to use one definition in many different ways, therefore, by describing a solution for some easy problem, 
+we are getting solutions to other connected problems, which can be a lot harder. For example, if we create a relational interpreter 
+for some language, we can use it to generate programs in this language with specific properties. Many logical languages can be used 
+for relational programming, but in this work we deal with MiniKanren. It is a minimalistic domain-specific language, designed 
+specially for this programing style.
+
+    3. The core of the language is really tiny, so we can descibe it here completetly. Relations are expressed by goals. The basic 
+goal is unification of two terms. We can also constuct goals using conjunction and disjunction. Semantics of each goal is a function
+that maps substitution to a stream of updated substitutions. It’s based on some monadic search. More precisely, unification 
+composes given substitution with the most general unifier of two terms and returns a one-element stream, or empty stream if the terms
+can’t be unified. Disjunction composes streams with some monadic plus, and conjunction applies the second goal to the result stream of
+the first goal using monadic bind. Streams could be infinite, and it is useful if we need to get a few results from infinite set of
+solutions. The implementation of monadic primitives determines the shape of search tree. The standard MiniKanren uses interleaving
+search, which is known to be complete. This plus syntactic constructions for introduction of new variables, relation definitions and
+calls gives a quite expressive relational language. Here is an example of a simple list concatenation relation.
+
+    4. A known phenomenon in relational programming is refutational incompleteness. A program is called refutationally incomplete, 
+if it diverges after finding all existing solutions. This is a usual behaviour even for the simplest relations, which forces 
+programmer always to specify the number of answers explicitly. Here are some simple queries to relations known from literature. 
+From top to bottom they are list concatenation, list reversing, sorting and permutation generation for list of numbers, binary multiplication and binary division with a reminder.
+
+    5. A frequent reason of refutational incompleteness, which we focus on in this work, is conjunction non-commutativity. Lets us
+take a conjunction of two goals, first of which diverges on some substitution, while the second one fails on it. Then the evaluation 
+of this conjunction will diverge, too. However, if we switch the conjucts, it will terminate. Such orders, which we will call optimistic, are preferable since they provide not only termination, but usually much more effective execution also. Unfornutally, 
+there is no way to find out which order is optimistic for a given definition. Moreover, «optimistic» order can be different for different queries and can even vary during the execution of the same query. So we can’t find optimistic order statically.
+
+    6. Therefore we suggest to reorder conjuncts dynamically during the evaluation, relying on a specific divergence test. 
+This is how it works. The search runs normally with initial order before a divergence is detected. If it happens, we roll back to 
+the nearest enclosed conjunction, swap the conjuncts and resume the search from this point. As a signal of divergence we treat 
+more general arguments in a recursive call of some relation. By this we mean that arguments of the recursive call subsume the 
+arguments of the enclosing one.
+
