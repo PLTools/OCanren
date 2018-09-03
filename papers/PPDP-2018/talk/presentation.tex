@@ -234,7 +234,8 @@ Program as a \textcolor{dark-green}{\textbf{relation}} \emph{vs.} program as a \
 
 \vskip10mm
 
-Solution to hard problem from relational solution to (easier) reversed problem:
+Solving interesting problems by reversing simple relational descriptions:
+\vskip5mm
 
 \begin{itemize}
     \item \textbf{Proof search} from proof checking (Near et al., 2008)
@@ -277,7 +278,8 @@ append$^o$ a b ab =
 
 \begin{frame}[fragile]{Refutational Incompleteness}
 
-Program is \emph{refutationally incomplete} (Byrd, 2009), if it diverges, despite having finite set of answers.
+Program is \emph{refutationally incomplete} (Byrd, 2009), if it diverges after returning all existing answers.
+\vskip10mm
 
 \begin{comment}
 \begin{lstlisting}
@@ -292,38 +294,37 @@ append$^o$ a b ab =
 % \vskip3mm
 
 \begin{tabular}{lcl}
-  \lstinline|append$^o\;q\;r\;[1,2]$| & $\leadsto$ & \lstinline|$([],\,[1, 2]);\; ([1],\,[2]);\; ([1, 2],\,[]);\; \dots$|\\
-  \lstinline|reverso$^o\;[1,2,3]\;q$| & $\leadsto$ & \lstinline|$[3,2,1];\; \dots$|\\
-  \lstinline|sort$^o\;q\;[1,2]$| & $\leadsto$ & \lstinline|$[1, 2];\; [2, 1];\; \dots$|\\
-  \lstinline|perm$^o\;[2,1]\;q$| & $\leadsto$ & \lstinline|$[1, 2];\; [2, 1];\; \dots$|\\
-  \lstinline|mult$^o\;q\;r\;\overline{9}$| & $\leadsto$ & \lstinline|$(\overline{1}, \overline{9});\; (\overline{9}, \overline{1});\; (\overline{3}, \overline{3});\; \dots$|\\
-  \lstinline|div$^o\;\overline{23}\;\overline{5}\;q\;r$| & $\leadsto$ & \lstinline|$(\overline{4},\,\overline{3});\; \dots$|\\
+  \lstinline|append$^o\;q\;r\;[1,2]$| & $\leadsto$ & \lstinline|$([],\,[1, 2]);\; ([1],\,[2]);\; ([1, 2],\,[]);\; \dots$|\\[2mm]
+  \lstinline|reverso$^o\;[1,2,3]\;q$| & $\leadsto$ & \lstinline|$[3,2,1];\; \dots$|\\[2mm]
+  \lstinline|sort$^o\;q\;[1,2]$| & $\leadsto$ & \lstinline|$[1, 2];\; [2, 1];\; \dots$|\\[2mm]
+  \lstinline|perm$^o\;[2,1]\;q$| & $\leadsto$ & \lstinline|$[1, 2];\; [2, 1];\; \dots$|\\[2mm]
+  \lstinline|mult$^o\;q\;r\;9$| & $\leadsto$ & \lstinline|$(1, 9);\; (9, 1);\; (3, 3);\; \dots$|\\[2mm]
+  \lstinline|div$^o\;23\;5\;q\;r$| & $\leadsto$ & \lstinline|$(4,\,3);\; \dots$|
 \end{tabular}
 
 \vskip3mm
 
 \end{frame}
 
-\begin{frame}{Conjunction Non-commutativity}
+\begin{frame}{Conjunction Non-Commutativity}
+\vskip5mm
+Let for some $\theta$, $g_1$, and $g_2$:
 
-With optimistic order:
- 
- \begin{itemize}
- \item search for answers terminates
- \item search for answers usually is \underline{much} faster
- \end{itemize}
- 
- \vskip10mm
- 
- But:
- 
-  \begin{itemize}
- \item It can be not obvious, which order is optimistic
-  
- \item Optimistic orders can be different for different directions of evaluation
-  
- \item Optimistic orders can be different on different steps of evaluation
- \end{itemize}
+\begin{itemize}
+\item $\llbracket g_1\rrbracket\theta=\perp$
+\item $\llbracket g_2\rrbracket\theta=[]$
+\end{itemize}
+\vskip5mm
+Then $\llbracket g_1\wedge g_2\rrbracket\theta=\perp$, but $\llbracket\overbrace{g_2\wedge g_1}^{\mbox{\small ``optimistic'' order}}\rrbracket\theta=[]$
+\vskip5mm
+Observations:
+\begin{itemize}
+ \item Under ``optimistic'' order the search terminates.
+ \item Under ``optimistic'' order the search usually is \underline{much} faster.
+ \item It can be not obvious, which order is ``optimistic''.
+ \item ``Optimistic'' order can depend on the direction of evaluation.
+ \item ``Optimistic'' order can vary as the evaluation proceeds.
+\end{itemize}
 
 \end{frame}
 
@@ -607,98 +608,7 @@ revers$^o$ a r =
 \end{tabular}
 \end{frame}
 
-% ===============
-
-\begin{frame}[fragile]{Conjuncts reordering}
-
-\begin{onlyenv}<1-3>
-\begin{lstlisting}
-append$^o$ a b ab =			$\only<2-3>{{\bf a = ?, \;b = ?, \;ab = [1, 2]}}$
-  (a === [ ] &&& ab === $\;$b) |||
-  (fresh (h t tb) (
-     (a === h :: t) &&&
-     (append$^o$ t b tb) &&&		$\only<3>{{\bf t = ?, \;b = ?, \;tb = ?}}$
-     (ab === h :: tb)  
-  ))
- \end{lstlisting}
- \end{onlyenv}
- \begin{onlyenv}<4-5>
-\begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
-append$^o$ a b ab =			$\only<4-5>{{\bf a = ?, \;b = ?, \;ab = [1, 2]}}$
-  (a === [ ] &&& ab === $\;$b) |||
-  (fresh (h t tb) (
-     (a === h :: t) &&&
-     (@\color{blue}(ab $\equiv$ h :: tb) $\wedge$@)
-     (@\color{blue}(append$^o$ t b tb)@)		   $\only<5>{{\bf t = ?, \;b = ?, \;tb = [2]}}$
-  ))
- \end{lstlisting}
- \end{onlyenv}
-
-\end{frame}
-
-\begin{frame}[fragile]{Conjuncts reordering 2}
-
-\begin{onlyenv}<1-5>
-\begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
-append$^o$ a b ab =			$\only<4-5>{{\bf a = ?, \;b = [1], \;ab = ?}}$
-  (a === [ ] &&& ab === $\;$b) |||
-  (fresh (h t tb) (
-     (a === h :: t) &&&
-     (append$^o$ t b tb) &&&		$\only<5>{{\bf t = ?, \;b = [1], \;tb = ?}}$
-     (ab === h :: tb)  
-  ))
-
-revers$^o$ a r =			$\only<2-5>{{\bf a = [1, 2, 3], \;r = ?}}$
-  (a === [ ] &&& r === [ ]) |||
-  (fresh (h t rt) (
-     (a === h :: t) &&&
-     (append$^o$ rt [h] r) &&&	$\only<3-4>{{\bf rt = ?, \;h = 1, \;r = ?}}$
-     (revers$^o$ t rt)
-  ))
- \end{lstlisting}
- \end{onlyenv}
- \begin{onlyenv}<6-7>
-\begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
-append$^o$ a b ab =			$\only<6-7>{{\bf a = ?, \;b = [1], \;ab = ?}}$
-  (a === [ ] &&& ab === $\;$b) |||
-  (fresh (h t tb) (
-     (a === h :: t) &&&
-     (@\color{blue}(ab $\equiv$ h :: tb) $\wedge$@)
-     (@\color{blue}(append$^o$ t b tb)@)		   $\only<7>{{\bf t = ?, \;b = [1], \;tb = ?}}$
-  ))
-
-revers$^o$ a r =			$\only<6-7>{{\bf a = [1, 2, 3], \;r = ?}}$
-  (a === [ ] &&& r === [ ]) |||
-  (fresh (h t rt) (
-     (a === h :: t) &&&
-     (append$^o$ rt [h] r) &&&
-     (revers$^o$ t rt)
-  ))
- \end{lstlisting}
- \end{onlyenv}
- \begin{onlyenv}<8-9>
-\begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
-append$^o$ a b ab =
-  (a === [ ] &&& ab === $\;$b) |||
-  (fresh (h t tb) (
-     (a === h :: t) &&&
-     (append$^o$ t b tb) &&&
-     (ab === h :: tb)  
-  ))
-
-revers$^o$ a r =			$\only<8-9>{{\bf a = [1, 2, 3], \;r = ?}}$
-  (a === [ ] &&& r === [ ]) |||
-  (fresh (h t rt) (
-     (a === h :: t) &&&
-     (@\color{blue}(revers$^o$ t rt) $\wedge$@)		    $\only<9>{{\bf t = [2, 3], \;r = ?}}$
-     (@\color{blue}(append$^o$ rt [h] r)@)
-  ))
- \end{lstlisting}
- \end{onlyenv}
-
-\end{frame}
-
-\begin{frame}{Formal development}
+\begin{frame}{Formal Development}
 
 Operational semantics (for terminating programs only!):
  \begin{itemize}
