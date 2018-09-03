@@ -380,14 +380,139 @@ If relation is called recursively with more general arguments than previous one 
 
 \end{frame}
 
-\begin{frame}[fragile]
-  Experimental feature:
-
-  \begin{center}
-     \Tree [.S [.NP LaTeX ] [.VP [.V is ] [.NP fun ] ] ]
-  \end{center}
+\begin{frame}[fragile]{Conjunct Reordering Demonstration}
+  \begin{tabular}{p{5cm}p{5cm}}
+    \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
+append$^o$ a b ab =		
+  (a === [ ] &&& ab === $\;$b) |||
+  fresh (h t tb) 
+    (a === h :: t) &&&
+    (append$^o$ t b tb) &&&
+    (ab === h :: tb)  
   
+revers$^o$ a r =	
+  (a === [ ] &&& r === [ ]) |||
+  fresh (h t rt) 
+    (a === h :: t) &&&
+    (append$^o$ rt [h] r) &&&
+    (revers$^o$ t rt)
+\end{lstlisting}
+&
+\begin{center}
+   \Tree [.{\lstinline|revers$^o\; [1,\,2,\,3]\; r$|} ]
+\end{center}
+\end{tabular}
 \end{frame}
+
+\begin{frame}[fragile]{Conjunct Reordering Demonstration}
+  \begin{tabular}{p{5cm}p{5cm}}
+    \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
+append$^o$ a b ab =		
+  (a === [ ] &&& ab === $\;$b) |||
+  fresh (h t tb) 
+    (a === h :: t) &&&
+    (append$^o$ t b tb) &&&
+    (ab === h :: tb)  
+  
+revers$^o$ a r =	
+  (a === [ ] &&& r === [ ]) |||
+  fresh (h t rt) 
+    (a === h :: t) &&&
+    (append$^o$ rt [h] r) &&&
+    (revers$^o$ t rt)
+\end{lstlisting}
+&
+\begin{center}
+   \Tree [.{\lstinline|revers$^o\; [1,\,2,\,3]\; r$|}  [.{$[1,\,2,\,3]\not\equiv [\;]$} ] [.{$\ldots$} ] ]
+\end{center}
+\end{tabular}
+\end{frame}
+
+\begin{frame}[fragile]{Conjunct Reordering Demonstration}
+  \begin{tabular}{p{5cm}p{5cm}}
+    \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
+append$^o$ a b ab =		
+  (a === [ ] &&& ab === $\;$b) |||
+  fresh (h t tb) 
+    (a === h :: t) &&&
+    (append$^o$ t b tb) &&&
+    (ab === h :: tb)  
+  
+revers$^o$ a r =	
+  (a === [ ] &&& r === [ ]) |||
+  fresh (h t rt) 
+    (a === h :: t) &&&
+    (append$^o$ rt [h] r) &&&
+    (revers$^o$ t rt)
+\end{lstlisting}
+&
+\begin{center}
+   \Tree [.{\lstinline|revers$^o\; [1,\,2,\,3]\; r$|}  [.{$[1,\,2,\,3]\not\equiv [\;]$} ] [.{$[1,\,2,\,3]\equiv h_0:t_0$} ] ]
+\end{center}
+\end{tabular}
+\end{frame}
+
+\begin{frame}[fragile]{Conjunct Reordering Demonstration}
+  \begin{tabular}{p{5cm}p{5cm}}
+    \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
+append$^o$ a b ab =		
+  (a === [ ] &&& ab === $\;$b) |||
+  fresh (h t tb) 
+    (a === h :: t) &&&
+    (append$^o$ t b tb) &&&
+    (ab === h :: tb)  
+  
+revers$^o$ a r =	
+  (a === [ ] &&& r === [ ]) |||
+  fresh (h t rt) 
+    (a === h :: t) &&&
+    (append$^o$ rt [h] r) &&&
+    (revers$^o$ t rt)
+\end{lstlisting}
+&
+\begin{center}
+  \Tree [.{\lstinline|revers$^o\; [1,\,2,\,3]\; r$|}
+    [.{$[1,\,2,\,3]\not\equiv [\;]$} ]
+    [.{$[1,\,2,\,3]\equiv h_0:t_0$}
+      [.{\lstinline|append$^o\;rt_0\;[1]\;r$|} ]
+    ]
+  ]
+\end{center}
+\end{tabular}
+\end{frame}
+
+\begin{frame}[fragile]{Conjunct Reordering Demonstration}
+  \begin{tabular}{p{5cm}p{5cm}}
+    \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
+append$^o$ a b ab =		
+  (a === [ ] &&& ab === $\;$b) |||
+  fresh (h t tb) 
+    (a === h :: t) &&&
+    (append$^o$ t b tb) &&&
+    (ab === h :: tb)  
+  
+revers$^o$ a r =	
+  (a === [ ] &&& r === [ ]) |||
+  fresh (h t rt) 
+    (a === h :: t) &&&
+    (append$^o$ rt [h] r) &&&
+    (revers$^o$ t rt)
+\end{lstlisting}
+&
+\begin{center}
+  \Tree [.{\lstinline|revers$^o\; [1,\,2,\,3]\; r$|}
+    [.{$[1,\,2,\,3]\not\equiv [\;]$} ]
+    [.{$[1,\,2,\,3]\equiv h_0:t_0$}
+      [.{\lstinline|append$^o\;rt_0\;[1]\;r$|}
+        [.{$\dots$} ]
+        [.{$rt_0\equiv h_1:t_1$} [.{\lstinline|append$^o\;t_1\;[1]\;tb_0$|} ] ]
+      ]
+    ]
+  ]
+\end{center}
+\end{tabular}
+\end{frame}
+
 
 \begin{frame}[fragile]{Conjuncts reordering}
 
