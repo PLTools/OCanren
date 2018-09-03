@@ -8,7 +8,7 @@
 \usepackage{epigraph}
 \usepackage{verbatim}
 
-%\usepackage{graphicx}
+\usepackage{graphicx}
 \usepackage{latexsym}
 \usepackage{array}
 \usepackage{comment}
@@ -650,14 +650,17 @@ Fixed relations:
 
 \begin{frame}[fragile]{Simplification of programs}
 
-\begin{center}
-\begin{tabular}{cc}
+%\begin{center}
+%\begin{tabular}{cc}
 
-Refutationally complete (proven) & Seems to work with  \\
-but very non-trivial & new search too \\
+%Refutationally complete (proven) & Seems to work with  \\
+%but very non-trivial & new search too \\
 
-\begin{minipage}{.8\textwidth}
-\begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
+%\begin{figure}
+\newsavebox{\mybox}
+
+\begin{lrbox}{\mybox}
+    \begin{lstlisting}[basicstyle=\tiny]
 div$^o$ n m q r =
   ((r === n) &&& ([ ] === q) &&& (lt$^o$ n m)) |||
   (([1] === q) &&& (eql$^o$ n m) &&& (plus$^o$ r m n) &&& (lt$^o$ r m)) |||
@@ -675,9 +678,14 @@ div$^o$ n m q r =
        (split$^o$ rr r [ ] rh) &&&
        (div$^o$ nh m qh rh)))
   )
-\end{lstlisting}
-\end{minipage}
+    \end{lstlisting}
+\end{lrbox}
 
+\scalebox{1}{\usebox{\mybox}}
+
+%\end{figure}
+
+\begin{comment}
 &
 
 \begin{minipage}{.5\textwidth}
@@ -689,9 +697,9 @@ div$^o$ n m q r =
     (lt$^o$ r m)
 \end{lstlisting}
 \end{minipage}
-
-\end{tabular}
-\end{center}
+\end{comment}
+%\end{tabular}
+%\end{center}
 
 \end{frame}
 
