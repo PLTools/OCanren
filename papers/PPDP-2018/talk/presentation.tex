@@ -611,56 +611,53 @@ revers$^o$ a r =
 \end{tabular}
 \end{frame}
 
-\begin{frame}{Formal Development}
+\begin{frame}{Formal Justification}
 
-Operational semantics (for terminating programs only!):
- \begin{itemize}
- \item standart search
- \item search with extension
- \end{itemize}
+Operational semantics (so far for finite-set answers programs only):
+\vskip3mm
+
+\begin{itemize}
+  \item for the standard search;
+  \item for the improved search with divergence detection and conjuncts reordering.
+\end{itemize}
  
- \vskip1cm
+ \vskip8mm
  
- Proofs:
+ Properties proven:
+ \vskip3mm
  \begin{itemize}
- \item divergence test
- \item extension preserves termination
+ \item the divergence test constitutes a sufficient condition for divergence;
+ \item the extension preserves convergence.
  \end{itemize}
  
 \end{frame}
 
 \begin{frame}{Evaluation}
 
-Implemented for OCanren (typed MiniKanren for OCaml)
+Implemented for OCanren (a typed MiniKanren for OCaml)
 
- \vskip8mm
+\vskip8mm
 
-Test detects divergence in all natural relations (only artificial counterexamples)
+The test detects divergence in all natural relations (only artificial counterexamples are known)
 
- \vskip8mm
+\vskip8mm
 
-Fixed relations:
- \begin{itemize}
- \item list relations (append, reverse, map)
- \item list sorting
- \item binary arithmetic (addition, multiplication, division, comparisons)
- \item binary tree size
- \end{itemize}
+Some examples:
+ 
+\begin{itemize}
+ \item list relations (append, reverse, map);
+ \item list sorting;
+ \item binary arithmetic (addition, multiplication, division, comparisons);
+ \item binary tree size.
+\end{itemize}
  
 \end{frame}
 
-\begin{frame}[fragile]{Simplification of programs}
+\begin{frame}[fragile]{Program Simplification Under the Extended Search}
 
 \begin{center}
-\begin{tabular}{cc}
-
-Refutationally complete (proven) & Seems to work with  \\
-but very non-trivial & new search too \\
-
-\\
-
+\begin{tabular}{ccc}
 \newsavebox{\mybox}
-
 \begin{lrbox}{\mybox}
     \begin{lstlisting}[basicstyle=\tiny]
 split$^o$ n r l h =
@@ -706,7 +703,8 @@ div$^o$ n m q r =
 \scalebox{0.75}{\usebox{\mybox}}
 
 &
-
+$\leadsto$
+&
 \begin{minipage}{.3\textwidth}
 \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
 div$^o$ n m q r =
@@ -722,73 +720,26 @@ div$^o$ n m q r =
 
 \end{frame}
 
-\begin{frame}{Quantitative evaluation}
+\begin{frame}{Quantitative Evaluation}
 
-\begin{tabular}{cc}
+  \includegraphics[scale=0.5]{optimistic.png}
 
-Optimistic order & Pessimistic order \\
+\end{frame}
 
-\begin{bchart}[max=5,scale=0.6]
-\bcbar[plain,color=blue]{1.6803}
-\bcbar[plain,color=red]{1.9091}
-\bcskip{5pt}
-\bcbar[plain,color=blue]{0.5830}
-\bcbar[plain,color=red]{1.0870}
-\bcskip{5pt}
-\bcbar[plain,color=blue]{0.7473}
-\bcbar[plain,color=red]{1.2663}
-\bcskip{5pt}
-\bcbar[plain,color=blue]{1.887}
-\bcbar[plain,color=red]{2.397}
-\bcskip{5pt}
-\bcbar[plain,color=blue]{3.6135}
-\bcbar[plain,color=red]{3.6208}
-\end{bchart}
+\begin{frame}{Quantitative Evaluation}
 
-&
-
-\begin{bchart}[max=100,scale=0.6]
-\bcbar[plain,color=blue]{14.6674}
-\bcbar[plain,color=red]{2.0216}
-\bcskip{5pt}
-\bcbar[plain,color=blue]{20.8215}
-\bcbar[plain,color=red]{1.0620}
-\bcskip{5pt}
-\bcbar[plain,color=blue]{100}
-\bcbar[plain,color=red]{36.2886}
-\bcskip{5pt}
-\bcbar[plain,color=blue]{100}
-\bcbar[plain,color=red]{9.222}
-\bcskip{5pt}
-\bcbar[plain,color=blue]{100}
-\bcbar[plain,color=red]{3.7984}
-\end{bchart}
-
-\end{tabular}
-
-\vskip1cm
-
-\begin{itemize}
-\item[] \textcolor{blue}{standart search}
-\item[] \textcolor{red}{search with extention}
-\end{itemize}
-
-
+  \includegraphics[scale=0.5]{pessimistic.png}
 
 \end{frame}
 
 
-\begin{frame}{Contributions}
+\begin{frame}{Wrap-up}
 
 \begin{itemize}
- \item Divergence test and conjuncts reordering algorithm based on it
- \vskip1cm
- \item Operational semantics and proofs of divergence test and termination preservation
- \vskip1cm
- \item Evaluation
+ \item A new improved search based on divergence test and conjunct reordering.
+ \item Operational semantics for the standard and improved search and proof of convergence preservation.
+ \item Performance evaluation: \includegraphics[scale=0.09]{thumbs-up.png} 
 \end{itemize}
- 
+
 \end{frame}
-
-
 \end{document}
