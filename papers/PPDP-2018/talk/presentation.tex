@@ -253,24 +253,23 @@ Solution to hard problem from relational solution to (easier) reversed problem:
 \begin{center}
 \begin{tabular}{cc}
   \textbf{Syntax} & \textbf{Semantics} $\llbracket\bullet\rrbracket$ \\[3mm] 
-  $term_1 \equiv term_2$ & $\lambda \theta. [ \theta \circ mgu(term_1 \theta, term_2 \theta) ]$ \\ 
-  $goal_1 \wedge goal_2$ & $\lambda \theta. \llbracket goal_1 \rrbracket \theta \oplus \llbracket goal_2 \rrbracket \theta$ \\
-  $goal_1 \vee goal_2$   & $\lambda \theta. \llbracket goal_1 \rrbracket \theta \gg\!\!= \llbracket goal_2 \rrbracket$ \\[3mm]
+  $term_1 \equiv term_2$ & $\lambda \theta. [ \theta \circ mgu\,(term_1 \theta, term_2 \theta) ]$ \\ 
+  $goal_1 \vee goal_2$ & $\lambda \theta. \llbracket goal_1 \rrbracket \theta \oplus \llbracket goal_2 \rrbracket \theta$ \\
+  $goal_1 \wedge goal_2$   & $\lambda \theta. \llbracket goal_1 \rrbracket \theta \gg\!\!= \llbracket goal_2 \rrbracket$ \\[3mm]
   \multicolumn{2}{l}{+ \lstinline|fresh $\,(x\;y \dots)\;goal$| for introducing existential variables} \\
   \multicolumn{2}{l}{+ a first order language for definitions and applications}
 \end{tabular}
-
-\begin{figure}
+\vskip5mm
+\begin{minipage}{.5\textwidth}
 \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
 append$^o$ a b ab = 
   (a === [ ] &&& ab === $\;$b) |||
-  (fresh (h t tb) (
-     (a === h :: t) &&&
-     (append$^o$ t b tb) &&&
-     (ab === h :: tb)
-  ))
+  fresh (h t tb) 
+    (a === h :: t) &&&
+    (append$^o$ t b tb) &&&
+    (ab === h :: tb)
 \end{lstlisting}
-\end{figure}
+\end{minipage}
 \end{center}
 
 \end{frame}
@@ -278,44 +277,26 @@ append$^o$ a b ab =
 
 \begin{frame}[fragile]{Refutational incompleteness}
 
+Program is \emph{refutationally incomplete} (Byrd, 2009), if it diverges, despite having finite set of answers.
+
+\begin{comment}
 \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
 append$^o$ a b ab = 
   (a === [ ] &&& ab === $\;$b) |||
-  (fresh (h t tb) (
-     (a === h :: t) &&&
-     (append$^o$ t b tb) &&&
-     (ab === h :: tb)
-  ))
- \end{lstlisting}
- 
- \vskip3mm
+  fresh (h t tb) 
+    (a === h :: t) &&&
+    (append$^o$ t b tb) &&&
+    (ab === h :: tb)
+\end{lstlisting}
+\end{comment}
+% \vskip3mm
 
 \begin{tabular}{lcl}
-%Query & & Stream \\
-%\hline
-%  \begin{lstlisting}
-%append$^o$ [1,2] [3,4] $\;\;q\;\;$
-%  \end{lstlisting} &
-%$\leadsto$ &
- % \begin{lstlisting}
-%{ $q$ = [1,2,3,4] }
-%  \end{lstlisting} \\
-%\\ \hline
-\begin{lstlisting}
-append$^o$ $\;\;q\;\;$ $\;\;r\;\;$ [1,2]
-  \end{lstlisting} &
-  $\leadsto$ &
-  \begin{lstlisting}
-{  $q$ = [], $r$ = [1,2];
-   $q$ = [1], $r$ = [2];
-   $q$ = [1,2], $r$ = [];
-   ...
-  \end{lstlisting}
+  \lstinline|append$^o\;q\;r\;[1,2]$| & $\leadsto$ & \lstinline|$([],\,[1, 2]);\; ([1],\,[2]);\; ([1, 2],\,[]);\; \dots$|\\
+  other examples & &
 \end{tabular}
 
 \vskip3mm
-
-Program is \emph{refutationally incomplete} (Byrd, 2009), if it diverges, despite having finite set of answers.
 
 \end{frame}
 
