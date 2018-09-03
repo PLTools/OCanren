@@ -42,6 +42,8 @@
 \usepackage{mathtools}
 \usepackage{tikz}
 \usepackage{tikz-qtree}
+\usepackage{bchart}
+
 
 \makeatletter
 \begin{comment}
@@ -645,6 +647,109 @@ Fixed relations:
  \end{itemize}
  
 \end{frame}
+
+\begin{frame}[fragile]{Simplification of programs}
+
+\begin{center}
+\begin{tabular}{cc}
+
+Refutationally complete (proven) & Seems to work with  \\
+but very non-trivial & new search too \\
+
+\begin{minipage}{.8\textwidth}
+\begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
+div$^o$ n m q r =
+  ((r === n) &&& ([ ] === q) &&& (lt$^o$ n m)) |||
+  (([1] === q) &&& (eql$^o$ n m) &&& (plus$^o$ r m n) &&& (lt$^o$ r m)) |||
+  ((ltl$^o$ m n) &&&
+   (lt$^o$ r m) &&&
+   (pos$^o$ q) &&&
+   fresh (nh hl qh ql qlm qlmr rr rh)
+     (split$^o$ n r nl nh) &&&
+     (split$^o$ q r ql qh) &&&
+     ((([ ] === nh) &&& ([ ] === qh) &&& (minus$^o$ nl r qlm) &&& (mult$^o$ ql m qlm)) |||
+      ((pos$^o$ nh) &&&
+       (mult$^o$ ql m qlm) &&&
+       (plus$^o$ qlm r qlmr) &&&
+       (minus$^o$ qlmr nl rr) &&&
+       (split$^o$ rr r [ ] rh) &&&
+       (div$^o$ nh m qh rh)))
+  )
+\end{lstlisting}
+\end{minipage}
+
+&
+
+\begin{minipage}{.5\textwidth}
+\begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
+div$^o$ n m q r =
+  fresh (mq)
+    (mult$^o$ m q mq) &&&
+    (plus$^o$ mq r n) &&&
+    (lt$^o$ r m)
+\end{lstlisting}
+\end{minipage}
+
+\end{tabular}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Quantitative evaluation}
+
+\begin{tabular}{cc}
+
+Optimistic order & Pessimistic order \\
+
+\begin{bchart}[max=5,scale=0.6]
+\bcbar[plain,color=blue]{1.6803}
+\bcbar[plain,color=red]{1.9091}
+\bcskip{5pt}
+\bcbar[plain,color=blue]{0.5830}
+\bcbar[plain,color=red]{1.0870}
+\bcskip{5pt}
+\bcbar[plain,color=blue]{0.7473}
+\bcbar[plain,color=red]{1.2663}
+\bcskip{5pt}
+\bcbar[plain,color=blue]{1.887}
+\bcbar[plain,color=red]{2.397}
+\bcskip{5pt}
+\bcbar[plain,color=blue]{3.6135}
+\bcbar[plain,color=red]{3.6208}
+\end{bchart}
+
+&
+
+\begin{bchart}[max=100,scale=0.6]
+\bcbar[plain,color=blue]{14.6674}
+\bcbar[plain,color=red]{2.0216}
+\bcskip{5pt}
+\bcbar[plain,color=blue]{20.8215}
+\bcbar[plain,color=red]{1.0620}
+\bcskip{5pt}
+\bcbar[plain,color=blue]{100}
+\bcbar[plain,color=red]{36.2886}
+\bcskip{5pt}
+\bcbar[plain,color=blue]{100}
+\bcbar[plain,color=red]{9.222}
+\bcskip{5pt}
+\bcbar[plain,color=blue]{100}
+\bcbar[plain,color=red]{3.7984}
+\end{bchart}
+
+\end{tabular}
+
+\vskip1cm
+
+\begin{itemize}
+\item[] \textcolor{blue}{standart search}
+\item[] \textcolor{red}{search with extention}
+\end{itemize}
+
+
+
+\end{frame}
+
 
 \begin{frame}{Contributions}
 
