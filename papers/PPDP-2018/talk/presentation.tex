@@ -244,7 +244,7 @@ Solution to hard problem from relational solution to (easier) reversed problem:
 
 \vskip10mm
 
-\emph{MiniKanren}  (reference? reasoned schemer) is a minimalistic relational DSL
+\emph{MiniKanren} (Friedman, 2005) is a minimalistic relational DSL
 
 \end{frame}
 
@@ -293,7 +293,11 @@ append$^o$ a b ab =
 
 \begin{tabular}{lcl}
   \lstinline|append$^o\;q\;r\;[1,2]$| & $\leadsto$ & \lstinline|$([],\,[1, 2]);\; ([1],\,[2]);\; ([1, 2],\,[]);\; \dots$|\\
-  other examples & &
+  \lstinline|reverso$^o\;[1,2,3]\;q$| & $\leadsto$ & \lstinline|$[3,2,1];\; \dots$|\\
+  \lstinline|sort$^o\;q\;[1,2]$| & $\leadsto$ & \lstinline|$[1, 2];\; [2, 1];\; \dots$|\\
+  \lstinline|perm$^o\;[2,1]\;q$| & $\leadsto$ & \lstinline|$[1, 2];\; [2, 1];\; \dots$|\\
+  \lstinline|mult$^o\;q\;r\;\overline{9}$| & $\leadsto$ & \lstinline|$(\overline{1}, \overline{9});\; (\overline{9}, \overline{1});\; (\overline{3}, \overline{3});\; \dots$|\\
+  \lstinline|div$^o\;\overline{23}\;\overline{5}\;q\;r$| & $\leadsto$ & \lstinline|$(\overline{4},\,\overline{3});\; \dots$|\\
 \end{tabular}
 
 \vskip3mm
@@ -302,62 +306,24 @@ append$^o$ a b ab =
 
 \begin{frame}{Conjucntion non-comutativity}
 
-Information passing:
-
-\begin{center}
-     \begin{tikzpicture}[scale=0.8]
-          \node[text width=3cm] at (0,0) {\huge $r_1 \wedge r_2 \wedge r_3$};
-          \draw [->, line width=3, blue] (-3.5,0) -- (-2,0);
-          \draw [->, line width=3, blue] (2,0) -- (3.5,0); 
-          \draw [->, line width=3, blue] (-1.75,0.5) .. controls (-1.25,1.25) and (-0.75,1.25) .. (-0.25,0.5);
-          \draw [->, line width=3, blue] (-0.25,-0.5) .. controls (-0.75,-1.25) and (-1.25,-1.25) .. (-1.75,-0.5);
-          \draw [line width=3, red] (-1.3,-0.75) -- (-0.7,-1.35); 
-          \draw [line width=3, red] (-1.3,-1.35) -- (-0.7,-0.75);
-          \draw [->, line width=3, blue] (0,0.5) .. controls (0.5,1.25) and (1,1.25) .. (1.5,0.5);
-          \draw [->, line width=3, blue] (1.5,-0.5) .. controls (1,-1.25) and (0.5,-1.25) .. (0,-0.5);
-          \draw [line width=3, red] (0.45,-0.75) -- (1.05,-1.35); 
-          \draw [line width=3, red] (0.45,-1.35) -- (1.05,-0.75);
-        \end{tikzpicture}
-\end{center}
-
- \vskip5mm
- 
- With optimistic order:
+With optimistic order:
  
  \begin{itemize}
  \item search for answers terminates
  \item search for answers usually is \underline{much} faster
  \end{itemize}
-
-\end{frame}
-
-\begin{frame}[fragile]{Conjucntion non-comutativity}
-
- \begin{itemize}
- \item It can be not obvious, which order is optimistic
  
-  \vskip5mm
+ \vskip10mm
+ 
+ But:
+ 
+  \begin{itemize}
+ \item It can be not obvious, which order is optimistic
   
  \item Optimistic orders can be different for different directions of evaluation
- 
-  \vskip5mm
   
  \item Optimistic orders can be different on different steps of evaluation
  \end{itemize}
-
-%\begin{center}
-\begin{tabular}{ccl}
-& & \begin{lstlisting}[escapeinside={(@}{@)},mathescape=true,language=ocaml]
-sort$^o$ xs r = ...
-
-perm$^o$ xs ys =
-  (fresh (ss) (
-     (sort$^o$ xs ss) &&&
-     (sort$^o$ ys ss)
-  ))
- \end{lstlisting}
-\end{tabular}
-%\end{center}
 
 \end{frame}
 
