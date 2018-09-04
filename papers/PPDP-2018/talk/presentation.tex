@@ -211,8 +211,8 @@ language=ocaml
 
 \institute[]{
 \small{
-  $^1$ Saint Petersburg Academic University, JetBrains Research \\
-  $^2$ Saint Petersburg State University, JetBrains Research
+  $^1$ Saint Petersburg Academic University, JetBrains Research, Russia \\
+  $^2$ Saint Petersburg State University, JetBrains Research, Russia
 }
 }
 
@@ -602,8 +602,39 @@ revers$^o$ a r =
  \Tree [.{\lstinline|revers$^o\; [1,\,2,\,3]\; r$|}
     [.{$[1,\,2,\,3]\not\equiv [\;]$} ]
     [.{$[1,\,2,\,3]\equiv h_0::t_0$}
+      [.{\lstinline|revers$^o\;[2,\,3]\;rt_0$|} ]
+    ]
+  ]
+\end{center}
+\end{tabular}
+\end{frame}
+
+\begin{frame}[fragile]{Conjunct Reordering Demonstration}
+  \begin{tabular}{p{4cm}p{6cm}}
+    \begin{lstlisting}
+append$^o$ a b ab =		
+  (a === [ ] &&& ab === $\;$b) |||
+  fresh (h t tb) 
+    (a === h :: t) &&&
+    (ab === h :: tb) &&&
+    (append$^o$ t b tb) 
+  
+revers$^o$ a r =	
+  (a === [ ] &&& r === [ ]) |||
+  fresh (h t rt) 
+    (a === h :: t) &&&
+    (revers$^o$ t rt) &&&
+    (append$^o$ rt [h] r)
+\end{lstlisting}
+&
+\begin{center}
+ \Tree [.{\lstinline|revers$^o\; [1,\,2,\,3]\; r$|}
+    [.{$[1,\,2,\,3]\not\equiv [\;]$} ]
+    [.{$[1,\,2,\,3]\equiv h_0::t_0$}
       [.{\lstinline|revers$^o\;[2,\,3]\;rt_0$|}
-        [.{$\dots$} ]
+        [.{\lstinline|append$^o\;[3,\,2]\;[1]\;r$|}
+          [.{$\dots$} ]
+        ]
       ]
     ]
   ]
@@ -634,11 +665,11 @@ Operational semantics (so far for finite-set answers programs only):
 
 \begin{frame}{Evaluation}
 
-Implemented for OCanren (a typed MiniKanren for OCaml)
+Implemented for OCanren (a typed MiniKanren for OCaml).
 
 \vskip8mm
 
-The test detects divergence in all natural relations (only artificial counterexamples are known)
+The test detects divergence in all natural relations (only artificial counterexamples are known).
 
 \vskip8mm
 
@@ -738,7 +769,7 @@ div$^o$ n m q r =
 \begin{itemize}
  \item A new improved search based on divergence test and conjunct reordering.
  \item Operational semantics for the standard and improved search and proof of convergence preservation.
- \item Performance evaluation: \includegraphics[scale=0.09]{thumbs-up.png} 
+ \item Qualitative and quantitative evaluation: \includegraphics[scale=0.09]{thumbs-up.png} 
 \end{itemize}
 
 \end{frame}

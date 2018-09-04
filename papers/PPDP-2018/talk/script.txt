@@ -8,8 +8,8 @@ for some language, we can use it to generate programs in this language with spec
 for relational programming, but in this work we deal with MiniKanren. It is a minimalistic domain-specific language, designed 
 specially for this programing style.
 
-    3. The core of the language is really tiny, so we can descibe it here completetly. Relations are expressed by goals. The basic 
-goal is unification of two terms. We can also constuct goals using conjunction and disjunction. Semantics of each goal is a function
+    3. The core of the language is really tiny, so we can describe it here completely. Relations are expressed by goals. The basic 
+goal is unification of two terms. We can also construct goals using conjunction and disjunction. Semantics of each goal is a function
 that maps substitution to a stream of updated substitutions. It’s based on some monadic search. More precisely, unification 
 composes given substitution with the most general unifier of two terms and returns a one-element stream, or empty stream if the terms
 can’t be unified. Disjunction composes streams with some monadic plus, and conjunction applies the second goal to the result stream of
@@ -25,7 +25,7 @@ From top to bottom they are list concatenation, list reversing, sorting and perm
 
     5. A frequent reason of refutational incompleteness, which we focus on in this work, is conjunction non-commutativity. Lets us
 take a conjunction of two goals, first of which diverges on some substitution, while the second one fails on it. Then the evaluation 
-of this conjunction will diverge, too. However, if we switch the conjucts, it will terminate. Such orders, which we will call optimistic, are preferable since they provide not only termination, but usually much more effective execution also. Unfornutally, 
+of this conjunction will diverge, too. However, if we switch the conjuncts, it will terminate. Such orders, which we will call optimistic, are preferable since they provide not only termination, but usually much more effective execution also. Unfortunately, 
 there is no way to find out which order is optimistic for a given definition. Moreover, «optimistic» order can be different for different queries and can even vary during the execution of the same query. So we can’t find optimistic order statically.
 
     6. Therefore we suggest to reorder conjuncts dynamically during the evaluation, relying on a specific divergence test. 
@@ -34,3 +34,35 @@ the nearest enclosed conjunction, swap the conjuncts and resume the search from 
 more general arguments in a recursive call of some relation. By this we mean that arguments of the recursive call subsume the 
 arguments of the enclosing one.
 
+    7. Let’s look at reordering more closely using example of relation for list reversing. Reverso relation defined recursively and uses appendo relation. Let’s consider this query, where argument a is instantiated with the list one-two-three and r is left as free logical variable.
+
+    8. In the first branch unification fails.
+
+    9. In the second branch we firstly split given list into head and tail by unification with fresh variables.
+
+    10. Then appendo relation is called and only second argument has ground value, so the result there is infinite stream and execution in this call would have diverged under standard search.
+
+    11. Inside appendo we are not interested in the first branch and in the second we have recursive call with the same arguments as the enclosing one up to renaming of free variables, so we detect divergence here.
+
+   12. And try to fix it reordering this conjunction.
+
+   13. But problem is not in the definition of appendo, so we have the same situation again.
+
+   14. Now we roll back further and consider this conjunction in the definition of reverso.
+
+   15. After switching conjuncts there we get recursive call to reverso with smaller argument, so we can guess its execution will terminate. And it is true.
+
+   16. After that the call of appendo have ground values for the first two arguments, so it just performs concatenation and terminates.
+
+   17. Described approach was based only on some intuitive considerations, so we had an obligation to substantiate it formally. For this purpose we have described operational semantics for standard search and search with reordering. This semantics have significant restriction — they only describe behavior of terminating programs, but it is sufficient for our purpose. Using it we formally stated and proved that the desired test is indeed sufficient condition for divergence and that our search improvenment preserves convergence. All this can be found in the paper.
+
+    18. We implemented improved search in one of the basic MiniKanren versions. The evaluation shows that suggested divergence test is very effective in detecting divergence of relational programs and for now we know only artificially constructed counterexamples. Therefore our approach fixes problems caused by conjunction non-commutativity in a variety of known examples. Some of them are listed here.
+
+    19. Improved search allows to create useful programs much simpler, even naively, while under standard search programer usually have to apply complex techniques to avoid effects of conjunctions non-comutativity. As a brightest example we consider binary division with a reminder. On the left hand side we have very complicated standard definition which is proven to be refutationally complete. At the same time with improved search we can just write down the mathematical definition of division with a reminder and it will work just as fine as the left one on a vast variety of queries. However, we can’t prove that this relation is refutationally complete.
+
+    20. As I mentioned before, conjuncts reordering can increase performance speed significantly. On the other hand, repeating divergence testing and reruns of search after reordering intruduce some overhead and we can expect that improved search works slower on the programs with already optimistic order. We have measured these time differences. Here are results for programs with optimistic order. You can see that improved search is indeed slower, up to two times in bad cases.
+
+    21. But it’s hard to compare with gain that we have if program has bad initial order. As we discussed, we usually have divergence under standard search and convergence under improved. But even if we fix desired number of answers and stop the search after enough solutions were discovered, in many cases standard search works impractically slow, and sometimes we can’t even measure expended time, as it don’t stop in tens of minutes, which is denoted here by crosses. 
+
+    22. As a result, in this work we have described conjuncts reordering technique based on a specific divergence test for relational programs. We described operational semantics for standard and improved search and proved some properties of new search using it. Our evaluation demonstrates ability of the improved search to fix conjunction non-comutativity problems in a variety of interesting programs. That’s all, thank you.
+    
