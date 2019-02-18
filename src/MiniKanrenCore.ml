@@ -1825,23 +1825,23 @@ module Table :
         let consume (cache, _) args =
           let open State in fun {env; subst; scope} as st ->
           let st = State.new_scope st in
-          (* [helper iter seen] consumes answer terms from cache one by one
-           *   until [iter] (i.e. current pointer into cache list) is not equal to [seen]
+          (* [helper start curr seen] consumes answer terms from cache one by one
+           *   until [curr] (i.e. current pointer into cache list) is not equal to [seen]
            *   (i.e. to the head of seen part of the cache list)
            *)
-          let rec helper iter seen =
-            if iter == seen then
+          let rec helper start curr seen =
+            if curr == seen then
               (* update `seen` - pointer to already seen part of cache *)
-              let seen = !cache in
+              let seen = start in
               (* delayed check that current head of cache is not equal to head of seen part *)
               let is_ready () = seen != !cache  in
               (* delayed thunk starts to consume unseen part of cache  *)
-              Stream.suspend ~is_ready @@ fun () -> helper !cache seen
+              Stream.suspend ~is_ready @@ fun () -> helper !cache !cache seen
             else
               (* consume one answer term from cache and `lift` it to the current environment *)
-              let answ, tail = (Answer.lift env @@ List.hd iter), List.tl iter in
+              let answ, tail = (Answer.lift env @@ List.hd curr), List.tl curr in
               match State.unify (Obj.repr args) (Answer.unctr_term answ) st with
-                | None -> helper tail seen
+                | None -> helper start tail seen
                 | Some ({subst=subst'; ctrs=ctrs'} as st') ->
                   begin
                   (* check `answ` disequalities against external substitution *)
@@ -1854,13 +1854,13 @@ module Table :
                     )
                   in
                   match Disequality.recheck env subst' ctrs (Subst.split subst') with
-                  | None      -> helper tail seen
+                  | None      -> helper start tail seen
                   | Some ctrs ->
                     let st' = {st' with ctrs = Disequality.merge_disjoint env subst' ctrs' ctrs} in
-                    Stream.(cons st' (from_fun @@ fun () -> helper tail seen))
+                    Stream.(cons st' (from_fun @@ fun () -> helper start tail seen))
                   end
           in
-          helper !cache []
+          helper !cache !cache []
 
       end
 
