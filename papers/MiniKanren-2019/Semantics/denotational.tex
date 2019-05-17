@@ -1,0 +1,209 @@
+\section{Denotational Semantics}
+\label{denotational}
+
+To motivate further development we first consider the following example. Let us have the following goal:
+
+\begin{lstlisting}
+   x === Cons (y, z)
+\end{lstlisting}
+
+There are three free variables, and solving the goal delivers us the following single answer:
+
+\begin{lstlisting}
+   $\alpha\mapsto\;$ Cons ($\beta$, $\gamma$)
+\end{lstlisting}
+
+where semantic variables $\alpha$, $\beta$ and $\gamma$ correspond to the syntactic ones ``\lstinline|x|'', ``\lstinline|y|'', ``\lstinline|z|''. The
+goal does not put any constraints on ``\lstinline|y|'' and ``\lstinline|z|'', so there are no bindings for ``$\beta$'' and ``$\gamma$'' in the answer.
+This answer can be seen as the following ternary relation over the set of all ground terms:
+
+\[
+\{(\mbox{\lstinline|Cons ($\beta$, $\,\gamma$)|}, \beta, \gamma) \mid \beta\in\mathcal{D},\,\gamma\in\mathcal{D}\}\subset\mathcal{D}^3
+\]
+
+The order of ``dimensions'' is important since each dimension corresponds to a certain free variable. Our main idea is to represent this relation as a set of functions 
+
+\[
+\mathfrak{f}:\mathcal{A}\to\mathcal{D}
+\]
+
+from semantic variables to ground terms. We call these functions \emph{representing functions}. Thus, we may reformulate the same relation as
+
+\[
+\{(\mathfrak{f}\,(\alpha),\mathfrak{f}\,(\beta),\mathfrak{f}\,(\gamma))\mid\mathfrak{f}\in\sembr{\mbox{\lstinline|$\alpha$ === Cons ($\beta$, $\,\gamma$)|}}\}
+\]
+
+where we use conventional semantic brackets ``$\sembr{\bullet}$'' to denote the semantics. Now we implement this idea.
+
+First, for a representing function
+
+\[
+\mathfrak{f} : \mathcal{A}\to\mathcal{D}
+\]
+
+we introduce its homomorphic extension 
+
+\[
+  \overline{\mathfrak{f}}:\mathcal{T_A}\to\mathcal{D}
+\]
+
+which maps terms to terms:
+
+\[
+\begin{array}{rcl}
+
+  \overline{\mathfrak f}\,(\alpha) & = & \mathfrak f\,(\alpha)\\
+  \overline{\mathfrak f}\,(C_i^{k_i}\,(t_1,\dots.t_{k_i})) & = & C_i^{k_i}\,(\overline{\mathfrak f}\,(t_1),\dots \overline{\mathfrak f}\,(t_{k_i}))
+\end{array}
+\]
+
+Then, the semantic function for goals is parameterized over environments which prescribe semantic functions to relational symbols:
+
+\[
+  \Gamma : \mathcal{R} \to (\mathcal{T_A}^*\to 2^{\mathcal{A}\to\mathcal{D}})
+\]
+
+An environment associates with a relational symbol a function which takes a string of terms (the arguments of the relation) and returns a set of
+representing functions. The signature for semantic brackets for goals is as follows:
+
+\[
+\sembr{\bullet}_{\Gamma} : \mathcal{G}\to 2^{\mathcal{A}\to\mathcal{D}}
+\]
+
+It maps a goal into the set of representing functions w.r.t. an environment $\Gamma$.
+
+We formulate the following important \emph{coverage condition} for the semantics of a goal $g$:
+
+\[
+\forall\alpha\not\in FV\,(g)\; :\; \{\mathfrak{f}\,(\alpha)\mid\mathfrak{f}\in\sembr{g}_\Gamma\}=\mathcal{D}\eqno{(\star)}
+\]
+
+Informally, it means that the values of all representing functions on each non-free variable of $g$ covers $\mathcal{D}$. In other words, representing
+functions restrict only the values of free variables. This condition guarantees that our semantics is complete in the sense that it does not
+introduce artificial restrictions for the relation it defines.
+
+We remind conventional notions of pointwise modification of a function
+
+\[
+f\,[x\gets v]\,(z)=\left\{
+\begin{array}{rcl}
+  f\,(z) &,& z \ne x \\
+  v      &,& z = x
+\end{array}
+\right.
+\]
+
+and substitution of a free variable with a term in terms and goals (see Figure~\ref{substitution}).
+
+\begin{figure}[t]
+\[
+\begin{array}{rcll}
+  x\,[t/x] &=& t &\\
+  y\,[t/x] &=& y & y\ne x\\
+  C_i^{k_i}\,(t_1,\dots,t_{k_i})\,[t/x]&=&C_i^{k_i}\,(t_1\,[t/x],\dots,t_{k_i}\,[t/x])&\\[2mm]
+  (t_1 \equiv t_2)\,[t/x]&=&t_1\,[t/x] \equiv t_2\,[t/x]&\\
+  (g_1 \wedge g_2)\,[t/x]&=&g_1\,[t/x] \wedge g_2\,[t/x]&\\
+  (g_1 \vee g_2)\,[t/x]&=&g_1\,[t/x] \vee g_2\,[t/x]&\\
+  (\mbox{\lstinline|fresh|}\;x\,.\,g)\,[t/x]&=&\mbox{\lstinline|fresh|}\;x\,.\,g&\\
+  (\mbox{\lstinline|fresh|}\;y\,.\,g)\,[t/x]&=&\mbox{\lstinline|fresh|}\;y\,.\,(g\,[t/x])&y\ne x\\
+  (R_i^{k_i}\,(t_1,\dots,t_{k_i})\,[t/x]&=&R_i^{k_i}\,(t_1\,[t/x],\dots,t_{k_i}\,[t/x])&
+\end{array}
+\]
+  \caption{Substitutions for terms and goals}
+  \label{substitution}
+\end{figure}
+
+For a representing function $\mathfrak{f}:\mathcal{A}\to\mathcal{D}$ and a semantic variable $\alpha$ we define
+the following \emph{generalization} operation:
+
+\[
+\mathfrak{f}\uparrow\alpha = \{ \mathfrak{f}\,[\alpha\gets d] \mid d\in\mathcal D\}
+\]
+
+Informally, this operation generalizes a representing function into a set of representing functions in such a way that the
+values of these functions for the given variable cover the whole $\mathcal{D}$. We extend the generalization operation for the sets of
+representing functions $\mathfrak{F}\subseteq\mathcal{A}\to\mathcal{D}$:
+
+\[
+  \mathfrak{F}\uparrow\alpha = \bigcup_{\mathfrak{f}\in\mathfrak{F}}(\mathfrak{f}\uparrow\alpha)
+\]
+
+Now we are ready to specify the sematics for goals (see Figure~\ref{denotational_semantics_of_goals}).
+
+\begin{figure}[t]
+  \[
+  \begin{array}{cclr}
+    \sembr{t_1\equiv t_2}_\Gamma&=&\{\mathfrak f : \mathcal{A}\to\mathcal{D}\mid \overline{\mathfrak{f}}\,(t_1)=\overline{\mathfrak{f}}\,(t_2)\}& \mbox{[\textsc{Unify$_D$}]}\\
+    \sembr{g_1\wedge g_2}_\Gamma&=&\sembr{g_1}_\Gamma\cap\sembr{g_1}_\Gamma&\mbox{[\textsc{Conj$_D$}]}\\
+    \sembr{g_1\vee g_2}_\Gamma&=&\sembr{g_1}_\Gamma\cup\sembr{g_1}_\Gamma&\mbox{[\textsc{Disj$_D$}]}\\
+    \sembr{\mbox{\lstinline|fresh|}\,x\,.\,g}_\Gamma&=&(\sembr{g\,[\alpha/x]}_\Gamma)\uparrow\alpha,\;\alpha\not\in FV(g)& \mbox{[\textsc{Fresh$_D$}]}\\
+    \sembr{R\,(t_1,\dots,t_k)}_\Gamma&=&(\Gamma\,R)\,t_1\dots t_k & \mbox{[\textsc{Invoke$_D$}]}
+  \end{array}
+  \]
+  \caption{Denotational semantics of goals}
+  \label{denotational_semantics_of_goals}
+\end{figure}
+
+\begin{figure}[t]
+  \begin{gather*}
+    \sembr{\{R_i=\lambda\,x_1^i\dots x_{k_i}^i\,.\,g_i\}_{i=1}^n\;g}=\sembr{g}_{\Gamma_{fix}}\\[2mm]
+    \Gamma_{fix}\,R_i=(fix\;\mathcal{F})\,[i]\\[2mm]
+    \mathcal{F} : (\mathcal{T_A}^*\to 2^{\mathcal{A}\to\mathcal{D}})^n\to (\mathcal{T_A}^*\to 2^{\mathcal{A}\to\mathcal{D}})^n\\[2mm]
+    \begin{array}{rcl}
+      \mathcal{F}\,(p_1,\dots,p_n)& = &(t^1_1\dots t^1_{k_1}\mapsto\sembr{g^1\,[t^1_1/x^1_1,\dots,t^1_{k_1}/x^1_{k_1}]}_\Gamma,\\
+                                  &  &\phantom{(}\dots\\
+                                  &  &\phantom{(}t^n_1\dots t^n_{k_n}\mapsto\sembr{g^n\,[t^n_1/x^n_1,\dots,t^n_{k_n}/x^n_{k_n}]}_\Gamma)
+    \end{array}\\
+    \mbox{where}\;\Gamma\, R_i=p_i
+  \end{gather*}
+  \caption{Denotational semantics of specifications}
+  \label{denotational_semantics_of_relations}
+\end{figure}
+
+\subsection{Semantics for goals}
+
+\[ V = \{ \alpha_1, \alpha_2, \dots \} \]
+
+\[ \llbracket g \rrbracket_{\Gamma} \in 2^{V \to D} \]
+
+Where $(f \in \llbracket g \rrbracket_{\Gamma}) \land (\alpha \not\in FV(g)) \Rightarrow \forall d \in D, \; f[\alpha \to d] \in \llbracket g \rrbracket_{\Gamma}$
+
+\[\]
+
+\[ \llbracket t_1 \equiv t_2 \rrbracket_{\Gamma} = \{ f \mid \overline{f}(t_1) = \overline{f}(t_2) \} \]
+
+\[ \llbracket g_1 \lor g_2 \rrbracket_{\Gamma} = \llbracket g_1 \rrbracket_{\Gamma} \cup \llbracket g_2 \rrbracket_{\Gamma} \]
+
+\[ \llbracket g_1 \land g_2 \rrbracket_{\Gamma} = \llbracket g_1 \rrbracket_{\Gamma} \cap \llbracket g_2 \rrbracket_{\Gamma} \]
+
+\[ \llbracket fresh \, (x, g) \rrbracket_{\Gamma} = \{ f[\alpha \to d] \, \mid \, f \in \llbracket g[\bigslant{\alpha}{x}] \rrbracket_{\Gamma}, \; d \in D \}, \quad \alpha \not\in FV(g) \]
+
+\[ \llbracket r^n \, t_1 \, \dots \, t_n \rrbracket_{\Gamma} = \Gamma(r^n)(t_1, \dots, t_n) \]
+
+\[\]
+
+\subsection{Semantics for relations}
+
+\[ \begin{array}{l}
+r_1^{k_1} = \lambda x_1 \dots x_{k_1}. \, g_1 \\
+\dots \\
+r_n^{k_n} = \lambda x_1 \dots x_{k_n}. \, g_n
+\end{array} \]
+
+\[ F : (T^{k_1} \to 2^{V \to D}) \times \dots \times (T^{k_1} \to 2^{V \to D}) \to (T^{k_1} \to 2^{V \to D}) \times \dots \times (T^{k_1} \to 2^{V \to D}) \]
+\[ F(p_1, \dots, p_n) = (\lambda t_1 \dots t_{k_1}. \, \llbracket g_1[\bigslant{t_j}{x_j}] \rrbracket_{\Gamma}, \dots, \lambda t_1 \dots t_{k_n}. \, \llbracket g_n[\bigslant{t_j}{x_j}] \rrbracket_{\Gamma}), \quad \texttt{where} \quad \Gamma = r_i^{n_i} \mapsto p_i  \]
+
+\[ \]
+
+$2^{V \to D}$ --- complete lattice $\Rightarrow$
+
+$(T^{k_1} \to 2^{V \to D}) \times \dots \times (T^{k_1} \to 2^{V \to D})$ --- complete lattice
+
+\[ \Gamma_{fix} \stackrel{def}{=}  r_i^{k_i} \mapsto (fix \; F)_i \]
+
+\[ \Gamma_{fix}(r_i^{k_i}) = \lambda t_1 \dots t_{k_i}. \, \llbracket g_i[\bigslant{t_j}{x_j}] \rrbracket_{\Gamma_{fix}}\]
+
+\[ \llbracket g \rrbracket \stackrel{def}{=} \llbracket g \rrbracket_{\Gamma_{fix}} \]
+
+\[\]
+
