@@ -99,7 +99,7 @@ It maps a goal into the set of representing functions w.r.t. an environment $\Ga
 We formulate the following important \emph{coverage condition} for the semantics of a goal $g$:
 
 \[
-\forall\alpha\not\in FV\,(g)\; :\; \{\mathfrak{f}\,(\alpha)\mid\mathfrak{f}\in\sembr{g}_\Gamma\}=\mathcal{D}\eqno{(\star)}
+\forall\alpha\not\in FV\,(g)\; :\; \forall d \in \mathcal{D}:\; \forall\mathfrak{f} \in \sembr{g}:\; \exists \mathfrak{f'} \in \sembr{g} :\; \mathfrak{f'}\,(\alpha)\; = d \wedge \forall \beta \neq \alpha:\; \mathfrak{f'}\,(\beta)\; = \mathfrak{f}\,(\beta)\; 
 \]
 
 Informally, it means that the values of all representing functions on each non-free variable of $g$ covers $\mathcal{D}$. In other words, representing
