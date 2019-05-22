@@ -141,7 +141,7 @@ for disjunction and conjunction of goals, and the semantics of relational invoca
 function from the environment. The only interesting case is ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
 not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semantics of $g\,[\alpha/x]$. The interesting part is the next step:
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
-goal specifies a relation over its free variables. Consider the following example:
+goal specifies a relation over its free variables. We introduce some nondeterminism, by choosing arbitrary $\alpha$, but it can be proven by structural induction, that with different choices of free variable, semantics of a goal won't change. Consider the following example:
 
 \begin{lstlisting}
    fresh y . ($\alpha$ === y) /\ (y === Zero)
