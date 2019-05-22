@@ -122,7 +122,8 @@ language=minikanren
 \newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
 \newcommand{\inbr}[1]{\left<{#1}\right>}
 \newcommand{\highlight}[1]{\color{red}{#1}}
-\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
+%\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
 \newcommand{\rulename}[1]{\textsc{#1}}
 \newcommand{\inmath}[1]{\mbox{$#1$}}
 \newcommand{\lfp}[1]{fix_{#1}}
@@ -139,6 +140,9 @@ language=minikanren
 \newcommand{\meta}[1]{{\mathcal{#1}}}
 \newcommand{\dom}[1]{\mathtt{dom}\;{#1}}
 \newcommand{\primi}[2]{\mathbf{#1}\;{#2}}
+\renewcommand{\dom}[1]{\mathcal{D}om\,({#1})}
+\newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
+\newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
 
 \newcommand{\searchRule}[6] {
   #1, #2 \vdash (#3, #4) \xRightarrow{#5} #6}
@@ -300,6 +304,7 @@ Text of abstract \ldots.
 
 \input{language.tex}
 \input{denotational.tex}
+\input{operational.tex}
 
 %Text of paper \ldots
 

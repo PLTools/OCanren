@@ -166,11 +166,11 @@ By the end we've got the set of representing functions each of which restricts o
 \begin{figure}[t]
   \[
   \begin{array}{cclr}
-    \sembr{t_1\equiv t_2}_\Gamma&=&\{\mathfrak f : \mathcal{A}\to\mathcal{D}\mid \overline{\mathfrak{f}}\,(t_1)=\overline{\mathfrak{f}}\,(t_2)\}& \mbox{[\textsc{Unify$_D$}]}\\
-    \sembr{g_1\wedge g_2}_\Gamma&=&\sembr{g_1}_\Gamma\cap\sembr{g_1}_\Gamma&\mbox{[\textsc{Conj$_D$}]}\\
-    \sembr{g_1\vee g_2}_\Gamma&=&\sembr{g_1}_\Gamma\cup\sembr{g_1}_\Gamma&\mbox{[\textsc{Disj$_D$}]}\\
-    \sembr{\mbox{\lstinline|fresh|}\,x\,.\,g}_\Gamma&=&(\sembr{g\,[\alpha/x]}_\Gamma)\uparrow\alpha,\;\alpha\not\in FV(g)& \mbox{[\textsc{Fresh$_D$}]}\\
-    \sembr{R\,(t_1,\dots,t_k)}_\Gamma&=&(\Gamma\,R)\,t_1\dots t_k & \mbox{[\textsc{Invoke$_D$}]}
+    \sembr{t_1\equiv t_2}_\Gamma&=&\{\mathfrak f : \mathcal{A}\to\mathcal{D}\mid \overline{\mathfrak{f}}\,(t_1)=\overline{\mathfrak{f}}\,(t_2)\}& \ruleno{Unify$_D$}\\
+    \sembr{g_1\wedge g_2}_\Gamma&=&\sembr{g_1}_\Gamma\cap\sembr{g_1}_\Gamma&\ruleno{Conj$_D$}\\
+    \sembr{g_1\vee g_2}_\Gamma&=&\sembr{g_1}_\Gamma\cup\sembr{g_1}_\Gamma&\ruleno{Disj$_D$}\\
+    \sembr{\mbox{\lstinline|fresh|}\,x\,.\,g}_\Gamma&=&(\sembr{g\,[\alpha/x]}_\Gamma)\uparrow\alpha,\;\alpha\not\in FV(g)& \ruleno{Fresh$_D$}\\
+    \sembr{R\,(t_1,\dots,t_k)}_\Gamma&=&(\Gamma\,R)\,t_1\dots t_k & \ruleno{Invoke$_D$} 
   \end{array}
   \]
   \caption{Denotational semantics of goals}
