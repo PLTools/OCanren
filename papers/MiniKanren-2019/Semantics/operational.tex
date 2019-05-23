@@ -99,3 +99,8 @@ scheduled for evaluation (\textsc{ConjStepAns}).
   \caption{Operational semantics of interleaving search}
   \label{lts}
 \end{figure}
+
+\begin{lstlisting}[language=Coq]
+  Inductive stream (A : Type) :=
+  | Cons : forall (a : A), a -> stream A -> stream A.
+\end{lstlisting}
