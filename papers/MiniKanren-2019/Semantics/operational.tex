@@ -57,26 +57,6 @@ L = \circ \mid \Sigma\times \mathbb{N}
 The label ``$\circ$'' is used to mark those steps which do not provide an answer; otherwise a transition is labeled by a pair of a substitution and a number of allocated
 variables. The substitution is one of the answers, and the number is threaded through the derivation to keep track of allocated variables; we ignore it in further explanations.
 
-The transition rules are shown on Figure~\ref{lts}. The first two rules specify the semantics of unification. If two terms are not unifiable under the current substitution
-$\sigma$ then the evaluation stops with no answer; otherwise it stops with the answer equal to the most general unifier.
-
-The next two rules describe the steps performed when disjunction (conjunction) is encountered on the top level of the current goal. For disjunction it schedules both goals (using ``$\oplus$'') for
-evaluating in the same context as the parent state, for conjunction~--- schedules the left goal and postpones the right one (using ``$\otimes$'').
-
-The rule for ``\lstinline|fresh|'' substitutes bound syntactic variable with a newly allocated semantic one and proceeds with the goal; no answer provided at this step.
-
-The rule for relation invocation finds a corresponding definition, substitutes its formal parameters with the actual ones, and proceeds with the body.
-
-The rest of the rules specify the steps performed during the evaluation of two remaining types of the states~--- conjunction and disjunction. In all cases the left state
-is evaluated first. If its evaluation stops with a result then the right state (or goal) is scheduled for evaluation, and the label is propagated. If there is no result then
-the conjunction evaluation stops with no result (\textsc{ConjStop}) as well while the disjunction evaluation proceeds with the right state (\textsc{DisjStop}).
-
-The last four rules describe \emph{interleaving}, which occurs when the evaluation of the left state suspends with some residual state (with or without an answer). In the case of disjunction
-the answer (if any) is propagated, and the constituents of the disjunction are swapped (\textsc{DisjStep}, \textsc{DisjStepAns}). In case of conjunction, if the evaluation step in
-the left conjunct did not provide any answer, the evaluation is continued in the same order since there is still no information to proceed with the evaluation of the right
-conjunct (\textsc{ConjStep}); if there is some answer, then the disjunction of the right conjunct in the context of the answer and the remaining conjunction is
-scheduled for evaluation (\textsc{ConjStepAns}).
-
 \begin{figure}
   \[
   \begin{array}{cr}
@@ -100,7 +80,29 @@ scheduled for evaluation (\textsc{ConjStepAns}).
   \label{lts}
 \end{figure}
 
-\begin{lstlisting}[language=Coq]
-  Inductive stream (A : Type) :=
-  | Cons : forall (a : A), a -> stream A -> stream A.
-\end{lstlisting}
+The transition rules are shown on Figure~\ref{lts}. The first two rules specify the semantics of unification. If two terms are not unifiable under the current substitution
+$\sigma$ then the evaluation stops with no answer; otherwise it stops with the answer equal to the most general unifier.
+
+The next two rules describe the steps performed when disjunction (conjunction) is encountered on the top level of the current goal. For disjunction it schedules both goals (using ``$\oplus$'') for
+evaluating in the same context as the parent state, for conjunction~--- schedules the left goal and postpones the right one (using ``$\otimes$'').
+
+The rule for ``\lstinline|fresh|'' substitutes bound syntactic variable with a newly allocated semantic one and proceeds with the goal; no answer provided at this step.
+
+The rule for relation invocation finds a corresponding definition, substitutes its formal parameters with the actual ones, and proceeds with the body.
+
+The rest of the rules specify the steps performed during the evaluation of two remaining types of the states~--- conjunction and disjunction. In all cases the left state
+is evaluated first. If its evaluation stops with a result then the right state (or goal) is scheduled for evaluation, and the label is propagated. If there is no result then
+the conjunction evaluation stops with no result (\textsc{ConjStop}) as well while the disjunction evaluation proceeds with the right state (\textsc{DisjStop}).
+
+The last four rules describe \emph{interleaving}, which occurs when the evaluation of the left state suspends with some residual state (with or without an answer). In the case of disjunction
+the answer (if any) is propagated, and the constituents of the disjunction are swapped (\textsc{DisjStep}, \textsc{DisjStepAns}). In case of conjunction, if the evaluation step in
+the left conjunct did not provide any answer, the evaluation is continued in the same order since there is still no information to proceed with the evaluation of the right
+conjunct (\textsc{ConjStep}); if there is some answer, then the disjunction of the right conjunct in the context of the answer and the remaining conjunction is
+scheduled for evaluation (\textsc{ConjStepAns}).
+
+The introduced transition system is completely deterministic. There was, however, some freedom in choosing the order of evaluation for conjunction and
+disjunction states. For example, instead of evaluating the left substate first we could choose to evaluate the right one, etc. In each concrete case we would
+end up with a different (but still deterministic) system which would prescribe different semantics to a concrete goal. This choice reflects the inherent
+non-deterministic nature of search in relational (and, more generally, logical) programming. However, as long as deterministic search procedures
+are sound and complete, we can consider them ``equivalent''\footnote{There still can be differences in observable behavior of concrete goals under different
+sound and complete search strategies: a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}.
