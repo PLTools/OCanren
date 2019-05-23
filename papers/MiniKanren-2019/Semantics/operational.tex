@@ -106,3 +106,39 @@ end up with a different (but still deterministic) system which would prescribe d
 non-deterministic nature of search in relational (and, more generally, logical) programming. However, as long as deterministic search procedures
 are sound and complete, we can consider them ``equivalent''\footnote{There still can be differences in observable behavior of concrete goals under different
 sound and complete search strategies: a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}.
+
+A derivation sequence for a certain state determines a \emph{trace}~--- a finite or inifinite sequence of answers. We may define a set of finite or infinite
+sequences $X^\omega$ over an alphabet $X$ as a set of functions from natural numbers into a lifted set $X_\bot=X\cup\{\bot\}$:
+
+\[
+X^\omega=\{\omega : \mathbb{N}\to X_\bot\ \mid \forall n\in\mathbb{N},\, \omega\,(n)=\bot\Rightarrow \omega\,(n+1)=\bot\}
+\]
+
+Informally speaking, we represent a sequence as a function which maps positions (treated as natural numbers) into the elements of the sequence. We use ``$\bot$''
+to specify that there is no element at given position, and we stipulate, that there are no ``holes'' in this representation: if there is no element at given
+position then there are no elements at greater positions as well. 
+
+For this representation we may define the empty sequence $\epsilon$ and operations of prepending a sequence $\omega$ with an element $a$ and taking a suffix of
+a sequence $\omega$ from a position $n$ as follows:
+
+\begin{gather*}
+  \epsilon = i \mapsto \bot\\[2mm]
+  a\omega = i \mapsto \left\{
+  \begin{array}{rcl}
+    a &,& i = 0\\
+    \omega\,(i-1)&,&\mbox{otherwise}
+  \end{array}
+  \right.\\[2mm]
+  \omega\,[n:]=i\mapsto\omega\,(n+i)
+\end{gather*}
+
+For a given state $s$ a trace $\tr{s}\in L^\omega$ is a sequence of labels, defined as follows simultaneously with the sequence of states $\{s_i\}$:
+
+\[
+\begin{array}{ccccl}
+  \multicolumn{5}{c}{s_o=s}\\
+  \tr{s}\,(n)=a &,& s_{n+1}=s'&\mbox{ if }& s_n\ne\diamond,\, s_n\xrightarrow{a} x'\\
+  \tr{s}\,(n)=\bot&,&s_{n+1}=\diamond&\mbox{ if }& s_n=\diamond
+\end{array}
+\]
+
