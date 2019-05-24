@@ -116,3 +116,53 @@ represent palindromes. Running it results in an infinite stream of substitutions
 
 where ``$\alpha$''~--- a \emph{semantic} variable, corresponfing to ``\lstinline|x|'', ``$\beta_i$''~--- free semantics variables.
 
+The notions above can be formalized in Coq in a natural way using inductive data types. We have made a few non-essential simplifications and modifications for the sake of convenience.
+
+Specifically, we restrict the arities of constructors to be either zero or two.
+
+\begin{lstlisting}[language=Coq]
+  Inductive term : Set :=
+  | Var : var -> term
+  | Cst : con_name -> term
+  | Con : con_name -> term -> term -> term.
+\end{lstlisting}
+
+Similarly, we restrict relations to always have exactly one argument.
+
+\begin{lstlisting}[language=Coq]
+  Definition rel : Set := term -> goal.
+\end{lstlisting}
+
+These restrictions do not make the language less expressive in any way since we can represent a sequence of terms as a list using constructors \lstinline|Nil$^0$| and \lstinline|Cons$^2$|.
+
+We also introduce one additional type of goals -- failure -- for deliberately unsuccessful computation (empty stream). As a result, the definition of goals looks as follows.
+
+\begin{lstlisting}[language=Coq]
+  Inductive goal : Set :=
+  | Fail   : goal
+  | Unify  : term -> term -> goal
+  | Disj   : goal -> goal -> goal
+  | Conj   : goal -> goal -> goal
+  | Fresh  : (var -> goal) -> goal
+  | Invoke : rel_name -> term -> goal.
+\end{lstlisting}
+
+Note that in our formalization we use the higher-order abstract syntax for variable binding. We preferred it to the first-order syntax because it gives us the ability to use substitution and the suitable inductive principle provided by Coq. However, we still need to carefully ensure some expected properties on the structure of syntax trees. For example, we should demand that the defitions of relations do not contain unbound variables.
+
+\begin{lstlisting}[language=Coq]
+  Definition closed_goal_in_context (c : list var) (g : goal) : Prop :=
+    forall n, is_fv_of_goal n g -> In n c.
+
+  Definition closed_rel (r : rel) : Prop :=
+    forall (arg : term), closed_goal_in_context (fv_term arg) (r arg).
+
+  Definition def : Set := {r : rel | closed_rel r}.
+\end{lstlisting}
+
+We set an arbitrary environment (a map from relational symbol to the definition of relation) to use further throughout the formalization. Failure goals allow us to define it as a total function.
+
+\begin{lstlisting}[language=Coq]
+  Definition env : Set := rel_name -> def.
+
+  Variable Prog : env.
+\end{lstlisting}
