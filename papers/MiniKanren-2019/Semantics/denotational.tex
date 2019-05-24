@@ -225,3 +225,38 @@ The least fixed point exists by Tarski-Knaster theorem:
 \item Functions $\mathfrak{f}:\mathcal{A}\to\mathcal{D}$ form a complete lattice.
 \item Semantic function is monothonous, since fresh, conjunction and disjunction are monothonous.
 \end{itemize}
+
+To formalize denotational semantics in Coq we can define representing functions simply as Coq functions.
+
+\begin{lstlisting}[language=Coq]
+Definition repr_fun : Set := var -> ground_term.
+\end{lstlisting}
+
+It is convenient to define semantics through the proposition "a given representing function belongs to denotational semantics of a given goal". It can be defined just as an inductively defined proposition which is the way to build described least fixed point in Coq.
+
+\begin{lstlisting}[language=Coq]
+Inductive in_denotational_sem_goal : goal -> repr_fun -> Prop :=
+
+| dsgUnify  : forall f t1 t2, apply_repr_fun f t1 = apply_repr_fun f t2 ->
+                         in_denotational_sem_goal (Unify t1 t2) f
+
+| dsgDisjL  : forall f g1 g2, in_denotational_sem_goal g1 f ->
+                         in_denotational_sem_goal (Disj g1 g2) f
+
+| dsgDisjR  : forall f g1 g2, in_denotational_sem_goal g2 f ->
+                         in_denotational_sem_goal (Disj g1 g2) f
+
+| dsgConj   : forall f g1 g2, in_denotational_sem_goal g1 f ->
+                         in_denotational_sem_goal g2 f ->
+                         in_denotational_sem_goal (Conj g1 g2) f
+
+| dsgFresh  : forall f fn a fg, (~ is_fv_of_goal a (Fresh fg)) ->
+                           in_denotational_sem_goal (fg a) fn ->
+                           (forall x, x <> a -> fn x = f x) ->
+                           in_denotational_sem_goal (Fresh fg) f
+
+| dsgInvoke : forall r t f, in_denotational_sem_goal (proj1_sig (Prog r) t) f ->
+                       in_denotational_sem_goal (Invoke r t) f.
+\end{lstlisting}
+
+Recall that the environment Prog maps every relational symbol to the definition of relation, which is a pair of a function from term to goal and a proof that it has no unbound variables. So in the last case \lstinline|(proj1_sig (Prog r) t)| simply takes the body of the corresponding relation.
