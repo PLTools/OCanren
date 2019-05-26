@@ -39,14 +39,14 @@
 
 \section{Language}
 
-In this section, we introduce the syntax of the language we use throughout the paper, describe the informal semantics and give some examples.
+In this section we introduce the syntax of the language we use throughout the paper, describe the informal semantics and give some examples.
 
 The syntax of the language is shown on Figure~\ref{syntax}. First, we fix a set of constructors $\mathcal{C}$ with known arities and consider
 a set of terms $\mathcal{T}_X$ with constructors as functional symbols and variables from $X$. We parameterize this set with an alphabet of
 variables, since in the semantic description we will need \emph{two} kinds of variables. The first kind, \emph{syntactic} variables, is denoted
 by $\mathcal{X}$. We also consider an alphabet of \emph{relational symbols} $\mathcal{R}$ which are used to name relational definitions.
 The central syntactic category in the langiage is a \emph{goal}. In our case there are five types of goals: \emph{unification} of terms,
-conjunction and disjunction of goals, fresh variable introduction and an invocation of some relational definition. Thus, unification is used
+conjunction and disjunction of goals, fresh variable introduction and invocation of some relational definition. Thus, unification is used
 as a constraint, and multiple constraints can be combined using conjunction, disjunction and recursion. For the sake of brevity we
 abbreviate immediately nested ``\lstinline|fresh|'' constructs into the one, writing ``\lstinline|fresh $x$ $y$ $\dots$ . $g$|'' instead of
 ``\lstinline|fresh $x$ . fresh $y$ . $\dots$ $g$|''. The final syntactic category is \emph{specification} $\mathcal{S}$. It consists of a set
@@ -65,9 +65,10 @@ scenarios are possible (dependent on the type of the goal):
 \item Conjunction ``\lstinline|$g_1$ /\ $g_2$|'' applies $g_1$ to the current state and then applies $g_2$ to the each element of the result, concatenating
   the streams.
 \item Disjunction ``\lstinline|$g_1$ \/ $g_2$|'' applies both its goals to the current state independently and then concatenates the results.
-\item Fresh construct ``\lstinline|fresh $x$ . $g$|'' allocates a new semantic variable $\alpha$ and substitutes all free occurences of $x$ in $g$ with $\alpha$.
+\item Fresh construct ``\lstinline|fresh $x$ . $g$|'' allocates a new semantic variable $\alpha$, substitutes all free occurences of $x$ in $g$ with $\alpha$, and
+  runs the goal.
 \item Invocation ``$\lstinline|$R_i^{k_i}$ ($t_1$,...,$t_{k_i}$)|$'' finds a definition for relational symbol $R_i^{k_i}=\lambda x_1\dots x_{k_i}\,.\,g_i$, substitutes
-  all free occurrnces of formal parameter $x_j$ in $g_i$ with term $t_j$ (for all $j$) and runs the goal in the current state.
+  all free occurrences of formal parameter $x_j$ in $g_i$ with term $t_j$ (for all $j$) and runs the goal in the current state.
 \end{itemize}
 
 We stipulate, that the top-level goal is preceded by an implicit ``\lstinline|fresh|'' construct, which binds all its free variables, and the final substitutions for these
@@ -76,7 +77,7 @@ variables constitute the result of the goal evaluation.
 Conjunction and disjunction form a monadic~\cite{Monads} interface with conjunction playing role of ``bind'' and disjunction~--- of ``mplus''. In this description
 we swept a lot of important details under the carpet~--- for example, in actual implementations the components of disjunction are not evaluated in isolation, but
 both disjuncts are being evaluated incrementally with the control passing from one disjunct to another (\emph{interleaving}); instead streams the implementation
-can be based on ``ferns''~\cite{BottomAvoiding} to defer divergent computations, etc.
+can be based on ``ferns''~\cite{BottomAvoiding} to defer divergent computations, etc. 
 
 As an example consider the following specification:
 
@@ -116,53 +117,59 @@ represent palindromes. Running it results in an infinite stream of substitutions
 
 where ``$\alpha$''~--- a \emph{semantic} variable, corresponfing to ``\lstinline|x|'', ``$\beta_i$''~--- free semantics variables.
 
-The notions above can be formalized in Coq in a natural way using inductive data types. We have made a few non-essential simplifications and modifications for the sake of convenience.
+The notions above can be formalized in \textsc{Coq} in a natural way using inductive data types. We have made a few non-essential simplifications and modifications for the sake of convenience.
 
-Specifically, we restrict the arities of constructors to be either zero or two.
+Specifically, we restrict the arities of constructors to be either zero or two:
 
 \begin{lstlisting}[language=Coq]
-  Inductive term : Set :=
-  | Var : var -> term
-  | Cst : con_name -> term
-  | Con : con_name -> term -> term -> term.
+   Inductive term : Set :=
+   | Var : var -> term
+   | Cst : con_name -> term
+   | Con : con_name -> term -> term -> term.
 \end{lstlisting}
 
-Similarly, we restrict relations to always have exactly one argument.
+Here ``\lstinline[language=Coq]{var}'' and ``\lstinline[language=Coq]{con_name}''~--- types representing vriables and constructor names, whose definitions we omitted for the sake of brevity.
+Similarly, we restrict relations to always have exactly one argument:
 
 \begin{lstlisting}[language=Coq]
-  Definition rel : Set := term -> goal.
+   Definition rel : Set := term -> goal.
 \end{lstlisting}
 
 These restrictions do not make the language less expressive in any way since we can represent a sequence of terms as a list using constructors \lstinline|Nil$^0$| and \lstinline|Cons$^2$|.
 
-We also introduce one additional type of goals -- failure -- for deliberately unsuccessful computation (empty stream). As a result, the definition of goals looks as follows.
+We also introduce one additional type of goals~--- \emph{failure}~--- for deliberately unsuccessful computation (empty stream). As a result, the definition of goals looks as follows:
 
 \begin{lstlisting}[language=Coq]
-  Inductive goal : Set :=
-  | Fail   : goal
-  | Unify  : term -> term -> goal
-  | Disj   : goal -> goal -> goal
-  | Conj   : goal -> goal -> goal
-  | Fresh  : (var -> goal) -> goal
-  | Invoke : rel_name -> term -> goal.
+   Inductive goal : Set :=
+   | Fail   : goal
+   | Unify  : term -> term -> goal
+   | Disj   : goal -> goal -> goal
+   | Conj   : goal -> goal -> goal
+   | Fresh  : (var -> goal) -> goal
+   | Invoke : rel_name -> term -> goal.
 \end{lstlisting}
 
-Note that in our formalization we use the higher-order abstract syntax for variable binding. We preferred it to the first-order syntax because it gives us the ability to use substitution and the suitable inductive principle provided by Coq. However, we still need to carefully ensure some expected properties on the structure of syntax trees. For example, we should demand that the defitions of relations do not contain unbound variables.
+Note that in our formalization we use the higher-order abstract syntax for variable binding~\cite{HOAS}. We preferred it to the first-order syntax because it gives us the ability
+to use substitution and inductive principle provided by \textsc{Coq}. However, we still need to carefully ensure some expected properties on the structure of syntax trees.
+For example, we should require that the defitions of relations do not contain unbound variables:
 
 \begin{lstlisting}[language=Coq]
-  Definition closed_goal_in_context (c : list var) (g : goal) : Prop :=
-    forall n, is_fv_of_goal n g -> In n c.
+   Definition closed_goal_in_context (c : list var) (g : goal) : Prop :=
+     forall n, is_fv_of_goal n g -> In n c.
 
-  Definition closed_rel (r : rel) : Prop :=
-    forall (arg : term), closed_goal_in_context (fv_term arg) (r arg).
-
-  Definition def : Set := {r : rel | closed_rel r}.
+   Definition closed_rel (r : rel) : Prop :=
+     forall (arg : term), closed_goal_in_context (fv_term arg) (r arg).
+ 
+   Definition def : Set := {r : rel | closed_rel r}.
 \end{lstlisting}
 
-We set an arbitrary environment (a map from relational symbol to the definition of relation) to use further throughout the formalization. Failure goals allow us to define it as a total function.
+In the snoppet above ``\lstinline[language=Coq]{def}'' corresponds to a set of relational symbol definitions in a specification.
+
+We set an arbitrary environment (a map from relational symbol to the definition of relation) to use further throughout the formalization. Failure goals allow us to define it as
+a total function:
 
 \begin{lstlisting}[language=Coq]
-  Definition env : Set := rel_name -> def.
-
-  Variable Prog : env.
+   Definition env : Set := rel_name -> def.
 \end{lstlisting}
+
+%   Variable Prog : env.
