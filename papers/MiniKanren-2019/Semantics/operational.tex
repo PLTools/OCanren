@@ -143,16 +143,19 @@ For a given state $s$ a trace $\tr{s}\in L^\omega$ is a sequence of labels, defi
 \end{array}
 \]
 
+The trace corresponds to the stream of answers in the reference \textsc{miniKanren} implementations.
 
-To formalize the operational part in Coq we first need to define all preliminary notions from unification theory which our semantics uses.
+To formalize the operational part in \textsc{Coq} we first need to define all preliminary notions from unification theory~\cite{Unification} which our semantics uses.
 
-In particular, we need to implement the notion of the most general unifier. As is well-known all standard recursive algorithms for calculating MGU are not decreasing on argument terms, so we can't define it as a simple recursive function in Coq due to the termination check. There is no such obstacle when we define MGU as a proposition.
+In particular, we need to implement the notion of the most general unifier (MGU). As is it well-known~\cite{UnificationMcBride} all standard recursive algorithms for calculating
+MGU are not decreasing on argument terms, so we can't define it as a simple recursive function in \textsc{Coq} due to the termination check. There is no such obstacle when we define
+MGU as a proposition:
 
 \begin{lstlisting}[language=Coq]
   Inductive MGU : term -> term -> option subst -> Set := ...
 \end{lstlisting}
 
-However, we still need to use well-founded induction to prove the existence of the most general unifier and its defining properties.
+However, we still need to use a well-founded induction to prove the existence of the most general unifier and its defining properties:
 
 \begin{lstlisting}[language=Coq]
   Lemma MGU_ex : forall t1 t2, {r & MGU t1 t2 r}.
@@ -175,7 +178,7 @@ However, we still need to use well-founded induction to prove the existence of t
       MGU t1 t2 None -> forall s,  ~ (unifier s t1 t2).
 \end{lstlisting}
 
-For this well-founded induction we use the number of free variables in argument terms as a well-founded order on pairs of terms.
+For this well-founded induction we use the number of free variables in argument terms as a well-founded order on pairs of terms:
 
 \begin{lstlisting}[language=Coq]
   Definition terms := term * term.
@@ -187,13 +190,14 @@ For this well-founded induction we use the number of free variables in argument 
   Lemma fvOrder_wf: well_founded fvOrderRel.
 \end{lstlisting}
 
-After this preliminary work, the described transition relation can be encoded naturally as an inductively defined proposition (here state' stands for an extended state).
+After this preliminary work, the described transition relation can be encoded naturally as an inductively defined proposition (here ``\lstinline|state'|''
+stands for an extended state):
 
 \begin{lstlisting}[language=Coq]
   Inductive eval_step : state -> label -> state' -> Set := ...
 \end{lstlisting}
 
-We state the fact that our system is deterministic through existence and uniqueness of a transition for every state.
+We state the fact that our system is deterministic through existence and uniqueness of a transition for every state:
 
 \begin{lstlisting}[language=Coq]
   Lemma eval_step_ex : forall (st : state), {l : label & {st' : state' & eval_step st l st'}}.
@@ -203,7 +207,7 @@ We state the fact that our system is deterministic through existence and uniquen
       eval_step st l1 st'1 -> eval_step st l2 st'2 -> l1 = l2 /\ st'1 = st'2.
 \end{lstlisting}
 
-To work with (possibly) infinite sequences we use the standard approach in Coq -- coinductively defined streams.
+To work with (possibly) infinite sequences we use the standard approach in \textsc{Coq}~--- coinductively defined streams:
 
 \begin{lstlisting}[language=Coq]
   Context {A : Set}.
@@ -213,7 +217,7 @@ To work with (possibly) infinite sequences we use the standard approach in Coq -
   | Cons : A -> stream -> stream.
 \end{lstlisting}
 
-Though the definition of the datatype is coinductive some of its properties we are working with make sense only when defined inductively.
+Although the definition of the datatype is coinductive some of its properties we are working with make sense only when defined inductively:
 
 \begin{lstlisting}[language=Coq]
   Inductive in_stream : A -> stream -> Prop :=
@@ -225,10 +229,10 @@ Though the definition of the datatype is coinductive some of its properties we a
   | fCons : forall h t, finite t -> finite (Cons h t).
 \end{lstlisting}
 
-Then we define trace coinductively as a stream of labels in transition steps and prove that there exists a unique trace from any extended state.
+Then we define a trace coinductively as a stream of labels in transition steps and prove that there exists a unique trace from any extended state:
 
 \begin{lstlisting}[language=Coq]
-  Definition trace : Set := @stream label.
+  Definition trace : Set := $@$stream label.
 
   CoInductive op_sem : state' -> trace -> Set :=
   | osStop : op_sem Stop Nil
@@ -242,9 +246,10 @@ Then we define trace coinductively as a stream of labels in transition steps and
     forall st' t1 t2, op_sem st' t1 -> op_sem st' t2 -> equal_streams t1 t2.
 \end{lstlisting}
 
-Note that for equality of streams we need to define new coinductive proposition instead of using standard syntactic equality for coinductive proofs to work.
+Note, for the equality of streams we need to define a new coinductive proposition instead of using the standard syntactic equality for coinductive proofs to work~\cite{CPDT}.
 
-One thing we can prove using operational semantics is some interleaving properties of disjunction in our language. Specifically, we can prove that trace for disjunction is one-by-one interleaving of streams for disjuncts.
+One thing we can prove using operational semantics the \emph{interleaving} properties of disjunction. Specifically, we can prove that a trace for a disjunction is
+a one-by-one interleaving of streams for its disjuncts:
 
 \begin{lstlisting}[language=Coq]
   CoInductive interleave : stream -> stream -> stream -> Prop :=
@@ -260,9 +265,11 @@ One thing we can prove using operational semantics is some interleaving properti
 This allows us to prove the expected properties of interleaving in a more general setting of arbitrary streams:
 
 \begin{itemize}
-\item  Elements of the interleaved stream are exactly elements of two interleaved streams.
-\item  Interleaved stream is finite iff both interleaved streams are finite.
+\item  the elements of the interleaved stream are exactly those of two interleaved streams;
+\item  the interleaved stream is finite iff both interleaving streams are finite.
 \end{itemize}
+
+The corresponding \textsc{Coq} lemmas are as follows:
 
 \begin{lstlisting}[language=Coq]
   Lemma interleave_in : forall s1 s2 s, interleave s1 s2 s ->
