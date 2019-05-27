@@ -1,1 +1,22 @@
 \section{Introduction}
+
+\textsc{miniKanren}~\cite{TRS} is a minimalistic relational DSL
+
+
+
+The introductory book~\cite{TRS} describes the language by mean of an evolving set of examples; various flavours of the language are presented
+in a number of papers~\cite{MicroKanren,CKanren,CKanren1,AlphaKanren,2016,Guided} in terms of \textsc{Scheme} implemetation. In~\cite{RelConversion}
+a variant of nondeterministic operational semantics was presented, and in~\cite{DivTest} another variant of finite-set semantics was
+used. None of these semantics reflect the major property of \textsc{miniKanren} search~--- \emph{interleaving}~\cite{Search}, thus
+deviating from the conventional understanding of the language.
+
+In this paper we present a formal semantics for core \textsc{miniKanren} and prove some its basic properties. First,
+we define denotational semantics similar to the least Herbrand model for definite clauses~\cite{LHM}; then
+we describe operational semantics with interleaving in terms of labeled transition system. Finally, we prove the soundness and
+completeness of the operational semantics w.r.t the denotational one. 
+
+The paper orginized as follows. In Section~\ref{syntax} we give the syntax of the language, describe its semantics
+informally and discuss some examples. Section~\ref{denotational} contains the description of denotational semantics for
+the language, and Section~\ref{operational}~--- the operational semantics.
+
+
