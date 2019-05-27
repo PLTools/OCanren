@@ -143,3 +143,131 @@ For a given state $s$ a trace $\tr{s}\in L^\omega$ is a sequence of labels, defi
 \end{array}
 \]
 
+
+To formalize the operational part in Coq we first need to define all preliminary notions from unification theory which our semantics uses.
+
+In particular, we need to implement the notion of the most general unifier. As is well-known all standard recursive algorithms for calculating MGU are not decreasing on argument terms, so we can't define it as a simple recursive function in Coq due to the termination check. There is no such obstacle when we define MGU as a proposition.
+
+\begin{lstlisting}[language=Coq]
+  Inductive MGU : term -> term -> option subst -> Set := ...
+\end{lstlisting}
+
+However, we still need to use well-founded induction to prove the existence of the most general unifier and its defining properties.
+
+\begin{lstlisting}[language=Coq]
+  Lemma MGU_ex : forall t1 t2, {r & MGU t1 t2 r}.
+  
+  Definition unifier (s : subst) (t1 t2 : term) : Prop := apply_subst s t1 = apply_subst s t2.
+
+  Lemma MGU_unifies:
+    forall t1 t2 s, MGU t1 t2 (Some s) -> unifier s t1 t2.
+  
+  Definition more_general (m s : subst) : Prop :=
+    exists (s' : subst), forall (t : term), apply_subst s t = apply_subst s' (apply_subst m t).
+
+  Lemma MGU_most_general :
+    forall (t1 t2 : term) (m : subst),
+      MGU t1 t2 (Some m) ->
+      forall (s : subst), unifier s t1 t2 -> more_general m s.
+
+  Lemma MGU_non_unifiable :
+    forall (t1 t2 : term),
+      MGU t1 t2 None -> forall s,  ~ (unifier s t1 t2).
+\end{lstlisting}
+
+For this well-founded induction we use the number of free variables in argument terms as a well-founded order on pairs of terms.
+
+\begin{lstlisting}[language=Coq]
+  Definition terms := term * term.
+
+  Definition fvOrder (t : terms) := length (union (fv_term (fst t)) (fv_term (snd t))).
+
+  Definition fvOrderRel (t p : terms) := fvOrder t < fvOrder p.
+
+  Lemma fvOrder_wf: well_founded fvOrderRel.
+\end{lstlisting}
+
+After this preliminary work, the described transition relation can be encoded naturally as an inductively defined proposition (here state' stands for an extended state).
+
+\begin{lstlisting}[language=Coq]
+  Inductive eval_step : state -> label -> state' -> Set := ...
+\end{lstlisting}
+
+We state the fact that our system is deterministic through existence and uniqueness of a transition for every state.
+
+\begin{lstlisting}[language=Coq]
+  Lemma eval_step_ex : forall (st : state), {l : label & {st' : state' & eval_step st l st'}}.
+
+  Lemma eval_step_unique :
+    forall (st : state) (l1 l2 : label) (st'1 st'2 : state'),
+      eval_step st l1 st'1 -> eval_step st l2 st'2 -> l1 = l2 /\ st'1 = st'2.
+\end{lstlisting}
+
+To work with (possibly) infinite sequences we use the standard approach in Coq -- coinductively defined streams.
+
+\begin{lstlisting}[language=Coq]
+  Context {A : Set}.
+
+  CoInductive stream : Set :=
+  | Nil : stream
+  | Cons : A -> stream -> stream.
+\end{lstlisting}
+
+Though the definition of the datatype is coinductive some of its properties we are working with make sense only when defined inductively.
+
+\begin{lstlisting}[language=Coq]
+  Inductive in_stream : A -> stream -> Prop :=
+  | inHead : forall x t, in_stream x (Cons x t)
+  | inTail : forall x h t, in_stream x t -> in_stream x (Cons h t).
+
+  Inductive finite : stream -> Prop :=
+  | fNil : finite Nil
+  | fCons : forall h t, finite t -> finite (Cons h t).
+\end{lstlisting}
+
+Then we define trace coinductively as a stream of labels in transition steps and prove that there exists a unique trace from any extended state.
+
+\begin{lstlisting}[language=Coq]
+  Definition trace : Set := @stream label.
+
+  CoInductive op_sem : state' -> trace -> Set :=
+  | osStop : op_sem Stop Nil
+  | osState : forall st l st' t, eval_step st l st' ->
+                            op_sem st' t ->
+                            op_sem (State st) (Cons l t).
+
+  Lemma op_sem_ex (st' : state') : {t : trace & op_sem st' t}.
+
+  Lemma op_sem_unique :
+    forall st' t1 t2, op_sem st' t1 -> op_sem st' t2 -> equal_streams t1 t2.
+\end{lstlisting}
+
+Note that for equality of streams we need to define new coinductive proposition instead of using standard syntactic equality for coinductive proofs to work.
+
+One thing we can prove using operational semantics is some interleaving properties of disjunction in our language. Specifically, we can prove that trace for disjunction is one-by-one interleaving of streams for disjuncts.
+
+\begin{lstlisting}[language=Coq]
+  CoInductive interleave : stream -> stream -> stream -> Prop :=
+  | interNil : forall s s', equal_streams s s' -> interleave Nil s s'
+  | interCons : forall h t s rs, interleave s t rs -> interleave (Cons h t) s (Cons h rs).
+
+  Lemma sum_op_sem : forall st1 st2 t1 t2 t, op_sem (State st1) t1 ->
+                                        op_sem (State st2) t2 ->
+                                        op_sem (State (Sum st1 st2)) t ->
+                                        interleave t1 t2 t.
+\end{lstlisting}
+
+This allows us to prove the expected properties of interleaving in a more general setting of arbitrary streams:
+
+\begin{itemize}
+\item  Elements of the interleaved stream are exactly elements of two interleaved streams.
+\item  Interleaved stream is finite iff both interleaved streams are finite.
+\end{itemize}
+
+\begin{lstlisting}[language=Coq]
+  Lemma interleave_in : forall s1 s2 s, interleave s1 s2 s ->
+                   forall x, in_stream x s <-> in_stream x s1 \/ in_stream x s2.
+
+  Lemma interleave_finite : forall s1 s2 s, interleave s1 s2 s ->
+                   (finite s <-> finite s1 /\ finite s2).
+\end{lstlisting}
