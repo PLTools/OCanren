@@ -2,10 +2,10 @@
 
 The introductory book on \textsc{miniKanren}~\cite{TRS} describes the language by means of an evolving set of examples. In the
 series of follow-up papers~\cite{MicroKanren,CKanren,CKanren1,AlphaKanren,2016,Guided} various extensions of the language were presented with
-their semantics explaned in terms of \textsc{Scheme} implementation. We argue that this style of semantic definition is
+their semantics explained in terms of \textsc{Scheme} implementation. We argue that this style of semantic definition is
 fragile and not self-evident since it requires the knowledge of semantics of concrete implementation language. In addition the justification of
 important properties of relational programs (for example, refutational completeness~\cite{WillThesis}) becomes cumbersome. In the
-area of programming languages reserach a formal definition for the semantics of language of interest is a \emph{de-facto} standard, and
+area of programming languages research a formal definition for the semantics of language of interest is a \emph{de-facto} standard, and
 in our opinion in its current state \textsc{miniKanren} deviates from this standard.
 
 There were some previous attempts to define a formal semantics for \textsc{miniKanren}. In~\cite{RelConversion} a variant of nondeterministic
@@ -20,7 +20,7 @@ completeness of the operational semantics w.r.t the denotational one. We support
 using \textsc{Coq}~\cite{Coq} proof assistant\footnote{\url{https://github.com/dboulytchev/miniKanren-coq}}, thus outsourcing
 the burden of proof checking to the automatic tool. 
 
-The paper orginized as follows. In Section~\ref{syntax} we give the syntax of the language, describe its semantics
+The paper organized as follows. In Section~\ref{language} we give the syntax of the language, describe its semantics
 informally and discuss some examples. Section~\ref{denotational} contains the description of denotational semantics for
 the language, and Section~\ref{operational}~--- the operational semantics. In Section~\ref{equivalence} we overview the
 certified proof for soundness and completeness of operational semantics. The final section concludes.
