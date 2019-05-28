@@ -45,7 +45,7 @@ The syntax of the language is shown on Figure~\ref{syntax}. First, we fix a set 
 a set of terms $\mathcal{T}_X$ with constructors as functional symbols and variables from $X$. We parameterize this set with an alphabet of
 variables, since in the semantic description we will need \emph{two} kinds of variables. The first kind, \emph{syntactic} variables, is denoted
 by $\mathcal{X}$. We also consider an alphabet of \emph{relational symbols} $\mathcal{R}$ which are used to name relational definitions.
-The central syntactic category in the langiage is a \emph{goal}. In our case there are five types of goals: \emph{unification} of terms,
+The central syntactic category in the language is a \emph{goal}. In our case there are five types of goals: \emph{unification} of terms,
 conjunction and disjunction of goals, fresh variable introduction and invocation of some relational definition. Thus, unification is used
 as a constraint, and multiple constraints can be combined using conjunction, disjunction and recursion. For the sake of brevity we
 abbreviate immediately nested ``\lstinline|fresh|'' constructs into the one, writing ``\lstinline|fresh $x$ $y$ $\dots$ . $g$|'' instead of
@@ -65,7 +65,7 @@ scenarios are possible (dependent on the type of the goal):
 \item Conjunction ``\lstinline|$g_1$ /\ $g_2$|'' applies $g_1$ to the current state and then applies $g_2$ to the each element of the result, concatenating
   the streams.
 \item Disjunction ``\lstinline|$g_1$ \/ $g_2$|'' applies both its goals to the current state independently and then concatenates the results.
-\item Fresh construct ``\lstinline|fresh $x$ . $g$|'' allocates a new semantic variable $\alpha$, substitutes all free occurences of $x$ in $g$ with $\alpha$, and
+\item Fresh construct ``\lstinline|fresh $x$ . $g$|'' allocates a new semantic variable $\alpha$, substitutes all free occurrences of $x$ in $g$ with $\alpha$, and
   runs the goal.
 \item Invocation ``$\lstinline|$R_i^{k_i}$ ($t_1$,...,$t_{k_i}$)|$'' finds a definition for relational symbol $R_i^{k_i}=\lambda x_1\dots x_{k_i}\,.\,g_i$, substitutes
   all free occurrences of formal parameter $x_j$ in $g_i$ with term $t_j$ (for all $j$) and runs the goal in the current state.
@@ -115,7 +115,7 @@ represent palindromes. Running it results in an infinite stream of substitutions
    $\dots$
 \end{lstlisting}
 
-where ``$\alpha$''~--- a \emph{semantic} variable, corresponfing to ``\lstinline|x|'', ``$\beta_i$''~--- free semantics variables.
+where ``$\alpha$''~--- a \emph{semantic} variable, corresponding to ``\lstinline|x|'', ``$\beta_i$''~--- free semantics variables.
 
 The notions above can be formalized in \textsc{Coq} in a natural way using inductive data types. We have made a few non-essential simplifications and modifications for the sake of convenience.
 
@@ -128,7 +128,7 @@ Specifically, we restrict the arities of constructors to be either zero or two:
    | Con : con_name -> term -> term -> term.
 \end{lstlisting}
 
-Here ``\lstinline[language=Coq]{var}'' and ``\lstinline[language=Coq]{con_name}''~--- types representing vriables and constructor names, whose definitions we omitted for the sake of brevity.
+Here ``\lstinline[language=Coq]{var}'' and ``\lstinline[language=Coq]{con_name}''~--- types representing variables and constructor names, whose definitions we omitted for the sake of brevity.
 Similarly, we restrict relations to always have exactly one argument:
 
 \begin{lstlisting}[language=Coq]
@@ -151,7 +151,7 @@ We also introduce one additional type of goals~--- \emph{failure}~--- for delibe
 
 Note that in our formalization we use the higher-order abstract syntax for variable binding~\cite{HOAS}. We preferred it to the first-order syntax because it gives us the ability
 to use substitution and inductive principle provided by \textsc{Coq}. However, we still need to carefully ensure some expected properties on the structure of syntax trees.
-For example, we should require that the defitions of relations do not contain unbound variables:
+For example, we should require that the definitions of relations do not contain unbound variables:
 
 \begin{lstlisting}[language=Coq]
    Definition closed_goal_in_context (c : list var) (g : goal) : Prop :=
@@ -163,7 +163,7 @@ For example, we should require that the defitions of relations do not contain un
    Definition def : Set := {r : rel | closed_rel r}.
 \end{lstlisting}
 
-In the snoppet above ``\lstinline[language=Coq]{def}'' corresponds to a set of relational symbol definitions in a specification.
+In the snippet above ``\lstinline[language=Coq]{def}'' corresponds to a set of relational symbol definitions in a specification.
 
 We set an arbitrary environment (a map from relational symbol to the definition of relation) to use further throughout the formalization. Failure goals allow us to define it as
 a total function:

@@ -146,7 +146,7 @@ representing functions $\mathfrak{F}\subseteq\mathcal{A}\to\mathcal{D}$:
   \mathfrak{F}\uparrow\alpha = \bigcup_{\mathfrak{f}\in\mathfrak{F}}(\mathfrak{f}\uparrow\alpha)
 \]
 
-Now we are ready to specify the sematics for goals (see Figure~\ref{denotational_semantics_of_goals}). We've already given the motivation for
+Now we are ready to specify the semantics for goals (see Figure~\ref{denotational_semantics_of_goals}). We've already given the motivation for
 the semantics of unification: the condition $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$ gives us the set of all (otherwise
 unrestricted) representing functions which ``equate'' terms $t_1$ and $t_2$. Set union and intersection provide a conventional interpretation
 for disjunction and conjunction of goals, and the semantics of relational invocation reduces to the application of corresponding
@@ -154,7 +154,7 @@ function from the environment. The only interesting case is ``\lstinline|fresh $
 not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semantics of $g\,[\alpha/x]$. The interesting part is the next step:
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
 goal specifies a relation over its free variables. We introduce some nondeterminism by letting choose arbitrary $\alpha$, but, as we immediately
-use apply the generalization, this hiddent nondeerminism does not affect the result. Consider the following example:
+use apply the generalization, this hidden nondeterminism does not affect the result. Consider the following example:
 
 \begin{lstlisting}
    fresh y . ($\alpha$ ===  y) /\ (y === Zero)
@@ -233,7 +233,7 @@ we take the least fixed point of $\mathcal{F}$ and define the top-level environm
 
 where ``$[i]$'' denotes the $i$-th component of a vector-function.
 
-The least fixed point exists by Tarski-Knaster~\cite{TarskiKnaster} theorem~--- the set $(\mathcal{T_A}^*\to 2^{\mathcal{A}\to\mathcal{D}})^n$
+The least fixed point exists by Knaster-Tarski~\cite{TarskiKnaster} theorem~--- the set $(\mathcal{T_A}^*\to 2^{\mathcal{A}\to\mathcal{D}})^n$
 forms a complete lattice, and $\mathcal{F}$ is monotonic. 
 
 To formalize denotational semantics in \textsc{Coq} we can define representing functions simply as \textsc{Coq} functions:

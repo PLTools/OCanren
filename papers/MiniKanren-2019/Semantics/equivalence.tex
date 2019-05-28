@@ -90,7 +90,7 @@ to states of the shape $\inbr{g, \sigma, n}$. We also need to introduce one more
 \sembr{\bullet}^l : \mathcal{G} \to 2^{\mathcal{A}\to\mathcal{D}}
 \]
 
-Instead of always unfold the definition of a relation for invokation goal, it does so only given number of times. So for a given set of relational
+Instead of always unfold the definition of a relation for invocation goal, it does so only given number of times. So for a given set of relational
 definitions $\{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i;\}$ the definition of bounded denotational semantics is exactly the same as in usual denotational semantics,
 except that for the invocation case:
 
@@ -125,7 +125,7 @@ For any set of relational definitions, for any level $l$, for any well-formed (w
 
 It is proven by induction on the level $l$. The induction step is proven by structural induction on the goal $g$.
 
-The proofs of both theorems are certified in \textsc{Coq}, although the proofs for a number of (obvious) technical facts about representing functions and compuation of the most
+The proofs of both theorems are certified in \textsc{Coq}, although the proofs for a number of (obvious) technical facts about representing functions and computation of the most
 general unifier as well as some properties of denotational semantics, proven informally in Section~\ref{denotational}, are
 admitted for now. For completeness we can not just use the induction on proposition \lstinline|in_denotational_sem_goal|, as it would be natural to expect,
 because the inductive principle it provides is not flexible enough. So we need to define bounded denotational semantics in our formalization too and perform
