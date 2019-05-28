@@ -260,7 +260,11 @@ language=minikanren
 %% Note: \begin{abstract}...\end{abstract} environment must come
 %% before \maketitle command
 \begin{abstract}
-Text of abstract \ldots.
+  We present two formal semantics for the core \textsc{miniKanren}. First, we give denotational
+  variant which corresponds to the minimal Herbrand model for definite logic program. Second,
+  we present operational semantics which models interleaving, and prove its soundness and
+  completeness w.r.t. denotational semantics. Our development is supported by formal \textsc{Coq}
+  specification, thus making it certified.
 \end{abstract}
 
 
@@ -306,6 +310,7 @@ Text of abstract \ldots.
 \input{language.tex}
 \input{denotational.tex}
 \input{operational.tex}
+\input{conclusion.tex}
 
 %Text of paper \ldots
 
