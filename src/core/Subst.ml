@@ -1,3 +1,24 @@
+module Binding
+  struct
+    type t =
+      { var   : Var.t
+      ; term  : Term.t
+      }
+
+    let is_relevant env vs {var; term} =
+      (VarSet.mem var vs) ||
+      (match Env.var env term with Some v -> VarSet.mem v vs | None -> false)
+
+    let equal {var=v; term=t} {var=u; term=p} =
+      (Var.equal v u) || (Term.equal t p)
+
+    let compare {var=v; term=t} {var=u; term=p} =
+      let res = Var.compare v u in
+      if res <> 0 then res else Term.compare t p
+
+    let hash {var; term} = Hashtbl.hash (Var.hash var, Term.hash term)
+  end
+
 type t = Term.t VarMap.t
 
 let empty = VarMap.empty

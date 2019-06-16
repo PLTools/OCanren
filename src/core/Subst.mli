@@ -1,3 +1,17 @@
+module Binding :
+  sig
+    type t =
+      { var   : Var.t
+      ; term  : Term.t
+      }
+
+    val is_relevant : Env.t -> VarSet.t -> t -> bool
+
+    val equal : t -> t -> bool
+    val compare : t -> t -> int
+    val hash : t -> int
+  end
+
 type t
 
 val empty : t
