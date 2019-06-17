@@ -121,6 +121,7 @@ INSTALL_TARGETS=META \
 	$(wildcard _build/regression/tester.cmx) \
 	$(wildcard _build/regression/tester.o) \
 	$(wildcard _build/src/*.cmi) \
+	$(wildcard _build/src/core/*.cmi) \
 	_build/src/MiniKanren.cmx \
 	_build/src/MiniKanren.cma \
 	_build/src/MiniKanren.cmxa \
