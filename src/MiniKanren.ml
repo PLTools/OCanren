@@ -1,6 +1,5 @@
-include Stream
+include OStream
 include Logic
-include Reification
 include Core
 
 module Std = MiniKanrenStd

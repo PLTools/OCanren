@@ -1,3 +1,5 @@
+open Printf
+
 module Var =
   struct
     type env    = int

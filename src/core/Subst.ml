@@ -1,50 +1,50 @@
-module Binding
+module Binding =
   struct
     type t =
-      { var   : Var.t
+      { var   : Term.Var.t
       ; term  : Term.t
       }
 
     let is_relevant env vs {var; term} =
-      (VarSet.mem var vs) ||
-      (match Env.var env term with Some v -> VarSet.mem v vs | None -> false)
+      (Term.VarSet.mem var vs) ||
+      (match Env.var env term with Some v -> Term.VarSet.mem v vs | None -> false)
 
     let equal {var=v; term=t} {var=u; term=p} =
-      (Var.equal v u) || (Term.equal t p)
+      (Term.Var.equal v u) || (Term.equal t p)
 
     let compare {var=v; term=t} {var=u; term=p} =
-      let res = Var.compare v u in
+      let res = Term.Var.compare v u in
       if res <> 0 then res else Term.compare t p
 
-    let hash {var; term} = Hashtbl.hash (Var.hash var, Term.hash term)
+    let hash {var; term} = Hashtbl.hash (Term.Var.hash var, Term.hash term)
   end
 
-type t = Term.t VarMap.t
+type t = Term.t Term.VarMap.t
 
-let empty = VarMap.empty
+let empty = Term.VarMap.empty
 
 let of_list =
   ListLabels.fold_left ~init:empty ~f:(let open Binding in fun subst {var; term} ->
-    if not @@ VarMap.mem var subst then
-      VarMap.add var term subst
+    if not @@ Term.VarMap.mem var subst then
+      Term.VarMap.add var term subst
     else
       invalid_arg "OCanren fatal (Subst.of_list): invalid substituion"
   )
 
 let of_map m = m
 
-let split s = VarMap.fold (fun var term xs -> Binding.({var; term})::xs) s []
+let split s = Term.VarMap.fold (fun var term xs -> Binding.({var; term})::xs) s []
 
-type lterm = Var of Var.t | Value of Term.t
+type lterm = Var of Term.Var.t | Value of Term.t
 
 let rec walk env subst x =
   (* walk var *)
   let rec walkv env subst v =
     Env.check_exn env v;
-    match v.Var.subst with
-    | Some term -> walkt env subst !!!term
+    match v.Term.Var.subst with
+    | Some term -> walkt env subst (Obj.magic term)
     | None ->
-        try walkt env subst (VarMap.find v subst)
+        try walkt env subst (Term.VarMap.find v subst)
         with Not_found -> Var v
   (* walk term *)
   and walkt env subst t =
@@ -88,7 +88,7 @@ exception Occurs_check
 
 let rec occurs env subst var term =
   iter env subst term
-    ~fvar:(fun v -> if Var.equal v var then raise Occurs_check)
+    ~fvar:(fun v -> if Term.Var.equal v var then raise Occurs_check)
     ~fval:(fun x -> ())
 
 let extend ~scope env subst var term  =
@@ -103,17 +103,17 @@ let extend ~scope env subst var term  =
    * 2) If we do unification after a fresh, then in case of failure it doesn't matter if
    *    the variable is be distructively substituted: we will not look on it in future.
    *)
-  if (scope = var.scope) && (scope <> Var.non_local_scope)
+  if (scope = var.scope) && (scope <> Term.Var.non_local_scope)
   then begin
     var.subst <- Some (Obj.repr term);
     subst
   end
     else
-      VarMap.add var (Term.repr term) subst
+      Term.VarMap.add var (Term.repr term) subst
 
 exception Unification_failed
 
-let unify ?(subsume=false) ?(scope=Var.non_local_scope) env subst x y =
+let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
   (* The idea is to do the unification and collect the unification prefix during the process *)
   let extend var term (prefix, subst) =
     let subst = extend ~scope env subst var term in
@@ -154,11 +154,11 @@ let apply env subst x = Obj.magic @@
 let freevars env subst x =
   Env.freevars env @@ apply env subst x
 
-let is_bound = VarMap.mem
+let is_bound = Term.VarMap.mem
 
-let merge env subst1 subst2 = VarMap.fold (fun var term -> function
+let merge env subst1 subst2 = Term.VarMap.fold (fun var term -> function
   | Some s  -> begin
-    match unify env s !!!var term with
+    match unify env s (Obj.magic var) term with
     | Some (_, s') -> Some s'
     | None         -> None
     end
@@ -166,13 +166,13 @@ let merge env subst1 subst2 = VarMap.fold (fun var term -> function
 ) subst1 (Some subst2)
 
 let merge_disjoint env =
-  VarMap.union (fun _ _ ->
+  Term.VarMap.union (fun _ _ ->
     invalid_arg "OCanren fatal (Subst.merge_disjoint): substitutions intersect"
   )
 
 let subsumed env subst =
-  VarMap.for_all (fun var term ->
-    match unify env subst !!!var term with
+  Term.VarMap.for_all (fun var term ->
+    match unify env subst (Obj.magic var) term with
     | Some ([], _)  -> true
     | _             -> false
   )

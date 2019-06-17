@@ -25,7 +25,7 @@ JSOO_LIB=jsoo_runner/jsoo_runner.cma
 all: bundle samples
 bundle: lib plugin
 lib:
-	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
+	$(OB) -r -Is src,src/core $(BYTE_TARGETS) $(NATIVE_TARGETS)
 
 ppx:
 	$(OB) -Is src ppx/ppx_repr_bin.cmxa ppx/pa_minikanren_bin.cmxa \
@@ -55,10 +55,10 @@ test$(1).native: regression/test$(1).native
 test$(1).byte:   regression/test$(1).byte
 
 regression/test$(1).byte: regression/test$(1).ml
-	$(OB) -Is src $$@
+	$(OB) -Is src,src/core $$@
 
 regression/test$(1).native: regression/test$(1).ml
-	$(OB) -Is src $$@
+	$(OB) -Is src,src/core $$@
 
 run_tests: test_$(1)
 test_$(1):
@@ -76,10 +76,10 @@ $(foreach i,$(REGRES_CASES),$(eval $(call TESTRULES,$(i)) ) )
 .PHONY: compile_tests_native compile_tests_byte compile_tests run_tests
 
 compile_tests_native: plugin $(TEST_MLS)
-	$(OB) -Is src $(NATIVE_TEST_EXECUTABLES)
+	$(OB) -Is src,src/core $(NATIVE_TEST_EXECUTABLES)
 
 compile_tests_byte: plugin $(TEST_MLS)
-	$(OB) -Is src $(BYTE_TEST_EXECUTABLES)
+	$(OB) -Is src,src/core $(BYTE_TEST_EXECUTABLES)
 
 compile_tests: compile_tests_native
 

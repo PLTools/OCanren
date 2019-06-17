@@ -1,4 +1,9 @@
-MiniKanrenTypes
+core/OStream
+core/Term
+core/Env
+core/Subst
+core/Disequality
+core/Logic
+core/Core
 MiniKanrenStd
-MiniKanrenCore
 MiniKanren

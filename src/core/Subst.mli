@@ -1,11 +1,11 @@
 module Binding :
   sig
     type t =
-      { var   : Var.t
+      { var   : Term.Var.t
       ; term  : Term.t
       }
 
-    val is_relevant : Env.t -> VarSet.t -> t -> bool
+    val is_relevant : Env.t -> Term.VarSet.t -> t -> bool
 
     val equal : t -> t -> bool
     val compare : t -> t -> int
@@ -17,7 +17,7 @@ type t
 val empty : t
 
 val of_list : Binding.t list -> t
-val of_map  : Term.t VarMap.t -> t
+val of_map  : Term.t Term.VarMap.t -> t
 
 val split : t -> Binding.t list
 
@@ -27,10 +27,10 @@ val split : t -> Binding.t list
 val apply : Env.t -> t -> 'a -> 'a
 
 (* [is_bound x subst] - checks whether [x] is bound by [subst] *)
-val is_bound : Var.t -> t -> bool
+val is_bound : Term.Var.t -> t -> bool
 
 (* [freevars env subst x] - returns all free-variables of term [x] *)
-val freevars : Env.t -> t -> 'a -> VarSet.t
+val freevars : Env.t -> t -> 'a -> Term.VarSet.t
 
 (* [unify ~subsume ~scope env subst x y] performs unification of two terms [x] and [y] in [subst].
  *   Unification is a process of finding substituion [s] s.t. [s(x) = s(y)].
@@ -43,7 +43,7 @@ val freevars : Env.t -> t -> 'a -> VarSet.t
  *   This can be used to perform subsumption check:
  *   [y] is subsumed by [x] (i.e. [x] is more general than [x]) if such a unification succeeds.
  *)
-val unify : ?subsume:bool -> ?scope:Var.scope -> Env.t -> t -> 'a -> 'a -> (Binding.t list * t) option
+val unify : ?subsume:bool -> ?scope:Term.Var.scope -> Env.t -> t -> 'a -> 'a -> (Binding.t list * t) option
 
 val merge_disjoint : Env.t -> t -> t -> t
 

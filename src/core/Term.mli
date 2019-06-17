@@ -1,9 +1,14 @@
 (* [Term] encapsulates unsafe operations on untyped OCaml's values extended with the logic variables *)
 
-
 (* [Var] logic variables and operations on them *)
 module Var :
   sig
+    type env = int
+
+    type scope
+
+    type anchor
+
     type t =
       { anchor        : anchor;
         env           : env;
@@ -13,11 +18,9 @@ module Var :
         constraints   : Obj.t list
       }
 
-    type env
+    val tabling_env : env
 
-    type scope
-
-    type anchor
+    val non_local_scope : scope
 
     val new_scope : unit -> scope
 
@@ -36,13 +39,13 @@ module Var :
     val hash : t -> int
   end
 
-module VarSet : Set.S(Var)
+module VarSet : Set.S with type elt = Var.t
 
-module VarTbl : Hashtbl.S(Var)
+module VarTbl : Hashtbl.S with type key = Var.t
 
 module VarMap :
   sig
-    include Map.S(Var)
+    include Map.S with type key = Var.t
 
     val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
   end

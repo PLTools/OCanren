@@ -11,12 +11,12 @@ val add : Env.t -> Subst.t -> t -> 'a -> 'a -> t option
  *   This function may rebuild internal representation of constraints and thus it returns new object.
  *   If constraint is violated then [None] is returned.
  *)
-val recheck : Env.t -> Subst.t -> t -> Binding.t list -> t option
+val recheck : Env.t -> Subst.t -> t -> Subst.Binding.t list -> t option
 
 (* [project env subst diseq fv] - projects [diseq] into the set of free-variables [fv],
  *   i.e. it extracts only those constraints that are relevant to variables from [fv]
  *)
-val project : Env.t -> Subst.t -> t -> VarSet.t -> t
+val project : Env.t -> Subst.t -> t -> Term.VarSet.t -> t
 
 (* [merge_disjoint env subst diseq diseq'] merges two disequality constraints *)
 val merge_disjoint : Env.t -> Subst.t -> t -> t -> t
@@ -27,7 +27,7 @@ module Answer :
     type t
 
     (* [extract a v] returns list of `forbidden` terms for variable [v] *)
-    val extract : t -> Var.t -> Term.t list
+    val extract : t -> Term.Var.t -> Term.t list
 
     val subsumed : Env.t -> t -> t -> bool
   end

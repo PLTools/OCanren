@@ -16,10 +16,11 @@
  * (enclosed in the file COPYING).
  *)
 
-open MiniKanrenCore
+open Logic
+open Core
 
-     @type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr;;
-@type 'a nat = O | S of 'a with show, gmap ;; (*html, eq, compare, foldl, foldr, gmap;;*)
+@type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr;;
+@type 'a nat = O | S of 'a with show, gmap, html, eq, compare, foldl, foldr;;
 
 module Pair = 
   struct
@@ -75,7 +76,7 @@ module Pair =
     include T
     include Fmap2 (T)
 
-    let pair x y = MiniKanrenCore.inj @@ distrib (x, y)
+    let pair x y = Logic.inj @@ distrib (x, y)
 
   end
 
@@ -133,8 +134,8 @@ module Option =
     include T
     include Fmap (T)
 
-    let some x  = MiniKanrenCore.inj @@ distrib (Some x)
-    let none () = MiniKanrenCore.inj @@ distrib None
+    let some x  = Logic.inj @@ distrib (Some x)
+    let none () = Logic.inj @@ distrib None
 
     let option = function None -> none () | Some x -> some x
 
@@ -184,10 +185,10 @@ module Bool =
 
     type groundi = (ground, logic) injected
 
-    let reify = MiniKanrenCore.reify
+    let reify = Logic.reify
 
-    let falso = MiniKanrenCore.inj @@ lift false
-    let truo  = MiniKanrenCore.inj @@ lift true
+    let falso = Logic.inj @@ lift false
+    let truo  = Logic.inj @@ lift true
 
     let (|^) a b c =
       conde [
@@ -285,10 +286,10 @@ module Nat =
 
     let rec reify h n = F.reify reify h n
 
-    let o   = MiniKanrenCore.inj @@ F.distrib O
-    let s x = MiniKanrenCore.inj @@ F.distrib (S x)
+    let o   = Logic.inj @@ F.distrib O
+    let s x = Logic.inj @@ F.distrib (S x)
 
-    let rec nat n = MiniKanrenCore.inj @@ F.distrib @@ X.fmap nat n
+    let rec nat n = Logic.inj @@ F.distrib @@ X.fmap nat n
 
     let zero = o
     let one  = s o
@@ -368,8 +369,8 @@ module List =
 
     module F = Fmap2 (X)
 
-    let nil ()    = MiniKanrenCore.inj @@ F.distrib Nil
-    let conso x y = MiniKanrenCore.inj @@ F.distrib (Cons (x, y))
+    let nil ()    = Logic.inj @@ F.distrib Nil
+    let conso x y = Logic.inj @@ F.distrib (Cons (x, y))
 
     type 'a ground = ('a, 'a ground) t
     type 'a logic  = ('a, 'a logic) t logic'

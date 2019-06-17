@@ -11,6 +11,8 @@ val cons : 'a -> 'a t -> 'a t
 
 val from_fun : (unit -> 'a t) -> 'a t
 
+val suspend : is_ready:(unit -> bool) -> (unit -> 'a t) -> 'a t
+
 val of_list : 'a list -> 'a t
 
 (** Emptiness test *)
@@ -28,12 +30,25 @@ val iter : ('a -> unit) -> 'a t -> unit
 val filter : ('a -> bool) -> 'a t -> 'a t
 
 (** [fold f a s] left-fold over a stream [s]
-  *    with function [f] and initial accumulator value [a] *)
+  *   with function [f] and initial accumulator value [a] *)
 val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
 
 (** [zip s s'] zips streams [s] and [s'] into a stream of pairs;
-  *   fails with the [Invalid_argument] for the streams of different lengths *)
+  *   fails with the [Invalid_argument] for the streams of different lengths
+  *)
 val zip : 'a t -> 'b t -> ('a * 'b) t
+
+(** [mplus s s'] monadic-alternative for streams;
+  *   concatenates two streams, the resulting stream contains elements
+  *   of both input streams in an interleaved order
+  *)
+val mplus : 'a t -> 'a t -> 'a t
+
+(** [bind s f] monadic-bind for streams;
+  *   maps function [f] over values of the stream [s],
+  *    obtaining a stream of streams ['b t t], and then flattens this stream
+  *)
+val bind : 'a t -> ('a -> 'b t) -> 'b t
 
 (** [retrieve ~n:n s] returns the list of [n]-first elements of [s] and the rest of the stream *)
 val retrieve : ?n:int -> 'a t -> 'a list * 'a t

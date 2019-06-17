@@ -16,7 +16,8 @@
  * (enclosed in the file COPYING).
  *)
 
-open MiniKanrenCore
+open Logic
+open Core
 
 (** {2 Standard relational library} *)
 
@@ -377,7 +378,7 @@ module List :
     val conso : ('a, 'b) injected -> ('a, 'b) groundi -> ('a, 'b) groundi
 
     (** Relational foldr *)
-    val foldro : (('a, 'b) injected -> ('acc, _ MiniKanrenCore.logic as 'acc2) injected -> ('acc, 'acc2) injected -> goal) ->
+    val foldro : (('a, 'b) injected -> ('acc, _ logic' as 'acc2) injected -> ('acc, 'acc2) injected -> goal) ->
                  ('acc, 'acc2) injected -> ('a, 'b) groundi -> ('acc, 'acc2) injected -> goal
 
     (** Relational map *)
@@ -387,7 +388,7 @@ module List :
     val filtero : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) groundi -> ('a, 'b) groundi -> goal
 
     (** Relational lookup *)
-    val lookupo : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) groundi -> ('a option, 'b option MiniKanrenCore.logic) injected -> goal
+    val lookupo : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) groundi -> ('a option, 'b option logic') injected -> goal
 
     (** Boolean list disjunctions *)
     val anyo : (Bool.ground, Bool.logic) groundi -> Bool.groundi -> goal

@@ -1,9 +1,174 @@
+open Logic
+
+module Answer :
+  sig
+    (* [Answer.t] - a type that represents (untyped) answer to a query *)
+    type t
+
+    (* [make env t] creates the answer from the environment and term (with constrainted variables)  *)
+    val make : Env.t -> Term.t -> t
+
+    (* [lift env a] lifts the answer into different environment, replacing all variables consistently *)
+    val lift : Env.t -> t -> t
+
+    (* [env a] returns an environment of the answer *)
+    val env : t -> Env.t
+
+    (* [unctr_term a] returns a term with unconstrained variables *)
+    val unctr_term : t -> Term.t
+
+    (* [ctr_term a] returns a term with constrained variables *)
+    val ctr_term : t -> Term.t
+
+    (* [disequality a] returns all disequality constraints on variables in term as a list of bindings *)
+    val disequality : t -> Subst.Binding.t list
+
+    (* [equal t t'] syntactic equivalence (not an alpha-equivalence) *)
+    val equal : t -> t -> bool
+
+    (* [hash t] hashing that is consistent with syntactic equivalence *)
+    val hash : t -> int
+  end = struct
+    type t = Env.t * Term.t
+
+    let make env t = (env, t)
+
+    let env (env, _) = env
+
+    let unctr_term (_, t) =
+      Term.map t
+        ~fval:(fun x -> Term.repr x)
+        ~fvar:(fun v -> Term.repr {v with Term.Var.constraints = []})
+
+    let ctr_term (_, t) = t
+
+    let disequality (env, t) =
+      let rec helper acc x =
+        Term.fold x ~init:acc
+          ~fval:(fun acc _ -> acc)
+          ~fvar:(fun acc var ->
+            ListLabels.fold_left var.Term.Var.constraints ~init:acc
+              ~f:(fun acc ctr_term ->
+                let ctr_term = Term.repr ctr_term in
+                let var = {var with Term.Var.constraints = []} in
+                let term = unctr_term @@ (env, ctr_term) in
+                let acc = Subst.(Binding.({var; term}))::acc in
+                helper acc ctr_term
+              )
+          )
+      in
+      helper [] t
+
+    let lift env' (env, t) =
+      let vartbl = Term.VarTbl.create 31 in
+      let rec helper x =
+        Term.map x
+          ~fval:(fun x -> Term.repr x)
+          ~fvar:(fun v -> Term.repr @@
+            try
+              Term.VarTbl.find vartbl v
+            with Not_found ->
+              let new_var = Env.fresh ~scope:Term.Var.non_local_scope env' in
+              Term.VarTbl.add vartbl v new_var;
+              {new_var with Term.Var.constraints =
+                List.map (fun x -> helper x) v.Term.Var.constraints
+                |> List.sort Term.compare
+              }
+          )
+      in
+      (env', helper t)
+
+    let check_envs_exn env env' =
+      if Env.equal env env' then () else
+        failwith "OCanren fatal (Answer.check_envs): answers from different environments"
+
+    let equal (env, t) (env', t') =
+      check_envs_exn env env';
+      Term.equal t t'
+
+    let hash (env, t) = Term.hash t
+  end
+
+module State =
+  struct
+    type t =
+      { env   : Env.t
+      ; subst : Subst.t
+      ; ctrs  : Disequality.t
+      ; scope : Term.Var.scope
+      }
+
+    type reified = Env.t * Term.t
+
+    let empty () =
+      { env   = Env.empty ()
+      ; subst = Subst.empty
+      ; ctrs  = Disequality.empty
+      ; scope = Term.Var.new_scope ()
+      }
+
+    let env   {env} = env
+    let subst {subst} = subst
+    let constraints {ctrs} = ctrs
+    let scope {scope} = scope
+
+    let fresh {env; scope} = Env.fresh ~scope env
+
+    let new_scope st = {st with scope = Term.Var.new_scope ()}
+
+    let unify x y ({env; subst; ctrs; scope} as st) =
+        match Subst.unify ~scope env subst x y with
+        | None -> None
+        | Some (prefix, subst) ->
+          match Disequality.recheck env subst ctrs prefix with
+          | None      -> None
+          | Some ctrs -> Some {st with subst; ctrs}
+
+    let diseq x y ({env; subst; ctrs; scope} as st) =
+      match Disequality.add env subst ctrs x y with
+      | None      -> None
+      | Some ctrs -> Some {st with ctrs}
+
+    let reify x {env; subst; ctrs} =
+      let answ = Subst.reify env subst x in
+      let diseqs = Disequality.reify env subst ctrs x in
+      if List.length diseqs = 0 then
+        [Answer.make env answ]
+      else
+        ListLabels.map diseqs ~f:(fun diseq ->
+          let rec helper forbidden t =
+            Term.map t
+              ~fval:(fun x -> Term.repr x)
+              ~fvar:(fun v -> Term.repr @@
+                if List.mem v.Term.Var.index forbidden then v
+                else
+                  {v with Term.Var.constraints =
+                    Disequality.Answer.extract diseq v
+                    |> List.filter (fun dt ->
+                      match Env.var env dt with
+                      | Some u  -> not (List.mem u.Term.Var.index forbidden)
+                      | None    -> true
+                    )
+                    |> List.map (fun x -> helper (v.Term.Var.index::forbidden) x)
+                    (* TODO: represent [Var.constraints] as [Set];
+                     * TODO: hide all manipulations on [Var.t] inside [Var] module;
+                     *)
+                    |> List.sort Term.compare
+                  }
+              )
+          in
+          Answer.make env (helper [] answ)
+      )
+  end
+
+let (!!!) = Obj.magic
+
 type 'a goal' = State.t -> 'a
 
-type goal = State.t Stream.t goal'
+type goal = State.t OStream.t goal'
 
-let success st = Stream.single st
-let failure _  = Stream.nil
+let success st = OStream.single st
+let failure _  = OStream.nil
 
 let (===) x y st =
   match State.unify x y st with
@@ -15,15 +180,15 @@ let (=/=) x y st =
   | Some st -> success st
   | None    -> failure st
 
-let delay g st = Stream.from_fun (fun () -> g () st)
+let delay g st = OStream.from_fun (fun () -> g () st)
 
-let conj f g st = Stream.bind (f st) g
+let conj f g st = OStream.bind (f st) g
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
 
-let disj_base f g st = Stream.mplus (f st) (Stream.from_fun (fun () -> g st))
+let disj_base f g st = OStream.mplus (f st) (OStream.from_fun (fun () -> g st))
 
-let disj f g st = let st = State.new_scope st in disj_base f g |> (fun g -> Stream.from_fun (fun () -> g st))
+let disj f g st = let st = State.new_scope st in disj_base f g |> (fun g -> OStream.from_fun (fun () -> g st))
 
 let (|||) = disj
 
@@ -34,7 +199,7 @@ let (?|) gs st =
   | g::gs -> disj_base g (inner gs)
   | [] -> failwith "Wrong argument of (?!)"
   in
-  inner gs |> (fun g -> Stream.from_fun (fun () -> g st))
+  inner gs |> (fun g -> OStream.from_fun (fun () -> g st))
 
 let conde = (?|)
 
@@ -126,8 +291,8 @@ let qrstu = five
 let run n g h =
   let adder, reifier, ext, uncurr = n () in
   let args, stream = ext @@ adder g @@ State.empty () in
-  Stream.bind stream (fun st -> Stream.of_list @@ State.reify args st)
-  |> Stream.map (fun answ ->
+  OStream.bind stream (fun st -> OStream.of_list @@ State.reify args st)
+  |> OStream.map (fun answ ->
     uncurr h @@ reifier (Obj.magic @@ Answer.ctr_term answ) (Answer.env answ)
   )
 
@@ -193,7 +358,7 @@ module Table :
               (* delayed check that current head of cache is not equal to head of seen part *)
               let is_ready () = seen != !cache  in
               (* delayed thunk starts to consume unseen part of cache  *)
-              Stream.suspend ~is_ready @@ fun () -> helper !cache !cache seen
+              OStream.suspend ~is_ready @@ fun () -> helper !cache !cache seen
             else
               (* consume one answer term from cache and `lift` it to the current environment *)
               let answ, tail = (Answer.lift env @@ List.hd curr), List.tl curr in
@@ -203,7 +368,7 @@ module Table :
                   begin
                   (* check `answ` disequalities against external substitution *)
                   let ctrs = ListLabels.fold_left (Answer.disequality answ) ~init:Disequality.empty
-                    ~f:(let open Binding in fun acc {var; term} ->
+                    ~f:(let open Subst.Binding in fun acc {var; term} ->
                       match Disequality.add env Subst.empty acc (Term.repr var) term with
                       (* we should not violate disequalities *)
                       | None     -> assert false
@@ -214,7 +379,7 @@ module Table :
                   | None      -> helper start tail seen
                   | Some ctrs ->
                     let st' = {st' with ctrs = Disequality.merge_disjoint env subst' ctrs' ctrs} in
-                    Stream.(cons st' (from_fun @@ fun () -> helper start tail seen))
+                    OStream.(cons st' (from_fun @@ fun () -> helper start tail seen))
                   end
           in
           helper !cache !cache []
@@ -224,7 +389,7 @@ module Table :
     type t = Cache.t H.t
 
     let make_answ args st =
-      let env = Env.create ~anchor:Var.tabling_env in
+      let env = Env.create ~anchor:Term.Var.tabling_env in
       let [answ] = State.reify args st in
       Answer.lift env answ
 
