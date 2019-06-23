@@ -5,5 +5,11 @@ core/Subst
 core/Disequality
 core/Logic
 core/Core
+std/LPair
+std/LOption
+std/LBool
+std/LNat
+std/LList
+std/Std
 MiniKanrenStd
 MiniKanren

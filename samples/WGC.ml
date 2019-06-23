@@ -67,15 +67,15 @@ let rec eval state moves state' =
 
 
 let reify_state =
-  let reify_qua = Pair.reify (Pair.reify reify reify) (Pair.reify reify reify) in
-  Pair.reify reify_qua reify_qua
+  let reify_qua = LPair.reify (LPair.reify reify reify) (LPair.reify reify reify) in
+  LPair.reify reify_qua reify_qua
 
 let show_state =
-  let show_qua = show(Pair.logic) (show(Pair.logic) (show(Bool.logic)) (show(Bool.logic))) (show(Pair.logic) (show(Bool.logic)) (show(Bool.logic))) in
-  show(Pair.logic) show_qua show_qua
+  let show_qua = show(LPair.logic) (show(LPair.logic) (show(LBool.logic)) (show(LBool.logic))) (show(LPair.logic) (show(LBool.logic)) (show(LBool.logic))) in
+  show(LPair.logic) show_qua show_qua
 
-let reify_solution s = s#reify @@ List.reify reify
-let show_solution = show(List.logic) (show(logic) (show move))
+let reify_solution s = s#reify @@ LList.reify reify
+let show_solution = show(LList.logic) (show(logic) (show move))
 
 let id x = x
              

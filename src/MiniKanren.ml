@@ -2,4 +2,4 @@ include RStream
 include Logic
 include Core
 
-module Std = MiniKanrenStd
+module Std = Std
