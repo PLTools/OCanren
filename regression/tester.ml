@@ -38,7 +38,7 @@ let run_gen onOK onFree n num handler (repr, goal) =
   let rec loop st = function
   | k when (k > n) && (n >= 0) -> ()
   | k ->
-    match OStream.retrieve ~n:1 st with
+    match RStream.retrieve ~n:1 st with
     | [],_ -> raise NoMoreAnswers
     | [f],tl ->
       f ();

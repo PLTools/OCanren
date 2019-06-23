@@ -80,19 +80,19 @@ let show_solution = show(List.logic) (show(logic) (show move))
 let id x = x
              
 let _ =
-  OStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
+  RStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (nil ()) q) id;
   
-  OStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
+  RStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Empty) q) id;
 
-  OStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
+  RStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Goat) q) id; 
 
-  OStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
+  RStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q) id;
 
-  List.iter (fun s -> Printf.printf "%s\n" @@ show_solution @@ reify_solution s) @@ OStream.take ~n:100 @@
+  List.iter (fun s -> Printf.printf "%s\n" @@ show_solution @@ reify_solution s) @@ RStream.take ~n:100 @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) q (pair (qua !false !false !false !false) (qua !true !true !true !true))) id;
 
   

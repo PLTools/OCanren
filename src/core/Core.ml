@@ -165,10 +165,10 @@ let (!!!) = Obj.magic
 
 type 'a goal' = State.t -> 'a
 
-type goal = State.t OStream.t goal'
+type goal = State.t RStream.t goal'
 
-let success st = OStream.single st
-let failure _  = OStream.nil
+let success st = RStream.single st
+let failure _  = RStream.nil
 
 let (===) x y st =
   match State.unify x y st with
@@ -180,15 +180,15 @@ let (=/=) x y st =
   | Some st -> success st
   | None    -> failure st
 
-let delay g st = OStream.from_fun (fun () -> g () st)
+let delay g st = RStream.from_fun (fun () -> g () st)
 
-let conj f g st = OStream.bind (f st) g
+let conj f g st = RStream.bind (f st) g
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
 
-let disj_base f g st = OStream.mplus (f st) (OStream.from_fun (fun () -> g st))
+let disj_base f g st = RStream.mplus (f st) (RStream.from_fun (fun () -> g st))
 
-let disj f g st = let st = State.new_scope st in disj_base f g |> (fun g -> OStream.from_fun (fun () -> g st))
+let disj f g st = let st = State.new_scope st in disj_base f g |> (fun g -> RStream.from_fun (fun () -> g st))
 
 let (|||) = disj
 
@@ -199,7 +199,7 @@ let (?|) gs st =
   | g::gs -> disj_base g (inner gs)
   | [] -> failwith "Wrong argument of (?!)"
   in
-  inner gs |> (fun g -> OStream.from_fun (fun () -> g st))
+  inner gs |> (fun g -> RStream.from_fun (fun () -> g st))
 
 let conde = (?|)
 
@@ -291,8 +291,8 @@ let qrstu = five
 let run n g h =
   let adder, reifier, ext, uncurr = n () in
   let args, stream = ext @@ adder g @@ State.empty () in
-  OStream.bind stream (fun st -> OStream.of_list @@ State.reify args st)
-  |> OStream.map (fun answ ->
+  RStream.bind stream (fun st -> RStream.of_list @@ State.reify args st)
+  |> RStream.map (fun answ ->
     uncurr h @@ reifier (Obj.magic @@ Answer.ctr_term answ) (Answer.env answ)
   )
 
@@ -358,7 +358,7 @@ module Table :
               (* delayed check that current head of cache is not equal to head of seen part *)
               let is_ready () = seen != !cache  in
               (* delayed thunk starts to consume unseen part of cache  *)
-              OStream.suspend ~is_ready @@ fun () -> helper !cache !cache seen
+              RStream.suspend ~is_ready @@ fun () -> helper !cache !cache seen
             else
               (* consume one answer term from cache and `lift` it to the current environment *)
               let answ, tail = (Answer.lift env @@ List.hd curr), List.tl curr in
@@ -379,7 +379,7 @@ module Table :
                   | None      -> helper start tail seen
                   | Some ctrs ->
                     let st' = {st' with ctrs = Disequality.merge_disjoint env subst' ctrs' ctrs} in
-                    OStream.(cons st' (from_fun @@ fun () -> helper start tail seen))
+                    RStream.(cons st' (from_fun @@ fun () -> helper start tail seen))
                   end
           in
           helper !cache !cache []

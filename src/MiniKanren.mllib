@@ -1,4 +1,4 @@
-core/OStream
+core/RStream
 core/Term
 core/Env
 core/Subst

@@ -74,7 +74,7 @@ let _ =
 (* Making regular sorting from relational one *)
 let sort l =
   List.to_list Nat.to_int @@
-  OStream.hd @@
+  RStream.hd @@
   run q (sorto @@ nat_list l)
         (fun rr -> rr#prj)
 
@@ -85,14 +85,14 @@ let rec fact = function 0 -> 1 | n -> n * fact (n-1)
 (* Making permutations from relational sorting *)
 let perm l =
   List.map (List.to_list Nat.to_int) @@
-  OStream.take ~n:(fact @@ List.length l) @@
+  RStream.take ~n:(fact @@ List.length l) @@
   run q (fun q -> sorto q @@ nat_list (List.sort Pervasives.compare l))
         (fun rr -> rr#prj)
 
 (* More hardcore version: no standard sorting required *)
 let perm' l =
   List.map (List.to_list Nat.to_int) @@
-  OStream.take ~n:(fact @@ List.length l) @@
+  RStream.take ~n:(fact @@ List.length l) @@
   run q (fun q -> fresh (r) (sorto (nat_list l) r) (sorto q r))
         (fun rr -> rr#prj)
 
