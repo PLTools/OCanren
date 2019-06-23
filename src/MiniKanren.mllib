@@ -11,5 +11,4 @@ std/LBool
 std/LNat
 std/LList
 std/Std
-MiniKanrenStd
 MiniKanren
