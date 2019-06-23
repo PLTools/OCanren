@@ -1,6 +1,6 @@
 open GT
 open MiniKanren
-open Std
+open MiniKanren.Std
 open Tester
 open Printf
 

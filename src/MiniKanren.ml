@@ -20,4 +20,13 @@ include RStream
 include Logic
 include Core
 
-module Std = Std
+module Std =
+  struct
+    include Std
+
+    module LPair    = LPair
+    module LOption  = LOption
+    module LBool    = LBool
+    module LNat     = LNat
+    module LList    = LList
+  end

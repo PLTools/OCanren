@@ -1,7 +1,7 @@
 open Printf
 open GT
 open MiniKanren
-open Std
+open MiniKanren.Std
 open Tester
 open Stlc
 

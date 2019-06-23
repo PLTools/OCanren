@@ -1,6 +1,6 @@
 open GT
 open MiniKanren
-open Std
+open MiniKanren.Std
 open Tester
 
 let show_nat_list = GT.(show LList.ground @@ show LNat.ground)
