@@ -1,36 +1,25 @@
-%% For double-blind review submission, w/o CCS and ACM Reference (max submission space)
-\documentclass[acmlarge,review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
-%% For double-blind review submission, w/ CCS and ACM Reference
-%\documentclass[acmsmall,review,anonymous]{acmart}\settopmatter{printfolios=true}
-%% For single-blind review submission, w/o CCS and ACM Reference (max submission space)
-%\documentclass[acmsmall,review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
-%% For single-blind review submission, w/ CCS and ACM Reference
-%\documentclass[acmsmall,review]{acmart}\settopmatter{printfolios=true}
-%% For final camera-ready submission, w/ required CCS and ACM Reference
-%\documentclass[acmsmall]{acmart}\settopmatter{}
+\documentclass[acmlarge]{acmart}
+\usepackage[
+    type={CC},           % your choice
+    modifier={by-sa},    % your choice
+    version={4.0},       % your choice
+]{doclicense}            % your choice, see \doclicenseThis below
 
+\settopmatter{printacmref=false}
+\fancyfoot{}
 
-%% Journal information
-%% Supplied to authors by publisher for camera-ready submission;
-%% use defaults for review submission.
-\acmJournal{PACMPL}
-\acmVolume{1}
-\acmNumber{CONF} % CONF = POPL or ICFP or OOPSLA
-\acmArticle{1}
-\acmYear{2019}
-\acmMonth{1}
-\acmDOI{} % \acmDOI{10.1145/nnnnnnn.nnnnnnn}
-\startPage{1}
+\makeatletter
+\def\@formatdoi#1{}
+\def\@permissionCodeOne{miniKanren.org/workshop}
+\def\@copyrightpermission{\doclicenseThis} % your choice of text
+\def\@copyrightowner{Copyright held by the author(s).} % your choice
+\makeatother
 
-%% Copyright information
-%% Supplied to authors (based on authors' rights management selection;
-%% see authors.acm.org) by publisher for camera-ready submission;
-%% use 'none' for review submission.
-\setcopyright{none}
-%\setcopyright{acmcopyright}
-%\setcopyright{acmlicensed}
-%\setcopyright{rightsretained}
-%\copyrightyear{2018}           %% If different from \acmYear
+\copyrightyear{2019}
+\setcopyright{rightsretained}
+
+\acmMonth{8}
+\acmArticle{5}
 
 %% Bibliography style
 \bibliographystyle{ACM-Reference-Format}
@@ -184,84 +173,36 @@ language=minikanren
 %% Many elements are not rendered, but should be provided for metadata
 %% extraction tools.
 
-%% Author with single affiliation.
 \author{Dmitry Rozplokhas}
-%\authornote{with author1 note}          %% \authornote is optional;
-                                        %% can be repeated if necessary
-%\orcid{nnnn-nnnn-nnnn-nnnn}             %% \orcid is optional
-\affiliation{
-  %\position{Position1}
-  \department{Department of Informatics}              %% \department is recommended
-  \institution{Higher School of Economics}            %% \institution is required
-  \streetaddress{Kantemirovskaya st., 3 block 1 lit. A}
-  \city{Saint Petersburg}
-  %\state{State1}
-  \postcode{194100}
-  %\country{Russia}                    %% \country is recommended
-}
-\affiliation{
-  %\position{Position2b}
-  %\department{Department2b}             %% \department is recommended
-  \institution{JetBrains Research}           %% \institution is required
-  \streetaddress{Kantemirovskaya st., 2}
-  \city{Saint Petersburg}
-  %\state{State2b}
-  \postcode{197342}
-  \country{Russia}                   %% \country is recommended
-}
-\email{rozplokhas@gmail.com}          %% \email is recommended
+\affiliation{%
+  \institution{Higher School of Economics}}
+\affiliation{%
+  \institution{JetBrains Research}
+  \country{Russia}}
+\email{darozplokhas@edu.hse.ru}
 
-%% Author with two affiliations and emails.
 \author{Andrey Vyatkin}
-%\authornote{with author2 note}          %% \authornote is optional;
-                                        %% can be repeated if necessary
-%\orcid{nnnn-nnnn-nnnn-nnnn}             %% \orcid is optional
-\affiliation{
-  %\position{Position2a}
-  \department{Faculty of Mathematics and Mechanics}             %% \department is recommended
-  \institution{Saint Petersburg State University}           %% \institution is required
-  \streetaddress{Universitetski pr., 28}
-  \city{Saint Petersburg}
-%  \state{State2a}
-  \postcode{198504}
-  \country{Russia}                   %% \country is recommended
-}
-\email{dewshick@gmail.com}         %% \email is recommended
-%\email{first2.last2@inst2b.org}         %% \email is recommended
+\affiliation{%
+  \institution{Saint Petersburg State University}
+  \country{Russia}}
+\email{dewshick@gmail.com}
 
-%% Author with single affiliation.
 \author{Dmitry Boulytchev}
-%\authornote{with author1 note}          %% \authornote is optional;
-\affiliation{
-  %\position{Position2a}
-  \department{Faculty of Mathematics and Mechanics}             %% \department is recommended
-  \institution{Saint Petersburg State University}           %% \institution is required
-  \streetaddress{Universitetski pr., 28}
-  \city{Saint Petersburg}
-%  \state{State2a}
-  \postcode{198504}
-%  \country{Russia}                   %% \country is recommended
-}
-                                       %% can be repeated if necessary
-%\orcid{nnnn-nnnn-nnnn-nnnn}             %% \orcid is optional
-\affiliation{
-  %\position{Position2b}
-  %\department{Department2b}             %% \department is recommended
-  \institution{JetBrains Research}           %% \institution is required
-  \streetaddress{Kantemirovskaya st., 2}
-  \city{Saint Petersburg}
-  %\state{State2b}
-  \postcode{197342}
-  \country{Russia}                   %% \country is recommended
-}
-\email{dboulytchev@math.spbu.ru}          %% \email is recommended
+\affiliation{%
+  \institution{Saint Petersburg State University}}
+\affiliation{%
+  \institution{JetBrains Research}
+  \country{Russia}}
+\email{dboulytchev@math.spbu.ru}
+
+
 
 %% Abstract
 %% Note: \begin{abstract}...\end{abstract} environment must come
 %% before \maketitle command
 \begin{abstract}
   We present two formal semantics for the core \textsc{miniKanren}. First, we give denotational
-  variant which corresponds to the minimal Herbrand model for definite logic program. Second,
+  variant which corresponds to the minimal Herbrand model for definite logic programs. Second,
   we present operational semantics which models interleaving, and prove its soundness and
   completeness w.r.t. denotational semantics. Our development is supported by formal \textsc{Coq}
   specification, thus making it certified.
@@ -305,6 +246,7 @@ language=minikanren
 %% commands, abstract environment, Computing Classification System
 %% environment and commands, and keywords command.
 \maketitle
+\thispagestyle{empty}
 
 \input{intro.tex}
 \input{language.tex}

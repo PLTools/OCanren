@@ -1,7 +1,7 @@
 \section{Semantics Equivalence}
 \label{equivalence}
 
-Now when we defined two different kinds of semantics for MiniKanren we can relate them and show that the results given by these two semantics are the same for any specification.
+Now when we defined two different kinds of semantics for \textsc{miniKanren} we can relate them and show that the results given by these two semantics are the same for any specification.
 This will actually say something important about the search in the language: since operational semantics describes precisely the behavior of the search and denotational semantics
 ignores the search and describes what we \emph{should} get from mathematical point of view, by proving their equivalence we establish \emph{completeness} of the search which
 means that the search will get all answers satisfying the described specification and only those.
@@ -64,7 +64,7 @@ For any top-level environment $\Gamma_0$ acquired from some specification, for a
 \]
 \end{lemma}
 
-It can be proven by the induction on the number of steps in which a given answer (more accurately, the substitution that contains it) occurs in the trace.
+It can be proven by induction on the number of steps in which a given answer (more accurately, the substitution that contains it) occurs in the trace.
 The induction step is proven by structural induction on the extended state $s$.
 
 It would be tempting to formulate the completeness of operational semantics as the inverse inclusion, but it does not hold in such generality. The reason for
@@ -78,19 +78,19 @@ which are allocated in the beginning.
 For any specification $\{\dots\}\; g$, for which the indices of all free variables in $g$ are limited by some number $n$
 
 \[
-\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \in \sembr{\{\dots\}\; g}\} \subset \{\mathfrak{f} \mid \mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \in \sembr{\inbr{g, \epsilon, n}}_{op}\}.
+\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\{\dots\}\; g}\} \subset \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \epsilon, n}}_{op}\}.
 \]
 \end{theorem}
 
 
 Similarly to the soundness, this can be proven by nested induction, but the generalization is required. This time it is enough to generalize it from goals
-to states of the shape $\inbr{g, \sigma, n}$. We also need to introduce one more auxiliary semantics: bounded denotational semantics:
+to states of the shape $\inbr{g, \sigma, n}$. We also need to introduce one more auxiliary semantics --- bounded denotational semantics:
 
 \[
 \sembr{\bullet}^l : \mathcal{G} \to 2^{\mathcal{A}\to\mathcal{D}}
 \]
 
-Instead of always unfold the definition of a relation for invocation goal, it does so only given number of times. So for a given set of relational
+Instead of always unfolding the definition of a relation for invocation goal, it does so only given number of times. So for a given set of relational
 definitions $\{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i;\}$ the definition of bounded denotational semantics is exactly the same as in usual denotational semantics,
 except that for the invocation case:
 
@@ -119,7 +119,7 @@ Now the generalized version of the completeness theorem is as follows:
 For any set of relational definitions, for any level $l$, for any well-formed (w.r.t. that set of definitions) state $\inbr{g, \sigma, n}$,
 
 \[
-\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \in \sembr{g}^l \cap [\sigma]\} \subset \{\mathfrak{f} \mid \mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \in \sembr{\inbr{g, \sigma, n}}_{op}\}.
+\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}^l \cap [\sigma]\} \subset \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \sigma, n}}_{op}\}.
 \]
 \end{lemma}
 

@@ -65,7 +65,7 @@ variables. The substitution is one of the answers, and the number is threaded th
     \inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{(mgu\,(t_1, t_2, \sigma),\, n)} \Diamond & \ruleno{UnifySuccess} \\[2mm]
     \inbr{g_1 \lor g_2, \sigma, n} \xrightarrow{\circ} \inbr{g_1, \sigma, n} \oplus \inbr{g_2, \sigma, n} & \ruleno{Disj} \\[2mm]
     \inbr{g_1 \land g_2, \sigma, n} \xrightarrow{\circ} \inbr{ g_1, \sigma, n} \otimes g_2 & \ruleno{Conj} \\[2mm]
-    \inbr{\mbox{\lstinline|fresh|}\, x\, .\, g, \sigma, n} \xrightarrow{\circ} \inbr{g\,[\bigslant{\alpha_{n}}{x}], \sigma, n + 1} & \ruleno{Fresh}\\[2mm]
+    \inbr{\mbox{\lstinline|fresh|}\, x\, .\, g, \sigma, n} \xrightarrow{\circ} \inbr{g\,[\bigslant{\alpha_{n + 1}}{x}], \sigma, n + 1} & \ruleno{Fresh}\\[2mm]
     \dfrac{R_i^{k_i}=\lambda\,x_1\dots x_{k_i}\,.\,g}{\inbr{R_i^{k_i}\,(t_1,\dots,t_{k_i}),\sigma,n} \xrightarrow{\circ} \inbr{g\,[\bigslant{t_1}{x_1}\dots\bigslant{t_{k_i}}{x_{k_i}}], \sigma, n}} & \ruleno{Invoke}\\[5mm]
     \dfrac{s_1 \xrightarrow{\circ} \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} s_2} & \ruleno{DisjStop}\\[5mm]
     \dfrac{s_1 \xrightarrow{r} \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} s_2} & \ruleno{DisjStopAns}\\[5mm]
@@ -187,7 +187,7 @@ For this well-founded induction we use the number of free variables in argument 
 
   Definition fvOrderRel (t p : terms) := fvOrder t < fvOrder p.
 
-  Lemma fvOrder_wf: well_founded fvOrderRel.
+  Lemma fvOrder_wf : well_founded fvOrderRel.
 \end{lstlisting}
 
 After this preliminary work, the described transition relation can be encoded naturally as an inductively defined proposition (here ``\lstinline|state'|''
@@ -246,9 +246,9 @@ Then we define a trace coinductively as a stream of labels in transition steps a
     forall st' t1 t2, op_sem st' t1 -> op_sem st' t2 -> equal_streams t1 t2.
 \end{lstlisting}
 
-Note, for the equality of streams we need to define a new coinductive proposition instead of using the standard syntactic equality for coinductive proofs to work~\cite{CPDT}.
+Note, for the equality of streams we need to define a new coinductive proposition instead of using the standard syntactic equality in order for coinductive proofs to work~\cite{CPDT}.
 
-One thing we can prove using operational semantics the \emph{interleaving} properties of disjunction. Specifically, we can prove that a trace for a disjunction is
+One thing we can prove using operational semantics is the \emph{interleaving} properties of disjunction. Specifically, we can prove that a trace for a disjunction is
 a one-by-one interleaving of streams for its disjuncts:
 
 \begin{lstlisting}[language=Coq]
