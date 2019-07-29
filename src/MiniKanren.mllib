@@ -10,5 +10,4 @@ std/LOption
 std/LBool
 std/LNat
 std/LList
-std/Std
 MiniKanren
