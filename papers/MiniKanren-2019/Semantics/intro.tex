@@ -8,8 +8,8 @@ important properties of relational programs (for example, refutational completen
 area of programming languages research a formal definition for the semantics of language of interest is a \emph{de-facto} standard, and
 in our opinion in its current state \textsc{miniKanren} deviates from this standard.
 
-There were some previous attempts to define a formal semantics for \textsc{miniKanren}. In~\cite{RelConversion} a variant of nondeterministic
-operational semantics was presented, and in~\cite{DivTest} another variant of finite-set semantics was used. None of them was capable of reflecting
+There were some previous attempts to define a formal semantics for \textsc{miniKanren}. \citet{RelConversion} present a variant of nondeterministic
+operational semantics, and~\citet{DivTest} use another variant of finite-set semantics. None of them was capable of reflecting
 the distinctive property of \textsc{miniKanren} search~--- \emph{interleaving}~\cite{Search}, thus deviating from the conventional understanding
 of the language.
 
@@ -24,5 +24,3 @@ The paper organized as follows. In Section~\ref{language} we give the syntax of 
 informally and discuss some examples. Section~\ref{denotational} contains the description of denotational semantics for
 the language, and Section~\ref{operational}~--- the operational semantics. In Section~\ref{equivalence} we overview the
 certified proof for soundness and completeness of operational semantics. The final section concludes.
-
-
