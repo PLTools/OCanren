@@ -112,7 +112,7 @@ module Fresh :
     - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
 *)
 val run : (unit ->
-            ('a -> State.t -> 'b) * ('c -> Env.t -> 'd) *
+            ('a -> State.t -> 'b) * ('c -> VarEnv.t -> 'd) *
             ('b -> 'c * State.t RStream.t) * ('e -> 'd -> 'f)) ->
            'a -> 'e -> 'f RStream.t
 
@@ -126,18 +126,18 @@ val delay : (unit -> goal) -> goal
 
 (** Successor function *)
 val succ : (unit ->
-            ('a -> State.t -> 'b) * ('c -> Env.t -> 'd) * ('e -> 'f * 'g) *
+            ('a -> State.t -> 'b) * ('c -> VarEnv.t -> 'd) * ('e -> 'f * 'g) *
             ('h -> 'i -> 'j)) ->
            unit ->
            ((('k, 'l) injected -> 'a) -> State.t -> ('k, 'l) injected * 'b) *
-           (('m, 'n) injected * 'c -> Env.t -> ('m, 'n) reified * 'd) *
+           (('m, 'n) injected * 'c -> VarEnv.t -> ('m, 'n) reified * 'd) *
            ('o * 'e -> ('o * 'f) * 'g) * (('p -> 'h) -> 'p * 'i -> 'j)
 
 (** {3 Predefined numerals (one to five)} *)
 val one : unit ->
            ((('a, 'b) injected -> goal) ->
             State.t -> ('a, 'b) injected * State.t RStream.t) *
-           (('c, 'd) injected -> Env.t -> ('c, 'd) reified) * ('e -> 'e) *
+           (('c, 'd) injected -> VarEnv.t -> ('c, 'd) reified) * ('e -> 'e) *
            (('f -> 'g) -> 'f -> 'g)
 
 val two : unit ->
@@ -145,7 +145,7 @@ val two : unit ->
             State.t ->
             ('a, 'b) injected * (('c, 'd) injected * State.t RStream.t)) *
            (('e, 'f) injected * ('g, 'h) injected ->
-            Env.t -> ('e, 'f) reified * ('g, 'h) reified) *
+            VarEnv.t -> ('e, 'f) reified * ('g, 'h) reified) *
            ('i * ('j * 'k) -> ('i * 'j) * 'k) *
            (('l -> 'm -> 'n) -> 'l * 'm -> 'n)
 
@@ -157,7 +157,7 @@ val three : unit ->
             (('c, 'd) injected *
              (('e, 'f) injected * State.t RStream.t))) *
            (('g, 'h) injected * (('i, 'j) injected * ('k, 'l) injected) ->
-            Env.t ->
+            VarEnv.t ->
             ('g, 'h) reified * (('i, 'j) reified * ('k, 'l) reified)) *
            ('m * ('n * ('o * 'p)) -> ('m * ('n * 'o)) * 'p) *
            (('q -> 'r -> 's -> 't) -> 'q * ('r * 's) -> 't)
@@ -173,7 +173,7 @@ val four : unit ->
               (('g, 'h) injected * State.t RStream.t)))) *
            (('i, 'j) injected *
             (('k, 'l) injected * (('m, 'n) injected * ('o, 'p) injected)) ->
-            Env.t ->
+            VarEnv.t ->
             ('i, 'j) reified *
             (('k, 'l) reified * (('m, 'n) reified * ('o, 'p) reified))) *
            ('q * ('r * ('s * ('t * 'u))) -> ('q * ('r * ('s * 't))) * 'u) *
@@ -193,7 +193,7 @@ val five : unit ->
            (('k, 'l) injected *
             (('m, 'n) injected *
              (('o, 'p) injected * (('q, 'r) injected * ('s, 't) injected))) ->
-            Env.t ->
+            VarEnv.t ->
             ('k, 'l) reified *
             (('m, 'n) reified *
              (('o, 'p) reified * (('q, 'r) reified * ('s, 't) reified)))) *
@@ -206,7 +206,7 @@ val five : unit ->
 val q : unit ->
            ((('a, 'b) injected -> goal) ->
             State.t -> ('a, 'b) injected * State.t RStream.t) *
-           (('c, 'd) injected -> Env.t -> ('c, 'd) reified) * ('e -> 'e) *
+           (('c, 'd) injected -> VarEnv.t -> ('c, 'd) reified) * ('e -> 'e) *
            (('f -> 'g) -> 'f -> 'g)
 
 val qr : unit ->
@@ -214,7 +214,7 @@ val qr : unit ->
             State.t ->
             ('a, 'b) injected * (('c, 'd) injected * State.t RStream.t)) *
            (('e, 'f) injected * ('g, 'h) injected ->
-            Env.t -> ('e, 'f) reified * ('g, 'h) reified) *
+            VarEnv.t -> ('e, 'f) reified * ('g, 'h) reified) *
            ('i * ('j * 'k) -> ('i * 'j) * 'k) *
            (('l -> 'm -> 'n) -> 'l * 'm -> 'n)
 
@@ -226,7 +226,7 @@ val qrs : unit ->
             (('c, 'd) injected *
              (('e, 'f) injected * State.t RStream.t))) *
            (('g, 'h) injected * (('i, 'j) injected * ('k, 'l) injected) ->
-            Env.t ->
+            VarEnv.t ->
             ('g, 'h) reified * (('i, 'j) reified * ('k, 'l) reified)) *
            ('m * ('n * ('o * 'p)) -> ('m * ('n * 'o)) * 'p) *
            (('q -> 'r -> 's -> 't) -> 'q * ('r * 's) -> 't)
@@ -242,7 +242,7 @@ val qrst : unit ->
               (('g, 'h) injected * State.t RStream.t)))) *
            (('i, 'j) injected *
             (('k, 'l) injected * (('m, 'n) injected * ('o, 'p) injected)) ->
-            Env.t ->
+            VarEnv.t ->
             ('i, 'j) reified *
             (('k, 'l) reified * (('m, 'n) reified * ('o, 'p) reified))) *
            ('q * ('r * ('s * ('t * 'u))) -> ('q * ('r * ('s * 't))) * 'u) *
@@ -262,7 +262,7 @@ val qrstu : unit ->
            (('k, 'l) injected *
             (('m, 'n) injected *
              (('o, 'p) injected * (('q, 'r) injected * ('s, 't) injected))) ->
-            Env.t ->
+            VarEnv.t ->
             ('k, 'l) reified *
             (('m, 'n) reified *
              (('o, 'p) reified * (('q, 'r) reified * ('s, 't) reified)))) *

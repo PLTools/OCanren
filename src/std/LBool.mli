@@ -42,7 +42,7 @@ val ground :
      foldr   : 'a -> ground -> 'a;
      gmap    : ground -> ground;
      html    : ground -> HTML.viewer;
-     show    : ground -> string >)
+     show    : ground -> string >, unit)
   GT.t
 
 (** GT-compatible typeinfo for [logic] *)
@@ -54,7 +54,7 @@ val logic :
      foldr   : 'a -> logic -> 'a;
      gmap    : logic -> logic;
      html    : logic -> HTML.viewer;
-     show    : logic -> string >)
+     show    : logic -> string >, unit)
   GT.t
 
 (** Logic injection (for reification) *)
@@ -64,7 +64,7 @@ val inj : ground -> logic
 type groundi = (ground, logic) injected
 
 (** Reifier *)
-val reify : Env.t -> groundi -> logic
+val reify : VarEnv.t -> groundi -> logic
 
 (** Constants *)
 val falso : groundi

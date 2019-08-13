@@ -31,6 +31,7 @@ type ('a, 'b) logic  = ('a * 'b) logic'
 
 let ground = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method html    f g n   = GT.html   (GT.pair) f g n
@@ -45,6 +46,7 @@ let ground = {
 
 let logic = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method html    f g n   = GT.html   (logic') (GT.html   (ground) f g) n

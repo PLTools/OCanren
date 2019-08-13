@@ -31,6 +31,7 @@ type 'a logic  = 'a option logic'
 
 let ground = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method html    n   = GT.html   (GT.option) n
@@ -45,6 +46,7 @@ let ground = {
 
 let logic = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method html    f n   = GT.html   (logic') (GT.html   (ground) f) n

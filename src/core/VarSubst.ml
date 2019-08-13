@@ -25,7 +25,7 @@ module Binding =
 
     let is_relevant env vs {var; term} =
       (Term.VarSet.mem var vs) ||
-      (match Env.var env term with Some v -> Term.VarSet.mem v vs | None -> false)
+      (match VarEnv.var env term with Some v -> Term.VarSet.mem v vs | None -> false)
 
     let equal {var=v; term=t} {var=u; term=p} =
       (Term.Var.equal v u) || (Term.equal t p)
@@ -58,7 +58,7 @@ type lterm = Var of Term.Var.t | Value of Term.t
 let rec walk env subst x =
   (* walk var *)
   let rec walkv env subst v =
-    Env.check_exn env v;
+    VarEnv.check_exn env v;
     match v.Term.Var.subst with
     | Some term -> walkt env subst (Obj.magic term)
     | None ->
@@ -66,7 +66,7 @@ let rec walk env subst x =
         with Not_found -> Var v
   (* walk term *)
   and walkt env subst t =
-    match Env.var env t with
+    match VarEnv.var env t with
     | Some v -> walkv env subst v
     | None   -> Value t
   in
@@ -75,7 +75,7 @@ let rec walk env subst x =
 (* same as [Term.map] but performs [walk] on the road *)
 let map ~fvar ~fval env subst x =
   let rec deepfvar v =
-    Env.check_exn env v;
+    VarEnv.check_exn env v;
     match walk env subst v with
     | Var v   -> fvar v
     | Value x -> Term.map x ~fval ~fvar:deepfvar
@@ -85,7 +85,7 @@ let map ~fvar ~fval env subst x =
 (* same as [Term.iter] but performs [walk] on the road *)
 let iter ~fvar ~fval env subst x =
   let rec deepfvar v =
-    Env.check_exn env v;
+    VarEnv.check_exn env v;
     match walk env subst v with
     | Var v   -> fvar v
     | Value x -> Term.iter x ~fval ~fvar:deepfvar
@@ -95,7 +95,7 @@ let iter ~fvar ~fval env subst x =
 (* same as [Term.fold] but performs [walk] on the road *)
 let fold ~fvar ~fval ~init env subst x =
   let rec deepfvar acc v =
-    Env.check_exn env v;
+    VarEnv.check_exn env v;
     match walk env subst v with
     | Var v   -> fvar acc v
     | Value x -> Term.fold x ~fval ~fvar:deepfvar ~init:acc
@@ -112,7 +112,7 @@ let rec occurs env subst var term =
 let extend ~scope env subst var term  =
   (* if occurs env subst var term then raise Occurs_check *)
   occurs env subst var term;
-    (* assert (Env.var env var <> Env.var env term); *)
+    (* assert (VarEnv.var env var <> VarEnv.var env term); *)
 
   (* It is safe to modify variables destructively if the case of scopes match.
    * There are two cases:
@@ -170,7 +170,7 @@ let apply env subst x = Obj.magic @@
     ~fval:(fun x -> Term.repr x)
 
 let freevars env subst x =
-  Env.freevars env @@ apply env subst x
+  VarEnv.freevars env @@ apply env subst x
 
 let is_bound = Term.VarMap.mem
 

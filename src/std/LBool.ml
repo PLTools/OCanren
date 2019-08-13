@@ -28,6 +28,7 @@ type t      = bool
 
 let ground = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method html    n   = GT.html   (GT.bool) n
@@ -44,6 +45,7 @@ type logic = bool logic'
 
 let logic = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method html    n   = GT.html   (logic') (GT.html   (ground)) n

@@ -45,6 +45,7 @@ let rec reify r1 h = F.reify r1 (reify r1) h
 
 let ground = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method html    fa l = GT.html   (list) fa (this#html    fa) l
@@ -56,11 +57,9 @@ let ground = {
       method show    fa l = "[" ^
         let rec inner l =
           (GT.transform(list)
-             (GT.lift fa)
-             (GT.lift inner)
-             (object inherit ['a,'a ground] @list[show]
+             (fun fself -> object inherit ['a,'a ground,_]  @list[show] (GT.lift fa) (GT.lift inner) fself
                 method c_Nil   _ _      = ""
-                method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Nil -> "" | _ -> "; " ^ xs.GT.fx ())
+                method c_Cons  i s x xs = (fa x) ^ (match xs with Nil -> "" | _ -> "; " ^ (inner xs) )
               end)
              ()
              l
@@ -71,6 +70,7 @@ let ground = {
 
 let logic = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method compare fa l = GT.compare (logic') (GT.compare (list) fa (this#compare fa)) l
@@ -84,15 +84,14 @@ let logic = {
           (fun l -> "[" ^
              let rec inner l =
                 GT.transform(list)
-                  (GT.lift fa)
-                  (GT.lift (GT.show(logic) inner))
-                  (object inherit ['a,'a logic] @list[show]
+                  (fun fself -> object
+                     inherit ['a,'a logic, _] @list[show] (GT.lift fa) (GT.lift (GT.show(logic) inner)) fself
                      method c_Nil   _ _      = ""
                      method c_Cons  i s x xs =
-                       x.GT.fx () ^ (match xs.GT.x with Value Nil -> "" | _ -> "; " ^ xs.GT.fx ())
+                       (fa x) ^ (match xs with Value Nil -> "" | _ -> "; " ^ (GT.show(logic) inner xs))
                    end)
-
-                () l
+                  ()
+                  l
                in inner l ^ "]"
           )
           l
@@ -117,6 +116,7 @@ type ('a,'b) groundi = ('a ground, 'b logic) injected
 
 let groundi =
   { GT.gcata = ()
+  ; GT.fix = ()
   ; plugins = object
       method show : ('a -> string) -> ('a,_) groundi -> string = fun fa l ->
       GT.show(ground) fa (Obj.magic l : 'a ground)

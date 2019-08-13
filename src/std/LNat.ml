@@ -40,6 +40,7 @@ type groundi = (ground, logic) injected
 
 let ground = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method html    n = GT.html   (nat) this#html    n
@@ -54,6 +55,7 @@ let ground = {
 
 let logic = {
   GT.gcata = ();
+  GT.fix = ();
   GT.plugins =
     object(this)
       method html    n   = GT.html   (logic') (GT.html   (nat) this#html   ) n

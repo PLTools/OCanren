@@ -47,7 +47,7 @@ val ground :
      foldl   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
      foldr   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
      html    : ('a -> HTML.viewer) -> 'a ground -> HTML.viewer;
-     show    : ('a -> string) -> 'a ground -> string >)
+     show    : ('a -> string) -> 'a ground -> string >, unit)
   GT.t
 
 (** GT-compatible typeinfo for ['a logic] *)
@@ -59,7 +59,7 @@ val logic :
       foldr   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
       foldl   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
       html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
-      show    : ('a -> string) -> 'a logic -> GT.string  >)
+      show    : ('a -> string) -> 'a logic -> GT.string  >, unit)
     GT.t
 
 (** A synonym for injected list *)
@@ -83,7 +83,7 @@ val inj : ('a -> 'b) -> 'a ground -> 'b logic
 val list : ('a, 'b) injected GT.list -> ('a, 'b) groundi
 
 (** Reifier *)
-val reify : (Env.t -> ('a, 'b) injected -> 'b) -> Env.t -> ('a ground, 'b logic) injected -> 'b logic
+val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> VarEnv.t -> ('a ground, 'b logic) injected -> 'b logic
 
 (** Relational foldr *)
 val foldro : (('a, 'b) injected -> ('acc, _ logic' as 'acc2) injected -> ('acc, 'acc2) injected -> goal) ->

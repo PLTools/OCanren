@@ -42,7 +42,7 @@ val ground :
      foldr   : ('a -> 'b -> 'a) -> 'a -> 'b ground -> 'a;
      gmap    : ('a -> 'b) -> 'a ground -> 'b ground;
      html    : ('a -> HTML.viewer) -> 'a ground -> HTML.viewer;
-     show    : ('a -> string) -> 'a ground -> string >)
+     show    : ('a -> string) -> 'a ground -> string >, unit)
   GT.t
 
 (** GT-compatible typeinfo for [logic] *)
@@ -54,7 +54,7 @@ val logic :
      foldr   : ('a -> 'b -> 'a) -> 'a -> 'b logic -> 'a;
      gmap    : ('a -> 'b) -> 'a logic -> 'b logic;
      html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
-     show    : ('a -> string) -> 'a logic -> string >)
+     show    : ('a -> string) -> 'a logic -> string >, unit)
   GT.t
 
 (** Logic injection (for reification) *)
@@ -67,7 +67,7 @@ type ('a, 'b) groundi = ('a ground, 'b logic) injected
 val option : ('a, 'b) injected ground -> ('a, 'b) groundi
 
 (** Reifier *)
-val reify : (Env.t -> ('a, 'b) injected -> 'b) -> Env.t -> ('a, 'b) groundi -> 'b logic
+val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> VarEnv.t -> ('a, 'b) groundi -> 'b logic
 
 (** Injection counterpart for constructors *)
 val some : ('a, 'b) injected -> ('a, 'b) groundi
