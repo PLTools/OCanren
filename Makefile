@@ -133,6 +133,10 @@ INSTALL_TARGETS=META \
 	$(wildcard _build/ppx/ppx_ocanren_all.cmxs) \
 	$(wildcard _build/ppx/ppx_ocanren_all.native) \
 	$(wildcard _build/src/MiniKanren.[oa]) \
+	$(wildcard _build/ppxnew/pp_distrib.native) \
+	$(wildcard _build/ppxnew/ppx_distrib.a) \
+	$(wildcard _build/ppxnew/ppx_distrib.cm[tiaox]) \
+	$(wildcard _build/ppxnew/ppx_distrib.cmxa) \
 	$(wildcard _build/camlp5/pa_minikanren.cm[oi]) \
 
 BUNDLEDIR=_build/bundle/ocanren
