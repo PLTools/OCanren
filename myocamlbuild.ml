@@ -58,7 +58,7 @@ end
 module Ocaml_dependencies = Pack.Ocaml_dependencies.Make(Ocaml_dependencies_input)
 
 let caml_transitive_closure = Ocaml_dependencies.caml_transitive_closure
-
+(*
 let init_js_of_ocaml () =
   dep ["link"; "js_of_ocaml"] ["jsoo_runner/jsoo_runner.cmo"];
 
@@ -153,17 +153,18 @@ let init_js_of_ocaml () =
     (fun findlib_name -> S [A "-export-package"; A findlib_name]);
   ()
 ;;
+*)
 open Command;;
 
 let () = dispatch (fun hook ->
-  Ppx_driver_ocamlbuild.dispatch hook;
+  (*Ppx_driver_ocamlbuild.dispatch hook;*)
   match hook with
   | Before_rules ->
      ()
 
   | After_rules ->
      ocaml_lib "src/MiniKanren";
-     init_js_of_ocaml ();
+     (* init_js_of_ocaml (); *)
      (* miniKanren related stuff*)
      (* flag ["ocamldep"; "use_mkshow"] (S [A"-ppopt";A"-I";A"-ppopt";A"plugin"; A"-ppopt";A"mkshow.cmo" ]); *)
      flag ["compile"; "use_pa_minikanren"]

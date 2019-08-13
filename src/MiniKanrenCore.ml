@@ -304,15 +304,15 @@ let logic = {logic with
       method foldr     = logic.plugins#foldr
       method show fa x =
         GT.transform(logic)
-          (GT.lift fa)
-          (object inherit ['a] @logic[show]
+          (fun fself -> object
+             inherit ['a, _] @logic[show]  (GT.lift fa) fself
              method c_Var _ s i cs =
                let c = match cs with
                | [] -> ""
-               | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ s.GT.f () l) cs)
+               | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ fself () l) cs)
                in
                sprintf "_.%d%s" i c
-             method c_Value _ _ x = x.GT.fx ()
+             method c_Value _ _ x = fa x
            end)
           ()
           x

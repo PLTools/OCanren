@@ -36,6 +36,7 @@ module Pair =
 
     let ground = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method html    f g n   = GT.html   (GT.pair) f g n
@@ -50,6 +51,7 @@ module Pair =
 
     let logic = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method html    f g n   = GT.html   (logic') (GT.html   (ground) f g) n
@@ -94,6 +96,7 @@ module Option =
 
     let ground = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method html    n   = GT.html   (GT.option) n
@@ -108,6 +111,7 @@ module Option =
 
     let logic = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method html    f n   = GT.html   (logic') (GT.html   (ground) f) n
@@ -152,6 +156,7 @@ module Bool =
 
     let ground = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method html    n   = GT.html   (GT.bool) n
@@ -168,6 +173,7 @@ module Bool =
 
     let logic = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method html    n   = GT.html   (logic') (GT.html   (ground)) n
@@ -252,6 +258,7 @@ module Nat =
 
     let ground = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method html    n = GT.html   (nat) this#html    n
@@ -266,6 +273,7 @@ module Nat =
 
     let logic = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method html    n   = GT.html   (logic') (GT.html   (nat) this#html   ) n
@@ -378,6 +386,7 @@ module List =
 
     let ground = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method html    fa l = GT.html   (list) fa (this#html    fa) l
@@ -389,11 +398,9 @@ module List =
           method show    fa l = "[" ^
             let rec inner l =
               (GT.transform(list)
-                 (GT.lift fa)
-                 (GT.lift inner)
-                 (object inherit ['a,'a ground] @list[show]
+                 (fun fself -> object inherit ['a,'a ground,_]  @list[show] (GT.lift fa) (GT.lift inner) fself 
                     method c_Nil   _ _      = ""
-                    method c_Cons  i s x xs = x.GT.fx () ^ (match xs.GT.x with Nil -> "" | _ -> "; " ^ xs.GT.fx ())
+                    method c_Cons  i s x xs = (fa x) ^ (match xs with Nil -> "" | _ -> "; " ^ (inner xs) )
                   end)
                  ()
                  l
@@ -404,6 +411,7 @@ module List =
 
     let logic = {
       GT.gcata = ();
+      GT.fix = ();
       GT.plugins =
         object(this)
           method compare fa l = GT.compare (logic') (GT.compare (list) fa (this#compare fa)) l
@@ -417,15 +425,14 @@ module List =
               (fun l -> "[" ^
                  let rec inner l =
                     GT.transform(list)
-                      (GT.lift fa)
-                      (GT.lift (GT.show(logic) inner))
-                      (object inherit ['a,'a logic] @list[show]
+                      (fun fself -> object
+                         inherit ['a,'a logic, _] @list[show] (GT.lift fa) (GT.lift (GT.show(logic) inner)) fself
                          method c_Nil   _ _      = ""
                          method c_Cons  i s x xs =
-                           x.GT.fx () ^ (match xs.GT.x with Value Nil -> "" | _ -> "; " ^ xs.GT.fx ())
+                           (fa x) ^ (match xs with Value Nil -> "" | _ -> "; " ^ (GT.show(logic) inner xs))
                        end)
-
-                    () l
+                      ()
+                      l
                    in inner l ^ "]"
               )
               l
@@ -450,6 +457,7 @@ module List =
 
     let groundi =
       { GT.gcata = ()
+      ; GT.fix = ()
       ; plugins = object
           method show : ('a -> string) -> ('a,_) groundi -> string = fun fa l ->
           GT.show(ground) fa (Obj.magic l : 'a ground)
