@@ -171,6 +171,15 @@ let rec lookupo p xs mx =
     )
   ]
 
+let rec assoco x xs v =
+   Fresh.three (fun a b tl ->
+     (xs === (LPair.pair a b) % tl) &&&
+     conde [
+       (a === x) &&& (b === v);
+       (a =/= x) &&& (assoco x tl v)
+     ]
+   )
+
 let anyo = foldro LBool.oro LBool.falso
 
 let allo = foldro LBool.ando LBool.truo

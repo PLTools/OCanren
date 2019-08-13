@@ -86,8 +86,7 @@ val list : ('a, 'b) injected GT.list -> ('a, 'b) groundi
 val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> VarEnv.t -> ('a ground, 'b logic) injected -> 'b logic
 
 (** Relational foldr *)
-val foldro : (('a, 'b) injected -> ('acc, _ logic' as 'acc2) injected -> ('acc, 'acc2) injected -> goal) ->
-             ('acc, 'acc2) injected -> ('a, 'b) groundi -> ('acc, 'acc2) injected -> goal
+val foldro : (('a, 'b) injected -> ('acc, _ logic' as 'acc2) injected -> ('acc, 'acc2) injected -> goal) -> ('acc, 'acc2) injected -> ('a, 'b) groundi -> ('acc, 'acc2) injected -> goal
 
 (** Relational map *)
 val mapo : (('a, 'b) injected -> ('q, 'w) injected -> goal) -> ('a, 'b) groundi -> ('q, 'w) groundi -> goal
@@ -97,6 +96,9 @@ val filtero : (('a, 'b) injected -> LBool.groundi -> goal) -> ('a, 'b) groundi -
 
 (** Relational lookup *)
 val lookupo : (('a, 'b) injected -> LBool.groundi -> goal) -> ('a, 'b) groundi -> ('a option, 'b option logic') injected -> goal
+
+(** Relational association list lookup *)
+val assoco : ('a, 'b logic') injected -> (('a, 'c) LPair.ground, ('b logic', 'd logic') LPair.logic) groundi -> ('c, 'd logic') injected -> goal
 
 (** Boolean list disjunctions *)
 val anyo : (LBool.ground, LBool.logic) groundi -> LBool.groundi -> goal
