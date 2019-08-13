@@ -388,8 +388,7 @@ module List :
     val conso : ('a, 'b) injected -> ('a, 'b) groundi -> ('a, 'b) groundi
 
     (** Relational foldr *)
-    val foldro : (('a, 'b) injected -> ('acc, _ MiniKanrenCore.logic as 'acc2) injected -> ('acc, 'acc2) injected -> goal) ->
-                 ('acc, 'acc2) injected -> ('a, 'b) groundi -> ('acc, 'acc2) injected -> goal
+    val foldro : (('a, 'b) injected -> ('acc, _ MiniKanrenCore.logic as 'acc2) injected -> ('acc, 'acc2) injected -> goal) -> ('acc, 'acc2) injected -> ('a, 'b) groundi -> ('acc, 'acc2) injected -> goal
 
     (** Relational map *)
     val mapo : (('a, 'b) injected -> ('q, 'w) injected -> goal) -> ('a, 'b) groundi -> ('q, 'w) groundi -> goal
@@ -399,6 +398,9 @@ module List :
 
     (** Relational lookup *)
     val lookupo : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) groundi -> ('a option, 'b option MiniKanrenCore.logic) injected -> goal
+
+    (** Relational association list lookup *)
+    val assoco : ('a, 'b logic') injected -> ('a * 'c, ('b logic' * 'd logic') logic') groundi -> ('c, 'd logic') injected -> MiniKanrenCore.goal
 
     (** Boolean list disjunctions *)
     val anyo : (Bool.ground, Bool.logic) groundi -> Bool.groundi -> goal

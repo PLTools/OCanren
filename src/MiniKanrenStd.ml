@@ -512,6 +512,15 @@ module List =
         )
       ]
 
+    let rec assoco x xs v =
+       Fresh.three (fun a b tl ->
+         (xs === (Pair.pair a b) % tl) &&&
+         conde [
+           (a === x) &&& (b === v);
+           (a =/= x) &&& (assoco x tl v)  
+         ]
+       )
+      
     let anyo = foldro Bool.oro Bool.falso
 
     let allo = foldro Bool.ando Bool.truo
