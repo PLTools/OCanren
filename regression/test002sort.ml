@@ -19,15 +19,15 @@
 open GT
 open Printf
 open MiniKanren
-open Std
+open MiniKanren.Std
 open Tester
 
-let show_nat_list = GT.(show List.ground @@ show Nat.ground)
-let show_nat      = GT.(show Nat.ground)
+let show_nat_list = GT.(show LList.ground @@ show LNat.ground)
+let show_nat      = GT.(show LNat.ground)
 
 (* Relational minimum/maximum (for nats only) *)
 let minmaxo a b min max =
-  let open Nat in
+  let open LNat in
   conde
     [ (min === a) &&& (max === b) &&& (a <= b)
     ; (max === a) &&& (min === b) &&& (a >  b)
@@ -59,22 +59,22 @@ let rec sorto x y =
         (smallesto x s xs)   (* 2 *)
     ]
 
-let _ = Stream.take ~n:10 @@
+let _ = RStream.take ~n:10 @@
   run four  (fun q1 q2 q3 p -> sorto (q1 % (q2 % (q3 % nil ()))) p)
             (fun _  _  _  rr ->
               printf "%s\n%!"  @@ (if rr#is_open
               then
-                GT.(show List.logic (show Nat.logic)) @@
-                  rr#reify (List.reify Nat.reify)
+                GT.(show LList.logic (show LNat.logic)) @@
+                  rr#reify (LList.reify LNat.reify)
               else
-                GT.(show List.ground (show Nat.ground) rr#prj)
+                GT.(show LList.ground (show LNat.ground) rr#prj)
               )
             )
 
 (* Making regular sorting from relational one *)
 let sort l =
-  List.to_list Nat.to_int @@
-  Stream.hd @@
+  LList.to_list LNat.to_int @@
+  RStream.hd @@
   run q (sorto @@ nat_list l)
         (fun rr -> rr#prj)
 
@@ -84,15 +84,15 @@ let rec fact = function 0 -> 1 | n -> n * fact (n-1)
 
 (* Making permutations from relational sorting *)
 let perm l =
-  List.map (List.to_list Nat.to_int) @@
-  Stream.take ~n:(fact @@ List.length l) @@
+  List.map (LList.to_list LNat.to_int) @@
+  RStream.take ~n:(fact @@ List.length l) @@
   run q (fun q -> sorto q @@ nat_list (List.sort Pervasives.compare l))
         (fun rr -> rr#prj)
 
 (* More hardcore version: no standard sorting required *)
 let perm' l =
-  List.map (List.to_list Nat.to_int) @@
-  Stream.take ~n:(fact @@ List.length l) @@
+  List.map (LList.to_list LNat.to_int) @@
+  RStream.take ~n:(fact @@ List.length l) @@
   run q (fun q -> fresh (r) (sorto (nat_list l) r) (sorto q r))
         (fun rr -> rr#prj)
 

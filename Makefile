@@ -8,6 +8,8 @@ ifdef OBV
 OB += -verbose 6
 endif
 
+SRC=src,src/core,src/std
+
 CMA_TARGETS=src/MiniKanren.cma
 CMO_TARGETS=regression/tester.cmo
 #TESTER_TARGETS=regression/tester.cmo regression/tester.cmx
@@ -25,7 +27,7 @@ JSOO_LIB=jsoo_runner/jsoo_runner.cma
 all: bundle samples
 bundle: lib plugin
 lib:
-	$(OB) -Is src $(BYTE_TARGETS) $(NATIVE_TARGETS)
+	$(OB) -r -Is $(SRC) $(BYTE_TARGETS) $(NATIVE_TARGETS)
 
 ppx:
 	$(OB) -Is src ppx/ppx_repr_bin.cmxa ppx/pa_minikanren_bin.cmxa \
@@ -55,10 +57,10 @@ test$(1).native: regression/test$(1).native
 test$(1).byte:   regression/test$(1).byte
 
 regression/test$(1).byte: regression/test$(1).ml
-	$(OB) -Is src $$@
+	$(OB) -Is $(SRC) $$@
 
 regression/test$(1).native: regression/test$(1).ml
-	$(OB) -Is src $$@
+	$(OB) -Is $(SRC) $$@
 
 run_tests: test_$(1)
 test_$(1):
@@ -76,10 +78,10 @@ $(foreach i,$(REGRES_CASES),$(eval $(call TESTRULES,$(i)) ) )
 .PHONY: compile_tests_native compile_tests_byte compile_tests run_tests
 
 compile_tests_native: plugin $(TEST_MLS)
-	$(OB) -Is src $(NATIVE_TEST_EXECUTABLES)
+	$(OB) -Is $(SRC) $(NATIVE_TEST_EXECUTABLES)
 
 compile_tests_byte: plugin $(TEST_MLS)
-	$(OB) -Is src $(BYTE_TEST_EXECUTABLES)
+	$(OB) -Is $(SRC) $(BYTE_TEST_EXECUTABLES)
 
 compile_tests: compile_tests_native
 
@@ -121,6 +123,8 @@ INSTALL_TARGETS=META \
 	$(wildcard _build/regression/tester.cmx) \
 	$(wildcard _build/regression/tester.o) \
 	$(wildcard _build/src/*.cmi) \
+	$(wildcard _build/src/core/*.cmi) \
+	$(wildcard _build/src/std/*.cmi) \
 	_build/src/MiniKanren.cmx \
 	_build/src/MiniKanren.cma \
 	_build/src/MiniKanren.cmxa \

@@ -1,5 +1,5 @@
 open MiniKanren
-open Std
+open MiniKanren.Std
 open Tester
 open Printf
 open GT
@@ -9,9 +9,9 @@ let show_int_opt   = show(option) (show(int))
 let show_intl      = show(logic)  (show(int))
 let show_intl_optl = show(logic)  (show(option) (show(logic) (show(int))))
 
-let int_opt_reifier = Option.reify MiniKanren.reify
+let int_opt_reifier = LOption.reify MiniKanren.reify
 
-let _ = Option.(
+let _ = LOption.(
     run_exn show_int 1 q qh (REPR(fun q -> q === !!5));
     runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> q === some !!5));
     runR int_opt_reifier show_int_opt show_intl_optl 1 q qh (REPR(fun q -> q === none ()));

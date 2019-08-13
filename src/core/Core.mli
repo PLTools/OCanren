@@ -1,5 +1,5 @@
 (*
- * MiniKanren: miniKanren implementation.
+ * OCanren.
  * Copyright (C) 2015-2017
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
@@ -16,120 +16,16 @@
  * (enclosed in the file COPYING).
  *)
 
-(** {1 Implementation of miniKanren primitives} *)
+open Logic
 
-(** {2 Basic modules and types} *)
-
-module Stream :
-  sig
-    (** Stream type *)
-    type 'a t
-
-    (** Constructors *)
-
-    val nil : 'a t
-
-    val single : 'a -> 'a t
-
-    val cons : 'a -> 'a t -> 'a t
-
-    val from_fun : (unit -> 'a t) -> 'a t
-
-    val of_list : 'a list -> 'a t
-
-    (** Emptiness test *)
-    val is_empty : 'a t -> bool
-
-    (** [map f s] maps function [f] over the stream [s] *)
-    val map : ('a -> 'b) -> 'a t -> 'b t
-
-    (** [iter f s] iterates function [f] over the stream [s] *)
-    val iter : ('a -> unit) -> 'a t -> unit
-
-    (** [filter p g] filters the stream [g] using the predicate [p] (leaves only those elements [x], for which [p x = true]) *)
-    val filter : ('a -> bool) -> 'a t -> 'a t
-
-    val fold : ('a -> 'b -> 'a) -> 'a -> 'b t -> 'a
-
-    (** [zip f g] returns a strem of corresponding pairs of [f] and [g]; fails for the streams of different lengths *)
-    val zip : 'a t -> 'b t -> ('a * 'b) t
-
-    (** [retrieve ~n:n s] returns the list of [n]-first elements of [s] and the rest of the stream *)
-    val retrieve : ?n:int -> 'a t -> 'a list * 'a t
-
-    (** [take ~n:n s] returns the list of [n]-first elements of [s] *)
-    val take : ?n:int -> 'a t -> 'a list
-
-    (** [hd s] gets a head of the stream *)
-    val hd : 'a t -> 'a
-
-    (** [hd s] gets a tail of the stream *)
-    val tl : 'a t -> 'a t
-  end
-
-(** {3 States and goals} *)
-
-module Env :
-  sig
-    type t
-  end
-
-(** A state *)
 module State :
   sig
-    (** State type *)
     type t
   end
 
 (** Goal converts a state into a lazy stream of states *)
 type 'a goal'
-type goal = State.t Stream.t goal'
-
-(** {3 Logic values} *)
-
-(** A type of a logic value *)
-@type 'a logic = private
-| Var   of GT.int * 'a logic GT.list
-| Value of 'a with show, gmap, html, eq, compare, foldl, foldr
-
-(** GT-compatible typeinfo for logics *)
-val logic :
-  (unit,
-   < show    : ('a -> string) -> 'a logic -> string;
-     html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
-     eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool;
-     compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison;
-     foldl   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
-     foldr   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
-     gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic
-   >) GT.t
-
-(** [to_logic x] makes a logic value from a regular one *)
-val to_logic : 'a -> 'a logic
-
-(** [from_logic x] makes a regular value from a logic one.
-    Raises exception [Not_a_value] if [x] contains free variables
-*)
-val from_logic : 'a logic -> 'a
-
-(** {3 Injections/projections} *)
-
-(**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
-type ('a, 'b) injected
-
-(** [lift x] lifts [x] into injected doamin *)
-val lift : 'a -> ('a, 'a) injected
-
-(** [inj x] injects [x] into logical [x] *)
-val inj : ('a, 'b) injected -> ('a, 'b logic) injected
-
-(** A synonym for [fun x -> inj @@ lift x] (for non-parametric types) *)
-val (!!) : 'a -> ('a, 'a logic) injected
-
-(** [prj x] returns a regular value from injected representation.
-    Raises exception [Not_a_value] if [x] contains free variables
-*)
-val prj : ('a, 'b) injected -> 'a
+type goal = State.t RStream.t goal'
 
 (** {3 miniKanren basic combinators} *)
 
@@ -217,8 +113,8 @@ module Fresh :
 *)
 val run : (unit ->
             ('a -> State.t -> 'b) * ('c -> Env.t -> 'd) *
-            ('b -> 'c * State.t Stream.t) * ('e -> 'd -> 'f)) ->
-           'a -> 'e -> 'f Stream.t
+            ('b -> 'c * State.t RStream.t) * ('e -> 'd -> 'f)) ->
+           'a -> 'e -> 'f RStream.t
 
 (** The primitive [delay] helps to construct recursive goals, which depend on themselves. For example,
     we can't write [let rec fives q = (q === !!5) ||| (fives q)] because the generation of this goal leads to
@@ -227,24 +123,6 @@ val run : (unit ->
     See also syntax extension [defer].
 *)
 val delay : (unit -> goal) -> goal
-
-(** The exception is raised when we try to extract a regular term from the answer with some free variables *)
-exception Not_a_value
-
-(** Reification result *)
-class type ['a,'b] reified =
-object
-  (** Returns [true] if the term has any free logic variable inside *)
-  method is_open: bool
-
-  (** Gets the answer as regular term. Raises exception [Not_a_value] when the answer contains free variables *)
-  method prj: 'a
-
-  (** Gets the answer as a logic value using provided injection function [inj] *)
-  method reify: (Env.t -> ('a, 'b) injected -> 'b) -> 'b
-
-  method prjc : (Env.t -> ('a, 'b) injected -> 'a) -> 'a
-end
 
 (** Successor function *)
 val succ : (unit ->
@@ -258,14 +136,14 @@ val succ : (unit ->
 (** {3 Predefined numerals (one to five)} *)
 val one : unit ->
            ((('a, 'b) injected -> goal) ->
-            State.t -> ('a, 'b) injected * State.t Stream.t) *
+            State.t -> ('a, 'b) injected * State.t RStream.t) *
            (('c, 'd) injected -> Env.t -> ('c, 'd) reified) * ('e -> 'e) *
            (('f -> 'g) -> 'f -> 'g)
 
 val two : unit ->
            ((('a, 'b) injected -> ('c, 'd) injected -> goal) ->
             State.t ->
-            ('a, 'b) injected * (('c, 'd) injected * State.t Stream.t)) *
+            ('a, 'b) injected * (('c, 'd) injected * State.t RStream.t)) *
            (('e, 'f) injected * ('g, 'h) injected ->
             Env.t -> ('e, 'f) reified * ('g, 'h) reified) *
            ('i * ('j * 'k) -> ('i * 'j) * 'k) *
@@ -277,7 +155,7 @@ val three : unit ->
             State.t ->
             ('a, 'b) injected *
             (('c, 'd) injected *
-             (('e, 'f) injected * State.t Stream.t))) *
+             (('e, 'f) injected * State.t RStream.t))) *
            (('g, 'h) injected * (('i, 'j) injected * ('k, 'l) injected) ->
             Env.t ->
             ('g, 'h) reified * (('i, 'j) reified * ('k, 'l) reified)) *
@@ -292,7 +170,7 @@ val four : unit ->
             ('a, 'b) injected *
             (('c, 'd) injected *
              (('e, 'f) injected *
-              (('g, 'h) injected * State.t Stream.t)))) *
+              (('g, 'h) injected * State.t RStream.t)))) *
            (('i, 'j) injected *
             (('k, 'l) injected * (('m, 'n) injected * ('o, 'p) injected)) ->
             Env.t ->
@@ -311,7 +189,7 @@ val five : unit ->
             (('c, 'd) injected *
              (('e, 'f) injected *
               (('g, 'h) injected *
-               (('i, 'j) injected * State.t Stream.t))))) *
+               (('i, 'j) injected * State.t RStream.t))))) *
            (('k, 'l) injected *
             (('m, 'n) injected *
              (('o, 'p) injected * (('q, 'r) injected * ('s, 't) injected))) ->
@@ -327,14 +205,14 @@ val five : unit ->
 (** {3 The same numerals with conventional names} *)
 val q : unit ->
            ((('a, 'b) injected -> goal) ->
-            State.t -> ('a, 'b) injected * State.t Stream.t) *
+            State.t -> ('a, 'b) injected * State.t RStream.t) *
            (('c, 'd) injected -> Env.t -> ('c, 'd) reified) * ('e -> 'e) *
            (('f -> 'g) -> 'f -> 'g)
 
 val qr : unit ->
            ((('a, 'b) injected -> ('c, 'd) injected -> goal) ->
             State.t ->
-            ('a, 'b) injected * (('c, 'd) injected * State.t Stream.t)) *
+            ('a, 'b) injected * (('c, 'd) injected * State.t RStream.t)) *
            (('e, 'f) injected * ('g, 'h) injected ->
             Env.t -> ('e, 'f) reified * ('g, 'h) reified) *
            ('i * ('j * 'k) -> ('i * 'j) * 'k) *
@@ -346,7 +224,7 @@ val qrs : unit ->
             State.t ->
             ('a, 'b) injected *
             (('c, 'd) injected *
-             (('e, 'f) injected * State.t Stream.t))) *
+             (('e, 'f) injected * State.t RStream.t))) *
            (('g, 'h) injected * (('i, 'j) injected * ('k, 'l) injected) ->
             Env.t ->
             ('g, 'h) reified * (('i, 'j) reified * ('k, 'l) reified)) *
@@ -361,7 +239,7 @@ val qrst : unit ->
             ('a, 'b) injected *
             (('c, 'd) injected *
              (('e, 'f) injected *
-              (('g, 'h) injected * State.t Stream.t)))) *
+              (('g, 'h) injected * State.t RStream.t)))) *
            (('i, 'j) injected *
             (('k, 'l) injected * (('m, 'n) injected * ('o, 'p) injected)) ->
             Env.t ->
@@ -380,7 +258,7 @@ val qrstu : unit ->
             (('c, 'd) injected *
              (('e, 'f) injected *
               (('g, 'h) injected *
-               (('i, 'j) injected * State.t Stream.t))))) *
+               (('i, 'j) injected * State.t RStream.t))))) *
            (('k, 'l) injected *
             (('m, 'n) injected *
              (('o, 'p) injected * (('q, 'r) injected * ('s, 't) injected))) ->
@@ -453,25 +331,12 @@ module Tabling :
             'l * ('m * ('n * ('o * 'p))) -> 'q)
 
     val tabled : (unit ->
-            (('a -> State.t Stream.t goal') -> 'b) *
-            ('c -> 'a -> State.t Stream.t goal')) ->
+            (('a -> State.t RStream.t goal') -> 'b) *
+            ('c -> 'a -> State.t RStream.t goal')) ->
            'c -> 'b
 
     val tabledrec : (unit ->
-       (('a -> State.t Stream.t goal') -> 'b -> 'c) *
-       ('d -> 'a -> State.t Stream.t goal')) ->
+       (('a -> State.t RStream.t goal') -> 'b -> 'c) *
+       ('d -> 'a -> State.t RStream.t goal')) ->
       (('b -> 'c) -> 'd) -> 'b -> 'c
   end
-
-
-(** {2 Building reifiers for a custom type compositionally} *)
-include module type of struct include MiniKanrenTypes.Ts end
-
-include MiniKanrenTypes.Fmaps with type ('a,'b) inj = ('a,'b) injected
-                               and type helper = Env.t
-                               and type 'a logic_ = 'a logic
-
-(* A default shallow reifier *)
-val reify : Env.t -> ('a, 'a logic) injected -> 'a logic
-
-val prjc : (int -> 'a list -> 'a) -> Env.t -> ('a, 'a logic) injected -> 'a

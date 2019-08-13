@@ -1,7 +1,7 @@
 open Printf
 open GT
 open MiniKanren
-open Std
+open MiniKanren.Std
 open Tester
 
 @type token = Id | Add | Mul with show
@@ -74,7 +74,7 @@ and pTop i i' r = pAdd i i' r
 let pExpr i r = fresh (i') (pTop i i' r) (eof i')
 
 let runE_exn n = run_exn show_expr n
-let show_stream xs = show(List.ground) show_token xs
+let show_stream xs = show(LList.ground) show_token xs
 
 let _ =
   runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id]) q                  ));

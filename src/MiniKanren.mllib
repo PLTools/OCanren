@@ -1,4 +1,13 @@
-MiniKanrenTypes
-MiniKanrenStd
-MiniKanrenCore
+core/RStream
+core/Term
+core/Env
+core/Subst
+core/Disequality
+core/Logic
+core/Core
+std/LPair
+std/LOption
+std/LBool
+std/LNat
+std/LList
 MiniKanren

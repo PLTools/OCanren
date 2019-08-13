@@ -35,10 +35,10 @@ module Tree = struct
 
   type inttree = (int, inttree) X.t
   (* A shortcut for "ground" tree we're going to work with in "functional" code *)
-  type rtree = (Nat.ground, rtree) X.t
+  type rtree = (LNat.ground, rtree) X.t
 
   (* Logic counterpart *)
-  type ltree = (Nat.logic, ltree) X.t logic
+  type ltree = (LNat.logic, ltree) X.t logic
 
   type ftree = (rtree, ltree) injected
 
@@ -48,9 +48,9 @@ module Tree = struct
   (* Printing tree with ints inside *)
   let rec show_inttree t = GT.(show X.t (show int) show_inttree) t
   (* Printing tree with Peano numbers inside *)
-  let rec show_rtree t = GT.(show X.t (show Nat.ground) show_rtree) t
+  let rec show_rtree t = GT.(show X.t (show LNat.ground) show_rtree) t
   (* Printing logical tree *)
-  let rec show_ltree t = GT.(show logic @@ show X.t (show Nat.logic) show_ltree) t
+  let rec show_ltree t = GT.(show logic @@ show X.t (show LNat.logic) show_ltree) t
 
   (* Injection *)
   let rec inj_tree : inttree -> ftree = fun tree ->
@@ -58,7 +58,7 @@ module Tree = struct
 
   (* Projection *)
   let rec prj_tree : rtree -> inttree =
-    fun x -> GT.(gmap t) Nat.to_int prj_tree x
+    fun x -> GT.(gmap t) LNat.to_int prj_tree x
 
 end
 
@@ -69,7 +69,7 @@ let rec inserto a t t' = conde [
   (t === nil) &&& (t' === node a nil nil);
   fresh (x l r l')
     (t === node x l r)
-    Nat.(conde [
+    LNat.(conde [
       (t' === t) &&& (a === x);
       (t' === (node x l' r  )) &&& (a < x) &&& (inserto a l l');
       (t' === (node x l  l' )) &&& (a > x) &&& (inserto a r l')
@@ -78,14 +78,14 @@ let rec inserto a t t' = conde [
 
 (* Top-level wrapper for insertion --- takes and returns non-logic data *)
 let insert : int -> inttree -> inttree = fun a t ->
-  prj_tree @@ Stream.hd @@
+  prj_tree @@ RStream.hd @@
   run q (fun q  -> inserto (nat a) (inj_tree t) q)
         (fun qs -> qs#prj)
 
 (* Top-level wrapper for "inverse" insertion --- returns an integer, which
    has to be inserted to convert t into t' *)
 let insert' t t' =
-  Nat.to_int @@ Stream.hd @@
+  LNat.to_int @@ RStream.hd @@
   run q (fun q  -> inserto q (inj_tree t) (inj_tree t'))
         (fun qs -> qs#prj)
 

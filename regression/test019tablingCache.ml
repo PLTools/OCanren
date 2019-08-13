@@ -1,15 +1,15 @@
 open MiniKanren
+open MiniKanren.Std
 open Tester
 open GT
-open MiniKanrenStd
 
-let o = Nat.zero
-let l = Nat.succ o
+let o = LNat.zero
+let l = LNat.succ o
 
 let rec test = Tabling.(tabled one) @@
    fun x -> conde [x === o; x === l]
 
-let run = runR (List.reify Nat.reify) (show List.ground (show Nat.ground)) (show List.logic (show Nat.logic))
+let run = runR (LList.reify LNat.reify) (show LList.ground (show LNat.ground)) (show LList.logic (show LNat.logic))
 
 let () =
   run (-1) q qh ("test", fun q ->
