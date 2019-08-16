@@ -163,9 +163,9 @@ EXTEND
     [ "["; ts=LIST0 ocanren_term SEP ";"; "]" ->
       match ts with
       | [] -> <:expr< MiniKanren.Std.nil () >>
-      | _  -> List.fold_right (fun x l -> <:expr< MiniKanren.Std.LList.conso $x$ $l$ >> ) ts <:expr< MiniKanren.Std.nil () >>
+      | _  -> List.fold_right (fun x l -> <:expr< MiniKanren.Std.LList.cons $x$ $l$ >> ) ts <:expr< MiniKanren.Std.nil () >>
     ] |
-    RIGHTA [ l=ocanren_term; "::"; r=ocanren_term -> <:expr< MiniKanren.Std.LList.conso $l$ $r$ >> ] |
+    RIGHTA [ l=ocanren_term; "::"; r=ocanren_term -> <:expr< MiniKanren.Std.LList.cons $l$ $r$ >> ] |
     [ "("; t=ocanren_term LEVEL "top"; ")" -> t ]
   ];
   
