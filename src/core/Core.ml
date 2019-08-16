@@ -193,11 +193,15 @@ let (===) x y st =
   | Some st -> success st
   | None    -> failure st
 
+let unify = (===)
+          
 let (=/=) x y st =
   match State.diseq x y st with
   | Some st -> success st
   | None    -> failure st
 
+let diseq = (=/=)
+          
 let delay g st = RStream.from_fun (fun () -> g () st)
 
 let conj f g st = RStream.bind (f st) g
