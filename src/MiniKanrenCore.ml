@@ -1276,11 +1276,15 @@ let (===) x y st =
   | None   -> Stream.Internal.nil
   | Some s -> Stream.Internal.single s
 
+let unify = (===)
+          
 let (=/=) x y st =
   match State.disunify x y st with
   | None   -> Stream.Internal.nil
   | Some s -> Stream.Internal.single s
 
+let diseq = (=/=)
+  
 let delay g st = Stream.Internal.from_fun (fun () -> g () st)
 
 let conj f g st = Stream.Internal.bind (f st) g

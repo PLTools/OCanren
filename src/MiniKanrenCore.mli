@@ -125,8 +125,14 @@ val call_fresh : (('a, 'b) injected -> goal) -> goal
 (** [x === y] creates a goal, which performs a unification of [x] and [y] *)
 val (===) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
+(** [unify x y] is prefix synonym for [(===)] *)
+val unify : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
+
 (** [x =/= y] creates a goal, which introduces a disequality constraint for [x] and [y] *)
 val (=/=) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
+
+(** [diseq x y] is prefix synonym for [(=/=)] *)
+val diseq : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
 (** [conj s1 s2] creates a goal, which is a conjunction of its arguments *)
 val conj : goal -> goal -> goal

@@ -44,9 +44,27 @@ let rec fold_right1 f = function
 
 let rec fold_left1 f xs = List.fold_left f (List.hd xs) (List.tl xs)
 
+let decapitalize s =
+  String.init (String.length s) (function 0 -> Char.lowercase_ascii s.[0] | i -> s.[i])
+  
 EXTEND
   GLOBAL: expr;
 
+  expr_ident:
+    [ RIGHTA
+      [ i = LIDENT -> false, (<:expr< $lid:i$ >>, <:expr< $lid:i$ >>)
+      | i = UIDENT -> true , (<:expr< $uid:i$ >>, <:expr< $lid:decapitalize i$ >>)
+      | i = UIDENT; "."; j = SELF ->
+          let f, j = j in
+          let rec loop (m1, m2) =
+            function
+            | <:expr< $x$ . $y$ >>, <:expr< $a$ . $z$ >> -> loop (<:expr< $m1$ . $x$ >>, <:expr< $m2$ . $a$ >>) (y, z)
+            | (e, e') -> <:expr< $m1$ . $e$ >>, <:expr< $m2$ . $e'$ >> 
+          in
+          f, loop (<:expr< $uid:i$ >>, <:expr< $uid:i$ >>) j
+    ]]
+  ;
+    
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
     [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
@@ -84,7 +102,71 @@ EXTEND
     ] |
     [ "defer"; subj=expr LEVEL "." ->
       <:expr< delay (fun () -> $subj$) >>
-    ]
+    ] |
+    [ e=ocanren_embedding -> e ]
   ];
 
+  ocanren_embedding: [
+    [ "ocanren"; "("; e=ocanren_expr LEVEL "top"; ")" -> e ]
+  ];
+
+  ocanren_expr: [
+    "top" RIGHTA [ l=ocanren_expr; "|"; r=ocanren_expr -> <:expr< MiniKanrenCore.disj $l$ $r$ >> ] |
+          RIGHTA [ l=ocanren_expr; "&"; r=ocanren_expr -> <:expr< MiniKanrenCore.conj $l$ $r$ >> ] |
+    [ "fresh"; vars=LIST1 LIDENT SEP ","; "in"; b=ocanren_expr LEVEL "top" ->
+       List.fold_right
+         (fun x b ->
+            let p = <:patt< $lid:x$ >> in
+            <:expr< MiniKanrenCore.call_fresh ( fun $p$ -> $b$ ) >>
+         )
+         vars
+         b                                        
+    ] |
+    "primary" [
+        l=ocanren_term; "==";  r=ocanren_term -> <:expr< MiniKanrenCore.unify $l$ $r$ >> 
+      | l=ocanren_term; "=/="; r=ocanren_term -> <:expr< MiniKanrenCore.diseq $l$ $r$ >>
+      | l=ocanren_term                        -> l
+      | "("; e=ocanren_expr LEVEL "top"; ")" -> e                                            
+    ]
+  ];
+  
+  ocanren_term:  [
+    "top" LEFTA [l=ocanren_term; r=ocanren_term -> <:expr< $l$ $r$ >> ] |
+    [ c=expr_ident ->
+      let uid, (o, _) = c in
+      if uid
+      then <:expr< MiniKanrenCore.inj (MiniKanrenCore.lift $o$) >>
+      else o ] |
+    [ c=expr_ident; "("; ts=LIST1 ocanren_term SEP ","; ")" ->
+      let uid, (o, d) = c in
+      let c = if uid then d else o in
+      List.fold_left (fun e x -> <:expr< $e$ $x$ >>) c ts ] |
+    [ c=INT ->
+      let n = <:expr< $int:c$ >> in
+      <:expr< MiniKanrenStd.nat $n$ >> ] |
+    [ "("; ts=LIST0 ocanren_term SEP ","; ")" ->
+      match ts with
+      | []      -> <:expr< MiniKanrenCore.inj (MiniKanren.lift ()) >>
+      | [x]     -> x
+      | x::y::t ->
+         List.fold_left
+           (fun p x -> <:expr< MiniKanrenStd.pair p x >>)
+           <:expr< MiniKanrenStd.pair $x$ $y$ >>
+           t
+    ] |
+    [ s=STRING ->
+      let s = <:expr< $str:s$ >> in
+      <:expr< MiniKanrenCore.inj (MiniKanrenCore.lift $s$) >>
+    ] |
+    [ "true"   -> <:expr< MiniKanrenStd.Bool.truo >> ] |
+    [ "false"  -> <:expr< MiniKanrenStd.Bool.falso >> ] |
+    [ "["; ts=LIST0 ocanren_term SEP ";"; "]" ->
+      match ts with
+      | [] -> <:expr< MiniKanrenStd.nil () >>
+      | _  -> List.fold_right (fun x l -> <:expr< MiniKanrenStd.List.conso $x$ $l$ >> ) ts <:expr< MiniKanrenStd.nil () >>
+    ] |
+    RIGHTA [ l=ocanren_term; "::"; r=ocanren_term -> <:expr< MiniKanrenStd.List.conso $l$ $r$ >> ] |
+    [ "("; t=ocanren_term LEVEL "top"; ")" -> t ]
+  ];
+  
 END;
