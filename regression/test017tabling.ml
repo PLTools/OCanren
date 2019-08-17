@@ -1,4 +1,4 @@
-open MiniKanren
+open OCanren
 open Tester
 
 let patho_norec arco po x y = conde [
@@ -15,7 +15,7 @@ let patho_tabled arco = Tabling.(tabledrec two) (patho_norec arco)
 let show s = s
 let showl = GT.show(logic) (show)
 
-let runS n = runR (MiniKanren.reify) show showl n
+let runS n = runR (OCanren.reify) show showl n
 
 (* This relation defines a graph with cycle *)
 let arco1 x y = conde [

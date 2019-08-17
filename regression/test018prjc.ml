@@ -1,5 +1,5 @@
 open GT
-open MiniKanren
+open OCanren
 open Tester
 
 module X = struct
@@ -24,7 +24,7 @@ module Y = struct
 end
 
 let prjc_xy h t =
-  X.prjc (Y.prjc (MiniKanren.prjc (fun _ -> assert false)) (fun n _ -> Y.Var2 n))
+  X.prjc (Y.prjc (OCanren.prjc (fun _ -> assert false)) (fun n _ -> Y.Var2 n))
     (fun n _ -> X.Var1 n) h t
 
 let showxy_int = show X.t @@ (show Y.t (show int))

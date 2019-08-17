@@ -1,7 +1,7 @@
 (** {1 Useful functions to test running relational queries } *)
 
 open Printf
-open MiniKanren
+open OCanren
 
 (** {3 Helper functions to provide names for top-level variables } *)
 
@@ -47,7 +47,7 @@ let run_gen onOK onFree n num handler (repr, goal) =
     | _ -> assert false
   in
   let handler = handler onOK onFree in
-  let () = try loop (MiniKanren.run num goal handler) 1 with NoMoreAnswers -> () in
+  let () = try loop (run num goal handler) 1 with NoMoreAnswers -> () in
   printf "}\n%!"
 
 (**

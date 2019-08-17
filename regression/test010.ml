@@ -1,7 +1,7 @@
 (* Some tests about constraints *)
 open GT
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 open Tester
 
 let (!) = (!!)
@@ -29,7 +29,7 @@ let _ =
   run_exn show_fint (-1)    q   qh (REPR (fun q   -> (fresh (x y z) (x === y)(y === z)(z === !(2+2))(x =/= !4))));
   run_exn show_fint (-1)    q   qh (REPR (fun q   -> (fresh (x y z) (x =/= !4)(y === z)(x === y)(z === !(2+2)))))
 
-let runI n = runR MiniKanren.reify show_int (show(logic) show_int) n
+let runI n = runR OCanren.reify show_int (show(logic) show_int) n
 
 let _ =
   runI (-1)  q qh (REPR (fun q   -> (q =/= !5)                                                ));
@@ -38,7 +38,7 @@ let _ =
 
 let show_bool = show(bool)
 
-let runB n = runR MiniKanren.reify show_bool (show(logic) show_bool) n
+let runB n = runR OCanren.reify show_bool (show(logic) show_bool) n
 
 let _ =
   runB (-1) qr qrh (REPR (fun q r -> (q =/= (!!true)) &&& (q =/= r)))

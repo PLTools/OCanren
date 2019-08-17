@@ -10,7 +10,7 @@ endif
 
 SRC=src,src/core,src/std
 
-CMA_TARGETS=src/MiniKanren.cma
+CMA_TARGETS=src/OCanren.cma
 CMO_TARGETS=regression/tester.cmo
 #TESTER_TARGETS=regression/tester.cmo regression/tester.cmx
 BYTE_TARGETS=$(CMA_TARGETS) $(CMO_TARGETS)
@@ -30,12 +30,12 @@ lib:
 	$(OB) -r -Is $(SRC) $(BYTE_TARGETS) $(NATIVE_TARGETS)
 
 ppx:
-	$(OB) -Is src ppx/ppx_repr_bin.cmxa ppx/pa_minikanren_bin.cmxa \
+	$(OB) -Is src ppx/ppx_repr_bin.cmxa ppx/pa_ocanren_bin.cmxa \
 	  ppx/ppx_ocanren_all.cma ppx/ppx_ocanren_all.cmxa ppx/ppx_ocanren_all.cmxs \
 		ppx/ppx_ocanren_all.native
 
 plugin:
-	$(OB) camlp5/pa_minikanren.cmo
+	$(OB) camlp5/pa_ocanren.cmo
 
 celan: clean
 
@@ -125,19 +125,19 @@ INSTALL_TARGETS=META \
 	$(wildcard _build/src/*.cmi) \
 	$(wildcard _build/src/core/*.cmi) \
 	$(wildcard _build/src/std/*.cmi) \
-	_build/src/MiniKanren.cmx \
-	_build/src/MiniKanren.cma \
-	_build/src/MiniKanren.cmxa \
+	_build/src/OCanren.cmx \
+	_build/src/OCanren.cma \
+	_build/src/OCanren.cmxa \
 	$(wildcard _build/ppx/ppx_ocanren_all.cma) \
 	$(wildcard _build/ppx/ppx_ocanren_all.cmxa) \
 	$(wildcard _build/ppx/ppx_ocanren_all.cmxs) \
 	$(wildcard _build/ppx/ppx_ocanren_all.native) \
-	$(wildcard _build/src/MiniKanren.[oa]) \
+	$(wildcard _build/src/OCanren.[oa]) \
 	$(wildcard _build/ppxnew/pp_distrib.native) \
 	$(wildcard _build/ppxnew/ppx_distrib.a) \
 	$(wildcard _build/ppxnew/ppx_distrib.cm[tiaox]) \
 	$(wildcard _build/ppxnew/ppx_distrib.cmxa) \
-	$(wildcard _build/camlp5/pa_minikanren.cm[oi]) \
+	$(wildcard _build/camlp5/pa_ocanren.cm[oi]) \
 
 BUNDLEDIR=_build/bundle/ocanren
 
@@ -166,4 +166,4 @@ uninstall:
 	ocamlfind remove ocanren
 
 doc: all bundle compile_tests
-	$(OB) MiniKanren.docdir/index.html -Is src
+	$(OB) OCanren.docdir/index.html -Is src

@@ -1,6 +1,6 @@
 open Printf
 open GT
-open MiniKanren
+open OCanren
 open Std
 
 module GLam =
@@ -38,4 +38,4 @@ let varY = !! "y"
 let varF = !! "f"
 
 let rec glam_reifier : VarEnv.t -> GLam.flam -> GLam.llam = fun c x ->
-  GLam.reify MiniKanren.reify glam_reifier c x
+  GLam.reify OCanren.reify glam_reifier c x

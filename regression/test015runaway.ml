@@ -1,6 +1,6 @@
 open GT
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 open Tester
 open Printf
 
@@ -23,7 +23,7 @@ let demo2 q =
     )
 
 let intlist_reifier c xs =
-  List.reify MiniKanren.reify c xs
+  List.reify OCanren.reify c xs
 
 let show_int = show(int)
 let show_int_list = show(List.ground) show_int

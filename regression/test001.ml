@@ -1,6 +1,6 @@
 open GT
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 open Tester
 open Printf
 
@@ -33,7 +33,7 @@ let rec fives x =
   let show_int_list  = (show(List.ground) (show int))
   let show_intl_list = (show(List.logic ) (show(logic) (show int)))
 
-  (* let (===) = unitrace (fun h t -> show_intl_list @@ List.reify MiniKanren.reify h t) *)
+  (* let (===) = unitrace (fun h t -> show_intl_list @@ List.reify OCanren.reify h t) *)
 
 let rec appendo a b ab =
   conde
@@ -55,7 +55,7 @@ let rec reverso a b =
     ]
 
 
-let runL n         = runR (List.reify MiniKanren.reify) show_int_list show_intl_list n
+let runL n         = runR (List.reify OCanren.reify) show_int_list show_intl_list n
 
 let _ =
   (* run_exn show_int_list  1  q qh (REPR (fun q   -> q === !!1 % q)); *)

@@ -21,8 +21,8 @@ open Printf
 
 module L = List
 
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 
 let show_nat_list = GT.(show List.ground @@ show Nat.ground)
 let show_nat      = GT.(show Nat.ground)

@@ -1,5 +1,5 @@
 open GT
-open MiniKanren
+open OCanren
 open Tester
 open Stlc
 open GLam

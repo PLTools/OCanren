@@ -1,5 +1,5 @@
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 open Tester
 open GT
 

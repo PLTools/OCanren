@@ -2,8 +2,8 @@ open GT
 
 module L = List
 
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 
 @type 'nat move = Forward of 'nat | Backward of 'nat | Unload of 'nat | Fill of 'nat with show, gmap
                                                                                                   

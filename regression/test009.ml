@@ -1,7 +1,7 @@
 open Printf
 open GT
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 open Tester
 
 @type token = Id | Add | Mul with show

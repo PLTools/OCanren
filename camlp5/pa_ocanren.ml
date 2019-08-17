@@ -1,5 +1,5 @@
 (*
- * pa_minikanren: a camlp5 extension to implement syntax-level
+ * pa_ocanren: a camlp5 extension to implement syntax-level
  * miniKanren constructs.
  * Copyright (C) 2015
  * Dmitri Boulytchev, St.Petersburg State University
@@ -16,7 +16,7 @@
  * (enclosed in the file COPYING).
  *)
 
-(** {1 Pa_minikanren --- a camlp5 syntax extension for miniKanren syntax constructs} *)
+(** {1 Pa_ocanren --- a camlp5 syntax extension for miniKanren syntax constructs} *)
 
 (**
   {2 General description}
@@ -67,7 +67,7 @@ let rec fix_term e =
          )
       | _ ->         
          (match e with
-          | <:expr< MiniKanren.Std.nil () >> -> e
+          | <:expr< OCanren.Std.nil () >> -> e
           | _ -> <:expr< $fix_term e1$ $fix_term e2$ >>
          )
      )
@@ -75,12 +75,12 @@ let rec fix_term e =
      (* isolater tuple case (not an arguments to a constructor *)
      (match ts with
       | [e] -> fix_term e
-      | _   -> fold_right1 (fun e tup -> <:expr< MiniKanren.Std.pair $fix_term e$ $tup$ >> ) ts
+      | _   -> fold_right1 (fun e tup -> <:expr< OCanren.Std.pair $fix_term e$ $tup$ >> ) ts
      )
   | _ ->
     (* everything else *)
     (match ctor e with
-     | Some _ -> <:expr< MiniKanren.inj (MiniKanren.lift $e$) >> (* isolated nullary constructor case *)
+     | Some _ -> <:expr< OCanren.inj (OCanren.lift $e$) >> (* isolated nullary constructor case *)
      | _ -> e
     )
     
@@ -128,15 +128,15 @@ EXTEND
             let pa = <:patt< $lid:a$ >> in
             let pb = <:patt< $lid:b$ >> in
             let pc = <:patt< $lid:c$ >> in
-            <:expr< MiniKanren.Fresh.three (fun $pa$ $pb$ $pc$ -> $loop tl$) >>
+            <:expr< OCanren.Fresh.three (fun $pa$ $pb$ $pc$ -> $loop tl$) >>
         | a::b::tl ->
             let rez = loop tl in
             let pa = <:patt< $lid:a$ >> in
             let pb = <:patt< $lid:b$ >> in
-            <:expr< MiniKanren.Fresh.two (fun $pa$ $pb$ -> $rez$) >>
+            <:expr< OCanren.Fresh.two (fun $pa$ $pb$ -> $rez$) >>
         | a::[] ->
             let pa = <:patt< $lid:a$ >> in
-            <:expr< MiniKanren.Fresh.one (fun $pa$ -> $body$) >>
+            <:expr< OCanren.Fresh.one (fun $pa$ -> $body$) >>
         | []    -> body
         in
         loop vars
@@ -158,20 +158,20 @@ EXTEND
   ];
 
   ocanren_expr: [
-    "top" RIGHTA [ l=ocanren_expr; "|"; r=ocanren_expr -> <:expr< MiniKanren.disj $l$ $r$ >> ] |
-          RIGHTA [ l=ocanren_expr; "&"; r=ocanren_expr -> <:expr< MiniKanren.conj $l$ $r$ >> ] |
+    "top" RIGHTA [ l=ocanren_expr; "|"; r=ocanren_expr -> <:expr< OCanren.disj $l$ $r$ >> ] |
+          RIGHTA [ l=ocanren_expr; "&"; r=ocanren_expr -> <:expr< OCanren.conj $l$ $r$ >> ] |
     [ "fresh"; vars=LIST1 LIDENT SEP ","; "in"; b=ocanren_expr LEVEL "top" ->
        List.fold_right
          (fun x b ->
             let p = <:patt< $lid:x$ >> in
-            <:expr< MiniKanren.call_fresh ( fun $p$ -> $b$ ) >>
+            <:expr< OCanren.call_fresh ( fun $p$ -> $b$ ) >>
          )
          vars
          b                                        
     ] |
     "primary" [
-        l=ocanren_term; "==";  r=ocanren_term -> <:expr< MiniKanren.unify $l$ $r$ >> 
-      | l=ocanren_term; "=/="; r=ocanren_term -> <:expr< MiniKanren.diseq $l$ $r$ >>
+        l=ocanren_term; "==";  r=ocanren_term -> <:expr< OCanren.unify $l$ $r$ >>
+      | l=ocanren_term; "=/="; r=ocanren_term -> <:expr< OCanren.diseq $l$ $r$ >>
       | l=ocanren_term                        -> l
       | "("; e=ocanren_expr LEVEL "top"; ")" -> e                                            
     ]
@@ -186,24 +186,24 @@ EXTEND
     [ c=long_ident -> c
     | c=INT ->
       let n = <:expr< $int:c$ >> in
-      <:expr< MiniKanren.Std.nat $n$ >>
+      <:expr< OCanren.Std.nat $n$ >>
     | "("; ts=LIST0 ocanren_term' SEP ","; ")" ->
       (match ts with
-       | []      -> <:expr< MiniKanren.inj (MiniKanren.lift ()) >>
+       | []      -> <:expr< OCanren.inj (OCanren.lift ()) >>
        | _       -> <:expr< ( $list:ts$ ) >>
       )
     | s=STRING ->
       let s = <:expr< $str:s$ >> in
-      <:expr< MiniKanren.inj (MiniKanren.lift $s$) >>    
-    | "true"   -> <:expr< MiniKanren.Std.LBool.truo >> 
-    | "false"  -> <:expr< MiniKanren.Std.LBool.falso >> 
+      <:expr< OCanren.inj (OCanren.lift $s$) >>
+    | "true"   -> <:expr< OCanren.Std.Bool.truo >>
+    | "false"  -> <:expr< OCanren.Std.Bool.falso >>
     | "["; ts=LIST0 ocanren_term' SEP ";"; "]" ->
       (match ts with
-       | [] -> <:expr< MiniKanren.Std.nil () >>
-       | _  -> List.fold_right (fun x l -> <:expr< MiniKanren.Std.LList.cons $x$ $l$ >> ) ts <:expr< MiniKanren.Std.nil () >>
+       | [] -> <:expr< OCanren.Std.nil () >>
+       | _  -> List.fold_right (fun x l -> <:expr< OCanren.Std.List.cons $x$ $l$ >> ) ts <:expr< OCanren.Std.nil () >>
       )
     ] |
-    RIGHTA [ l=ocanren_term'; "::"; r=ocanren_term' -> <:expr< MiniKanren.Std.LList.cons $l$ $r$ >> ] |
+    RIGHTA [ l=ocanren_term'; "::"; r=ocanren_term' -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ] |
     [ "("; t=ocanren_term' LEVEL "top"; ")" -> t ]
   ];
   

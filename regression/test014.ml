@@ -1,6 +1,6 @@
 open Printf
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 open Tester
 
 let rec build_num =
@@ -329,7 +329,7 @@ let _ffoo _ =
   run_exn show_int_list (-1)   q  qh (REPR (fun q       -> logo (build_num 14) (build_num 2) (build_num 3) q));
   run_exn show_int_list (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ))
 
-let runL n = runR (List.reify MiniKanren.reify) show_int_list show_intl_List n
+let runL n = runR (List.reify OCanren.reify) show_int_list show_intl_List n
 
 let _freeVars =
   runL   22  qrs  qrsh (REPR (fun q r s   -> pluso q r s                                      ));

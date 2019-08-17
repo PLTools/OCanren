@@ -2,8 +2,8 @@ open GT
 
 module L = List
 
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 
 @type move = Empty | Goat | Wolf | Cabbage with show
   
