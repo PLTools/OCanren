@@ -4,13 +4,13 @@ open MiniKanren.Std
 open Tester
 
 let (!) = (!!)
-let (!!) = LList.list
+let (!!) = List.list
 
-let show_int_list   = GT.(show LList.ground @@ show int)
-let show_intl_llist = GT.(show LList.logic @@ show logic @@ show int)
+let show_int_list   = GT.(show List.ground @@ show int)
+let show_intl_List = GT.(show List.logic @@ show logic @@ show int)
 
 let runInt n = runR MiniKanren.reify GT.(show int) GT.(show logic @@ show int) n
-let runIList n = runR (LList.reify MiniKanren.reify) show_int_list show_intl_llist n
+let runIList n = runR (List.reify MiniKanren.reify) show_int_list show_intl_List n
 
 let pair = LPair.pair
 

@@ -1,6 +1,9 @@
 open GT
+
+module L = List
+
 open MiniKanren
-open Std
+open MiniKanren.Std
 
 @type move = Empty | Goat | Wolf | Cabbage with show
   
@@ -9,10 +12,10 @@ let (!) x = inj @@ lift x
 let qua x y z t = pair (pair x y) (pair z t)
                        
 let [[isGoat; isWolf; isCabbage; isMan] as are; [noGoat; noWolf; noCabbage; noMan] as no] =
-  List.map (fun f -> List.map (fun p s -> p f s) [(fun f s -> fresh (x y z) (s === qua !f x y z));
-                                                  (fun f s -> fresh (x y z) (s === qua x !f y z));
-                                                  (fun f s -> fresh (x y z) (s === qua x y !f z));
-                                                  (fun f s -> fresh (x y z) (s === qua x y z !f))]
+  L.map (fun f -> L.map (fun p s -> p f s) [(fun f s -> fresh (x y z) (s === qua !f x y z));
+                                            (fun f s -> fresh (x y z) (s === qua x !f y z));
+                                            (fun f s -> fresh (x y z) (s === qua x y !f z));
+                                            (fun f s -> fresh (x y z) (s === qua x y z !f))]
            ) [true; false]
 
 let safe state = fresh (left right) (
@@ -67,15 +70,15 @@ let rec eval state moves state' =
 
 
 let reify_state =
-  let reify_qua = LPair.reify (LPair.reify reify reify) (LPair.reify reify reify) in
-  LPair.reify reify_qua reify_qua
+  let reify_qua = Pair.reify (Pair.reify reify reify) (Pair.reify reify reify) in
+  Pair.reify reify_qua reify_qua
 
 let show_state =
-  let show_qua = show(LPair.logic) (show(LPair.logic) (show(LBool.logic)) (show(LBool.logic))) (show(LPair.logic) (show(LBool.logic)) (show(LBool.logic))) in
-  show(LPair.logic) show_qua show_qua
+  let show_qua = show(Pair.logic) (show(Pair.logic) (show(LBool.logic)) (show(LBool.logic))) (show(Pair.logic) (show(LBool.logic)) (show(LBool.logic))) in
+  show(Pair.logic) show_qua show_qua
 
-let reify_solution s = s#reify @@ LList.reify reify
-let show_solution = show(LList.logic) (show(logic) (show move))
+let reify_solution s = s#reify @@ List.reify reify
+let show_solution = show(List.logic) (show(logic) (show move))
 
 let id x = x
              
@@ -92,7 +95,7 @@ let _ =
   RStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q) id;
 
-  List.iter (fun s -> Printf.printf "%s\n" @@ show_solution @@ reify_solution s) @@ RStream.take ~n:100 @@
+  L.iter (fun s -> Printf.printf "%s\n" @@ show_solution @@ reify_solution s) @@ RStream.take ~n:100 @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) q (pair (qua !false !false !false !false) (qua !true !true !true !true))) id;
 
   
