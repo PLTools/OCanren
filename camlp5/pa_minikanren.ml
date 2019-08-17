@@ -46,24 +46,71 @@ let rec fold_left1 f xs = List.fold_left f (List.hd xs) (List.tl xs)
 
 let decapitalize s =
   String.init (String.length s) (function 0 -> Char.lowercase_ascii s.[0] | i -> s.[i])
-  
+
+let rec ctor e =
+  let loc = MLast.loc_of_expr e in
+  match e with
+  | <:expr< $uid:u$ >>   -> Some (<:expr< $lid:decapitalize u$ >>)
+  | <:expr< $m$ . $e$ >> -> (match ctor e with Some e -> Some (<:expr< $m$ . $e$ >>) | _ -> None)
+  | _                    -> None
+
+let rec fix_term e =
+  let loc = MLast.loc_of_expr e in
+  match e with
+  | <:expr< $e1$ $e2$ >> ->
+     (match ctor e1 with
+      | Some e1' ->
+         (match e2 with
+          | <:expr< ( $list:ts$ ) >> ->
+             List.fold_left (fun acc e -> <:expr< $acc$ $fix_term e$ >> ) e1' ts
+          | _  -> <:expr< $e1'$ $fix_term e2$ >>
+         )
+      | _ ->         
+         (match e with
+          | <:expr< MiniKanren.Std.nil () >> -> e
+          | _ -> <:expr< $fix_term e1$ $fix_term e2$ >>
+         )
+     )
+  | <:expr< ( $list:ts$ ) >> ->
+     (* isolater tuple case (not an arguments to a constructor *)
+     (match ts with
+      | [e] -> fix_term e
+      | _   -> fold_right1 (fun e tup -> <:expr< MiniKanren.Std.pair $fix_term e$ $tup$ >> ) ts
+     )
+  | _ ->
+    (* everything else *)
+    (match ctor e with
+     | Some _ -> <:expr< MiniKanren.inj (MiniKanren.lift $e$) >> (* isolated nullary constructor case *)
+     | _ -> e
+    )
+    
 EXTEND
   GLOBAL: expr;
 
-  expr_ident:
+  long_ident:
     [ RIGHTA
-      [ i = LIDENT -> false, (<:expr< $lid:i$ >>, <:expr< $lid:i$ >>)
-      | i = UIDENT -> true , (<:expr< $uid:i$ >>, <:expr< $lid:decapitalize i$ >>)
+      [ i = LIDENT -> <:expr< $lid:i$ >>
+      | i = UIDENT -> <:expr< $uid:i$ >> 
       | i = UIDENT; "."; j = SELF ->
-          let f, j = j in
+          let rec loop m =
+            function
+            | <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
+            | e                    -> <:expr< $m$ . $e$ >>
+          in
+          loop <:expr< $uid:i$ >> j
+    ]];
+
+  long_ctor:
+    [ RIGHTA
+      [ i = UIDENT -> (<:expr< $uid:i$ >>, <:expr< $lid:decapitalize i$ >>)
+      | i = UIDENT; "."; j = SELF ->
           let rec loop (m1, m2) =
             function
             | <:expr< $x$ . $y$ >>, <:expr< $a$ . $z$ >> -> loop (<:expr< $m1$ . $x$ >>, <:expr< $m2$ . $a$ >>) (y, z)
             | (e, e') -> <:expr< $m1$ . $e$ >>, <:expr< $m2$ . $e'$ >> 
           in
-          f, loop (<:expr< $uid:i$ >>, <:expr< $uid:i$ >>) j
-    ]]
-  ;
+          loop (<:expr< $uid:i$ >>, <:expr< $uid:i$ >>) j
+    ]];
     
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
@@ -129,44 +176,35 @@ EXTEND
       | "("; e=ocanren_expr LEVEL "top"; ")" -> e                                            
     ]
   ];
+
+  ocanren_term: [[
+    t=ocanren_term' -> fix_term t
+  ]];
   
-  ocanren_term:  [
-    "top" LEFTA [l=ocanren_term; r=ocanren_term -> <:expr< $l$ $r$ >> ] |
-    [ c=expr_ident ->
-      let uid, (o, _) = c in
-      if uid
-      then <:expr< MiniKanren.inj (MiniKanren.lift $o$) >>
-      else o ] |
-    [ c=expr_ident; "("; ts=LIST1 ocanren_term SEP ","; ")" ->
-      let uid, (o, d) = c in
-      let c = if uid then d else o in
-      List.fold_left (fun e x -> <:expr< $e$ $x$ >>) c ts ] |
-    [ c=INT ->
+  ocanren_term':  [
+    "top" LEFTA [l=ocanren_term'; r=ocanren_term' -> <:expr< $l$ $r$ >> ] |
+    [ c=long_ident -> c
+    | c=INT ->
       let n = <:expr< $int:c$ >> in
-      <:expr< MiniKanren.Std.nat $n$ >> ] |
-    [ "("; ts=LIST0 ocanren_term SEP ","; ")" ->
-      match ts with
-      | []      -> <:expr< MiniKanren.inj (MiniKanren.lift ()) >>
-      | [x]     -> x
-      | x::y::t ->
-         List.fold_left
-           (fun p x -> <:expr< MiniKanren.Std.pair p x >>)
-           <:expr< MiniKanren.Std.pair $x$ $y$ >>
-           t
-    ] |
-    [ s=STRING ->
+      <:expr< MiniKanren.Std.nat $n$ >>
+    | "("; ts=LIST0 ocanren_term' SEP ","; ")" ->
+      (match ts with
+       | []      -> <:expr< MiniKanren.inj (MiniKanren.lift ()) >>
+       | _       -> <:expr< ( $list:ts$ ) >>
+      )
+    | s=STRING ->
       let s = <:expr< $str:s$ >> in
-      <:expr< MiniKanren.inj (MiniKanren.lift $s$) >>
+      <:expr< MiniKanren.inj (MiniKanren.lift $s$) >>    
+    | "true"   -> <:expr< MiniKanren.Std.LBool.truo >> 
+    | "false"  -> <:expr< MiniKanren.Std.LBool.falso >> 
+    | "["; ts=LIST0 ocanren_term' SEP ";"; "]" ->
+      (match ts with
+       | [] -> <:expr< MiniKanren.Std.nil () >>
+       | _  -> List.fold_right (fun x l -> <:expr< MiniKanren.Std.LList.cons $x$ $l$ >> ) ts <:expr< MiniKanren.Std.nil () >>
+      )
     ] |
-    [ "true"   -> <:expr< MiniKanren.Std.LBool.truo >> ] |
-    [ "false"  -> <:expr< MiniKanren.Std.LBool.falso >> ] |
-    [ "["; ts=LIST0 ocanren_term SEP ";"; "]" ->
-      match ts with
-      | [] -> <:expr< MiniKanren.Std.nil () >>
-      | _  -> List.fold_right (fun x l -> <:expr< MiniKanren.Std.LList.cons $x$ $l$ >> ) ts <:expr< MiniKanren.Std.nil () >>
-    ] |
-    RIGHTA [ l=ocanren_term; "::"; r=ocanren_term -> <:expr< MiniKanren.Std.LList.cons $l$ $r$ >> ] |
-    [ "("; t=ocanren_term LEVEL "top"; ")" -> t ]
+    RIGHTA [ l=ocanren_term'; "::"; r=ocanren_term' -> <:expr< MiniKanren.Std.LList.cons $l$ $r$ >> ] |
+    [ "("; t=ocanren_term' LEVEL "top"; ")" -> t ]
   ];
   
 END;
