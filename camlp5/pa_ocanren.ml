@@ -158,8 +158,8 @@ EXTEND
   ];
 
   ocanren_expr: [
-    "top" RIGHTA [ l=SELF; "|"; r=SELF -> <:expr< MiniKanren.disj $l$ $r$ >> ] |
-          RIGHTA [ l=SELF; "&"; r=SELF -> <:expr< MiniKanren.conj $l$ $r$ >> ] |
+    "top" RIGHTA [ l=SELF; "|"; r=SELF -> <:expr< OCanren.disj $l$ $r$ >> ] |
+          RIGHTA [ l=SELF; "&"; r=SELF -> <:expr< OCanren.conj $l$ $r$ >> ] |
     [ "fresh"; vars=LIST1 LIDENT SEP ","; "in"; b=ocanren_expr LEVEL "top" ->
        List.fold_right
          (fun x b ->
