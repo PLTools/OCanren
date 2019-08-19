@@ -1,4 +1,4 @@
-open MiniKanren
+open OCanren
 open Tester
 open Stlc
 

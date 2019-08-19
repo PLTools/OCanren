@@ -2,7 +2,7 @@ fun q -> (=/=) q !1, all answers {
 q=_.10 [=/= 1];
 }
 fun q ->
-  MiniKanren.Fresh.three
+  OCanren.Fresh.three
     (fun x y z ->
        delay
          (fun () ->
@@ -11,7 +11,7 @@ fun q ->
 q=_.10;
 }
 fun q ->
-  MiniKanren.Fresh.three
+  OCanren.Fresh.three
     (fun x y z ->
        delay
          (fun () ->
@@ -22,7 +22,7 @@ fun q ->
 q=_.10;
 }
 fun q ->
-  MiniKanren.Fresh.three
+  OCanren.Fresh.three
     (fun x y z ->
        delay
          (fun () ->
@@ -33,7 +33,7 @@ fun q ->
 q=_.10;
 }
 fun q ->
-  MiniKanren.Fresh.three
+  OCanren.Fresh.three
     (fun x y z ->
        delay
          (fun () ->
@@ -43,7 +43,7 @@ fun q ->
               ((===) y ((!!) [!0; !1; !1])))), all answers {
 }
 fun q ->
-  MiniKanren.Fresh.three
+  OCanren.Fresh.three
     (fun x y z ->
        delay
          (fun () ->
@@ -54,7 +54,7 @@ fun q ->
 q=_.10;
 }
 fun q ->
-  MiniKanren.Fresh.three
+  OCanren.Fresh.three
     (fun x y z ->
        delay
          (fun () ->
@@ -64,21 +64,21 @@ fun q ->
               ((=/=) x y))), all answers {
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () -> conj ((=/=) ((!!) [x; !1]) ((!!) [!2; y])) ((===) x !2))), all answers {
 q=_.10;
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () -> conj ((=/=) ((!!) [x; !1]) ((!!) [!2; y])) ((===) y !1))), all answers {
 q=_.10;
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -88,7 +88,7 @@ q=[_.11; _.12 [=/= 1]];
 q=[_.11 [=/= 2]; _.12];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -97,7 +97,7 @@ fun q ->
 q=[2; _.12 [=/= 1]];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -108,7 +108,7 @@ fun q ->
 q=[2; 9];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun a d ->
        delay
          (fun () ->
@@ -118,7 +118,7 @@ fun q ->
               ((===) d !6))), all answers {
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -128,7 +128,7 @@ fun q ->
               ((===) ((!!) [x; y]) q))), all answers {
 }
 fun q ->
-  MiniKanren.Fresh.three
+  OCanren.Fresh.three
     (fun a x z ->
        delay
          (fun () ->
@@ -136,12 +136,12 @@ fun q ->
               ((===) x z))), all answers {
 }
 fun x ->
-  MiniKanren.Fresh.one
+  OCanren.Fresh.one
     (fun y -> delay (fun () -> (=/=) ((!!) [x; y]) ((!!) [!5; !6]))), all answers {
 q=_.10;
 }
 fun q ->
-  MiniKanren.Fresh.three
+  OCanren.Fresh.three
     (fun a x z ->
        delay
          (fun () ->
@@ -159,7 +159,7 @@ fun q -> (=/=) !3 !3, all answers {
 fun q -> (&&&) ((&&&) ((=/=) !5 q) ((=/=) !6 q)) ((===) q !5), all answers {
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun a d ->
        delay
          (fun () ->
@@ -168,7 +168,7 @@ fun q ->
 q=[5; _.12 [=/= 6]];
 }
 fun q ->
-  MiniKanren.Fresh.one
+  OCanren.Fresh.one
     (fun a -> delay (fun () -> conj ((===) !3 a) ((=/=) a !4))), all answers {
 q=_.10;
 }
@@ -179,12 +179,12 @@ fun q -> (&&&) ((=/=) q !5) ((=/=) q !5), all answers {
 q=_.10 [=/= 5];
 }
 fun q ->
-  let foo x = MiniKanren.Fresh.one (fun a -> delay (fun () -> (=/=) x a)) in
-  MiniKanren.Fresh.one (fun a -> delay (fun () -> foo a)), all answers {
+  let foo x = OCanren.Fresh.one (fun a -> delay (fun () -> (=/=) x a)) in
+  OCanren.Fresh.one (fun a -> delay (fun () -> foo a)), all answers {
 q=_.10;
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y -> delay (fun () -> conj ((===) ((!!) [x; y]) q) ((=/=) x y))), all answers {
 q=[_.11 [=/= _.12]; _.12];
 }
@@ -200,12 +200,12 @@ fun q ->
 q=[3; _.12];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y -> delay (fun () -> conj ((===) ((!!) [x; y]) q) ((=/=) y x))), all answers {
 q=[_.11; _.12 [=/= _.11]];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -213,7 +213,7 @@ fun q ->
 q=[_.11 [=/= _.12]; _.12];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -224,7 +224,7 @@ fun q -> (&&&) ((=/=) q !5) ((=/=) !5 q), all answers {
 q=_.10 [=/= 5];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -235,7 +235,7 @@ fun q ->
 q=[_.11 [=/= 5]; _.12];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -244,7 +244,7 @@ fun q ->
 q=[_.11 [=/= 5]; _.12];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -253,7 +253,7 @@ fun q ->
 q=[_.11 [=/= 5]; _.12];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -262,7 +262,7 @@ fun q ->
 q=[_.11 [=/= 5]; _.12];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -271,7 +271,7 @@ fun q ->
 q=[_.11 [=/= 5]; _.12];
 }
 fun q ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun x y ->
        delay
          (fun () ->
@@ -280,7 +280,7 @@ fun q ->
 q=[_.11; 2];
 }
 fun x ->
-  MiniKanren.Fresh.two
+  OCanren.Fresh.two
     (fun y z ->
        delay
          (fun () -> conj ((=/=) x ((!!) [y; !2])) ((===) x ((!!) [z; !2])))), all answers {

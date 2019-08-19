@@ -1,7 +1,7 @@
 (** {1 Useful functions to test running relational queries } *)
 
 open Printf
-open MiniKanren
+open OCanren
 
 (** {3 Helper functions to provide names for top-level variables } *)
 
@@ -38,7 +38,7 @@ let run_gen onOK onFree n num handler (repr, goal) =
   let rec loop st = function
   | k when (k > n) && (n >= 0) -> ()
   | k ->
-    match RStream.retrieve ~n:1 st with
+    match Stream.retrieve ~n:1 st with
     | [],_ -> raise NoMoreAnswers
     | [f],tl ->
       f ();
@@ -47,7 +47,7 @@ let run_gen onOK onFree n num handler (repr, goal) =
     | _ -> assert false
   in
   let handler = handler onOK onFree in
-  let () = try loop (MiniKanren.run num goal handler) 1 with NoMoreAnswers -> () in
+  let () = try loop (run num goal handler) 1 with NoMoreAnswers -> () in
   printf "}\n%!"
 
 (**

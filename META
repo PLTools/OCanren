@@ -1,8 +1,8 @@
 version = "0.1"
 description = "ocanren"
 requires = "GT,unix"
-archive(byte) = "MiniKanren.cma"
-archive(native) = "MiniKanren.cmxa"
+archive(byte) = "OCanren.cma"
+archive(native) = "OCanren.cmxa"
 
 package "ppx" (
   description = "PPX syntax extensionon top of ppx_deriving"
@@ -25,8 +25,8 @@ package "repr" (
 package "syntax" (
   description="Camlp5 syntax extension"
   requires="camlp5"
-  archive(syntax,preprocessor) = "pa_minikanren.cmo"
-  archive(syntax,toploop)      = "pa_minikanren.cmo"
+  archive(syntax,preprocessor) = "pa_ocanren.cmo"
+  archive(syntax,toploop)      = "pa_ocanren.cmo"
 )
 package "tester" (
   description="Tests helper"

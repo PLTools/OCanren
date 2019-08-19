@@ -5,7 +5,7 @@ true: short_paths
 <ppx/*>: package(ocaml-migrate-parsetree ocaml-migrate-parsetree ppx_tools_versioned.metaquot_405)
 
 <samples>: not_hygienic
-<camlp5/pa_minikanren.*>: syntax(camlp5o), package(camlp5)
+<camlp5/pa_ocanren.*>: syntax(camlp5o), package(camlp5)
 
 #<src/MiniKanrenCore.ml>: use_time_log
 <src/core/*> or <src/std/*> or <src/MiniKanrenStd*.*>: opaque
@@ -19,6 +19,6 @@ true: short_paths
 <regression/test0*.*>: package(GT,GT.syntax.all), syntax(camlp5o)
 
 <regression/test*.ml> : syntax(camlp5o), package(logger.syntax)
-<regression/test0*.ml> : use_pa_minikanren, package(GT.syntax.all)
+<regression/test0*.ml> : use_pa_ocanren, package(GT.syntax.all)
 
 

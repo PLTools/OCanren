@@ -18,8 +18,8 @@
 
 open Printf
 open GT
-open MiniKanren
-open MiniKanren.Std
+open OCanren
+open OCanren.Std
 
 module Tree = struct
   module X = struct
