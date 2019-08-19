@@ -8,11 +8,11 @@ let () = dispatch (function
      ()
 
  | After_rules ->
-     ocaml_lib "src/MiniKanren";
+     ocaml_lib "src/OCanren";
      (* miniKanren related stuff*)
      (* flag ["ocamldep"; "use_mkshow"] (S [A"-ppopt";A"-I";A"-ppopt";A"plugin"; A"-ppopt";A"mkshow.cmo" ]); *)
-     flag ["compile"; "use_pa_minikanren"]
-       (S [ A"-ppopt";A"camlp5/pa_minikanren.cmo"]);
+     flag ["compile"; "use_pa_ocanren"]
+       (S [ A"-ppopt";A"camlp5/pa_ocanren.cmo"]);
 
      flag ["compile"; "use_time_log"]
        (S [ A"-package"; A"logger.syntax"; A"-ppopt";A"-LOG"]);

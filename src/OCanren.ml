@@ -16,18 +16,19 @@
  * (enclosed in the file COPYING).
  *)
 
-include RStream
 include Logic
 include Core
+
+module Stream = RStream
 
 module Std =
   struct
 
-    module LPair    = LPair
-    module LOption  = LOption
-    module LBool    = LBool
-    module LNat     = LNat
-    module LList    = LList
+    module Pair    = LPair
+    module Option  = LOption
+    module Bool    = LBool
+    module Nat     = LNat
+    module List    = LList
 
     let eqo x y t =
       conde [
@@ -41,22 +42,22 @@ module Std =
         (x === y) &&& (t === LBool.falso);
       ]
 
-    let nat n = LNat.nat (LNat.of_int n)
+    let nat n = Nat.nat (Nat.of_int n)
 
-    let (%)  = LList.cons
-    let (%<) = LList.(%<)
-    let (!<) = LList.(!<)
-    let nil  = LList.nil
+    let (%)  = List.cons
+    let (%<) = List.(%<)
+    let (!<) = List.(!<)
+    let nil  = List.nil
 
     let rec list f = function
     | []    -> nil ()
-    | x::xs -> LList.cons (f x) (list f xs)
+    | x::xs -> List.cons (f x) (list f xs)
 
     let rec nat_list = function
     | []    -> nil ()
     | x::xs -> nat x % nat_list xs
 
-    let some = LOption.some
-    let none = LOption.none
-    let pair = LPair.pair
+    let some = Option.some
+    let none = Option.none
+    let pair = Pair.pair
   end
