@@ -27,40 +27,16 @@ open Core
 | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr
 
 (** Type synonym to prevent toplevel [logic] from being hidden *)
-type 'a logic' = 'a logic
+@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr
 
 (** Synonym for abstract list type *)
-type ('a, 'l) t = ('a, 'l) list
+@type ('a, 'l) t = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr
 
 (** Ground lists (isomorphic to regular ones) *)
-type 'a ground = ('a, 'a ground) t
+@type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr
 
 (** Logic lists (with the tails as logic lists) *)
-type 'a logic  = ('a, 'a logic) t logic'
-
-(** GT-compatible typeinfo for ['a ground] *)
-val ground :
-  (unit,
-   < gmap    : ('a -> 'b) -> 'a ground -> 'b ground;
-     compare : ('a -> 'a -> GT.comparison) -> 'a ground -> 'a ground -> GT.comparison;
-     eq      : ('a -> 'a -> bool) -> 'a ground -> 'a ground -> bool;
-     foldl   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
-     foldr   : ('b -> 'a -> 'b) -> 'b -> 'a ground -> 'b;
-     html    : ('a -> HTML.viewer) -> 'a ground -> HTML.viewer;
-     show    : ('a -> string) -> 'a ground -> string >, unit)
-  GT.t
-
-(** GT-compatible typeinfo for ['a logic] *)
-val logic :
-  (unit,
-    < gmap    : ('a -> 'b) -> (('a, 'c) t logic' as 'c) -> (('b, 'd) t logic' as 'd);
-      compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison;
-      eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool;
-      foldr   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
-      foldl   : ('b -> 'a -> 'b) -> 'b -> 'a logic -> 'b;
-      html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
-      show    : ('a -> string) -> 'a logic -> GT.string  >, unit)
-    GT.t
+@type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr
 
 (** A synonym for injected list *)
 type ('a,'b) groundi = ('a ground, 'b logic) injected

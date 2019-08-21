@@ -65,14 +65,14 @@ end
 open Tree
 
 (* Relational insert into a search tree *)
-let rec inserto a t t' = conde [
-  (t === nil) &&& (t' === node a nil nil);
+let rec inserto a t' t'' = conde [
+  (t' === nil) &&& (t'' === node a nil nil);
   fresh (x l r l')
-    (t === node x l r)
-    LNat.(conde [
-      (t' === t) &&& (a === x);
-      (t' === (node x l' r  )) &&& (a < x) &&& (inserto a l l');
-      (t' === (node x l  l' )) &&& (a > x) &&& (inserto a r l')
+    (t' === node x l r)
+    Nat.(conde [
+      (t'' === t') &&& (a === x);
+      (t'' === (node x l' r  )) &&& (a < x) &&& (inserto a l l');
+      (t'' === (node x l  l' )) &&& (a > x) &&& (inserto a r l')
     ])
 ]
 

@@ -22,40 +22,16 @@ open Logic
 open Core
 
 (** Type synonym to prevent toplevel [logic] from being hidden *)
-type 'a logic' = 'a logic
+@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr
 
 (** Synonym for regular option type *)
-type ('a, 'b) t = 'a * 'b
+@type ('a, 'b) t = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr
 
 (** Ground option (the regular one) *)
-type ('a, 'b) ground = 'a * 'b
+@type ('a, 'b) ground = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr
 
 (** Logic option *)
-type ('a, 'b) logic = ('a * 'b) logic'
-
-(** GT-compatible typeinfo for [ground] *)
-val ground :
-  (unit,
-   < compare : ('a -> 'a -> GT.comparison) -> ('b -> 'b -> GT.comparison) -> ('a, 'b) ground -> ('a, 'b) ground -> GT.comparison;
-     eq      : ('a -> 'a -> bool) -> ('b -> 'b -> bool) -> ('a, 'b) ground -> ('a, 'b) ground -> bool;
-     foldl   : ('c -> 'a -> 'c) -> ('c -> 'b -> 'c) -> 'c -> ('a, 'b) ground -> 'c;
-     foldr   : ('c -> 'a -> 'c) -> ('c -> 'b -> 'c) -> 'c -> ('a, 'b) ground -> 'c;
-     gmap    : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) ground -> ('c, 'd) ground;
-     html    : ('a -> HTML.viewer) -> ('b -> HTML.viewer) -> ('a, 'b) ground -> HTML.viewer;
-     show    : ('a -> string) -> ('b -> string) -> ('a, 'b) ground -> string >, unit)
-  GT.t
-
-(** GT-compatible typeinfo for [logic] *)
-val logic :
-  (unit,
-   < compare : ('a -> 'a -> GT.comparison) -> ('b -> 'b -> GT.comparison) -> ('a, 'b) logic -> ('a, 'b) logic -> GT.comparison;
-     eq      : ('a -> 'a -> bool) -> ('b -> 'b -> bool) -> ('a, 'b) logic -> ('a, 'b) logic -> bool;
-     foldl   : ('c -> 'a -> 'c) -> ('c -> 'b -> 'c) -> 'c -> ('a, 'b) logic -> 'c;
-     foldr   : ('c -> 'a -> 'c) -> ('c -> 'b -> 'c) -> 'c -> ('a, 'b) logic -> 'c;
-     gmap    : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) logic -> ('c, 'd) logic;
-     html    : ('a -> HTML.viewer) -> ('b -> HTML.viewer) -> ('a, 'b) logic -> HTML.viewer;
-     show    : ('a -> string) -> ('b -> string) -> ('a, 'b) logic -> string >, unit)
-  GT.t
+@type ('a, 'b) logic = ('a * 'b) logic' with show, gmap, html, eq, compare, foldl, foldr
 
 (** Logic injection (for reification) *)
 val inj : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) ground -> ('c, 'd) logic

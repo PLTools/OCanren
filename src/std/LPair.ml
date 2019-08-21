@@ -19,53 +19,34 @@
 open Logic
 open Core
 
-type 'a logic' = 'a logic
+@type 'a logic'                = 'a logic                                   with show, gmap, html, eq, compare, foldl, foldr
 
-let logic' = logic
+let logic' = logic;;
 
-type ('a, 'b) ground = 'a * 'b
+@type ('a, 'b) ground          = 'a * 'b                                    with show, gmap, html, eq, compare, foldl, foldr
+@type ('a, 'b) logic           = ('a * 'b) logic'                           with show, gmap, html, eq, compare, foldl, foldr
 
-let ground = GT.pair
-
-type ('a, 'b) logic  = ('a * 'b) logic'
-
-let ground = {
-  GT.gcata = ();
-  GT.fix = ();
-  GT.plugins =
-    object(this)
-      method html    f g n   = GT.html   (GT.pair) f g n
-      method eq      f g n m = GT.eq     (GT.pair) f g n m
-      method compare f g n m = GT.compare(GT.pair) f g n m
-      method foldr   f g a n = GT.foldr  (GT.pair) f g a n
-      method foldl   f g a n = GT.foldl  (GT.pair) f g a n
-      method gmap    f g n   = GT.gmap   (GT.pair) f g n
-      method show    f g n   = GT.show   (GT.pair) f g n
-    end
-}
+type ('a, 'b, 'c, 'd) groundi = (('a, 'c) ground, ('b, 'd) logic) injected 
 
 let logic = {
-  GT.gcata = ();
-  GT.fix = ();
+  logic with
   GT.plugins =
     object(this)
-      method html    f g n   = GT.html   (logic') (GT.html   (ground) f g) n
-      method eq      f g n m = GT.eq     (logic') (GT.eq     (ground) f g) n m
-      method compare f g n m = GT.compare(logic') (GT.compare(ground) f g) n m
-      method foldr   f g a n = GT.foldr  (logic') (GT.foldr  (ground) f g) a n
-      method foldl   f g a n = GT.foldl  (logic') (GT.foldl  (ground) f g) a n
-      method gmap    f g n   = GT.gmap   (logic') (GT.gmap   (ground) f g) n
-      method show    f g n   = GT.show   (logic') (GT.show   (ground) f g) n
+      method compare       = logic.GT.plugins#compare
+      method gmap          = logic.GT.plugins#gmap
+      method eq            = logic.GT.plugins#eq
+      method foldl         = logic.GT.plugins#foldl
+      method foldr         = logic.GT.plugins#foldr
+      method html          = logic.GT.plugins#html
+      method show    fa fb = GT.show(logic') (fun l -> GT.show(GT.pair) fa fb l)
     end
-}
+} 
 
 let inj f g p = to_logic (GT.(gmap pair) f g p)
 
-type ('a, 'b, 'c, 'd) groundi = (('a, 'c) ground, ('b, 'd) logic) injected
-
 module T =
   struct
-    type ('a, 'b) t = 'a * 'b
+    @type ('a, 'b) t = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr
     let fmap f g x = GT.(gmap pair) f g x
   end
 
