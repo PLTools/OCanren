@@ -265,10 +265,10 @@ Also, there are some well-known observations about evaluation of miniKanren prog
 
 \vskip5mm
 
-Most of them we can not prove formaly:
+Most of them we can not prove formally:
 \begin{itemize}
-\item disjunction commutativity over termination
-\item conjunction commutativity over answers
+\item disjunction commutativity w.r.t. termination
+\item conjunction commutativity w.r.t. answers
 \end{itemize}
 
 \vskip5mm
@@ -276,7 +276,7 @@ Most of them we can not prove formaly:
 Some of them we can not formulate strictly:
 \begin{itemize}
 \item search completeness (``Any \underline{answer satisfying the relation} will be found in a finite time'')
-\item notion of refutational completeness \textcolor{red}{?}
+\item notion of refutational completeness
 \end{itemize}
 
 \end{frame}
@@ -304,12 +304,12 @@ Pen-and-paper specification are fragile (and quite boring to make)
 Especially in our case, because:
 \begin{itemize}
 \item we work with (potentially) infinite objects
-\item the proofs have a lot cases and a lot of details to track
+\item the proofs have a lot cases and a lot of details to track down
 \end{itemize}
 
 \vskip8mm
 
-\textcolor{red}{Why Coq?}
+So we are doing it in Coq
 
 \end{frame}
 
@@ -325,8 +325,6 @@ Especially in our case, because:
   \item Operational semantics \visible<2->{\textcolor{blue}{+ specification in Coq}}
   \vskip6mm
   \item Equivalence of the semantics \visible<2->{\textcolor{blue}{+ proof mechanization in Coq}}
-  \vskip6mm
-  \item Some observations \textcolor{red}{?}
 \end{enumerate}
 
 \end{frame}
@@ -386,13 +384,7 @@ $\downarrow$
 
 \begin{frame}[fragile]{Language in Coq}
 
-There are two standard ways to define bindings:
-
-\textbf{First-order abstract syntax} vs. \textbf{Higher-order abstract syntax}
-
-\vskip5mm
-
-We use the latter
+For bindings we use \textbf{Higher-order abstract syntax}
 
 \begin{lstlisting}
 Fresh (fun x -> Unify (Var x) (Cst 0))
@@ -402,9 +394,9 @@ Fresh (fun x -> Unify (Var x) (Cst 0))
 
 \begin{itemize}
 \item[+] No fuss with syntactic variables
-\item[+] Suitable indunctive principle out of the box
-\item[-] We can not prove the ``coherence'' of bindings and need to require it explicitly
-\item[-] Hard to define some easy operations \textcolor{red}{?}
+\item[+] Suitable inductive principle out of the box
+\item[-] No ``coherence'' of bindings, so we need to require it explicitly
+\item[-] Some other well-known higher-order pitfalls
 \end{itemize}
 
 \end{frame}
@@ -417,7 +409,7 @@ We use the standard approach for logic PLs --- \emph{the least Herbrand model}
 
 \vskip10mm
 
-Alternatively, we could just describe a translation into a set of definite clauses and use model there
+Alternatively, we could just describe a conversion into a set of definite clauses and use its model
 
 \vskip5mm
 
@@ -425,7 +417,7 @@ But:
 
 \begin{itemize}
 \item we would need to define the model for definite clauses in a certified way
-\item the translation may be non-trivial for language with extensions
+\item the conversion may be non-trivial for language with extensions
 \end{itemize}
 
 \end{frame}
@@ -438,20 +430,23 @@ But:
 $\llbracket$relation in program$\rrbracket$ $=$ relation over the set of ground terms
 \end{center}
 
+\pause
+
 \vskip5mm
 
-More precisely --- representing functions:
+Representing functions:
 
 \begin{center}
-
-
-${\mathfrak f} \colon$ logical variables $\to$ ground terms ($\mathcal{D}$)
-
-\vskip3mm
-
-$\sembr{goal} \subset \{ {\mathfrak f} \mid {\mathfrak f}$ is a representing function$\}$
-
+${\mathfrak f} \colon$ logical variables $\to$ ground terms
 \end{center}
+
+Semantics of a goal:
+
+\begin{center}
+$\sembr{goal} \subset \{ {\mathfrak f} \mid {\mathfrak f}$ is a representing function$\}$
+\end{center}
+
+\pause
 
 \vskip5mm
 
@@ -506,8 +501,7 @@ $\llbracket fresh \; (x) \; g \rrbracket_{\Gamma} = \llbracket g[a/x] \rrbracket
 \visible<4->{(\{\mathfrak{f}\mid \overline{\mathfrak{f}}\,(\alpha)=\overline{\mathfrak{f}}\,(\beta)\} \,\cap\, \{\mathfrak{f}\mid \overline{\mathfrak{f}}\,(\beta)=\overline{\mathfrak{f}}\,(\mbox{\lstinline|Zero|})\})\uparrow\beta} & \visible<5->{=} \\[3mm]
 \visible<5->{(\{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mathfrak{f}\,(\beta)\} \,\cap\, \{\mathfrak{f}\mid \mathfrak{f}\,(\beta)=\mbox{\lstinline|Zero|}\})\uparrow\beta} & \visible<6->{=} \\[3mm]
 \visible<6->{(\{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mathfrak{f}\,(\beta)=\mbox{\lstinline|Zero|}\})\uparrow\beta} & \visible<7->{=} \\[3mm]
-\visible<7->{\{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mbox{\lstinline|Zero|}, \mathfrak{f}\,(\beta)=d, d\in\mathcal{D}\}} & \visible<8->{=} \\[3mm]
-\visible<8->{\{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mbox{\lstinline|Zero|}\}} & \\[3mm]
+\visible<7->{\{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mbox{\lstinline|Zero|}\}} & \\[3mm]
 \end{array} \]
 
 \end{frame}
@@ -562,7 +556,7 @@ The least fixpoint semantic is implicitly provided by inductive definition
 
 \vskip5mm
 
-Proof of arbitrarity of choice of fresh variable is unbelievebly cumbersome
+The proof of arbitrarity of choice of fresh variable is unexpectedly cumbersome
 
 \end{frame}
 
@@ -570,7 +564,7 @@ Proof of arbitrarity of choice of fresh variable is unbelievebly cumbersome
 
 \begin{frame}{Operational semantics}
 
-Should reflect program execution for some \emph{real} implementation
+Should reflect program execution for some \emph{realistic} implementation
 
 \vskip3mm
 
@@ -578,7 +572,7 @@ In particular, should capture search termination
 
 \vskip8mm
 
-Described as \emph{Labeled Transition System with observable answers}
+Described as a \emph{deterministic Labeled Transition System \\ with observable answers}
 
 \end{frame}
 
@@ -588,7 +582,7 @@ Described as \emph{Labeled Transition System with observable answers}
 
 States:
 
-\[nSt \;=\; \langle goal, subst, counter \rangle \;\;|\;\; nSt + nSt \;\;|\;\; nSt \times goal \] 
+\[nSt \;=\; \langle goal, subst, counter \rangle \;\;|\;\; nSt \oplus nSt \;\;|\;\; nSt \otimes goal \] 
 \[St \;=\; nSt \;\;|\;\; \Diamond\]
 
 \vskip5mm
@@ -598,6 +592,8 @@ Transitions:
 \begin{center}
 $St \xrightarrow{} St \qquad $ or $ \qquad St \xrightarrow{(subst, counter)} St$
 \end{center}
+
+\pause
 
 \vskip8mm
 
@@ -620,19 +616,25 @@ $\inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{} \Diamond , \, \, \nexists\; mgu
 
 $\inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{(mgu\,(t_1, t_2, \sigma),\, n)} \Diamond$
 
+\pause
+
 \vskip4mm
 
-\item For conjunction and disjunction we construct states of corresponing types
+\item For conjunction and disjunction we construct states of corresponding types
 
 $\inbr{g_1 \lor g_2, \sigma, n} \xrightarrow{} \inbr{g_1, \sigma, n} \oplus \inbr{g_2, \sigma, n}$
 
 $\inbr{g_1 \land g_2, \sigma, n} \xrightarrow{} \inbr{ g_1, \sigma, n} \otimes g_2$
+
+\pause
 
 \vskip4mm
 
 \item For fresh we update the counter
 
 $\inbr{fresh \; (x) \; g, \sigma, n} \xrightarrow{} \inbr{g\,[\bigslant{\alpha_{n + 1}}{x}], \sigma, n + 1}$
+
+\pause
 
 \vskip4mm
 
@@ -648,12 +650,9 @@ $\dfrac{r\;=\;\lambda\,x_1\dots x_{k_i}\,.\,g}{\inbr{r\,(t_1,\dots,t_{k_i}),\sig
 
 \begin{frame}{Operational semantics: rules for interleaving}
     
-How we define rules for sum-states and product-states defines the search
+The search is parallel in sum
 
-\begin{itemize}
-
-\item Parallel in sum
-
+\begin{center}
 \begin{tabular}{lll}
 
 $\dfrac{s_1 \xrightarrow{r} \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} s_2}$ &
@@ -663,11 +662,13 @@ $\dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \oplus s_2) \xrightarrow{r} (s_2 \oplus s
 ... \\
 
 \end{tabular}
+\end{center}
 
 \vskip4mm
 
-\item Sequential in product
+and sequential in product
 
+\begin{center}
 \begin{tabular}{lll}
 
 $\dfrac{s \xrightarrow{(\sigma, n)} \Diamond}{(s \otimes g) \xrightarrow{} \inbr{g, \sigma, n}} $ &
@@ -677,16 +678,17 @@ $\dfrac{s \xrightarrow{(\sigma, n)} s'}{(s \otimes g) \xrightarrow{} \inbr{g, \s
 ... \\
 
 \end{tabular}
+\end{center}
 
-\end{itemize}
+\pause
 
 \vskip5mm
 
 Some basic properties we can prove here:
 
 \begin{itemize}
-\item Answer will be found in disjunction iff it will be found in either of disjuncts
-\item Search in disjunction terminates iff search in both disjuncts terminates
+\item In a disjunction an answer will be found iff it will be found in either of disjuncts
+\item In a disjunction the search terminates iff the search terminates in both disjuncts
 \end{itemize}
 
 \end{frame}
@@ -695,7 +697,7 @@ Some basic properties we can prove here:
 
 \begin{frame}[fragile]{Operational semantics: note on certification}
 
-It is well-known, that we can not define most general unifier as a structurally recursive function
+It is well-known, that the textbooks algorithms for MGU computation are not structurally recursive w.r.t. argument terms \\ $\Rightarrow$ \\ Direct encoding in Coq is problematic
 
 \vskip5mm
 
@@ -706,18 +708,20 @@ Inductive MGU : term -> term -> option subst -> Set := ...
 
 \vskip5mm
 
-but still need well-founded induction (on the number of free variables) to prove its defining properties.
+but still need well-founded induction (on the number of free variables) to prove its definitional properties.
 
 \end{frame}
 
 
 
-\begin{frame}[fragile]{Operational semantics: note on certification}
+\begin{frame}[fragile]{Operational semantics: notes on specification}
 
 Transition relation is encoded as an inductively defined proposition:
 \begin{lstlisting}
 Inductive eval_step : n_state -> label -> state -> Set := ...
 \end{lstlisting}
+
+\pause
 
 \vskip5mm
 
@@ -741,18 +745,11 @@ Inductive finite : trace -> Prop := ...
 
 
 
-\begin{frame}{Search completeness via semantics equivalence}
+\begin{frame}{Semantics equivalence}
 
-Correspondence between mathematical model and results, \\ obtained by search
-
-\vskip5mm
-
-First, we need to relate two kind of results
+First, we need to relate two kinds of results
 
 \begin{center}
-$[ subst ] = \{$ all representing functions, which are its extensions $\}$
-
-\vskip3mm
 
 $ [\sigma] = \{ \overline{\mathfrak f} \circ \sigma \mid {\mathfrak f}$ is a representing function$\}$
 
@@ -760,6 +757,8 @@ $ [\sigma] = \{ \overline{\mathfrak f} \circ \sigma \mid {\mathfrak f}$ is a rep
 
 $\llbracket s \rrbracket_{op} = \bigcup\limits_{(\sigma, n) \in Tr_s} [\sigma]$
 \end{center}
+
+\pause
 
 \begin{namedthm}{Interleaving search soundness and completeness}
 If $FV(g) \subset \{\alpha_1,\dots,\alpha_n\}$,
@@ -796,7 +795,7 @@ Generalize the statement and use nested structural induction
 
 \vskip3mm
 
-Unfolds defintions of relations only $i$ times
+Unfolds definitions of relations only $i$ times
 
 \vskip3mm
 
@@ -818,7 +817,7 @@ By the definition of the least fixed point from Tarski-Knaster theorem
 
 \begin{frame}{Note on certification: the proof of semantics equivalence}
 
-It is rather long and it is green!
+It is rather long and all green!
 
 \begin{tabular}{cc}
 Generalized correctness & \hskip15mm Generalized completeness \\
@@ -827,51 +826,54 @@ Generalized correctness & \hskip15mm Generalized completeness \\
 
 \vskip5mm
 
-Formalization revealed serious flaws in proofs for both directions
-
-We fixed them, now we can be sure everything is OK
+Formalization revealed serious flaws in pen-and-paper proofs for both directions
 
 \end{frame}
 
 
 
-\begin{frame}{Corollary: Correctness of Program Transformations}
+\begin{frame}{Corollary: correctness of program transformations}
 
-Transformations, that do not change mathematical relation,\\do not change the result of its execution (the set of answers):
+Transformations which are invariant w.r.t. denotational semantics have the same result of evaluation (the set of answers):
 
 \vspace{3mm}
 
 \begin{itemize}
 \item conjunction/disjunction commutativity,
 \item distributivity,
+\item fresh lifting,
 \item \dots
 \end{itemize}
 
 \vspace{10mm}
 
-Programs can be reduced to a normal form
+Programs may be fearlessly converted into canonical form
 
 \end{frame}
 
 
 
-\begin{frame}{More proofs}
-
-Some other proven (not certified) facts:
-
-\vskip4mm
+\begin{frame}{Conclusions}
 
 \begin{itemize}
 
-\item Correctness of a certain optimization \textcolor{red}{?}
+\item Two formal semantics for miniKanren
 
-\vskip6mm
+\vskip5mm
 
-\item Refutational incompleteness of \lstinline|append$^o$|
+\item Equivalence result
 
-\vskip6mm
+\vskip5mm
 
-\item Linear refutational completeness of \lstinline|append$^o$|
+\item Everything is certified in Coq
+
+\vskip5mm
+
+\item Correctness of certain transformations
+
+\vskip5mm
+
+\item (Uncertified) properties of certain relations
 
 \end{itemize}
 
@@ -879,19 +881,19 @@ Some other proven (not certified) facts:
 
 
 
-\begin{frame}{What else should we prove?}
+\begin{frame}{Future work}
 
 \begin{itemize}
 
-\item Language extensions (the first thing --- disequality constraints)
+\item Language extensions (primarily - disequality constraint)
 
 \vskip6mm
 
-\item Program equivalences
+\item A certified interpreter by extraction
 
 \vskip6mm
 
-\item Your suggestions are very welcome!
+\item Correctness of improved search strategies
 
 \end{itemize}
 
