@@ -6,9 +6,10 @@ open OCanren
 open OCanren.Std
 
 @type 'nat move = Forward of 'nat | Backward of 'nat | Unload of 'nat | Fill of 'nat with show, gmap
-@type moves     = Nat.logic move logic List.logic with show
-@type state     = (Nat.logic, (Nat.logic, (Nat.logic, Nat.logic) Pair.logic List.logic) Pair.logic) Pair.logic with show
-                                                     
+
+@type moves = ocanren (int move list) with show
+@type state = ocanren (int * int * (int * int) list) with show
+                                                                                                    
 module M = Fmap (struct type 'a t = 'a move let fmap f = gmap(move) f end)
 
 let reify_moves m = List.reify (M.reify Nat.reify) m

@@ -68,34 +68,31 @@ let rec eval state moves state' =
     )
     ]
 
-
 let reify_state =
   let reify_qua = Pair.reify (Pair.reify reify reify) (Pair.reify reify reify) in
   Pair.reify reify_qua reify_qua
 
-let show_state =
-  let show_qua = show(Pair.logic) (show(Pair.logic) (show(LBool.logic)) (show(LBool.logic))) (show(Pair.logic) (show(LBool.logic)) (show(LBool.logic))) in
-  show(Pair.logic) show_qua show_qua
+let reify_solution s = s#reify @@ List.reify reify;;
 
-let reify_solution s = s#reify @@ List.reify reify
-let show_solution = show(List.logic) (show(logic) (show move))
+@type state    = ocanren (((bool * bool) * (bool * bool)) * ((bool * bool) * (bool * bool))) with show
+@type solution = ocanren (move list) with show 
 
 let id x = x
              
 let _ =
-  RStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
+  RStream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (nil ()) q) id;
   
-  RStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
+  RStream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Empty) q) id;
 
-  RStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
+  RStream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Goat) q) id; 
 
-  RStream.iter (fun s -> Printf.printf "%s\n" @@ show_state @@ s#reify reify_state) @@
+  RStream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q) id;
 
-  L.iter (fun s -> Printf.printf "%s\n" @@ show_solution @@ reify_solution s) @@ RStream.take ~n:100 @@
+  L.iter (fun s -> Printf.printf "%s\n" @@ show(solution) @@ reify_solution s) @@ RStream.take ~n:100 @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) q (pair (qua !false !false !false !false) (qua !true !true !true !true))) id;
 
   

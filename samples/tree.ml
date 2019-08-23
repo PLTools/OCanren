@@ -33,24 +33,17 @@ module Tree = struct
   include X
   include Fmap2(X)
 
-  type inttree = (int, inttree) X.t
+  @type inttree = (int, inttree) X.t with show
   (* A shortcut for "ground" tree we're going to work with in "functional" code *)
-  type rtree = (LNat.ground, rtree) X.t
+  @type rtree = (LNat.ground, rtree) X.t with show
 
   (* Logic counterpart *)
-  type ltree = (LNat.logic, ltree) X.t logic
+  @type ltree = (LNat.logic, ltree) X.t logic with show
 
   type ftree = (rtree, ltree) injected
 
   let nil        : ftree = inj @@ distrib @@ X.Nil
   let node a b c : ftree = inj @@ distrib @@ X.Node (a,b,c)
-
-  (* Printing tree with ints inside *)
-  let rec show_inttree t = GT.(show X.t (show int) show_inttree) t
-  (* Printing tree with Peano numbers inside *)
-  let rec show_rtree t = GT.(show X.t (show LNat.ground) show_rtree) t
-  (* Printing logical tree *)
-  let rec show_ltree t = GT.(show logic @@ show X.t (show LNat.logic) show_ltree) t
 
   (* Injection *)
   let rec inj_tree : inttree -> ftree = fun tree ->
