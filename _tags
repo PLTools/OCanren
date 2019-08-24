@@ -1,9 +1,6 @@
 true: debug, rectypes, color(auto), bin_annot, keep_asm
 true: short_paths
 
-<ppx/*>: package(ppx_tools_versioned,ppx_tools_versioned.metaquot_405,ppx_deriving.std)
-<ppx/*>: package(ocaml-migrate-parsetree ocaml-migrate-parsetree ppx_tools_versioned.metaquot_405)
-
 <samples>: not_hygienic
 <camlp5/pa_ocanren.*>: syntax(camlp5o), package(camlp5)
 
@@ -13,7 +10,7 @@ true: short_paths
 <src/core/*.ml*> or <src/std/*> or <src/*.ml*>: package(GT)
 
 <regression/orig/*>: traverse
-<regression/test*.native> or <regression/test*.byte>: package(unix),package(str)
+<regression/test*.native> or <regression/test*.byte>: package(unix,str)
 <regression/stlc.*>: syntax(camlp5o), package(GT.syntax.all)
 
 <regression/test0*.*>: package(GT,GT.syntax.all), syntax(camlp5o)
@@ -21,4 +18,18 @@ true: short_paths
 <regression/test*.ml> : syntax(camlp5o), package(logger.syntax)
 <regression/test0*.ml> : use_pa_ocanren, package(GT.syntax.all)
 
+####################################################################
+<ppxnew/pp_distrib.*>:    package(ppxlib,GT.ppx_gt), link_ppx_distrib, link_ppx_gt, linkall
+<ppxnew/pp_noinjected.*>: package(ppxlib),           link_ppx_noinjected, linkall
+<ppxnew/ppx_distrib.*>:   package(ppxlib,GT.ppx_gt), linkall
+<ppxnew/ppx_noinjected.*>: package(ppxlib,ppxlib.metaquot), linkall
+<ppxnew/ppx_distrib_expander.*>: package(ppxlib,ppxlib.metaquot,GT.expander), linkall
 
+<ppx/*>: package(ppxlib,ppxlib.metaquot)
+<ppx/pp_repr.native>: link_ppx_repr
+<ppx/pp_ocanren_all.native>: link_ppx_ocanren
+<ppx/ppx_repr.*>: linkall
+<ppx/ppx_fresh.*>: linkall
+
+<regression_ppx/test*.*>: package(GT), pp(ppxnew/pp_distrib.native -no-merge -apply distrib,deriving --as-pp), link_ocanren_cma
+<regression_ppx/*.native>: package(unix)

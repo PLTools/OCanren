@@ -18,8 +18,9 @@ NATIVE_TARGETS= $(CMA_TARGETS:.cma=.cmxa) $(CMO_TARGETS:.cmo=.cmx)
 TESTS_ENVIRONMENT=./test.sh
 JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
-.PHONY: all celan clean clean_tests install uninstall tests test regression promote_all \
-	ppx doc \
+.PHONY: all celan clean clean_tests cleanppx install uninstall \
+  tests test regression promote_all \
+	ppx ppxnew doc \
 	only-toplevel toplevel lib tester bundle plugin samples
 
 .DEFAULT_GOAL: all
@@ -30,9 +31,18 @@ lib:
 	$(OB) -r -Is $(SRC) $(BYTE_TARGETS) $(NATIVE_TARGETS)
 
 ppx:
-	$(OB) -Is src ppx/ppx_repr_bin.cmxa ppx/pa_ocanren_bin.cmxa \
-	  ppx/ppx_ocanren_all.cma ppx/ppx_ocanren_all.cmxa ppx/ppx_ocanren_all.cmxs \
-		ppx/ppx_ocanren_all.native
+	$(OB) -Is src ppx/ppx_repr.cma ppx/ppx_repr.cmxa ppx/pp_repr.native \
+		ppx/ppx_fresh.cma ppx/ppx_fresh.cmxa \
+	  ppx/pp_ocanren_all.cma ppx/pp_ocanren_all.cmxa ppx/pp_ocanren_all.cmxs \
+		ppx/pp_ocanren_all.native
+
+ppx_tests: ppxnew
+	$(OB) regression_ppx/test004peano.native \
+		regression_ppx/test005lang.native
+
+ppxnew:
+	$(OB) -Is src ppxnew/ppx_distrib.cma ppxnew/ppx_distrib.cmxa ppxnew/ppx_noinjected.cmxa \
+		ppxnew/pp_distrib.native ppxnew/pp_noinjected.native
 
 plugin:
 	$(OB) camlp5/pa_ocanren.cmo
@@ -41,6 +51,9 @@ celan: clean
 
 clean: clean_tests
 	$(RM) -r _build *.log  *.native *.byte *.docdir
+
+cleanppx:
+	$(RM) -r _build/ppx _build/ppxnew
 
 ######################## Tests related stuff  ##########################
 REGRES_CASES := 000 002sort 001 004 005 006 007 009 010 011 013 014 015runaway 016sorto 017tabling 018prjc 019tablingCache 020
