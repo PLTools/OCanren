@@ -40,7 +40,6 @@ open Printf
 let rec fold_right1 f = function
 | [h]  -> h
 | h::t -> f h (fold_right1 f t)
-;;
 
 let rec fold_left1 f xs = List.fold_left f (List.hd xs) (List.tl xs)
 
@@ -55,8 +54,8 @@ let rec ctor e =
   | _                    -> None
 
 let list_of_list es =
-  let loc     = MLast.loc_of_expr (List.hd es) in 
-  let cons a b   = <:expr< [ $a$ :: $b$ ]  >> in
+  let loc      = MLast.loc_of_expr (List.hd es) in 
+  let cons a b = <:expr< [ $a$ :: $b$ ]  >> in
   List.fold_right (fun e lst -> cons e lst) es <:expr< [] >>  
 
 let rec fix_term e =
@@ -110,9 +109,46 @@ let operator_rparen =
            Stream.junk strm;
            Stream.junk strm;
            s
-         
        | _ -> raise Stream.Failure)
 
+let operator =
+  Grammar.Entry.of_parser gram "operator"
+    (fun strm ->
+       match Stream.npeek 1 strm with
+       | [("", s)] when is_operator s -> 
+           Stream.junk strm;
+           s
+       | _ -> raise Stream.Failure)
+
+let symbolchar =
+  let list =
+    ['!'; '$'; '%'; '&'; '*'; '+'; '-'; '.'; '/'; ':'; '<'; '='; '>'; '?';
+     '@'; '^'; '|'; '~']
+  in
+  let rec loop s i =
+    if i == String.length s then true
+    else if List.mem s.[i] list then loop s (i + 1)
+    else false
+  in
+  loop 
+
+let prefix =
+  let list = ['!'; '?'; '~'] in
+  let excl = ["!="; "??"; "?!"] in
+  Grammar.Entry.of_parser gram "prefixop"
+    (fun strm ->
+      match Stream.npeek 1 strm with
+      | [("", s)] when not (List.mem s excl) && String.length s >= 2 &&
+                            List.mem s.[0] list && symbolchar s 1 -> Stream.junk strm; s
+      | _ -> raise Stream.Failure
+    )
+  
+let op_from_list l =
+  let b = Buffer.create 64 in
+  let add = Buffer.add_string b in
+  List.iter add l;
+  Buffer.contents b
+    
 (* Decorate type expressions *)
 let rec decorate_type ctyp =
   let loc = MLast.loc_of_ctyp ctyp in
@@ -172,10 +208,6 @@ EXTEND
         | []    -> body
         in
         loop vars
-        (* List.fold_right (fun x e ->
-          let p = <:patt< $lid:x$ >> in
-          <:expr< call_fresh (fun $p$ -> $e$) >>
-        ) (List.rev vars) body *)
       in
       ans
     ] |
@@ -192,6 +224,7 @@ EXTEND
   ocanren_expr: [
     "top" RIGHTA [ l=SELF; "|"; r=SELF -> <:expr< OCanren.disj $l$ $r$ >> ] |
           RIGHTA [ l=SELF; "&"; r=SELF -> <:expr< OCanren.conj $l$ $r$ >> ] |
+          LEFTA  [ l=SELF; r=SELF -> <:expr< $l$ $r$ >> ] |
     [ "fresh"; vars=LIST1 LIDENT SEP ","; "in"; b=ocanren_expr LEVEL "top" ->
        List.fold_right
          (fun x b ->
@@ -202,10 +235,15 @@ EXTEND
          b                                        
     ] |
     "primary" [
-        l=ocanren_term; "==";  r=ocanren_term         -> <:expr< OCanren.unify $l$ $r$ >>
+        p=prefix; t=ocanren_term                      -> let p = <:expr< $lid:p$ >> in <:expr< $p$ $t$ >>
+      | l=ocanren_term; "==" ; r=ocanren_term         -> <:expr< OCanren.unify $l$ $r$ >>
       | l=ocanren_term; "=/="; r=ocanren_term         -> <:expr< OCanren.diseq $l$ $r$ >>
+      | l=ocanren_term; op=operator; r=ocanren_term   -> let p = <:expr< $lid:op$ >> in
+                                                         let a = <:expr< $p$ $l$ >> in
+                                                         <:expr< $a$ $r$ >>
       | l=ocanren_term                                -> l
-      | "("; e=ocanren_expr LEVEL "top"; ")"          -> e
+      | "("; op=operator_rparen                       -> <:expr< $lid:op$ >> 
+      | "("; e=ocanren_expr; ")"                      -> e
       | "||"; "("; es=LIST1 ocanren_expr SEP ";"; ")" -> <:expr< OCanren.conde $list_of_list es$ >> 
       | "&&"; "("; es=LIST1 ocanren_expr SEP ";"; ")" ->
          let op = <:expr< $lid:"?&"$ >> in
@@ -219,17 +257,13 @@ EXTEND
   ]];
   
   ocanren_term':  [
-    "top" LEFTA [l=ocanren_term'; r=ocanren_term' -> <:expr< $l$ $r$ >> ] |
-    [ c=long_ident -> c
-    | "!"; "("; e=expr; ")" -> e
+    "top" [ "!"; "("; e=expr; ")" -> e
     | c=INT ->
       let n = <:expr< $int:c$ >> in
       <:expr< OCanren.Std.nat $n$ >>
-    | "("; ts=LIST0 ocanren_term' SEP ","; ")" ->
-      (match ts with
-       | []      -> <:expr< OCanren.inj (OCanren.lift ()) >>
-       | _       -> <:expr< ( $list:ts$ ) >>
-      )
+    | c=CHAR ->
+       let s = <:expr< $chr:c$ >> in
+       <:expr< OCanren.inj (OCanren.lift $s$) >>
     | s=STRING ->
       let s = <:expr< $str:s$ >> in
       <:expr< OCanren.inj (OCanren.lift $s$) >>
@@ -242,7 +276,14 @@ EXTEND
       )
     ] |
     RIGHTA [ l=ocanren_term'; "::"; r=ocanren_term' -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ] |
-    [ "("; t=ocanren_term' LEVEL "top"; ")" -> t ]
+    ["("; ts=LIST0 ocanren_term' SEP ","; ")" ->
+      (match ts with
+       | []  -> <:expr< OCanren.inj (OCanren.lift ()) >>
+       | [t] -> t
+       | _   -> <:expr< ( $list:ts$ ) >>
+      )
+    | c=long_ident -> c
+    ]
   ];
 
   ctyp: [[ "ocanren"; "("; t=ctyp; ")" -> decorate_type t ]];
