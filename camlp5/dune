@@ -1,0 +1,8 @@
+(library
+  (name pa_ocanren)
+  (libraries camlp5)
+  (flags (:standard -warn-error -A -rectypes))
+  (preprocess
+      (action (run camlp5 %{read-lines:../config/camlp5-flags} %{input-file}))
+  )
+)
