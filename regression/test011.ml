@@ -12,7 +12,7 @@ let show_intl_List = GT.(show List.logic @@ show logic @@ show int)
 let runInt n = runR OCanren.reify GT.(show int) GT.(show logic @@ show int) n
 let runIList n = runR (List.reify OCanren.reify) show_int_list show_intl_List n
 
-let pair = LPair.pair
+let pair = Pair.pair
 
 let _ =
   runInt       (-1) q qh (REPR (fun q -> (q =/= !1)       ));
