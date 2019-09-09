@@ -1,7 +1,7 @@
 open Printf
 open GT
 open OCanren
-open Std
+open OCanren.Std
 
 module GLam =
   struct

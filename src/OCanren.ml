@@ -23,7 +23,8 @@ module Stream  = RStream
 module Peep    = Peep
 module Runconf = Runconf
 module Timer   = Timer
-               
+module VarEnv = VarEnv
+
 module Std =
   struct
 
