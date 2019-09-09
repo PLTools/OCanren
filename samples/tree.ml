@@ -23,15 +23,13 @@ open OCanren.Std
 
 module Tree = struct
   module X = struct
-  (* Abstracted type for the tree *)
-  @type ('a, 'self) t = Nil | Node of 'a * 'self * 'self with gmap,show;;
-
-  let fmap f g = function
-  | Nil -> Nil
-  | Node (a,b,c) -> Node (f a, g b, g c)
+    (* Abstracted type for the tree *)
+    @type ('a, 'self) t = Leaf | Node of 'a * 'self * 'self with gmap,show;;
+    let fmap eta = GT.gmap t eta
   end
   include X
-  include Fmap2(X)
+  module M = Fmap2(X)
+  include M
 
   @type inttree = (int, inttree) X.t with show
   (* A shortcut for "ground" tree we're going to work with in "functional" code *)
@@ -42,7 +40,7 @@ module Tree = struct
 
   type ftree = (rtree, ltree) injected
 
-  let nil        : ftree = inj @@ distrib @@ X.Nil
+  let leaf    () : ftree = inj @@ distrib @@ X.Leaf
   let node a b c : ftree = inj @@ distrib @@ X.Node (a,b,c)
 
   (* Injection *)
@@ -53,13 +51,29 @@ module Tree = struct
   let rec prj_tree : rtree -> inttree =
     fun x -> GT.(gmap t) LNat.to_int prj_tree x
 
+  let rec reify_tree eta = M.reify LNat.reify reify_tree eta
+  (* let rec prjc_tree env t = M.prjc LNat.prjc prjc_tree env t *)
 end
 
 open Tree
 
+
+let () =
+  (* Demo about reification *)
+
+  let _: Tree.ltree RStream.t =
+    run q (fun q  -> q === leaf ())
+        (fun qs -> qs#reify Tree.reify_tree)
+  in
+  (* run q (fun q  -> q === leaf ())
+        (fun qs -> qs#reify Tree.prjc_tree) *)
+  ()
+
+
+
 (* Relational insert into a search tree *)
 let rec inserto a t' t'' = conde [
-  (t' === nil) &&& (t'' === node a nil nil);
+  (t' === leaf ()) &&& (t'' === node a (leaf ()) (leaf ()) );
   fresh (x l r l')
     (t' === node x l r)
     Nat.(conde [
@@ -92,7 +106,7 @@ let _ =
       printf "Inserting %d into %s makes %s\n%!" x (show_inttree t) (show_inttree t');
       inner t' xs
     in
-    inner Nil l
+    inner Leaf l
   in
   ignore @@ insert_list [1; 2; 3; 4];
   let t  = insert_list [3; 2; 4; 1] in
