@@ -1,0 +1,36 @@
+(executables
+  (names
+    test000
+    test001
+    test002sort
+    test004
+    test005
+    test006
+    test007
+    test009
+    test010
+    test011
+    test013
+    test014
+    test015runaway
+    test016sorto
+    test017tabling
+    test018prjc
+    test019tablingCache
+    test020
+  )
+  (libraries GT OCanren OCanren.syntax)
+  (flags (:standard -warn-error -A -rectypes))
+  (preprocess
+    (action
+      (run camlp5
+        %{read-lines:../config/camlp5-flags.cfg}
+        %{read-lines:../config/gt-flags.cfg}
+        %{read-lines:../config/logger-flags.cfg}
+        %{workspace_root}/camlp5/pa_ocanren.cma
+        %{input-file})
+    )
+  )
+  (preprocessor_deps (file %{workspace_root}/camlp5/pa_ocanren.cma))
+)
+

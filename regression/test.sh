@@ -1,51 +1,36 @@
-#!/bin/sh
+#!/bin/bash
+
+# simple script for running test and diffing its result with the expected;
+# please, run the script from the toplevel directory of the project
+
+set -e
 
 if test $# = 0; then
-    echo "usage: $0 <file prefix>"
+    echo "usage: $0 <test name>"
     exit 1
 fi
 
 TEST=$1
-ERROR=0
+TESTDIR="regression"
+TESTEXE="${TESTDIR}/${TEST}.exe"
+TESTLOG="${TESTDIR}/${TEST}.log"
+TESTDIFF="${TESTDIR}/${TEST}.diff"
+TESTORIG="${TESTDIR}/orig/${TEST}.orig"
 
-RUN="${TEST}"
-ARGS=""
-# it is meant that script takes only one argument
-CHECKS=`basename ${RUN}`
-CHECKS=${CHECKS%.native}
+# run the test;
+# we use `dune exec` so that `dune`
+# can build the test and its dependencies
+# if it has not been done
 
-for i in ${RUN}; do
-    if [ ! -x ${i} ]; then
-      echo "File ${i} does not exist or not executable"
-      ERROR=$((${ERROR} + 1))
-    fi
-done
+dune exec --no-print-directory ${TESTEXE} > ${TESTLOG}
 
-if [ ${ERROR} -gt 0 ]; then
-    exit ${ERROR}
-fi
+# diff test output with the expected and print `PASSED/FAILED` message
 
-OLDPATH=${PATH}
-PATH=.:${PATH}
-
-for i in ${RUN}; do
-    ${i} ${ARGS} > ${CHECKS}.log
-done
-
-PATH=${OLDPATH}
-
-for i in ${CHECKS}; do
-    if ! diff -u orig/${i}.log ${i}.log > ${i}.diff; then
-        echo "${TEST}: FAILED (see regression/${i}.diff)"
-        ERROR=$((${ERROR} + 1))
-    else
-        rm -f ${i}.diff
-    fi
-done
-
-if [ ${ERROR} -eq 0 ]; then
-    #echo "${TEST}: passed"
+if diff -u ${TESTORIG} ${TESTLOG} > ${TESTDIFF}; then
+    echo "${TEST}: PASSED"
+    rm -f ${TESTDIFF}
     exit 0
 else
-    exit ${ERROR}
+    echo "${TEST}: FAILED (see ${TESTDIFF})"
+    exit 1
 fi

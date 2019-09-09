@@ -11,7 +11,7 @@ let rec build_num =
 
 let rec appendo l s out =
   conde [
-    (LList.nullo l) &&& (s === out);
+    (List.nullo l) &&& (s === out);
     fresh (a d res)
       ((a % d) === l)
       (appendo d s res)
@@ -72,13 +72,13 @@ let minuso n m k = pluso m k n
 
 let rec bound_multo q p n m =
   conde [
-    (LList.nullo q) &&& (poso p);
+    (List.nullo q) &&& (poso p);
     fresh (x y z)
-      (LList.tlo q x)
-      (LList.tlo p y)
+      (List.tlo q x)
+      (List.tlo p y)
       (conde [
-        (LList.nullo n) &&& (LList.cdro m z) &&& (bound_multo x y z @@ nil());
-        (LList.cdro n z) &&& (bound_multo x y z m)
+        (List.nullo n) &&& (List.cdro m z) &&& (bound_multo x y z @@ nil());
+        (List.cdro n z) &&& (bound_multo x y z m)
       ])
   ]
 
@@ -319,8 +319,8 @@ let test17 n m =
 let test27 b q r =
   (logo (build_num 68) b q r) &&& (gt1o q)
 
-let show_int_list   = GT.(show LList.ground @@ show int)
-let show_intl_llist = GT.(show LList.logic @@ show logic @@ show int)
+let show_int_list   = GT.(show List.ground @@ show int)
+let show_intl_llist = GT.(show List.logic @@ show logic @@ show int)
 
 let _ffoo _ =
   run_exn show_int_list (-1)  qr qrh (REPR (fun q r     -> multo q r (build_num 1)                          ));
@@ -329,7 +329,7 @@ let _ffoo _ =
   run_exn show_int_list (-1)   q  qh (REPR (fun q       -> logo (build_num 14) (build_num 2) (build_num 3) q));
   run_exn show_int_list (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ))
 
-let runL n = runR (LList.reify OCanren.reify) show_int_list show_intl_llist n
+let runL n = runR (List.reify OCanren.reify) show_int_list show_intl_llist n
 
 let _freeVars =
   runL   22  qrs  qrsh (REPR (fun q r s   -> pluso q r s                                      ));

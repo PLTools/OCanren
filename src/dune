@@ -1,11 +1,17 @@
 (include_subdirs unqualified)
 
 (library
-  (name ocanren)
+  (name OCanren)
+  (public_name OCanren)
   (libraries GT GT.syntax.all)
   (flags (:standard -warn-error -A -rectypes))
   (preprocess
-    (action (run camlp5 %{read-lines:../config/camlp5-flags} %{read-lines:../config/gt-flags} %{input-file}))
+    (action
+      (run camlp5
+        %{read-lines:../config/camlp5-flags.cfg}
+        %{read-lines:../config/gt-flags.cfg}
+        %{input-file})
+    )
   )
 )
 
