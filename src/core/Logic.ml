@@ -23,8 +23,6 @@ open Printf
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
 let logic = {logic with
-  gcata = ();
-  GT.fix = ();
   plugins =
     object
       method gmap      = logic.plugins#gmap
@@ -48,9 +46,9 @@ let logic = {logic with
           ()
           x
     end
-}
+};;
 
-type ('a, 'b) injected = 'a
+@type ('a, 'b) injected = 'a with show, gmap, html, eq, compare, foldl, foldr
 
 external lift : 'a -> ('a, 'a) injected                      = "%identity"
 external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"

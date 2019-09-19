@@ -27,40 +27,16 @@ open Core
 | S of 'a with show, html, eq, compare, foldl, foldr, gmap
 
 (** Type synonym to prevent toplevel [logic] from being hidden *)
-type 'a logic' = 'a logic
+@type 'a logic' = 'a logic with show, html, eq, compare, foldl, foldr, gmap
 
 (** Synonym for abstract nat type *)
-type 'a t = 'a nat
+@type 'a t = 'a nat with show, html, eq, compare, foldl, foldr, gmap
 
 (** Ground nat are ismorphic for regular one *)
-type ground = ground t
+@type ground = ground t with show, html, eq, compare, foldl, foldr, gmap
 
 (** Logic nat *)
-type logic = logic t logic'
-
-(** GT-compatible typeinfo for [ground] *)
-val ground :
-  (unit,
-   < compare : ground -> ground -> GT.comparison;
-     eq      : ground -> ground -> bool;
-     foldl   : 'a -> ground -> 'a;
-     foldr   : 'a -> ground -> 'a;
-     gmap    : ground -> ground;
-     html    : ground -> HTML.viewer;
-     show    : ground -> string >, unit)
-  GT.t
-
-(** GT-compatible typeinfo for [logic] *)
-val logic :
-  (unit,
-   < compare : logic -> logic -> GT.comparison;
-     eq      : logic -> logic -> bool;
-     foldl   : 'a -> logic -> 'a;
-     foldr   : 'a -> logic -> 'a;
-     gmap    : logic -> logic;
-     html    : logic -> HTML.viewer;
-     show    : logic -> string >, unit)
-  GT.t
+@type logic = logic t logic' with show, html, eq, compare, foldl, foldr, gmap
 
 (** Logic injection (for reification) *)
 val inj : ground -> logic

@@ -23,7 +23,7 @@
 | Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr
 
-(** GT-compatible typeinfo for logics *)
+(** GT-compatible typeinfo for logics 
 val logic :
   (unit,
    < show    : ('a -> string) -> 'a logic -> string;
@@ -34,7 +34,7 @@ val logic :
      foldr   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
      gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic
    >, unit) GT.t
-
+ *)
 (** [to_logic x] makes a logic value from a regular one *)
 val to_logic : 'a -> 'a logic
 
@@ -47,7 +47,7 @@ val from_logic : 'a logic -> 'a
 
 (**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
 type ('a, 'b) injected
-
+   
 (** [lift x] lifts [x] into injected doamin *)
 val lift : 'a -> ('a, 'a) injected
 
@@ -59,7 +59,7 @@ val (!!) : 'a -> ('a, 'a logic) injected
 
 (** [prj x] returns a regular value from injected representation.
     Raises exception [Not_a_value] if [x] contains free variables
-*)
+ *)
 val prj : ('a, 'b) injected -> 'a
 
 (** The exception is raised when we try to extract a regular term from the answer with some free variables *)

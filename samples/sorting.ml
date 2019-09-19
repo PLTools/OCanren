@@ -24,9 +24,6 @@ module L = List
 open OCanren
 open OCanren.Std
 
-let show_nat_list = GT.(show List.ground @@ show Nat.ground)
-let show_nat      = GT.(show Nat.ground)
-
 (* Relational minimum/maximum (for nats only) *)
 let minmaxo a b min max =
   let open Nat in

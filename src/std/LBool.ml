@@ -19,48 +19,31 @@
 open Logic
 open Core
 
-type 'a logic' = 'a logic
+@type 'a logic' = 'a logic                 with show, html, eq, compare, foldr, foldl, gmap
+                                              
+let logic' = logic;;
+                                              
+@type ground    = GT.bool                  with show, html, eq, compare, foldr, foldl, gmap
+@type t         = GT.bool                  with show, html, eq, compare, foldr, foldl, gmap
+@type logic     = GT.bool logic'           with show, html, eq, compare, foldr, foldl, gmap 
 
-let logic' = logic
-
-type ground = bool
-type t      = bool
-
-let ground = {
-  GT.gcata = ();
-  GT.fix = ();
-  GT.plugins =
-    object(this)
-      method html    n   = GT.html   (GT.bool) n
-      method eq      n m = GT.eq     (GT.bool) n m
-      method compare n m = GT.compare(GT.bool) n m
-      method foldr   n   = GT.foldr  (GT.bool) n
-      method foldl   n   = GT.foldl  (GT.bool) n
-      method gmap    n   = GT.gmap   (GT.bool) n
-      method show    n   = GT.show   (GT.bool) n
-    end
-}
-
-type logic = bool logic'
+type groundi   = (ground, logic) injected
 
 let logic = {
-  GT.gcata = ();
-  GT.fix = ();
+  logic with
   GT.plugins =
     object(this)
-      method html    n   = GT.html   (logic') (GT.html   (ground)) n
-      method eq      n m = GT.eq     (logic') (GT.eq     (ground)) n m
-      method compare n m = GT.compare(logic') (GT.compare(ground)) n m
-      method foldr   a n = GT.foldr  (logic') (GT.foldr  (ground)) a n
-      method foldl   a n = GT.foldl  (logic') (GT.foldl  (ground)) a n
-      method gmap    n   = GT.gmap   (logic') (GT.gmap   (ground)) n
-      method show    n   = GT.show   (logic') (GT.show   (ground)) n
+      method compare = logic.GT.plugins#compare
+      method gmap    = logic.GT.plugins#gmap
+      method eq      = logic.GT.plugins#eq
+      method foldl   = logic.GT.plugins#foldl
+      method foldr   = logic.GT.plugins#foldr
+      method html    = logic.GT.plugins#html
+      method show    = GT.show(logic') (GT.show(GT.bool))
     end
-}
-
+} 
+                                              
 let inj = to_logic
-
-type groundi = (ground, logic) injected
 
 let reify = Logic.reify
 

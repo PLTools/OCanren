@@ -6,13 +6,15 @@ open OCanren
 open OCanren.Std
 
 @type 'nat move = Forward of 'nat | Backward of 'nat | Unload of 'nat | Fill of 'nat with show, gmap
-                                                                                                  
+
+@type moves = ocanren (int move list) with show
+@type state = ocanren (int * int * (int * int) list) with show
+                                                                                                    
 module M = Fmap (struct type 'a t = 'a move let fmap f = gmap(move) f end)
 
-let show_move  m = show(logic) (show(move) (show(Nat.logic))) m
-let show_moves m = show(List.logic) show_move m
-
 let reify_moves m = List.reify (M.reify Nat.reify) m
+let reify_stations s = List.reify (Pair.reify Nat.reify Nat.reify) s
+let reify_state s = Pair.reify Nat.reify (Pair.reify Nat.reify reify_stations) s
 
 let forward  x = inj @@ M.distrib (Forward  x)
 let backward x = inj @@ M.distrib (Backward x)
@@ -46,13 +48,7 @@ let rec puto stations d q stations' =
   ]
 
 let triple a b c = pair a @@ pair b c
-                                  
-let show_stations s = show(List.logic) (show(Pair.logic) (show(Nat.logic)) (show(Nat.logic))) s
-let reify_stations s = List.reify (Pair.reify Nat.reify Nat.reify) s
-
-let show_state s = show(Pair.logic) (show(Nat.logic)) (show(Pair.logic) (show(Nat.logic)) show_stations) s
-let reify_state s = Pair.reify Nat.reify (Pair.reify Nat.reify reify_stations) s
-
+        
 let max_capacity = nat 5
                      
 let step state m state' =
@@ -118,27 +114,27 @@ let steps state moves state' =
 
 let init = triple (nat 0) max_capacity (nil ())
 let id x = x
-             
+
 let _ =
-  L.iter (fun q -> Printf.printf "Reaching 6: %s\n%!" (show_state (q#reify reify_state))) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Reaching 6: %s\n%!" (show(state) (q#reify reify_state))) @@ Stream.take ~n:1 @@
   run q (fun q -> steps init (inj_moves [Forward 2; Unload 1; Backward 2; Fill 5; Forward 2; Fill 1; Forward 4]) q) id;
         
-  L.iter (fun q -> Printf.printf "Making stations: %s\n%!" (show_state (q#reify reify_state))) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Making stations: %s\n%!" (show(state) (q#reify reify_state))) @@ Stream.take ~n:1 @@
   run q (fun q -> steps init (inj_moves [Forward 1; Unload 2; Backward 1; Fill 3; Forward 2]) q) id;
   
-  L.iter (fun q -> Printf.printf "Searching for making stations: %s\n%!" (show_moves (q#reify reify_moves))) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Searching for making stations: %s\n%!" (show(moves) (q#reify reify_moves))) @@ Stream.take ~n:1 @@
   run q (fun q -> steps init q (triple (nat 2) (nat 2) (!< (pair (nat 1) (nat 2))))) id;
 
-  L.iter (fun q -> Printf.printf "Searching for reaching 6: %s\n%!" (show_moves (q#reify reify_moves))) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Searching for reaching 6: %s\n%!" (show(moves) (q#reify reify_moves))) @@ Stream.take ~n:1 @@
   run q (fun q -> steps init q (triple (nat 6) (nat 0) (nil ()))) id;
 
-  L.iter (fun q -> Printf.printf "Reaching 8: %s\n%!" (show_state (q#reify reify_state))) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Reaching 8: %s\n%!" (show(state) (q#reify reify_state))) @@ Stream.take ~n:1 @@
   run q (fun q -> steps init (inj_moves [Forward 2; Unload 1; Backward 2; Fill 3; Forward 1; Unload 1; Backward 1; 
                                          Fill 5; Forward 2; Unload 1; Backward 2; Fill 5; Forward 1; 
                                          Fill 1; Forward 1; Fill 1; Forward 1; Unload 2; Backward 1; Fill 1; Backward 2; 
                                          Fill 3; Forward 1; Unload 1; Backward 1; Fill 5; Forward 1; Fill 1; 
                                          Forward 2; Fill 2; Forward 5]) q) id;
 
-  L.iter (fun q -> Printf.printf "Searching for reaching 8: %s\n%!" (show_moves (q#reify reify_moves))) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Searching for reaching 8: %s\n%!" (show(moves) (q#reify reify_moves))) @@ Stream.take ~n:1 @@
   run q (fun q -> fresh (r s) (steps init q (triple (nat 8) r s))) id;
 

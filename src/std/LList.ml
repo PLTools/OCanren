@@ -19,33 +19,30 @@
 open Logic
 open Core
 
-@type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr;;
-
-type 'a logic' = 'a logic
+@type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr
+@type 'a logic'     = 'a logic              with show, gmap, html, eq, compare, foldl, foldr
+@type ('a, 'l) t    = ('a, 'l) list         with show, gmap, html, eq, compare, foldl, foldr
 
 let logic' = logic
-
-type ('a, 'l) t = ('a, 'l) list
-
+           
 module X =
   struct
-    type ('a,'b) t = ('a, 'b) list
+    @type ('a,'b) t = ('a, 'b) list with show, gmap, html, eq, compare, foldl, foldr
     let fmap f g x = GT.gmap list f g x
   end
 
 module F = Fmap2 (X)
 
-let nil ()    = Logic.inj @@ F.distrib Nil
-let cons x y = Logic.inj @@ F.distrib (Cons (x, y))
+let nil ()   = Logic.inj @@ F.distrib Nil
+let cons x y = Logic.inj @@ F.distrib (Cons (x, y));;
 
-type 'a ground = ('a, 'a ground) t
-type 'a logic  = ('a, 'a logic) t logic'
+@type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr
+@type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr
 
 let rec reify r1 h = F.reify r1 (reify r1) h
 
 let ground = {
-  GT.gcata = ();
-  GT.fix = ();
+  ground with 
   GT.plugins =
     object(this)
       method html    fa l = GT.html   (list) fa (this#html    fa) l
@@ -69,8 +66,7 @@ let ground = {
 }
 
 let logic = {
-  GT.gcata = ();
-  GT.fix = ();
+  logic with
   GT.plugins =
     object(this)
       method compare fa l = GT.compare (logic') (GT.compare (list) fa (this#compare fa)) l
@@ -79,25 +75,26 @@ let logic = {
       method foldl   fa l = GT.foldl   (logic') (GT.foldl   (list) fa (this#foldl   fa)) l
       method foldr   fa l = GT.foldr   (logic') (GT.foldr   (list) fa (this#foldr   fa)) l
       method html    fa l = GT.html    (logic') (GT.html    (list) fa (this#html    fa)) l
-      method show : ('a -> string) -> 'a logic -> GT.string = fun fa l ->
+      method show fa l =
         GT.show(logic')
           (fun l -> "[" ^
-             let rec inner l =
-                GT.transform(list)
-                  (fun fself -> object
-                     inherit ['a,'a logic, _] @list[show] (GT.lift fa) (GT.lift (GT.show(logic) inner)) fself
-                     method c_Nil   _ _      = ""
-                     method c_Cons  i s x xs =
-                       (fa x) ^ (match xs with Value Nil -> "" | _ -> "; " ^ (GT.show(logic) inner xs))
-                   end)
+              let rec inner l =
+                GT.transform(t)
+                  (fun fself ->                          
+                      object
+                         inherit ['a,'a logic, _] @t[show] (GT.lift fa) (GT.lift (GT.show(logic') inner)) fself
+                         method c_Nil   _ _      = ""
+                         method c_Cons  i s x xs =
+                           (fa x) ^ (match xs with Value Nil -> "" | _ -> "; " ^ (GT.show(logic') inner xs))
+                      end)
                   ()
                   l
                in inner l ^ "]"
           )
           l
     end
-}
-
+} 
+            
 let rec of_list f = function
 | []    -> Nil
 | x::xs -> Cons (f x, of_list f xs)
@@ -110,19 +107,10 @@ let rec inj f xs = to_logic (GT.gmap list f (inj f) xs)
 
 let rec list = function
 | []    -> nil ()
-| x::xs -> cons x (list xs)
+| x::xs -> cons x (list xs);;
 
 type ('a,'b) groundi = ('a ground, 'b logic) injected
-
-let groundi =
-  { GT.gcata = ()
-  ; GT.fix = ()
-  ; plugins = object
-      method show : ('a -> string) -> ('a,_) groundi -> string = fun fa l ->
-      GT.show(ground) fa (Obj.magic l : 'a ground)
-    end
-  }
-
+                     
 let (%): ('a,'b) injected -> ('a,'b) groundi -> ('a,'b) groundi = cons
 let (%<): ('a,'b) injected -> ('a,'b) injected -> ('a,'b) groundi = fun x y -> cons x @@ cons y @@ nil ()
 let (!<) : ('a,'b) injected -> ('a,'b) groundi = fun x -> cons x @@ nil ()

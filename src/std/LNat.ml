@@ -19,55 +19,40 @@
 open Logic
 open Core
 
-@type 'a nat = O | S of 'a with show, gmap, html, eq, compare, foldl, foldr;;
+@type 'a nat = O | S of 'a with show, gmap, html, eq, compare, foldl, foldr
+@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr
 
-type 'a logic' = 'a logic
 let logic' = logic
-
+           
 module X =
   struct
-    type 'a t = 'a nat
-    let fmap f x = GT.(gmap nat) f x
+    @type 'a t = 'a nat with show, gmap, html, eq, compare, foldl, foldr
+    let fmap f x = GT.gmap (t) f x 
   end
 
 include X
 
 module F = Fmap (X)
+                   
+@type ground  = ground t                 with show, gmap, html, eq, compare, foldl, foldr
+@type logic   = logic t logic'           with show, gmap, html, eq, compare, foldl, foldr
 
-type ground = ground t
-type logic = logic t logic'
-type groundi = (ground, logic) injected
-
-let ground = {
-  GT.gcata = ();
-  GT.fix = ();
-  GT.plugins =
-    object(this)
-      method html    n = GT.html   (nat) this#html    n
-      method eq      n = GT.eq     (nat) this#eq      n
-      method compare n = GT.compare(nat) this#compare n
-      method foldr   n = GT.foldr  (nat) this#foldr   n
-      method foldl   n = GT.foldl  (nat) this#foldl   n
-      method gmap    n = GT.gmap   (nat) this#gmap    n
-      method show    n = GT.show   (nat) this#show    n
-    end
-}
+type groundi = (ground, logic) injected 
 
 let logic = {
-  GT.gcata = ();
-  GT.fix = ();
+  logic with
   GT.plugins =
     object(this)
-      method html    n   = GT.html   (logic') (GT.html   (nat) this#html   ) n
-      method eq      n m = GT.eq     (logic') (GT.eq     (nat) this#eq     ) n m
-      method compare n m = GT.compare(logic') (GT.compare(nat) this#compare) n m
-      method foldr   a n = GT.foldr  (logic') (GT.foldr  (nat) this#foldr  ) a n
-      method foldl   a n = GT.foldl  (logic') (GT.foldl  (nat) this#foldl  ) a n
-      method gmap    n   = GT.gmap   (logic') (GT.gmap   (nat) this#gmap   ) n
-      method show    n   = GT.show   (logic') (GT.show   (nat) this#show   ) n
+      method compare = logic.GT.plugins#compare
+      method gmap    = logic.GT.plugins#gmap
+      method eq      = logic.GT.plugins#eq
+      method foldl   = logic.GT.plugins#foldl
+      method foldr   = logic.GT.plugins#foldr
+      method html    = logic.GT.plugins#html
+      method show    = GT.show(logic') (fun l -> GT.show(t) this#show l)
     end
-}
-
+} 
+          
 let rec of_int n = if n <= 0 then O else S (of_int (n-1))
 let rec to_int   = function O -> 0 | S n -> 1 + to_int n
 

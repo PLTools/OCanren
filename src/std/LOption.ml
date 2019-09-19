@@ -19,53 +19,34 @@
 open Logic
 open Core
 
-type 'a logic' = 'a logic
+@type 'a logic'        = 'a logic                       with show, gmap, html, eq, compare, foldl, foldr
+                                                                
+let logic' = logic;;
 
-let logic' = logic
+@type 'a ground        = 'a GT.option                   with show, gmap, html, eq, compare, foldl, foldr
+@type 'a logic         = 'a GT.option logic'            with show, gmap, html, eq, compare, foldl, foldr
 
-type 'a ground = 'a option
-
-let ground = GT.option
-
-type 'a logic  = 'a option logic'
-
-let ground = {
-  GT.gcata = ();
-  GT.fix = ();
-  GT.plugins =
-    object(this)
-      method html    n   = GT.html   (GT.option) n
-      method eq      n m = GT.eq     (GT.option) n m
-      method compare n m = GT.compare(GT.option) n m
-      method foldr   n   = GT.foldr  (GT.option) n
-      method foldl   n   = GT.foldl  (GT.option) n
-      method gmap    n   = GT.gmap   (GT.option) n
-      method show    n   = GT.show   (GT.option) n
-    end
-}
+type ('a, 'b) groundi = ('a ground, 'b logic) injected 
 
 let logic = {
-  GT.gcata = ();
-  GT.fix = ();
+  logic with
   GT.plugins =
     object(this)
-      method html    f n   = GT.html   (logic') (GT.html   (ground) f) n
-      method eq      f n m = GT.eq     (logic') (GT.eq     (ground) f) n m
-      method compare f n m = GT.compare(logic') (GT.compare(ground) f) n m
-      method foldr   f a n = GT.foldr  (logic') (GT.foldr  (ground) f) a n
-      method foldl   f a n = GT.foldl  (logic') (GT.foldl  (ground) f) a n
-      method gmap    f n   = GT.gmap   (logic') (GT.gmap   (ground) f) n
-      method show    f n   = GT.show   (logic') (GT.show   (ground) f) n
+      method compare    = logic.GT.plugins#compare
+      method gmap       = logic.GT.plugins#gmap
+      method eq         = logic.GT.plugins#eq
+      method foldl      = logic.GT.plugins#foldl
+      method foldr      = logic.GT.plugins#foldr
+      method html       = logic.GT.plugins#html
+      method show    fa = GT.show(logic') (fun l -> GT.show(GT.option) fa l)
     end
-}
-
+} 
+                                                           
 let inj f x = to_logic (GT.(gmap option) f x)
-
-type ('a, 'b) groundi = ('a ground, 'b logic) injected
 
 module T =
   struct
-    type 'a t = 'a option
+    @type 'a t = 'a GT.option with show, gmap, html, eq, compare, foldl, foldr
     let fmap f x = GT.(gmap option) f x
   end
 

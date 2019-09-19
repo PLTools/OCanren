@@ -8,7 +8,7 @@ let show_bool       = GT.show(Bool.ground)
 
 let show_nat_List  = GT.show(List.ground) (GT.show(Nat.ground))
 let show_bool_List = GT.show(List.ground) (GT.show(Bool.ground))
-let show_option_nat = GT.(show option  (show Nat.ground))
+let show_option_nat = GT.(show option (show Nat.ground))
 
 let (?$) = nat
 let nats = nat_list
