@@ -22,7 +22,6 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
 ## Installation
 
 OCanren can be installed using [opam](https://opam.ocaml.org/doc/Install.html) 2.x.
-Expected workflow: add new test to try something out.
 
 - either `opam init -c 4.07.1+fp+flambda` for fresh opam installation
 - or `opam switch create 4.07.1+fp+flambda` to install right version of OCaml compiler
@@ -34,9 +33,11 @@ Expected workflow: add new test to try something out.
 - `make`
 - `make tests`
 
+Expected workflow: add new test to try something out.
+
 ## OCanren vs miniKanren
 
-The correspondence between original MiniKanren and OCanren constructs is shown below:
+The correspondence between original miniKanren and OCanren constructs is shown below:
 
 | miniKanren                        | OCanren                                         |
 | --------------------------------- | ----------------------------------------------- |
