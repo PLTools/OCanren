@@ -1,15 +1,14 @@
-Table of Contents
-=================
+# Table of Contents
 
-  * [OCanren](#ocanren)
-    * [Injecting and Projecting User-Type Data](#injecting-and-projecting-user-type-data)
-    * [Installation](#installation)
-    * [Bool, Nat, List](#bool-nat-list)
-    * [Syntax Extensions](#syntax-extensions)
-    * [Run](#run)
-    * [Sample](#sample)
-    * [Installation](#installation)
-  * [More info](#more-info)
+- [OCanren](#ocanren)
+  - [Installation](#installation)
+  - [OCanren vs. miniKanren](#ocanren-vs-minikanren)
+  - [Injecting and Projecting User-Type Data](#injecting-and-projecting-user-type-data)
+  - [Bool, Nat, List](#bool-nat-list)
+  - [Syntax Extensions](#syntax-extensions)
+  - [Run](#run)
+  - [Sample](#sample)
+- [More info](#more-info)
 
 # OCanren
 
@@ -20,8 +19,7 @@ Previous implementation was based on
 [microKanren](http://webyrd.net/scheme-2013/papers/HemannMuKanren2013.pdf)
 with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis2011.pdf).
 
-
-# Installation
+## Installation
 
 OCanren can be installed using [opam](https://opam.ocaml.org/doc/Install.html) 2.x.
 Expected workflow: add new test to try something out.
@@ -29,29 +27,32 @@ Expected workflow: add new test to try something out.
 - either `opam init -c 4.07.1+fp+flambda` for fresh opam installation
 - or `opam switch create 4.07.1+fp+flambda` to install right version of OCaml compiler
 - `eval $(opam env)`
-- `opam pin add GT https://github.com/JetBrains-Research/GT.git -n -y`
-- `opam pin add ocanren https://github.com/jetbrains-research/ocanren.git -n -y`
-- `opam install ocanren`
 
-# OCanren vs miniKanren
+- `opam pin add GT https://github.com/JetBrains-Research/GT.git -n -y`
+- `git clone https://github.com/JetBrains-Research/OCanren.git && cd ocanren`
+- `opam install . --deps-only --yes`
+- `make`
+- `make tests`
+
+## OCanren vs miniKanren
 
 The correspondence between original MiniKanren and OCanren constructs is shown below:
 
 | miniKanren                        | OCanren                                         |
-| --------------------------------- | ------------------------------------------------|
+| --------------------------------- | ----------------------------------------------- |
 | `#u`                              | success                                         |
 | `#f`                              | failure                                         |
 | `((==) a b)`                      | `(a === b)`                                     |
 | `((=/=) a b)`                     | `(a =/= b)`                                     |
 | `(conde (a b ...) (c d ...) ...)` | `conde [a &&& b &&& ...; c &&& d &&& ...; ...]` |
-| `(fresh (x y ...) a b ...      )` | `fresh (x y ...) a b ...`                       |
+| `(fresh (x y ...) a b ... )`      | `fresh (x y ...) a b ...`                       |
 
 In addition, OCanren introduces explicit disjunction (`|||`) and conjunction
 (`&&&`) operators for goals.
 
 ## Injecting and Projecting User-Type Data
 
-To make it possible to work with OCanren, user-type data have to be *injected* into
+To make it possible to work with OCanren, user-type data have to be _injected_ into
 logic domain. In the simplest case (non-parametric, non-recursive) the function
 
 ```ocaml
@@ -130,7 +131,6 @@ type ltree = ltree X.t logic
 type ftree = (rtree, ltree) injected
 ```
 
-
 Using another function `reify` provided by the functor application we can
 translate `(_, 'b) injected` values to `'b` type.
 
@@ -184,15 +184,14 @@ numbers in Peano form, logical lists. See corresponding modules.
 The following table summarizes the correspondence between some expressions
 on regular lists and their OCanren counterparts:
 
-
-| Regular lists   | OCanren              |
-|-----------------|----------------------|
-| `[]`            | `nil`                |
-| `[x]`           | `!< x`               |
-| `[x; y]`        | `x %< y`             |
-| `[x; y; z]`     | `x % (y %< z)`       |
-| `x::y::z::tl`   | `x % (y % (z % tl))` |
-| `x::xs`         | `x % xs`             |
+| Regular lists | OCanren              |
+| ------------- | -------------------- |
+| `[]`          | `nil`                |
+| `[x]`         | `!< x`               |
+| `[x; y]`      | `x %< y`             |
+| `[x; y; z]`   | `x % (y %< z)`       |
+| `x::y::z::tl` | `x % (y % (z % tl))` |
+| `x::xs`       | `x % xs`             |
 
 ## Syntax Extensions
 
@@ -235,10 +234,10 @@ pattern:
 run n (fun q1 q2 ... qn -> g) (fun a1 a2 ... an -> h)
 ```
 
-Here `n` stands for *numeral* (some value, describing the number of arguments,
+Here `n` stands for _numeral_ (some value, describing the number of arguments,
 `q1`, `q2`, ..., `qn` --- free logic variables, `a1`, `a2`, ..., `an` --- streams
 of answers for `q1`, `q2`, ..., `qn` respectively, `g` --- some goal, `h` --- a
-*handler* (some piece of code, presumable making use of `a1`, `a2`, ..., `an`).
+_handler_ (some piece of code, presumable making use of `a1`, `a2`, ..., `an`).
 
 There are a few predefined numerals (`q`, `qr`, `qrs`, `qrst` etc.) and a
 successor function, `succ`, which can be used to "manufacture" greater
