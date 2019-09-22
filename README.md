@@ -21,11 +21,14 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
 
 ## Installation
 
-OCanren can be installed using [opam](https://opam.ocaml.org/doc/Install.html) 2.x.
+OCanren can be installed using [opam](https://opam.ocaml.org/doc/Install.html) 2.x. Frist,
+install opam itself and right compiler version.
 
 - either `opam init -c 4.07.1+fp+flambda` for fresh opam installation
 - or `opam switch create 4.07.1+fp+flambda` to install right version of OCaml compiler
 - `eval $(opam env)`
+
+Then, install dependencies and `OCanren`:
 
 - `opam pin add GT https://github.com/JetBrains-Research/GT.git -n -y`
 - `git clone https://github.com/JetBrains-Research/OCanren.git && cd ocanren`
