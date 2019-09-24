@@ -31,7 +31,7 @@ install opam itself and right compiler version.
 Then, install dependencies and `OCanren`:
 
 - `opam pin add GT https://github.com/JetBrains-Research/GT.git -n -y`
-- `git clone https://github.com/JetBrains-Research/OCanren.git && cd ocanren`
+- `git clone https://github.com/JetBrains-Research/OCanren.git ocanren && cd ocanren`
 - `opam install . --deps-only --yes`
 - `make`
 - `make tests`
