@@ -38,16 +38,16 @@ let logic = {
       method foldl         = logic.GT.plugins#foldl
       method foldr         = logic.GT.plugins#foldr
       method html          = logic.GT.plugins#html
-      method show    fa fb = GT.show(logic') (fun l -> GT.show(GT.pair) fa fb l)
+      method show    fa fb = GT.show(logic') (fun l -> GT.show(ground) fa fb l)
     end
 } 
 
-let inj f g p = to_logic (GT.(gmap pair) f g p)
+let inj f g p = to_logic (GT.gmap(ground) f g p)
 
 module T =
   struct
     @type ('a, 'b) t = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr
-    let fmap f g x = GT.(gmap pair) f g x
+    let fmap f g x = GT.gmap(ground) f g x
   end
 
 include T
