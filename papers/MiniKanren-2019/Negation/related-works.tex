@@ -1,0 +1,99 @@
+\section{Related Works}
+
+\label{sec:related-works}
+
+There are two directions of work in the process of 
+incorporating negative reasoning in the logic programming:
+the first considers the semantics of negation,
+and the second is focused mainly on implementation aspects.
+
+The first attempt to give a semantics 
+for negation in logic programming 
+was done by Clark~\cite{clark1978negation, chan1988constructive}
+with his completion semantics.
+It was then realized, that 
+Clark's semantics has various drawbacks~\cite{van1991well}.
+
+Przymusinski~\cite{przymusinski1989constructive} 
+has studied the semantics of stratified logic programs.
+He introduced the notion of \emph{perfect model semantics} for such programs.
+Stratified logic programs have a variety of good properties,
+including the property that each stratified program 
+has a unique minimal model.
+
+In an attempt to extend the semantics of negation
+to non-stratified programs the 
+\emph{well-founded semantics} was proposed~\cite{van1991well}.
+However, this semantics is three-valued,
+meaning that for some queries it 
+can return answer \lstinline{unknown}.
+For example, given the relation \lstinline{winning}
+(section~\ref{sec:strat}, listing~\ref{lst:game}),
+queries \lstinline{winning 'a'} and \lstinline{winning 'b'}
+would return \lstinline{unknown}.
+
+An alternative approach is 
+\emph{stable model semantics}~\cite{gelfond1988stable}.
+Under this semantics, non-stratified logic program
+can have several stable models.
+Program, that defines \lstinline{winning}, 
+has two stable models, 
+in one of these models goal 
+\lstinline{winning 'a'} succeeds and 
+\lstinline{winning 'b'} fails,
+in the other \lstinline{winning 'a'} fails
+and \lstinline{winning 'b'} succeeds.
+Logic programming under stable model semantics
+is also known under the name 
+answer set programming (ASP).
+
+The works~\cite{stuckey1991constructive, dovier2000necessary}
+are theoretical studies of constructive negation
+in the context of constraint logic programming.
+They give a necessary and sufficient condition for the
+constraint structures that are compatible with constructive negation.
+Namely, the constraint structure should be \emph{admissible closed}.
+
+From an implementation side,
+Chen et al.~\cite{chen1995efficient, chen1996tabled}
+developed a \textsc{Prolog} system
+based on SLG resolution,
+which is sound with respect to well-founded semantics.
+However, they used negation as failure
+with delaying of non-ground negative subgoals.
+\cite{liu1999constructive} is an extension of this system
+with the support of the constructive negation.
+Works~\cite{bartak1998constructive, alvez2004constructive} 
+implement a constraint logic programming systems
+with the support of constructive negation.
+Yet, as with our implementation, the
+constructive negation in these systems
+supports only equality and disequality
+constraints over first-order terms.
+We are not aware of any practical implementation 
+that is parametric over arbitrary admissible closed constraint structures.
+
+Many tools were developed to 
+compute stable models of logic programs,
+among them are~\cite{gebser2007clasp, giunchiglia2006answer}.
+These systems usually require
+to perform grounding of logic program.
+The problem of finding stable models of 
+ground logic program then is encoded 
+as propositional formula and solved 
+by some SAT solver.
+Unfortunately, some logic programs
+do not have finite grounding, 
+but even if a program has it,
+grounding may cause an exponential blow-up.
+Recently, a goal-directed system
+for computing stable models was developed~ 
+\cite{marple2012goal, marple2017s, arias2018constraint}.
+To the best of our knowledge, it is the only ASP system,
+that does not require grounding.
+The key components of this system are the usage of tabling, 
+constructive negation, coinductive logic programming, 
+and non-monotonic reasoning check.
+It is an interesting and challenging task
+to extend \textsc{MiniKanren} with the support of 
+stable model semantics in the spirit of this line of work.

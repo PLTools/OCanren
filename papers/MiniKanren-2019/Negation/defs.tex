@@ -1,0 +1,127 @@
+\newcommand{\rulehskip}{\hskip 1.5em}
+\newcommand{\rulevspace}{\vspace{1em}}
+
+\newcommand{\pvfill}{\pause\vfill}
+
+% \mathchardef\mhyphen="2D
+
+\theoremstyle{definition}
+
+\newtheorem{example}{Example}[section]
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newtheorem{theorem}{Theorem}
+
+\newenvironment{subproof}[1][\proofname]{%
+  \renewcommand{\qedsymbol}{$\blacksquare$}%
+  \begin{proof}[#1]%
+}{%
+  \end{proof}%
+}
+
+% \newtheorem{prop}{Proposition}
+
+%% \counterwithin{lemma}{section}
+
+\newcommand{\textdef}[1]{\textit{#1}}
+
+\newcommand{\imm}{{\textrm IMM}~}
+
+% inline code 
+\newcommand{\code}[1]{\texttt{#1}}
+
+% tuple with angle brackets
+\newcommand{\tup}[1]{\langle #1 \rangle}
+
+% semantics brackets
+\newcommand{\sem}[1]{\llbracket #1 \rrbracket}
+
+% equality by definition
+\newcommand{\defeq}{\triangleq}
+
+% function arrow
+\newcommand{\fun}{\rightarrow}
+
+% partial function arrow
+\newcommand{\pfun}{\rightharpoonup}
+
+% some math sets
+\newcommand{\N}{{\mathbb{N}}}
+\newcommand{\Q}{{\mathbb{Q}}}
+
+% domain/codomain notation
+\newcommand{\dom}[1]{\textit{dom}{({#1})}}
+\newcommand{\codom}[1]{\textit{codom}{({#1})}}
+
+\newcommand{\isground}[1]{\textit{is\_ground}({#1})}
+
+\newcommand{\mgu}{\textit{mgu}}
+
+\newcommand{\vars}[1]{\textit{Vars}({#1})}
+
+\newcommand{\sapp}[2]{{#2}{#1}}
+\newcommand{\subs}{\sqsubseteq}
+
+% some logical notation
+%\newcommand{\implies}{{\Rightarrow}}
+%\newcommand{\iff}{{\Leftrightarrow}}
+
+% check-mark and cross-mark
+\newcommand{\cmark}{\text{\color{green!60!black}\ding{51}}}
+\newcommand{\xmark}{\text{\color{red!60!black}\ding{55}}}
+
+%% axiom labels
+
+\newcounter{mylabelcounter}
+
+\makeatletter
+\newcommand{\labelAxiom}[2]{%
+\hfill{\normalfont\textsc{(#1)}}\refstepcounter{mylabelcounter}
+\immediate\write\@auxout{%
+  \string\newlabel{#2}{{\unexpanded{\normalfont\textsc{#1}}}{\thepage}{{\unexpanded{\normalfont\textsc{#1}}}}{mylabelcounter.\number\value{mylabelcounter}}{}}
+}%
+}
+\makeatother
+
+%% warning
+
+\colorlet{colorWARNING}{yellow!90!black}
+
+% \newcommand{\warning}[1]{{\color{colorWARNING}\texttt{WARNING}}: #1}
+% \newcommand{\app}[1]{{\color{blue}\textbf{ANTON: #1}}}
+% \newcommand{\note}[1]{{\color{cyan}\textbf{EVG: #1}}}
+
+\newcommand\ExecScaleFactor{1}
+
+\newcommand{\todo}[1]{{\color{red}\textbf{TODO: #1}}}
+
+%% OCanren's listings
+
+\lstdefinelanguage{ocanren}{
+    keywords={fresh, let, in, match, with, when, class, type,
+    object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
+    new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+    true, false},
+    sensitive=true,
+    commentstyle=\small\itshape\ttfamily,
+    identifierstyle=\ttfamily,
+    keywordstyle=\bfseries,
+    basewidth={0.5em,0.5em},
+    columns=fixed,
+    fontadjust=true,
+    abovecaptionskip=\bigskipamount,
+    literate={->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3  {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2 {^}{{$\uparrow$}}1 {'}{{$^\prime$}}1 {~}{{$\neg$}}1 {=>}{{$\Rightarrow$}}2, 
+    morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+    mathescape=true,
+    %basicstyle=\small,
+    commentstyle=\scriptsize\rmfamily,
+    language=ocanren,
+    captionpos=b,
+    % escapeinside={(*}{*)},
+}
+
+\newcolumntype{H}{>{\collectcell\lstinline}l<{\endcollectcell}}

@@ -1,0 +1,265 @@
+\section{Evaluation}
+
+\label{sec:evaluation}
+
+In this section, we present an evaluation of 
+implemented constructive negation on a series of examples.
+
+\subsection{If-then-else}
+
+Using relational if-then-else operator, 
+presented in section~\ref{sec:ifte},
+we have implemented several 
+higher-order relations over lists, namely 
+\lstinline{find} (Listing~\ref{lst:eval-find}), 
+\lstinline{remove}\footnote{Note, this implementation 
+differs from the one in Section~\ref{sec:intro}, but 
+it is easy to see that these two are semantically equivalent.} (Listing~\ref{lst:eval-remove}) 
+and \lstinline{filter} (Listing~\ref{lst:eval-filter}).
+These relations are almost identical (syntactically) to their
+functional implementations.
+We have tested that these relations can be run
+in various directions and produce the expected results.
+For example, the goal \lstinline{filter p q q}
+with the predicate \lstinline{p} equal to
+
+\begin{lstlisting}
+  fun l -> fresh (x) (l === [x])
+\end{lstlisting}
+
+stating that the given list should be a singleton list,
+starts to generate all singleton lists.
+Vice versa, the goal \lstinline{filter p q []} 
+with that same \lstinline{p} generates 
+all lists, constrained to be not a singleton list.
+
+Listings~\ref{lst:eval-p}-\ref{lst:eval-filter-queries} give 
+more concrete examples of queries to these relations.
+In the listing the syntax \lstinline{run n q g}
+means running a goal \lstinline{g} with 
+the free variable \lstinline{q}
+taking the first \lstinline{n} answers (``\lstinline{*}'' denotes all answers).
+After the sign $\leadsto$ the result of the query is given.
+The result \lstinline{fail} means that the query has failed.
+The result \lstinline[mathescape]|succ {{a$_1$}; ... {a$_n$}} |
+means that the query has succeeded delivering $n$ answers.
+Each answer represents a set of constraint on free variables.
+Constraints are of two forms: equality constraints, e.g. \lstinline{q = (1, _.$_0$)}, 
+or disequality constraints, e.g. \lstinline{q $\neq$ (1, _.$_0$)}.
+The terms of the form \lstinline{_.$_i$} in the answer
+denote some universally quantified variables.
+
+\begin{minipage}[thb]{.3\textwidth}
+\begin{lstlisting}[
+  caption={A definition of \code{find} relation},
+  label={lst:eval-find}
+]
+let find p e xs =
+  fresh (x xs' ys') (
+    xs === x::xs' /\
+    ifte (p x)
+      (e === x)
+      (find p e xs')
+  )
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[thb]{.3\textwidth}
+\begin{lstlisting}[
+  caption={A definition of \code{remove} relation},
+  label={lst:eval-remove}
+]
+let remove p xs ys =
+  (xs === [] /\ ys === [])
+  \/
+  fresh (x xs' ys') (
+    xs === x::xs' /\
+    ifte (p x)
+      (ys === xs')
+      (ys === x::ys' /\ 
+       remove p xs' ys')
+  )
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[thb]{.3\textwidth}
+\begin{lstlisting}[
+  caption={A definition of \code{filter} relation},
+  label={lst:eval-filter}
+]
+let filter p xs ys =
+  (xs === [] /\ ys === [])
+  \/
+  fresh (x xs' ys') (
+    xs === x::xs' /\
+    (ifte (p x)
+      (ys === x :: ys')
+      (ys === ys')) /\
+    filter p xs' ys'
+  )
+\end{lstlisting}
+\end{minipage}
+
+% \vspace{3cm}
+
+\begin{minipage}[thb]{0.4\textwidth}
+\begin{lstlisting}[
+  caption={Definition of the predicate \lstinline{p}},
+  label={lst:eval-p}
+]
+let p l = fresh (x) (l === [x])
+\end{lstlisting}
+\begin{lstlisting}[
+  caption={Example of queries to \lstinline{find}},
+  label={lst:eval-find-queries}
+]
+run 3 q (fresh (e) find p e q) 
+$\leadsto$ succ {
+     { q = [_.$_0$] :: _.$_1$ }
+     { q = _.$_0$ :: [_.$_1$] :: _.$_2$; 
+         _.$_0$ $\neq$ [_.$_3$] }
+     { q = _.$_0$ :: _.$_1$ :: [_.$_2$] :: _.$_3$; 
+         _.$_0$ $\neq$ [_.$_4$]; _.$_1$ $\neq$ [_.$_5$] }
+   }
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[thb]{0.4\textwidth}
+\begin{lstlisting}[
+  caption={Example of queries to \lstinline{remove}},
+  label={lst:eval-remove-queries}
+]
+run * q (fresh (e) remove p q [[ ]]) 
+$\leadsto$ succ {
+     { q = [[_.$_0$]; [ ]] }
+     { q = [[ ]] }
+     { q = [[ ]; [_.$_0$]] }
+   }
+
+run 3 q (fresh (e) remove p q q) 
+$\leadsto$ succ {
+     { q = [] }
+     { q = [_.$_0$], _.$_0$ $\neq$ [_.$_1$] }
+     { q = [_.$_0$; _.$_1$]; 
+         _.$_0$ $\neq$ [_.$_2$]; _.$_1$ $\neq$ [_.$_3$] }
+   }
+\end{lstlisting}
+\end{minipage}
+
+\begin{minipage}[thb]{0.4\textwidth}
+\begin{lstlisting}[
+  caption={Example of queries to \lstinline{filter}},
+  label={lst:eval-filter-queries}
+]
+run 3 q (filter p q q) 
+$\leadsto$ succ {
+     { q = [ ] }
+     { q = [_.$_0$] }
+     { q = [_.$_0$; _.$_1$] }
+   }
+
+run 3 q (filter p q [1]) 
+$\leadsto$ succ {
+     { q = [[1]] }
+     { q = [_.$_0$; [1]]; _.$_0$ $\neq$ [_.$_1$] }
+     { q = [[1]; _.$_0$]; _.$_0$ $\neq$ [_.$_1$] }
+   }
+
+run 3 q (filter p q [ ]) 
+$\leadsto$ succ {
+     { q = [] }
+     { q = [_.$_0$]; _.$_0$ $\neq$ [_.$_1$] }
+     { q = [_.$_0$; _.$_1$]; 
+            _.$_0$ $\neq$ [_.$_2$]; _.$_1$ $\neq$ [_.$_3$] }
+   }
+\end{lstlisting}
+\end{minipage}
+
+\subsection{Universal quantification}
+
+In the Section~\ref{sec:impl-univ} we presented 
+the \lstinline{forall} goal constructor 
+which is implemented through the double negation.
+We have observed, that although \lstinline{forall g}
+does not terminate when the goal \lstinline{g x} 
+has an infinite number of answers 
+(assuming \lstinline{x} is a fresh variable),
+it does terminate in the case when \lstinline{g x} has 
+a finite number of answers.
+The behavior of \lstinline{forall} in this case is sound
+even in the presence of disequality constraints or nested quantifiers. 
+
+The Table~\ref{tab:univ} gives some concrete examples.
+The left column contains the tested goals\footnote{
+We typeset the goals in terms of first-order logic syntax 
+instead of \textsc{OCanren} syntax for brevity and clarity.} 
+and the right column gives the obtained results.
+For the results we use the same notation 
+as in the previous section.
+
+\begin{table}[th]
+  \centering
+  \def\arraystretch{1.5}
+  \begin{tabularx}{\textwidth}{|X|X|}
+    \hline
+
+    $\forall x\ldotp x = q$ & 
+      \texttt{fail} \\
+    \hline
+
+    $\forall x\ldotp \exists y\ldotp x = y$ & 
+      \texttt{succ \{[q = \_.$_0$]\}} \\
+    \hline
+
+    $\forall x\ldotp \exists y\ldotp x = y \wedge y = q$ &
+      \texttt{fail} \\
+    \hline
+
+    $\forall x\ldotp q = (1, x)$ & 
+      \texttt{fail} \\
+    \hline
+
+    $\forall x\ldotp \exists y\ldotp y = (1, x)$ & 
+      \texttt{succ \{[q = \_.$_0$]\}} \\
+    \hline
+
+    $\forall x\ldotp \exists y\ldotp x = (1, y)$ &
+      \texttt{fail} \\
+    \hline
+
+    $\forall x\ldotp x \neq q$ & \texttt{fail} \\
+    \hline
+
+    $\forall x\ldotp \exists y\ldotp x \neq y$ & 
+      \texttt{succ \{[q = \_.$_0$]\}} \\
+    \hline
+
+    $\forall x\ldotp \exists y\ldotp x \neq y \wedge y = q$ & 
+      \texttt{fail} \\
+    \hline
+
+    $\forall x\ldotp q \neq (1, x)$ & 
+      \texttt{succ \{[q $\neq$ (1, \_.$_0$)]\}} \\
+    \hline
+
+    $(\exists x\ldotp q = (1, x)) \wedge (\forall x\ldotp q \neq (1, x))$ & 
+      \texttt{fail} \\
+    \hline
+
+    $\forall x\ldotp (x, x) \neq (0, 1)$ & 
+      \texttt{succ \{[q = \_.$_0$]\}} \\
+    \hline
+
+    $\forall x\ldotp (x, x) \neq (1, 1)$ & 
+      \texttt{fail} \\
+    \hline
+
+    $\forall x\ldotp (x, x) \neq (q, 1)$ & 
+      \texttt{succ \{[q $\neq$ 1]\}} \\
+    \hline
+
+    $\exists a~ b\ldotp q = (a, b) \wedge \forall x\ldotp (x, x) \neq (a, b)$ & 
+      \texttt{succ \{[q = (\_.$_0$, \_.$_1$); \_.$_0$ $\neq$ \_.$_1$]\}} \\
+    \hline
+
+  \end{tabularx}
+  \caption{\lstinline{forall} evaluation}
+  \label{tab:univ}
+\end{table}

@@ -1,0 +1,232 @@
+\section{Motivating Examples}
+
+\label{sec:motivation}
+
+In this section we give further motivation 
+for adding the negation into relational programming.
+We present several examples of how the negation can be used.
+
+\subsection{Relational If-then-else}
+
+\label{sec:ifte}
+
+In the Prolog one can simulate the conditional if-then-else
+operator using so-called \emph{soft cut}~\cite{naish1995pruning}.
+The behavior of the soft cut \lstinline{c $\rightarrow^*$ t ; e}
+can be described as follows:
+
+\begin{itemize}
+  \item if the goal \lstinline{c} succeeds 
+        (i.e. produces at least one answer) then
+        the result of \lstinline{c $\rightarrow^*$ t ; e}
+        is equivalent to \lstinline{c /\ t};
+  \item if the goal \lstinline{c} fails 
+        (i.e. produces no answers at all) then
+        the result of \lstinline{c $\rightarrow^*$ t ; e}
+        is equivalent to \lstinline{e}.
+\end{itemize}
+
+The soft cut is an example of a non-relational feature.
+Such features usually do not compose well
+in the sense that they are sensitive to the 
+order in which they appear in a program.
+For example, consider the goal 
+\lstinline{(c $\rightarrow^*$ t ; e) /\ g},
+and assume that \lstinline{c /\ g} always fails
+regardless of the order of conjuncts.
+Then if \lstinline{c} succeeds the result 
+of the above goal will be equivalent to 
+\lstinline{c /\ t /\ g} and thus it will fail.
+Suppose we reorder the conjuncts as follows:
+\lstinline{g /\ (c $\rightarrow^*$ t ; e)}.
+Now the goal \lstinline{c}, when executed after \lstinline{g}, 
+certainly fails, and thus the result 
+of the whole goal will be equivalent to
+\lstinline{g /\ e} which does not fails necessarily.
+One can see that the simple reordering 
+of subgoals in the program can lead to the different results.
+
+With the help of constructive negation
+if-then-else can be simply expressed as follows:
+
+\begin{minipage}[h]{\textwidth}
+\begin{lstlisting}[
+  % caption={Logical if-then-else},
+  label={lst:ifte},
+  escapeinside={(*}{*)},
+]
+let ifte c t e = 
+  (c /\ t) \/ (~ c /\ e)
+\end{lstlisting}
+\end{minipage}
+
+The behavior of if-then-else defined in this way
+subsumes the behavior of the soft cut.
+That is, every answer to the query \lstinline{run (c $\rightarrow^*$ t ; e)}
+is also an answer to the query \lstinline{run (ifte c t e)}.
+Moreover, \lstinline{ifte} is not sensitive to the order
+of subgoals in the program.
+
+\subsection{Classical Implication and Universal Quantification}
+
+\label{sec:impl-univ}
+
+With the negation added to the language, one can easily express other 
+connectives of the classical first-order logic,
+namely the implication and universal quantification\footnote{
+It is easy to see that \lstinline[mathescape]{c => t} 
+is equivalent to \lstinline{ifte c t succ}},
+using the well-known equivalences.
+
+\begin{minipage}[h]{\textwidth}
+\begin{lstlisting}[
+  % caption={Implication and universal quantification},
+  label={lst:impl-univ},
+  escapeinside={(*}{*)},
+]
+let (=>) : goal -> goal -> goal = 
+  fun g$_1$ g$_2$ ->  ~ g$_1$ \/ (g$_1$ /\ g$_2$)
+
+let forall : ('a -> goal) -> goal = 
+  fun g -> ~ fresh (x) (~ g x)
+\end{lstlisting}
+\end{minipage}
+
+% There are at least two common interpretations of universal quantification.
+% Under the \emph{intentional} interpretation we assume that 
+% $\forall x. P(X)$ is true if $P(c)$ is true for 
+% an arbitrary choice of some constant $c$.
+% Under the \emph{extensional} interpretation 
+% $\forall x. P(X)$ is true if $P(t)$ is true for every $t$.
+% The \lstinline{forall} presented above implements 
+% the extensional universal quantification.
+
+However, we should make a few remarks here.
+It is well known that the search implemented 
+in conventional \textsc{MiniKanren} is complete, 
+meaning that every answer to an arbitrary query 
+will be found eventually. 
+In the presence of constructive negation 
+(and thus implication and universal quantification defined through negation)
+the search becomes incomplete as we will later see.
+Moreover, constructive negation is computationally heavy
+and thus the double usage of it,
+as in the definition of \lstinline{forall},
+can be inefficient in some cases.
+
+Despite all this trouble we have found that 
+the above definitions are still useful.
+Some of the previous \textsc{MiniKanren} implementations 
+introduced \emph{eigen} variables,
+adopted from $\lambda$Prolog~\cite{miller2012programming}.
+Eigen variables act as a universally quantified variables.
+Yet, to the best of our knowledge,
+there is no sound implementation of eigen variables
+with the support of disequality constraints.
+We observed that our implementation 
+of universal quantifications through double negation 
+works nicely with disequalities 
+(we give some examples in the Section~\ref{sec:evaluation}).
+ 
+\subsection{Graph Unreachability Problem}
+
+One of the classical examples of negation application 
+in logic programming is a problem of checking whether 
+one node of the graph is unreachable 
+from the another~\cite{przymusinski1989constructive}.
+The code on Listing~\ref{lst:unreach}
+defines binary relation \lstinline{edge},
+which binds pairs of nodes in graph, 
+connected by some edge,
+and binary relation \lstinline{reachable},
+which is nothing more than a 
+transitive closure of the \lstinline{edge} relation.
+Then the relation \lstinline{unreachable}
+is simply negation of \lstinline{reachable}.
+
+\begin{minipage}[h]{\textwidth}
+\begin{lstlisting}[
+  caption={Unreachability in a graph},
+  label={lst:unreach},
+  escapeinside={(*}{*)},
+]
+let edge x y = 
+  (x, y) === ('a', 'b') \/
+  (x, y) === ('b', 'a') \/
+  (x, y) === ('b', 'c') \/
+  (x, y) === ('c', 'd') 
+
+let reachable x y = 
+  x === y \/
+  fresh (z) (
+    edge x z /\ reachable z y
+  )
+
+let unreachable x y = 
+  ~(reachable x y)
+\end{lstlisting}
+\end{minipage}
+
+Given this definition the query \lstinline{run unreachable 'c' 'a'} will succeed.
+A knowledgeable reader might notice that 
+constructive negation is not necessary in this case 
+because negation as failure will deliver the same result.
+But the query \lstinline{run unreachable 'c' q} will fail under
+negation as failure because of the free variable \lstinline{q} which 
+will appear under the negation.
+However constructive negation will succeed 
+delivering the constraint \lstinline{q =/= 'd'}.
+
+\subsection{Unreachability in Labeled Transition Systems}
+
+One can consider a special kind of graphs --- 
+\emph{labeled transition systems}~\cite{baier2008principles}.
+Labeled transition system is defined by a set of states $S$,
+a set of labels $L$ and a ternary transition relation $R \subseteq S \times L \times S$.
+By existential quantification over labels one can then obtain a binary relation. 
+Taking its transitive closure gives the reachability relation.
+The negation of the reachability relation can be used 
+to check that some state $s'$ is not reachable from the initial state $s$.
+The Listing~\ref{lst:lts} shows an encoding of an
+abstract labeled transition system in \textsc{OCanren}.
+
+Labeled transition systems are often used to 
+describe the behavior of imperative languages.
+Although the naive encoding of transition relation in \textsc{OCanren}
+with simple enumeration of reachable states is often
+not tractable for checking reachability (or unreachability) in 
+huge state spaces arising in practical imperative programs,
+it still can be used, for example, for the task of 
+prototyping the semantics of such languages.
+
+\begin{minipage}[htp]{\textwidth}
+\begin{lstlisting}[
+  caption={Unreachability in a labeled transition system},
+  label={lst:lts},
+  escapeinside={(*}{*)},
+]
+module type LTS = sig
+  type state
+  type label
+
+  val transition : state -> label -> state -> goal
+end
+
+module LTSExt (T : LTS) = struct
+
+  let reachable : T.state -> T.state -> goal = 
+    fun s s'' -> 
+      s === s'' 
+      \/
+      fresh (l s') (
+        T.transition s l s' /\
+        reachable s' s''
+      )
+
+  let unreachable : T.state -> T.state -> goal = 
+    fun s s' -> 
+      ~(reachable s s')
+end
+
+\end{lstlisting}
+\end{minipage}

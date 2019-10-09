@@ -1,0 +1,98 @@
+\section{Limitations and Future Work}
+
+\label{sec:limitations}
+
+In this section we discuss the limitations 
+of constructive negation in general 
+and our implementation in particular. 
+Also we consider possible directions for future work.
+
+\subsection{Type Constraints}
+
+Although the program written in \textsc{OCanren} typechecks statically 
+(thus, for example, preventing the user from unifying two terms of distinct types),
+at runtime the type information is erased.
+In the presence of even regular disequality constraints
+it can lead to the incorrect results.
+As an example, consider the following program:
+
+\begin{minipage}[h]{\textwidth}
+\begin{lstlisting}[
+  % caption={An example of unsoundness in the presence of types},
+  label={lst:types-unsound}
+]
+type bool = true | false
+
+let g = 
+  fresh (x y z : bool) (
+    (x =/= y)
+    (y =/= z)
+    (z =/= x)
+  )
+\end{lstlisting}
+\end{minipage}
+
+The goal \lstinline{g} states that there
+exists at least three different non-equal 
+terms of type \lstinline{bool},
+which, as we know, is not true.
+Yet the query \lstinline{run g} will succeed.
+
+In order to prevent unsoundness in cases like this,
+type information in the form of \emph{type constraints}
+should be somehow attached to the variables at runtime.
+The satisfiability of type constraints then should 
+be rechecked each time when the new disequality is added to some variable.
+An extension of \textsc{OCanren} with type constraints
+is a direction for future work.
+
+\subsection{Non-stratified Programs}
+
+As we have already discussed in the section~\ref{sec:strat}
+our current implementation handles only stratified logic programs.
+One of the possible extensions is to support 
+non-stratified programs, such as one given in Listing~\ref{lst:game},
+with respect to well-founded and/or stable model semantics 
+(see section~\ref{sec:related-works} for the details).
+
+\subsection{Negation of Goals With an Infinite Number of Answers}
+
+Consider the following program:
+
+\begin{minipage}[h]{\textwidth}
+\begin{lstlisting}[
+  % caption={Relation defining a list of zeros},
+  label={lst:zeros}
+]
+let zeros l =
+  l === [0] 
+  \/
+  fresh (l') (
+    (l === 0 :: l')
+    (zeros l')
+  )
+\end{lstlisting}
+\end{minipage}
+
+The unary relation \lstinline{zeros} defines lists consisting of zeros.
+Now, intuitively, the query \lstinline{run ~(zeros q)} should enumerate
+all lists that are not built out of zeros only.
+Yet this query will fail to deliver even a single answer.
+Why? Consider its operational behavior.
+First the positive version of the goal, that is \lstinline{zeros q}, should be executed.
+Then all answers to this goal should be collected and complemented.
+However, there is an infinite number of answers to \lstinline{zeros q}
+and thus this process will never terminate. 
+
+It is a significant drawback of constructive negation
+that the negation of the goal cannot be computed
+if the goal has an infinite number of answers.
+This limitation cannot be avoided in general,
+however in some cases it is possible to narrow 
+the number of answers to some subgoal 
+by the reordering of surrounding subgoals.
+For example, the query \lstinline{run ~(zeros q) /\ (q === [1])}
+can be executed in finite time by the reordering of conjuncts.
+It seems that the best strategy is to delay 
+negative subgoals as long as possible,
+but we do not have a formal proof of that.
