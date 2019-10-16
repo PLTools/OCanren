@@ -1,0 +1,193 @@
+\section{Introduction}
+
+\label{sec:intro}
+
+\textsc{MiniKanren}~\cite{TheReasonedSchemer, byrd2010relational} is a minimalistic domain-specific language which brings 
+features of logic programming into a host language.
+Typical \textsc{MiniKanren} implementation introduces only a few operators:
+conjunction, disjunction, unification (which can be seen as equality constraint) 
+and fresh variable introduction (existential quantification).
+Although this basis constitutes a Turing-complete language,
+in practice there are some cases when 
+the availability of negative reasoning is desirable.
+
+For example, consider the following problem.
+Suppose we want to write a program 
+which removes the first occurrence of a given element from a list.
+In order to do that in \textsc{MiniKanren} 
+we have to first define a ternary relation \code{remove} 
+which binds the desired element, original list, 
+and the same list after the deletion. 
+Substituting the first argument of the relation with some element \code{e}, 
+the second argument with some list \code{xs} and 
+the third argument with a free variable \code{q}
+gives us a \emph{goal} which is a proof search procedure.
+When passed to the \lstinline{run} function, 
+the goal will produce a lazy stream of \emph{answers}.
+Each answer is represented by substitution 
+which binds free variables to some terms.
+In the case of \lstinline{remove}, 
+we would expect a single answer,
+which binds \lstinline{q} to the list, 
+equal to \lstinline{xs}, 
+except that the first occurrence of \lstinline{e} 
+is removed.
+
+The code on Listing~\ref{lst:remove-buggy} demonstrates
+a possible implementation of \code{remove}.
+It consists of three disjuncts, which represent three different cases.
+First, if the original list is empty, 
+then the resulting list should also be empty.
+If the original list is not empty and its head 
+is equal to the given element, 
+then the resulting list should be equal to the tail.
+Finally, in the case when the head is not equal to the given element,
+the resulting list should be equal to the original, 
+from the tail of which the occurrence of the element \code{e} is deleted.
+
+Given the definition of \code{remove} from Listing~\ref{lst:remove-buggy},
+the following query \lstinline{run (remove 2 [1;2;3] q)} will
+wrongly return two answers: \lstinline{q=[1;3]} and \lstinline{q=[1;2;3]}.
+The redundant (and, indeed, incorrect) answer \lstinline{q=[1;2;3]}
+arose because of the third disjunct from \lstinline{remove} definition,
+which always succeeds and thus generates a copy of the original list.
+We can prevent this behavior using \emph{disequality constraint},
+yet another primitive, which some \textsc{MiniKanren} implementations provide.
+Adding constraint \lstinline{x =/= e} to the third case 
+makes all disjuncts mutually disjoint. 
+With the fixed definition of \lstinline{remove} (Listing~\ref{lst:remove-correct}), 
+the query given above returns the single answer \lstinline{q=[1;3]} as expected. 
+
+\begin{minipage}[t]{.3\textwidth}
+\begin{lstlisting}[
+  caption={A flawed definition of \code{remove} relation},
+  label={lst:remove-buggy}
+]
+let remove e xs ys =
+  (xs === [] /\ ys === [])
+  \/
+  fresh (x xs') (
+    x === e /\
+    xs === x::xs' /\ 
+    ys === xs'
+  ) \/
+  fresh (x xs' ys') (
+    xs === x::xs' /\
+    ys === x::ys' /\
+    remove e xs' ys'
+  )
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{.3\textwidth}
+\begin{lstlisting}[
+  caption={The correct definition of the \code{remove} relation},
+  label={lst:remove-correct}
+]
+let remove e xs ys =
+  (xs === [] /\ ys === [])
+  \/
+  fresh (x xs') (
+    x === e /\
+    xs === x::xs' /\ 
+    ys === xs'
+  ) \/
+  fresh (x xs' ys') (
+    x =/= e /\
+    xs === x::xs' /\
+    ys === x::ys' /\
+    remove e xs' ys'
+  )
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{.3\textwidth}
+\begin{lstlisting}[
+  caption={A generalized version of the \code{remove} relation},
+  label={lst:remove-gen}
+]
+let remove p xs ys =
+  (xs === [] /\ ys === [])
+  \/
+  fresh (x xs') (
+    p x /\
+    xs === x::xs' /\ 
+    ys === xs'
+  ) \/
+  fresh (x xs' ys') (
+    ~(p x) /\
+    xs === x::xs' /\
+    ys === x::ys' /\
+    remove p xs' ys'
+  )
+\end{lstlisting}
+\end{minipage}
+
+A disequality constraint represents a very limited form of negation,
+which is often not sufficient.
+Imagine that we want to generalize \lstinline{remove}, 
+so that instead of taking an element, 
+it takes a predicate \lstinline{p} and removes
+the first element of the list which satisfies the predicate (Listing~\ref{lst:remove-gen}).
+In order to do that and avoid similar pitfalls as 
+in our first attempt to define \lstinline{remove},
+we need to ensure that the third disjunct succeeds 
+only when the predicate \lstinline{p} fails on the head element of \lstinline{xs}.
+Thus we need a general \emph{negation operator}. 
+Unfortunately, none of the existing \textsc{MiniKanren} implementations
+provide this feature.
+
+In the world of Prolog, negative reasoning is usually implemented 
+using so-called \emph{negation as failure} approach.
+Under this rule, a goal \lstinline{~p} succeeds whenever \lstinline{p} fails, 
+and it fails whenever \lstinline{p} succeeds.
+Unfortunately, negation as failure is unsound 
+if the negated goal \lstinline{p} contains free variables.
+For example, the query \lstinline{run (q === 0) /\ ~(q === 1)} succeeds, 
+although \lstinline{run ~(q === 1) /\ (q === 0)} fails.
+The failure in the last case is due to the fact that 
+at the time of negation execution the variable \lstinline{q} is free, 
+thus \lstinline{q === 1} succeeds, and conversely \lstinline{~(q === 1)} fails.
+This example demonstrates that
+negation as failure goes against the philosophy of \textsc{MiniKanren}, 
+which positions itself as a pure relational language
+without non-logical features.
+
+In this work we present an implementation of the negation operator
+based on the method of \emph{constructive negation}.
+It overcomes several shortcomings of negation as failure 
+and provides a more expressive form of 
+negative reasoning than disequality constraints. 
+The idea of this method is to constructively 
+build a stream of answers for the negated goal.
+It is achieved by first collecting all answers to 
+the positive version of the goal and then negating them. 
+The constructive negation approach 
+while being an improvement over negation as failure 
+still has its own drawbacks. 
+For example, applying the negation operator 
+to the goal that has infinitely many answers 
+results in a non-terminating computation. 
+
+Although constructive negation was first 
+proposed as an extension of Prolog, 
+to the best of our knowledge 
+our work is the first attempt to adapt it for \textsc{MiniKanren}. 
+We have developed a prototype implementation for \textsc{OCanren}~\cite{kosarev2018typed}, 
+a \textsc{MiniKanren} dialect embedded in \textsc{OCaml}. 
+Like the rest of \textsc{MiniKanren}, 
+our version of constructive negation is developed 
+in a pure functional style using
+persistent data structures.
+This makes it different from the earlier implementations for Prolog.
+
+Our paper is structured as follows.
+In Section~\ref{sec:motivation} we give 
+more examples of constructive negation usage. 
+Section~\ref{sec:implementation} describes our implementation.
+Next, Section~\ref{sec:evaluation} presents the evaluation
+of the negation on a series of examples.
+In Section~\ref{sec:limitations} 
+we discuss the limitations of our approach and 
+directions for future work. 
+Section~\ref{sec:related-works} reviews related works. 
+The final Section~\ref{sec:conclusion} concludes.
+
