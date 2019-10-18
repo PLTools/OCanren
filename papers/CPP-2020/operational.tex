@@ -292,3 +292,68 @@ The corresponding \textsc{Coq} lemmas are as follows:
     interleave s1 s2 s ->
     (finite s <-> finite s1 /\ finite s2).
 \end{lstlisting}
+
+\subsection{SLD semantics}
+
+
+Interlving to SLD --- changing order in disjunctions:
+
+\[
+  \begin{array}{cr}
+    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s'_1 \oplus s_2)} &\ruleno{DisjStep}\\[5mm]
+    \dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \oplus s_2) \xrightarrow{r} (s'_1 \oplus s_2)} &\ruleno{DisjStepAns}\\[5mm]
+  \end{array}
+\]
+
+Now, cuts.
+
+New states:
+
+\[
+S = \mathcal{G}\times\Sigma\times\mathbb{N}\mid S\oplus S \mid  S \circledast S \mid S \otimes \mathcal{G}
+\]
+
+
+Changing \textsc{ConjStepAns} to
+
+  \[
+  \begin{array}{cr}
+    \dfrac{s \xrightarrow{(\sigma, n)} s'}{(s \otimes g) \xrightarrow{\circ} (\inbr{g, \sigma, n} \circledast (s' \otimes g))} & \ruleno{ConjStepAns} 
+  \end{array}
+  \]
+  
+Adding simple rules for asterisk (the same as those for plus):
+
+  \[
+  \begin{array}{cr}
+    \dfrac{s_1 \xrightarrow{\circ} \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ} s_2} & \ruleno{AstStop}\\[5mm]
+    \dfrac{s_1 \xrightarrow{r} \Diamond}{(s_1 \circledast s_2) \xrightarrow{r} s_2} & \ruleno{AstStopAns}\\[5mm]
+    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ} (s'_1 \circledast s_2)} &\ruleno{AstStep}\\[5mm]
+    \dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \circledast s_2) \xrightarrow{r} (s'_1 \circledast s_2)} &\ruleno{AstStepAns}\\[5mm]
+  \end{array}
+\]
+  
+Cut signal creation:
+
+  \[
+  \begin{array}{cr}
+    \inbr{!, \sigma, n} \xrightarrow{(\sigma, n)}_c \Diamond &\ruleno{UnifyFail} \\[2mm]
+  \end{array}
+\]
+
+Cut signal for pluses and asterisks:
+
+  \[
+  \begin{array}{cr}
+    \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} \Diamond} & \ruleno{PlusStopC}\\[5mm]
+    \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}\\[5mm]
+    \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} s'_1} &\ruleno{PlusStepC}\\[5mm]
+    \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{PlusStepAnsC}\\[5mm]
+    \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ}_c \Diamond} & \ruleno{AstStopC}\\[5mm]
+    \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}\\[5mm]
+    \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ}_c s'_1} &\ruleno{AstStepC}\\[5mm]
+    \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}\\[5mm]
+  \end{array}
+  \]
+  
+And cut signal propogation in crosses (just adding $c$ to all arrows)
