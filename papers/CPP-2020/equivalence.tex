@@ -131,37 +131,43 @@ admitted for now. For completeness we can not just use the induction on proposit
 because the inductive principle it provides is not flexible enough. So we need to define bounded denotational semantics in our formalization too and perform
 induction on the level explicitly:
 
-\begin{lstlisting}[language=Coq]
-   Inductive in_denotational_sem_lev_goal : nat -> goal -> repr_fun -> Prop :=
-   ...
-   | dslgInvoke : forall l r t f,
-        in_denotational_sem_lev_goal l (proj1_sig (Prog r) t) f ->
-        in_denotational_sem_lev_goal (S l) (Invoke r t) f.
+\begin{lstlisting}[language=Coq,,basicstyle=\footnotesize,morekeywords={where,at,level}]
+  Reserved Notation "[| n | g , f |]" (at level 0).
+  Inductive in_denotational_sem_lev_goal :
+    nat -> goal -> repr_fun -> Prop :=
+    ...
+  | dslgInvoke : forall l r t f,
+      [| l  | proj1_sig (Prog r) t , f |] ->
+      [| S l | Invoke r t , f |]
+  where "[| n | g , f |]" :=
+    (in_denotational_sem_lev_goal n g f).
 \end{lstlisting}
 
 The lemma relating bounded and unbounded denotational semantics is translated into \textsc{Coq}:
 
-\begin{lstlisting}[language=Coq]
-   Lemma in_denotational_sem_some_lev: forall (g : goal) (f : repr_fun),
-        in_denotational_sem_goal g f ->
-        exists l, in_denotational_sem_lev_goal l g f.
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+  Lemma in_denotational_sem_some_lev:
+    forall (g : goal) (f : repr_fun),
+      [| g , f |] -> exists l, [| l | g , f |].
 \end{lstlisting}
 
 The statements of the theorems are as follows:
 
-\begin{lstlisting}[language=Coq]
-   Theorem search_correctness: forall (g : goal) (k : nat) (f : repr_fun) (t : trace),
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+  Theorem search_correctness:
+    forall (g : goal) (k : nat) (f : repr_fun) (t : trace),
       closed_goal_in_context (first_nats k) g) ->
       op_sem (State (Leaf g empty_subst k)) t) ->
-      in_denotational_analog t f ->
-      in_denotational_sem_goal g f.
-      
-   Theorem search_completeness: forall (g : goal) (k : nat) (f : repr_fun) (t : trace),
-      closed_goal_in_context (first_nats k) g) ->
-      op_sem (State (Leaf g empty_subst k)) t) ->
-      in_denotational_sem_goal g f ->
-      exists (f' : repr_fun), (in_denotational_analog t f') /\
-                         forall (x : var), In x (first_nats k) -> f x = f' x.
+      {| t , f |} ->
+      [| g , f |].
+  Theorem search_completeness:
+    forall (g : goal) (k : nat) (f : repr_fun) (t : trace),
+      closed_goal_in_context (first_nats k) g ->
+      op_sem (State (Leaf g empty_subst k)) t ->
+      [| g , f |] ->
+      exists (f' : repr_fun),
+        {| t , f' |} /\
+        forall (x : var), In x (first_nats k) -> f x = f' x.
 \end{lstlisting}
 
 One important immediate corollary of these theorems is the correctness of certain program transformations. Since the results obtained by the search on a

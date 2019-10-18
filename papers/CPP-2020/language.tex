@@ -1,19 +1,21 @@
 \begin{figure*}[t]
-\centering
 \[
-\begin{array}{ccll}
-  \mathcal{C} & = & \{C_i^{k_i}\} & \mbox{constructors with arities} \\
-  \mathcal{T}_X & = & X \cup \{C_i^{k_i} (t_1, \dots, t_{k_i}) \mid t_j\in\mathcal{T}_X\} & \mbox{terms over the set of variables $X$} \\
-  \mathcal{D} & = & \mathcal{T}_\emptyset & \mbox{ground terms}\\
-  \mathcal{X} & = & \{ x, y, z, \dots \} & \mbox{syntactic variables} \\
-  \mathcal{A} & = & \{ \alpha, \beta, \gamma, \dots \} & \mbox{semantic variables} \\
-  \mathcal{R} & = & \{ R_i^{k_i}\} &\mbox{relational symbols with arities} \\[2mm]
-  \mathcal{G} & = & \mathcal{T_X}\equiv\mathcal{T_X}   &  \mbox{unification} \\
-              &   & \mathcal{G}\wedge\mathcal{G}     & \mbox{conjunction} \\
-              &   & \mathcal{G}\vee\mathcal{G}       &\mbox{disjunction} \\
-              &   & \mbox{\lstinline|fresh|}\;\mathcal{X}\;.\;\mathcal{G} & \mbox{fresh variable introduction} \\
-              &   & R_i^{k_i} (t_1,\dots,t_{k_i}),\;t_j\in\mathcal{T_X} & \mbox{relational symbol invocation} \\[2mm]
-  \mathcal{S} & = & \{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i;\}\; g & \mbox{specification}
+\begin{array}{cccll}
+  &\mathcal{C} & = & \{C_i^{k_i}\} & \mbox{constructors with arities} \\
+  &\mathcal{T}_X & = & X \cup \{C_i^{k_i} (t_1, \dots, t_{k_i}) \mid t_j\in\mathcal{T}_X\} & \mbox{terms over the set of variables $X$} \\
+  &\mathcal{D} & = & \mathcal{T}_\emptyset & \mbox{ground terms}\\
+  &\mathcal{X} & = & \{ x, y, z, \dots \} & \mbox{syntactic variables} \\
+  &\mathcal{A} & = & \{ \alpha, \beta, \gamma, \dots \} & \mbox{semantic variables} \\
+  &\mathcal{R} & = & \{ R_i^{k_i}\} &\mbox{relational symbols with arities} \\[2mm]
+  &\mathcal{G} & = & \mathcal{T_X}\equiv\mathcal{T_X}   &  \mbox{unification} \\
+  &            &   & \mathcal{G}\wedge\mathcal{G}     & \mbox{conjunction} \\
+  &            &   & \mathcal{G}\vee\mathcal{G}       &\mbox{disjunction} \\
+  &            &   & \mbox{\lstinline|fresh|}\;\mathcal{X}\;.\;\mathcal{G} & \mbox{fresh variable introduction} \\
+  &            &   & R_i^{k_i} (t_1,\dots,t_{k_i}),\;t_j\in\mathcal{T_X} & \mbox{relational symbol invocation} \\[2mm]
+  \phantom{XXXXXXXXXXXXXXX}&\mathcal{S} & = & \{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i;\}\; g & \mbox{specification}
+  %      ^
+  %      |
+  %  this ugly hack is due to non-working \centering
 \end{array}
 \]
 \caption{The syntax of the source language}
@@ -39,7 +41,7 @@
 
 \section{The Language}
 \label{language}
-
+ 
 In this section we introduce the syntax of the language we use throughout the paper, describe the informal semantics and give some examples.
 
 The syntax of the language is shown on Figure~\ref{syntax}. First, we fix a set of constructors $\mathcal{C}$ with known arities and consider
@@ -122,7 +124,7 @@ The notions above can be formalized in \textsc{Coq} in a natural way using induc
 
 Specifically, we restrict the arities of constructors to be either zero or two:
 
-\begin{lstlisting}[language=Coq]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
    Inductive term : Set :=
    | Var : var -> term
    | Cst : con_name -> term
@@ -132,7 +134,7 @@ Specifically, we restrict the arities of constructors to be either zero or two:
 Here ``\lstinline[language=Coq]{var}'' and ``\lstinline[language=Coq]{con_name}''~--- types representing variables and constructor names, whose definitions we omitted for the sake of brevity.
 Similarly, we restrict relations to always have exactly one argument:
 
-\begin{lstlisting}[language=Coq]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
    Definition rel : Set := term -> goal.
 \end{lstlisting}
 
@@ -140,7 +142,7 @@ These restrictions do not make the language less expressive in any way since we 
 
 We also introduce one additional type of goals~--- \emph{failure}~--- for deliberately unsuccessful computation (empty stream). As a result, the definition of goals looks as follows:
 
-\begin{lstlisting}[language=Coq]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
    Inductive goal : Set :=
    | Fail   : goal
    | Unify  : term -> term -> goal
@@ -154,13 +156,13 @@ Note that in our formalization we use the higher-order abstract syntax for varia
 to use substitution and inductive principle provided by \textsc{Coq}. However, we still need to carefully ensure some expected properties on the structure of syntax trees.
 For example, we should require that the definitions of relations do not contain unbound variables:
 
-\begin{lstlisting}[language=Coq]
-   Definition closed_goal_in_context (c : list var) (g : goal) : Prop :=
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+   Definition closed_goal_in_context
+     (c : list var) (g : goal) : Prop :=
      forall n, is_fv_of_goal n g -> In n c.
-
    Definition closed_rel (r : rel) : Prop :=
-     forall (arg : term), closed_goal_in_context (fv_term arg) (r arg).
- 
+     forall (arg : term),
+     closed_goal_in_context (fv_term arg) (r arg). 
    Definition def : Set := {r : rel | closed_rel r}.
 \end{lstlisting}
 
@@ -169,9 +171,8 @@ In the snippet above ``\lstinline[language=Coq]{def}'' corresponds to a set of r
 We set an arbitrary environment (a map from relational symbol to the definition of relation) to use further throughout the formalization. Failure goals allow us to define it as
 a total function:
 
-\begin{lstlisting}[language=Coq]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
    Definition env : Set := rel_name -> def.
-
    Variable Prog : env.
 \end{lstlisting}
 

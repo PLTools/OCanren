@@ -58,28 +58,28 @@ L = \circ \mid \Sigma\times \mathbb{N}
 The label ``$\circ$'' is used to mark those steps which do not provide an answer; otherwise a transition is labeled by a pair of a substitution and a number of allocated
 variables. The substitution is one of the answers, and the number is threaded through the derivation to keep track of allocated variables; we ignore it in further explanations.
 
-\begin{figure}
+\begin{figure*}
   \[
-  \begin{array}{cr}
-    \inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{\circ} \Diamond , \, \, \nexists\; mgu\,(t_1, t_2, \sigma) &\ruleno{UnifyFail} \\[2mm]
+  \begin{array}{cr|cr}
+    \inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{\circ} \Diamond , \, \, \nexists\; mgu\,(t_1, t_2, \sigma) &\ruleno{UnifyFail} &
     \inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{(mgu\,(t_1, t_2, \sigma),\, n)} \Diamond & \ruleno{UnifySuccess} \\[2mm]
-    \inbr{g_1 \lor g_2, \sigma, n} \xrightarrow{\circ} \inbr{g_1, \sigma, n} \oplus \inbr{g_2, \sigma, n} & \ruleno{Disj} \\[2mm]
+    \inbr{g_1 \lor g_2, \sigma, n} \xrightarrow{\circ} \inbr{g_1, \sigma, n} \oplus \inbr{g_2, \sigma, n} & \ruleno{Disj} &
     \inbr{g_1 \land g_2, \sigma, n} \xrightarrow{\circ} \inbr{ g_1, \sigma, n} \otimes g_2 & \ruleno{Conj} \\[2mm]
-    \inbr{\mbox{\lstinline|fresh|}\, x\, .\, g, \sigma, n} \xrightarrow{\circ} \inbr{g\,[\bigslant{\alpha_{n + 1}}{x}], \sigma, n + 1} & \ruleno{Fresh}\\[2mm]
+    \inbr{\mbox{\lstinline|fresh|}\, x\, .\, g, \sigma, n} \xrightarrow{\circ} \inbr{g\,[\bigslant{\alpha_{n + 1}}{x}], \sigma, n + 1} & \ruleno{Fresh} &
     \dfrac{R_i^{k_i}=\lambda\,x_1\dots x_{k_i}\,.\,g}{\inbr{R_i^{k_i}\,(t_1,\dots,t_{k_i}),\sigma,n} \xrightarrow{\circ} \inbr{g\,[\bigslant{t_1}{x_1}\dots\bigslant{t_{k_i}}{x_{k_i}}], \sigma, n}} & \ruleno{Invoke}\\[5mm]
-    \dfrac{s_1 \xrightarrow{\circ} \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} s_2} & \ruleno{DisjStop}\\[5mm]
+    \dfrac{s_1 \xrightarrow{\circ} \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} s_2} & \ruleno{DisjStop} &
     \dfrac{s_1 \xrightarrow{r} \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} s_2} & \ruleno{DisjStopAns}\\[5mm]
-    \dfrac{s \xrightarrow{\circ} \Diamond}{(s \otimes g) \xrightarrow{\circ} \Diamond} &\ruleno{ConjStop}\\[5mm]
+    \dfrac{s \xrightarrow{\circ} \Diamond}{(s \otimes g) \xrightarrow{\circ} \Diamond} &\ruleno{ConjStop} &
     \dfrac{s \xrightarrow{(\sigma, n)} \Diamond}{(s \otimes g) \xrightarrow{\circ} \inbr{g, \sigma, n}}  & \ruleno{ConjStopAns}\\[5mm]
-    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s_2 \oplus s'_1)} &\ruleno{DisjStep}\\[5mm]
+    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s_2 \oplus s'_1)} &\ruleno{DisjStep} &
     \dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \oplus s_2) \xrightarrow{r} (s_2 \oplus s'_1)} &\ruleno{DisjStepAns}\\[5mm]
-    \dfrac{s \xrightarrow{\circ} s'}{(s \otimes g) \xrightarrow{\circ} (s' \otimes g)} &\ruleno{ConjStep}\\[5mm]
+    \dfrac{s \xrightarrow{\circ} s'}{(s \otimes g) \xrightarrow{\circ} (s' \otimes g)} &\ruleno{ConjStep} &
     \dfrac{s \xrightarrow{(\sigma, n)} s'}{(s \otimes g) \xrightarrow{\circ} (\inbr{g, \sigma, n} \oplus (s' \otimes g))} & \ruleno{ConjStepAns} 
   \end{array}
   \]
   \caption{Operational semantics of interleaving search}
   \label{lts}
-\end{figure}
+\end{figure*}
 
 The transition rules are shown on Figure~\ref{lts}. The first two rules specify the semantics of unification. If two terms are not unifiable under the current substitution
 $\sigma$ then the evaluation stops with no answer; otherwise it stops with the answer equal to the most general unifier.
@@ -151,28 +151,29 @@ In particular, we need to implement the notion of the most general unifier (MGU)
 MGU are not decreasing on argument terms, so we can't define it as a simple recursive function in \textsc{Coq} due to the termination check. There is no such obstacle when we define
 MGU as a proposition:
 
-\begin{lstlisting}[language=Coq]
-  Inductive MGU : term -> term -> option subst -> Set := ...
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+  Inductive MGU :
+    term -> term -> option subst -> Set := ...
 \end{lstlisting}
 
 However, we still need to use a well-founded induction to prove the existence of the most general unifier and its defining properties:
 
-\begin{lstlisting}[language=Coq]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Lemma MGU_ex : forall t1 t2, {r & MGU t1 t2 r}.
-  
-  Definition unifier (s : subst) (t1 t2 : term) : Prop := apply_subst s t1 = apply_subst s t2.
-
+  Definition unifier (s : subst) (t1 t2 : term) : Prop :=
+    apply_subst s t1 = apply_subst s t2.
   Lemma MGU_unifies:
     forall t1 t2 s, MGU t1 t2 (Some s) -> unifier s t1 t2.
-  
   Definition more_general (m s : subst) : Prop :=
-    exists (s' : subst), forall (t : term), apply_subst s t = apply_subst s' (apply_subst m t).
-
+    exists (s' : subst),
+    forall (t : term),
+      apply_subst s t = apply_subst s' (apply_subst m t).
   Lemma MGU_most_general :
-    forall (t1 t2 : term) (m : subst),
+    forall (t1 t2 : term)
+      (m : subst),
       MGU t1 t2 (Some m) ->
-      forall (s : subst), unifier s t1 t2 -> more_general m s.
-
+      forall (s : subst),
+        unifier s t1 t2 -> more_general m s.
   Lemma MGU_non_unifiable :
     forall (t1 t2 : term),
       MGU t1 t2 None -> forall s,  ~ (unifier s t1 t2).
@@ -180,36 +181,41 @@ However, we still need to use a well-founded induction to prove the existence of
 
 For this well-founded induction we use the number of free variables in argument terms as a well-founded order on pairs of terms:
 
-\begin{lstlisting}[language=Coq]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Definition terms := term * term.
-
-  Definition fvOrder (t : terms) := length (union (fv_term (fst t)) (fv_term (snd t))).
-
-  Definition fvOrderRel (t p : terms) := fvOrder t < fvOrder p.
-
+  Definition fvOrder (t : terms) :=
+    length (union (fv_term (fst t)) (fv_term (snd t))).
+  Definition fvOrderRel (t p : terms) :=
+    fvOrder t < fvOrder p.
   Lemma fvOrder_wf : well_founded fvOrderRel.
 \end{lstlisting}
 
 After this preliminary work, the described transition relation can be encoded naturally as an inductively defined proposition (here ``\lstinline|state'|''
 stands for an extended state):
 
-\begin{lstlisting}[language=Coq]
-  Inductive eval_step : state -> label -> state' -> Set := ...
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+  Inductive eval_step :
+    state -> label -> state' -> Set := ...
 \end{lstlisting}
 
 We state the fact that our system is deterministic through existence and uniqueness of a transition for every state:
 
-\begin{lstlisting}[language=Coq]
-  Lemma eval_step_ex : forall (st : state), {l : label & {st' : state' & eval_step st l st'}}.
-
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+  Lemma eval_step_ex :
+    forall (st : state),
+    {l : label & {st' : state' & eval_step st l st'}}.
   Lemma eval_step_unique :
-    forall (st : state) (l1 l2 : label) (st'1 st'2 : state'),
-      eval_step st l1 st'1 -> eval_step st l2 st'2 -> l1 = l2 /\ st'1 = st'2.
+    forall (st : state)
+      (l1 l2 : label)
+      (st'1 st'2 : state'),
+    eval_step st l1 st'1 ->
+    eval_step st l2 st'2 ->
+    l1 = l2 /\ st'1 = st'2.
 \end{lstlisting}
 
 To work with (possibly) infinite sequences we use the standard approach in \textsc{Coq}~--- coinductively defined streams:
 
-\begin{lstlisting}[language=Coq]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Context {A : Set}.
 
   CoInductive stream : Set :=
@@ -219,11 +225,12 @@ To work with (possibly) infinite sequences we use the standard approach in \text
 
 Although the definition of the datatype is coinductive some of its properties we are working with make sense only when defined inductively:
 
-\begin{lstlisting}[language=Coq]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Inductive in_stream : A -> stream -> Prop :=
-  | inHead : forall x t, in_stream x (Cons x t)
-  | inTail : forall x h t, in_stream x t -> in_stream x (Cons h t).
-
+  | inHead : forall x t,
+    in_stream x (Cons x t)
+  | inTail : forall x h t,
+    in_stream x t -> in_stream x (Cons h t).
   Inductive finite : stream -> Prop :=
   | fNil : finite Nil
   | fCons : forall h t, finite t -> finite (Cons h t).
@@ -231,19 +238,21 @@ Although the definition of the datatype is coinductive some of its properties we
 
 Then we define a trace coinductively as a stream of labels in transition steps and prove that there exists a unique trace from any extended state:
 
-\begin{lstlisting}[language=Coq]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Definition trace : Set := $@$stream label.
-
   CoInductive op_sem : state' -> trace -> Set :=
   | osStop : op_sem Stop Nil
-  | osState : forall st l st' t, eval_step st l st' ->
-                            op_sem st' t ->
-                            op_sem (State st) (Cons l t).
-
-  Lemma op_sem_ex (st' : state') : {t : trace & op_sem st' t}.
-
+  | osState : forall st l st' t,
+      eval_step st l st' ->
+      op_sem st' t ->
+      op_sem (State st) (Cons l t).
+  Lemma op_sem_ex (st' : state') :
+    {t : trace & op_sem st' t}.
   Lemma op_sem_unique :
-    forall st' t1 t2, op_sem st' t1 -> op_sem st' t2 -> equal_streams t1 t2.
+    forall st' t1 t2,
+      op_sem st' t1 ->
+      op_sem st' t2 ->
+      equal_streams t1 t2.
 \end{lstlisting}
 
 Note, for the equality of streams we need to define a new coinductive proposition instead of using the standard syntactic equality in order for coinductive proofs to work~\cite{CPDT}.
@@ -251,15 +260,19 @@ Note, for the equality of streams we need to define a new coinductive propositio
 One thing we can prove using operational semantics is the \emph{interleaving} properties of disjunction. Specifically, we can prove that a trace for a disjunction is
 a one-by-one interleaving of streams for its disjuncts:
 
-\begin{lstlisting}[language=Coq]
-  CoInductive interleave : stream -> stream -> stream -> Prop :=
-  | interNil : forall s s', equal_streams s s' -> interleave Nil s s'
-  | interCons : forall h t s rs, interleave s t rs -> interleave (Cons h t) s (Cons h rs).
-
-  Lemma sum_op_sem : forall st1 st2 t1 t2 t, op_sem (State st1) t1 ->
-                                        op_sem (State st2) t2 ->
-                                        op_sem (State (Sum st1 st2)) t ->
-                                        interleave t1 t2 t.
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+  CoInductive interleave :
+    stream -> stream -> stream -> Prop :=
+  | interNil : forall s s',
+    equal_streams s s' -> interleave Nil s s'
+  | interCons : forall h t s rs,
+    interleave s t rs ->
+    interleave (Cons h t) s (Cons h rs).
+  Lemma sum_op_sem : forall st1 st2 t1 t2 t,
+    op_sem (State st1) t1 ->
+    op_sem (State st2) t2 ->
+    op_sem (State (Sum st1 st2)) t ->
+    interleave t1 t2 t.
 \end{lstlisting}
 
 This allows us to prove the expected properties of interleaving in a more general setting of arbitrary streams:
@@ -271,10 +284,11 @@ This allows us to prove the expected properties of interleaving in a more genera
 
 The corresponding \textsc{Coq} lemmas are as follows:
 
-\begin{lstlisting}[language=Coq]
-  Lemma interleave_in : forall s1 s2 s, interleave s1 s2 s ->
-                   forall x, in_stream x s <-> in_stream x s1 \/ in_stream x s2.
-
-  Lemma interleave_finite : forall s1 s2 s, interleave s1 s2 s ->
-                   (finite s <-> finite s1 /\ finite s2).
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+  Lemma interleave_in : forall s1 s2 s,
+    interleave s1 s2 s ->
+    forall x, in_stream x s <-> in_stream x s1 \/ in_stream x s2.
+  Lemma interleave_finite : forall s1 s2 s,
+    interleave s1 s2 s ->
+    (finite s <-> finite s1 /\ finite s2).
 \end{lstlisting}

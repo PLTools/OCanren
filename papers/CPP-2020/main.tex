@@ -35,6 +35,7 @@
 \newtheorem{definition}{Definition}
 
 \lstdefinelanguage{minikanren}{
+basicstyle=\small,
 keywords={fresh},
 sensitive=true,
 commentstyle=\small\itshape\ttfamily,
@@ -85,7 +86,7 @@ language=minikanren
 \newcommand{\inbr}[1]{\left<{#1}\right>}
 \newcommand{\highlight}[1]{\color{red}{#1}}
 %\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
-\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
+\newcommand{\ruleno}[1]{\mbox{\scriptsize{[\textsc{#1}]}}}
 \newcommand{\rulename}[1]{\textsc{#1}}
 \newcommand{\inmath}[1]{\mbox{$#1$}}
 \newcommand{\lfp}[1]{fix_{#1}}
@@ -119,6 +120,14 @@ language=minikanren
 \let\eps\varepsilon
 
 \sloppy
+
+%% Bibliography style
+\bibliographystyle{ACM-Reference-Format}
+%% Citation style
+%% Note: author/year citations are required for papers published as an
+%% issue of PACMPL.
+\citestyle{acmauthoryear}   %% For author/year citations
+
 
 \begin{document}
 
