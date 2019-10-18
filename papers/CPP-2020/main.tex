@@ -132,10 +132,10 @@ language=minikanren
 \begin{document}
 
 %% Title information
-\title{Certified Semantics for \textsc{miniKanren}} %% [Short Title] is optional;
+\title{Certified Semantics for Relational Programming} %% [Short Title] is optional;
                                            %% when present, will be used in
                                            %% header instead of Full Title.
-\titlenote{This work was partially suppored by the grant 18-01-00380 from The Russian Foundation for Basic Research} %% \titlenote is optional;
+%\titlenote{This work was partially suppored by the grant 18-01-00380 from The Russian Foundation for Basic Research} %% \titlenote is optional;
                                         %% can be repeated if necessary;
                                         %% contents suppressed with 'anonymous'
 %\subtitle{Subtitle}                     %% \subtitle is optional
@@ -182,11 +182,13 @@ language=minikanren
 %% Note: \begin{abstract}...\end{abstract} environment must come
 %% before \maketitle command
 \begin{abstract}
-  We present two formal semantics for the core \textsc{miniKanren}. First, we give denotational
-  variant which corresponds to the minimal Herbrand model for definite logic programs. Second,
-  we present operational semantics which models interleaving, and prove its soundness and
-  completeness w.r.t. denotational semantics. Our development is supported by formal \textsc{Coq}
-  specification, thus making it certified.
+  We present a formal study of semantics for relational programming language \textsc{miniKanren}. First,
+  we formulate its denotational variant which corresponds to the minimal Herbrand model for definite logic
+  programs. Second, we present operational semantics which models the destinctive feature of \textsc{miniKanren}
+  implementation~---interleaving,~--- and prove its soundness and completeness w.r.t. the denotational semantics.
+  Our development is supported by \textsc{Coq} specification, from which a reference interpreter can be
+  extracted. We also derive from our main result a certified semantics (and a reference interpreter) for Prolog
+  with cut and prove its soundness.   
 \end{abstract}
 
 

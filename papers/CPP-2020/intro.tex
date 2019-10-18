@@ -1,25 +1,35 @@
 \section{Introduction}
 
+In the context of this paper we understand ``relational programming'' as a puristic form of logic programming with all extra-logical
+features banned. Specifically, we use \textsc{miniKanren} as an exemplary language. \textsc{miniKanren} can be seen as
+a logical language with explicit connectives and unification, and is mutually convertible to the pure logical subset of
+Prolog\footnote{A detailed Prolog-to-\textsc{miniKanren} comparison can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
+Unlike Prolog, whose implementation utilizes SLD-resolution, most \textsc{miniKanren} implementations use monadic \emph{interleaving
+search}, which is believed to be complete.
+
 The introductory book on \textsc{miniKanren}~\cite{TRS} describes the language by means of an evolving set of examples. In the
 series of follow-up papers~\cite{MicroKanren,CKanren,CKanren1,AlphaKanren,2016,Guided} various extensions of the language were presented with
 their semantics explained in terms of \textsc{Scheme} implementation. We argue that this style of semantic definition is
 fragile and not self-evident since it requires the knowledge of semantics of concrete implementation language. In addition the justification of
-important properties of relational programs (for example, refutational completeness~\cite{WillThesis}) becomes cumbersome. In the
-area of programming languages research a formal definition for the semantics of language of interest is a \emph{de-facto} standard, and
-in our opinion in its current state \textsc{miniKanren} deviates from this standard.
+important properties of relational programs (for example, refutational completeness~\cite{WillThesis}) becomes cumbersome.
 
-There were some previous attempts to define a formal semantics for \textsc{miniKanren}. \citet{RelConversion} present a variant of nondeterministic
-operational semantics, and~\citet{DivTest} use another variant of finite-set semantics. None of them was capable of reflecting
-the distinctive property of \textsc{miniKanren} search~--- \emph{interleaving}~\cite{Search}, thus deviating from the conventional understanding
-of the language.
+There were some previous attempts to define a formal semantics for \textsc{miniKanren}. \citet{MechanisingMiniKanren} gave a formal definition
+for denotational and non-deterministic operational semantics and proved the soundness result; the development was mechanized in HOL. 
+\citet{RelConversion} presented a variant of nondeterministic operational semantics, and~\citet{DivTest} used another variant of finite-set semantics.
+None of previous approaches were capable of reflecting the distinctive property of \textsc{miniKanren} search~--- \emph{interleaving}~\cite{Search},
+thus deviating from the conventional understanding of the language. Moreover, one of the most important features of the
+language~--- the completeness of the search,~--- was never addressed.
 
 In this paper we present a formal semantics for core \textsc{miniKanren} and prove some its basic properties. First,
 we define denotational semantics similar to the least Herbrand model for definite logic programs~\cite{LHM}; then
 we describe operational semantics with interleaving in terms of labeled transition system. Finally, we prove the soundness and
 completeness of the operational semantics w.r.t the denotational one. We support our development with a formal specification
-using \textsc{Coq}~\cite{Coq} proof assistant, thus outsourcing the burden of proof checking to the automatic tool. 
+using \textsc{Coq}~\cite{Coq} proof assistant, thus outsourcing the burden of proof checking to the automatic tool and
+deriving a certified reference interpreter via extraction mechanism. As a rather straightforward extension of our
+main result we also provide a certified operational semantics (and a reference interpreter) for Prolog with cut, a new result
+to our knowledge; while this step brings us out of purely relational domain, it still can be interesting on its own.
 
 The paper organized as follows. In Section~\ref{language} we give the syntax of the language, describe its semantics
-informally and discuss some examples. Section~\ref{denotational} contains the description of denotational semantics for
+informally and discuss some examples. Section~\ref{denotational} contains the description of the denotational semantics for
 the language, and Section~\ref{operational}~--- the operational semantics. In Section~\ref{equivalence} we overview the
 certified proof for soundness and completeness of operational semantics. The final section concludes.
