@@ -1,0 +1,26 @@
+\section{Related Works}
+
+The study of formal semantics for logic programming languages, in the first place Prolog, is a well-established research domain. Early
+works~\cite{JonesMycroftSemantics,DebrayMishraSemantics} addressed the computational aspects of both pure Prolog and its extension
+with the cut construct. Recently the application of certified/mechanized approaches came into focus as well. In particular,
+in~\cite{CertifiedPrologEquivalences} the equivalence of a few differently defined operational semantics
+for pure Prolog is proven, and in~\cite{CeritfiedDenotationalCut} a denotational semantics for Prolog with cut is presented; both
+works provide \textsc{Coq}-mechanised proofs. It is interesting that the former one also advocates the use of higher-order
+abstract syntax. We are not aware of any prior works on certified semantics for Prolog which contributed a correct-by-construction
+interpreter.
+
+The study of formal semantics for \textsc{miniKanren} is also not a completely novel venture. In~\cite{RelConversion} a non-deterministic
+small-step semantics is described, and in~\cite{DivTest} a big-step semantics for finite number of answers is given;
+neither works use proof mechanization, and in both the intrleaving is not addressed. 
+
+The work of~\citet{MechanisingMiniKanren} can be considered as our direct predecessor. It also introduces both denotational and
+operational semantics and presents a HOL-certified proof for the soundness of the latter w.r.t. the former. The denotational
+semantics resembles ours, but considers only queries with a single free variable (we do not see this restriction as important).
+On the other hand, the operational semantics is nondeterministic (similarly to~\cite{RelConversion}), which makes it
+impossible to express interleaving, prove completeness and extract an interpreter in a direct way.  In addition, a
+specific form of ``executable semantics'' is introduced, but its connection to the other two is not established.
+We consider our completeness result as an essential improvement. 
+
+
+
+
