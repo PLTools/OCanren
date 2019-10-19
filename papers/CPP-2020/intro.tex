@@ -2,7 +2,7 @@
 
 In the context of this paper we understand ``relational programming'' as a puristic form of logic programming with all extra-logical
 features banned. Specifically, we use \textsc{miniKanren} as an exemplary language. \textsc{miniKanren} can be seen as
-a logical language with explicit connectives and unification, and is mutually convertible to the pure logical subset of
+a logical language with explicit connectives, existentials and unification, and is mutually convertible to the pure logical subset of
 Prolog\footnote{A detailed Prolog-to-\textsc{miniKanren} comparison can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
 Unlike Prolog, whose implementation utilizes SLD-resolution, most \textsc{miniKanren} implementations use monadic \emph{interleaving
 search}, which is believed to be complete.
