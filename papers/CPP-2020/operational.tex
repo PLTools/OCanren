@@ -108,7 +108,10 @@ non-deterministic nature of search in relational (and, more generally, logical) 
 are sound and complete, we can consider them ``equivalent''\footnote{There still can be differences in observable behavior of concrete goals under different
 sound and complete search strategies: a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}.
 
-A derivation sequence for a certain state determines a \emph{trace}~--- a finite or infinite sequence of answers. { \color{lightgray} We may define a set of finite or infinite
+A derivation sequence for a certain state determines a \emph{trace}~--- a finite or infinite sequence of answers.
+
+\begin{comment}
+{ \color{lightgray} We may define a set of finite or infinite
 sequences $X^\omega$ over an alphabet $X$ as a set of functions from natural numbers into a lifted set $X_\bot=X\cup\{\bot\}$:
 
 \[
@@ -143,6 +146,7 @@ For a given state $s$ a trace $\tr{s}\in L^\omega$ is a sequence of labels, defi
 \end{array}
 \]
 }
+\end{comment}
 
 The trace corresponds to the stream of answers in the reference \textsc{miniKanren} implementations.
 

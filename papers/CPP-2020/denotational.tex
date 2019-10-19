@@ -129,8 +129,9 @@ Now we are ready to specify the semantics for goals (see Figure~\ref{denotationa
 for disjunction and conjunction of goals. Now for the case of ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
 not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semantics of $g\,[\alpha/x]$. The interesting part is the next step:
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
-goal specifies a relation over its free variables. We introduce some nondeterminism by choosing arbitrary $\alpha$, but it can be proven by
-structural induction that with different choices of free variable the semantics of a goal does not change. Consider the following example:
+goal specifies a relation over its free variables. We introduce some nondeterminism by choosing arbitrary $\alpha$, but we have proven by
+structural induction that with different choices of free variable the semantics of a goal does not change (and this proof turned out to
+be the most cumbersome among all others). Consider the following example:
 
 \renewcommand{\overset}[2]{#2}
 \[
