@@ -93,6 +93,8 @@ turns both $t_1$ and $t_2$ into the same \emph{ground} term (we do not require $
 performed in the opposite direction: a unification $t_1\equiv t_2$ defines the set of all representing functions $\mathfrak{f}$ for which
 $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$. 
 
+{ \color{lightgray}
+
 Then, the semantic function for goals is parameterized over environments which prescribe semantic functions to relational symbols:
 
 \[
@@ -108,18 +110,7 @@ representing functions. The signature for semantic brackets for goals is as foll
 
 It maps a goal into the set of representing functions w.r.t. an environment $\Gamma$.
 
-We formulate the following important \emph{completeness condition} for the semantics of a goal $g$:
-
-\[
-\forall\alpha\not\in FV\,(g)\; \forall d \in \mathcal{D}\; \forall\mathfrak{f} \in \sembr{g},
-\]
-\[
-\exists \mathfrak{f'} \in \sembr{g} \;:\; \mathfrak{f'}\,(\alpha)\; = d \wedge \forall \beta \neq \alpha:\; \mathfrak{f'}\,(\beta)\; = \mathfrak{f}\,(\beta)\; 
-\]
-
-In other words, representing functions for a goal $g$ restrict only the values of free variables of $g$ and do not introduce any ``hidden'' correlations.
-This condition guarantees that our semantics is complete in the sense that it does not introduce artificial restrictions for the relation it defines. It
-can be proven that the semantics of goals always satisfy this condition.
+}
 
 We remind conventional notions of pointwise modification of a function
 
@@ -152,17 +143,17 @@ representing functions $\mathfrak{F}\subseteq\mathcal{A}\to\mathcal{D}$:
 Now we are ready to specify the semantics for goals (see Figure~\ref{denotational_semantics_of_goals}). We've already given the motivation for
 the semantics of unification: the condition $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$ gives us the set of all (otherwise
 unrestricted) representing functions which ``equate'' terms $t_1$ and $t_2$. Set union and intersection provide a conventional interpretation
-for disjunction and conjunction of goals, and the semantics of relational invocation reduces to the application of corresponding
-function from the environment. The only interesting case is ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
+for disjunction and conjunction of goals, \textcolor{red}{and the semantics of relational invocation reduces to the application of corresponding
+function from the environment}. The only interesting case is ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
 not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semantics of $g\,[\alpha/x]$. The interesting part is the next step:
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
 goal specifies a relation over its free variables. We introduce some nondeterminism, by choosing arbitrary $\alpha$, but it can be proven by structural induction, that with different choices of free variable, semantics of a goal won't change. Consider the following example:
 
+{ \color{red}
 \begin{lstlisting}
    fresh y . ($\alpha$ ===  y) /\ (y === Zero)
 \end{lstlisting}
-
-As there is no invocations involved, we can safely omit the environment. Then:
+}
 
 \renewcommand{\overset}[2]{#2}
 \[
@@ -200,6 +191,8 @@ In the end we've got the set of representing functions, each of which restricts 
   \caption{Denotational semantics of goals}
   \label{denotational_semantics_of_goals}
 \end{figure}
+
+{ \color{lightgray}
 
 The final component is the semantics of specifications. Given a specification
 
@@ -244,7 +237,19 @@ we take the least fixed point of $\mathcal{F}$ and define the top-level environm
 where ``$[i]$'' denotes the $i$-th component of a vector-function.
 
 The least fixed point exists by Knaster-Tarski~\cite{TarskiKnaster} theorem~--- the set $(\mathcal{T_A}^*\to 2^{\mathcal{A}\to\mathcal{D}})^n$
-forms a complete lattice, and $\mathcal{F}$ is monotonic. 
+forms a complete lattice, and $\mathcal{F}$ is monotonic.
+
+}
+
+We formulate the following important \emph{completeness condition} for the semantics of a goal $g$:
+
+\[
+\forall {\mathfrak f}, {\mathfrak f'}:  \left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}, \quad {\mathfrak f} \in \sembr{g} \Leftrightarrow {\mathfrak f'} \in \sembr{g}
+\]
+
+In other words, representing functions for a goal $g$ restrict only the values of free variables of $g$ and do not introduce any ``hidden'' correlations.
+This condition guarantees that our semantics is complete in the sense that it does not introduce artificial restrictions for the relation it defines. \textcolor{red}{It
+can be proven that the semantics of goals always satisfy this condition.}
 
 To formalize denotational semantics in \textsc{Coq} we can define representing functions simply as \textsc{Coq} functions:
 
@@ -261,41 +266,19 @@ We define the semantics via inductive proposition ``\lstinline|in_denotational_s
 The definition is as follows:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize,morekeywords={where,at,level}]
-  Reserved Notation "[| g , f |]" (at level 0).       
   Inductive in_denotational_sem_goal :
-    goal -> gt_fun -> Prop :=
-  | dsgUnify  : forall f t1 t2,
-      gt_eq (apply_gt_fun f t1)
-            (apply_gt_fun f t2) -> 
-      [| Unify t1 t2 , f |]
-  | dsgDisjL  : forall f g1 g2,
-      [| g1 , f |] ->
-      [| Disj g1 g2 , f |]
-  | dsgDisjR  : forall f g1 g2,
-      [| g2 , f |] ->
-      [| Disj g1 g2 , f |]
-  | dsgConj   : forall f g1 g2,
-      [| g1 , f |] ->
-      [| g2 , f |] ->
-      [| Conj g1 g2 , f |]
-  | dsgFresh  : forall f fn a fg,
-      ~ is_fv_of_goal a (Fresh fg) ->
-      [| fg a , fn |] ->
-      (forall x, x <> a -> gt_eq (fn x) (f x)) ->
-      [| Fresh fg , f |]
-  | dsgInvoke : forall r t f,
-      [| proj1_sig (MiniKanrenSyntax.P r) t , f |]) ->
-      [| Invoke r t, f |]
+    ...
   where "[| g , f |]" := (in_denotational_sem_goal g f).
 \end{lstlisting}
 
+{ \color{lightgray}
 Here we refer to a fixpoint ``\lstinline[language=Coq]|apply_repr_fun|'' which calculates the extension ``$\overline{\bullet}$'' for a representing
 function, and inductive proposition ``\lstinline[language=Coq]|is_fv_of_goal|'' which encodes the set of free variables for a goal.
 
 Recall that the environment ``\lstinline[language=Coq]|Prog|'' maps every relational symbol to the definition of relation,
 which is a pair of a function from terms to goals and a proof that it has no unbound variables.
 So in the last case ``\lstinline[language=Coq]|(proj1_sig (Prog r) t)|'' simply takes the body of the corresponding relation;
-thus ``\lstinline[language=Coq]|Prog|'' in \textsc{Coq} specification plays role of a global environment $\Gamma$.
+thus ``\lstinline[language=Coq]|Prog|'' in \textsc{Coq} specification plays role of a global environment $\Gamma$. }
 
-It is interesting that in \textsc{Coq} implementation we do not need to refer to Tarski-Knaster theorem explicitly since
-the least fixpoint semantic is implicitly provided by inductive definitions.
+\textcolor{blue}{It is interesting that in \textsc{Coq} implementation we do not need to refer to Tarski-Knaster theorem explicitly since
+the least fixpoint semantic is implicitly provided by inductive definitions.}
