@@ -166,7 +166,8 @@ For example, we should require that the definitions of relations do not contain 
    Definition def : Set := {r : rel | closed_rel r}.
 \end{lstlisting}
 
-In the snippet above ``\lstinline[language=Coq]{def}'' corresponds to a set of relational symbol definitions in a specification.
+In the snippet above ``\lstinline[language=Coq]{def}'' corresponds to a set of relational symbol definitions in a specification, ``\lstinline[language=Coq]{is_fv_of_goal}''
+is inductively defined proposition for a free variable in a goal.
 
 We set an arbitrary environment (a map from relational symbol to the definition of relation) to use further throughout the formalization. Failure goals allow us to define it as
 a total function:
