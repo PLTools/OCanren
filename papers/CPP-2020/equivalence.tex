@@ -28,13 +28,24 @@ then defined as a union of sets for all substitution in the trace:
 \sembr{s}_{op} = \cup_{(\sigma, n) \in \tr{s}} [\sigma]
 \]
 
+{ \color{blue}  In \textsc{Coq} we again use a proposition instead:
+
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+Definition in_denotational_analog (t : trace) (f : gt_fun)
+  : Prop :=
+    exists s n, in_stream (Answer s n) t /\
+           in_denotational_sem_subst s f.
+Notation "{| t , f |}" := (in_denotational_analog t f).
+\end{lstlisting}
+}
+
 This allows us to state theorems relating two semantics.
 
 \begin{theorem}[Operational semantics soundness]
-For any specification $\{\dots\}\; g$, for which the indices of all free variables in $g$ are limited by some number $n$
+If indices of all free variables in a goal $g$ are limited by some number $n$, then
 
 \[
-\sembr{\inbr{g, \epsilon, n}}_{op} \subset \sembr{\{\dots\}\; g}.
+\sembr{\inbr{g, \epsilon, n}}_{op} \subset \sembr{g}.
 \]
 \end{theorem}
 
@@ -46,10 +57,10 @@ The generalized version of the theorem uses it:
 \begin{figure}[t]
   \[
   \begin{array}{ccl}
-    \sembr{\Diamond}_\Gamma&=&\emptyset\\
-    \sembr{\inbr{g, \sigma, n}}_\Gamma&=&\sembr{g}_\Gamma\cap[\sigma]\\
-    \sembr{s_1 \oplus s_2}_\Gamma&=&\sembr{s_1}_\Gamma\cup\sembr{s_2}_\Gamma\\
-    \sembr{s \otimes g}_\Gamma&=&\sembr{s}_\Gamma\cap\sembr{g}_\Gamma\\
+    \sembr{\Diamond}&=&\emptyset\\
+    \sembr{\inbr{g, \sigma, n}}&=&\sembr{g}\cap[\sigma]\\
+    \sembr{s_1 \oplus s_2}&=&\sembr{s_1}\cup\sembr{s_2}\\
+    \sembr{s \otimes g}&=&\sembr{s}\cap\sembr{g}\\
   \end{array}
   \]
   \caption{Denotational semantics of states}
@@ -57,10 +68,10 @@ The generalized version of the theorem uses it:
 \end{figure}
 
 \begin{lemma}[Generalized soundness]
-For any top-level environment $\Gamma_0$ acquired from some specification, for any well-formed (w.r.t. that specification) extended state $s$
+For any well-formed extended state $s$
 
 \[
-\sembr{s}_{op} \subset \sembr{s}_{\Gamma_0}.
+\sembr{s}_{op} \subset \sembr{s}.
 \]
 \end{lemma}
 
@@ -75,10 +86,10 @@ compromise our promise to prove the completeness of the search as \textsc{miniKa
 which are allocated in the beginning.
 
 \begin{theorem}[Operational semantics completeness]
-For any specification $\{\dots\}\; g$, for which the indices of all free variables in $g$ are limited by some number $n$
+If indices of all free variables in a goal $g$ are limited by some number $n$, then
 
 \[
-\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\{\dots\}\; g}\} \subset \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \epsilon, n}}_{op}\}.
+\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}\} \subset \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \epsilon, n}}_{op}\}.
 \]
 \end{theorem}
 
@@ -108,7 +119,7 @@ Bounded denotational semantics is an approximation of a usual denotational seman
 bounded denotational semantics for some level:
 
 \begin{lemma}
-$\sembr{g}_{\Gamma_0} \subset \cup_l \sembr{g}^l$
+$\sembr{g} \subset \cup_l \sembr{g}^l$
 \end{lemma}
 
 Formally it can be proven using the definition of the least fixed point from Tarski-Knaster theorem: the set on the right-hand side is a closed set.
@@ -141,7 +152,7 @@ induction on the level explicitly:
     (in_denotational_sem_lev_goal n g f).
 \end{lstlisting}
 
-The lemma relating bounded and unbounded denotational semantics is translated into \textsc{Coq}:
+The lemma relating bounded and unbounded denotational semantics is {\color{red} translated} into \textsc{Coq}:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Lemma in_denotational_sem_some_lev:
@@ -160,6 +171,7 @@ The statements of the theorems are as follows:
       [| g , f |].
   Theorem search_completeness:
     forall (g : goal) (k : nat) (f : repr_fun) (t : trace),
+      consistent_goal g ->
       closed_goal_in_context (first_nats k) g ->
       op_sem (State (Leaf g empty_subst k)) t ->
       [| g , f |] ->

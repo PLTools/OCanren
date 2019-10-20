@@ -126,12 +126,16 @@ Specifically, we restrict the arities of constructors to be either zero or two:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
    Inductive term : Set :=
-   | Var : var -> term
-   | Cst : con_name -> term
-   | Con : con_name -> term -> term -> term.
+   | Var : name -> term
+   | Cst : name -> term
+   | Con : name -> term -> term -> term.
 \end{lstlisting}
 
-Here ``\lstinline[language=Coq]{var}'' and ``\lstinline[language=Coq]{con_name}''~--- the types representing variables and constructor names, whose definitions we omitted for the sake of brevity.
+{ \color{blue} Here ``\lstinline[language=Coq]{name}'' is a type we use for all named entities (for variables, constructors and relations) in our formalization. It is represented by natural numbers:
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+  Definition name := nat.
+\end{lstlisting}
+}
 Similarly, we restrict relations to always have exactly one argument:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
@@ -139,6 +143,8 @@ Similarly, we restrict relations to always have exactly one argument:
 \end{lstlisting}
 
 These restrictions do not make the language less expressive in any way since we can represent a sequence of terms as a list using constructors \lstinline|Nil$^0$| and \lstinline|Cons$^2$|.
+
+{ \color{red} More details here? }
 
 We also introduce one additional type of goals~--- \emph{failure}~--- for deliberately unsuccessful computation (empty stream). As a result, the definition of goals looks as follows:
 
@@ -148,32 +154,96 @@ We also introduce one additional type of goals~--- \emph{failure}~--- for delibe
    | Unify  : term -> term -> goal
    | Disj   : goal -> goal -> goal
    | Conj   : goal -> goal -> goal
-   | Fresh  : (var -> goal) -> goal
-   | Invoke : rel_name -> term -> goal.
+   | Fresh  : (name -> goal) -> goal
+   | Invoke : name -> term -> goal.
 \end{lstlisting}
 
-Note that in our formalization we use higher-order abstract syntax for variable binding~\cite{HOAS}. We preferred it to the first-order syntax because it gives us the ability
-to use substitution and inductive principle provided by \textsc{Coq}. However, we still need to carefully ensure some expected properties on the structure of syntax trees.
-For example, we should require that the definitions of relations do not contain unbound variables:
+{ \color{blue} We define sets of free variables of a term naturaly as sets in \textsc{Coq}:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
-   Definition closed_goal_in_context
-     (c : list var) (g : goal) : Prop :=
-     forall n, is_fv_of_goal n g -> In n c.
-   Definition closed_rel (r : rel) : Prop :=
-     forall (arg : term),
-     closed_goal_in_context (fv_term arg) (r arg). 
-   Definition def : Set := {r : rel | closed_rel r}.
+Fixpoint fv_term (t : term) : set name :=
+  ...
 \end{lstlisting}
 
-In the snippet above ``\lstinline[language=Coq]{def}'' corresponds to a set of relational symbol definitions in a specification, ``\lstinline[language=Coq]{is_fv_of_goal}''
-is inductively defined proposition for a free variable in a goal.
+And we use it to define ground terms as a subset type:
 
-We set an arbitrary environment (a map from relational symbol to the definition of relation) to use further throughout the formalization. Failure goals allow us to define it as
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+Definition ground_term : Set :=
+  {t : term | fv_term t = empty_set name}.
+\end{lstlisting}
+
+However, for goals it is more convenient for its usage to define set of free variables as a proposition:
+
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+Inductive is_fv_of_goal (n : name) : goal -> Prop :=
+  ...
+\end{lstlisting}
+ }
+
+Note that in our formalization we use higher-order abstract syntax for variable binding~\cite{HOAS}, {\color{blue} therefore we work only with semantic variables explicitly}. We preferred it to the first-order syntax because it gives us the ability to use substitution and inductive principle provided by \textsc{Coq}.
+{ \color{blue} On the other hand, we need to carefully ensure some expected properties on the structure of syntax trees. 
+
+Firstly, we need a requirement that the definitions of relations do not contain unbound variables:
+
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+Definition closed_goal_in_context 
+  (c : list name) (g : goal) : Prop :=
+    forall n, is_fv_of_goal n g -> In n c.
+
+Definition closed_rel (r : rel) : Prop :=
+  forall (arg : term),
+  closed_goal_in_context (fv_term arg) (r arg).
+\end{lstlisting}
+
+The second requirement is that all bindings we have are ``consistent'', i.e. if we pass different variables the results we get will be renamings of each other \textcolor{red}{(it's more complicated, see below)}. It is rather non-trivial to define usual variable renaming for our goals with higher-order syntax, but for our purpose a weaker version which binds only fresh variables is sufficient:
+
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+Inductive renaming (old_x : name) (new_x : name) :
+  goal -> goal -> Prop :=
+...
+| rFreshNFV : forall fg,
+                (~is_fv_of_goal old_x (Fresh fg)) ->
+                renaming old_x new_x (Fresh fg) (Fresh fg)
+| rFreshFV : forall fg rfg,
+               (is_fv_of_goal old_x (Fresh fg)) ->
+               (forall y, (~is_fv_of_goal y (Fresh fg)) ->
+                     renaming old_x new_x (fg y) (rfg y)) ->
+               renaming old_x new_x (Fresh fg) (Fresh rfg)
+...
+\end{lstlisting}
+
+Consistency is defined using it:
+
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+Definition consistent_binding (b : name -> goal) : Prop :=
+  forall x y, (~ is_fv_of_goal x (Fresh b)) ->
+         renaming x y (b x) (b y).
+
+Inductive consistent_goal : goal -> Prop :=
+  ...
+
+Definition consistent_function (f : term -> goal) : Prop :=
+  forall a1 a2 t, renaming a1 a2 (f t)
+             (f (apply_subst [(a1, Var a2)] t)).
+
+Definition consistent_rel (r : rel) : Prop :=
+  forall (arg : term), consistent_goal (r arg) /\
+                  consistent_function r.
+\end{lstlisting}
+
+In the snippet above the ``\lstinline[language=Coq]{consistent_goal}'' property inductively ensures that all bindings occuring in a goal are consistent.
+}
+
+{ \color{blue} We can now set an arbitrary environment (a map from relational symbol to the definition of relation with described constraints) to use further throughout the formalization. } Failure goals allow us to define it as
 a total function:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
-   Definition env : Set := rel_name -> def.
-   Variable Prog : env.
+Definition def : Set := 
+  {r : rel | closed_rel r /\ consistent_rel r}.
+Definition env : Set := rel_name -> def.
+
+Variable Prog : env.
 \end{lstlisting}
+
+{ \color{blue} We will also have to add binding consistency requirement as a condition for some of our later theorems. }
 
