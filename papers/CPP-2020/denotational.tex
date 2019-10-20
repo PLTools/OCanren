@@ -27,6 +27,12 @@ the least Herbrand model semantics for definite logic programs in a certified wa
 this concrete language the conversion to definite logic form is trivial, it may become less trivial for
 its extensions (with, for examples, nominal constructs~\cite{AlphaKanren}) which we plan to do in future.
 
+We also must make the following observation. Usually, building inductive denotational semantics amounts to
+constructing a complete lattice and a monotone function and taking its least fixed point~\cite{TarskiKnaster}.
+As we deal with a first-order language with only monotonic constructs (conjunction/disjunction) these steps
+are trivial. Moreover, we express the semantics in \textsc{Coq}, where all well-formed inductive definitions already
+have proper semantics, which removed the neccesity to justify the validity of steps we perform.
+
 To motivate further development, we first consider the following example. Let us have the following goal:
 
 \begin{lstlisting}
@@ -93,7 +99,7 @@ turns both $t_1$ and $t_2$ into the same \emph{ground} term (we do not require $
 performed in the opposite direction: a unification $t_1\equiv t_2$ defines the set of all representing functions $\mathfrak{f}$ for which
 $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$. 
 
-We remind conventional notions of pointwise modification of a function
+We remind the conventional notions of pointwise modification of a function
 
 \[
 f\,[x\gets v]\,(z)=\left\{
@@ -125,7 +131,7 @@ Now we are ready to specify the semantics for goals (see Figure~\ref{denotationa
  We've already given the motivation for
   the semantics of unification: the condition $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$ gives us the set of all (otherwise
   unrestricted) representing functions which ``equate'' terms $t_1$ and $t_2$.
-  Set union and intersection provide a conventional interpretation
+  Set union and intersection provide a conventional interpretations
 for disjunction and conjunction of goals. Now for the case of ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
 not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semantics of $g\,[\alpha/x]$. The interesting part is the next step:
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
@@ -156,6 +162,9 @@ be the most cumbersome among all others). Consider the following example:
 
 In the end we've got the set of representing functions, each of which restricts only the value of free variable $\alpha$. 
 
+The final case is relational invocation, in which we unfold the definition of corresponding relational symbol and substitute its formal parameters with
+actual ones.
+
 \begin{figure}[t]
   \[
   \begin{array}{cclr}
@@ -177,7 +186,8 @@ To formalize denotational semantics in \textsc{Coq} we can define representing f
    Definition repr_fun : Set := var -> ground_term.
 \end{lstlisting}
 
-We define the semantics via inductive proposition ``\lstinline|in_denotational_sem_goal|'' such that
+We define the semantics via inductive proposition ``\lstinline|in_denotational_sem_goal|'' (with notation ``\lstinline[mathescape=true]{[| $\bullet$ , $\bullet$ |]}'')
+such that
 
 \[
 \forall g,\mathfrak{f}\;:\;\mbox{\lstinline|in_denotational_sem_goal|}\;g\;\mathfrak{f}\Longleftrightarrow\mathfrak{f}\in\sembr{g}
@@ -186,12 +196,15 @@ We define the semantics via inductive proposition ``\lstinline|in_denotational_s
 The head of the definition is as follows
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize,morekeywords={where,at,level}]
+  Reserved Notation "[| g , f |]" (at level 0).
   Inductive in_denotational_sem_goal :
     goal -> repr_fun -> Prop :=
     ...
   where "[| g , f |]" := (in_denotational_sem_goal g f).
 \end{lstlisting}
 
+and the body just eumerates the cases shown on Fig.~\ref{denotational_semantics_of_goals}.
+  
 We formulate the following important \emph{completeness condition} for the semantics of a goal $g$:
 
 \[

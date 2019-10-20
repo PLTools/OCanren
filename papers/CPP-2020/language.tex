@@ -48,7 +48,7 @@ The syntax of the language is shown on Figure~\ref{syntax}. First, we fix a set 
 a set of terms $\mathcal{T}_X$ with constructors as functional symbols and variables from $X$. We parameterize this set with an alphabet of
 variables, since in the semantic description we will need \emph{two} kinds of variables. The first kind, \emph{syntactic} variables, is denoted
 by $\mathcal{X}$. We also consider an alphabet of \emph{relational symbols} $\mathcal{R}$ which are used to name relational definitions.
-The central syntactic category in the language is a \emph{goal}. In our case there are five types of goals: \emph{unification} of terms,
+The central syntactic category in the language is \emph{goal}. In our case there are five types of goals: \emph{unification} of terms,
 conjunction and disjunction of goals, fresh variable introduction and invocation of some relational definition. Thus, unification is used
 as a constraint, and multiple constraints can be combined using conjunction, disjunction and recursion. For the sake of brevity we
 abbreviate immediately nested ``\lstinline|fresh|'' constructs into the one, writing ``\lstinline|fresh $x$ $y$ $\dots$ . $g$|'' instead of
@@ -59,8 +59,8 @@ is the sole binding construct the definition is rather trivial. The language we 
 returned or constructed at runtime.
 
 We now informally describe how relational search works. As we said, a goal represents a search procedure. This procedure takes a \emph{state} as input and returns a
-stream of states; a state (among other information) contains a substitution which maps semantic variables into terms over semantic variables. Then five types of
-scenarios are possible (dependent on the type of the goal):
+stream of states; a state (among other information) contains a substitution which maps semantic variables into terms over semantic variables. Then the five types of
+scenarios are possible (depending on the type of the goal):
 
 \begin{itemize}
 \item Unification ``\lstinline|$t_1$ === $t_2$|'' unifies terms $t_1$ and $t_2$ in the context of the substitution in the current state. If terms are unifiable,
@@ -70,12 +70,12 @@ scenarios are possible (dependent on the type of the goal):
 \item Disjunction ``\lstinline|$g_1$ \/ $g_2$|'' applies both its goals to the current state independently and then concatenates the results.
 \item Fresh construct ``\lstinline|fresh $x$ . $g$|'' allocates a new semantic variable $\alpha$, substitutes all free occurrences of $x$ in $g$ with $\alpha$, and
   runs the goal.
-\item Invocation ``$\lstinline|$R_i^{k_i}$ ($t_1$,...,$t_{k_i}$)|$'' finds a definition for relational symbol $R_i^{k_i}=\lambda x_1\dots x_{k_i}\,.\,g_i$, substitutes
+\item Invocation ``$\lstinline|$R_i^{k_i}$ ($t_1$,...,$t_{k_i}$)|$'' finds a definition for the relational symbol $R_i^{k_i}=\lambda x_1\dots x_{k_i}\,.\,g_i$, substitutes
   all free occurrences of formal parameter $x_j$ in $g_i$ with term $t_j$ (for all $j$) and runs the goal in the current state.
 \end{itemize}
 
-We stipulate, that the top-level goal is preceded by an implicit ``\lstinline|fresh|'' construct, which binds all its free variables, and the final substitutions for these
-variables constitute the result of the goal evaluation.
+We stipulate that the top-level goal is preceded by an implicit ``\lstinline|fresh|'' construct, which binds all its free variables, and that the final substitutions
+for these variables constitute the result of the goal evaluation.
 
 Conjunction and disjunction form a monadic~\cite{Monads} interface with conjunction playing role of ``bind'' and disjunction~--- of ``mplus''. In this description
 we swept a lot of important details under the carpet~--- for example, in actual implementations the components of disjunction are not evaluated in isolation, but
@@ -102,7 +102,8 @@ As an example consider the following specification:
   revers$^o$ x x
 \end{lstlisting}
 
-Here we defined two relational symbols~--- ``\lstinline|append$^o$|'' and ``\lstinline|revers$^o$|'',~--- and specified a top-level goal ``\lstinline|revers$^o$ x x|''.
+Here we defined\footnote{We respect here a conventional tradition for \textsc{miniKanren} programming to superscript all relational names with ``$^o$''.}
+two relational symbols~--- ``\lstinline|append$^o$|'' and ``\lstinline|revers$^o$|'',~--- and specified a top-level goal ``\lstinline|revers$^o$ x x|''.
 The symbol ``\lstinline|append$^o$|'' defines a relational concatenation of lists~--- it takes three arguments and performs a case analysis on the first one. If the
 first one is an empty list (``\lstinline|Nil|''), then the second and the third arguments are unified. Otherwise the first argument is deconstructed into a head ``\lstinline|h|''
 and a tail ``\lstinline|t|'', and the tail is concatenated with the second argument using a recursive call to ``\lstinline|append$^o$|'' and additional variable ``\lstinline|ty|'', which
@@ -120,8 +121,7 @@ represent palindromes. Running it results in an infinite stream of substitutions
 
 where ``$\alpha$''~--- a \emph{semantic} variable, corresponding to ``\lstinline|x|'', ``$\beta_i$''~--- free semantics variables.
 
-The notions above can be formalized in \textsc{Coq} in a natural way using inductive data types. We have made a few non-essential simplifications and modifications for the sake of convenience.
-
+The syntax described above can be formalized in \textsc{Coq} in a natural way using inductive data types. We have made a few non-essential simplifications and modifications for the sake of convenience.
 Specifically, we restrict the arities of constructors to be either zero or two:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
@@ -131,7 +131,7 @@ Specifically, we restrict the arities of constructors to be either zero or two:
    | Con : con_name -> term -> term -> term.
 \end{lstlisting}
 
-Here ``\lstinline[language=Coq]{var}'' and ``\lstinline[language=Coq]{con_name}''~--- types representing variables and constructor names, whose definitions we omitted for the sake of brevity.
+Here ``\lstinline[language=Coq]{var}'' and ``\lstinline[language=Coq]{con_name}''~--- the types representing variables and constructor names, whose definitions we omitted for the sake of brevity.
 Similarly, we restrict relations to always have exactly one argument:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
@@ -152,7 +152,7 @@ We also introduce one additional type of goals~--- \emph{failure}~--- for delibe
    | Invoke : rel_name -> term -> goal.
 \end{lstlisting}
 
-Note that in our formalization we use the higher-order abstract syntax for variable binding~\cite{HOAS}. We preferred it to the first-order syntax because it gives us the ability
+Note that in our formalization we use higher-order abstract syntax for variable binding~\cite{HOAS}. We preferred it to the first-order syntax because it gives us the ability
 to use substitution and inductive principle provided by \textsc{Coq}. However, we still need to carefully ensure some expected properties on the structure of syntax trees.
 For example, we should require that the definitions of relations do not contain unbound variables:
 
