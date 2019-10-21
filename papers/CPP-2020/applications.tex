@@ -76,9 +76,8 @@ The conversion in the opposite direction involves the following steps:
 
     \begin{lstlisting}
       unify (X, X).
-    \end{lstlisting}
-    
-    and moving all of them forward in the  conjunctions'
+    \end{lstlisting}    
+
   \item splitting top-level disjunctions into separate clauses with the same head.
 \end{itemize}
 
@@ -98,7 +97,8 @@ using the certified framework we developed, describe conventional \textsc{Prolog
 
 \subsection{SLD Semantics}
 
-Interlving to SLD --- changing order in disjunctions:
+The conventional for \textsc{Prolog} SLD search differs from the interleaving one in just one aspect~--- it does not perform interleaving.
+Thus, changing just two rules in the operational semantics converts interleaving search into the depth-first one:
 
 \[
   \begin{array}{cr}
@@ -106,6 +106,9 @@ Interlving to SLD --- changing order in disjunctions:
     \dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \oplus s_2) \xrightarrow{r} (s'_1 \oplus s_2)} &\ruleno{DisjStepAns}\\[5mm]
   \end{array}
 \]
+
+With this definition we can almost completely reuse the mechanized proof of soundness (with just cosmetic changes); the completeness, however,
+can no longer be proven (as it does not hold anymore).
 
 \subsection{Cut}
 
