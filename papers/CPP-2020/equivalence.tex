@@ -21,6 +21,18 @@ preserve all variable dependencies in the substitution. So we can define a set o
 [\sigma] = \{\overline{\mathfrak f} \circ \sigma \mid \mathfrak{f}:\mathcal{A}\mapsto\mathcal{D}\}
 \]
 
+In \textsc{Coq} this notion boils down to the following definition:
+
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+   Definition in_denotational_sem_subst
+     (s : subst) (f : repr_fun) : Prop :=
+       exists (f' : repr_fun),
+         repr_fun_eq (subst_repr_fun_compose s f') f.
+\end{lstlisting}
+
+where ``\lstinline[language=Coq]|repr_fun_eq|'' stands for representing functions extensional equality, ``\lstinline[language=Coq]|subst_repr_fun_compose|''~---
+for a composition of a substitution and a representing function.
+
 And \emph{denotational analog} of an operational semantics (a set of representing functions corresponding to answers in the trace) for given extended state $s$ is
 then defined as a union of sets for all substitution in the trace:
 
@@ -28,16 +40,15 @@ then defined as a union of sets for all substitution in the trace:
 \sembr{s}_{op} = \cup_{(\sigma, n) \in \tr{s}} [\sigma]
 \]
 
-{ \color{blue}  In \textsc{Coq} we again use a proposition instead:
+In \textsc{Coq} we again use a proposition instead:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
-Definition in_denotational_analog (t : trace) (f : gt_fun)
-  : Prop :=
-    exists s n, in_stream (Answer s n) t /\
-           in_denotational_sem_subst s f.
-Notation "{| t , f |}" := (in_denotational_analog t f).
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]   
+   Definition in_denotational_analog
+      (t : trace) (f : repr_fun) : Prop :=
+      exists s n, in_stream (Answer s n) t /\
+             in_denotational_sem_subst s f.
+   Notation "{| t , f |}" := (in_denotational_analog t f).
 \end{lstlisting}
-}
 
 This allows us to state theorems relating two semantics.
 
@@ -140,7 +151,7 @@ The proofs of both theorems are certified in \textsc{Coq}; for completeness we c
 because the inductive principle it provides is not flexible enough. So we need to define bounded denotational semantics in our formalization too and perform
 induction on the level explicitly:
 
-\begin{lstlisting}[language=Coq,,basicstyle=\footnotesize,morekeywords={where,at,level}]
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize,morekeywords={where,at,level}]
   Reserved Notation "[| n | g , f |]" (at level 0).
   Inductive in_denotational_sem_lev_goal :
     nat -> goal -> repr_fun -> Prop :=
@@ -152,7 +163,7 @@ induction on the level explicitly:
     (in_denotational_sem_lev_goal n g f).
 \end{lstlisting}
 
-The lemma relating bounded and unbounded denotational semantics is {\color{red} translated} into \textsc{Coq}:
+The lemma relating bounded and unbounded denotational semantics in \textsc{Coq} looks like follows:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Lemma in_denotational_sem_some_lev:
@@ -180,17 +191,3 @@ The statements of the theorems are as follows:
         forall (x : var), In x (first_nats k) -> f x = f' x.
 \end{lstlisting}
 
-One important immediate corollary of these theorems is the correctness of certain program transformations. Since the results obtained by the search on a
-specification are exactly the results from the mathematical model of this specification, after the transformations of relations that do not change their
-mathematical meaning the search will obtain the same results. Note that this way we guarantee only the stability of results as the set of ground terms,
-the other aspects of program behavior, such as termination, may be affected. This allows us to safely (to a certain extent) apply such natural
-transformations as:
-
-\begin{itemize}
-\item changing the order of constituents in conjunction or disjunction;
-\item swapping conjunction and disjunction using distributivity;
-\item moving fresh variable introduction.
-\end{itemize}
-
-and even transform relational definitions to some kinds of normal form (like all fresh variables introduction on the top level with the
-conjunctive normal form inside), which may be convenient, for example, for metacomputation.

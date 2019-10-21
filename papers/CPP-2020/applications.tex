@@ -1,5 +1,24 @@
 \section{Application}
 
+In this section we consider some applications of the framework and the results, described in the previous sections.
+
+\subsection{Correctness of Transformations}
+
+One important immediate corollary of these theorems is the correctness of certain program transformations. Since the results obtained by the search on a
+specification are exactly the results from the mathematical model of this specification, after the transformations of relations that do not change their
+mathematical meaning the search will obtain the same results. Note that this way we guarantee only the stability of results as the set of ground terms,
+the other aspects of program behavior, such as termination, may be affected. This allows us to safely (to a certain extent) apply such natural
+transformations as:
+
+\begin{itemize}
+\item changing the order of constituents in conjunction or disjunction;
+\item swapping conjunction and disjunction using distributivity;
+\item moving fresh variable introduction.
+\end{itemize}
+
+and even transform relational definitions to some kinds of normal form (like all fresh variables introduction on the top level with the
+conjunctive normal form inside), which may be convenient, for example, for metacomputation.
+
 \subsection{SLD Semantics}
 
 Interlving to SLD --- changing order in disjunctions:
