@@ -1,23 +1,100 @@
 \section{Application}
 
-In this section we consider some applications of the framework and the results, described in the previous sections.
+In this section we consider some applications of the framework and results, described in the previous sections.
 
 \subsection{Correctness of Transformations}
 
-One important immediate corollary of these theorems is the correctness of certain program transformations. Since the results obtained by the search on a
-specification are exactly the results from the mathematical model of this specification, after the transformations of relations that do not change their
-mathematical meaning the search will obtain the same results. Note that this way we guarantee only the stability of results as the set of ground terms,
-the other aspects of program behavior, such as termination, may be affected. This allows us to safely (to a certain extent) apply such natural
-transformations as:
+One important immediate corollary of theorems we've proven is the justification of correctness for certain program transformations.
+The completeness of interleaving search guarantees the correctness of any transformation which preserves the denotational semantics,
+for example:
 
 \begin{itemize}
-\item changing the order of constituents in conjunction or disjunction;
-\item swapping conjunction and disjunction using distributivity;
-\item moving fresh variable introduction.
+\item changing the order of constituents in conjunctions and disjunctions;
+\item distributing conjunctions over disjunctions and vice versa, for example, normalising goals info CNF or DNF;
+\item moving fresh variable introduction upwards/downwards, for example, transforming any relation into a top-level fresh
+  construct with a freshless body.
 \end{itemize}
 
-and even transform relational definitions to some kinds of normal form (like all fresh variables introduction on the top level with the
-conjunctive normal form inside), which may be convenient, for example, for metacomputation.
+Note that this way we can guarantee only the preservation of results as \emph{sets of ground terms}; the other aspects of program behavior,
+such as termination, may be affected by some of these transformations. 
+
+As an example of these transformations application we consider the transformation from \textsc{Prolog} to conventional \textsc{miniKanren} and,
+more interesting, in the opposite direction.
+
+Since in \textsc{Prolog} a rather limited form of goals (an implicit conjunction of atoms) is used the conversion to \textsc{miniKanren} is easy:
+
+\begin{itemize}
+  \item built-in constructors in \textsc{Prolog} terms (for examples, for lists) are converted into \textsc{miniKanren} representation;
+  \item each atom is converted into a corresponding relational invocation with the same parameters (modulo the conversion of terms);
+  \item the list of atoms in the body of \textsc{Prolog} clause is converted into explicit conjunction;
+  \item a number of fresh variables (one for each argument) is created and these variables are unified with terms in corresponding
+    argument position in the head of corresponding clause;
+  \item different clauses for the same predicate are combined using disjunction.
+\end{itemize}
+
+For example, consider the result of conversion from \textsc{Prolog} definition for list appending relation into \textsc{miniKanren}.
+Like in \textsc{miniKanren}, the definition consists of two clauses. The first one is
+
+\begin{lstlisting}
+  append ([], X, X).
+\end{lstlisting}
+
+and the result of conversion is
+
+\begin{lstlisting}
+  append$^o$ = fun x y z .
+    fresh X . x == Nil /\
+              y == X   /\
+              z == X
+\end{lstlisting}
+
+The second one is
+
+\begin{lstlisting}
+  append ([H$|$T], Y, [H$|$TY]) :- append (T, Y, TY).
+\end{lstlisting}
+
+which is convered into
+
+\begin{lstlisting}
+  append$^o$ = fun x y z .
+    fresh H T Y TY . x == Cons (H, T)  /\
+                     y == Y            /\
+                     z == Cons (H, TY) /\
+                     append$^o$ (T, Y, TY)
+\end{lstlisting}
+
+The overall result is not literally the same as what we've shown in Section~\ref{language}, but denotationally equivalent.
+
+The conversion in the opposite direction involves the following steps:
+
+\begin{itemize}
+  \item converting between term representation;
+  \item moving all ``\lstinline|fresh|'' constructs into the top-level;
+  \item transforming the freshless body into DNF;
+  \item replacing all unifications with calls for a specific predicate ``\lstinline|unify/2|'', defined as
+
+    \begin{lstlisting}
+      unify (X, X).
+    \end{lstlisting}
+    
+    and moving all of them forward in the  conjunctions'
+  \item splitting top-level disjunctions into separate clauses with the same head.
+\end{itemize}
+
+The correctness of these, again, can be justified denotationally. For the appendo relation in Section~\ref{language} the result
+can be as follows:
+
+\begin{lstlisting}
+  append (X, Y, Z) :- unify (X, []), unify (Z, Y).
+  append (X, Y, Z) :-
+    unify (X, [H$|$T]),
+    unify (Z, [H$|$TY]),
+    append (T, Y, TY).
+\end{lstlisting}
+
+This transformations show that we can, for example, interpret \textsc{Prolog} specifications in interleaving semantics; moreover, we can,
+using the certified framework we developed, describe conventional \textsc{Prolog} search strategies.
 
 \subsection{SLD Semantics}
 
@@ -84,3 +161,5 @@ Cut signal for pluses and asterisks:
   \]
   
 And cut signal propogation in crosses (just adding $c$ to all arrows)
+
+\subsection{Reference Interpreters}

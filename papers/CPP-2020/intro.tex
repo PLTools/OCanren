@@ -3,8 +3,8 @@
 In the context of this paper we understand ``relational programming'' as a puristic form of logic programming with all extra-logical
 features banned. Specifically, we use \textsc{miniKanren} as an exemplary language. \textsc{miniKanren} can be seen as
 a logical language with explicit connectives, existentials and unification, and is mutually convertible to the pure logical subset of
-Prolog\footnote{A detailed Prolog-to-\textsc{miniKanren} comparison can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
-Unlike Prolog, whose implementation utilizes SLD-resolution, most \textsc{miniKanren} implementations use monadic \emph{interleaving
+\textsc{Prolog}\footnote{A detailed \textsc{Prolog}-to-\textsc{miniKanren} comparison can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
+Unlike \textsc{Prolog}, whose implementation utilizes SLD-resolution, most \textsc{miniKanren} implementations use monadic \emph{interleaving
 search}, which is believed to be complete.
 
 The introductory book on \textsc{miniKanren}~\cite{TRS} describes the language by means of an evolving set of examples. In the
@@ -26,7 +26,7 @@ we describe operational semantics with interleaving in terms of labeled transiti
 completeness of the operational semantics w.r.t the denotational one. We support our development with a formal specification
 using \textsc{Coq}~\cite{Coq} proof assistant, thus outsourcing the burden of proof checking to the automatic tool and
 deriving a certified reference interpreter via extraction mechanism. As a rather straightforward extension of our
-main result we also provide a certified operational semantics (and a reference interpreter) for Prolog with cut, a new result
+main result we also provide a certified operational semantics (and a reference interpreter) for \textsc{Prolog} with cut, a new result
 to our knowledge; while this step brings us out of purely relational domain, it still can be interesting on its own.
 
 The paper organized as follows. In Section~\ref{language} we give the syntax of the language, describe its semantics
