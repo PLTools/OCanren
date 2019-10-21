@@ -1,4 +1,5 @@
 all: *.tex
-	pdflatex main.tex
+	latex main.tex
 	bibtex main
-	pdflatex main.tex
+	latex main.tex
+	dvipdf main.dvi main.pdf

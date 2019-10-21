@@ -95,6 +95,24 @@ can be as follows:
 This transformations show that we can, for example, interpret \textsc{Prolog} specifications in interleaving semantics; moreover, we can,
 using the certified framework we developed, describe conventional \textsc{Prolog} search strategies.
 
+\begin{figure*}
+\[
+\begin{array}{cr|cr|cr|cr}
+  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} \Diamond} & \ruleno{PlusStopC}&
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}&
+  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} s'_1} &\ruleno{PlusStepC}&
+  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{PlusStepAnsC}\\
+  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ}_c \Diamond} & \ruleno{AstStopC}&
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}&
+  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ}_c s'_1} &\ruleno{AstStepC}&
+  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}
+\end{array}
+\]
+\caption{Cut signal propagation rules}
+\label{cut-signal-propagation}
+\end{figure*}
+%\FloatBarrier
+
 \subsection{SLD Semantics}
 
 The conventional for \textsc{Prolog} SLD search differs from the interleaving one in just one aspect~--- it does not perform interleaving.
@@ -102,8 +120,8 @@ Thus, changing just two rules in the operational semantics converts interleaving
 
 \[
   \begin{array}{cr}
-    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s'_1 \oplus s_2)} &\ruleno{DisjStep}\\[5mm]
-    \dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \oplus s_2) \xrightarrow{r} (s'_1 \oplus s_2)} &\ruleno{DisjStepAns}\\[5mm]
+    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s'_1 \oplus s_2)} &\ruleno{DisjStep}\\
+    \dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \oplus s_2) \xrightarrow{r} (s'_1 \oplus s_2)} &\ruleno{DisjStepAns}
   \end{array}
 \]
 
@@ -112,57 +130,110 @@ can no longer be proven (as it does not hold anymore).
 
 \subsection{Cut}
 
-Now, cuts.
+Dealing with the ``cut'' construct is known to be a cornerstone feature in study of operational semantics for \textsc{Prolog}. It turned out that
+in our case the semantics of ``cut'' can be expressed naturally (but a bit verbose). Unlike SLD-resolution, it does not amount to an incremental
+change in semantics description. It also would work only for programs, directly converted from \textsc{Prolog} specifications.
 
-New states:
+The key observation in dealing with the ``cut'' in our settings is that a state in our semantics in fact encodes the whole current
+search tree (including all backtracking possiblities). This opens the opportunity to organize proper ``navigation'' through the tree
+to reflect the effect of ``cut''.
+
+First, we add ``cut'' as a new sort of goals:
+
+\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+  Inductive goal : Set := ... | Cut : goal.
+\end{lstlisting}
+
+In denotational semantics we interpret ``cut'' as success (thus, denotationally we treat all cuts as ``green''). Operationally, we
+modify SLD semantics is such a way that a ``cut'' cuts all other branches of all enclosing nodes, marked with ``$\oplus$'', up to
+the moment when the evaluation of the disjunct, containing the ``cut'', was started. It is easy to see that this node will always
+be the nearest ``$\oplus$'', derived from the disjunction. Unfortunately, in the tree other ``$\oplus$'' nodes can
+appear due to the evaluation of ``$\otimes$'' nodes, thus we need a way to distinguish these two sorts of ``$\oplus$''. We
+denote the new sort of nodes as ``$\circledast$'', and modify the definition of states.
+
+In the semantics the rule \textsc{[ConjStepAns]} is replaced with
 
 \[
-S = \mathcal{G}\times\Sigma\times\mathbb{N}\mid S\oplus S \mid  S \circledast S \mid S \otimes \mathcal{G}
+\begin{array}{cr}
+  \dfrac{s \xrightarrow{(\sigma, n)} s'}{(s \otimes g) \xrightarrow{\circ} (\inbr{g, \sigma, n} \circledast (s' \otimes g))} & \ruleno{ConjStepAns} 
+\end{array}
 \]
 
+The rules for ``$\circledast$'' evaluation mirrors those for ``$\oplus$'', so we omit them.
 
-Changing \textsc{ConjStepAns} to
+We need a separate kind of transitions to propagate the sugnal for cutting the branches $\xrightarrow{\circ}_c$/$\xrightarrow{(\sigma, n)}_c$.
 
-  \[
-  \begin{array}{cr}
-    \dfrac{s \xrightarrow{(\sigma, n)} s'}{(s \otimes g) \xrightarrow{\circ} (\inbr{g, \sigma, n} \circledast (s' \otimes g))} & \ruleno{ConjStepAns} 
-  \end{array}
-  \]
-  
-Adding simple rules for asterisk (the same as those for plus):
+The signal itself is risen when a ``cut'' construct is encountered:
 
-  \[
-  \begin{array}{cr}
-    \dfrac{s_1 \xrightarrow{\circ} \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ} s_2} & \ruleno{AstStop}\\[5mm]
-    \dfrac{s_1 \xrightarrow{r} \Diamond}{(s_1 \circledast s_2) \xrightarrow{r} s_2} & \ruleno{AstStopAns}\\[5mm]
-    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ} (s'_1 \circledast s_2)} &\ruleno{AstStep}\\[5mm]
-    \dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \circledast s_2) \xrightarrow{r} (s'_1 \circledast s_2)} &\ruleno{AstStepAns}\\[5mm]
-  \end{array}
-\]
-  
-Cut signal creation:
-
-  \[
-  \begin{array}{cr}
-    \inbr{!, \sigma, n} \xrightarrow{(\sigma, n)}_c \Diamond &\ruleno{UnifyFail} \\[2mm]
-  \end{array}
+\[
+\begin{array}{cr}
+  \inbr{!, \sigma, n} \xrightarrow{(\sigma, n)}_c \Diamond &\ruleno{Cut} 
+\end{array}
 \]
 
-Cut signal for pluses and asterisks:
+When the signal is being propagated through ``$\oplus$'' and ``$\circledast$'' nodes, their right branches are cut out, and for ``$\circledast$'' the
+propagation continues (see Fig.~\ref{cut-signal-propagation}). In case of ``$\otimes$'' nodes the signal is simply propagated; we omit the rules since they mirrors the regular ones.
 
-  \[
-  \begin{array}{cr}
-    \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} \Diamond} & \ruleno{PlusStopC}\\[5mm]
-    \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}\\[5mm]
-    \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} s'_1} &\ruleno{PlusStepC}\\[5mm]
-    \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{PlusStepAnsC}\\[5mm]
-    \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ}_c \Diamond} & \ruleno{AstStopC}\\[5mm]
-    \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}\\[5mm]
-    \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ}_c s'_1} &\ruleno{AstStepC}\\[5mm]
-    \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}\\[5mm]
-  \end{array}
-  \]
-  
-And cut signal propogation in crosses (just adding $c$ to all arrows)
+For this semantics we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
+we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut''. Nevertheless we can demonstrate a plausible behavior
+using extracted reference interpreter.
+
 
 \subsection{Reference Interpreters}
+
+Using \textsc{Coq} extraction mechanism, we extracted two reference interpreters from out definitions and theorems: one for conventional
+\textsc{miniKanren} and another for SLD search with cut. These interpreters can be used to practically investigate the behaviour
+of specifications in unclear, complex or corner cases. Our experience has shown that these interpreters demonstrate the expected behavior
+in all cases.
+
+\begin{comment}
+  
+Мы не можем доказать, что поведение нашего cut в точности соответствует поведению cut в пролог, для этого была бы нужна детальная семантика
+Prolog с cut.
+
+Мы однако можем продемонстрировать, что обрезаются ровно те ветки поиска, которые должны, сравнив результаты исполнения Prolog и нашей семантики на
+достаточно полном примере.
+
+\begin{lstlisting}[language=Prolog,basicstyle=\footnotesize,numbers=left,stepnumber=1]
+  a(0).
+  a(1).
+  b(2, 0).
+  b(X, Y) :- a(X), !, a(Y).
+  b(3, 0).
+  c(4, 0, 0, 0).
+  c(W, X, Y, Z) :- a(W), b(X, Y), a(Z).
+  c(5, 0, 0, 0).
+\end{lstlisting}
+
+
+(Для простоты мы используем здесь целые числа, для соответствия нашему синтаксису нужно представить их в форме Пеано или просто заменить их на различные конструкторы.)
+
+В момент вычисления cut создастся ``отрезающий'' сигнал, в результате чего отрежется выбор второй альтернативы для a(X) в строке 5 --- это будет дополнительная ветка, подвешенная к $\circledast$ --- и альтернатива в строке 6 --- эта ветка (содержащая дизъюнкцию всех альтернатив после пятой строчки) подвешенная к $\oplus$ --- на которой распространение сигнала остановится.
+
+Таким образом из строк 8-10 ничего не отрезается, как и положено.
+
+Мы получаем те же ответы, что и Prolog, и в том же порядке:
+
+\[
+\begin{array}{|cccc|}
+\hline
+W & X & Y & Z \\
+\hline
+4 & 0 & 0 & 0 \\
+0 & 2 & 0 & 0 \\
+0 & 2 & 0 & 1 \\
+0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 1 & 1 \\
+1 & 2 & 0 & 0 \\
+1 & 2 & 0 & 1 \\
+1 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 \\
+1 & 0 & 1 & 0 \\
+1 & 0 & 1 & 1 \\
+5 & 0 & 0 & 0 \\
+\hline
+\end{array}
+\]
+\end{comment}
