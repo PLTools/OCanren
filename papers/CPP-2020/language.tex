@@ -239,9 +239,8 @@ Failure goals allow us to define it as a total function:
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
    Definition def : Set := 
      {r : rel | closed_rel r /\ consistent_rel r}.
-   Definition env : Set := rel_name -> def.
+   Definition env : Set := name -> def.
    Variable Prog : env.
 \end{lstlisting}
 
 We will also have to add binding consistency requirement as a condition for some of our later theorems.
-

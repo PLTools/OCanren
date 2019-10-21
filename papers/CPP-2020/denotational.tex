@@ -183,7 +183,7 @@ actual ones.
 To formalize denotational semantics in \textsc{Coq} we can define representing functions simply as \textsc{Coq} functions:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
-   Definition repr_fun : Set := var -> ground_term.
+   Definition repr_fun : Set := name -> ground_term.
 \end{lstlisting}
 
 We define the semantics via inductive proposition ``\lstinline|in_denotational_sem_goal|'' (with notation ``\lstinline[mathescape=true]{[| $\bullet$ , $\bullet$ |]}'')

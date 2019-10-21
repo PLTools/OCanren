@@ -118,31 +118,31 @@ MGU are not decreasing on argument terms, so we can't define it as a simple recu
 MGU as a proposition:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
-  Inductive MGU :
+  Inductive mgu :
     term -> term -> option subst -> Set := ...
 \end{lstlisting}
 
 However, we still need to use a well-founded induction to prove the existence of the most general unifier and its defining properties:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
-  Lemma MGU_ex : forall t1 t2, {r & MGU t1 t2 r}.
+  Lemma mgu_exists : forall t1 t2, {r & mgu t1 t2 r}.
   Definition unifier (s : subst) (t1 t2 : term) : Prop :=
     apply_subst s t1 = apply_subst s t2.
-  Lemma MGU_unifies:
-    forall t1 t2 s, MGU t1 t2 (Some s) -> unifier s t1 t2.
+  Lemma mgu_unifies:
+    forall t1 t2 s, mgu t1 t2 (Some s) -> unifier s t1 t2.
   Definition more_general (m s : subst) : Prop :=
     exists (s' : subst),
     forall (t : term),
       apply_subst s t = apply_subst s' (apply_subst m t).
-  Lemma MGU_most_general :
+  Lemma mgu_most_general :
     forall (t1 t2 : term)
       (m : subst),
-      MGU t1 t2 (Some m) ->
+      mgu t1 t2 (Some m) ->
       forall (s : subst),
         unifier s t1 t2 -> more_general m s.
-  Lemma MGU_non_unifiable :
+  Lemma mgu_non_unifiable :
     forall (t1 t2 : term),
-      MGU t1 t2 None -> forall s,  ~ (unifier s t1 t2).
+      mgu t1 t2 None -> forall s,  ~ (unifier s t1 t2).
 \end{lstlisting}
 
 For this well-founded induction we use the number of free variables in argument terms as a well-founded order on pairs of terms:
@@ -212,9 +212,9 @@ Then we define a trace coinductively as a stream of labels in transition steps a
       eval_step st l st' ->
       op_sem st' t ->
       op_sem (State st) (Cons l t).
-  Lemma op_sem_ex (st' : state') :
+  Lemma op_sem_exists (st' : state'):
     {t : trace & op_sem st' t}.
-  Lemma op_sem_unique :
+  Lemma op_sem_unique:
     forall st' t1 t2,
       op_sem st' t1 ->
       op_sem st' t2 ->
