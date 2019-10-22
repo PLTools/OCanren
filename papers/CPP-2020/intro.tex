@@ -1,6 +1,6 @@
 \section{Introduction}
 
-In the context of this paper we understand ``relational programming'' as a puristic form of logic programming with all extra-logical
+In the context of this paper, we understand ``relational programming'' as a puristic form of logic programming with all extra-logical
 features banned. Specifically, we use \textsc{miniKanren} as an exemplary language. \textsc{miniKanren} can be seen as
 a logical language with explicit connectives, existentials and unification, and is mutually convertible to the pure logical subset of
 \textsc{Prolog}\footnote{A detailed \textsc{Prolog}-to-\textsc{miniKanren} comparison can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
@@ -10,23 +10,23 @@ search}, which is believed to be complete.
 The introductory book on \textsc{miniKanren}~\cite{TRS} describes the language by means of an evolving set of examples. In the
 series of follow-up papers~\cite{MicroKanren,CKanren,CKanren1,AlphaKanren,2016,Guided} various extensions of the language were presented with
 their semantics explained in terms of \textsc{Scheme} implementation. We argue that this style of semantic definition is
-fragile and not self-evident since it requires the knowledge of concrete implementation language semantics. In addition the justification of
+fragile and not self-evident since it requires the knowledge of concrete implementation language semantics. In addition, the justification of
 important properties of relational programs (for example, refutational completeness~\cite{WillThesis}) becomes cumbersome.
 
 There were some previous attempts to define a formal semantics for \textsc{miniKanren}. \citet{MechanisingMiniKanren} gave a formal definition
 for denotational and non-deterministic operational semantics and proved the soundness result; the development was mechanized in HOL. 
 \citet{RelConversion} presented a variant of nondeterministic operational semantics, and~\citet{DivTest} used another variant of finite-set semantics.
-None of previous approaches were capable of reflecting the distinctive property of \textsc{miniKanren} search~--- \emph{interleaving}~\cite{Search},
+None of the previous approaches were capable of reflecting the distinctive property of \textsc{miniKanren} search~--- \emph{interleaving}~\cite{Search},
 thus deviating from the conventional understanding of the language. Moreover, one of the most important features of the
 language~--- the completeness of the search,~--- was never addressed.
 
-In this paper we present a formal semantics for core \textsc{miniKanren} and prove some its basic properties. First,
+In this paper, we present a formal semantics for core \textsc{miniKanren} and prove some of its basic properties. First,
 we define denotational semantics similar to the least Herbrand model for definite logic programs~\cite{LHM}; then
-we describe operational semantics with interleaving in terms of labeled transition system. Finally, we prove the soundness and
+we describe operational semantics with interleaving in terms of a labeled transition system. Finally, we prove the soundness and
 completeness of the operational semantics w.r.t the denotational one. We support our development with a formal specification
 using \textsc{Coq}~\cite{Coq} proof assistant, thus outsourcing the burden of proof checking to the automatic tool and
 deriving a certified reference interpreter via extraction mechanism. As a rather straightforward extension of our
-main result we also provide a certified operational semantics (and a reference interpreter) for \textsc{Prolog} with cut, a new result
+main result, we also provide a certified operational semantics (and a reference interpreter) for \textsc{Prolog} with cut, a new result
 to our knowledge; while this step brings us out of purely relational domain, it still can be interesting on its own.
 
 \begin{comment}

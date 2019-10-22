@@ -1,16 +1,16 @@
-\section{Application}
+\section{Applications}
 
 In this section we consider some applications of the framework and results, described in the previous sections.
 
 \subsection{Correctness of Transformations}
 
-One important immediate corollary of theorems we've proven is the justification of correctness for certain program transformations.
+One important immediate corollary of the equivalence theorems we have proven is the justification of correctness for certain program transformations.
 The completeness of interleaving search guarantees the correctness of any transformation which preserves the denotational semantics,
 for example:
 
 \begin{itemize}
 \item changing the order of constituents in conjunctions and disjunctions;
-\item distributing conjunctions over disjunctions and vice versa, for example, normalising goals info CNF or DNF;
+\item distributing conjunctions over disjunctions and vice versa, for example, normalizing goals info CNF or DNF;
 \item moving fresh variable introduction upwards/downwards, for example, transforming any relation into a top-level fresh
   construct with a freshless body.
 \end{itemize}
@@ -24,15 +24,16 @@ more interesting, in the opposite direction.
 Since in \textsc{Prolog} a rather limited form of goals (an implicit conjunction of atoms) is used the conversion to \textsc{miniKanren} is easy:
 
 \begin{itemize}
-  \item built-in constructors in \textsc{Prolog} terms (for examples, for lists) are converted into \textsc{miniKanren} representation;
+  \item built-in constructors in \textsc{Prolog} terms (for example, for lists) are converted into \textsc{miniKanren} representation;
   \item each atom is converted into a corresponding relational invocation with the same parameters (modulo the conversion of terms);
   \item the list of atoms in the body of \textsc{Prolog} clause is converted into explicit conjunction;
-  \item a number of fresh variables (one for each argument) is created and these variables are unified with terms in corresponding
-    argument position in the head of corresponding clause;
+  \item a number of fresh variables (one for each argument) are created
+  \item arguments are unified with terms in the corresponding
+    argument position in the head of the corresponding clause;
   \item different clauses for the same predicate are combined using disjunction.
 \end{itemize}
 
-For example, consider the result of conversion from \textsc{Prolog} definition for list appending relation into \textsc{miniKanren}.
+For example, consider the result of conversion from \textsc{Prolog} definition for the list appending relation into \textsc{miniKanren}.
 Like in \textsc{miniKanren}, the definition consists of two clauses. The first one is
 
 \begin{lstlisting}
@@ -54,7 +55,7 @@ The second one is
   append ([H$|$T], Y, [H$|$TY]) :- append (T, Y, TY).
 \end{lstlisting}
 
-which is convered into
+which is converted into
 
 \begin{lstlisting}
   append$^o$ = fun x y z .
@@ -81,8 +82,8 @@ The conversion in the opposite direction involves the following steps:
   \item splitting top-level disjunctions into separate clauses with the same head.
 \end{itemize}
 
-The correctness of these, again, can be justified denotationally. For the appendo relation in Section~\ref{language} the result
-can be as follows:
+The correctness of these, again, can be justified denotationally. For the append$^o$ relation in Section~\ref{language} the result
+will be as follows:
 
 \begin{lstlisting}
   append (X, Y, Z) :- unify (X, []), unify (Z, Y).
@@ -92,7 +93,7 @@ can be as follows:
     append (T, Y, TY).
 \end{lstlisting}
 
-This transformations show that we can, for example, interpret \textsc{Prolog} specifications in interleaving semantics; moreover, we can,
+These transformations show that we can, for example, interpret \textsc{Prolog} specifications in interleaving semantics; moreover, we can,
 using the certified framework we developed, describe conventional \textsc{Prolog} search strategies.
 
 \begin{figure*}
@@ -125,17 +126,17 @@ Thus, changing just two rules in the operational semantics converts interleaving
   \end{array}
 \]
 
-With this definition we can almost completely reuse the mechanized proof of soundness (with just cosmetic changes); the completeness, however,
+With this definition we can almost completely reuse the mechanized proof of soundness (with minor changes); the completeness, however,
 can no longer be proven (as it does not hold anymore).
 
 \subsection{Cut}
 
-Dealing with the ``cut'' construct is known to be a cornerstone feature in study of operational semantics for \textsc{Prolog}. It turned out that
+Dealing with the ``cut'' construct is known to be a cornerstone feature in the study of operational semantics for \textsc{Prolog}. It turned out that
 in our case the semantics of ``cut'' can be expressed naturally (but a bit verbose). Unlike SLD-resolution, it does not amount to an incremental
 change in semantics description. It also would work only for programs, directly converted from \textsc{Prolog} specifications.
 
-The key observation in dealing with the ``cut'' in our settings is that a state in our semantics in fact encodes the whole current
-search tree (including all backtracking possiblities). This opens the opportunity to organize proper ``navigation'' through the tree
+The key observation in dealing with the ``cut'' in our setting is that a state in our semantics, in fact, encodes the whole current
+search tree (including all backtracking possibilities). This opens the opportunity to organize proper ``navigation'' through the tree
 to reflect the effect of ``cut''.
 
 First, we add ``cut'' as a new sort of goals:
@@ -144,8 +145,8 @@ First, we add ``cut'' as a new sort of goals:
   Inductive goal : Set := ... | Cut : goal.
 \end{lstlisting}
 
-In denotational semantics we interpret ``cut'' as success (thus, denotationally we treat all cuts as ``green''). Operationally, we
-modify SLD semantics is such a way that a ``cut'' cuts all other branches of all enclosing nodes, marked with ``$\oplus$'', up to
+In denotational semantics, we interpret ``cut'' as success (thus, denotationally we treat all cuts as ``green''). Operationally, we
+modify SLD semantics in such a way that a ``cut'' cuts all other branches of all enclosing nodes, marked with ``$\oplus$'', up to
 the moment when the evaluation of the disjunct, containing the ``cut'', was started. It is easy to see that this node will always
 be the nearest ``$\oplus$'', derived from the disjunction. Unfortunately, in the tree other ``$\oplus$'' nodes can
 appear due to the evaluation of ``$\otimes$'' nodes, thus we need a way to distinguish these two sorts of ``$\oplus$''. We
@@ -159,9 +160,9 @@ In the semantics the rule \textsc{[ConjStepAns]} is replaced with
 \end{array}
 \]
 
-The rules for ``$\circledast$'' evaluation mirrors those for ``$\oplus$'', so we omit them.
+The rules for ``$\circledast$'' evaluation mirror those for ``$\oplus$'', so we omit them.
 
-We need a separate kind of transitions to propagate the sugnal for cutting the branches $\xrightarrow{\circ}_c$/$\xrightarrow{(\sigma, n)}_c$.
+We need a separate kind of transitions to propagate the signal for cutting the branches $\xrightarrow{\circ}_c$/$\xrightarrow{(\sigma, n)}_c$.
 
 The signal itself is risen when a ``cut'' construct is encountered:
 
@@ -172,68 +173,16 @@ The signal itself is risen when a ``cut'' construct is encountered:
 \]
 
 When the signal is being propagated through ``$\oplus$'' and ``$\circledast$'' nodes, their right branches are cut out, and for ``$\circledast$'' the
-propagation continues (see Fig.~\ref{cut-signal-propagation}). In case of ``$\otimes$'' nodes the signal is simply propagated; we omit the rules since they mirrors the regular ones.
+propagation continues (see Fig.~\ref{cut-signal-propagation}). In the case of ``$\otimes$'' nodes the signal is simply propagated; we omit the rules since they mirror the regular ones.
 
 For this semantics we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
-we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut''. Nevertheless we can demonstrate a plausible behavior
+we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut''. Nevertheless, we can demonstrate a plausible behavior
 using extracted reference interpreter.
 
 
 \subsection{Reference Interpreters}
 
 Using \textsc{Coq} extraction mechanism, we extracted two reference interpreters from out definitions and theorems: one for conventional
-\textsc{miniKanren} and another for SLD search with cut. These interpreters can be used to practically investigate the behaviour
+\textsc{miniKanren} with interleaving search and another one for SLD search with cut. These interpreters can be used to practically investigate the behaviour
 of specifications in unclear, complex or corner cases. Our experience has shown that these interpreters demonstrate the expected behavior
 in all cases.
-
-\begin{comment}
-  
-Мы не можем доказать, что поведение нашего cut в точности соответствует поведению cut в пролог, для этого была бы нужна детальная семантика
-Prolog с cut.
-
-Мы однако можем продемонстрировать, что обрезаются ровно те ветки поиска, которые должны, сравнив результаты исполнения Prolog и нашей семантики на
-достаточно полном примере.
-
-\begin{lstlisting}[language=Prolog,basicstyle=\footnotesize,numbers=left,stepnumber=1]
-  a(0).
-  a(1).
-  b(2, 0).
-  b(X, Y) :- a(X), !, a(Y).
-  b(3, 0).
-  c(4, 0, 0, 0).
-  c(W, X, Y, Z) :- a(W), b(X, Y), a(Z).
-  c(5, 0, 0, 0).
-\end{lstlisting}
-
-
-(Для простоты мы используем здесь целые числа, для соответствия нашему синтаксису нужно представить их в форме Пеано или просто заменить их на различные конструкторы.)
-
-В момент вычисления cut создастся ``отрезающий'' сигнал, в результате чего отрежется выбор второй альтернативы для a(X) в строке 5 --- это будет дополнительная ветка, подвешенная к $\circledast$ --- и альтернатива в строке 6 --- эта ветка (содержащая дизъюнкцию всех альтернатив после пятой строчки) подвешенная к $\oplus$ --- на которой распространение сигнала остановится.
-
-Таким образом из строк 8-10 ничего не отрезается, как и положено.
-
-Мы получаем те же ответы, что и Prolog, и в том же порядке:
-
-\[
-\begin{array}{|cccc|}
-\hline
-W & X & Y & Z \\
-\hline
-4 & 0 & 0 & 0 \\
-0 & 2 & 0 & 0 \\
-0 & 2 & 0 & 1 \\
-0 & 0 & 0 & 0 \\
-0 & 0 & 0 & 1 \\
-0 & 0 & 1 & 0 \\
-0 & 0 & 1 & 1 \\
-1 & 2 & 0 & 0 \\
-1 & 2 & 0 & 1 \\
-1 & 0 & 0 & 0 \\
-1 & 0 & 0 & 1 \\
-1 & 0 & 1 & 0 \\
-1 & 0 & 1 & 1 \\
-5 & 0 & 0 & 0 \\
-\hline
-\end{array}
-\]
-\end{comment}

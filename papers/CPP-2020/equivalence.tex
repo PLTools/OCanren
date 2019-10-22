@@ -3,11 +3,11 @@
 
 Now when we defined two different kinds of semantics for \textsc{miniKanren} we can relate them and show that the results given by these two semantics are the same for any specification.
 This will actually say something important about the search in the language: since operational semantics describes precisely the behavior of the search and denotational semantics
-ignores the search and describes what we \emph{should} get from mathematical point of view, by proving their equivalence we establish \emph{completeness} of the search which
+ignores the search and describes what we \emph{should} get from a mathematical point of view, by proving their equivalence we establish \emph{completeness} of the search which
 means that the search will get all answers satisfying the described specification and only those.
 
 But first, we need to relate the answers produced by these two semantics as they have different forms: a trace of substitutions (along with numbers of allocated variables)
-for operational and a set of representing functions for denotational. We can notice that the notion of representing function is close to substitution, with only two differences:
+for the operational one and a set of representing functions for the denotational one. We can notice that the notion of representing function is close to substitution, with only two differences:
 
 \begin{itemize}
 \item representing function is total;
@@ -50,7 +50,7 @@ In \textsc{Coq} we again use a proposition instead:
    Notation "{| t , f |}" := (in_denotational_analog t f).
 \end{lstlisting}
 
-This allows us to state theorems relating two semantics.
+This allows us to state theorems relating the two semantics.
 
 \begin{theorem}[Operational semantics soundness]
 If indices of all free variables in a goal $g$ are limited by some number $n$, then
@@ -62,7 +62,7 @@ If indices of all free variables in a goal $g$ are limited by some number $n$, t
 
 It can be proven by nested induction, but first, we need to generalize the statement so that the inductive hypothesis would be strong enough for the inductive step.
 To do so, we define denotational semantics not only for goals but for arbitrarily extended states. Note that this definition does not need to have any intuitive
-interpretation, it is introduced only for proof to go smoothly. The definition of the denotational semantics for extended states is on Figure~\ref{denotational_semantics_of_states}.
+interpretation, it is introduced only for proof to go smoothly. The definition of the denotational semantics for extended states is in Figure~\ref{denotational_semantics_of_states}.
 The generalized version of the theorem uses it:
 
 \begin{figure}[t]
@@ -138,7 +138,7 @@ Formally it can be proven using the definition of the least fixed point from Tar
 Now the generalized version of the completeness theorem is as follows:
 
 \begin{lemma}[Generalized completeness]
-For any set of relational definitions, for any level $l$, for any well-formed (w.r.t. that set of definitions) state $\inbr{g, \sigma, n}$,
+For any set of relational definitions, for any level $l$, for any well-formed state $\inbr{g, \sigma, n}$,
 
 \[
 \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}^l \cap [\sigma]\} \subset \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \sigma, n}}_{op}\}.
@@ -163,7 +163,11 @@ induction on the level explicitly:
     (in_denotational_sem_lev_goal n g f).
 \end{lstlisting}
 
-The lemma relating bounded and unbounded denotational semantics in \textsc{Coq} looks like follows:
+Recall that the environment ``\lstinline[language=Coq]|Prog|'' maps every relational symbol to the definition of relation,
+which is a pair of a function from terms to goals and a proof that it is closed and consistent.
+So ``\lstinline[language=Coq]|(proj1_sig (Prog r) t)|'' here simply takes the body of the corresponding relation.
+
+The lemma relating bounded and unbounded denotational semantics in \textsc{Coq} looks as follows:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Lemma in_denotational_sem_some_lev:
