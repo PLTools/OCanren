@@ -22,18 +22,18 @@
 In this section we present a denotational semantics for the language we defined above. We use a simple set-theoretic
 approach which can be considered as an analogy to the least Herbrand model for definite logic programs~\cite{LHM}.
 Strictly speaking, instead of developing it from scratch we could have just described the conversion of specifications
-into definite logic form and took their least Herbrand model. However, in that case we would still need to define
+into definite logic form and took their least Herbrand model. However, in that case, we would still need to define
 the least Herbrand model semantics for definite logic programs in a certified way. In addition, while for
 this concrete language the conversion to definite logic form is trivial, it may become less trivial for
-its extensions (with, for examples, nominal constructs~\cite{AlphaKanren}) which we plan to do in future.
+its extensions (with, for example, nominal constructs~\cite{AlphaKanren}) which we plan to do in future.
 
 We also must make the following observation. Usually, building inductive denotational semantics amounts to
 constructing a complete lattice and a monotone function and taking its least fixed point~\cite{TarskiKnaster}.
 As we deal with a first-order language with only monotonic constructs (conjunction/disjunction) these steps
 are trivial. Moreover, we express the semantics in \textsc{Coq}, where all well-formed inductive definitions already
-have proper semantics, which removes the neccesity to justify the validity of steps we perform.
+have proper semantics, which removes the necessity to justify the validity of the steps we perform.
 
-To motivate further development, we first consider the following example. Let us have the following goal:
+To motivate the further development, we first consider the following example. Let us have the following goal:
 
 \begin{lstlisting}
    x === Cons (y, z)
@@ -66,9 +66,9 @@ from semantic variables to ground terms. We call these functions \emph{represent
 \{(\mathfrak{f}\,(\alpha),\mathfrak{f}\,(\beta),\mathfrak{f}\,(\gamma))\mid\mathfrak{f}\in\sembr{\mbox{\lstinline|$\alpha$ === Cons ($\beta$, $\,\gamma$)|}}\}
 \]
 
-where we use conventional semantic brackets ``$\sembr{\bullet}$'' to denote the semantics. For the top-level goal we need to substitute its free syntactic
+where we use conventional semantic brackets ``$\sembr{\bullet}$'' to denote the semantics. For the top-level goal, we need to substitute its free syntactic
 variables with distinct semantic ones, calculate the semantics, and build the explicit representation for the relation as shown above. The relation, obviously,
-does not depend on concrete choice of semantic variables, but depends on the order in which the values of representing functions are tupled. This order can be
+does not depend on concrete choice of semantic variables but depends on the order in which the values of representing functions are tupled. This order can be
 conventionalized, which gives us a completely deterministic semantics.
 
 Now we implement this idea. First, for a representing function
@@ -95,7 +95,7 @@ which maps terms to terms:
 
 Let us have two terms $t_1, t_2\in\mathcal{T_A}$. If there is a unifier for $t_1$ and $t_2$ then, clearly, there is a substitution $\theta$ which
 turns both $t_1$ and $t_2$ into the same \emph{ground} term (we do not require $\theta$ to be the most general). Thus, $\theta$ maps
-(some) ground variables into ground terms, and its application to $t_{1(2)}$ is exactly $\overline{\theta}(t_{1(2)})$. This reasoning can be
+(some) variables into ground terms, and its application to $t_{1(2)}$ is exactly $\overline{\theta}(t_{1(2)})$. This reasoning can be
 performed in the opposite direction: a unification $t_1\equiv t_2$ defines the set of all representing functions $\mathfrak{f}$ for which
 $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$. 
 
@@ -131,13 +131,30 @@ Now we are ready to specify the semantics for goals (see Figure~\ref{denotationa
  We've already given the motivation for
   the semantics of unification: the condition $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$ gives us the set of all (otherwise
   unrestricted) representing functions which ``equate'' terms $t_1$ and $t_2$.
-  Set union and intersection provide a conventional interpretations
+  Set union and intersection provide a conventional interpretation
 for disjunction and conjunction of goals. Now for the case of ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
 not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semantics of $g\,[\alpha/x]$. The interesting part is the next step:
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
 goal specifies a relation over its free variables. We introduce some nondeterminism by choosing arbitrary $\alpha$, but we have proven by
 structural induction that with different choices of free variable the semantics of a goal does not change (and this proof turned out to
-be the most cumbersome among all others). Consider the following example:
+be the most cumbersome among all others). The final case is a relational invocation, in which we unfold the definition of corresponding relational symbol and substitute its formal parameters with actual ones.
+
+\begin{figure}[t]
+  \[
+  \begin{array}{cclr}
+    \sembr{t_1\equiv t_2}&=&\{\mathfrak f : \mathcal{A}\to\mathcal{D}\mid \overline{\mathfrak{f}}\,(t_1)=\overline{\mathfrak{f}}\,(t_2)\}& \ruleno{Unify$_D$}\\
+    \sembr{g_1\wedge g_2}&=&\sembr{g_1}\cap\sembr{g_1}&\ruleno{Conj$_D$}\\
+    \sembr{g_1\vee g_2}&=&\sembr{g_1}\cup\sembr{g_1}&\ruleno{Disj$_D$}\\
+    \sembr{\mbox{\lstinline|fresh|}\,x\,.\,g}&=&(\sembr{g\,[\alpha/x]})\uparrow\alpha,\;\alpha\not\in FV(g)& \ruleno{Fresh$_D$}\\
+    \sembr{R\,(t_1,\dots,t_k)}&=&\sembr{g\,[t_1/x_1,\dots,t_k/x_k]} & \ruleno{Invoke$_D$}\\
+    & & \multicolumn{2}{c}{\mbox{where}\;R=\lambda\,x_1\dots x_k\,.\,g}
+  \end{array}
+  \]
+  \caption{Denotational semantics of goals}
+  \label{denotational_semantics_of_goals}
+\end{figure}
+
+Here is an example of denotational semantics of a goal:
 
 \renewcommand{\overset}[2]{#2}
 \[
@@ -160,25 +177,7 @@ be the most cumbersome among all others). Consider the following example:
 \end{array}
 \]
 
-In the end we've got the set of representing functions, each of which restricts only the value of free variable $\alpha$. 
-
-The final case is relational invocation, in which we unfold the definition of corresponding relational symbol and substitute its formal parameters with
-actual ones.
-
-\begin{figure}[t]
-  \[
-  \begin{array}{cclr}
-    \sembr{t_1\equiv t_2}&=&\{\mathfrak f : \mathcal{A}\to\mathcal{D}\mid \overline{\mathfrak{f}}\,(t_1)=\overline{\mathfrak{f}}\,(t_2)\}& \ruleno{Unify$_D$}\\
-    \sembr{g_1\wedge g_2}&=&\sembr{g_1}\cap\sembr{g_1}&\ruleno{Conj$_D$}\\
-    \sembr{g_1\vee g_2}&=&\sembr{g_1}\cup\sembr{g_1}&\ruleno{Disj$_D$}\\
-    \sembr{\mbox{\lstinline|fresh|}\,x\,.\,g}&=&(\sembr{g\,[\alpha/x]})\uparrow\alpha,\;\alpha\not\in FV(g)& \ruleno{Fresh$_D$}\\
-    \sembr{R\,(t_1,\dots,t_k)}&=&\sembr{g\,[t_1/x_1,\dots,t_k/x_k]} & \ruleno{Invoke$_D$}\\
-    & & \multicolumn{2}{c}{\mbox{where}\;R=\lambda\,x_1\dots x_k\,.\,g}
-  \end{array}
-  \]
-  \caption{Denotational semantics of goals}
-  \label{denotational_semantics_of_goals}
-\end{figure}
+In the end, we've got the set of representing functions, each of which restricts only the value of the free variable $\alpha$.
 
 To formalize denotational semantics in \textsc{Coq} we can define representing functions simply as \textsc{Coq} functions:
 
@@ -203,7 +202,7 @@ The head of the definition is as follows
   where "[| g , f |]" := (in_denotational_sem_goal g f).
 \end{lstlisting}
 
-and the body just eumerates the cases shown on Fig.~\ref{denotational_semantics_of_goals}.
+and the body just goes through the cases shown in Fig.~\ref{denotational_semantics_of_goals}.
   
 We formulate the following important \emph{completeness condition} for the semantics of a goal $g$:
 

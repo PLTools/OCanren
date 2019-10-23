@@ -24,7 +24,7 @@ S = \mathcal{G}\times\Sigma\times\mathbb{N}\mid S\oplus S \mid S \otimes \mathca
 As we will see later, an evaluation of a goal is separated into elementary steps, and these steps are performed interchangeably for different subgoals. 
 Thus, a state has a tree-like structure with intermediate nodes corresponding to partially-evaluated conjunctions (``$\otimes$'') or
 disjunctions (``$\oplus$''). A leaf in the form $\inbr{g, \sigma, n}$ determines a goal in a context, where $g$~--- a goal, $\sigma$~--- a substitution accumulated so far,
-and $n$~--- a natural number, which corresponds to a number of semantic variables used to this point. For a conjunction node its right child is always a goal since
+and $n$~--- a natural number, which corresponds to a number of semantic variables used to this point. For a conjunction node, its right child is always a goal since
 it cannot be evaluated unless some result is provided by the left conjunct.
 
 We also need extended states
@@ -55,14 +55,14 @@ Finally, we define the set of labels:
 L = \circ \mid \Sigma\times \mathbb{N}
 \]
 
-The label ``$\circ$'' is used to mark those steps which do not provide an answer; otherwise a transition is labeled by a pair of a substitution and a number of allocated
+The label ``$\circ$'' is used to mark those steps which do not provide an answer; otherwise, a transition is labeled by a pair of a substitution and a number of allocated
 variables. The substitution is one of the answers, and the number is threaded through the derivation to keep track of allocated variables; we ignore it in further explanations.
 
 \begin{figure*}
   \[
   \begin{array}{cr|cr}
-    \inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{\circ} \Diamond , \, \, \nexists\; mgu\,(t_1, t_2, \sigma) &\ruleno{UnifyFail} &
-    \inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{(mgu\,(t_1, t_2, \sigma),\, n)} \Diamond & \ruleno{UnifySuccess} \\[2mm]
+    \inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{\circ} \Diamond , \, \, \nexists\; mgu\,(t_1 \sigma, t_2 \sigma) &\ruleno{UnifyFail} &
+    \inbr{t_1 \equiv t_2, \sigma, n} \xrightarrow{(mgu\,(t_1 \sigma, t_2 \sigma) \circ \sigma),\, n)} \Diamond & \ruleno{UnifySuccess} \\[2mm]
     \inbr{g_1 \lor g_2, \sigma, n} \xrightarrow{\circ} \inbr{g_1, \sigma, n} \oplus \inbr{g_2, \sigma, n} & \ruleno{Disj} &
     \inbr{g_1 \land g_2, \sigma, n} \xrightarrow{\circ} \inbr{ g_1, \sigma, n} \otimes g_2 & \ruleno{Conj} \\[2mm]
     \inbr{\mbox{\lstinline|fresh|}\, x\, .\, g, \sigma, n} \xrightarrow{\circ} \inbr{g\,[\bigslant{\alpha_{n + 1}}{x}], \sigma, n + 1} & \ruleno{Fresh} &
@@ -81,17 +81,17 @@ variables. The substitution is one of the answers, and the number is threaded th
   \label{lts}
 \end{figure*}
 
-The transition rules are shown on Figure~\ref{lts}. The first two rules specify the semantics of unification. If two terms are not unifiable under the current substitution
-$\sigma$ then the evaluation stops with no answer; otherwise it stops with the answer equal to the most general unifier.
+The transition rules are shown in Figure~\ref{lts}. The first two rules specify the semantics of unification. If two terms are not unifiable under the current substitution
+$\sigma$ then the evaluation stops with no answer; otherwise, it stops with the answer equal to the most general unifier.
 
-The next two rules describe the steps performed when disjunction (conjunction) is encountered on the top level of the current goal. For disjunction it schedules both goals (using ``$\oplus$'') for
+The next two rules describe the steps performed when disjunction or conjunction is encountered on the top level of the current goal. For disjunction, it schedules both goals (using ``$\oplus$'') for
 evaluating in the same context as the parent state, for conjunction~--- schedules the left goal and postpones the right one (using ``$\otimes$'').
 
 The rule for ``\lstinline|fresh|'' substitutes bound syntactic variable with a newly allocated semantic one and proceeds with the goal; no answer provided at this step.
 
 The rule for relation invocation finds a corresponding definition, substitutes its formal parameters with the actual ones, and proceeds with the body.
 
-The rest of the rules specify the steps performed during the evaluation of two remaining types of the states~--- conjunction and disjunction. In all cases the left state
+The rest of the rules specify the steps performed during the evaluation of two remaining types of the states~--- conjunction and disjunction. In all cases, the left state
 is evaluated first. If its evaluation stops with a result then the right state (or goal) is scheduled for evaluation, and the label is propagated. If there is no result then
 the conjunction evaluation stops with no result (\textsc{ConjStop}) as well while the disjunction evaluation proceeds with the right state (\textsc{DisjStop}).
 
@@ -103,7 +103,7 @@ scheduled for evaluation (\textsc{ConjStepAns}).
 
 The introduced transition system is completely deterministic. There was, however, some freedom in choosing the order of evaluation for conjunction and
 disjunction states. For example, instead of evaluating the left substate first we could choose to evaluate the right one, etc. In each concrete case we would
-end up with a different (but still deterministic) system which would prescribe different semantics to a concrete goal. This choice reflects the inherent
+end up with a different (but still deterministic) system that would prescribe different semantics to a concrete goal. This choice reflects the inherent
 non-deterministic nature of search in relational (and, more generally, logical) programming. However, as long as deterministic search procedures
 are sound and complete, we can consider them ``equivalent''\footnote{There still can be differences in observable behavior of concrete goals under different
 sound and complete search strategies: a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}.
@@ -113,7 +113,7 @@ in the reference \textsc{miniKanren} implementations.
 
 To formalize the operational part in \textsc{Coq} we first need to define all preliminary notions from unification theory~\cite{Unification} which our semantics uses.
 
-In particular, we need to implement the notion of the most general unifier (MGU). As is it well-known~\cite{UnificationMcBride} all standard recursive algorithms for calculating
+In particular, we need to implement the notion of the most general unifier (MGU). As is well-known~\cite{UnificationMcBride} all standard recursive algorithms for calculating
 MGU are not decreasing on argument terms, so we can't define it as a simple recursive function in \textsc{Coq} due to the termination check. There is no such obstacle when we define
 MGU as a proposition:
 
@@ -125,7 +125,7 @@ MGU as a proposition:
 However, we still need to use a well-founded induction to prove the existence of the most general unifier and its defining properties:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
-  Lemma mgu_exists : forall t1 t2, {r & mgu t1 t2 r}.
+  Lemma mgu_$\texttt{exists}$ : forall t1 t2, {r & mgu t1 t2 r}.
   Definition unifier (s : subst) (t1 t2 : term) : Prop :=
     apply_subst s t1 = apply_subst s t2.
   Lemma mgu_unifies:
@@ -157,26 +157,26 @@ For this well-founded induction we use the number of free variables in argument 
 \end{lstlisting}
 
 After this preliminary work, the described transition relation can be encoded naturally as an inductively defined proposition (here ``\lstinline|state'|''
-stands for an extended state):
+stands for a non-extended state and ``\lstinline|state|'' --- for an extended one):
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Inductive eval_step :
-    state -> label -> state' -> Set := ...
+    state' -> label -> state -> Set := ...
 \end{lstlisting}
 
 We state the fact that our system is deterministic through existence and uniqueness of a transition for every state:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
-  Lemma eval_step_ex :
-    forall (st : state),
-    {l : label & {st' : state' & eval_step st l st'}}.
+  Lemma eval_step_$\texttt{exists}$ :
+    forall (st' : state'),
+    {l : label & {st : state & eval_step st' l st}}.
   Lemma eval_step_unique :
-    forall (st : state)
+    forall (st' : state')
       (l1 l2 : label)
-      (st'1 st'2 : state'),
-    eval_step st l1 st'1 ->
-    eval_step st l2 st'2 ->
-    l1 = l2 /\ st'1 = st'2.
+      (st1 st2 : state'),
+    eval_step st' l1 st1 ->
+    eval_step st' l2 st2 ->
+    l1 = l2 /\ st1 = st2.
 \end{lstlisting}
 
 To work with (possibly) infinite sequences we use the standard approach in \textsc{Coq}~--- coinductively defined streams:
@@ -206,18 +206,18 @@ Then we define a trace coinductively as a stream of labels in transition steps a
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
   Definition trace : Set := $@$stream label.
-  CoInductive op_sem : state' -> trace -> Set :=
+  CoInductive op_sem : state -> trace -> Set :=
   | osStop : op_sem Stop Nil
-  | osState : forall st l st' t,
-      eval_step st l st' ->
-      op_sem st' t ->
-      op_sem (State st) (Cons l t).
-  Lemma op_sem_exists (st' : state'):
-    {t : trace & op_sem st' t}.
+  | osState : forall st' l st t,
+      eval_step st' l st ->
+      op_sem st t ->
+      op_sem (State st') (Cons l t).
+  Lemma op_sem_$\texttt{exists}$ (st : state):
+    {t : trace & op_sem st t}.
   Lemma op_sem_unique:
-    forall st' t1 t2,
-      op_sem st' t1 ->
-      op_sem st' t2 ->
+    forall st t1 t2,
+      op_sem st t1 ->
+      op_sem st t2 ->
       equal_streams t1 t2.
 \end{lstlisting}
 
@@ -244,10 +244,11 @@ a one-by-one interleaving of streams for its disjuncts:
 This allows us to prove the expected properties of interleaving in a more general setting of arbitrary streams:
 
 \begin{itemize}
-\item  the elements of the interleaved stream are exactly those of two interleaved streams;
-\item  the interleaved stream is finite iff both interleaving streams are finite.
+\item the elements of the interleaved stream are exactly those of two interleaved streams;
+\item the interleaved stream is finite iff both interleaving streams are finite.
 \end{itemize}
 
+\begin{comment}
 The corresponding \textsc{Coq} lemmas are as follows:
 
 \begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
@@ -258,4 +259,6 @@ The corresponding \textsc{Coq} lemmas are as follows:
     interleave s1 s2 s ->
     (finite s <-> finite s1 /\ finite s2).
 \end{lstlisting}
+\end{comment}
 
+One immediate corollary of these facts is the ``commutativity'' of disjunction under the interleaving search: the fact that swapping of two disjuncts (at the top level) does not change the termination of the goal evaluation.
