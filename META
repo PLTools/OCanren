@@ -5,13 +5,27 @@ archive(byte) = "OCanren.cma"
 archive(native) = "OCanren.cmxa"
 
 package "ppx" (
-  description = "PPX syntax extensionon top of ppx_deriving"
-  #requires(-ppx_driver) = "ppx_deriving"
-  ppx = "./ppx_ocanren_all.native --as-ppx"
-  #requires(ppx_driver) = "ppx_deriving.api"
-  archive(ppx_driver, byte) = "ppx_ocanren_all.cma"
-  archive(ppx_driver, native) = "ppx_ocanren_all.cmxa"
-  exists_if = "ppx_ocanren_all.cmxs"
+  description = ""
+  requires(ppx_driver) = "ppxlib"
+  archive(ppx_driver,byte) = "ppx_fresh.cma"
+  archive(ppx_driver,native) = "ppx_fresh.cmx"
+  plugin(ppx_driver,byte) = "ppxlib_metaquot.cma"
+  plugin(ppx_driver,native) = "ppxlib_metaquot.cmxs"
+  # This line makes things transparent for people mixing preprocessors
+  # and normal dependencies
+  requires(-ppx_driver) = ""
+  ppx(-ppx_driver,-custom_ppx) = "./ppx.exe --as-ppx"
+
+#  description = "PPX syntax extensionon top of ppx_deriving"
+#  requires = ""
+#  archive(ppx_driver, byte)   = "pp_ocanren_all.cma"
+#  archive(ppx_driver, native) = "pp_ocanren_all.cmxa"
+#  plugin (ppx_driver, byte)   = "pp_ocanren_all.cma"
+#  plugin (ppx_driver, native) = "pp_ocanren_all.cmxs"
+#  exists_if = "pp_ocanren_all.cmxs"
+#  #
+#  requires(-ppx_driver) = ""
+#  ppx(-ppx_driver,-custom_ppx) = "./pp_ocanren_all.exe --as-ppx"
 )
 package "repr" (
   description = ""

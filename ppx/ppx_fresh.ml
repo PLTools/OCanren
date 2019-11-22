@@ -201,7 +201,7 @@ let mapper = object(self)
                       Fresh.one (fun [%p Pat.var ~loc (Selected_ast.Ast.Location.mkloc ident loc) ] -> [%e acc])
                     ]
                   )
-                ~init:[%expr MKStream.inc (fun () -> [%e new_body ])]
+                ~init:[%expr delay (fun () -> [%e new_body ])]
             in
             ans
         | None ->
@@ -209,7 +209,7 @@ let mapper = object(self)
           {e with pexp_desc=Pexp_apply (e1,[Nolabel, new_body]) }
       end
     | Pexp_apply (d, [(_,body)]) when is_defer d ->
-        let ans = [%expr MKStream.inc (fun () -> [%e self#expression body])] in
+        let ans = [%expr delay (fun () -> [%e self#expression body])] in
         ans
     | Pexp_apply (d, body) when is_unif d ->
         (* let loc_str =

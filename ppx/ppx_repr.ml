@@ -1,6 +1,6 @@
 (*
  * OCanren. PPX suntax extensions.
- * Copyright (C) 2015-2019
+ * Copyright (C) 2015-2020
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -28,7 +28,6 @@ let mapper = object
   inherit Ast_traverse.map as super
 
   method! expression e =
-    print_endline "expression";
     match e with
     | { pexp_desc=Pexp_construct ({txt=Lident "REPR";_}, Some e); _} as expr ->
 
@@ -37,31 +36,8 @@ let mapper = object
                     Pexp_tuple [Ast_helper.Exp.constant (Pconst_string (text,None)); e] }
     | e -> super#expression e
 end
-(*
-let string_constants_of = object
-  inherit [string list] Ast_traverse.fold as super
-  method! expression e acc =
-    let acc = super#expression e acc in
-    match e.pexp_desc with
-    | Pexp_constant (Pconst_string (s, _)) -> s :: acc
-    | _ -> acc
-end
-let string_constants_of_structure = string_constants_of#structure
-let map_constants_of = object
-  inherit Ast_traverse.map as super
-  method! expression e =
-    let e2 = super#expression e in
-    match e.pexp_desc with
-    | Pexp_constant (Pconst_string (s, x)) -> {e with pexp_desc = Pexp_constant (Pconst_string (s^s, x))}
-    | _ -> e2
-end
-*)
 
-let register () =
+let () =
   Ppxlib.Driver.register_transformation
-    ~impl:(fun s  ->
-              (* let strings = string_constants_of_structure s [] in
-              print_endline @@ Base.String.concat ~sep:"," strings;
-              let s = map_constants_of#structure s in *)
-              mapper#structure s)
+    ~impl:(fun s  -> mapper#structure s)
     "repr"

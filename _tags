@@ -25,11 +25,11 @@ true: short_paths
 <ppxnew/ppx_noinjected.*>: package(ppxlib,ppxlib.metaquot), linkall
 <ppxnew/ppx_distrib_expander.*>: package(ppxlib,ppxlib.metaquot,GT.expander), linkall
 
-<ppx/*>: package(ppxlib,ppxlib.metaquot)
+<ppx/*>: package(ppxlib)
 <ppx/pp_repr.native>: link_ppx_repr
-<ppx/pp_ocanren_all.native>: link_ppx_ocanren
+<ppx/pp_ocanren_all.native>: link_ppx_ocanren,link_ppx_repr
 <ppx/ppx_repr.*>: linkall
-<ppx/ppx_fresh.*>: linkall
+<ppx/ppx_fresh.*>: linkall, package(ppxlib.metaquot)
 
 <regression_ppx/test*.*>: package(GT), pp(ppxnew/pp_distrib.native -no-merge -apply distrib,deriving --as-pp), link_ocanren_cma
 <regression_ppx/*.native>: package(unix)

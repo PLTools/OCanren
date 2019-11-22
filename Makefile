@@ -31,10 +31,10 @@ lib:
 	$(OB) -r -Is $(SRC) $(BYTE_TARGETS) $(NATIVE_TARGETS)
 
 ppx:
-	$(OB) -Is src ppx/ppx_repr.cma ppx/ppx_repr.cmxa ppx/pp_repr.native \
-		ppx/ppx_fresh.cma ppx/ppx_fresh.cmxa \
-	  ppx/pp_ocanren_all.cma ppx/pp_ocanren_all.cmxa ppx/pp_ocanren_all.cmxs \
-		ppx/pp_ocanren_all.native
+	$(OB) -Is src \
+		ppx/ppx_repr.cma  ppx/ppx_repr.cmxa  ppx/ppx_repr.cmxs  ppx/pp_repr.native \
+		ppx/ppx_fresh.cma ppx/ppx_fresh.cmxa ppx/ppx_fresh.cmxs ppx/pp_fresh.native \
+	  ppx/pp_ocanren_all.cma ppx/pp_ocanren_all.cmxa ppx/pp_ocanren_all.native
 
 ppx_tests: ppxnew
 	$(OB) regression_ppx/test004peano.native \
@@ -141,10 +141,18 @@ INSTALL_TARGETS=META \
 	_build/src/OCanren.cmx \
 	_build/src/OCanren.cma \
 	_build/src/OCanren.cmxa \
-	$(wildcard _build/ppx/ppx_ocanren_all.cma) \
-	$(wildcard _build/ppx/ppx_ocanren_all.cmxa) \
-	$(wildcard _build/ppx/ppx_ocanren_all.cmxs) \
-	$(wildcard _build/ppx/ppx_ocanren_all.native) \
+	$(wildcard _build/ppx/pp_ocanren_all.native) \
+	$(wildcard _build/ppx/pp_fresh.native) \
+	$(wildcard _build/ppx/ppx_fresh.a) \
+	$(wildcard _build/ppx/ppx_fresh.cma) \
+	$(wildcard _build/ppx/ppx_fresh.cmxa) \
+	$(wildcard _build/ppx/pp_repr.native) \
+	$(wildcard _build/ppx/ppx_repr.a) \
+	$(wildcard _build/ppx/ppx_repr.cma) \
+	$(wildcard _build/ppx/ppx_repr.cmxa) \
+	$(wildcard _build/ppx/pp_ocanren_all.cmxa) \
+	$(wildcard _build/ppx/pp_ocanren_all.cmxs) \
+	$(wildcard _build/ppx/pp_ocanren_all.native) \
 	$(wildcard _build/src/OCanren.[oa]) \
 	$(wildcard _build/ppxnew/pp_distrib.native) \
 	$(wildcard _build/ppxnew/ppx_distrib.a) \
