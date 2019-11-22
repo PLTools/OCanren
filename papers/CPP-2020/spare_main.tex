@@ -1,0 +1,165 @@
+% This is samplepaper.tex, a sample chapter demonstrating the
+% LLNCS macro package for Springer Computer Science proceedings;
+% Version 2.20 of 2017/10/04
+%
+\documentclass{llncs}
+%
+\usepackage{graphicx}
+% Used for displaying a sample figure. If possible, figure files should
+% be included in EPS format.
+%
+% If you use the hyperref package, please uncomment the following line
+% to display URLs in blue roman font according to Springer's eBook style:
+% \renewcommand\UrlFont{\color{blue}\rmfamily}
+
+\usepackage{amsmath,amssymb}
+\usepackage[english]{babel}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage{comment}
+\usepackage{indentfirst}
+\usepackage{hyperref}
+\usepackage{stmaryrd}
+\usepackage{eufrak}
+\usepackage{lstcoq}
+\usepackage{placeins}
+\usepackage{natbib}
+
+\lstdefinelanguage{minikanren}{
+basicstyle=\footnotesize,
+keywords={fresh},
+sensitive=true,
+commentstyle=\footnotesize\itshape\ttfamily,
+keywordstyle=\textbf,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+fontadjust=true,
+literate={fun}{{$\lambda\;\;$}}1 {->}{{$\to$}}3 {===}{{$\,\equiv\,$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2,
+morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+mathescape=true,
+language=minikanren
+}
+
+\usepackage{letltxmacro}
+\newcommand*{\SavedLstInline}{}
+\LetLtxMacro\SavedLstInline\lstinline
+\DeclareRobustCommand*{\lstinline}{%
+  \ifmmode
+    \let\SavedBGroup\bgroup
+    \def\bgroup{%
+      \let\bgroup\SavedBGroup
+      \hbox\bgroup
+    }%
+  \fi
+  \SavedLstInline
+}
+
+\def\transarrow{\xrightarrow}
+\newcommand{\setarrow}[1]{\def\transarrow{#1}}
+
+\def\padding{\phantom{X}}
+\newcommand{\setpadding}[1]{\def\padding{#1}}
+
+\def\subarrow{}
+\newcommand{\setsubarrow}[1]{\def\subarrow{#1}}
+
+\newcommand{\trule}[2]{\frac{#1}{#2}}
+\newcommand{\crule}[3]{\frac{#1}{#2},\;{#3}}
+\newcommand{\withenv}[2]{{#1}\vdash{#2}}
+\newcommand{\trans}[3]{{#1}\transarrow{\padding{\textstyle #2}\padding}\subarrow{#3}}
+\newcommand{\ctrans}[4]{{#1}\transarrow{\padding#2\padding}\subarrow{#3},\;{#4}}
+\newcommand{\llang}[1]{\mbox{\lstinline[mathescape]|#1|}}
+\newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
+\newcommand{\inbr}[1]{\left<{#1}\right>}
+\newcommand{\highlight}[1]{\color{red}{#1}}
+%\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
+\newcommand{\ruleno}[1]{\mbox{\scriptsize{[\textsc{#1}]}}}
+\newcommand{\rulename}[1]{\textsc{#1}}
+\newcommand{\inmath}[1]{\mbox{$#1$}}
+\newcommand{\lfp}[1]{fix_{#1}}
+\newcommand{\gfp}[1]{Fix_{#1}}
+\newcommand{\vsep}{\vspace{-2mm}}
+\newcommand{\supp}[1]{\scriptsize{#1}}
+\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\cd}[1]{\texttt{#1}}
+\newcommand{\free}[1]{\boxed{#1}}
+\newcommand{\binds}{\;\mapsto\;}
+\newcommand{\dbi}[1]{\mbox{\bf{#1}}}
+\newcommand{\sv}[1]{\mbox{\textbf{#1}}}
+\newcommand{\bnd}[2]{{#1}\mkern-9mu\binds\mkern-9mu{#2}}
+\newcommand{\meta}[1]{{\mathcal{#1}}}
+\newcommand{\dom}[1]{\mathtt{dom}\;{#1}}
+\newcommand{\primi}[2]{\mathbf{#1}\;{#2}}
+\renewcommand{\dom}[1]{\mathcal{D}om\,({#1})}
+\newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
+\newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
+\newcommand{\tr}[1]{\mathcal{T}r_{#1}}
+
+\newcommand{\searchRule}[6] {
+  #1, #2 \vdash (#3, #4) \xRightarrow{#5} #6}
+\newcommand{\extSearchRule}[8] {
+  #1, #2, #3, #4 \vdash (#5, #6) \xRightarrow{#7}_{e} #8}
+\newcommand{\q}{\hspace{0.5em}}
+\newcommand{\bigcdot}{\boldsymbol{\cdot}}
+\newcommand{\bigslant}[2]{{\raisebox{.2em}{$#1$}\left/\raisebox{-.2em}{$#2$}\right.}}
+
+\let\emptyset\varnothing
+\let\eps\varepsilon
+
+\sloppy
+
+\begin{document}
+%
+\title{Certified Semantics for Relational Programming}
+%
+%\titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{Anonymus}
+%
+\authorrunning{Anonymous}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{Anonymous}
+%
+\maketitle              % typeset the header of the contribution
+%
+\begin{abstract}
+  We present a formal study of semantics for relational programming language \textsc{miniKanren}. First,
+  we formulate denotational semantics which corresponds to the minimal Herbrand model for definite logic
+  programs. Second, we present operational semantics which models the distinctive feature of \textsc{miniKanren}
+  implementation~--- interleaving,~--- and prove its soundness and completeness w.r.t. the denotational semantics.
+  Our development is supported by \textsc{Coq} specification, from which a reference interpreter can be
+  extracted. We also derive from our main result a certified semantics (and a reference interpreter) for \textsc{Prolog}
+  with cut and prove its soundness.   
+
+\keywords{Relational programming \and Denotational semantics \and Operational semantics \and Certified programming.}
+\end{abstract}
+%
+%
+%
+\input{intro.tex}
+\input{language.tex}
+\input{denotational.tex}
+\input{operational.tex}
+\input{equivalence.tex}
+\input{applications.tex}
+\input{relworks.tex}
+\input{conclusion.tex}
+
+%
+% ---- Bibliography ----
+%
+% BibTeX users should specify bibliography style 'splncs04'.
+% References will then be sorted and formatted in the correct style.
+%
+\bibliographystyle{splncs04}
+\bibliography{main}
+
+\end{document}
