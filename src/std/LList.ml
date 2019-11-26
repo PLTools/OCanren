@@ -53,6 +53,10 @@ let ground = {
       method foldr   fa l = GT.foldr  (list) fa (this#foldr   fa) l
       method foldl   fa l = GT.foldl  (list) fa (this#foldl   fa) l
       method gmap    fa l = GT.gmap   (list) fa (this#gmap    fa) l
+      method fmt     fa fmt (xs : _ ground) =
+        Format.fprintf fmt "@[[";
+        GT.foldl ground (fun () -> Format.fprintf fmt "%a;@ " fa) () xs;
+        Format.fprintf fmt "]@]"
       method show    fa l = "[" ^
         let rec inner l =
           (GT.transform(list)

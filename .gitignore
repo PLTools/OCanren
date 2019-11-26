@@ -7,3 +7,5 @@ _build
 # ocamldoc related
 /style.css
 /MiniKanren.docdir
+/node_modules
+
