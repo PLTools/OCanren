@@ -33,10 +33,10 @@ module Tree = struct
 
   @type inttree = (int, inttree) X.t with show
   (* A shortcut for "ground" tree we're going to work with in "functional" code *)
-  @type rtree = (LNat.ground, rtree) X.t with show
+  @type rtree = (Nat.ground, rtree) X.t with show
 
   (* Logic counterpart *)
-  @type ltree = (LNat.logic, ltree) X.t logic with show
+  @type ltree = (Nat.logic, ltree) X.t logic with show
 
   type ftree = (rtree, ltree) injected
 
@@ -49,7 +49,7 @@ module Tree = struct
 
   (* Projection *)
   let rec prj_tree : rtree -> inttree =
-    fun x -> GT.(gmap t) LNat.to_int prj_tree x
+    fun x -> GT.(gmap t) Nat.to_int prj_tree x
 
   let rec reify_tree eta = M.reify LNat.reify reify_tree eta
   (* let rec prjc_tree env t = M.prjc LNat.prjc prjc_tree env t *)
@@ -85,14 +85,14 @@ let rec inserto a t' t'' = conde [
 
 (* Top-level wrapper for insertion --- takes and returns non-logic data *)
 let insert : int -> inttree -> inttree = fun a t ->
-  prj_tree @@ RStream.hd @@
+  prj_tree @@ Stream.hd @@
   run q (fun q  -> inserto (nat a) (inj_tree t) q)
         (fun qs -> qs#prj)
 
 (* Top-level wrapper for "inverse" insertion --- returns an integer, which
    has to be inserted to convert t into t' *)
 let insert' t t' =
-  LNat.to_int @@ RStream.hd @@
+  Nat.to_int @@ Stream.hd @@
   run q (fun q  -> inserto q (inj_tree t) (inj_tree t'))
         (fun qs -> qs#prj)
 

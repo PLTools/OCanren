@@ -80,19 +80,19 @@ let reify_solution s = s#reify @@ List.reify reify;;
 let id x = x
              
 let _ =
-  RStream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
+  Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (nil ()) q) id;
   
-  RStream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
+  Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Empty) q) id;
 
-  RStream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
+  Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Goat) q) id; 
 
-  RStream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
+  Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) @@ s#reify reify_state) @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q) id;
 
-  L.iter (fun s -> Printf.printf "%s\n" @@ show(solution) @@ reify_solution s) @@ RStream.take ~n:100 @@
+  L.iter (fun s -> Printf.printf "%s\n" @@ show(solution) @@ reify_solution s) @@ Stream.take ~n:100 @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) q (pair (qua !false !false !false !false) (qua !true !true !true !true))) id;
 
   
