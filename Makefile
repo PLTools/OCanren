@@ -16,7 +16,6 @@ CMO_TARGETS=regression/tester.cmo
 BYTE_TARGETS=$(CMA_TARGETS) $(CMO_TARGETS)
 NATIVE_TARGETS= $(CMA_TARGETS:.cma=.cmxa) $(CMO_TARGETS:.cmo=.cmx)
 TESTS_ENVIRONMENT=./test.sh
-JSOO_LIB=jsoo_runner/jsoo_runner.cma
 
 .PHONY: all celan clean clean_tests cleanppx install uninstall \
   tests test regression promote_all \
@@ -131,13 +130,11 @@ endef
 $(foreach i,$(SAMPLES_CASES),$(eval $(call SAMPLESRULES,$(i)) ) )
 ######################## Installation related stuff ##########################
 INSTALL_TARGETS=META \
-	$(wildcard _build/regression/tester.cmi) \
-	$(wildcard _build/regression/tester.cmo) \
-	$(wildcard _build/regression/tester.cmx) \
+	$(wildcard _build/regression/tester.cm[iotx]) \
 	$(wildcard _build/regression/tester.o) \
-	$(wildcard _build/src/*.cmi) \
-	$(wildcard _build/src/core/*.cmi) \
-	$(wildcard _build/src/std/*.cmi) \
+	$(wildcard _build/src/*.cm[ti]) \
+	$(wildcard _build/src/core/*.cm[ti]) \
+	$(wildcard _build/src/std/*.cm[ti]) \
 	_build/src/OCanren.cmx \
 	_build/src/OCanren.cma \
 	_build/src/OCanren.cmxa \
