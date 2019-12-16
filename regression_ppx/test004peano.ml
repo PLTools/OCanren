@@ -44,9 +44,8 @@ let rec addo x y z =
 let rec mulo x y z =
   conde [
     (x === o) &&& (z === o);
-    Fresh.two (fun x' z' ->
-      (x === s x') &&&
-      (addo y z' z) &&&
+    fresh (x' z')
+      (x === s x') 
+      (addo y z' z) 
       (mulo x' y z')
-    )
   ]

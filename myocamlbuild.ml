@@ -41,8 +41,8 @@ let () = dispatch (function
     flag ["ocaml";"byte";  "link";"link_ppx_repr"] (S[A"ppx/ppx_repr.cma"]);
     flag ["ocaml";"native";"link";"link_ppx_repr"] (S[A"ppx/ppx_repr.cmxa"]);
 
-    flag ["ocaml";"byte";  "link";"link_ppx_ocanren"] (S[A"ppx/ppx_fresh.cma"]);
-    flag ["ocaml";"native";"link";"link_ppx_ocanren"] (S[A"ppx/ppx_fresh.cmxa"]);
+    flag ["ocaml";"byte";  "link";"link_ppx_fresh"] (S[A"ppx/ppx_fresh.cma"]);
+    flag ["ocaml";"native";"link";"link_ppx_fresh"] (S[A"ppx/ppx_fresh.cmxa"]);
 
     flag ["ocaml"; "native"; "link";"link_ocanren_cma"] @@
       S[A"-I"; A"bundle/ocanren/"; A"OCanren.cmxa"; A"tester.cmx"];
