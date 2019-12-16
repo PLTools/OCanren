@@ -19,13 +19,13 @@
 open Logic
 open Core
 
-@type 'a logic' = 'a logic                 with show, html, eq, compare, foldr, foldl, gmap
-                                              
+@type 'a logic' = 'a logic                 with show, html, eq, compare, foldr, foldl, gmap, fmt
+
 let logic' = logic;;
-                                              
-@type ground    = GT.bool                  with show, html, eq, compare, foldr, foldl, gmap
-@type t         = GT.bool                  with show, html, eq, compare, foldr, foldl, gmap
-@type logic     = GT.bool logic'           with show, html, eq, compare, foldr, foldl, gmap 
+
+@type ground    = GT.bool                  with show, html, eq, compare, foldr, foldl, gmap, fmt
+@type t         = GT.bool                  with show, html, eq, compare, foldr, foldl, gmap, fmt
+@type logic     = GT.bool logic'           with show, html, eq, compare, foldr, foldl, gmap , fmt
 
 type groundi   = (ground, logic) injected
 
@@ -39,10 +39,11 @@ let logic = {
       method foldl   = logic.GT.plugins#foldl
       method foldr   = logic.GT.plugins#foldr
       method html    = logic.GT.plugins#html
+      method fmt     = logic.GT.plugins#fmt
       method show    = GT.show(logic') (GT.show(GT.bool))
     end
-} 
-                                              
+}
+
 let inj = to_logic
 
 let reify = Logic.reify

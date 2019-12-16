@@ -24,19 +24,19 @@ open Core
 (** Abstract nat type *)
 @type 'a nat =
 | O
-| S of 'a with show, html, eq, compare, foldl, foldr, gmap
+| S of 'a with show, html, eq, compare, foldl, foldr, gmap, fmt
 
 (** Type synonym to prevent toplevel [logic] from being hidden *)
-@type 'a logic' = 'a logic with show, html, eq, compare, foldl, foldr, gmap
+@type 'a logic' = 'a logic with show, html, eq, compare, foldl, foldr, gmap, fmt
 
 (** Synonym for abstract nat type *)
-@type 'a t = 'a nat with show, html, eq, compare, foldl, foldr, gmap
+@type 'a t = 'a nat with show, html, eq, compare, foldl, foldr, gmap, fmt
 
 (** Ground nat are ismorphic for regular one *)
-@type ground = ground t with show, html, eq, compare, foldl, foldr, gmap
+@type ground = ground t with show, html, eq, compare, foldl, foldr, gmap, fmt
 
 (** Logic nat *)
-@type logic = logic t logic' with show, html, eq, compare, foldl, foldr, gmap
+@type logic = logic t logic' with show, html, eq, compare, foldl, foldr, gmap, fmt
 
 (** Logic injection (for reification) *)
 val inj : ground -> logic

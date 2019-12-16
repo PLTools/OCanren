@@ -24,19 +24,19 @@ open Core
 (** Abstract list type *)
 @type ('a, 'l) list =
 | Nil
-| Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr
+| Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Type synonym to prevent toplevel [logic] from being hidden *)
-@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr
+@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Synonym for abstract list type *)
-@type ('a, 'l) t = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr
+@type ('a, 'l) t = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Ground lists (isomorphic to regular ones) *)
-@type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr
+@type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Logic lists (with the tails as logic lists) *)
-@type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr
+@type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** A synonym for injected list *)
 type ('a,'b) groundi = ('a ground, 'b logic) injected

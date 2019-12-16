@@ -22,16 +22,16 @@ open Logic
 open Core
 
 (** Type synonym to prevent toplevel [logic] from being hidden *)
-@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr
+@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Synonym for regular option type *)
-@type ('a, 'b) t = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr
+@type ('a, 'b) t = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Ground option (the regular one) *)
-@type ('a, 'b) ground = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr
+@type ('a, 'b) ground = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Logic option *)
-@type ('a, 'b) logic = ('a * 'b) logic' with show, gmap, html, eq, compare, foldl, foldr
+@type ('a, 'b) logic = ('a * 'b) logic' with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Logic injection (for reification) *)
 val inj : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) ground -> ('c, 'd) logic

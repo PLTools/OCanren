@@ -21,9 +21,9 @@
 (** A type of a logic value *)
 @type 'a logic = private
 | Var   of GT.int * 'a logic GT.list
-| Value of 'a with show, gmap, html, eq, compare, foldl, foldr
+| Value of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
 
-(** GT-compatible typeinfo for logics 
+(** GT-compatible typeinfo for logics
 val logic :
   (unit,
    < show    : ('a -> string) -> 'a logic -> string;
@@ -47,7 +47,7 @@ val from_logic : 'a logic -> 'a
 
 (**  The type [('a, 'b) injected] describes an injection of a type ['a] into ['b] *)
 type ('a, 'b) injected
-   
+
 (** [lift x] lifts [x] into injected doamin *)
 val lift : 'a -> ('a, 'a) injected
 

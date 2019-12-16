@@ -20,7 +20,7 @@ open Printf
 
 @type 'a logic =
 | Var   of GT.int * 'a logic GT.list
-| Value of 'a with show, gmap, html, eq, compare, foldl, foldr
+| Value of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let logic = {logic with
   plugins =

@@ -22,23 +22,23 @@ open Logic
 open Core
 
 (** Type synonym to prevent toplevel [logic] from being hidden *)
-@type 'a logic' = 'a logic with show, html, eq, compare, foldr, foldl, gmap
+@type 'a logic' = 'a logic with show, html, eq, compare, foldr, foldl, gmap, fmt
 
 (** Synonym for boolean type *)
-@type t = GT.bool with show, html, eq, compare, foldr, foldl, gmap
+@type t = GT.bool with show, html, eq, compare, foldr, foldl, gmap, fmt
 
 (** Ground boolean (the regular one) *)
-@type ground = GT.bool with show, html, eq, compare, foldr, foldl, gmap
+@type ground = GT.bool with show, html, eq, compare, foldr, foldl, gmap, fmt
 
 (** Logic boolean *)
-@type logic = GT.bool logic' with show, html, eq, compare, foldr, foldl, gmap
+@type logic = GT.bool logic' with show, html, eq, compare, foldr, foldl, gmap, fmt
 
 (** Logic injection (for reification) *)
 val inj : ground -> logic
 
 (** A synonym for injected boolean; use [(!!)] operator to make a [groundi] from a regular [bool] *)
 type groundi = (ground, logic) injected
-             
+
 (** Reifier *)
 val reify : VarEnv.t -> groundi -> logic
 

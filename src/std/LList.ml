@@ -19,15 +19,15 @@
 open Logic
 open Core
 
-@type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr
-@type 'a logic'     = 'a logic              with show, gmap, html, eq, compare, foldl, foldr
-@type ('a, 'l) t    = ('a, 'l) list         with show, gmap, html, eq, compare, foldl, foldr
+@type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a logic'     = 'a logic              with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type ('a, 'l) t    = ('a, 'l) list         with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let logic' = logic
-           
+
 module X =
   struct
-    @type ('a,'b) t = ('a, 'b) list with show, gmap, html, eq, compare, foldl, foldr
+    @type ('a,'b) t = ('a, 'b) list with show, gmap, html, eq, compare, foldl, foldr, fmt
     let fmap f g x = GT.gmap list f g x
   end
 
@@ -36,15 +36,15 @@ module F = Fmap2 (X)
 let nil ()   = Logic.inj @@ F.distrib Nil
 let cons x y = Logic.inj @@ F.distrib (Cons (x, y));;
 
-@type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr
-@type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr
+@type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let rec reify r1 h = F.reify r1 (reify r1) h
 
 let rec prjc fa onvar env xs = F.prjc fa (prjc fa onvar) onvar env xs
 
 let ground = {
-  ground with 
+  ground with
   GT.plugins =
     object(this)
       method html    fa l = GT.html   (list) fa (this#html    fa) l
@@ -81,12 +81,13 @@ let logic = {
       method foldl   fa l = GT.foldl   (logic') (GT.foldl   (list) fa (this#foldl   fa)) l
       method foldr   fa l = GT.foldr   (logic') (GT.foldr   (list) fa (this#foldr   fa)) l
       method html    fa l = GT.html    (logic') (GT.html    (list) fa (this#html    fa)) l
+      method fmt fa fmt l = Format.fprintf fmt "%s" (this#show (Format.asprintf "%a" fa) l)
       method show fa l =
         GT.show(logic')
           (fun l -> "[" ^
               let rec inner l =
                 GT.transform(t)
-                  (fun fself ->                          
+                  (fun fself ->
                       object
                          inherit ['a,'a logic, _] @t[show] (GT.lift fa) (GT.lift (GT.show(logic') inner)) fself
                          method c_Nil   _ _      = ""
@@ -99,8 +100,8 @@ let logic = {
           )
           l
     end
-} 
-            
+}
+
 let rec of_list f = function
 | []    -> Nil
 | x::xs -> Cons (f x, of_list f xs)
@@ -116,7 +117,7 @@ let rec list = function
 | x::xs -> cons x (list xs);;
 
 type ('a,'b) groundi = ('a ground, 'b logic) injected
-                     
+
 let (%): ('a,'b) injected -> ('a,'b) groundi -> ('a,'b) groundi = cons
 let (%<): ('a,'b) injected -> ('a,'b) injected -> ('a,'b) groundi = fun x y -> cons x @@ cons y @@ nil ()
 let (!<) : ('a,'b) injected -> ('a,'b) groundi = fun x -> cons x @@ nil ()
