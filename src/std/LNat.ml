@@ -59,6 +59,7 @@ let rec to_int   = function O -> 0 | S n -> 1 + to_int n
 let rec inj n = to_logic (GT.(gmap nat) inj n)
 
 let rec reify h n = F.reify reify h n
+let rec prjc onvar env n = F.prjc (prjc onvar) onvar env n
 
 let o   = Logic.inj @@ F.distrib O
 let s x = Logic.inj @@ F.distrib (S x)

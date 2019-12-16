@@ -47,6 +47,9 @@ type groundi = (ground, logic) injected
 (** Reifier *)
 val reify : VarEnv.t -> groundi -> logic
 
+(* Shallow non-variable projection *)
+val prjc : (int -> ground GT.list -> ground) -> VarEnv.t -> groundi -> ground
+
 (** [of_int n] converts integer [n] into [ground]; negative integers become [O] *)
 val of_int : int -> ground
 

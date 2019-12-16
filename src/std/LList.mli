@@ -61,6 +61,9 @@ val list : ('a, 'b) injected GT.list -> ('a, 'b) groundi
 (** Reifier *)
 val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> VarEnv.t -> ('a ground, 'b logic) injected -> 'b logic
 
+val prjc : (VarEnv.t -> ('a, 'b) injected -> 'a) -> (int -> 'a ground GT.list -> 'a ground) ->
+  VarEnv.t -> ('a ground, 'b logic) injected -> 'a ground
+
 (** Relational foldr *)
 val foldro : (('a, 'b) injected -> ('acc, _ logic' as 'acc2) injected -> ('acc, 'acc2) injected -> goal) -> ('acc, 'acc2) injected -> ('a, 'b) groundi -> ('acc, 'acc2) injected -> goal
 
