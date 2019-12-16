@@ -84,14 +84,16 @@ let () =
 
   run_exn GTyp.show_rtyp    1 q qh (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q))
 
-let show_env_logic = show(List.logic) @@ show(logic) (show(GT.pair) (show(logic) (fun s -> s)) show_llam)
+let show_env_logic = show(List.logic) @@ show(logic) (show(Std.Pair.ground) (show(logic) (fun s -> s)) show_llam)
 
 let pair c p = Pair.reify OCanren.reify glam_reifier c p
 
 let env_reifier c xs = List.reify pair c xs
 
-let show_env  = show(List.ground) @@ GT.(show pair) show_string  GLam.show_rlam
-let show_envl = show(List.logic ) @@ show(logic) GT.(show pair show_stringl GLam.show_llam)
+(* let _:int  = GT.(show Std.Pair.logic (show string) GLam.show_llam) *)
+
+let show_env  = show(List.ground) @@ GT.(show Std.Pair.ground) show_string  GLam.show_rlam
+let show_envl = show(List.logic) @@ GT.(show Std.Pair.logic (show logic @@ show string) GLam.show_llam)
 
 let runEnv n = runR env_reifier show_env show_envl n
 
