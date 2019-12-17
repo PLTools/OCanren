@@ -84,7 +84,7 @@ let rec fix_term e =
   | _ ->
     (* everything else *)
     (match ctor e with
-     | Some _ -> <:expr< OCanren.inj (OCanren.lift $e$) >> (* isolated nullary constructor case *)
+     | Some e -> <:expr<$e$ () >>
      | _ -> e
     )
 
@@ -233,15 +233,14 @@ EXTEND
          vars
          b                                        
     ] |
-    "app" LEFTA [ l=SELF; r=SELF -> <:expr< $l$ $r$ >> ] |
     "primary" [
-        p=prefix; t=ocanren_term                      -> let p = <:expr< $lid:p$ >> in <:expr< $p$ $t$ >>                                                                                         
+        p=prefix; t=ocanren_term                      -> let p = <:expr< $lid:p$ >> in <:expr< $p$ $t$ >> 
       | l=ocanren_term; "==" ; r=ocanren_term         -> <:expr< OCanren.unify $l$ $r$ >>
       | l=ocanren_term; "=/="; r=ocanren_term         -> <:expr< OCanren.diseq $l$ $r$ >>
       | l=ocanren_term; op=operator; r=ocanren_term   -> let p = <:expr< $lid:op$ >> in
                                                          let a = <:expr< $p$ $l$ >> in
                                                          <:expr< $a$ $r$ >>
-      | l=ocanren_term                                -> l
+      | h=ocanren_term; t=LIST0 ocanren_term          -> List.fold_left (fun l r -> <:expr< $l$ $r$ >>) h t 
       | "("; op=operator_rparen                       -> <:expr< $lid:op$ >> 
       | "("; e=ocanren_expr; ")"                      -> e
       | "||"; "("; es=LIST1 ocanren_expr SEP ";"; ")" -> <:expr< OCanren.conde $list_of_list es$ >> 
@@ -251,7 +250,7 @@ EXTEND
          <:expr< $id$ $list_of_list es$ >> 
     ]
   ];
-
+  
   ocanren_term: [[
     t=ocanren_term' -> fix_term t
   ]];
@@ -281,11 +280,16 @@ EXTEND
        | []  -> <:expr< OCanren.inj (OCanren.lift ()) >>
        | [t] -> t
        | _   -> <:expr< ( $list:ts$ ) >>
-      )
-    | c=long_ident -> c
+     ) 
+    | c=long_ident; args=OPT ocanren_args ->
+       match args with None -> c | Some args -> List.fold_left (fun l r -> <:expr< $l$ $r$ >>) c args
     ]
   ];
 
+  ocanren_args: [[
+    "("; args=LIST1 ocanren_term' SEP ","; ")" -> args
+  ]];
+  
   ctyp: [[ "ocanren"; "("; t=ctyp; ")" -> decorate_type t ]];
   
 END;
