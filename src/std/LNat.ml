@@ -19,25 +19,25 @@
 open Logic
 open Core
 
-@type 'a nat = O | S of 'a with show, gmap, html, eq, compare, foldl, foldr
-@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr
+@type 'a nat = O | S of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let logic' = logic
-           
+
 module X =
   struct
-    @type 'a t = 'a nat with show, gmap, html, eq, compare, foldl, foldr
-    let fmap f x = GT.gmap (t) f x 
+    @type 'a t = 'a nat with show, gmap, html, eq, compare, foldl, foldr, fmt
+    let fmap f x = GT.gmap (t) f x
   end
 
 include X
 
 module F = Fmap (X)
-                   
-@type ground  = ground t                 with show, gmap, html, eq, compare, foldl, foldr
-@type logic   = logic t logic'           with show, gmap, html, eq, compare, foldl, foldr
 
-type groundi = (ground, logic) injected 
+@type ground  = ground t                 with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type logic   = logic t logic'           with show, gmap, html, eq, compare, foldl, foldr, fmt
+
+type groundi = (ground, logic) injected
 
 let logic = {
   logic with
@@ -49,16 +49,18 @@ let logic = {
       method foldl   = logic.GT.plugins#foldl
       method foldr   = logic.GT.plugins#foldr
       method html    = logic.GT.plugins#html
+      method fmt     = logic.GT.plugins#fmt
       method show    = GT.show(logic') (fun l -> GT.show(t) this#show l)
     end
-} 
-          
+}
+
 let rec of_int n = if n <= 0 then O else S (of_int (n-1))
 let rec to_int   = function O -> 0 | S n -> 1 + to_int n
 
 let rec inj n = to_logic (GT.(gmap nat) inj n)
 
 let rec reify h n = F.reify reify h n
+let rec prjc onvar env n = F.prjc (prjc onvar) onvar env n
 
 let o   = Logic.inj @@ F.distrib O
 let s x = Logic.inj @@ F.distrib (S x)

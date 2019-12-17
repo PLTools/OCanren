@@ -5,6 +5,4 @@
  * St.Petersburg State University, JetBrains Research
  *)
 
-let () =
-  Smart_logger.register ();
-  Ppxlib.Driver.standalone ()
+let () = Ppxlib.Driver.standalone ()

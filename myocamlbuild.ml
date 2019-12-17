@@ -4,8 +4,8 @@ open Ocamlbuild_plugin;;
 open Command;;
 
 let () = dispatch (function
- | Before_rules ->
-     ()
+  | Before_rules ->
+    ()
 
  | After_rules ->
      ocaml_lib "src/OCanren";
@@ -25,6 +25,30 @@ let () = dispatch (function
      (*   ); *)
 
      flag ["ocaml";"compile";"native";"keep_asm"] (S[A"-S"]);
+
+    dep ["ppx/pp_repr.native"]        ["ppx/ppx_repr.cmxa"];
+
+    (* TODO: maybe we need to add parametrized command to prevent copy-paste *)
+    flag ["ocaml";"byte";  "link";"link_ppx_gt"] (S[A"-package"; A"GT.ppx_gt"]);
+    flag ["ocaml";"native";"link";"link_ppx_gt"] (S[A"-package"; A"GT.ppx_gt"]);
+
+    flag ["ocaml";"byte";  "link";"link_ppx_distrib"] (S[A"ppxnew/ppx_distrib.cma"]);
+    flag ["ocaml";"native";"link";"link_ppx_distrib"] (S[A"ppxnew/ppx_distrib.cmxa"]);
+
+    flag ["ocaml";"byte";  "link";"link_ppx_noinjected"] (S[A"ppxnew/ppx_noinjected.cma"]);
+    flag ["ocaml";"native";"link";"link_ppx_noinjected"] (S[A"ppxnew/ppx_noinjected.cmxa"]);
+
+    flag ["ocaml";"byte";  "link";"link_ppx_repr"] (S[A"ppx/ppx_repr.cma"]);
+    flag ["ocaml";"native";"link";"link_ppx_repr"] (S[A"ppx/ppx_repr.cmxa"]);
+
+    flag ["ocaml";"byte";  "link";"link_ppx_fresh"] (S[A"ppx/ppx_fresh.cma"]);
+    flag ["ocaml";"native";"link";"link_ppx_fresh"] (S[A"ppx/ppx_fresh.cmxa"]);
+
+    flag ["ocaml"; "native"; "link";"link_ocanren_cma"] @@
+      S[A"-I"; A"bundle/ocanren/"; A"OCanren.cmxa"; A"tester.cmx"];
+    flag ["ocaml";   "byte"; "link";"link_ocanren_cma"] @@
+      S[A"-I"; A"bundle/ocanren/"; A"OCanren.cma"; A"tester.cma"];
+    flag ["ocaml"; "compile";       "link_ocanren_cma"] (S[A"-I"; A"bundle/ocanren"]);
 
      (* cppo-related stuff *)
      let cppo_rules ext =

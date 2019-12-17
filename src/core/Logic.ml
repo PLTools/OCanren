@@ -20,17 +20,18 @@ open Printf
 
 @type 'a logic =
 | Var   of GT.int * 'a logic GT.list
-| Value of 'a with show, gmap, html, eq, compare, foldl, foldr
+| Value of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let logic = {logic with
   plugins =
-    object
+    object(self)
       method gmap      = logic.plugins#gmap
       method html      = logic.plugins#html
       method eq        = logic.plugins#eq
       method compare   = logic.plugins#compare
       method foldl     = logic.plugins#foldl
       method foldr     = logic.plugins#foldr
+      method fmt fa fmt l = Format.fprintf fmt "%s" (self#show (Format.asprintf "%a" fa) l)
       method show fa x =
         GT.transform(logic)
           (fun fself -> object
