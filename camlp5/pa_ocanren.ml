@@ -224,7 +224,6 @@ EXTEND
   ocanren_expr: [
     "top" RIGHTA [ l=SELF; "|"; r=SELF -> <:expr< OCanren.disj $l$ $r$ >> ] |
           RIGHTA [ l=SELF; "&"; r=SELF -> <:expr< OCanren.conj $l$ $r$ >> ] |
-          LEFTA  [ l=SELF; r=SELF -> <:expr< $l$ $r$ >> ] |
     [ "fresh"; vars=LIST1 LIDENT SEP ","; "in"; b=ocanren_expr LEVEL "top" ->
        List.fold_right
          (fun x b ->
@@ -234,8 +233,9 @@ EXTEND
          vars
          b                                        
     ] |
+    "app" LEFTA [ l=SELF; r=SELF -> <:expr< $l$ $r$ >> ] |
     "primary" [
-        p=prefix; t=ocanren_term                      -> let p = <:expr< $lid:p$ >> in <:expr< $p$ $t$ >>
+        p=prefix; t=ocanren_term                      -> let p = <:expr< $lid:p$ >> in <:expr< $p$ $t$ >>                                                                                         
       | l=ocanren_term; "==" ; r=ocanren_term         -> <:expr< OCanren.unify $l$ $r$ >>
       | l=ocanren_term; "=/="; r=ocanren_term         -> <:expr< OCanren.diseq $l$ $r$ >>
       | l=ocanren_term; op=operator; r=ocanren_term   -> let p = <:expr< $lid:op$ >> in
@@ -266,7 +266,7 @@ EXTEND
        <:expr< OCanren.inj (OCanren.lift $s$) >>
     | s=STRING ->
       let s = <:expr< $str:s$ >> in
-      <:expr< OCanren.inj (OCanren.lift $s$) >>
+      <:expr< OCanren.inj (OCanren.lift $s$) >>        
     | "true"   -> <:expr< OCanren.Std.Bool.truo >>
     | "false"  -> <:expr< OCanren.Std.Bool.falso >>
     | "["; ts=LIST0 ocanren_term' SEP ";"; "]" ->
