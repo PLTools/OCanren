@@ -1,10 +1,8 @@
-MKDIR ?= mkdir -vp
-CP    ?= cp
 
 .PHONY: \
 	all clean \
 	lib syntax package \
-	test promote clean-tests \
+	test promote discover-tests clean-tests \
 	samples clean-samples
 
 .DEFAULT_GOAL: all
@@ -25,6 +23,9 @@ test:
 
 promote:
 	./test.sh --promote all
+
+discover-tests:
+	dune build @discover-tests
 
 samples:
 	dune build @samples
