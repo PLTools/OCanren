@@ -1,7 +1,7 @@
 
 .PHONY: \
 	all clean \
-	lib syntax package \
+	lib ppx syntax package \
 	test promote discover-tests clean-tests \
 	samples clean-samples
 
@@ -9,11 +9,13 @@
 
 all: package samples
 
-package: lib syntax
+package: lib ppx syntax
 
 lib:
-	dune build src/OCanren.cma
-	dune build src/OCanren.cmxa
+	dune build src/OCanren.a src/OCanren.cma src/OCanren.cmxa
+
+ppx:
+	dune build ppx ppxnew
 
 syntax:
 	dune build camlp5/pa_ocanren.cma
