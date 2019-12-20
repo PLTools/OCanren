@@ -1,12 +1,14 @@
 MKDIR ?= mkdir -vp
 CP    ?= cp
 
-.PHONY: \
 #	all clean install uninstall \
 #	lib syntax package \
 #	test tests samples promote promote-all clean-tests
+
+.PHONY: \
 	all clean \
-	lib syntax package
+	lib syntax package \
+	samples clean-samples
 
 .DEFAULT_GOAL: all
 
@@ -21,5 +23,11 @@ lib:
 syntax:
 	dune build camlp5/pa_ocanren.cma
 
-clean:
+samples:
+	dune build @samples
+
+clean-samples:
+	rm -f samples/*.log samples/*.diff
+
+clean: clean-samples
 	dune clean

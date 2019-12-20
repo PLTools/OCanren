@@ -14,3 +14,8 @@
   )
   (preprocessor_deps (file %{workspace_root}/camlp5/pa_ocanren.cma))
 )
+
+(alias
+  (name samples)
+  (deps tree.exe sorting.exe WGC.exe lorry.exe)
+)
