@@ -12,7 +12,7 @@ depends: [
   "ocamlfind" {build}
   "camlp5"
   "logger-p5"
-  "GT"
+  "GT" { >= "0.2.0" }
 ]
 build: [
   [make]
