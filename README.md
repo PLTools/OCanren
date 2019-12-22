@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Jetbrains-Research/ocanren.svg?branch=master)](https://travis-ci.org/Jetbrains-Research/ocanren)
+
 # Table of Contents
 
 - [OCanren](#ocanren)
