@@ -3,7 +3,6 @@
     %{tests}
   )
   (libraries GT OCanren OCanren.syntax)
-  (flags (:standard -warn-error -A -rectypes))
   (preprocess
     (action
       (run camlp5
