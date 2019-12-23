@@ -19,6 +19,9 @@
 open Logic
 open Core
 
+(* to avoid clash with Std.List (i.e. logic list) *)
+module List = Stdlib.List
+
 @type 'a nat = O | S of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
@@ -97,8 +100,8 @@ let ( * ) = mulo
 
 let rec leo x y b =
   conde [
-    (x === o) &&& (b === LBool.truo);
-    (x =/= o) &&& (y === o) &&& (b === LBool.falso);
+    (x === o) &&& (b === Bool.truo);
+    (x =/= o) &&& (y === o) &&& (b === Bool.falso);
     Fresh.two (fun x' y' ->
       (x === (s x')) &&& (y === (s y')) &&& (leo x' y' b)
     )
@@ -106,12 +109,12 @@ let rec leo x y b =
 
 let geo x y b = leo y x b
 
-let (<=) x y = leo x y LBool.truo
-let (>=) x y = geo x y LBool.truo
+let (<=) x y = leo x y Bool.truo
+let (>=) x y = geo x y Bool.truo
 
 let rec gto x y b = conde
-  [ (x =/= o) &&& (y === o) &&& (b === LBool.truo)
-  ; (x === o) &&& (b === LBool.falso)
+  [ (x =/= o) &&& (y === o) &&& (b === Bool.truo)
+  ; (x === o) &&& (b === Bool.falso)
   ; Fresh.two (fun x' y' ->
       (x === s x') &&& (y === s y') &&& (gto x' y' b)
     )
@@ -119,5 +122,5 @@ let rec gto x y b = conde
 
 let lto x y b = gto y x b
 
-let (>) x y = gto x y LBool.truo
-let (<) x y = lto x y LBool.truo
+let (>) x y = gto x y Bool.truo
+let (<) x y = lto x y Bool.truo

@@ -16,6 +16,9 @@
  * (enclosed in the file COPYING).
  *)
 
+(* to avoid clash with Std.List (i.e. logic list) *)
+module List = Stdlib.List
+
 module Answer =
   struct
     module S = Set.Make(Term)
@@ -54,7 +57,7 @@ module Answer =
           let terms = Term.VarMap.find var t in
           S.for_all (fun term' ->
             S.exists (fun term ->
-              VarSubst.Answer.subsumed env term term'
+              Subst.Answer.subsumed env term term'
             ) terms
           ) terms'
         with Not_found -> false
@@ -89,7 +92,7 @@ module Disjunct :
     type t
 
     (* [make env subst x y] creates new disjunct from the disequality [x =/= y] *)
-    val make : VarEnv.t -> VarSubst.t -> 'a -> 'a -> t
+    val make : Env.t -> Subst.t -> 'a -> 'a -> t
 
     (* [sample disj] returns an index of variable involved in some disequality inside disjunction *)
     val samplevar : t -> Term.Var.t
@@ -100,24 +103,24 @@ module Disjunct :
      *   with a series of more and more specialized substitutions.
      *   If arbitary substitutions are passed the result may be invalid.
      *)
-    val recheck : VarEnv.t -> VarSubst.t -> t -> t
+    val recheck : Env.t -> Subst.t -> t -> t
 
-    val is_relevant : VarEnv.t -> VarSubst.t -> t -> Term.VarSet.t -> bool
+    val is_relevant : Env.t -> Subst.t -> t -> Term.VarSet.t -> bool
 
-    val freevars : VarEnv.t -> VarSubst.t -> t -> Term.VarSet.t
+    val freevars : Env.t -> Subst.t -> t -> Term.VarSet.t
 
-    val subsumed : VarEnv.t -> VarSubst.t -> t -> t -> bool
+    val subsumed : Env.t -> Subst.t -> t -> t -> bool
 
-    val simplify : VarEnv.t -> VarSubst.t -> t -> t option
+    val simplify : Env.t -> Subst.t -> t -> t option
 
-    val reify : VarEnv.t -> VarSubst.t -> t -> VarSubst.Binding.t list
+    val reify : Env.t -> Subst.t -> t -> Subst.Binding.t list
   end =
   struct
     type t = Term.t Term.VarMap.t
 
     let update t =
       ListLabels.fold_left ~init:t
-        ~f:(let open VarSubst.Binding in fun acc {var; term} ->
+        ~f:(let open Subst.Binding in fun acc {var; term} ->
           if Term.VarMap.mem var acc then
             (* in this case we have subformula of the form (x =/= t1) \/ (x =/= t2) which is always SAT *)
             raise Disequality_fulfilled
@@ -132,10 +135,10 @@ module Disjunct :
     type status =
       | Fulfiled
       | Violated
-      | Refined of VarSubst.Binding.t list
+      | Refined of Subst.Binding.t list
 
     let refine env subst x y =
-      match VarSubst.unify env subst x y with
+      match Subst.unify env subst x y with
       | None              -> Fulfiled
       | Some ([], _)      -> Violated
       | Some (prefix, _)  -> Refined prefix
@@ -176,7 +179,7 @@ module Disjunct :
       with Disequality_fulfilled -> None
 
     let reify env subst t =
-      Term.VarMap.fold (fun var term xs -> VarSubst.(Binding.({var; term})::xs)) t []
+      Term.VarMap.fold (fun var term xs -> Subst.(Binding.({var; term})::xs)) t []
 
     let is_relevant env subst t fv =
       (* left those disjuncts that contains binding only for variables from [fv],
@@ -186,16 +189,16 @@ module Disjunct :
        *)
        Term.VarMap.for_all (fun var term ->
          (Term.VarSet.mem var fv) ||
-         (match VarEnv.var env term with Some u -> Term.VarSet.mem u fv | None -> false)
+         (match Env.var env term with Some u -> Term.VarSet.mem u fv | None -> false)
        ) t
 
     let freevars env subst t =
       Term.VarMap.fold (fun _ term acc ->
-        Term.VarSet.union acc @@ VarSubst.freevars env subst term
+        Term.VarSet.union acc @@ Subst.freevars env subst term
       ) t Term.VarSet.empty
 
     let subsumed env subst t t' =
-      VarSubst.(subsumed env (of_map t') (of_map t))
+      Subst.(subsumed env (of_map t') (of_map t))
 
   end
 
@@ -207,15 +210,15 @@ module Conjunct :
 
     val is_empty : t -> bool
 
-    val make : VarEnv.t -> VarSubst.t -> 'a -> 'a -> t
+    val make : Env.t -> Subst.t -> 'a -> 'a -> t
 
     val split : t -> t Term.VarMap.t
 
-    val recheck : VarEnv.t -> VarSubst.t -> t -> t
+    val recheck : Env.t -> Subst.t -> t -> t
 
-    val project : VarEnv.t -> VarSubst.t -> t -> Term.VarSet.t -> t
+    val project : Env.t -> Subst.t -> t -> Term.VarSet.t -> t
 
-    val merge_disjoint : VarEnv.t -> VarSubst.t -> t -> t -> t
+    val merge_disjoint : Env.t -> Subst.t -> t -> t -> t
 
     (* [diff env subst t' t] computes diff of two conjuncts, that is [t' \ t].
      *   Returns a pair where first element is conjunct
@@ -223,9 +226,9 @@ module Conjunct :
      *   and the second element is conjunct of entirely new constraints in [t'],
      *   that absent in [t].
      *)
-    val diff : VarEnv.t -> VarSubst.t -> t -> t -> t * t
+    val diff : Env.t -> Subst.t -> t -> t -> t * t
 
-    val reify : VarEnv.t -> VarSubst.t -> t -> 'a -> Answer.t list
+    val reify : Env.t -> Subst.t -> t -> 'a -> Answer.t list
   end = struct
     let next_id = ref 0
 
@@ -313,7 +316,7 @@ module Conjunct :
         | None      -> acc
       ) t M.empty
       in
-      let fv = VarSubst.freevars env subst x in
+      let fv = Subst.freevars env subst x in
       let t = project env subst t fv in
       (* here we convert disequality in CNF form into DNF form;
        * we maintain a list of answers, that is a mapping [var -> term list] ---
@@ -326,7 +329,7 @@ module Conjunct :
            * then we `concat` these lists into single list
            *)
         ListLabels.map acc ~f:(fun answ ->
-            let open VarSubst.Binding in
+            let open Subst.Binding in
             (* it might be the case that some atom in the disjunct
              * is a duplicate of some other disequality in the answer;
              * in this case we can throw away the whole disjunct (and keep only original answer)
@@ -376,9 +379,9 @@ let recheck env subst cstore bs =
   in
   try
     let cstore = ListLabels.fold_left bs ~init:cstore
-      ~f:(let open VarSubst.Binding in fun cstore {var; term} ->
+      ~f:(let open Subst.Binding in fun cstore {var; term} ->
         let cstore = helper var cstore in
-        match VarEnv.var env term with
+        match Env.var env term with
         | Some u -> helper u cstore
         | None   -> cstore
       )

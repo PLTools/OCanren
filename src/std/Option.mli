@@ -43,7 +43,7 @@ type ('a, 'b) groundi = ('a ground, 'b logic) injected
 val option : ('a, 'b) injected ground -> ('a, 'b) groundi
 
 (** Reifier *)
-val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> VarEnv.t -> ('a, 'b) groundi -> 'b logic
+val reify : (Env.t -> ('a, 'b) injected -> 'b) -> Env.t -> ('a, 'b) groundi -> 'b logic
 
 (** Injection counterpart for constructors *)
 val some : ('a, 'b) injected -> ('a, 'b) groundi

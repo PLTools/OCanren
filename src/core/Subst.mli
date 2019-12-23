@@ -23,7 +23,7 @@ module Binding :
       ; term  : Term.t
       }
 
-    val is_relevant : VarEnv.t -> Term.VarSet.t -> t -> bool
+    val is_relevant : Env.t -> Term.VarSet.t -> t -> bool
 
     val equal : t -> t -> bool
     val compare : t -> t -> int
@@ -42,13 +42,13 @@ val split : t -> Binding.t list
 (* [apply env subst x] - applies [subst] to term [x],
  *   i.e. replaces every variable to relevant binding in [subst];
  *)
-val apply : VarEnv.t -> t -> 'a -> 'a
+val apply : Env.t -> t -> 'a -> 'a
 
 (* [is_bound x subst] - checks whether [x] is bound by [subst] *)
 val is_bound : Term.Var.t -> t -> bool
 
 (* [freevars env subst x] - returns all free-variables of term [x] *)
-val freevars : VarEnv.t -> t -> 'a -> Term.VarSet.t
+val freevars : Env.t -> t -> 'a -> Term.VarSet.t
 
 (* [unify ~subsume ~scope env subst x y] performs unification of two terms [x] and [y] in [subst].
  *   Unification is a process of finding substituion [s] s.t. [s(x) = s(y)].
@@ -61,27 +61,27 @@ val freevars : VarEnv.t -> t -> 'a -> Term.VarSet.t
  *   This can be used to perform subsumption check:
  *   [y] is subsumed by [x] (i.e. [x] is more general than [x]) if such a unification succeeds.
  *)
-val unify : ?subsume:bool -> ?scope:Term.Var.scope -> VarEnv.t -> t -> 'a -> 'a -> (Binding.t list * t) option
+val unify : ?subsume:bool -> ?scope:Term.Var.scope -> Env.t -> t -> 'a -> 'a -> (Binding.t list * t) option
 
-val merge_disjoint : VarEnv.t -> t -> t -> t
+val merge_disjoint : Env.t -> t -> t -> t
 
 (* [merge env s1 s2] merges two substituions *)
-val merge : VarEnv.t -> t -> t -> t option
+val merge : Env.t -> t -> t -> t option
 
 (* [subsumed env s1 s2] checks that [s1] is subsumed by [s2] (i.e. [s2] is more general than [s1]).
  *   Subsumption relation forms a partial order on the set of substitutions.
  *)
-val subsumed : VarEnv.t -> t -> t -> bool
+val subsumed : Env.t -> t -> t -> bool
 
 module Answer :
   sig
     type t = Term.t
 
     (* [subsumed env x y] checks that [x] is subsumed by [y] (i.e. [y] is more general than [x]) *)
-    val subsumed : VarEnv.t -> t -> t -> bool
+    val subsumed : Env.t -> t -> t -> bool
   end
 
-val reify : VarEnv.t -> t -> 'a -> Answer.t
+val reify : Env.t -> t -> 'a -> Answer.t
 
 (** Walk counter *)
-val walk_counter : unit -> int                 
+val walk_counter : unit -> int

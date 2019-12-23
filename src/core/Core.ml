@@ -33,13 +33,13 @@ let stat = {
     disj_counter      = 0;
     delay_counter     = 0
 }
-         
+
 let unification_counter () = stat.unification_count
-let unification_time    () = stat.unification_time 
-let conj_counter        () = stat.conj_counter 
-let disj_counter        () = stat.disj_counter 
-let delay_counter       () = stat.delay_counter 
-                          
+let unification_time    () = stat.unification_time
+let conj_counter        () = stat.conj_counter
+let disj_counter        () = stat.disj_counter
+let delay_counter       () = stat.delay_counter
+
 let unification_incr     () = stat.unification_count <- stat.unification_count + 1
 let unification_time_incr t =
   stat.unification_time <- Mtime.Span.add stat.unification_time (t ())
@@ -48,19 +48,22 @@ let conj_counter_incr  () = stat.conj_counter  <- stat.conj_counter + 1
 let disj_counter_incr  () = stat.disj_counter  <- stat.disj_counter + 1
 let delay_counter_incr () = stat.delay_counter <- stat.delay_counter + 1
 
+(* to avoid clash with Std.List (i.e. logic list) *)
+module List = Stdlib.List
+
 module Answer :
   sig
     (* [Answer.t] - a type that represents (untyped) answer to a query *)
     type t
 
     (* [make env t] creates the answer from the environment and term (with constrainted variables)  *)
-    val make : VarEnv.t -> Term.t -> t
+    val make : Env.t -> Term.t -> t
 
     (* [lift env a] lifts the answer into different environment, replacing all variables consistently *)
-    val lift : VarEnv.t -> t -> t
+    val lift : Env.t -> t -> t
 
     (* [env a] returns an environment of the answer *)
-    val env : t -> VarEnv.t
+    val env : t -> Env.t
 
     (* [unctr_term a] returns a term with unconstrained variables *)
     val unctr_term : t -> Term.t
@@ -69,7 +72,7 @@ module Answer :
     val ctr_term : t -> Term.t
 
     (* [disequality a] returns all disequality constraints on variables in term as a list of bindings *)
-    val disequality : t -> VarSubst.Binding.t list
+    val disequality : t -> Subst.Binding.t list
 
     (* [equal t t'] syntactic equivalence (not an alpha-equivalence) *)
     val equal : t -> t -> bool
@@ -77,7 +80,7 @@ module Answer :
     (* [hash t] hashing that is consistent with syntactic equivalence *)
     val hash : t -> int
   end = struct
-    type t = VarEnv.t * Term.t
+    type t = Env.t * Term.t
 
     let make env t = (env, t)
 
@@ -100,7 +103,7 @@ module Answer :
                 let ctr_term = Term.repr ctr_term in
                 let var = {var with Term.Var.constraints = []} in
                 let term = unctr_term @@ (env, ctr_term) in
-                let acc = VarSubst.(Binding.({var; term}))::acc in
+                let acc = Subst.(Binding.({var; term}))::acc in
                 helper acc ctr_term
               )
           )
@@ -116,7 +119,7 @@ module Answer :
             try
               Term.VarTbl.find vartbl v
             with Not_found ->
-              let new_var = VarEnv.fresh ~scope:Term.Var.non_local_scope env' in
+              let new_var = Env.fresh ~scope:Term.Var.non_local_scope env' in
               Term.VarTbl.add vartbl v new_var;
               {new_var with Term.Var.constraints =
                 List.map (fun x -> helper x) v.Term.Var.constraints
@@ -127,7 +130,7 @@ module Answer :
       (env', helper t)
 
     let check_envs_exn env env' =
-      if VarEnv.equal env env' then () else
+      if Env.equal env env' then () else
         failwith "OCanren fatal (Answer.check_envs): answers from different environments"
 
     let equal (env, t) (env', t') =
@@ -139,19 +142,19 @@ module Answer :
 
 module Prunes : sig
   type rez = Violated | NonViolated
-  type ('a, 'b) reifier = VarEnv.t -> ('a, 'b) Logic.injected -> 'b
+  type ('a, 'b) reifier = Env.t -> ('a, 'b) Logic.injected -> 'b
   type 'b cond = 'b -> bool
   type t
 
   val empty   : t
   (* Returns false when constraints are violated *)
-  val recheck : t -> VarEnv.t -> VarSubst.t -> rez
-  val check_one : t -> VarEnv.t -> VarSubst.t -> Term.VarTbl.key -> rez
+  val recheck : t -> Env.t -> Subst.t -> rez
+  val check_one : t -> Env.t -> Subst.t -> Term.VarTbl.key -> rez
   val extend  : t -> Term.VarTbl.key -> ('a, 'b) reifier -> 'b cond -> t
 end = struct
   type rez = Violated | NonViolated
-  type ('a, 'b) reifier = VarEnv.t -> ('a, 'b) Logic.injected -> 'b
-  type reifier_untyped = VarEnv.t -> Obj.t -> Obj.t
+  type ('a, 'b) reifier = Env.t -> ('a, 'b) Logic.injected -> 'b
+  type reifier_untyped = Env.t -> Obj.t -> Obj.t
   type 'b cond = 'b -> bool
   type cond_untyped = Obj.t -> bool
 
@@ -162,7 +165,7 @@ end = struct
   let check_one map env subst term =
     try
       let (reifier, cond) = Term.VarMap.find term map in
-      let reified = reifier env (Obj.magic @@ VarSubst.apply env subst term) in
+      let reified = reifier env (Obj.magic @@ Subst.apply env subst term) in
       if cond reified
       then NonViolated
       else Violated
@@ -172,7 +175,7 @@ end = struct
   let recheck ps env s =
     try
       Term.VarMap.iter (fun k (reifier, checker) ->
-          let reified = reifier env (Obj.magic @@ VarSubst.apply env s k) in
+          let reified = reifier env (Obj.magic @@ Subst.apply env s k) in
           if not (checker reified)
           then raise Fail
        ) ps;
@@ -187,18 +190,18 @@ end
 module State =
   struct
     type t =
-      { env   : VarEnv.t
-      ; subst : VarSubst.t
+      { env   : Env.t
+      ; subst : Subst.t
       ; ctrs  : Disequality.t
       ; prunes: Prunes.t
       ; scope : Term.Var.scope
       }
 
-    type reified = VarEnv.t * Term.t
+    type reified = Env.t * Term.t
 
     let empty () =
-      { env   = VarEnv.empty ()
-      ; subst = VarSubst.empty
+      { env   = Env.empty ()
+      ; subst = Subst.empty
       ; ctrs  = Disequality.empty
       ; prunes = Prunes.empty
       ; scope = Term.Var.new_scope ()
@@ -210,12 +213,12 @@ module State =
     let scope {scope} = scope
     let prunes {prunes} = prunes
 
-    let fresh {env; scope} = VarEnv.fresh ~scope env
+    let fresh {env; scope} = Env.fresh ~scope env
 
     let new_scope st = {st with scope = Term.Var.new_scope ()}
 
     let unify x y ({env; subst; ctrs; scope} as st) =
-        match VarSubst.unify ~scope env subst x y with
+        match Subst.unify ~scope env subst x y with
         | None -> None
         | Some (prefix, subst) ->
           match Disequality.recheck env subst ctrs prefix with
@@ -231,7 +234,7 @@ module State =
       | Some ctrs -> Some {st with ctrs}
 
     let reify x {env; subst; ctrs} =
-      let answ = VarSubst.reify env subst x in
+      let answ = Subst.reify env subst x in
       let diseqs = Disequality.reify env subst ctrs x in
       if List.length diseqs = 0 then
         [Answer.make env answ]
@@ -246,7 +249,7 @@ module State =
                   {v with Term.Var.constraints =
                     Disequality.Answer.extract diseq v
                     |> List.filter (fun dt ->
-                      match VarEnv.var env dt with
+                      match Env.var env dt with
                       | Some u  -> not (List.mem u.Term.Var.index forbidden)
                       | None    -> true
                     )
@@ -266,10 +269,10 @@ let (!!!) = Obj.magic
 
 type 'a goal' = State.t -> 'a
 
-type goal = State.t RStream.t goal'
+type goal = State.t Stream.t goal'
 
-let success st = RStream.single st
-let failure _  = RStream.nil
+let success st = Stream.single st
+let failure _  = Stream.nil
 
 let (===) x y st =
   unification_incr ();
@@ -279,14 +282,15 @@ let (===) x y st =
   | None    -> unification_time_incr t; failure st
 
 let unify = (===)
-          
+
 let (=/=) x y st =
   match State.diseq x y st with
   | Some st -> success st
   | None    -> failure st
 
 let diseq = (=/=)
-          
+
+<<<<<<< HEAD
 let delay g st =
   delay_counter_incr ();
   RStream.from_fun (fun () -> g () st)
@@ -294,6 +298,11 @@ let delay g st =
 let conj f g st =
   conj_counter_incr ();
   RStream.bind (f st) g
+=======
+let delay g st = Stream.from_fun (fun () -> g () st)
+
+let conj f g st = Stream.bind (f st) g
+>>>>>>> get back old simpler names for modules
 
 let structural var rr k st =
   match Term.var var with
@@ -307,12 +316,16 @@ let structural var rr k st =
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
 
-let disj_base f g st = RStream.mplus (f st) (RStream.from_fun (fun () -> g st))
+let disj_base f g st = Stream.mplus (f st) (Stream.from_fun (fun () -> g st))
 
+<<<<<<< HEAD
 let disj f g st =
   disj_counter_incr ();
   let st = State.new_scope st in
   disj_base f g |> (fun g -> RStream.from_fun (fun () -> g st))
+=======
+let disj f g st = let st = State.new_scope st in disj_base f g |> (fun g -> Stream.from_fun (fun () -> g st))
+>>>>>>> get back old simpler names for modules
 
 let (|||) = disj
 
@@ -323,7 +336,7 @@ let (?|) gs st =
   | g::gs -> disj_base g (inner gs)
   | [] -> failwith "Wrong argument of (?!)"
   in
-  inner gs |> (fun g -> RStream.from_fun (fun () -> g st))
+  inner gs |> (fun g -> Stream.from_fun (fun () -> g st))
 
 let conde = (?|)
 
@@ -343,8 +356,8 @@ module Fresh =
     (* let two   g = fun st ->
       let scope = State.scope st in
       let env = State.env st in
-      let q = VarEnv.fresh ~scope env in
-      let r = VarEnv.fresh ~scope env in
+      let q = Env.fresh ~scope env in
+      let r = Env.fresh ~scope env in
       g q r st *)
 
     let three f = succ two f
@@ -415,8 +428,8 @@ let qrstu = five
 let run n g h =
   let adder, reifier, ext, uncurr = n () in
   let args, stream = ext @@ adder g @@ State.empty () in
-  RStream.bind stream (fun st -> RStream.of_list @@ State.reify args st)
-  |> RStream.map (fun answ ->
+  Stream.bind stream (fun st -> Stream.of_list @@ State.reify args st)
+  |> Stream.map (fun answ ->
     uncurr h @@ reifier (Obj.magic @@ Answer.ctr_term answ) (Answer.env answ)
   )
 
@@ -482,7 +495,7 @@ module Table :
               (* delayed check that current head of cache is not equal to head of seen part *)
               let is_ready () = seen != !cache  in
               (* delayed thunk starts to consume unseen part of cache  *)
-              RStream.suspend ~is_ready @@ fun () -> helper !cache !cache seen
+              Stream.suspend ~is_ready @@ fun () -> helper !cache !cache seen
             else
               (* consume one answer term from cache and `lift` it to the current environment *)
               let answ, tail = (Answer.lift env @@ List.hd curr), List.tl curr in
@@ -492,18 +505,18 @@ module Table :
                   begin
                   (* check `answ` disequalities against external substitution *)
                   let ctrs = ListLabels.fold_left (Answer.disequality answ) ~init:Disequality.empty
-                    ~f:(let open VarSubst.Binding in fun acc {var; term} ->
-                      match Disequality.add env VarSubst.empty acc (Term.repr var) term with
+                    ~f:(let open Subst.Binding in fun acc {var; term} ->
+                      match Disequality.add env Subst.empty acc (Term.repr var) term with
                       (* we should not violate disequalities *)
                       | None     -> assert false
                       | Some acc -> acc
                     )
                   in
-                  match Disequality.recheck env subst' ctrs (VarSubst.split subst') with
+                  match Disequality.recheck env subst' ctrs (Subst.split subst') with
                   | None      -> helper start tail seen
                   | Some ctrs ->
                     let st' = {st' with ctrs = Disequality.merge_disjoint env subst' ctrs' ctrs} in
-                    RStream.(cons st' (from_fun @@ fun () -> helper start tail seen))
+                    Stream.(cons st' (from_fun @@ fun () -> helper start tail seen))
                   end
           in
           helper !cache !cache []
@@ -513,7 +526,7 @@ module Table :
     type t = Cache.t H.t
 
     let make_answ args st =
-      let env = VarEnv.create ~anchor:Term.Var.tabling_env in
+      let env = Env.create ~anchor:Term.Var.tabling_env in
       let [answ] = State.reify args st in
       Answer.lift env answ
 
@@ -536,7 +549,7 @@ module Table :
           if not (Cache.contains cache answ) then begin
             Cache.add cache answ;
             (* TODO: we only need to check diff, i.e. [subst' \ subst] *)
-            match Disequality.recheck env subst' ctrs (VarSubst.split subst') with
+            match Disequality.recheck env subst' ctrs (Subst.split subst') with
             | None      -> failure ()
             | Some ctrs ->
               success {st' with ctrs = Disequality.merge_disjoint env subst' ctrs ctrs'}
