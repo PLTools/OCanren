@@ -2,7 +2,7 @@
 .PHONY: \
 	all clean \
 	lib ppx syntax package \
-	test promote discover-tests clean-tests \
+	test promote discover-tests clean-test \
 	samples clean-samples \
 	install uninstall
 
@@ -33,13 +33,13 @@ discover-tests:
 samples:
 	dune build samples
 
-clean-tests:
+clean-test:
 	rm -f regression/*.log regression/*.diff
 
 clean-samples:
 	rm -f samples/*.log samples/*.diff
 
-clean: clean-tests clean-samples
+clean: clean-test clean-samples
 	dune clean
 
 install:
