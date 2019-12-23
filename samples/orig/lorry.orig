@@ -1,6 +1,6 @@
-Reaching 6: (S (S (S (S (S (S (O ())))))), (O (), []))
-Making stations: (S (S (O ())), (S (S (O ())), [(S (O ()), S (S (O ())))]))
-Searching for making stations: [Forward (S (O ())); Unload (S (S (O ()))); Backward (S (O ())); Fill (S (S (S (O ())))); Forward (S (S (O ())))]
-Searching for reaching 6: [Forward (S (O ())); Unload (S (O ())); Backward (S (O ())); Fill (S (S (S (O ())))); Forward (S (O ())); Fill (S (O ())); Forward (S (S (S (S (S (O ()))))))]
-Reaching 8: (S (S (S (S (S (S (S (S (O ())))))))), (O (), []))
-Searching for reaching 8: [Forward (S (S (O ()))); Unload (S (O ())); Backward (S (S (O ()))); Fill (S (S (S (O ())))); Forward (S (O ())); Unload (S (O ())); Backward (S (O ())); Fill (S (S (S (S (S (O ())))))); Forward (S (S (O ()))); Unload (S (O ())); Backward (S (S (O ()))); Fill (S (S (S (S (S (O ())))))); Forward (S (O ())); Fill (S (O ())); Forward (S (O ())); Fill (S (O ())); Forward (S (O ())); Unload (S (S (O ()))); Backward (S (O ())); Fill (S (O ())); Backward (S (S (O ()))); Fill (S (S (S (O ())))); Forward (S (O ())); Unload (S (O ())); Backward (S (O ())); Fill (S (S (S (S (S (O ())))))); Forward (S (O ())); Fill (S (O ())); Forward (S (S (O ()))); Fill (S (S (O ()))); Forward (S (S (S (S (S (O ()))))))]
+Reaching 6: (S (S (S (S (S (S (O)))))), (O, []))
+Making stations: (S (S (O)), (S (S (O)), [(S (O), S (S (O)))]))
+Searching for making stations: [Forward (S (O)); Unload (S (S (O))); Backward (S (O)); Fill (S (S (S (O)))); Forward (S (S (O)))]
+Searching for reaching 6: [Forward (S (O)); Unload (S (O)); Backward (S (O)); Fill (S (S (S (O)))); Forward (S (O)); Fill (S (O)); Forward (S (S (S (S (S (O))))))]
+Reaching 8: (S (S (S (S (S (S (S (S (O)))))))), (O, []))
+Searching for reaching 8: [Forward (S (S (O))); Unload (S (O)); Backward (S (S (O))); Fill (S (S (S (O)))); Forward (S (O)); Unload (S (O)); Backward (S (O)); Fill (S (S (S (S (S (O)))))); Forward (S (S (O))); Unload (S (O)); Backward (S (S (O))); Fill (S (S (S (S (S (O)))))); Forward (S (O)); Fill (S (O)); Forward (S (O)); Fill (S (O)); Forward (S (O)); Unload (S (S (O))); Backward (S (O)); Fill (S (O)); Backward (S (S (O))); Fill (S (S (S (O)))); Forward (S (O)); Unload (S (O)); Backward (S (O)); Fill (S (S (S (S (S (O)))))); Forward (S (O)); Fill (S (O)); Forward (S (S (O))); Fill (S (S (O))); Forward (S (S (S (S (S (O))))))]
