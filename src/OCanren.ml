@@ -24,26 +24,27 @@ module Peep    = Peep
 module Runconf = Runconf
 module Timer   = Timer
 module VarEnv = VarEnv
+module Env = Env
 
 module Std =
   struct
 
-    module Pair    = LPair
-    module Option  = LOption
-    module Bool    = LBool
-    module Nat     = LNat
-    module List    = LList
+    module Pair    = Pair
+    module Option  = Option
+    module Bool    = Bool
+    module Nat     = Nat
+    module List    = List
 
     let eqo x y t =
       conde [
-        (x === y) &&& (t === LBool.truo);
-        (x =/= y) &&& (t === LBool.falso);
+        (x === y) &&& (t === Bool.truo);
+        (x =/= y) &&& (t === Bool.falso);
       ]
 
     let neqo x y t =
       conde [
-        (x =/= y) &&& (t === LBool.truo);
-        (x === y) &&& (t === LBool.falso);
+        (x =/= y) &&& (t === Bool.truo);
+        (x === y) &&& (t === Bool.falso);
       ]
 
     let nat n = Nat.nat (Nat.of_int n)

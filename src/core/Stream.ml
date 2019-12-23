@@ -16,6 +16,7 @@
  * (enclosed in the file COPYING).
  *)
 
+<<<<<<< HEAD:src/core/RStream.ml
 type stat = {
     mutable unwrap_suspended_counter : int;
     mutable force_counter            : int;
@@ -46,6 +47,10 @@ let bind_counter_incr () = stat.bind_counter <- stat.bind_counter + 1
 
 let mplus_counter () = stat.mplus_counter
 let mplus_counter_incr () = stat.mplus_counter <- stat.mplus_counter + 1
+=======
+(* to avoid clash with Std.List (i.e. logic list) *)
+module List = Stdlib.List
+>>>>>>> get back old simpler names for modules:src/core/Stream.ml
 
 type 'a t =
   | Nil

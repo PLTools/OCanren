@@ -45,10 +45,10 @@ val inj : ground -> logic
 type groundi = (ground, logic) injected
 
 (** Reifier *)
-val reify : VarEnv.t -> groundi -> logic
+val reify : Env.t -> groundi -> logic
 
 (* Shallow non-variable projection *)
-val prjc : (int -> ground GT.list -> ground) -> VarEnv.t -> groundi -> ground
+val prjc : (int -> ground GT.list -> ground) -> Env.t -> groundi -> ground
 
 (** [of_int n] converts integer [n] into [ground]; negative integers become [O] *)
 val of_int : int -> ground
@@ -79,10 +79,10 @@ val mulo  : groundi -> groundi -> groundi -> goal
 val ( * ) : groundi -> groundi -> groundi -> goal
 
 (** Comparisons *)
-val leo : groundi -> groundi -> LBool.groundi -> goal
-val geo : groundi -> groundi -> LBool.groundi -> goal
-val gto : groundi -> groundi -> LBool.groundi -> goal
-val lto : groundi -> groundi -> LBool.groundi -> goal
+val leo : groundi -> groundi -> Bool.groundi -> goal
+val geo : groundi -> groundi -> Bool.groundi -> goal
+val gto : groundi -> groundi -> Bool.groundi -> goal
+val lto : groundi -> groundi -> Bool.groundi -> goal
 
 (** Comparisons as goals *)
 val (<=) : groundi -> groundi -> goal

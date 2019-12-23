@@ -59,10 +59,10 @@ val inj : ('a -> 'b) -> 'a ground -> 'b logic
 val list : ('a, 'b) injected GT.list -> ('a, 'b) groundi
 
 (** Reifier *)
-val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> VarEnv.t -> ('a ground, 'b logic) injected -> 'b logic
+val reify : (Env.t -> ('a, 'b) injected -> 'b) -> Env.t -> ('a ground, 'b logic) injected -> 'b logic
 
-val prjc : (VarEnv.t -> ('a, 'b) injected -> 'a) -> (int -> 'a ground GT.list -> 'a ground) ->
-  VarEnv.t -> ('a ground, 'b logic) injected -> 'a ground
+val prjc : (Env.t -> ('a, 'b) injected -> 'a) -> (int -> 'a ground GT.list -> 'a ground) ->
+  Env.t -> ('a ground, 'b logic) injected -> 'a ground
 
 (** Relational foldr *)
 val foldro : (('a, 'b) injected -> ('acc, _ logic' as 'acc2) injected -> ('acc, 'acc2) injected -> goal) -> ('acc, 'acc2) injected -> ('a, 'b) groundi -> ('acc, 'acc2) injected -> goal
@@ -71,22 +71,22 @@ val foldro : (('a, 'b) injected -> ('acc, _ logic' as 'acc2) injected -> ('acc, 
 val mapo : (('a, 'b) injected -> ('q, 'w) injected -> goal) -> ('a, 'b) groundi -> ('q, 'w) groundi -> goal
 
 (** Relational filter *)
-val filtero : (('a, 'b) injected -> LBool.groundi -> goal) -> ('a, 'b) groundi -> ('a, 'b) groundi -> goal
+val filtero : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) groundi -> ('a, 'b) groundi -> goal
 
 (** Relational lookup *)
-val lookupo : (('a, 'b) injected -> LBool.groundi -> goal) -> ('a, 'b) groundi -> ('a option, 'b option logic') injected -> goal
+val lookupo : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) groundi -> ('a option, 'b option logic') injected -> goal
 
 (** Relational association list lookup *)
-val assoco : ('a, 'b logic') injected -> (('a, 'c) LPair.ground, ('b logic', 'd logic') LPair.logic) groundi -> ('c, 'd logic') injected -> goal
+val assoco : ('a, 'b logic') injected -> (('a, 'c) Pair.ground, ('b logic', 'd logic') Pair.logic) groundi -> ('c, 'd logic') injected -> goal
 
 (** Boolean list disjunctions *)
-val anyo : (LBool.ground, LBool.logic) groundi -> LBool.groundi -> goal
+val anyo : (Bool.ground, Bool.logic) groundi -> Bool.groundi -> goal
 
 (** Boolean list conjunction *)
-val allo : (LBool.ground, LBool.logic) groundi -> LBool.groundi -> goal
+val allo : (Bool.ground, Bool.logic) groundi -> Bool.groundi -> goal
 
 (** Relational length *)
-val lengtho : (_, _) groundi -> LNat.groundi -> goal
+val lengtho : (_, _) groundi -> Nat.groundi -> goal
 
 (** Relational append *)
 val appendo : ('a, 'b) groundi -> ('a, 'b) groundi  -> ('a, 'b) groundi -> goal

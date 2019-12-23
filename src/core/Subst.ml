@@ -19,9 +19,11 @@
 type stat = {mutable walk_count : int}
 
 let stat = {walk_count = 0}
-         
+
 let walk_counter () = stat.walk_count
 let walk_incr () = stat.walk_count <- stat.walk_count + 1
+(* to avoid clash with Std.List (i.e. logic list) *)
+module List = Stdlib.List
 
 module Binding =
   struct
@@ -32,7 +34,7 @@ module Binding =
 
     let is_relevant env vs {var; term} =
       (Term.VarSet.mem var vs) ||
-      (match VarEnv.var env term with Some v -> Term.VarSet.mem v vs | None -> false)
+      (match Env.var env term with Some v -> Term.VarSet.mem v vs | None -> false)
 
     let equal {var=v; term=t} {var=u; term=p} =
       (Term.Var.equal v u) || (Term.equal t p)
@@ -67,6 +69,7 @@ let walk env subst x =
   let rec walkv env subst v =
     walk_incr ();
     VarEnv.check_exn env v;
+    Env.check_exn env v;
     match v.Term.Var.subst with
     | Some term -> walkt env subst (Obj.magic term)
     | None ->
@@ -76,6 +79,7 @@ let walk env subst x =
   and walkt env subst t =
     walk_incr ();
     match VarEnv.var env t with
+    match Env.var env t with
     | Some v -> walkv env subst v
     | None   -> Value t
   in
@@ -84,7 +88,7 @@ let walk env subst x =
 (* same as [Term.map] but performs [walk] on the road *)
 let map ~fvar ~fval env subst x =
   let rec deepfvar v =
-    VarEnv.check_exn env v;
+    Env.check_exn env v;
     match walk env subst v with
     | Var v   -> fvar v
     | Value x -> Term.map x ~fval ~fvar:deepfvar
@@ -94,7 +98,7 @@ let map ~fvar ~fval env subst x =
 (* same as [Term.iter] but performs [walk] on the road *)
 let iter ~fvar ~fval env subst x =
   let rec deepfvar v =
-    VarEnv.check_exn env v;
+    Env.check_exn env v;
     match walk env subst v with
     | Var v   -> fvar v
     | Value x -> Term.iter x ~fval ~fvar:deepfvar
@@ -104,7 +108,7 @@ let iter ~fvar ~fval env subst x =
 (* same as [Term.fold] but performs [walk] on the road *)
 let fold ~fvar ~fval ~init env subst x =
   let rec deepfvar acc v =
-    VarEnv.check_exn env v;
+    Env.check_exn env v;
     match walk env subst v with
     | Var v   -> fvar acc v
     | Value x -> Term.fold x ~fval ~fvar:deepfvar ~init:acc
@@ -120,8 +124,9 @@ let rec occurs env subst var term =
 
 let extend ~scope env subst var term  =
   (* if occurs env subst var term then raise Occurs_check *)
-  if Runconf.do_occurs_check () then occurs env subst var term; 
+  if Runconf.do_occurs_check () then occurs env subst var term;
     (* assert (VarEnv.var env var <> VarEnv.var env term); *)
+  occurs env subst var term;
 
   (* It is safe to modify variables destructively if the case of scopes match.
    * There are two cases:
@@ -179,7 +184,7 @@ let apply env subst x = Obj.magic @@
     ~fval:(fun x -> Term.repr x)
 
 let freevars env subst x =
-  VarEnv.freevars env @@ apply env subst x
+  Env.freevars env @@ apply env subst x
 
 let is_bound = Term.VarMap.mem
 

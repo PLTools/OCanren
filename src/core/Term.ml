@@ -18,6 +18,9 @@
 
 open Printf
 
+(* to avoid clash with Std.List (i.e. logic list) *)
+module List = Stdlib.List
+
 module Var =
   struct
     type env    = int

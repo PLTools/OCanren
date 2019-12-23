@@ -19,6 +19,9 @@
 open Logic
 open Core
 
+(* to avoid clash with Std.List (i.e. logic list) *)
+module List = Stdlib.List
+
 @type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type 'a logic'     = 'a logic              with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type ('a, 'l) t    = ('a, 'l) list         with show, gmap, html, eq, compare, foldl, foldr, fmt
@@ -148,43 +151,43 @@ let rec mapo f xs ys =
 let filtero p xs ys =
   let folder x a a' =
     conde [
-      (p x LBool.truo) &&& (x % a === a');
-      (p x LBool.falso) &&& (a === a')
+      (p x Bool.truo) &&& (x % a === a');
+      (p x Bool.falso) &&& (a === a')
     ]
   in
   foldro folder (nil ()) xs ys
 
 let rec lookupo p xs mx =
   conde [
-    (xs === nil ()) &&& (mx === LOption.none ());
+    (xs === nil ()) &&& (mx === Option.none ());
     Fresh.two (fun h t ->
       (h % t === xs) &&&
       (conde [
-        (p h LBool.truo) &&& (mx === (LOption.some h));
-        (p h LBool.falso) &&& (lookupo p t mx)
+        (p h Bool.truo) &&& (mx === (Option.some h));
+        (p h Bool.falso) &&& (lookupo p t mx)
       ])
     )
   ]
 
 let rec assoco x xs v =
    Fresh.three (fun a b tl ->
-     (xs === (LPair.pair a b) % tl) &&&
+     (xs === (Pair.pair a b) % tl) &&&
      conde [
        (a === x) &&& (b === v);
        (a =/= x) &&& (assoco x tl v)
      ]
    )
 
-let anyo = foldro LBool.oro LBool.falso
+let anyo = foldro Bool.oro Bool.falso
 
-let allo = foldro LBool.ando LBool.truo
+let allo = foldro Bool.ando Bool.truo
 
 let rec lengtho l n =
   conde [
-    (l === nil ()) &&& (n === LNat.o);
+    (l === nil ()) &&& (n === Nat.o);
     Fresh.three (fun x xs n' ->
       (l === x % xs)  &&&
-      (n === (LNat.s n')) &&&
+      (n === (Nat.s n')) &&&
       (lengtho xs n')
     )
   ]
