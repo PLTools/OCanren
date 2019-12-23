@@ -2,7 +2,6 @@
   (name discover)
   (modules Discover)
   (libraries str dune.configurator)
-  (flags (:standard -warn-error -A))
 )
 
 (rule

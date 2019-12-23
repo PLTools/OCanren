@@ -4,7 +4,6 @@
   (name OCanren)
   (public_name OCanren)
   (libraries GT GT.syntax.all)
-  (flags (:standard -warn-error -A -rectypes))
   (preprocess
     (action
       (run camlp5

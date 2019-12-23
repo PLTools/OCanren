@@ -4,7 +4,6 @@
   (kind ppx_rewriter)
   (libraries base ppxlib)
   (modules ppx_fresh)
-  (flags (:standard -warn-error -A -rectypes))
   (preprocess (pps ppxlib.metaquot))
 )
 
