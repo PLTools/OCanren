@@ -1,5 +1,5 @@
 version = "0.1"
-description = "ocanren"
+description = "OCanren"
 requires = "GT,unix"
 archive(byte) = "OCanren.cma"
 archive(native) = "OCanren.cmxa"
