@@ -3,7 +3,8 @@
 	all clean \
 	lib ppx syntax package \
 	test promote discover-tests clean-tests \
-	samples clean-samples
+	samples clean-samples \
+	install uninstall
 
 .DEFAULT_GOAL: all
 
@@ -40,3 +41,9 @@ clean-samples:
 
 clean: clean-tests clean-samples
 	dune clean
+
+install:
+	dune build @install && dune install
+
+uninstall:
+	dune uninstall
