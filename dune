@@ -1,0 +1,9 @@
+(env
+ (dev
+  (flags (:standard -rectypes -warn-error -A -w -K-9-27))
+ )
+ (release
+  (flags (:standard -rectypes -warn-error -A -w -K-9-27))
+  (ocamlopt_flags -O3)
+ )
+)
