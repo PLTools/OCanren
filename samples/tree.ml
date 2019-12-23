@@ -51,8 +51,8 @@ module Tree = struct
   let rec prj_tree : rtree -> inttree =
     fun x -> GT.(gmap t) Nat.to_int prj_tree x
 
-  let rec reify_tree eta = M.reify LNat.reify reify_tree eta
-  (* let rec prjc_tree env t = M.prjc LNat.prjc prjc_tree env t *)
+  let rec reify_tree eta = M.reify Nat.reify reify_tree eta
+  (* let rec prjc_tree env t = M.prjc Nat.prjc prjc_tree env t *)
 end
 
 open Tree
@@ -61,7 +61,7 @@ open Tree
 let () =
   (* Demo about reification *)
 
-  let _: Tree.ltree RStream.t =
+  let _: Tree.ltree Stream.t =
     run q (fun q  -> q === leaf ())
         (fun qs -> qs#reify Tree.reify_tree)
   in
