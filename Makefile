@@ -12,7 +12,7 @@ all: package samples
 package: lib ppx syntax
 
 lib:
-	dune build src/OCanren.a src/OCanren.cma src/OCanren.cmxa
+	dune build src
 
 ppx:
 	dune build ppx ppxnew
@@ -30,7 +30,7 @@ discover-tests:
 	dune build @discover-tests
 
 samples:
-	dune build @samples
+	dune build samples
 
 clean-tests:
 	rm -f regression/*.log regression/*.diff
