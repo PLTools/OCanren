@@ -70,9 +70,9 @@ for TEST in ${TESTS}; do
   if [[ ${PROMOTE} -eq "1" ]]; then
     if [[ ! -f ${TESTLOG} ]]; then
       echo "cannot find ${TESTLOG}"
-      exit 1
+    else
+      cp ${TESTLOG} ${TESTORIG}
     fi
-    cp ${TESTLOG} ${TESTORIG}
     continue
   fi
 
