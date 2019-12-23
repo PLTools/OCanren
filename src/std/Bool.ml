@@ -19,6 +19,9 @@
 open Logic
 open Core
 
+(* to avoid clash with Std.List (i.e. logic list) *)
+module List = Stdlib.List
+
 @type 'a logic' = 'a logic                 with show, html, eq, compare, foldr, foldl, gmap, fmt
 
 let logic' = logic;;

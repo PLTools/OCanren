@@ -40,7 +40,7 @@ val inj : ground -> logic
 type groundi = (ground, logic) injected
 
 (** Reifier *)
-val reify : VarEnv.t -> groundi -> logic
+val reify : Env.t -> groundi -> logic
 
 (** Constants *)
 val falso : groundi

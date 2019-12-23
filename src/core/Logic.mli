@@ -75,12 +75,12 @@ object
   method prj: 'a
 
   (** Gets the answer as a logic value using provided injection function [inj] *)
-  method reify: (VarEnv.t -> ('a, 'b) injected -> 'b) -> 'b
+  method reify: (Env.t -> ('a, 'b) injected -> 'b) -> 'b
 
-  method prjc : (VarEnv.t -> ('a, 'b) injected -> 'a) -> 'a
+  method prjc : (Env.t -> ('a, 'b) injected -> 'a) -> 'a
 end
 
-val make_rr : VarEnv.t -> ('a, 'b) injected -> ('a, 'b) reified
+val make_rr : Env.t -> ('a, 'b) injected -> ('a, 'b) reified
 
 (** Functors (1-6 type parameters) *)
 
@@ -121,47 +121,49 @@ module type T6 =
   end
 
 (* A default shallow reifier *)
-val reify : VarEnv.t -> ('a, 'a logic) injected -> 'a logic
+val reify : Env.t -> ('a, 'a logic) injected -> 'a logic
 
-val prjc : (int -> 'a list -> 'a) -> VarEnv.t -> ('a, 'a logic) injected -> 'a
+val prjc : (int -> 'a list -> 'a) -> Env.t -> ('a, 'a logic) injected -> 'a
 
 val project : ('a, 'b) reified -> 'a
-  
+
 (** Building reifiers for a custom type compositionally *)
 
 module Fmap : functor (T : T1) ->
  sig
    val distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected
 
-   val reify : (VarEnv.t -> ('a,'b) injected -> 'b) -> VarEnv.t -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
+   val reify : (Env.t -> ('a,'b) injected -> 'b) -> Env.t -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
 
-   val prjc  : (VarEnv.t -> ('a,'b) injected -> 'a) -> (int -> 'r list -> ('a T.t as 'r)) -> VarEnv.t -> ('r, 'b T.t logic) injected -> 'r
+   val prjc  : (Env.t -> ('a,'b) injected -> 'a) ->
+     (int -> 'r list -> ('a T.t as 'r)) ->
+     Env.t -> ('r, 'b T.t logic) injected -> 'r
  end
 
 module Fmap2 (T : T2) :
  sig
    val distrib : (('a,'c) injected, ('b,'d) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected
 
-   val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> (VarEnv.t -> ('c, 'd) injected -> 'd) -> VarEnv.t -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
+   val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> Env.t -> (('a, 'c) T.t, ('b, 'd) T.t logic as 'r) injected -> 'r
 
-   val prjc  : (VarEnv.t -> ('a, 'b) injected -> 'a) ->
-     (VarEnv.t -> ('c, 'd) injected -> 'c) ->
+   val prjc  : (Env.t -> ('a, 'b) injected -> 'a) ->
+     (Env.t -> ('c, 'd) injected -> 'c) ->
      (int -> 'r list -> (('a,'c) T.t as 'r) ) ->
-     VarEnv.t -> ('r, ('b,'d) T.t logic) injected -> 'r
+     Env.t -> ('r, ('b,'d) T.t logic) injected -> 'r
  end
 
 module Fmap3 (T : T3) :
  sig
    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected
 
-   val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> (VarEnv.t -> ('c, 'd) injected -> 'd) -> (VarEnv.t -> ('e, 'f) injected -> 'f) ->
-               VarEnv.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
+   val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> (Env.t -> ('e, 'f) injected -> 'f) ->
+               Env.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t logic as 'r) injected -> 'r
 
-   val prjc  : (VarEnv.t -> ('a, 'b) injected -> 'a) ->
-     (VarEnv.t -> ('c, 'd) injected -> 'c) ->
-     (VarEnv.t -> ('e, 'f) injected -> 'e) ->
+   val prjc  : (Env.t -> ('a, 'b) injected -> 'a) ->
+     (Env.t -> ('c, 'd) injected -> 'c) ->
+     (Env.t -> ('e, 'f) injected -> 'e) ->
      (int -> 'r list -> 'r) ->
-     VarEnv.t -> (('a,'c,'e) T.t as 'r, ('b,'d,'f) T.t logic) injected -> 'r
+     Env.t -> (('a,'c,'e) T.t as 'r, ('b,'d,'f) T.t logic) injected -> 'r
  end
 
 module Fmap4 (T : T4) :
@@ -169,15 +171,15 @@ module Fmap4 (T : T4) :
    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
                       (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected
 
-   val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> (VarEnv.t -> ('c, 'd) injected -> 'd) ->
-               (VarEnv.t -> ('e, 'f) injected -> 'f) -> (VarEnv.t -> ('g, 'h) injected -> 'h) ->
-               VarEnv.t -> (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t logic as 'r) injected -> 'r
+   val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) ->
+               (Env.t -> ('e, 'f) injected -> 'f) -> (Env.t -> ('g, 'h) injected -> 'h) ->
+               Env.t -> (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t logic as 'r) injected -> 'r
 
    val prjc  :
-     (VarEnv.t -> ('a, 'b) injected -> 'a) -> (VarEnv.t -> ('c, 'd) injected -> 'c) ->
-     (VarEnv.t -> ('e, 'f) injected -> 'e) -> (VarEnv.t -> ('g, 'h) injected -> 'g) ->
+     (Env.t -> ('a, 'b) injected -> 'a) -> (Env.t -> ('c, 'd) injected -> 'c) ->
+     (Env.t -> ('e, 'f) injected -> 'e) -> (Env.t -> ('g, 'h) injected -> 'g) ->
      (int -> 'r list -> 'r) ->
-     VarEnv.t -> ('r, ('b,'d,'f,'h) T.t logic) injected -> (('a,'c,'e,'g) T.t as 'r)
+     Env.t -> ('r, ('b,'d,'f,'h) T.t logic) injected -> (('a,'c,'e,'g) T.t as 'r)
  end
 
 module Fmap5 (T : T5) :
@@ -185,16 +187,16 @@ module Fmap5 (T : T5) :
    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
                       (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected
 
-   val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> (VarEnv.t -> ('c, 'd) injected -> 'd) -> (VarEnv.t -> ('e, 'f) injected -> 'f) ->
-               (VarEnv.t -> ('g, 'h) injected -> 'h) -> (VarEnv.t -> ('i, 'j) injected -> 'j) ->
-               VarEnv.t -> (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t logic as 'r) injected -> 'r
+   val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> (Env.t -> ('e, 'f) injected -> 'f) ->
+               (Env.t -> ('g, 'h) injected -> 'h) -> (Env.t -> ('i, 'j) injected -> 'j) ->
+               Env.t -> (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t logic as 'r) injected -> 'r
 
    val prjc  :
-     (VarEnv.t -> ('a, 'b) injected -> 'a) -> (VarEnv.t -> ('c, 'd) injected -> 'c) ->
-     (VarEnv.t -> ('e, 'f) injected -> 'e) -> (VarEnv.t -> ('g, 'h) injected -> 'g) ->
-     (VarEnv.t -> ('i, 'j) injected -> 'i) ->
+     (Env.t -> ('a, 'b) injected -> 'a) -> (Env.t -> ('c, 'd) injected -> 'c) ->
+     (Env.t -> ('e, 'f) injected -> 'e) -> (Env.t -> ('g, 'h) injected -> 'g) ->
+     (Env.t -> ('i, 'j) injected -> 'i) ->
      (int -> 'r list -> 'r) ->
-     VarEnv.t -> ('r, ('b,'d,'f,'h,'j) T.t logic) injected ->
+     Env.t -> ('r, ('b,'d,'f,'h,'j) T.t logic) injected ->
      (('a,'c,'e,'g,'i) T.t as 'r)
  end
 
@@ -203,15 +205,15 @@ module Fmap6 (T : T6) :
    val distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) T.t ->
                       (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected
 
-   val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> (VarEnv.t -> ('c, 'd) injected -> 'd) -> (VarEnv.t -> ('e, 'f) injected -> 'f) ->
-               (VarEnv.t -> ('g, 'h) injected -> 'h) -> (VarEnv.t -> ('i, 'j) injected -> 'j) -> (VarEnv.t -> ('k, 'l) injected -> 'l) ->
-               VarEnv.t -> (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t logic as 'r) injected -> 'r
+   val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> (Env.t -> ('e, 'f) injected -> 'f) ->
+               (Env.t -> ('g, 'h) injected -> 'h) -> (Env.t -> ('i, 'j) injected -> 'j) -> (Env.t -> ('k, 'l) injected -> 'l) ->
+               Env.t -> (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t logic as 'r) injected -> 'r
 
    val prjc  :
-     (VarEnv.t -> ('a, 'b) injected -> 'a) -> (VarEnv.t -> ('c, 'd) injected -> 'c) ->
-     (VarEnv.t -> ('e, 'f) injected -> 'e) -> (VarEnv.t -> ('g, 'h) injected -> 'g) ->
-     (VarEnv.t -> ('i, 'j) injected -> 'i) -> (VarEnv.t -> ('k, 'l) injected -> 'k) ->
+     (Env.t -> ('a, 'b) injected -> 'a) -> (Env.t -> ('c, 'd) injected -> 'c) ->
+     (Env.t -> ('e, 'f) injected -> 'e) -> (Env.t -> ('g, 'h) injected -> 'g) ->
+     (Env.t -> ('i, 'j) injected -> 'i) -> (Env.t -> ('k, 'l) injected -> 'k) ->
      (int -> 'r list -> 'r) ->
-     VarEnv.t -> ('r, ('b,'d,'f,'h,'j,'l) T.t logic) injected ->
+     Env.t -> ('r, ('b,'d,'f,'h,'j,'l) T.t logic) injected ->
      (('a,'c,'e,'g,'i,'k) T.t as 'r)
  end
