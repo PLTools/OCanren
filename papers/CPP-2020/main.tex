@@ -1,19 +1,16 @@
-\documentclass[sigplan,10pt,anonymous,review]{acmart}
-\settopmatter{printfolios=true,printccs=false,printacmref=false}
+\documentclass[a4paper,UKenglish,cleveref, autoref]{lipics-v2019}
+%This is a template for producing LIPIcs articles. 
+%See lipics-manual.pdf for further information.
+%for A4 paper format use option "a4paper", for US-letter use option "letterpaper"
+%for british hyphenation rules use option "UKenglish", for american hyphenation rules use option "USenglish"
+%for section-numbered lemmas etc., use "numberwithinsect"
+%for enabling cleveref support, use "cleveref"
+%for enabling cleveref support, use "autoref"
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Note: Authors migrating a paper from PACMPL format to traditional
-%% SIGPLAN proceedings format must update the '\documentclass' and
-%% topmatter commands above; see 'acmart-sigplanproc-template.tex'.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%\graphicspath{{./graphics/}}%helpful if your graphic files are in another directory
 
-%% Some recommended packages.
-\usepackage{booktabs}   %% For formal tables:
-                        %% http://ctan.org/pkg/booktabs
-\usepackage{subcaption} %% For complex figures with subfigures/subcaptions
-                        %% http://ctan.org/pkg/subcaption
-
+\bibliographystyle{plainurl}% the mandatory bibstyle
 
 \usepackage{amsmath,amssymb}
 \usepackage[english]{babel}
@@ -121,66 +118,49 @@ language=minikanren
 
 \sloppy
 
-%% Bibliography style
-\bibliographystyle{ACM-Reference-Format}
-%% Citation style
-%% Note: author/year citations are required for papers published as an
-%% issue of PACMPL.
-\citestyle{acmauthoryear}   %% For author/year citations
+\bibliographystyle{plainurl}% the mandatory bibstyle
 
+\title{Certified Semantics for Relational Programming} %TODO Please add
+
+\author{anonymus}{}{}{}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional
+
+%\Copyright{}%TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
+
+
+%\category{}%optional, e.g. invited paper
+
+%\relatedversion{}%optional, e.g. full version hosted on arXiv, HAL, or other respository/website
+%\relatedversion{A full version of the paper is available at \url{...}.}
+
+%\supplement{}%optional, e.g. related research data, source code, ... hosted on a repository like zenodo, figshare, GitHub, ...
+
+%\funding{(Optional) general funding statement \dots}%optional, to capture a funding statement, which applies to all authors. Please enter author specific funding statements as fifth argument of the \author macro.
+
+%\acknowledgements{I want to thank \dots}%optional
+
+%\nolinenumbers %uncomment to disable line numbering
+
+%\hideLIPIcs  %uncomment to remove references to LIPIcs series (logo, DOI, ...), e.g. when preparing a pre-final version to be uploaded to arXiv or another public repository
+
+%Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\EventEditors{John Q. Open and Joan R. Access}
+\EventNoEds{2}
+\EventLongTitle{42nd Conference on Very Important Topics (CVIT 2016)}
+\EventShortTitle{CVIT 2016}
+\EventAcronym{CVIT}
+\EventYear{2016}
+\EventDate{December 24--27, 2016}
+\EventLocation{Little Whinging, United Kingdom}
+\EventLogo{}
+\SeriesVolume{42}
+\ArticleNo{23}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
 
-%% Title information
-\title{Certified Semantics for Relational Programming} %% [Short Title] is optional;
-                                           %% when present, will be used in
-                                           %% header instead of Full Title.
-%\titlenote{This work was partially suppored by the grant 18-01-00380 from The Russian Foundation for Basic Research} %% \titlenote is optional;
-                                        %% can be repeated if necessary;
-                                        %% contents suppressed with 'anonymous'
-%\subtitle{Subtitle}                     %% \subtitle is optional
-%\subtitlenote{with subtitle note}       %% \subtitlenote is optional;
-                                        %% can be repeated if necessary;
-                                        %% contents suppressed with 'anonymous'
+\maketitle
 
-
-%% Author information
-%% Contents and number of authors suppressed with 'anonymous'.
-%% Each author should be introduced by \author, followed by
-%% \authornote (optional), \orcid (optional), \affiliation, and
-%% \email.
-%% An author may have multiple affiliations and/or emails; repeat the
-%% appropriate command.
-%% Many elements are not rendered, but should be provided for metadata
-%% extraction tools.
-
-\author{Dmitry Rozplokhas}
-\affiliation{%
-  \institution{Higher School of Economics}}
-\affiliation{%
-  \institution{JetBrains Research}
-  \country{Russia}}
-\email{darozplokhas@edu.hse.ru}
-
-\author{Andrey Vyatkin}
-\affiliation{%
-  \institution{Saint Petersburg State University}
-  \country{Russia}}
-\email{dewshick@gmail.com}
-
-\author{Dmitry Boulytchev}
-\affiliation{%
-  \institution{Saint Petersburg State University}}
-\affiliation{%
-  \institution{JetBrains Research}
-  \country{Russia}}
-\email{dboulytchev@math.spbu.ru}
-
-
-
-%% Abstract
-%% Note: \begin{abstract}...\end{abstract} environment must come
-%% before \maketitle command
+%TODO mandatory: add short abstract of the document
 \begin{abstract}
   We present a formal study of semantics for relational programming language \textsc{miniKanren}. First,
   we formulate denotational semantics which corresponds to the minimal Herbrand model for definite logic
@@ -188,48 +168,8 @@ language=minikanren
   implementation~--- interleaving,~--- and prove its soundness and completeness w.r.t. the denotational semantics.
   Our development is supported by \textsc{Coq} specification, from which a reference interpreter can be
   extracted. We also derive from our main result a certified semantics (and a reference interpreter) for \textsc{Prolog}
-  with cut and prove its soundness.   
+  with cut and prove its soundness.
 \end{abstract}
-
-
-%% 2012 ACM Computing Classification System (CSS) concepts
-%% Generate at 'http://dl.acm.org/ccs/ccs.cfm'.
-\begin{CCSXML}
-<ccs2012>
-<concept>
-<concept_id>10003752.10003790.10003795</concept_id>
-<concept_desc>Theory of computation~Constraint and logic programming</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-<concept>
-<concept_id>10003752.10010124.10010131.10010133</concept_id>
-<concept_desc>Theory of computation~Denotational semantics</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-<concept>
-<concept_id>10003752.10010124.10010131.10010134</concept_id>
-<concept_desc>Theory of computation~Operational semantics</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-</ccs2012>
-\end{CCSXML}
-\ccsdesc[500]{Theory of computation~Constraint and logic programming}
-\ccsdesc[500]{Theory of computation~Denotational semantics}
-\ccsdesc[500]{Theory of computation~Operational semantics}
-%% End of generated code
-
-
-%% Keywords
-%% comma separated list
-\keywords{Relational programming, denotational semantics, operational semantics, certified programming}  %% \keywords are mandatory in final camera-ready submission
-
-
-%% \maketitle
-%% Note: \maketitle command must come after title commands, author
-%% commands, abstract environment, Computing Classification System
-%% environment and commands, and keywords command.
-\maketitle
-\thispagestyle{empty}
 
 \input{intro.tex}
 \input{language.tex}
@@ -240,35 +180,17 @@ language=minikanren
 \input{relworks.tex}
 \input{conclusion.tex}
 
-%Text of paper \ldots
 
-
-%% Acknowledgments
-%\begin{acks}                            %% acks environment is optional
-                                        %% contents suppressed with 'anonymous'
-  %% Commands \grantsponsor{<sponsorID>}{<name>}{<url>} and
-  %% \grantnum[<url>]{<sponsorID>}{<number>} should be used to
-  %% acknowledge financial support and will be used by metadata
-  %% extraction tools.
- % This material is based upon work supported by the
-  %\grantsponsor{GS100000001}{National Science
-   % Foundation}{http://dx.doi.org/10.13039/100000001} under Grant
-  %No.~\grantnum{GS100000001}{nnnnnnn} and Grant
-  %No.~\grantnum{GS100000001}{mmmmmmm}.  Any opinions, findings, and
-  %conclusions or recommendations expressed in this material are those
-  %of the author and do not necessarily reflect the views of the
-  %National Science Foundation.
-%\end{acks}
-
-
+%%
 %% Bibliography
-\bibliography{main}
+%%
 
+%% Please use bibtex, 
 
-%% Appendix
-%\appendix
-%\section{Appendix}
-
-%Text of appendix \ldots
+%\bibliography{lipics-v2019-sample-article}
 
 \end{document}
+
+
+
+
