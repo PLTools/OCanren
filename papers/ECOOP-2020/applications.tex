@@ -98,13 +98,13 @@ using the certified framework we developed, describe conventional \textsc{Prolog
 
 \begin{figure*}
 \[
-\begin{array}{cr|cr|cr|cr}
+\begin{array}{cr|cr}
   \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} \Diamond} & \ruleno{PlusStopC}&
-  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}&
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}\\
   \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} s'_1} &\ruleno{PlusStepC}&
   \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{PlusStepAnsC}\\
   \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ}_c \Diamond} & \ruleno{AstStopC}&
-  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}&
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}\\
   \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ}_c s'_1} &\ruleno{AstStepC}&
   \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}
 \end{array}
@@ -141,7 +141,7 @@ to reflect the effect of ``cut''.
 
 First, we add ``cut'' as a new sort of goals:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
   Inductive goal : Set := ... | Cut : goal.
 \end{lstlisting}
 

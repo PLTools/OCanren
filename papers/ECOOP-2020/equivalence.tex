@@ -23,7 +23,7 @@ preserve all variable dependencies in the substitution. So we can define a set o
 
 In \textsc{Coq} this notion boils down to the following definition:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
    Definition in_denotational_sem_subst
      (s : subst) (f : repr_fun) : Prop :=
        exists (f' : repr_fun),
@@ -42,7 +42,7 @@ then defined as a union of sets for all substitution in the trace:
 
 In \textsc{Coq} we again use a proposition instead:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]   
+\begin{lstlisting}[language=Coq]
    Definition in_denotational_analog
       (t : trace) (f : repr_fun) : Prop :=
       exists s n, in_stream (Answer s n) t /\
@@ -151,7 +151,7 @@ The proofs of both theorems are certified in \textsc{Coq}; for completeness we c
 because the inductive principle it provides is not flexible enough. So we need to define bounded denotational semantics in our formalization too and perform
 induction on the level explicitly:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize,morekeywords={where,at,level}]
+\begin{lstlisting}[language=Coq,morekeywords={where,at,level}]
   Reserved Notation "[| n | g , f |]" (at level 0).
   Inductive in_denotational_sem_lev_goal :
     nat -> goal -> repr_fun -> Prop :=
@@ -169,7 +169,7 @@ So ``\lstinline[language=Coq]|(proj1_sig (Prog r) t)|'' here simply takes the bo
 
 The lemma relating bounded and unbounded denotational semantics in \textsc{Coq} looks as follows:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq] 
   Lemma in_denotational_sem_some_lev:
     forall (g : goal) (f : repr_fun),
       [| g , f |] -> exists l, [| l | g , f |].
@@ -177,7 +177,7 @@ The lemma relating bounded and unbounded denotational semantics in \textsc{Coq} 
 
 The statements of the theorems are as follows:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]]
   Theorem search_correctness:
     forall (g : goal) (k : nat) (f : repr_fun) (t : trace),
       closed_goal_in_context (first_nats k) g) ->

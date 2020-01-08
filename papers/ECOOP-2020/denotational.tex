@@ -3,7 +3,7 @@
 \begin{array}{rcl}
   x\,[t/x] &=& t \\
   y\,[t/x] &=& y,\;\; y\ne x\\
-  C_i^{k_i}\,(t_1,\dots,t_{k_i})\,[t/x]&=&C_i^{k_i}\,(t_1\,[t/x],\dots,t_{k_i}\,[t/x])\\[2mm]
+  C_i^{k_i}\,(t_1,\dots,t_{k_i})\,[t/x]&=&C_i^{k_i}\,(t_1\,[t/x],\dots,t_{k_i}\,[t/x])\\
   (t_1 \equiv t_2)\,[t/x]&=&t_1\,[t/x] \equiv t_2\,[t/x]\\
   (g_1 \wedge g_2)\,[t/x]&=&g_1\,[t/x] \wedge g_2\,[t/x]\\
   (g_1 \vee g_2)\,[t/x]&=&g_1\,[t/x] \vee g_2\,[t/x]\\
@@ -137,7 +137,8 @@ not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semanti
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
 goal specifies a relation over its free variables. We introduce some nondeterminism by choosing arbitrary $\alpha$, but we have proven by
 structural induction that with different choices of free variable the semantics of a goal does not change (and this proof turned out to
-be the most cumbersome among all others). The final case is a relational invocation, in which we unfold the definition of corresponding relational symbol and substitute its formal parameters with actual ones.
+be the most cumbersome among all others). The final case is a relational invocation, in which we unfold the definition of corresponding
+relational symbol and substitute its formal parameters with actual ones.
 
 \begin{figure}[t]
   \[
@@ -146,8 +147,7 @@ be the most cumbersome among all others). The final case is a relational invocat
     \sembr{g_1\wedge g_2}&=&\sembr{g_1}\cap\sembr{g_1}&\ruleno{Conj$_D$}\\
     \sembr{g_1\vee g_2}&=&\sembr{g_1}\cup\sembr{g_1}&\ruleno{Disj$_D$}\\
     \sembr{\mbox{\lstinline|fresh|}\,x\,.\,g}&=&(\sembr{g\,[\alpha/x]})\uparrow\alpha,\;\alpha\not\in FV(g)& \ruleno{Fresh$_D$}\\
-    \sembr{R\,(t_1,\dots,t_k)}&=&\sembr{g\,[t_1/x_1,\dots,t_k/x_k]} & \ruleno{Invoke$_D$}\\
-    & & \multicolumn{2}{c}{\mbox{where}\;R=\lambda\,x_1\dots x_k\,.\,g}
+    \sembr{R\,(t_1,\dots,t_k)}&=&\sembr{g\,[t_1/x_1,\dots,t_k/x_k]},\;\mbox{where}\;R=\lambda\,x_1\dots x_k\,.\,g & \ruleno{Invoke$_D$}
   \end{array}
   \]
   \caption{Denotational semantics of goals}
@@ -156,23 +156,16 @@ be the most cumbersome among all others). The final case is a relational invocat
 
 Here is an example of denotational semantics of a goal:
 
-\renewcommand{\overset}[2]{#2}
+%\renewcommand{\overset}[2]{#2}
 \[
 \begin{array}{lc}
-  \sembr{\mbox{\lstinline|fresh y . ($\alpha$ === y) $\,\wedge\,$ (y === Zero)|}}&\overset{\mbox{(by \textsc{Fresh$_D$})}}{=}\\[1mm]
-  \multicolumn{2}{r}{\mbox{\tiny (by \textsc{Fresh$_D$})}}\\
-  (\sembr{\mbox{\lstinline|($\alpha$ === $\beta$) $\,\wedge\,$ ($\beta$ === Zero)|}})\uparrow\beta&\overset{\mbox{(by \textsc{Conj$_D$})}}{=}\\[1mm]
-  \multicolumn{2}{r}{\mbox{\tiny (by \textsc{Conj$_D$})}}\\
-  (\sembr{\mbox{\lstinline|$\alpha$ === $\beta$|}} \,\cap\, \sembr{\mbox{\lstinline|$\beta$ === Zero)|}})\uparrow\beta&\overset{\mbox{(by \textsc{Unify$_D$})}}{=}\\[1mm]
-  \multicolumn{2}{r}{\mbox{\tiny (by \textsc{Unify$_D$})}}\\
-  (\{\mathfrak{f}\mid \overline{\mathfrak{f}}\,(\alpha)=\overline{\mathfrak{f}}\,(\beta)\} \,\cap\, \{\mathfrak{f}\mid \overline{\mathfrak{f}}\,(\beta)=\overline{\mathfrak{f}}\,(\mbox{\lstinline|Zero|})\})\uparrow\beta&\overset{\mbox{(by the definition of ``$\overline{\mathfrak{f}}$'')}}{=}\\[1mm]
-  \multicolumn{2}{r}{\mbox{\tiny (by the definition of ``$\overline{\mathfrak{f}}$'')}}\\
-  (\{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mathfrak{f}\,(\beta)\} \,\cap\, \{\mathfrak{f}\mid \mathfrak{f}\,(\beta)=\mbox{\lstinline|Zero|}\})\uparrow\beta&\overset{\mbox{(by the definition of ``$\cap$'')}}{=}\\[1mm]
-  \multicolumn{2}{r}{\mbox{\tiny (by the definition of ``$\cap$'')}}\\
-  (\{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mathfrak{f}\,(\beta)=\mbox{\lstinline|Zero|}\})\uparrow\beta&\overset{\mbox{(by the definition of ``$\uparrow$'')}}{=}\\[1mm]
-  \multicolumn{2}{r}{\mbox{\tiny (by the definition of ``$\uparrow$'')}}\\
+  \sembr{\mbox{\lstinline|fresh y . ($\alpha$ === y) $\,\wedge\,$ (y === Zero)|}}&\overset{\mbox{(by \textsc{Fresh$_D$})}}{=}\\
+  (\sembr{\mbox{\lstinline|($\alpha$ === $\beta$) $\,\wedge\,$ ($\beta$ === Zero)|}})\uparrow\beta&\overset{\mbox{(by \textsc{Conj$_D$})}}{=}\\
+  (\sembr{\mbox{\lstinline|$\alpha$ === $\beta$|}} \,\cap\, \sembr{\mbox{\lstinline|$\beta$ === Zero)|}})\uparrow\beta&\overset{\mbox{(by \textsc{Unify$_D$})}}{=}\\
+  (\{\mathfrak{f}\mid \overline{\mathfrak{f}}\,(\alpha)=\overline{\mathfrak{f}}\,(\beta)\} \,\cap\, \{\mathfrak{f}\mid \overline{\mathfrak{f}}\,(\beta)=\overline{\mathfrak{f}}\,(\mbox{\lstinline|Zero|})\})\uparrow\beta&\overset{\mbox{(by the definition of ``$\overline{\mathfrak{f}}$'')}}{=}\\
+  (\{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mathfrak{f}\,(\beta)\} \,\cap\, \{\mathfrak{f}\mid \mathfrak{f}\,(\beta)=\mbox{\lstinline|Zero|}\})\uparrow\beta&\overset{\mbox{(by the definition of ``$\cap$'')}}{=}\\
+  (\{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mathfrak{f}\,(\beta)=\mbox{\lstinline|Zero|}\})\uparrow\beta&\overset{\mbox{(by the definition of ``$\uparrow$'')}}{=}\\
   \{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mbox{\lstinline|Zero|}, \mathfrak{f}\,(\beta)=d, d\in\mathcal{D}\}&\overset{\mbox{(by the totality of representing functions)}}{=}\\[1mm]
-  \multicolumn{2}{r}{\mbox{\tiny (by the totality of representing functions)}}\\
   \{\mathfrak{f}\mid \mathfrak{f}\,(\alpha)=\mbox{\lstinline|Zero|}\}&
 \end{array}
 \]
@@ -181,7 +174,7 @@ In the end, we've got the set of representing functions, each of which restricts
 
 To formalize denotational semantics in \textsc{Coq} we can define representing functions simply as \textsc{Coq} functions:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
    Definition repr_fun : Set := name -> ground_term.
 \end{lstlisting}
 
@@ -194,7 +187,7 @@ such that
 
 The head of the definition is as follows
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize,morekeywords={where,at,level}]
+\begin{lstlisting}[language=Coq,morekeywords={where,at,level}]
   Reserved Notation "[| g , f |]" (at level 0).
   Inductive in_denotational_sem_goal :
     goal -> repr_fun -> Prop :=
@@ -214,7 +207,7 @@ In other words, representing functions for a goal $g$ restrict only the values o
 This condition guarantees that our semantics is complete in the sense that it does not introduce artificial restrictions for the relation it defines.
 The following lemma proves that the semantics of goals always satisfies this condition:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
   Lemma completeness_condition (f f' : repr_fun) (g : goal),
     (forall x, is_fv_of_goal x g -> gt_eq (f x) (f' x)) ->
     [| g , f |] ->

@@ -6,16 +6,13 @@
   &\mathcal{D} & = & \mathcal{T}_\emptyset & \mbox{ground terms}\\
   &\mathcal{X} & = & \{ x, y, z, \dots \} & \mbox{syntactic variables} \\
   &\mathcal{A} & = & \{ \alpha, \beta, \gamma, \dots \} & \mbox{semantic variables} \\
-  &\mathcal{R} & = & \{ R_i^{k_i}\} &\mbox{relational symbols with arities} \\[2mm]
+  &\mathcal{R} & = & \{ R_i^{k_i}\} &\mbox{relational symbols with arities} \\
   &\mathcal{G} & = & \mathcal{T_X}\equiv\mathcal{T_X}   &  \mbox{unification} \\
   &            &   & \mathcal{G}\wedge\mathcal{G}     & \mbox{conjunction} \\
   &            &   & \mathcal{G}\vee\mathcal{G}       &\mbox{disjunction} \\
   &            &   & \mbox{\lstinline|fresh|}\;\mathcal{X}\;.\;\mathcal{G} & \mbox{fresh variable introduction} \\
-  &            &   & R_i^{k_i} (t_1,\dots,t_{k_i}),\;t_j\in\mathcal{T_X} & \mbox{relational symbol invocation} \\[2mm]
-  \phantom{XXXXXXXXXXXXXXX}&\mathcal{S} & = & \{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i;\}\; g & \mbox{specification}
-  %      ^
-  %      |
-  %  this ugly hack is due to non-working \centering
+  &            &   & R_i^{k_i} (t_1,\dots,t_{k_i}),\;t_j\in\mathcal{T_X} & \mbox{relational symbol invocation} \\
+  &\mathcal{S} & = & \{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i;\}\; g & \mbox{specification}
 \end{array}
 \]
 \caption{The syntax of the source language}
@@ -23,16 +20,16 @@
 \end{figure*}
 
 \begin{figure}[t]
-\centering
+%\centering
 \[
-\begin{array}{c}
-  \mathcal{FV}\,(x)=\{x\}\\
-  \mathcal{FV}\,(C_i^{k_i}\,(t_1,\dots,t_{k_i}))=\bigcup\mathcal{FV}\,(t_i)\\[2mm]
-  \mathcal{FV}\,(t_1\equiv t_2)=\mathcal{FV}\,(t_1)\cup\mathcal{FV}\,(t_2)\\
-  \mathcal{FV}\,(g_1\wedge g_2)=\mathcal{FV}\,(g_1)\cup\mathcal{FV}\,(g_2)\\
-  \mathcal{FV}\,(g_1\vee g_2)=\mathcal{FV}\,(g_1)\cup\mathcal{FV}\,(g_2)\\
-  \mathcal{FV}\,(\mbox{\lstinline|fresh|}\;x\;.\;g)=\mathcal{FV}\,(g)\setminus\{x\}\\
-  \mathcal{FV}\,(R_i^{k_i}\,(t_1,\dots,t_{k_i}))=\bigcup\mathcal{FV}\,(t_i)
+\begin{array}{rcl}
+  \mathcal{FV}\,(x)&=&\{x\}\\
+  \mathcal{FV}\,(C_i^{k_i}\,(t_1,\dots,t_{k_i}))&=&\bigcup\mathcal{FV}\,(t_i)\\
+  \mathcal{FV}\,(t_1\equiv t_2)&=&\mathcal{FV}\,(t_1)\cup\mathcal{FV}\,(t_2)\\
+  \mathcal{FV}\,(g_1\wedge g_2)&=&\mathcal{FV}\,(g_1)\cup\mathcal{FV}\,(g_2)\\
+  \mathcal{FV}\,(g_1\vee g_2)&=&\mathcal{FV}\,(g_1)\cup\mathcal{FV}\,(g_2)\\
+  \mathcal{FV}\,(\mbox{\lstinline|fresh|}\;x\;.\;g)&=&\mathcal{FV}\,(g)\setminus\{x\}\\
+  \mathcal{FV}\,(R_i^{k_i}\,(t_1,\dots,t_{k_i}))&=&\bigcup\mathcal{FV}\,(t_i)
 \end{array}
 \]
 \caption{Free variables in terms and goals}
@@ -125,7 +122,7 @@ where ``$\alpha$''~--- a \emph{semantic} variable, corresponding to ``\lstinline
 The syntax described above can be formalized in \textsc{Coq} in a natural way using inductive data types. We have made a few non-essential simplifications and modifications for the sake of convenience.
 Specifically, we restrict the arities of constructors to be either zero or two:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq] 
    Inductive term : Set :=
    | Var : name -> term
    | Cst : name -> term
@@ -134,13 +131,13 @@ Specifically, we restrict the arities of constructors to be either zero or two:
 
 Here ``\lstinline[language=Coq]{name}'' is a type for all named entities (variables, constructors and relations), for which we simply take natural numbers:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
   Definition name : Set := nat.
 \end{lstlisting}
 
 Similarly, we restrict relations to always have exactly one argument:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
    Definition rel : Set := term -> goal.
 \end{lstlisting}
 
@@ -148,7 +145,7 @@ These restrictions do not make the language less expressive in any way since we 
 
 We also introduce one additional type of goals~--- \emph{failure}~--- for deliberately unsuccessful computation (empty stream). As a result, the definition of goals looks as follows:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq] 
    Inductive goal : Set :=
    | Fail   : goal
    | Unify  : term -> term -> goal
@@ -160,21 +157,21 @@ We also introduce one additional type of goals~--- \emph{failure}~--- for delibe
 
 We define sets of free variables for terms naturaly as \textsc{Coq} sets: 
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize,mathescape=true]
+\begin{lstlisting}[language=Coq,mathescape=true] 
    Fixpoint fv_term (t : term) : $\mbox{\small{set}}$ name :=
      ...
 \end{lstlisting}
 
 And we use them to define ground terms as a subset type:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
    Definition ground_term : Set :=
      {t : term | fv_term t = empty_set name}.
 \end{lstlisting}
 
 However, for goals it is more convenient to define a set of free variables as a proposition:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
    Inductive is_fv_of_goal (n : name) : goal -> Prop :=
      ...
 \end{lstlisting}
@@ -185,7 +182,7 @@ On the other hand, we need to explicitly specify some requirements on syntax rep
 
 First, we need a requirement that the definitions of relations do not contain unbound variables:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq] 
   Definition closed_goal_in_context 
     (c : list name) (g : goal) : Prop :=
       forall n, is_fv_of_goal n g -> In n c.
@@ -199,7 +196,7 @@ construct for different variables the results will be the same up to renaming (p
 the body of the binder). It turned out to be rather non-trivial to define regular variable renaming for goals in higher-order syntax, but for our purposes
 a weaker version which deals with only non-free variables is sufficient:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
    Inductive renaming (old_x : name) (new_x : name) :
      goal -> goal -> Prop :=
    ...
@@ -216,7 +213,7 @@ a weaker version which deals with only non-free variables is sufficient:
 
 The consistency for goals and relations then can be defined as follows:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
    Definition consistent_binding (b : name -> goal) : Prop :=
      forall x y, (~ is_fv_of_goal x (Fresh b)) ->
            renaming x y (b x) (b y).
@@ -238,7 +235,7 @@ definition renames a variable \lstinline[language=Coq]{a1} into in \lstinline[la
 We can now set an arbitrary environment (a map from a relational symbol to a definition of relation with described constraints) to use further throughout the formalization.
 Failure goals allow us to define it as a total function:
 
-\begin{lstlisting}[language=Coq,basicstyle=\footnotesize]
+\begin{lstlisting}[language=Coq]
    Definition def : Set := 
      {r : rel | closed_rel r /\ consistent_rel r}.
    Definition env : Set := name -> def.

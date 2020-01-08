@@ -32,10 +32,10 @@
 %\newtheorem{definition}{Definition}
 
 \lstdefinelanguage{minikanren}{
-basicstyle=\footnotesize,
+basicstyle=\normalsize,
 keywords={fresh},
 sensitive=true,
-commentstyle=\footnotesize\itshape\ttfamily,
+commentstyle=\itshape\ttfamily, % \footnotesize\itshape\ttfamily,
 keywordstyle=\textbf,
 identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
@@ -83,7 +83,7 @@ language=minikanren
 \newcommand{\inbr}[1]{\left<{#1}\right>}
 \newcommand{\highlight}[1]{\color{red}{#1}}
 %\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
-\newcommand{\ruleno}[1]{\mbox{\scriptsize{[\textsc{#1}]}}}
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
 \newcommand{\rulename}[1]{\textsc{#1}}
 \newcommand{\inmath}[1]{\mbox{$#1$}}
 \newcommand{\lfp}[1]{fix_{#1}}
