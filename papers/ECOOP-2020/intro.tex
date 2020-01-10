@@ -19,8 +19,9 @@ There were some previous attempts to define a formal semantics for \textsc{miniK
 for denotational and non-deterministic operational semantics were given and the soundness result was proven; the development was mechanized in HOL. 
 \cite{RelConversion} presented a variant of nondeterministic operational semantics, and~\cite{DivTest} used another variant of finite-set semantics.
 None of the previous approaches were capable of reflecting the distinctive property of \textsc{miniKanren} search~--- \emph{interleaving}~\cite{Search},
-thus deviating from the conventional understanding of the language. Moreover, one of the most important features of the
-language~--- the completeness of the search,~--- was never addressed.
+thus deviating from the conventional understanding of the language.
+
+%Moreover, one of the most important features of the language~--- the completeness of the search,~--- was never addressed.
 
 In this paper, we present a formal semantics for core \textsc{miniKanren} and prove some of its basic properties. First,
 we define denotational semantics similar to the least Herbrand model for definite logic programs~\cite{LHM}; then
