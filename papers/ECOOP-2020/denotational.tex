@@ -189,6 +189,7 @@ such that
 \forall g,\mathfrak{f}\;:\;\mbox{\lstinline|in_denotational_sem_goal|}\;g\;\mathfrak{f}\Longleftrightarrow\mathfrak{f}\in\sembr{g}
 \]
 
+\begin{comment}
 The head of the definition is as follows
 
 \begin{lstlisting}[language=Coq,morekeywords={where,at,level}]
@@ -200,6 +201,7 @@ The head of the definition is as follows
 \end{lstlisting}
 
 and the body just goes through the cases shown in Fig.~\ref{denotational_semantics_of_goals}.
+\end{comment}
   
 We formulate the following important \emph{completeness condition} for the semantics of a goal $g$:
 
@@ -209,6 +211,9 @@ We formulate the following important \emph{completeness condition} for the seman
 
 In other words, representing functions for a goal $g$ restrict only the values of free variables of $g$ and do not introduce any ``hidden'' correlations.
 This condition guarantees that our semantics is complete in the sense that it does not introduce artificial restrictions for the relation it defines.
+We prove that the semantics of goals always satisfies this condition:
+
+\begin{comment}
 The following lemma proves that the semantics of goals always satisfies this condition:
 
 \begin{lstlisting}[language=Coq]
@@ -219,3 +224,4 @@ The following lemma proves that the semantics of goals always satisfies this con
 \end{lstlisting}
 
 Here ``\lstinline[language=Coq]{gt_eq}'' stands for the equality of ground terms.
+\end{comment}

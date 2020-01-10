@@ -146,6 +146,9 @@ However, we still need to use a well-founded induction to prove the existence of
       mgu t1 t2 None -> forall s,  ~ (unifier s t1 t2).
 \end{lstlisting}
 
+For this well-founded induction we use the number of distinct free variables in argument terms as a well-founded order on pairs of terms.
+
+\begin{comment}
 For this well-founded induction we use the number of free variables in argument terms as a well-founded order on pairs of terms:
 
 \begin{lstlisting}[language=Coq]
@@ -156,6 +159,7 @@ For this well-founded induction we use the number of free variables in argument 
     fvOrder t < fvOrder p.
   Lemma fvOrder_wf : well_founded fvOrderRel.
 \end{lstlisting}
+\end{comment}
 
 After this preliminary work, the described transition relation can be encoded naturally as an inductively defined proposition (here ``\lstinline|state'|''
 stands for a non-extended state and ``\lstinline|state|'' --- for an extended one):
