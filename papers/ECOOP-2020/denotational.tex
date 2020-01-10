@@ -91,7 +91,6 @@ which maps terms to terms:
 
 \[
 \begin{array}{rcl}
-
   \overline{\mathfrak f}\,(\alpha) & = & \mathfrak f\,(\alpha)\\
   \overline{\mathfrak f}\,(C_i^{k_i}\,(t_1,\dots.t_{k_i})) & = & C_i^{k_i}\,(\overline{\mathfrak f}\,(t_1),\dots \overline{\mathfrak f}\,(t_{k_i}))
 \end{array}
@@ -139,9 +138,33 @@ Now we are ready to specify the semantics for goals (see Figure~\ref{denotationa
 for disjunction and conjunction of goals. Now for the case of ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
 not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semantics of $g\,[\alpha/x]$. The interesting part is the next step:
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
-goal specifies a relation over its free variables. We introduce some nondeterminism by choosing arbitrary $\alpha$, but we have proven by
+goal specifies a relation over its free variables. We introduce some nondeterminism by choosing arbitrary $\alpha$, but we can prove that with different
+choices of free variable the semantics of a goal does not change. 
+
+{\color{blue}
+\begin{lemma}
+\label{ChangeFreeVarLemma}
+For any goal $\mbox{\lstinline|fresh|}\;x\,.\,g$,
+for any two variables $\alpha$ and $\beta$ that are not free in this goal,
+if $\mathfrak{f} \in \sembr{g\,[\alpha/x]}$, then for any representing function $\mathfrak{f}'$, such that
+\begin{enumerate}
+\item $\mathfrak{f}'(\beta) = \mathfrak{f}(\alpha)$,
+\item $\forall \gamma: \gamma \neq \alpha \land \gamma \neq \beta, \mathfrak{f}'(\gamma) = \mathfrak{f}(\gamma)$,
+\end{enumerate}
+it is true that
+\[\mathfrak{f}' \in \sembr{g\,[\beta/x]}\]
+\end{lemma}
+\begin{proof}
+  The proof turned out to be the most cumbersome among all others. In case of nested freshes we have to contruct two intermediate representing functions with different values on three points (one of which is non-free variable which is not equal to any of ones we have, so we also have to prove that there is always ``an other fresh variable'') and then examine four cases with different relations (equal or not equal) between substituted variables. We also have to use goal consistency here.
+\end{proof}
+}
+
+\begin{comment} We introduce some nondeterminism by choosing arbitrary $\alpha$, but we have proven by
 structural induction that with different choices of free variable the semantics of a goal does not change (and this proof turned out to
-be the most cumbersome among all others). The final case is a relational invocation, in which we unfold the definition of corresponding
+be the most cumbersome among all others). 
+\end{comment}
+
+The final case is a relational invocation, in which we unfold the definition of corresponding
 relational symbol and substitute its formal parameters with actual ones.
 
 \begin{figure}[t]
@@ -205,15 +228,29 @@ and the body just goes through the cases shown in Fig.~\ref{denotational_semanti
   
 We formulate the following important \emph{completeness condition} for the semantics of a goal $g$:
 
+{\color{blue}
+\begin{lemma}[Completeness condition]
+\label{CompletenessConditionLemma}
+For any goal $g$ and two representing functions ${\mathfrak f}$ and ${\mathfrak f'}$, such that $\left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}$,
+\[ {\mathfrak f} \in \sembr{g} \Leftrightarrow {\mathfrak f'} \in \sembr{g} \]
+\end{lemma}
+\begin{proof}
+  The proof is by induction on the definition of denotational semantics. The only non-trivial case is when goal is fresh construct, there we need to change the value of the given function in one point to use inductive hypothesis.
+\end{proof}
+}
+
+\begin{comment}
 \[
 \forall {\mathfrak f}, {\mathfrak f'}:  \left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}, \quad {\mathfrak f} \in \sembr{g} \Leftrightarrow {\mathfrak f'} \in \sembr{g}
 \]
+\end{comment}
 
 In other words, representing functions for a goal $g$ restrict only the values of free variables of $g$ and do not introduce any ``hidden'' correlations.
 This condition guarantees that our semantics is complete in the sense that it does not introduce artificial restrictions for the relation it defines.
-We prove that the semantics of goals always satisfies this condition:
 
 \begin{comment}
+We prove that the semantics of goals always satisfies this condition:
+
 The following lemma proves that the semantics of goals always satisfies this condition:
 
 \begin{lstlisting}[language=Coq]
