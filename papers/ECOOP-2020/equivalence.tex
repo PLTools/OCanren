@@ -21,6 +21,7 @@ preserve all variable dependencies in the substitution. So we can define a set o
 [\sigma] = \{\overline{\mathfrak f} \circ \sigma \mid \mathfrak{f}:\mathcal{A}\mapsto\mathcal{D}\}
 \]
 
+\begin{comment}
 In \textsc{Coq} this notion boils down to the following definition:
 
 \begin{lstlisting}[language=Coq]
@@ -32,6 +33,7 @@ In \textsc{Coq} this notion boils down to the following definition:
 
 where ``\lstinline[language=Coq]|repr_fun_eq|'' stands for representing functions extensional equality, ``\lstinline[language=Coq]|subst_repr_fun_compose|''~---
 for a composition of a substitution and a representing function.
+\end{comment}
 
 And \emph{denotational analog} of an operational semantics (a set of representing functions corresponding to answers in the trace) for given extended state $s$ is
 then defined as a union of sets for all substitution in the trace:
@@ -40,6 +42,7 @@ then defined as a union of sets for all substitution in the trace:
 \sembr{s}_{op} = \cup_{(\sigma, n) \in \tr{s}} [\sigma]
 \]
 
+\begin{comment}
 In \textsc{Coq} we again use a proposition instead:
 
 \begin{lstlisting}[language=Coq]
@@ -49,6 +52,7 @@ In \textsc{Coq} we again use a proposition instead:
              in_denotational_sem_subst s f.
    Notation "{| t , f |}" := (in_denotational_analog t f).
 \end{lstlisting}
+\end{comment}
 
 This allows us to state theorems relating the two semantics.
 
@@ -149,8 +153,9 @@ It is proven by induction on the level $l$. The induction step is proven by stru
 
 The proofs of both theorems are certified in \textsc{Coq}; for completeness we can not just use the induction on proposition \lstinline|in_denotational_sem_goal|, as it would be natural to expect,
 because the inductive principle it provides is not flexible enough. So we need to define bounded denotational semantics in our formalization too and perform
-induction on the level explicitly:
+induction on the level explicitly.
 
+\begin{comment}
 \begin{lstlisting}[language=Coq,morekeywords={where,at,level}]
   Reserved Notation "[| n | g , f |]" (at level 0).
   Inductive in_denotational_sem_lev_goal :
@@ -194,4 +199,4 @@ The statements of the theorems are as follows:
         {| t , f' |} /\
         forall (x : var), In x (first_nats k) -> f x = f' x.
 \end{lstlisting}
-
+\end{comment}
