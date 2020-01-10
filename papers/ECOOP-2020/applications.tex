@@ -76,9 +76,9 @@ The conversion in the opposite direction involves the following steps:
   \item transforming the freshless body into DNF;
   \item replacing all unifications with calls for a specific predicate ``\lstinline|unify/2|'', defined as
 
-    \begin{lstlisting}
-      unify (X, X).
-    \end{lstlisting}    
+\begin{lstlisting}
+   unify (X, X).
+\end{lstlisting}    
 
   \item splitting top-level disjunctions into separate clauses with the same head.
 \end{itemize}
@@ -177,9 +177,53 @@ When the signal is being propagated through ``$\oplus$'' and ``$\circledast$'' n
 propagation continues (see Fig.~\ref{cut-signal-propagation}). In the case of ``$\otimes$'' nodes the signal is simply propagated; we omit the rules since they mirror the regular ones.
 
 For this semantics we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
-we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut''. Nevertheless, we can demonstrate a plausible behavior
-using extracted reference interpreter.
+we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut'' (since we do not have other semantics of ``cut'' to compare with).
+Nevertheless, we can demonstrate a plausible behavior using extracted reference interpreter using ``litmus tests''.
 
+Consider the following specification:
+
+
+\begin{lstlisting}[language=Prolog,numbers=left,stepnumber=1]
+a(0).
+a(1).
+
+b(2, 0).
+b(X, Y) :- a(X), !, a(Y).
+b(3, 0).
+
+c(4, 0, 0, 0).
+c(W, X, Y, Z) :- a(W), b(X, Y), a(Z).
+c(5, 0, 0, 0).
+\end{lstlisting}
+
+Strictly speaking, integer literals can not be used in the language we defined; however we can replace them by Peano-encoded
+integers with the same result. The query we are interested in is ``\lstinline|c(W, X, Y, Z)|''. The answers of its
+evaluation using our certified interpreter (see below) are shown below:
+
+\[
+\begin{array}{|cccc|}
+\hline
+W & X & Y & Z \\
+\hline
+4 & 0 & 0 & 0 \\
+0 & 2 & 0 & 0 \\
+0 & 2 & 0 & 1 \\
+0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 1 & 1 \\
+1 & 2 & 0 & 0 \\
+1 & 2 & 0 & 1 \\
+1 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 \\
+1 & 0 & 1 & 0 \\
+1 & 0 & 1 & 1 \\
+5 & 0 & 0 & 0 \\
+\hline
+\end{array}
+\]
+
+These answers are exactly those (includng the order) delivered by SWI-Prolog. 
 
 \subsection{Reference Interpreters}
 
