@@ -246,12 +246,28 @@ a one-by-one interleaving of streams for its disjuncts:
     interleave t1 t2 t.
 \end{lstlisting}
 
-This allows us to prove the expected properties of interleaving in a more general setting of arbitrary streams:
+This allows us to prove the expected properties of interleaving in a more general setting of arbitrary streams.
 
+\begin{comment}
 \begin{itemize}
 \item the elements of the interleaved stream are exactly those of two interleaved streams;
 \item the interleaved stream is finite iff both interleaving streams are finite.
 \end{itemize}
+\end{comment}
+
+{\color{blue}
+\begin{lemma}
+\label{InterleavingInLemma}
+For any streams $s_1$, $s_2$, $s$ satisfying $\mbox{\lstinline|interleave s1 s2 s|}$,
+the elements occuring in $s$ are exactly the elements occuring in $s_1$ or $s_2$.
+\end{lemma}
+
+\begin{lemma}
+\label{InterleavingFiniteLemma}
+For any streams $s_1$, $s_2$, $s$ satisfying $\mbox{\lstinline|interleave s1 s2 s|}$,
+$s$ is finite iff $s_1$ is finite and $s_2$ is finite.
+\end{lemma}
+}
 
 \begin{comment}
 The corresponding \textsc{Coq} lemmas are as follows:
