@@ -41,7 +41,7 @@
  
 In this section we introduce the syntax of the language we use throughout the paper, describe the informal semantics and give some examples.
 
-The syntax of the language is shown in Figure~\ref{syntax}. First, we fix a set of constructors $\mathcal{C}$ with known arities and consider
+The syntax of the language is shown on Figure~\ref{syntax}. First, we fix a set of constructors $\mathcal{C}$ with known arities and consider
 a set of terms $\mathcal{T}_X$ with constructors as functional symbols and variables from $X$. We parameterize this set with an alphabet of
 variables since in the semantic description we will need \emph{two} kinds of variables. The first kind, \emph{syntactic} variables, is denoted
 by $\mathcal{X}$. The second kind, \emph{semantic} or \emph{logic} variables, is denoted by $\mathcal{A}$.
@@ -75,10 +75,12 @@ scenarios are possible (depending on the type of the goal):
 We stipulate that the top-level goal is preceded by an implicit ``\lstinline|fresh|'' construct, which binds all its free variables, and that the final substitutions
 for these variables constitute the result of the goal evaluation.
 
-Conjunction and disjunction form a monadic~\cite{Monads} interface with conjunction playing role of ``bind'' and disjunction~--- of ``mplus''. In this description
-we swept a lot of important details under the carpet~--- for example, in actual implementations the components of disjunction are not evaluated in isolation, but
-both disjuncts are being evaluated incrementally with the control passing from one disjunct to another (\emph{interleaving}); instead of streams the implementation
-can be based on ``ferns''~\cite{BottomAvoiding} to defer divergent computations, etc. 
+Conjunction and disjunction form a monadic~\cite{Monads} interface with conjunction playing role of ``\lstinline|bind|'' and disjunction~--- of ``\lstinline|mplus|''.
+In this description we swept a lot of important details under the carpet~--- for example, in actual implementations the components of disjunction are not evaluated in
+isolation, but both disjuncts are being evaluated incrementally with the control passing from one disjunct to another (\emph{interleaving})~\cite{Search};
+the evaluation of some goals can be additionally deferred (via so-called ``\emph{inverse-$\eta$-delay}'')\cite{MicroKanren}; instead of streams
+the implementation can be based on ``ferns''~\cite{BottomAvoiding} to defer divergent computations, etc. In the following sections we present
+a complete formal description of relational semantics which resolves these uncertainties in a conventional way.
 
 As an example consider the following specification:
 
