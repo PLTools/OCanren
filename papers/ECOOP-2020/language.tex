@@ -57,7 +57,7 @@ is the sole binding construct the definition is rather trivial. The language we 
 returned or constructed at runtime.
 
 We now informally describe how relational search works. As we said, a goal represents a search procedure. This procedure takes a \emph{state} as input and returns a
-stream of states; a state (among other information) contains a substitution that maps semantic variables into terms over semantic variables. Then the five types of
+stream of states; a state (among other information) contains a substitution that maps semantic variables into the terms over semantic variables. Then the five types of
 scenarios are possible (depending on the type of the goal):
 
 \begin{itemize}
@@ -68,7 +68,7 @@ scenarios are possible (depending on the type of the goal):
 \item Disjunction ``\lstinline|$g_1$ \/ $g_2$|'' applies both its goals to the current state independently and then concatenates the results.
 \item Fresh construct ``\lstinline|fresh $x$ . $g$|'' allocates a new semantic variable $\alpha$, substitutes all free occurrences of $x$ in $g$ with $\alpha$, and
   runs the goal.
-\item Invocation ``$\lstinline|$R_i^{k_i}$ ($t_1$,...,$t_{k_i}$)|$'' finds a definition for the relational symbol $R_i^{k_i}=\lambda x_1\dots x_{k_i}\,.\,g_i$, substitutes
+\item Invocation ``$\lstinline|$R_i^{k_i}$ ($t_1$,...,$t_{k_i}$)|$'' finds a definition for the relational symbol \mbox{$R_i^{k_i}=\lambda x_1\dots x_{k_i}\,.\,g_i$}, substitutes
   all free occurrences of formal parameter $x_j$ in $g_i$ with term $t_j$ (for all $j$) and runs the goal in the current state.
 \end{itemize}
 
@@ -178,7 +178,7 @@ However, for goals it is more convenient to define a set of free variables as a 
      ...
 \end{lstlisting}
 
-Note that in our formalization we use the higher-order abstract syntax for variable binding~\cite{HOAS}, therefore we work explicitly only with semantic variables.
+Note that in our formalization we use higher-order abstract syntax for variable binding~\cite{HOAS}, therefore we work explicitly only with semantic variables.
 We preferred it to the first-order syntax because it gives us the ability to use substitution and inductive principle provided by \textsc{Coq}.
 On the other hand, we need to explicitly specify some requirements on syntax representation which are trivially fulfilled in the first-order case.
 
@@ -194,7 +194,7 @@ First, we need a requirement that the definitions of relations do not contain un
 \end{lstlisting}
 
 The second requirement is that all bindings have to be ``consistent'', i.e. if we instantiate a higher-order ``\lstinline|fresh|''
-construct for different variables the results will be the same up to renaming (provided that both those variables are not free in
+construct for different variables the results will be the same up to some renaming (provided that both those variables are not free in
 the body of the binder). It turned out to be rather non-trivial to define regular variable renaming for goals in higher-order syntax, but for our purposes
 a weaker version which deals with only non-free variables is sufficient:
 

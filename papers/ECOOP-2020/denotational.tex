@@ -27,11 +27,15 @@ the least Herbrand model semantics for definite logic programs in a certified wa
 this concrete language the conversion to definite logic form is trivial, it may become less trivial for
 its extensions (with, for example, nominal constructs~\cite{AlphaKanren}) which we plan to do in future.
 
-We also must make the following observation. Usually, building inductive denotational semantics amounts to
+We also must make the following observations. First, building inductive denotational semantics in a conventional way amounts to
 constructing a complete lattice and a monotone function and taking its least fixed point~\cite{TarskiKnaster}.
 As we deal with a first-order language with only monotonic constructs (conjunction/disjunction) these steps
 are trivial. Moreover, we express the semantics in \textsc{Coq}, where all well-formed inductive definitions already
-have proper semantics, which removes the necessity to justify the validity of the steps we perform.
+have proper semantics, which removes the necessity to justify the validity of the steps we perform. Second, 
+the least Herbrand model is traditionally defined as a least fixed point of a transition function (defined by a logic program)
+which maps sets of ground atoms to sets of ground atoms. We are, however, interested in \emph{relational} semantics which
+should map a program into $n$-ary relation over ground terms, where $n$ is the number of free variables in the topmost
+goal. Thus, we deviate from the traditional route and describe the denotational semantics in a more specific way.
 
 To motivate the further development, we first consider the following example. Let us have the following goal:
 
