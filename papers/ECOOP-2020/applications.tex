@@ -176,7 +176,7 @@ The signal itself is risen when a ``cut'' construct is encountered:
 When the signal is being propagated through ``$\oplus$'' and ``$\circledast$'' nodes, their right branches are cut out, and for ``$\circledast$'' the
 propagation continues (see Fig.~\ref{cut-signal-propagation}). In the case of ``$\otimes$'' nodes the signal is simply propagated; we omit the rules since they mirror the regular ones.
 
-For this semantics we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
+For this semantics, we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
 we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut'' (since we do not have other semantics of ``cut'' to compare with).
 Nevertheless, we can demonstrate a plausible behavior of extracted reference interpreter using ``litmus tests''.
 
