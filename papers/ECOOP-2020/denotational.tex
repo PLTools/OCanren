@@ -20,7 +20,7 @@
 \label{denotational}
 
 In this section we present a denotational semantics for the language we defined above. We use a simple set-theoretic
-approach which can be considered as an analogy to the least Herbrand model for definite logic programs~\cite{LHM}.
+approach analogous to the least Herbrand model for definite logic programs~\cite{LHM}.
 Strictly speaking, instead of developing it from scratch we could have just described the conversion of specifications
 into definite logic form and took their least Herbrand model. However, in that case, we would still need to define
 the least Herbrand model semantics for definite logic programs in a certified way. In addition, while for
@@ -37,7 +37,7 @@ which maps sets of ground atoms to sets of ground atoms. We are, however, intere
 should map a program into $n$-ary relation over ground terms, where $n$ is the number of free variables in the topmost
 goal. Thus, we deviate from the traditional route and describe the denotational semantics in a more specific way.
 
-To motivate the further development, we first consider the following example. Let us have the following goal:
+To motivate further development, we first consider the following example. Let us have the following goal:
 
 \begin{lstlisting}
    x === Cons (y, z)
@@ -72,7 +72,7 @@ from semantic variables to ground terms. We call these functions \emph{represent
 
 where we use conventional semantic brackets ``$\sembr{\bullet}$'' to denote the semantics. For the top-level goal, we need to substitute its free syntactic
 variables with distinct semantic ones, calculate the semantics, and build the explicit representation for the relation as shown above. The relation, obviously,
-does not depend on concrete choice of semantic variables but depends on the order in which the values of representing functions are tupled. This order can be
+does not depend on the concrete choice of semantic variables but depends on the order in which the values of representing functions are tupled. This order can be
 conventionalized, which gives us a completely deterministic semantics.
 
 Now we implement this idea. First, for a representing function
@@ -141,7 +141,6 @@ as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize
 goal specifies a relation over its free variables. We introduce some nondeterminism by choosing arbitrary $\alpha$, but we can prove that with different
 choices of free variable the semantics of a goal does not change:
 
-{\color{blue}
 \begin{lemma}
 \label{ChangeFreeVarLemma}
 For any goal 
@@ -165,19 +164,18 @@ it is true that
 \]
 \end{lemma}
 \begin{proof}
-  The proof turned out to be the most cumbersome among all others. In the case of nested ``\lstinline|fresh|'' we have to contruct two
+  The proof turned out to be the most cumbersome among all others. In the case of nested ``\lstinline|fresh|'' we have to construct two
   intermediate representing functions with different values on three points (one of which is non-free variable which is not equal to
   any of those we have, so we also have to prove that there is always exists ``other fresh variable'') and then examine the four cases
-  with different relations (equal or not equal) between substituted variables. We also have to use goal consistency condition here.
+  with different relations (equal or not equal) between substituted variables. We also have to use the goal consistency condition here.
 \end{proof}
-}
 
 \begin{comment} We introduce some nondeterminism by choosing arbitrary $\alpha$, but we have proven by
 structural induction that with different choices of free variable the semantics of a goal does not change (and this proof turned out to
 be the most cumbersome among all others). 
 \end{comment}
 
-The final case is a relational invocation, in which we unfold the definition of corresponding
+The final case is a relational invocation, in which we unfold the definition of the corresponding
 relational symbol and substitute its formal parameters with actual ones.
 
 \begin{figure}[t]
@@ -218,7 +216,7 @@ To formalize denotational semantics in \textsc{Coq} we can define representing f
    Definition repr_fun : Set := name -> ground_term.
 \end{lstlisting}
 
-We define the semantics via inductive proposition ``\lstinline|in_denotational_sem_goal|'' (with notation ``\lstinline[mathescape=true]{[| $\bullet$ , $\bullet$ |]}'')
+We define the semantics via the inductive proposition ``\lstinline|in_denotational_sem_goal|'' (with notation ``\lstinline[mathescape=true]{[| $\bullet$ , $\bullet$ |]}'')
 such that
 
 \[
@@ -241,17 +239,15 @@ and the body just goes through the cases shown in Fig.~\ref{denotational_semanti
   
 We formulate the following important \emph{completeness condition} for the semantics of a goal $g$:
 
-{\color{blue}
 \begin{lemma}[Completeness condition]
 \label{CompletenessConditionLemma}
 For any goal $g$ and two representing functions ${\mathfrak f}$ and ${\mathfrak f'}$, such that $\left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}$
 \[ {\mathfrak f} \in \sembr{g} \Leftrightarrow {\mathfrak f'} \in \sembr{g} \]
 \end{lemma}
 \begin{proof}
-  The proof is by induction on the definition of denotational semantics. The only non-trivial case is when the goal is a ``\lstinline|fresh|'' construct, there we need to change the value of
+  The proof is by induction on evidence. The only non-trivial case is when the goal is a ``\lstinline|fresh|'' construct, there we need to change the value of
   the given function in one point to apply the inductive hypothesis.
 \end{proof}
-}
 
 \begin{comment}
 \[

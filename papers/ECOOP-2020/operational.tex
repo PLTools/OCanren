@@ -33,7 +33,7 @@ We also need extended states
 \overline{S} = \diamond \mid S
 \]
 
-where $\diamond$ symbolizes the end of evaluation, and the following well-formedness condition:
+where $\diamond$ symbolizes the end of the evaluation, and the following well-formedness condition:
 
 \begin{definition}
   Well-formedness condition for extended states:
@@ -97,13 +97,13 @@ is evaluated first. If its evaluation stops with a result then the right state (
 the conjunction evaluation stops with no result (\textsc{ConjStop}) as well while the disjunction evaluation proceeds with the right state (\textsc{DisjStop}).
 
 The last four rules describe \emph{interleaving}, which occurs when the evaluation of the left state suspends with some residual state (with or without an answer). In the case of disjunction
-the answer (if any) is propagated, and the constituents of the disjunction are swapped (\textsc{DisjStep}, \textsc{DisjStepAns}). In case of conjunction, if the evaluation step in
+the answer (if any) is propagated, and the constituents of the disjunction are swapped (\textsc{DisjStep}, \textsc{DisjStepAns}). In the case of conjunction, if the evaluation step in
 the left conjunct did not provide any answer, the evaluation is continued in the same order since there is still no information to proceed with the evaluation of the right
 conjunct (\textsc{ConjStep}); if there is some answer, then the disjunction of the right conjunct in the context of the answer and the remaining conjunction is
 scheduled for evaluation (\textsc{ConjStepAns}).
 
 The introduced transition system is completely deterministic. There was, however, some freedom in choosing the order of evaluation for conjunction and
-disjunction states. For example, instead of evaluating the left substate first we could choose to evaluate the right one, etc. In each concrete case we would
+disjunction states. For example, instead of evaluating the left substate first we could choose to evaluate the right one, etc. In each concrete case, we would
 end up with a different (but still deterministic) system that would prescribe different semantics to a concrete goal. This choice reflects the inherent
 non-deterministic nature of search in relational (and, more generally, logical) programming. However, as long as deterministic search procedures
 are sound and complete, we can consider them ``equivalent''\footnote{There still can be differences in observable behavior of concrete goals under different
@@ -114,7 +114,7 @@ in the reference \textsc{miniKanren} implementations.
 
 To formalize the operational part in \textsc{Coq} we first need to define all preliminary notions from unification theory~\cite{Unification} which our semantics uses.
 
-In particular, we need to implement the notion of the most general unifier (MGU). As it is well-known~\cite{UnificationMcBride} all standard recursive algorithms for calculating
+In particular, we need to implement the notion of the most general unifier (MGU). As it is well-known~\cite{StructuralMGU} all standard recursive algorithms for calculating
 MGU are not decreasing on argument terms, so we can't define them as simple recursive functions in \textsc{Coq} due to the termination check failure. There is no such obstacle
 when we define MGU as a proposition:
 
@@ -126,7 +126,7 @@ when we define MGU as a proposition:
 However, we still need to use a well-founded induction to prove the existence of the most general unifier and its defining properties:\\[5mm]
 
 \begin{lstlisting}[language=Coq]
-  Lemma mgu_$\texttt{exists}$ : forall t1 t2, {r & mgu t1 t2 r}.
+  Lemma mgu_result_$\texttt{exists}$ : forall t1 t2, {r & mgu t1 t2 r}.
   Definition unifier (s : subst) (t1 t2 : term) : Prop :=
     apply_subst s t1 = apply_subst s t2.
   Lemma mgu_unifies:
@@ -146,7 +146,7 @@ However, we still need to use a well-founded induction to prove the existence of
       mgu t1 t2 None -> forall s,  ~ (unifier s t1 t2).
 \end{lstlisting}
 
-For this well-founded induction we use the number of distinct free variables in argument terms as a well-founded order on pairs of terms.
+For this well-founded induction, we use the number of distinct free variables in argument terms as a well-founded order on pairs of terms.
 
 \begin{comment}
 For this well-founded induction we use the number of free variables in argument terms as a well-founded order on pairs of terms:
@@ -255,7 +255,6 @@ This allows us to prove the expected properties of interleaving in a more genera
 \end{itemize}
 \end{comment}
 
-{\color{blue}
 \begin{lemma}
 \label{InterleavingInLemma}
 For any streams $s_1$, $s_2$, $s$ satisfying $\mbox{\lstinline|interleave s1 s2 s|}$,
@@ -267,7 +266,6 @@ the elements occuring in $s$ are exactly the elements occuring in $s_1$ or $s_2$
 For any streams $s_1$, $s_2$, $s$ satisfying $\mbox{\lstinline|interleave s1 s2 s|}$,
 $s$ is finite iff $s_1$ is finite and $s_2$ is finite.
 \end{lemma}
-}
 
 \begin{comment}
 The corresponding \textsc{Coq} lemmas are as follows:
