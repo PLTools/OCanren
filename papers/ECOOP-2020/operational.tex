@@ -1,8 +1,8 @@
 \section{Operational Semantics}
 \label{operational}
 
-In this section we describe operational semantics of \textsc{miniKanren}, which corresponds to the known
-implementations with interleaving search. The semantics will be given in the form of labeled transition system (LTS). From now on we
+In this section we describe the operational semantics of \textsc{miniKanren}, which corresponds to the known
+implementations with interleaving search. The semantics is given in the form of a labeled transition system (LTS). From now on we
 assume the set of semantic variables to be linearly ordered ($\mathcal{A}=\{\alpha_1,\alpha_2,\dots\}$).
 
 We introduce the notion of substitution
@@ -15,7 +15,7 @@ as a (partial) mapping from semantic variables to terms over the set of semantic
 set of all substitutions, $\dom{\sigma}$~--- the domain for a substitution $\sigma$,
 $\ran{\sigma}=\bigcup_{\alpha\in\mathcal{D}om\,(\sigma)}\fv{\sigma\,(\alpha)}$~--- its range (the set of all free variables in the image).
 
-The states in the transition system have the following shape
+The states in the transition system have the following shape:
 
 \[
 S = \mathcal{G}\times\Sigma\times\mathbb{N}\mid S\oplus S \mid S \otimes \mathcal{G}
@@ -114,16 +114,16 @@ in the reference \textsc{miniKanren} implementations.
 
 To formalize the operational part in \textsc{Coq} we first need to define all preliminary notions from unification theory~\cite{Unification} which our semantics uses.
 
-In particular, we need to implement the notion of the most general unifier (MGU). As is well-known~\cite{UnificationMcBride} all standard recursive algorithms for calculating
-MGU are not decreasing on argument terms, so we can't define it as a simple recursive function in \textsc{Coq} due to the termination check. There is no such obstacle when we define
-MGU as a proposition:
+In particular, we need to implement the notion of the most general unifier (MGU). As it is well-known~\cite{UnificationMcBride} all standard recursive algorithms for calculating
+MGU are not decreasing on argument terms, so we can't define them as simple recursive functions in \textsc{Coq} due to the termination check failure. There is no such obstacle
+when we define MGU as a proposition:
 
 \begin{lstlisting}[language=Coq]
   Inductive mgu :
     term -> term -> option subst -> Set := ...
 \end{lstlisting}
 
-However, we still need to use a well-founded induction to prove the existence of the most general unifier and its defining properties:
+However, we still need to use a well-founded induction to prove the existence of the most general unifier and its defining properties:\\[5mm]
 
 \begin{lstlisting}[language=Coq]
   Lemma mgu_$\texttt{exists}$ : forall t1 t2, {r & mgu t1 t2 r}.
@@ -169,7 +169,7 @@ stands for a non-extended state and ``\lstinline|state|'' --- for an extended on
     state' -> label -> state -> Set := ...
 \end{lstlisting}
 
-We state the fact that our system is deterministic through existence and uniqueness of a transition for every state:
+We state the fact that our system is deterministic through the existence and uniqueness of a transition for every state:
 
 \begin{lstlisting}[language=Coq]
   Lemma eval_step_$\texttt{exists}$ :
@@ -282,4 +282,4 @@ The corresponding \textsc{Coq} lemmas are as follows:
 \end{lstlisting}
 \end{comment}
 
-One immediate corollary of these facts is the ``commutativity'' of disjunction under the interleaving search: the fact that swapping of two disjuncts (at the top level) does not change the termination of the goal evaluation.
+One immediate corollary of these facts is the ``commutativity'' of disjunction under the interleaving search: the fact that swapping two disjuncts (at the top level) does not change the termination of the goal evaluation.

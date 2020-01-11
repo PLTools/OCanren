@@ -26,7 +26,7 @@ where it was employed to describe lambda calculus. The inconsistence phenomenon 
 there ``exotic terms'' and is handled using a dedicated inductive predicate ``\lstinline|Valid_v|''. The predicate has a non-trivial implementation based
 on subtle observations on bindings behavior. Our case, however, is much simpler: there is not much variety in ``exotic terms'' (for example, we do not have
 reductions in terms), and our predicate ``\lstinline|consistent_binding|'' can be considered as a limited version of ``\lstinline|Valid_v|'' for a
-reacher language.
+smaller language.
 
 The study of formal semantics for \textsc{miniKanren} is also not a completely novel venture. In~\cite{RelConversion} a non-deterministic
 small-step semantics is described, and in~\cite{DivTest} a big-step semantics for a finite number of answers is given;
@@ -34,14 +34,14 @@ neither uses proof mechanization, and in both works the interleaving is not addr
 
 The most important property of interleaving search~--- completeness~--- was postulated in the introductory paper~\cite{Search}, and is delivered by
 all major implemetations. In~\cite{2016} a formal proof of completeness is presented; however, the completeness is understood as a
-preservation of all answers during the interleaving of answer streams, i.e. is a more narrow sense than in our case since no relation
-to denotational semantics is established. 
+preservation of all answers during the interleaving of answer streams, i.e. in a more narrow sense than in our case since no relation
+to denotational semantics is established; additionally no proof mechanization is used.
 
 The work of~\cite{MechanisingMiniKanren} can be considered as our direct predecessor. It also introduces both denotational and
 operational semantics and presents a \textsc{HOL}-certified proof for the soundness of the latter w.r.t. the former. The denotational
 semantics resembles ours but considers only queries with a single free variable (we do not see this restriction as important).
 On the other hand, the operational semantics is nondeterministic (similarly to~\cite{RelConversion}), which makes it
-impossible to express interleaving and extract an interpreter in a direct way. In addition, a specific form of ``executable semantics''
+impossible to express interleaving and extract the interpreter in a direct way. In addition, a specific form of ``executable semantics''
 is introduced, but its connection to the other two is not established. Finally, no completeness result is presented.
 We consider our completeness proof as an essential improvement. 
 

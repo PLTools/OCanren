@@ -80,7 +80,7 @@ In this description we swept a lot of important details under the carpet~--- for
 isolation, but both disjuncts are being evaluated incrementally with the control passing from one disjunct to another (\emph{interleaving})~\cite{Search};
 the evaluation of some goals can be additionally deferred (via so-called ``\emph{inverse-$\eta$-delay}'')\cite{MicroKanren}; instead of streams
 the implementation can be based on ``ferns''~\cite{BottomAvoiding} to defer divergent computations, etc. In the following sections we present
-a complete formal description of relational semantics which resolves these uncertainties in a conventional way.
+a complete formal description of relational semantics which resolves these uncertainties in a conventional way.\\[5mm]
 
 As an example consider the following specification:
 
@@ -109,7 +109,7 @@ first one is an empty list (``\lstinline|Nil|''), then the second and the third 
 and a tail ``\lstinline|t|'', and the tail is concatenated with the second argument using a recursive call to ``\lstinline|append$^o$|'' and additional variable ``\lstinline|ty|'', which
 represents the concatenation of ``\lstinline|t|'' and ``\lstinline|y|''. Finally, we unify ``\lstinline|Cons (h, ty)|'' with ``\lstinline|xy|'' to form a final constraint. Similarly,
 ``\lstinline|revers$^o$|'' defines relational list reversing. The top-level goal represents a search procedure for all lists ``\lstinline|x|'', which are stable under reversing, i.e.
-represent palindromes. Running it results in an infinite stream of substitutions:
+palindromes. Running it results in an infinite stream of substitutions:
 
 \begin{lstlisting}
    $\alpha\;\mapsto\;$ Nil

@@ -32,7 +32,7 @@ constructing a complete lattice and a monotone function and taking its least fix
 As we deal with a first-order language with only monotonic constructs (conjunction/disjunction) these steps
 are trivial. Moreover, we express the semantics in \textsc{Coq}, where all well-formed inductive definitions already
 have proper semantics, which removes the necessity to justify the validity of the steps we perform. Second, 
-the least Herbrand model is traditionally defined as a least fixed point of a transition function (defined by a logic program)
+the least Herbrand model is traditionally defined as the least fixed point of a transition function (defined by a logic program)
 which maps sets of ground atoms to sets of ground atoms. We are, however, interested in \emph{relational} semantics which
 should map a program into $n$-ary relation over ground terms, where $n$ is the number of free variables in the topmost
 goal. Thus, we deviate from the traditional route and describe the denotational semantics in a more specific way.
@@ -139,23 +139,36 @@ for disjunction and conjunction of goals. Now for the case of ``\lstinline|fresh
 not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semantics of $g\,[\alpha/x]$. The interesting part is the next step:
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
 goal specifies a relation over its free variables. We introduce some nondeterminism by choosing arbitrary $\alpha$, but we can prove that with different
-choices of free variable the semantics of a goal does not change. 
+choices of free variable the semantics of a goal does not change:
 
 {\color{blue}
 \begin{lemma}
 \label{ChangeFreeVarLemma}
-For any goal $\mbox{\lstinline|fresh|}\;x\,.\,g$,
-for any two variables $\alpha$ and $\beta$ that are not free in this goal,
+For any goal 
+
+\[
+\mbox{\lstinline|fresh|}\;x\,.\,g
+\]
+
+for any two variables $\alpha$ and $\beta$ which are not free in this goal,
 if $\mathfrak{f} \in \sembr{g\,[\alpha/x]}$, then for any representing function $\mathfrak{f}'$, such that
+
 \begin{enumerate}
 \item $\mathfrak{f}'(\beta) = \mathfrak{f}(\alpha)$,
-\item $\forall \gamma: \gamma \neq \alpha \land \gamma \neq \beta, \mathfrak{f}'(\gamma) = \mathfrak{f}(\gamma)$,
+\item $\forall \gamma: \gamma \neq \alpha \land \gamma \neq \beta,\; \mathfrak{f}'(\gamma) = \mathfrak{f}(\gamma)$,
 \end{enumerate}
+
 it is true that
-\[\mathfrak{f}' \in \sembr{g\,[\beta/x]}\]
+
+\[
+\mathfrak{f}' \in \sembr{g\,[\beta/x]}
+\]
 \end{lemma}
 \begin{proof}
-  The proof turned out to be the most cumbersome among all others. In case of nested freshes we have to contruct two intermediate representing functions with different values on three points (one of which is non-free variable which is not equal to any of ones we have, so we also have to prove that there is always ``an other fresh variable'') and then examine four cases with different relations (equal or not equal) between substituted variables. We also have to use goal consistency here.
+  The proof turned out to be the most cumbersome among all others. In the case of nested ``\lstinline|fresh|'' we have to contruct two
+  intermediate representing functions with different values on three points (one of which is non-free variable which is not equal to
+  any of those we have, so we also have to prove that there is always exists ``other fresh variable'') and then examine the four cases
+  with different relations (equal or not equal) between substituted variables. We also have to use goal consistency condition here.
 \end{proof}
 }
 
@@ -231,11 +244,12 @@ We formulate the following important \emph{completeness condition} for the seman
 {\color{blue}
 \begin{lemma}[Completeness condition]
 \label{CompletenessConditionLemma}
-For any goal $g$ and two representing functions ${\mathfrak f}$ and ${\mathfrak f'}$, such that $\left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}$,
+For any goal $g$ and two representing functions ${\mathfrak f}$ and ${\mathfrak f'}$, such that $\left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}$
 \[ {\mathfrak f} \in \sembr{g} \Leftrightarrow {\mathfrak f'} \in \sembr{g} \]
 \end{lemma}
 \begin{proof}
-  The proof is by induction on the definition of denotational semantics. The only non-trivial case is when goal is fresh construct, there we need to change the value of the given function in one point to use inductive hypothesis.
+  The proof is by induction on the definition of denotational semantics. The only non-trivial case is when the goal is a ``\lstinline|fresh|'' construct, there we need to change the value of
+  the given function in one point to apply the inductive hypothesis.
 \end{proof}
 }
 

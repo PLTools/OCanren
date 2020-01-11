@@ -25,11 +25,11 @@ more interesting, in the opposite direction.
 Since in \textsc{Prolog} a rather limited form of goals (an implicit conjunction of atoms) is used the conversion to \textsc{miniKanren} is easy:
 
 \begin{itemize}
-  \item built-in constructors in \textsc{Prolog} terms (for example, for lists) are converted into \textsc{miniKanren} representation;
+  \item the built-in constructors in \textsc{Prolog} terms (for example, for lists) are converted into \textsc{miniKanren} representation;
   \item each atom is converted into a corresponding relational invocation with the same parameters (modulo the conversion of terms);
   \item the list of atoms in the body of \textsc{Prolog} clause is converted into explicit conjunction;
   \item a number of fresh variables (one for each argument) are created
-  \item arguments are unified with terms in the corresponding
+  \item the arguments are unified with the terms in the corresponding
     argument position in the head of the corresponding clause;
   \item different clauses for the same predicate are combined using disjunction.
 \end{itemize}
@@ -80,7 +80,7 @@ The conversion in the opposite direction involves the following steps:
    unify (X, X).
 \end{lstlisting}    
 
-  \item splitting top-level disjunctions into separate clauses with the same head.
+  \item splitting the top-level disjunctions into separate clauses with the same head.
 \end{itemize}
 
 The correctness of these, again, can be justified denotationally. For the append$^o$ relation in Section~\ref{language} the result
@@ -178,7 +178,7 @@ propagation continues (see Fig.~\ref{cut-signal-propagation}). In the case of ``
 
 For this semantics we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
 we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut'' (since we do not have other semantics of ``cut'' to compare with).
-Nevertheless, we can demonstrate a plausible behavior using extracted reference interpreter using ``litmus tests''.
+Nevertheless, we can demonstrate a plausible behavior of extracted reference interpreter using ``litmus tests''.
 
 Consider the following specification:
 
@@ -198,7 +198,7 @@ c(5, 0, 0, 0).
 
 Strictly speaking, integer literals can not be used in the language we defined; however we can replace them by Peano-encoded
 integers with the same result. The query we are interested in is ``\lstinline|c(W, X, Y, Z)|''. The answers of its
-evaluation using our certified interpreter (see below) are shown below:
+evaluation using our certified interpreter are shown below:
 
 \[
 \begin{array}{|cccc|}
@@ -223,7 +223,7 @@ W & X & Y & Z \\
 \end{array}
 \]
 
-These answers are exactly those (includng the order) delivered by SWI-Prolog. 
+These answers are exactly those (including the order) delivered by SWI-Prolog. 
 
 \subsection{Reference Interpreters}
 
