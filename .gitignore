@@ -9,4 +9,4 @@ _build
 /MiniKanren.docdir
 /node_modules
 /.vscode
-
+.merlin
