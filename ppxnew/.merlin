@@ -1,6 +1,0 @@
-PKG ppxlib
-PKG ppxlib.metaquot
-PKG GT.expander
-
-S .
-B ../_build/ppxnew
