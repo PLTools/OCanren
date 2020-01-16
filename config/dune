@@ -1,7 +1,7 @@
 (executable
   (name discover)
   (modules Discover)
-  (libraries str dune.configurator)
+  (libraries str dune-configurator)
 )
 
 (rule
