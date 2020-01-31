@@ -5,3 +5,6 @@
 
 (package
   (name OCanren))
+
+(allow_approximate_merlin)
+
