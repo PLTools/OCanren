@@ -39,6 +39,11 @@ val is_empty : 'a t -> bool
 (** [map f s] maps function [f] over the stream [s] *)
 val map : ('a -> 'b) -> 'a t -> 'b t
 
+(** Same as [map], but the function is applied to the index of the element as first argument
+ *  (counting from 0), and the element itself as second argument.
+ *)
+val mapi : (int -> 'a -> 'b) -> 'a t -> 'b t
+
 (** [iter f s] iterates function [f] over the stream [s] *)
 val iter : ('a -> unit) -> 'a t -> unit
 
