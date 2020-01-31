@@ -66,11 +66,42 @@ let discover_gt_flags cfg =
   Cfg.Flags.write_lines "gt-flags.cfg" @@ extract_words gt_archives
 
 let discover_logger_flags cfg =
+  (* logger has two kinds of CMOs: two from camlp5 (pr_o and pr_dump) and one for logger.
+      `pr_o` is required because logger uses pretty-printing inside itself.
+      `pr_dump` is required for printing result in binaru format (to save line numbers).
+      `pa_log` for logger itself
+
+    in META file they are listed as `pr_o.cmo pr_dump.cmo pa_log.cmo`
+    With ocamlfind they are passed as is to compilation command prefixed by
+    linking directory options. Because of that we can't write, for example,
+    '../camlp5/pr_o.cmo` in META file.
+
+    With dune these three cmos are prefixed using full path, so using naive
+    approach they are all located in the same directory $LIB/logger. This is
+    wrong but we can hack it in dune script because we know exact names of cmos.
+  *)
+
+  let camlp5_dir = String.trim @@
+    Cfg.Process.run_capture_exn cfg
+      "ocamlfind" ["query"; "camlp5"]
+  in
   let logger_archives =
     Cfg.Process.run_capture_exn cfg
       "ocamlfind" ["query"; "-pp"; "camlp5"; "-a-format"; "-predicates"; "byte"; "logger,logger.syntax"]
   in
-  Cfg.Flags.write_lines "logger-flags.cfg" @@ extract_words logger_archives
+  let pr_o_cmo = "pr_o.cmo" in
+  let pr_dump_cmo = "pr_dump.cmo" in
+  let cmos =
+    extract_words logger_archives
+    |> List.map (fun file ->
+      if Str.last_chars file (String.length pr_o_cmo) = pr_o_cmo
+      then camlp5_dir ^ "/" ^ pr_o_cmo
+      else if Str.last_chars file (String.length pr_dump_cmo) = pr_dump_cmo
+      then camlp5_dir ^ "/" ^ pr_dump_cmo
+      else file
+    )
+  in
+  Cfg.Flags.write_lines "logger-flags.cfg" cmos
 
 (*** generating dune files ***)
 
