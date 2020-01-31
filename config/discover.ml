@@ -46,11 +46,13 @@ let get_tests tests_dir =
 let discover_tests cfg tests =
   Cfg.Flags.write_lines "tests.txt" tests
 
-let discover_camlp5_flags cfg =
-  let camlp5_dir = String.trim @@
+let discover_camlp5_dir cfg = 
+  String.trim @@
     Cfg.Process.run_capture_exn cfg
       "ocamlfind" ["query"; "camlp5"]
-  in
+
+let discover_camlp5_flags cfg =
+  let camlp5_dir = discover_camlp5_dir cfg in 
   let camlp5_archives =
     List.map
       (fun arch -> String.concat Filename.dir_sep [camlp5_dir; arch])
@@ -68,7 +70,7 @@ let discover_gt_flags cfg =
 let discover_logger_flags cfg =
   (* logger has two kinds of CMOs: two from camlp5 (pr_o and pr_dump) and one for logger.
       `pr_o` is required because logger uses pretty-printing inside itself.
-      `pr_dump` is required for printing result in binaru format (to save line numbers).
+      `pr_dump` is required for printing result in binary format (to save line numbers).
       `pa_log` for logger itself
 
     in META file they are listed as `pr_o.cmo pr_dump.cmo pa_log.cmo`
@@ -81,10 +83,7 @@ let discover_logger_flags cfg =
     wrong but we can hack it in dune script because we know exact names of cmos.
   *)
 
-  let camlp5_dir = String.trim @@
-    Cfg.Process.run_capture_exn cfg
-      "ocamlfind" ["query"; "camlp5"]
-  in
+  let camlp5_dir = discover_camlp5_dir cfg in 
   let logger_archives =
     Cfg.Process.run_capture_exn cfg
       "ocamlfind" ["query"; "-pp"; "camlp5"; "-a-format"; "-predicates"; "byte"; "logger,logger.syntax"]
@@ -92,12 +91,12 @@ let discover_logger_flags cfg =
   let pr_o_cmo = "pr_o.cmo" in
   let pr_dump_cmo = "pr_dump.cmo" in
   let cmos =
-    extract_words logger_archives
-    |> List.map (fun file ->
-      if Str.last_chars file (String.length pr_o_cmo) = pr_o_cmo
-      then camlp5_dir ^ "/" ^ pr_o_cmo
-      else if Str.last_chars file (String.length pr_dump_cmo) = pr_dump_cmo
-      then camlp5_dir ^ "/" ^ pr_dump_cmo
+    extract_words logger_archives |> 
+    List.map (fun file ->
+      if Filename.basename file = pr_o_cmo then 
+        Filename.concat camlp5_dir pr_o_cmo
+      else if Filename.basename file = pr_dump_cmo then
+        Filename.concat camlp5_dir pr_dump_cmo
       else file
     )
   in
