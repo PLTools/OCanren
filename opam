@@ -11,7 +11,7 @@ depends: [
   "ocaml"
   "ocamlfind" {build}
   "camlp5"
-  "logger-p5"
+  "logger-p5" { = "0.4.2" }
   "GT" { >= "0.2.0" }
 ]
 build: [
