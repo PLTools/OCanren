@@ -105,6 +105,13 @@ let rec map f = function
   let helper {zz} as s = {s with zz = fun () -> map f (zz ())} in
   Waiting (List.map helper ss)
 
+let mapi f =
+  let rec helper i xs = match msplit xs with
+    | None -> Nil
+    | Some (h, tl) -> Cons (f i h, from_fun (fun () -> helper (1+i) tl))
+  in
+  helper 0
+
 let rec iter f s =
   match msplit s with
   | Some (x, s) -> f x; iter f s
