@@ -32,7 +32,7 @@ module FoldInfo = struct
       Pprintast.core_type Caml.Format.str_formatter typ;
       Caml.Format.flush_str_formatter ()
     in
-    try List.iter ts (fun i ->
+    try List.iter ts ~f:(fun i ->
                     let new_repr = Caml.Format.asprintf "%a" Pprintast.core_type i.rtyp in
                     if String.equal new_repr typ_repr then raise (ItemFound i)
                   );
