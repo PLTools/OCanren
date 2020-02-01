@@ -6,5 +6,8 @@
 (package
   (name OCanren))
 
+(package
+  (name OCanren-ppx))
+
 (allow_approximate_merlin)
 

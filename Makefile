@@ -1,6 +1,4 @@
-
-.PHONY: \
-	all clean \
+.PHONY: celan \
 	lib ppx syntax package \
 	test promote discover-tests clean-test \
 	samples clean-samples \
@@ -39,6 +37,7 @@ clean-test:
 clean-samples:
 	rm -f samples/*.log samples/*.diff
 
+celan: clean
 clean: clean-test clean-samples
 	dune clean
 
