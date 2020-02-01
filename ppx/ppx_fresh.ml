@@ -50,7 +50,7 @@ let is_call_fresh = need_insert_fname ~name:"call_fresh"
 let is_unif =
   classify_name
     ~f:(function
-        | Lident s -> (String.length s >=3) && (String.equal (String.sub s 0 3) "===")
+        | Lident s -> (String.length s >=3) && (String.equal (String.sub s ~pos:0 ~len:3) "===")
         | _ -> false
         )
 
@@ -161,7 +161,7 @@ let parse_to_list alist =
 let mapper = object(self)
   inherit Ast_traverse.map as super
 
-  method expression e =
+  method! expression e =
     let loc = e.pexp_loc in
     match e.pexp_desc with
     | Pexp_apply (_,[]) -> e
