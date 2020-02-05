@@ -55,3 +55,5 @@ include T
 include Fmap2 (T)
 
 let pair x y = Logic.inj @@ distrib (x, y)
+
+let prjc fa fb onvar env xs = prjc fa fb onvar env xs

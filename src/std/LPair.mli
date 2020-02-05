@@ -44,3 +44,11 @@ val pair : ('a, 'b) injected -> ('c, 'd) injected -> ('a, 'b, 'c, 'd) groundi
 
 (** Reifier *)
 val reify : (VarEnv.t -> ('a, 'b) injected -> 'b) -> (VarEnv.t -> ('c, 'd) injected -> 'd) -> VarEnv.t -> ('a, 'b, 'c, 'd) groundi -> ('b, 'd) logic
+
+val prjc :
+  (VarEnv.t -> ('a, 'b) injected -> 'a) ->
+  (VarEnv.t -> ('c, 'd) injected -> 'c) ->
+  (int -> ('a,'c) ground GT.list -> ('a, 'c) ground) ->
+  VarEnv.t -> ( ('a,'c) ground, ('b, 'd) logic) injected -> ('a, 'c) ground
+
+
