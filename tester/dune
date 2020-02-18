@@ -1,0 +1,8 @@
+(library
+  (name tester)
+  (modules tester)
+  (libraries OCanren)
+  (public_name OCanren.tester)
+)
+
+
