@@ -42,7 +42,9 @@ clean: clean-test clean-samples
 	dune clean
 
 install:
-	dune build @install && dune install
+	dune build @install
+	dune install
 
 uninstall:
+	dune build @install
 	dune uninstall
