@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2020
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -41,6 +41,19 @@ val unify : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
 (** [x =/= y] creates a goal, which introduces a disequality constraint for [x] and [y] *)
 val (=/=) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
+
+(* Call [structural var reifier checker] adds a structural constraint for future use.
+ * Every time substitution is updated it reifies [var] using [reifier] and checks that
+ * the result satisfies desired predicate [checker].
+ *
+ * The predicate [checker] returns false when constraint is violated.
+ * Call [structural] saves constraint and return substitution nonmodified.
+ * *)
+val structural :
+  ('a,'b) injected ->
+  (VarEnv.t -> ('a,'b) injected -> 'b) ->
+  ('b -> bool) ->
+  goal
 
 (** [diseq x y] is a prefix synonym for [x =/= y] *)
 val diseq : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
@@ -346,3 +359,4 @@ module Tabling :
        ('d -> 'a -> State.t RStream.t goal')) ->
       (('b -> 'c) -> 'd) -> 'b -> 'c
   end
+

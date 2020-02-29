@@ -107,12 +107,60 @@ module Answer :
     let hash (env, t) = Term.hash t
   end
 
+module Prunes : sig
+  type rez = Violated | NonViolated
+  type ('a, 'b) reifier = VarEnv.t -> ('a, 'b) Logic.injected -> 'b
+  type 'b cond = 'b -> bool
+  type t
+
+  val empty   : t
+  (* Returns false when constraints are violated *)
+  val recheck : t -> VarEnv.t -> VarSubst.t -> rez
+  val check_one : t -> VarEnv.t -> VarSubst.t -> Term.VarTbl.key -> rez
+  val extend  : t -> Term.VarTbl.key -> ('a, 'b) reifier -> 'b cond -> t
+end = struct
+  type rez = Violated | NonViolated
+  type ('a, 'b) reifier = VarEnv.t -> ('a, 'b) Logic.injected -> 'b
+  type reifier_untyped = VarEnv.t -> Obj.t -> Obj.t
+  type 'b cond = 'b -> bool
+  type cond_untyped = Obj.t -> bool
+
+  type t = (reifier_untyped * cond_untyped) Term.VarMap.t
+
+  let empty = Term.VarMap.empty
+
+  let check_one map env subst term =
+    try
+      let (reifier, cond) = Term.VarMap.find term map in
+      let reified = reifier env (Obj.magic @@ VarSubst.apply env subst term) in
+      if cond reified
+      then NonViolated
+      else Violated
+    with Not_found -> NonViolated
+
+  exception Fail
+  let recheck ps env s =
+    try
+      Term.VarMap.iter (fun k (reifier, checker) ->
+          let reified = reifier env (Obj.magic @@ VarSubst.apply env s k) in
+          if not (checker reified)
+          then raise Fail
+       ) ps;
+       NonViolated
+    with Fail -> Violated
+
+  let extend map var rr cond =
+    Term.VarMap.add (Obj.magic var) (Obj.magic (rr,cond)) map
+
+end
+
 module State =
   struct
     type t =
       { env   : VarEnv.t
       ; subst : VarSubst.t
       ; ctrs  : Disequality.t
+      ; prunes: Prunes.t
       ; scope : Term.Var.scope
       }
 
@@ -122,6 +170,7 @@ module State =
       { env   = VarEnv.empty ()
       ; subst = VarSubst.empty
       ; ctrs  = Disequality.empty
+      ; prunes = Prunes.empty
       ; scope = Term.Var.new_scope ()
       }
 
@@ -129,6 +178,7 @@ module State =
     let subst {subst} = subst
     let constraints {ctrs} = ctrs
     let scope {scope} = scope
+    let prunes {prunes} = prunes
 
     let fresh {env; scope} = VarEnv.fresh ~scope env
 
@@ -140,7 +190,10 @@ module State =
         | Some (prefix, subst) ->
           match Disequality.recheck env subst ctrs prefix with
           | None      -> None
-          | Some ctrs -> Some {st with subst; ctrs}
+          | Some ctrs ->
+            match Prunes.recheck (prunes st) env subst with
+            | Prunes.Violated -> None
+            | NonViolated -> Some {st with subst; ctrs}
 
     let diseq x y ({env; subst; ctrs; scope} as st) =
       match Disequality.add env subst ctrs x y with
@@ -205,6 +258,16 @@ let diseq = (=/=)
 let delay g st = RStream.from_fun (fun () -> g () st)
 
 let conj f g st = RStream.bind (f st) g
+
+let structural var rr k st =
+  match Term.var var with
+  | None -> success st
+  | Some v ->
+      let new_constraints = Prunes.extend (State.prunes st) v rr k in
+      match Prunes.check_one new_constraints (State.env st) (State.subst st) v with
+      | Prunes.Violated -> failure st
+      | NonViolated -> success { st with State.prunes = new_constraints }
+
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
 
@@ -472,3 +535,5 @@ module Tabling =
       g := currier g_tabled;
       !g
   end
+
+
