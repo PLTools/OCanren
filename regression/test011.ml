@@ -91,8 +91,8 @@ let () =
       ))
     ]
   in
-  runInt (-1) q qh (REPR (fun q -> distincto (!2 % (!3 %< q)) ));
-
+  runInt (-1) q qh (REPR (fun q -> distincto (!2 % (!3 %< q)) )); 
+  
   let rec remembero x ls out =
      conde [
        (ls === nil ()) &&& (out === nil ());

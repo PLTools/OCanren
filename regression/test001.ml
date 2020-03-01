@@ -44,7 +44,6 @@ let rec appendo a b ab =
         (appendo t b ab')
     ]
 
-
 let rec reverso a b =
   conde
     [ ((a === nil ()) &&& (b === nil ()))
