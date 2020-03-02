@@ -126,7 +126,7 @@ Dmitry Boulytchev
 
 We present a certified semantics for disequality constraints in \textsc{miniKanren}. In its initial form~\cite{TRS,MicroKanren} \textsc{miniKanren} introduces a single
 form of constraint~--- unification of terms. While from a theoretical standpoint unification together with other primitive constructs (conjunction, disjunction and
-fresh variable introduction) form a Turing-complete basis, in practice of relational programming a number of extensions are often used to make specification more
+fresh variable introduction) form a Turing-complete basis, in practice of relational programming a number of extensions are oftenly used to make specifications more
 expressive, concise or efficient. One of the most important extensions is \emph{disequality constraint}.
 
 Disequality constraint~\cite{Disunification} introduces one additional type of base goal~--- a disequality of two terms
@@ -224,32 +224,36 @@ may formulate the following set of \emph{sufficient conditions} for soundness an
 \item $\csupdate{\cstore_\sigma}{\delta} = \bot \implies \sembr{\cstore_\sigma} \cap \sembr{\sigma \delta} = \emptyset$.
 \end{enumerate}
 
-These conditions ensure that the given denotational interpretation and the given operations on constraint stores are adequate relative to each other.
-The conditions 2-5 describe exactly what we need to prove soundness and completeness for base goals (unification and disequality), at the same time,
+These conditions state that given denotational interpretation and the given operations on constraint stores are adequate to each other.
+The conditions 2-5 describe exactly what we need to prove the soundness and completeness for base goals (unification and disequality); at the same time,
 these conditions have relatively simple intuitive meaning in terms of these two operations and are expected to hold naturally in all reasonable
-implementations of constraint stores. We can prove that this is enough for soundness and completeness to hold for an arbitrary goal. However,
-contrary to our expectations, the proof for other types of goals, except base ones, is not working for this new formulation and has to be modified
-significantly in the case of \lstinline|fresh|. Specifically, we need one additional condition on constraint store in state $(\sigma, n, \cstore_\sigma)$:
-only the values on the first $n$ fresh variables determine whether a representing function belongs to the denotational semantics $[\sigma] \cap \sembr{\cstore_\sigma}$
-of the state (note the similarity to the completeness condition). Luckily, we can infer this property for all states that can be constructed by our operational
-semantics from the necessary conditions in the list above.
+implementations of constraint stores.
 
-Thus, for an arbitrary implementation, we need to give a formal definition of constraint store object and its denotational interpretation, provide three
-operations for it and prove five conditions on them, and by this we ensure that for arbitrary goal the interpretations of all solutions found by the
-search in this version of MiniKanren will cover exactly the mathematical interpretation of this goal. One thing we can not guarantee though is that
-the solutions will be presented to the user in a way that reflects their interpretation correctly. So we expect provided denotational interpretation
-for constraint store to be exactly what is put on the screen. {\color{red} Something that sounds more impressive is needed here probably.}
+%The certified proof of soundness and correctness 
 
-As well as our previous development this extension is certified in Coq\footnote{\color{red} TODO: create a new branch in the miniKanren-coq repository
-and put a link here}. We describe operational semantics and its soundness and completeness as modules parametrized by the definitions of constraint
-stores and our necessary conditions. We also provide a module with an example of a very obvious (and very impractical) suitable implementation of
-disequality constraints (with lists of pairs of terms as constraint stores) and extract a correct-by-construction reference interpreter for MiniKanren
-with disequality constraints from the operational semantics with this simple implementation passed as the parameter.
+%We can prove that this is enough for soundness and completeness to hold for an arbitrary goal. However,
+%contrary to our expectations, the proof for other types of goals, except base ones, is not working for this new formulation and has to be modified
+%significantly in the case of \lstinline|fresh|. Specifically, we need one additional condition on constraint store in state $(\sigma, n, \cstore_\sigma)$:
+%only the values on the first $n$ fresh variables determine whether a representing function belongs to the denotational semantics $[\sigma] \cap \sembr{\cstore_\sigma}$
+%of the state (note the similarity to the completeness condition). Luckily, we can infer this property for all states that can be constructed by our operational
+%semantics from the necessary conditions in the list above.
 
-In addition to verification of correctness of different implementation of disequality constraints, we potentially can use our framework to formally
-state and prove some of its other important properties (for example, we currently allow meaningless answers with empty interpretations, which don't
-affect soundness or completeness, but we probably want ``good'' implementations not to have such things) or correctness of some optimizations inside
-specific implementation (for example, throwing out a constraint that is subsumed by some other constraint in the store).
+%Thus, for an arbitrary implementation, we need to give a formal definition of constraint store object and its denotational interpretation, provide three
+%operations for it and prove five conditions on them, and by this we ensure that for arbitrary goal the interpretations of all solutions found by the
+%search in this version of MiniKanren will cover exactly the mathematical interpretation of this goal. One thing we can not guarantee though is that
+%the solutions will be presented to the user in a way that reflects their interpretation correctly. So we expect provided denotational interpretation
+%for constraint store to be exactly what is put on the screen. {\color{red} Something that sounds more impressive is needed here probably.}
+
+%As well as our previous development this extension is certified in Coq\footnote{\color{red} TODO: create a new branch in the miniKanren-coq repository
+%and put a link here}. We describe operational semantics and its soundness and completeness as modules parametrized by the definitions of constraint
+%stores and our necessary conditions. We also provide a module with an example of a very obvious (and very impractical) suitable implementation of
+%disequality constraints (with lists of pairs of terms as constraint stores) and extract a correct-by-construction reference interpreter for MiniKanren
+%with disequality constraints from the operational semantics with this simple implementation passed as the parameter.
+
+%In addition to verification of correctness of different implementation of disequality constraints, we potentially can use our framework to formally
+%state and prove some of its other important properties (for example, we currently allow meaningless answers with empty interpretations, which don't
+%affect soundness or completeness, but we probably want ``good'' implementations not to have such things) or correctness of some optimizations inside
+%specific implementation (for example, throwing out a constraint that is subsumed by some other constraint in the store).
 
 %\nocite{*}
 \bibliographystyle{eptcs}
