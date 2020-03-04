@@ -1,0 +1,224 @@
+\documentclass[submission,copyright,creativecommons]{eptcs}
+\providecommand{\event}{TEASE-LP 2020} % Name of the event you are submitting to
+\usepackage{breakurl}             % Not needed if you use pdflatex only.
+\usepackage{underscore}           % Only needed if you use pdflatex.
+
+\usepackage{amsmath,amssymb}
+\usepackage[english, russian]{babel}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage{comment}
+\usepackage{indentfirst}
+\usepackage{hyperref}
+\usepackage{amsthm}
+\usepackage{xcolor}
+\usepackage{stmaryrd}
+\usepackage{eufrak}
+\usepackage{placeins}
+\newtheorem{theorem}{Theorem}
+\newtheorem{hyp}{Hypothesis}
+
+\lstdefinelanguage{ocanren}{
+keywords={run, conde, fresh, let, in, match, with, when, class, type,
+object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+true, false},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\ttfamily\underbar,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+fontadjust=true,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
+morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+mathescape=true,
+%basicstyle=\small,
+identifierstyle=\ttfamily,
+keywordstyle=\bfseries,
+commentstyle=\scriptsize\rmfamily,
+basewidth={0.5em,0.5em},
+fontadjust=true,
+language=ocanren
+}
+
+\usepackage{letltxmacro}
+\newcommand*{\SavedLstInline}{}
+\LetLtxMacro\SavedLstInline\lstinline
+\DeclareRobustCommand*{\lstinline}{%
+  \ifmmode
+    \let\SavedBGroup\bgroup
+    \def\bgroup{%
+      \let\bgroup\SavedBGroup
+      \hbox\bgroup
+    }%
+  \fi
+  \SavedLstInline
+}
+
+\def\transarrow{\xrightarrow}
+\newcommand{\setarrow}[1]{\def\transarrow{#1}}
+
+\def\padding{\phantom{X}}
+\newcommand{\setpadding}[1]{\def\padding{#1}}
+
+\def\subarrow{}
+\newcommand{\setsubarrow}[1]{\def\subarrow{#1}}
+
+\newcommand{\trule}[2]{\frac{#1}{#2}}
+\newcommand{\crule}[3]{\frac{#1}{#2},\;{#3}}
+\newcommand{\withenv}[2]{{#1}\vdash{#2}}
+\newcommand{\trans}[3]{{#1}\transarrow{\padding{\textstyle #2}\padding}\subarrow{#3}}
+\newcommand{\ctrans}[4]{{#1}\transarrow{\padding#2\padding}\subarrow{#3},\;{#4}}
+\newcommand{\llang}[1]{\mbox{\lstinline[mathescape]|#1|}}
+\newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
+\newcommand{\inbr}[1]{\left<{#1}\right>}
+\newcommand{\highlight}[1]{\color{red}{#1}}
+%\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
+\newcommand{\rulename}[1]{\textsc{#1}}
+\newcommand{\inmath}[1]{\mbox{$#1$}}
+\newcommand{\lfp}[1]{fix_{#1}}
+\newcommand{\gfp}[1]{Fix_{#1}}
+\newcommand{\vsep}{\vspace{-2mm}}
+\newcommand{\supp}[1]{\scriptsize{#1}}
+\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\cd}[1]{\texttt{#1}}
+\newcommand{\free}[1]{\boxed{#1}}
+\newcommand{\binds}{\;\mapsto\;}
+\newcommand{\dbi}[1]{\mbox{\bf{#1}}}
+\newcommand{\sv}[1]{\mbox{\textbf{#1}}}
+\newcommand{\bnd}[2]{{#1}\mkern-9mu\binds\mkern-9mu{#2}}
+\newcommand{\meta}[1]{{\mathcal{#1}}}
+\newcommand{\dom}[1]{\mathtt{dom}\;{#1}}
+\newcommand{\primi}[2]{\mathbf{#1}\;{#2}}
+\renewcommand{\dom}[1]{\mathcal{D}om\,({#1})}
+\newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
+\newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
+\newcommand{\tr}[1]{\mathcal{T}r_{#1}}
+\newcommand{\diseq}{\not\equiv}
+\newcommand{\reprfunset}{\mathcal{D}}
+\newcommand{\reprfun}{\mathfrak{f}}
+\newcommand{\cstore}{\Omega}
+\newcommand{\cstoreinit}{\cstore_\epsilon^{init}}
+\newcommand{\csadd}[3]{\mathbf{add}\,(#1, #2 \diseq #3)}  %{#1 + [#2 \diseq #3]}
+\newcommand{\csupdate}[2]{\mathbf{update}\,(#1, #2)}  %{#1 \cdot #2}
+
+\let\emptyset\varnothing
+\let\eps\varepsilon
+
+\title{Fair Conjunction for miniKanren}
+\author{Petr Lozov
+\institute{Saint Petersburg State University and \\ JetBrains Research, Russia}
+\email{lozov.peter@gmail.com}
+\and
+Dmitry Boulytchev
+\institute{Saint Petersburg State University and \\ JetBrains Research, Russia}
+\email{dboulytchev@math.spbu.ru}
+}
+\def\titlerunning{Fair Conjunction for miniKanren}
+\def\authorrunning{P. Lozov \& D. Boulytchev}
+\begin{document}
+\maketitle
+
+Одной из особенностей реляционного программирования~\cite{TRS,MicroKanren} является полный поиск, достигаемый благодаря \emph{interleaving search}. Помимо полноты такой поиск делает реляционную дизъюнкцию справедливой: завершаемость программы не зависит от порядка дизъюктов. Однако конъюнкция таким свойстов уже не обладает. Например, реализации отношения обращения списка \lstinline{revers$^o$}, представленные на рисунке~\ref{fig:reverso}, отличаются только порядком конъюнктов (строки 5 и 6), однако исполнение запроса \lstinline{run$^*$ q (revers$^o_1$ [1,2,3] q)} обнаружит ответ, после чего разойдется в то время, как запрос \lstinline{run$^*$ q (revers$^o_1$ [1,2,3] q)} завершится после обнаружения ответа. Также для более длинных списков время обнаружения первого ответа сильно отличается: первая реальизация оказывается в несколько раз быстрее.
+
+\begin{figure}[h]
+    \centering
+    \begin{tabular}{c@{\hskip2cm}c}
+
+\begin{lstlisting}[numbers=left,numberstyle=\small]
+let rec revers$^o_1$ x y =
+  x === [] /\ y === [] \/
+  fresh (e xs ys) (
+    x === e : xs /\
+    revers$^o_1$ xs ys /\
+    appendo ys [e] y
+  )
+\end{lstlisting}
+
+&
+    
+\begin{lstlisting}[numbers=left,numberstyle=\small]
+let rec revers$^o_2$ x y =
+  x === [] /\ y === [] \/
+  fresh (e xs ys) (
+    x === e : xs /\
+    appendo ys [e] y /\
+    revers$^o_2$ xs ys
+  )
+\end{lstlisting}
+
+\end{tabular}
+\caption{Two implementations of \lstinline{reverso}}
+\label{fig:reverso}
+\end{figure}
+
+На текущий момент существует техника, управляющая порядком конъюнктов: Relational Search via Divergence Test~\cite{DivTest}. Данная техника, однако, консервативно подходит задаче перестановки конъюнктов. 
+%В случае обнаружения расхождения все полученные во время исполнения расходящегося конъюнкта данные забываются, после чего исполняться начинает второй конъюнкт. Данная особенность делает невозможными исполнение конъюнкции нескольких расходящихся конъюнктов, которые, однако, могут сходиться при менее консервативной перестановке конъюнктов. 
+Также критерий, обнаруживающий расхождение необходим, но недостаточней. Другими словами, такое управление порядком конъюнктов не делает конъюнкцию справедливой.
+
+Мы предлагаем подход, позволяющий сохранить информацию при перестановке конъюнктов засчет преобразования частично вычисленного конъюнкта в дизъюнктивную нормальную форму с явно представленными подстановками $\sigma_i$.
+$$S \; \wedge \; X \Rightarrow (S_1 \sigma_1 \; \vee \ldots \vee \; S_n \sigma_n) \wedge \; X$$
+В такой форме можно раскрыть скобки по правилу дистрибутивности, после чего поменять конъюнкты местами, сохранив содержимое подстановок.
+$$(S_1 \sigma_1 \; \vee \ldots \vee \; S_n \sigma_n) \wedge \; X \Rightarrow (X \sigma_1 \; \wedge S_1) \; \vee \ldots \vee \; (X \sigma_n \; \wedge S_n)$$
+
+Однако, использование такой перестановки после каждого шага редукции конъюнкта оказывается неэффективным, во-первых, из-за накладных расходов, связанных с частым перестраиванием структуры каждого конъюнкта, а во-вторых, из-за потери приоритета вычислению левого конъюкта.  Таким образом, нам необходим критерий, обнаруживающий необходимость перестановки конъюнктов.
+
+Классический критерий, используемый в суперкомпиляции~\cite{turchin1986concept}, который называется \emph{embedding}~\cite{Nash-Williams1987} оказался неэффективен. Хоть при данном критерии конъюнкция становится справедливой, ведь при счетном количестве шагов, перестановка конъюнктов обязательно произойдёт, но вычисление данного критерия крайне трудоемко. 
+%При попытках аппроксимировать вычисление embedding (например, исключить из рассмотрения подстановки), данный критерий начинает срабатывать слишком часто, что делает его слабоотличимым от перестановки конъюнктов после каждого шага редукции.
+
+Более эффективным оказался критерий, основанный на анализе опровергающей способности текущего конъюнкта. Для этого перед исполнением программы для каждого отношения строится аппроксимирующие отношение, из которого исключены все вызовы (пример для \lstinline{revers$^o$} на рисунке~\ref{fig:reverso_approx}). Количество ответов такого отношения, вычисленное со свободными аргументами в пустой подстановке, всегда конечно и соответствует количеству содержательных ветвей в исходном отношении. И если количество ответов этой аппроксимации, вычисленное на конкретных аргументах, меньше количества содержательных ветвей, значит хотя бы одна из ветвей будет опровергнута. В этом случае мы продолжаем вычисление конъюнкта, в противном --- делаем перестановку.
+\begin{figure}[h]
+\centering
+\begin{tabular}{c}
+\begin{lstlisting}
+let rec revers$^o$ x y =
+  x === [] /\ y === [] \/
+  fresh (e xs) (
+    x === e : xs 
+  )
+\end{lstlisting}
+\end{tabular}
+\caption{Approximation of \lstinline{reverso}}
+\label{fig:reverso_approx}
+\end{figure}
+
+Для апробации данного критерия был разработан интерпретатор, основанный на операциронной семинтике~\cite{CertifiedSemantics} языка miniKanren, которая была расширена возможностью перестановки конъюнктов.
+
+В качестве benchmarks были использованы два простых примера: \lstinline{revers$^o$} и \lstinline{sorto$^o$}, а также две более содержательные программы: \lstinline{hanoi$^o$} - поиск решения задачи Ханойских башен, а также \lstinline{bridge$^o$} - поиск решения задачи family on the bridge. Каждая из этих программ была взята в двух версиях: optimistic --- с хорошим порядком конъюнктов, и pessimistic --- с намеренно плохим порядком конъюнктов.
+
+\begin{figure}[h]
+  \small
+  \centering
+  \begin{tabular}{ c | c | c | c | c | c }
+    relation & size &  \multicolumn{2}{c}{directed conj} & \multicolumn{2}{c}{approx conj} \\
+    \cline{3-6}
+    & & optimistic & pessimistic & optimistic & pessimistic  \\ 
+    \hline
+    revers$^o$   & 30         & 0.124 & 0.318 & 0.118 & 0.292 \\
+                 & 60         & 0.255 & 1.791 & 0.287 & 0.636 \\
+                 & 90         & 0.692 & 5.728 & 0.796 & 1.027 \\
+    \hline
+    sort$^o$     & 3          & 0.088 & 0.106 & 0.088  & 0.103  \\
+                 & 4          & 0.087 & 0.975 & 0.099  & 0.117  \\
+                 & 5          & 0.092 & >300  & 0.108  & 0.124  \\
+                 & 30         & 8.601 & >300  & 11.813 & 42.853 \\ 
+    \hline
+    hanoi$^o$    & -          & 2.265 & >300  & 2.284 & 2.557  \\
+    \hline
+    bridge$^o$   & -          & 24.825 & >300 & 20.977 & 25.367    
+
+  \end{tabular}
+  \caption{The results of a evaluation: running times of benchmarks in seconds}
+  \label{evaluation_results}
+\end{figure}
+
+\bibliographystyle{eptcs}
+\bibliography{fair}
+
+\end{document}
