@@ -195,7 +195,7 @@ eval^o_{\mathcal B}\, (s, p, i)
 
 Here $s$ and $i$ have the same meaning as in declarative semantics description, $p\in\mathcal{B}$~--- a syntactic representation of
 a program in $\mathcal{B}$. The relation $eval^o_{\mathcal B}$ encodes the operational semantics of $\mathcal{B}$; it holds, if
-evaluating $p$ for $s$ returns $i$. Being relational intepreter, however, $eval^o_{\mathcal B}$ is capable of solving a
+evaluating $p$ for $s$ returns $i$. Being relational interpreter, however, $eval^o_{\mathcal B}$ is capable of solving a
 synthesis problem: by a scrutinee $s$ and a number $i$ calculate a program $p$ which makes the relation to hold.
 Within this setting, we can formulate the pattern-matching synthesis problem as follows: \emph{for a given ordered list of patterns $ps$ find a program $p$, such that}
 
@@ -203,11 +203,11 @@ Within this setting, we can formulate the pattern-matching synthesis problem as 
 \forall s\in\mathcal{V},\,\forall i\in\mathbb{N},\,eval^o_{\mathcal B}\, (s, p, i) \wedge\, match (s, ps, i)
 \]
 
-It is rather problematic to directly solve this synthesis problem with existing \textsc{miniKanren} impelementations as
+It is rather problematic to directly solve this synthesis problem with existing \textsc{miniKanren} implementations as
 they provide a rather limited support for universal quantification~\cite{eigen,moiseenko}. However, in our concrete
 case there is a simple way to alleviate this problem. Indeed, we may replace universal quantification over $i$ by
 a finite conjunction, as the length of $ps$ is known at the synthesis time. As for the quantification over $s$, for
-any concrete $ps$ we may pre-compute a \emph{complete set of examples} $\mathcal{E}(ps)\subseteq\mathcal{V}$ with the following
+any concrete $ps$ we may precompute a \emph{complete set of examples} $\mathcal{E}(ps)\subseteq\mathcal{V}$ with the following
 property:
 
 \[
