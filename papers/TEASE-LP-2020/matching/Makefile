@@ -1,5 +1,5 @@
 OUT=matching
-.PHONY: $(OUT).pdf clean celan
+.PHONY: $(OUT).pdf clean celan spell
 
 all: $(OUT).pdf
 
@@ -14,4 +14,7 @@ $(OUT).pdf: $(FILES_TEX)
 celan: clean
 clean:
 	$(RM) *.bak *.out *.pdf
+
+spell:
+	aspell --lang=en --mode=tex check $(OUT).tex
 
