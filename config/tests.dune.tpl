@@ -2,7 +2,7 @@
   (names
     %{tests}
   )
-  (libraries GT OCanren OCanren.syntax)
+  (libraries GT OCanren OCanren.syntax OCanren.tester)
   (preprocess
     (action
       (run camlp5
