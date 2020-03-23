@@ -46,17 +46,17 @@ let get_tests tests_dir =
 let discover_tests cfg tests =
   Cfg.Flags.write_lines "tests.txt" tests
 
-let discover_camlp5_dir cfg = 
+let discover_camlp5_dir cfg =
   String.trim @@
     Cfg.Process.run_capture_exn cfg
       "ocamlfind" ["query"; "camlp5"]
 
 let discover_camlp5_flags cfg =
-  let camlp5_dir = discover_camlp5_dir cfg in 
+  let camlp5_dir = discover_camlp5_dir cfg in
   let camlp5_archives =
     List.map
       (fun arch -> String.concat Filename.dir_sep [camlp5_dir; arch])
-      ["pa_o.cmo"; "pa_op.cmo"; "pr_o.cmo"]
+      ["pa_o.cmo"; "pa_op.cmo"; "pr_o.cmo"; "pr_dump.cmo" ]
   in
   Cfg.Flags.write_lines "camlp5-flags.cfg" camlp5_archives
 
@@ -83,7 +83,7 @@ let discover_logger_flags cfg =
     wrong but we can hack it in dune script because we know exact names of cmos.
   *)
 
-  let camlp5_dir = discover_camlp5_dir cfg in 
+  let camlp5_dir = discover_camlp5_dir cfg in
   let logger_archives =
     Cfg.Process.run_capture_exn cfg
       "ocamlfind" ["query"; "-pp"; "camlp5"; "-a-format"; "-predicates"; "byte"; "logger,logger.syntax"]
@@ -91,9 +91,9 @@ let discover_logger_flags cfg =
   let pr_o_cmo = "pr_o.cmo" in
   let pr_dump_cmo = "pr_dump.cmo" in
   let cmos =
-    extract_words logger_archives |> 
+    extract_words logger_archives |>
     List.map (fun file ->
-      if Filename.basename file = pr_o_cmo then 
+      if Filename.basename file = pr_o_cmo then
         Filename.concat camlp5_dir pr_o_cmo
       else if Filename.basename file = pr_dump_cmo then
         Filename.concat camlp5_dir pr_dump_cmo
