@@ -294,7 +294,7 @@ module Conjunct :
 
     let project env subst t fv =
       let rec helper fv =
-        let fv', t' = M.fold (fun id disj ((fv', conj) as acc) ->
+        let fv', t' = M.fold (fun id disj (fv', conj) ->
           (* left those disjuncts that contain bindings only for variables from [fv],
            * and obtain a set of free variables from terms mentioned in those disjuncts
            *)

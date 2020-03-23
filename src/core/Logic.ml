@@ -39,13 +39,13 @@ let logic = {logic with
         GT.transform(logic)
           (fun fself -> object
              inherit ['a, _] @logic[show]  (GT.lift fa) fself
-             method c_Var _ s i cs =
+             method! c_Var _ s i cs =
                let c = match cs with
                | [] -> ""
                | _  -> sprintf " %s" (GT.show(GT.list) (fun l -> "=/= " ^ fself () l) cs)
                in
                sprintf "_.%d%s" i c
-             method c_Value _ _ x = fa x
+             method! c_Value _ _ x = fa x
            end)
           ()
           x
