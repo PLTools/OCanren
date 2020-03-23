@@ -40,6 +40,7 @@ open Printf
 let rec fold_right1 f = function
 | [h]  -> h
 | h::t -> f h (fold_right1 f t)
+| []   -> failwith "fold_right1"
 
 let rec fold_left1 f xs = List.fold_left f (List.hd xs) (List.tl xs)
 
@@ -54,9 +55,9 @@ let rec ctor e =
   | _                    -> None
 
 let list_of_list es =
-  let loc      = MLast.loc_of_expr (List.hd es) in 
+  let loc      = MLast.loc_of_expr (List.hd es) in
   let cons a b = <:expr< [ $a$ :: $b$ ]  >> in
-  List.fold_right (fun e lst -> cons e lst) es <:expr< [] >>  
+  List.fold_right (fun e lst -> cons e lst) es <:expr< [] >>
 
 let rec fix_term e =
   let loc = MLast.loc_of_expr e in
@@ -69,7 +70,7 @@ let rec fix_term e =
              List.fold_left (fun acc e -> <:expr< $acc$ $fix_term e$ >> ) e1' ts
           | _  -> <:expr< $e1'$ $fix_term e2$ >>
          )
-      | _ ->         
+      | _ ->
          (match e with
           | <:expr< OCanren.Std.nil () >> -> e
           | _ -> <:expr< $fix_term e1$ $fix_term e2$ >>
@@ -89,7 +90,7 @@ let rec fix_term e =
     )
 
 (* Borrowed from camlp5 OCaml parser *)
-let is_operator = 
+let is_operator =
   let ht = Hashtbl.create 73 in
   let ct = Hashtbl.create 73 in
   List.iter (fun x -> Hashtbl.add ht x true)
@@ -99,13 +100,13 @@ let is_operator =
      '?'; '%'; '.'; '$'];
   fun x ->
     try Hashtbl.find ht x with
-    Not_found -> try Hashtbl.find ct x.[0] with _ -> false 
+    Not_found -> try Hashtbl.find ct x.[0] with _ -> false
 
 let operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
     (fun strm ->
        match Stream.npeek 2 strm with
-       | [("", s); ("", ")")] when is_operator s -> 
+       | [("", s); ("", ")")] when is_operator s ->
            Stream.junk strm;
            Stream.junk strm;
            s
@@ -115,7 +116,7 @@ let operator =
   Grammar.Entry.of_parser gram "operator"
     (fun strm ->
        match Stream.npeek 1 strm with
-       | [("", s)] when is_operator s -> 
+       | [("", s)] when is_operator s ->
            Stream.junk strm;
            s
        | _ -> raise Stream.Failure)
@@ -130,7 +131,7 @@ let symbolchar =
     else if List.mem s.[i] list then loop s (i + 1)
     else false
   in
-  loop 
+  loop
 
 let prefix =
   let list = ['!'; '?'; '~'] in
@@ -142,30 +143,30 @@ let prefix =
                             List.mem s.[0] list && symbolchar s 1 -> Stream.junk strm; s
       | _ -> raise Stream.Failure
     )
-  
+
 let op_from_list l =
   let b = Buffer.create 64 in
   let add = Buffer.add_string b in
   List.iter add l;
   Buffer.contents b
-  
+
 let of_val (Ploc.VaVal x) = x
 
-(* Decorate type expressions *)  
+(* Decorate type expressions *)
 let rec decorate_type ctyp =
   let loc = MLast.loc_of_ctyp ctyp in
   match ctyp with
   | <:ctyp< int >>           -> <:ctyp< OCanren.Std.Nat.logic >>
-  | <:ctyp< bool >>          -> <:ctyp< OCanren.Std.Bool.logic >>                                 
+  | <:ctyp< bool >>          -> <:ctyp< OCanren.Std.Bool.logic >>
   | <:ctyp< $lid:id$ >>      -> <:ctyp< OCanren.logic $ctyp$ >>
   | <:ctyp< ocanren  $t$ >>  -> t
-  | <:ctyp< list $y$ >>      -> <:ctyp< OCanren.Std.List.logic $decorate_type y$ >>                               
-  | <:ctyp< option $y$ >>    -> <:ctyp< OCanren.Std.Option.logic $decorate_type y$ >>                               
+  | <:ctyp< list $y$ >>      -> <:ctyp< OCanren.Std.List.logic $decorate_type y$ >>
+  | <:ctyp< option $y$ >>    -> <:ctyp< OCanren.Std.Option.logic $decorate_type y$ >>
   | <:ctyp< $x$ $y$ >>       -> let t = <:ctyp< $x$ $decorate_type y$ >> in <:ctyp< OCanren.logic $t$ >>
   | <:ctyp< $p$ . $t$ >>     -> <:ctyp< OCanren.logic $ctyp$ >>
   | <:ctyp< ( $list:ts$ ) >> -> fold_right1 (fun t1 t2 -> <:ctyp< OCanren.Std.Pair.logic $t1$ $t2$ >> ) @@ List.map decorate_type ts
   | _                        -> ctyp
-                         
+
 EXTEND
   GLOBAL: expr ctyp str_item;
 
@@ -173,7 +174,7 @@ EXTEND
     [ RIGHTA
       [ i = LIDENT -> <:expr< $lid:i$ >>
       | i = UIDENT -> <:expr< $uid:i$ >>
-      | "("; op=operator_rparen -> <:expr< $lid:op$ >> 
+      | "("; op=operator_rparen -> <:expr< $lid:op$ >>
       | i = UIDENT; "."; j = SELF ->
           let rec loop m =
             function
@@ -234,32 +235,32 @@ EXTEND
             <:expr< OCanren.call_fresh ( fun $p$ -> $b$ ) >>
          )
          vars
-         b                                        
+         b
     ] |
     "primary" [
-        p=prefix; t=ocanren_term                      -> let p = <:expr< $lid:p$ >> in <:expr< $p$ $t$ >> 
+        p=prefix; t=ocanren_term                      -> let p = <:expr< $lid:p$ >> in <:expr< $p$ $t$ >>
       | l=ocanren_term; "==" ; r=ocanren_term         -> <:expr< OCanren.unify $l$ $r$ >>
       | l=ocanren_term; "=/="; r=ocanren_term         -> <:expr< OCanren.diseq $l$ $r$ >>
       | l=ocanren_term; op=operator; r=ocanren_term   -> let p = <:expr< $lid:op$ >> in
                                                          let a = <:expr< $p$ $l$ >> in
                                                          <:expr< $a$ $r$ >>
       | x=ocanren_term                                -> x
-      | "{"; e=ocanren_expr; "}"                      -> e 
-      | "||"; "("; es=LIST1 ocanren_expr SEP ";"; ")" -> <:expr< OCanren.conde $list_of_list es$ >> 
+      | "{"; e=ocanren_expr; "}"                      -> e
+      | "||"; "("; es=LIST1 ocanren_expr SEP ";"; ")" -> <:expr< OCanren.conde $list_of_list es$ >>
       | "&&"; "("; es=LIST1 ocanren_expr SEP ";"; ")" ->
          let op = <:expr< $lid:"?&"$ >> in
          let id = <:expr< OCanren . $op$ >> in
-         <:expr< $id$ $list_of_list es$ >>  
+         <:expr< $id$ $list_of_list es$ >>
     ]
   ];
-  
+
   ocanren_term: [[
-    t=ocanren_term' -> fix_term t 
+    t=ocanren_term' -> fix_term t
   ]];
 
   ocanren_term':  [
-    "app"  LEFTA  [ l=SELF; r=SELF -> <:expr< $l$ $r$ >>] |      
-    "list" RIGHTA [ l=SELF; "::"; r=SELF -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ] |    
+    "app"  LEFTA  [ l=SELF; r=SELF -> <:expr< $l$ $r$ >>] |
+    "list" RIGHTA [ l=SELF; "::"; r=SELF -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ] |
     "primary" [ "!"; "("; e=expr; ")" -> e
     | c=INT ->
       let n = <:expr< $int:c$ >> in
@@ -269,7 +270,7 @@ EXTEND
        <:expr< OCanren.inj (OCanren.lift $s$) >>
     | s=STRING ->
       let s = <:expr< $str:s$ >> in
-      <:expr< OCanren.inj (OCanren.lift $s$) >>        
+      <:expr< OCanren.inj (OCanren.lift $s$) >>
     | "true"   -> <:expr< OCanren.Std.Bool.truo >>
     | "false"  -> <:expr< OCanren.Std.Bool.falso >>
     | "["; ts=LIST0 ocanren_term' SEP ";"; "]" ->
@@ -277,20 +278,20 @@ EXTEND
        | [] -> <:expr< OCanren.Std.nil () >>
        | _  -> List.fold_right (fun x l -> <:expr< OCanren.Std.List.cons $x$ $l$ >> ) ts <:expr< OCanren.Std.nil () >>
       )
-    | "("; op=operator_rparen                  -> <:expr< $lid:op$ >>  
+    | "("; op=operator_rparen                  -> <:expr< $lid:op$ >>
     | "("; ts=LIST0 ocanren_term' SEP ","; ")" ->
       (match ts with
        | []  -> <:expr< OCanren.inj (OCanren.lift ()) >>
        | [t] -> t
        | _   -> <:expr< ( $list:ts$ ) >>
       )
-    ] |    
-    [ long_ident ] 
+    ] |
+    [ long_ident ]
   ];
-  
+
   ctyp: [
              [ "ocanren"; "{"; t=ctyp; "}" -> decorate_type t ] |
     "simple" [ "!"; "("; t=ctyp; ")" -> <:ctyp< ocanren $t$ >> ]
   ];
-  
+
 END;
