@@ -64,8 +64,8 @@ let ground = {
         let rec inner l =
           (GT.transform(list)
              (fun fself -> object inherit ['a,'a ground,_]  @list[show] (GT.lift fa) (GT.lift inner) fself
-                method c_Nil   _ _      = ""
-                method c_Cons  i s x xs = (fa x) ^ (match xs with Nil -> "" | _ -> "; " ^ (inner xs) )
+                method! c_Nil   _ _      = ""
+                method! c_Cons  i s x xs = (fa x) ^ (match xs with Nil -> "" | _ -> "; " ^ (inner xs) )
               end)
              ()
              l
@@ -93,8 +93,8 @@ let logic = {
                   (fun fself ->
                       object
                          inherit ['a,'a logic, _] @t[show] (GT.lift fa) (GT.lift (GT.show(logic') inner)) fself
-                         method c_Nil   _ _      = ""
-                         method c_Cons  i s x xs =
+                         method! c_Nil   _ _      = ""
+                         method! c_Cons  i s x xs =
                            (fa x) ^ (match xs with Value Nil -> "" | _ -> "; " ^ (GT.show(logic') inner xs))
                       end)
                   ()
