@@ -59,6 +59,10 @@ else
 
 fi
 
+
+# compile all tests ahead of time
+dune build `printf "${TESTDIR}/%s.exe " ${TESTS}`
+
 for TEST in ${TESTS}; do
 
   TESTEXE="${TESTDIR}/${TEST}.exe"
