@@ -1,6 +1,6 @@
 (executables
   (names tree sorting WGC lorry)
-  (libraries GT OCanren OCanren.syntax)
+  (libraries GT OCanren)
   (preprocess
     (action
       (run camlp5

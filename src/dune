@@ -3,7 +3,7 @@
 (library
   (name OCanren)
   (public_name OCanren)
-  (libraries GT GT.syntax.all)
+  (libraries GT)
   (preprocess
     (action
       (run camlp5

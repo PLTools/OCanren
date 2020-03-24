@@ -14,7 +14,7 @@ lib:
 	dune build src
 
 ppx:
-	dune build ppx ppxnew
+	dune build ppx
 
 syntax:
 	dune build camlp5/pa_ocanren.cma
