@@ -16,3 +16,4 @@ test017tabling
 test018prjc
 test019tablingCache
 test020
+test021structural
