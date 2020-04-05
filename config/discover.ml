@@ -43,7 +43,7 @@ let get_tests tests_dir =
 
 (*** discovering ***)
 
-let discover_tests cfg tests =
+let discover_tests _ tests =
   Cfg.Flags.write_lines "tests.txt" tests
 
 let discover_camlp5_dir cfg =
@@ -105,7 +105,7 @@ let discover_logger_flags cfg =
 (*** generating dune files ***)
 
 (* generates build rules for `test*.exe` *)
-let gen_tests_dune cfg tests =
+let gen_tests_dune _ tests =
   let tpl_fn = "tests.dune.tpl" in
   let dune_fn = "tests.dune" in
   let tpl = read_file tpl_fn in
