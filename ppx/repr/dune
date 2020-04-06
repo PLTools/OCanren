@@ -1,0 +1,10 @@
+(library
+  (name ppx_repr)
+  (public_name OCanren-ppx.ppx_repr)
+  (kind ppx_rewriter)
+  (libraries base ppxlib)
+  (modules ppx_repr)
+  (flags (:standard -warn-error -A -rectypes))
+  (preprocess (pps ppxlib.metaquot))
+)
+

@@ -1,27 +1,8 @@
-(library
-  (name ppx_fresh)
-  (public_name OCanren-ppx.ppx_fresh)
-  (kind ppx_rewriter)
-  (libraries base ppxlib)
-  (modules ppx_fresh)
-  (preprocess (pps ppxlib.metaquot))
-)
-
 (executable
   (public_name pp_fresh)
   (package OCanren-ppx)
   (libraries ppx_fresh)
   (modules pp_fresh)
-)
-
-(library
-  (name ppx_repr)
-  (public_name OCanren-ppx.ppx_repr)
-  (kind ppx_rewriter)
-  (libraries base ppxlib)
-  (modules ppx_repr)
-  (flags (:standard -warn-error -A -rectypes))
-  (preprocess (pps ppxlib.metaquot))
 )
 
 (executable
@@ -31,30 +12,11 @@
   (modules pp_repr)
 )
 
-(library
-  (name ppx_distrib)
-  (public_name OCanren-ppx.ppx_distrib)
-  (kind ppx_rewriter)
-  (libraries base ppxlib)
-  (modules ppx_distrib ppx_distrib_expander)
-  (preprocess (pps ppxlib.metaquot))
-)
-
 (executable
   (public_name pp_distrib)
   (package OCanren-ppx)
   (libraries ppx_distrib)
   (modules pp_distrib)
-)
-
-(library
-  (name ppx_noinjected)
-  (public_name OCanren-ppx.ppx_noinjected)
-  (kind ppx_rewriter)
-  (libraries base ppxlib)
-  (modules ppx_noinjected)
-  (flags (:standard -warn-error -A -rectypes))
-  (preprocess (pps ppxlib.metaquot))
 )
 
 (executable
