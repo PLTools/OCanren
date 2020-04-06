@@ -8,6 +8,3 @@
 
 (package
   (name OCanren-ppx))
-
-(allow_approximate_merlin)
-

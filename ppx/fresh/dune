@@ -1,0 +1,10 @@
+(library
+  (name ppx_fresh)
+  (public_name OCanren-ppx.ppx_fresh)
+  (kind ppx_rewriter)
+  (libraries base ppxlib)
+  (modules ppx_fresh)
+  (preprocess (pps ppxlib.metaquot))
+)
+
+

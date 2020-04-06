@@ -1,0 +1,9 @@
+(library
+  (name ppx_distrib)
+  (public_name OCanren-ppx.ppx_distrib)
+  (kind ppx_rewriter)
+  (libraries base ppxlib)
+  (modules ppx_distrib ppx_distrib_expander)
+  (preprocess (pps ppxlib.metaquot))
+)
+
