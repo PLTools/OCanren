@@ -162,7 +162,8 @@ let rec iter f s =
 
 let rec filter p s =
   match msplit s with
-  | Some (x, s) -> let s = filter p s in if p x then Cons (x, s) else s
+  | Some (x, s) when p x -> Cons (x, from_fun (fun () -> filter p s))
+  | Some (x, s) -> from_fun (fun () -> filter p s)
   | None        -> Nil
 
 let rec fold f acc s =
