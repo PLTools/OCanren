@@ -8,4 +8,5 @@ _build
 /style.css
 /MiniKanren.docdir
 /node_modules
+/.vscode
 
