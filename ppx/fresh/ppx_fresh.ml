@@ -115,6 +115,7 @@ let option_bind ~f = function Some x -> f x | None -> None
 
 exception Not_an_ident
 let reconstruct_args e =
+  let open Longident in
   let are_all_idents (xs: (_*expression) list) =
     try Some (List.map xs ~f:(fun (_,e) ->
                         match e.pexp_desc with
@@ -127,9 +128,11 @@ let reconstruct_args e =
      (* fresh (var1 var2 var3) body *)
       option_map (are_all_idents ys) ~f:(fun xs -> arg1::xs )
 
-  | Pexp_ident {txt=Longident.Lident arg1; _} ->
-     (* fresh arg0 body *)
-     Some [arg1]
+  (* no fresh variables: just for geting rid of &&&  *)
+  | Pexp_construct ({ txt=Lident "()" }, None) -> Some []
+  (* [fresh arg0 body] -- single fresh variable  *)
+  | Pexp_ident {txt=Lident arg1; _} ->  Some [arg1]
+
   | _ -> None
 
 
@@ -180,7 +183,7 @@ let mapper = object(self)
     | Pexp_apply (e1,[args]) when is_fresh e1 ->
         (* bad syntax -- no body*)
         e
-    | Pexp_apply (e1, (_,args) :: body) when is_fresh e1 -> begin
+    | Pexp_apply (e1, (Nolabel,args) :: body) when is_fresh e1 -> begin
         assert (List.length body > 0);
         let body = List.map ~f:snd body in
 
@@ -224,25 +227,103 @@ let mapper = object(self)
         let ans = {e with pexp_desc = ans} in
         ans
     | Pexp_fun (l,opt,pat,e) ->
-      { e with pexp_desc=Pexp_fun(l,opt,pat, self#expression e) }
+        { e with pexp_desc = Pexp_fun(l, opt, pat, self#expression e) }
 
     | Pexp_construct (_, None) -> e
-    | Pexp_construct (id, Some e1) -> { e with pexp_desc = Pexp_construct (id, Some (self#expression e1)) }
+    | Pexp_construct (id, Some e1) -> { e with pexp_desc = Pexp_construct (id, Some (self#expression e1)) }    
 
-    | Pexp_tuple es -> {e with pexp_desc=Pexp_tuple (List.map ~f:self#expression es) }
-    | Pexp_let   (_recflag, vbs,where_expr) ->
-      let vbs_new = List.map vbs ~f:(fun vb -> {vb with pvb_expr=(self#expression vb.pvb_expr)}) in
-      {e with pexp_desc=Pexp_let(_recflag, vbs_new, self#expression where_expr) }
+    (* kind of default mapping below *)
+
+    | Pexp_constant _
+    | Pexp_ident _ -> e
+    | Pexp_variant (l, eopt) ->
+        let eopt = option_map eopt ~f:self#expression  in
+        { e with pexp_desc = Pexp_variant (l, eopt) }
+    | Pexp_record (xs, o) ->
+        let o = option_map o ~f:self#expression in
+        let xs = List.map xs ~f:(fun (s, e) -> (s, self#expression e)) in
+        { e with pexp_desc = Pexp_record (xs, o) }
+    | Pexp_field (e, lident) ->
+        let e = self#expression e in
+        { e with pexp_desc = Pexp_field (e, lident) }
+    | Pexp_setfield (l, lab, r) ->
+        let l = self#expression l in
+        let r = self#expression r in
+        { e with pexp_desc = Pexp_setfield (l, lab, r) }
+    | Pexp_array es ->
+        { e with pexp_desc=Pexp_array (List.map ~f:self#expression es) }
+    | Pexp_ifthenelse (s, th, el) ->
+        let s = self#expression s in
+        let th = self#expression th in
+        let el = option_map el ~f:self#expression in
+        { e with pexp_desc = Pexp_ifthenelse (s, th, el) }
     | Pexp_sequence (e1, e2) ->
-      {e with pexp_desc=Pexp_sequence(self#expression e1,self#expression e2) }
-    | Pexp_open (_od, ee) ->
-      { e with pexp_desc=Pexp_open (_od, self#expression ee) }
-    | Pexp_newtype (name, ee) ->
-      { e with pexp_desc=Pexp_newtype(name, self#expression ee) }
+        { e with pexp_desc = Pexp_sequence (self#expression e1, self#expression e2) }
+    | Pexp_tuple es ->
+        { e with pexp_desc=Pexp_tuple (List.map ~f:self#expression es) }
+    | Pexp_let   (_recflag, vbs,where_expr) ->
+        let vbs_new = List.map vbs ~f:(fun vb -> {vb with pvb_expr=(self#expression vb.pvb_expr)}) in
+        { e with pexp_desc = Pexp_let(_recflag, vbs_new, self#expression where_expr) }
+
+    | Pexp_while (e1, e2) ->
+        let e1 = self#expression e1 in
+        let e2 = self#expression e2 in
+        { e with pexp_desc = Pexp_while (e1, e2) }
+    | Pexp_for (p, e1, e2, flg, e3) ->
+        let e1 = self#expression e1 in
+        let e2 = self#expression e2 in
+        let e3 = self#expression e3 in
+        { e with pexp_desc = Pexp_for (p, e1, e2, flg, e3) }
     | Pexp_constraint (ee,t) ->
-      { e with pexp_desc=Pexp_constraint(self#expression ee, t) }
-    (* TODO: support all cases *)
-    | _ -> e
+        { e with pexp_desc = Pexp_constraint(self#expression ee, t) }
+    | Pexp_coerce (expr, t1, t2) ->
+        let expr = self#expression expr in
+        { e with pexp_desc = Pexp_coerce (expr, t1, t2) }
+
+    | Pexp_send (e, lab) ->
+        let e = self#expression e in
+        { e with pexp_desc = Pexp_send (e, lab) }
+    | Pexp_new _ -> e
+    | Pexp_setinstvar (l, body) ->
+        let body = self#expression body in
+        { e with pexp_desc = Pexp_setinstvar (l, body) }
+
+    | Pexp_override es ->
+        let es = List.map es ~f:(fun (l,e) -> (l, self#expression e)) in
+        { e with pexp_desc = Pexp_override es }
+
+    | Pexp_letmodule (name, me, body) ->
+        { e with pexp_desc = Pexp_letmodule (name, me, self#expression body) }
+    | Pexp_letexception (ec, e1) ->
+        let e1 = self#expression e1 in
+        { e with pexp_desc = Pexp_letexception (ec, e1) }
+    | Pexp_assert e ->
+        { e with pexp_desc = Pexp_assert (self#expression e) }
+    | Pexp_lazy e1 ->
+        let e1 = self#expression e1 in
+        { e with pexp_desc = Pexp_lazy e1 }
+    | Pexp_poly (e1,t) ->
+        let e1 = self#expression e1 in
+        { e with pexp_desc = Pexp_poly (e1,t) }
+    | Pexp_newtype (name, ee) ->
+        { e with pexp_desc=Pexp_newtype(name, self#expression ee) }
+    | Pexp_function cases -> { e with pexp_desc = Pexp_function (List.map ~f:self#case cases) }
+    | Pexp_match (s, cases) ->
+        let scru = self#expression s in
+        { e with pexp_desc = Pexp_match (scru, List.map ~f:self#case cases) }
+    | Pexp_try (s, cases) ->
+        let scru = self#expression s in
+        { e with pexp_desc = Pexp_try (scru, List.map ~f:self#case cases) }
+    | Pexp_object _
+    | Pexp_unreachable -> e
+    | Pexp_open (_od, ee) ->
+        { e with pexp_desc=Pexp_open (_od, self#expression ee) }
+    | Pexp_letop _
+    | Pexp_extension _
+    | Pexp_pack _ -> e
+(*    | _ ->
+      Caml.Format.printf "%a\n%a\n%!" Location.print loc Pprintast.expression e;
+      assert false*)
 end
 
 let () =
