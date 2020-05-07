@@ -1,0 +1,30 @@
+\section{Introduction}
+
+In its initial form~\cite{TRS,MicroKanren} \textsc{miniKanren} introduces a single
+form of constraint~--- unification of terms. While from a theoretical standpoint unification together with other primitive constructs (conjunction, disjunction, and
+fresh variable introduction) form a Turing-complete basis, in practice of relational programming a number of extensions are often used to make specifications more
+expressive, concise or efficient. One of the most important extensions is \emph{disequality constraint}.
+
+The informal semantics of disequality constraint is complementary to that of unification: it puts certain restrictions on free variables in the terms which
+prevent them from turning into syntactically equal. Similarly to unification, whose evaluation results in a substitution, which is then threaded through
+the rest of computations, the effect of disequality constraint is recorded in a \emph{constraint store} which is later used to check the violation of
+disequalities~\cite{CKanren}.
+
+We present an extension of our prior work on certified semantics for core \textsc{miniKanren}~\cite{CertifiedSemantics}. In that work, we
+defined denotational semantics, similar to the least Herbrand model, and operational semantics, corresponding to conventional for \textsc{miniKanren}
+\emph{interleaving search}, and proved the soundness and completeness of the latter w.r.t. the former. The development was formally certified in
+\textsc{Coq} proof assistant, and a correct-by-construction interpreter was extracted.
+
+The contribution of our current work is as follows:
+
+\begin{itemize}
+\item we extend our denotational semantics to handle disequality constraints;
+\item we introduce a new abstraction layer (a constraint store with a number of abstract operations) in our operational semantics;
+\item we formulate a set of \emph{sufficient conditions for completeness}, expressed as algebraic properties of constraint store and
+  abstract operators, and prove the soundness and completeness of the extended operational semantics w.r.t. the denotational one;
+\item we present two concrete implementations of constraint store and abstract operators and show that they satisfy the
+  sufficient conditions; thus, the soundness and completeness of the implementation with disequality constraints follow
+  immediately, and correct-by-construction interpreter for \textsc{miniKanren} with disequality constraints
+  can be extracted
+\item we demonstrate how our framework can be used to prove some properties of implementations of disequality constraints.
+\end{itemize}
