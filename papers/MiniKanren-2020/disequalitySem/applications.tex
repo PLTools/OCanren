@@ -1,0 +1,37 @@
+\section{Applications}
+
+In addition to verification of correctness of different implementations of disequality constraints, we can use our framework to formally
+state and prove some of its other important properties. Thanks to our completeness result, we can do it in the denotational context,
+where the reasoning is much easier.
+
+For example, we can define meaningless answers with empty interpretation, which we pointed out for Implementation A from the previous section,
+and prove their absence for Implementation B.
+So, for implementation B the following holds.
+
+\begin{lemma}
+If all free variables in a goal $g$ belong to the set $\{\alpha_1,\dots,\alpha_n\}$, then
+
+\[ \forall (\sigma, \cstore_\sigma, n_r) \in Tr(\inbr{g, \epsilon, \cstoreinit, n}), \sembr{\sigma} \cap \sembr{\cstore_\sigma} \neq \emptyset \]
+\end{lemma}
+
+It is based on the following lemma about combining constraints, which we can prove, but only using that there are infinitely many constraints in the language.
+
+\begin{lemma}
+If for a finite constraint store $\cstore_\sigma$
+\[ \forall \omega \in \cstore_\sigma,  \sembr{\sigma} \cap \sembr{\omega} \neq \emptyset, \]
+then
+\[ \sembr{\sigma} \cap \sembr{\cstore_\sigma} \neq \emptyset. \]
+\end{lemma}
+
+Another example is the justification of optimizations in constraint store implementation. For example, the following obvious (in denotational context) statement
+allows deleting subsumed constraints in Implementation B.
+
+\begin{lemma}
+For any constraint store $\cstore_\sigma$ and two constraint substitutions $\omega$ and $\omega'$, if
+
+\[ \exists \tau, \omega' = \omega \tau \]
+
+then
+
+\[ \sembr{\cstore_\sigma \cup \{\omega, \omega'\}} = \sembr{\cstore_\sigma \cup \{\omega\}}. \]
+\end{lemma}
