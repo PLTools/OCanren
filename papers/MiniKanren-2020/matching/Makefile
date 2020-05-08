@@ -7,11 +7,13 @@ all: $(MAIN).pdf
 
 OCANREN_TEX=$(MAIN).tex
 
+COMPILER=pdflatex -interaction=nonstopmode
+
 $(MAIN).pdf: $(OCANREN_TEX)
-	pdflatex $<
+	$(COMPILER) $<
 	bibtex $(MAIN).aux
-	pdflatex $<
-	pdflatex $<
+	$(COMPILER) $<
+	$(COMPILER) $<
 
 celan: clean
 clean:

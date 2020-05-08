@@ -114,3 +114,42 @@ We represent \emph{declarative semantics} of pattern matching (Figure~\ref{fig:m
    \label{fig:ir}
  \end{figure}
  
+
+\section{Switch language}
+
+ \[
+ \begin{array}{rcl}
+   \mathcal M & = & \bullet \\
+              &   & \mathcal M\,[\mathbb{N}] \\
+   \ir & = & \primi{return}\,\mathbb{N} \\
+%              &   & \primi{if}\;\mathcal{C}\;\mathcal{M}\;\primi{then}\;\ir\;\primi{else}\;\ir\\
+              &   & \primi{switch}\;\mathcal{M}\;\primi{with}\; (\mathcal{C}\; \primi{\rightarrow}\; \ir)^*\;\primi{otherwise}\;\ir
+ \end{array}
+ \]
+ 
+ \begin{figure}
+    \[
+    \begin{array}{cr}
+      \dfrac{m \equiv \bullet} { m \rightrightarrows s} & 
+ %      \ruleno{rule2}
+        \\[5mm]
+      \dfrac{m \equiv m'[i]\quad m'\rightrightarrows e\quad e\equiv C\;e_1\dots e_n\quad 1\le i\le n} { m \rightrightarrows e_i} & 
+ %      \ruleno{rule2}
+        \\[5mm]
+      \dfrac{}{\primi{return}\ n \rightarrow n} &       
+        \\[5mm]
+      \dfrac{el \rightarrow n} {\primi{switch}\;m \; \primi{with}\;\varepsilon\;\primi{otherwise}\;el \rightarrow n} &       
+        \\[5mm]
+      \dfrac{m \rightrightarrows e \quad e\equiv C\; e_1\dots e_n\quad th \rightarrow n} {\primi{switch}\;m \; \primi{with}\;C\rightarrow th\; \mid\; morecases\;\primi{otherwise}\;el \rightarrow n} &       
+        \\[5mm]
+      \dfrac{m \rightrightarrows e \quad e\not\equiv C\; e_1\dots e_n\quad 
+       {\primi{switch}\;m \; \primi{with}\; morecases\;\primi{otherwise}\;el } \rightarrow n} {\primi{switch}\;m \; \primi{with}\;C\rightarrow th\; \mid\; morecases\;\primi{otherwise}\;el \rightarrow n} &       
+ %     \ruleno{rule2}
+    \end{array}
+    \]
+    \caption{Semantics of scrutinee slicing $\mathcal{M} \rightrightarrows \mathcal{V}$ with top-level scrutinee $s$ and semantics $\ir\rightarrow \mathcal{N}$  of 
+    %$\ir\;$
+    (switch) language
+    }
+   \label{fig:ir_switch}
+\end{figure}
