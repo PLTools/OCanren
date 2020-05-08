@@ -1,4 +1,4 @@
-\section{The Syntax and Semantics of Pattern Matching}
+\section{The Pattern Matching Synthesis Problem}
 
 We start from a simplified view on pattern matching which does not incorporate some practically important aspects of the construct such as
 name bindings in patterns, guards or even semantic actions in branches. However, it in a purified form represents the essence of pattern
@@ -16,8 +16,8 @@ and a set of patterns $\mathcal{P}$:
  \end{array}
 \]
 
-We define a matching a value $v$ (\emph{scrutinee}) against an ordered non-empty sequence of patterns $p_1,\dots,p_k$ by mean of the following
-reduction relation
+We define a matching of a value $v$ (\emph{scrutinee}) against an ordered non-empty sequence of patterns $p_1,\dots,p_k$ by mean of the following
+relation
 
 \[
 \setarrow{\xRightarrow}
@@ -25,15 +25,17 @@ reduction relation
 \]
 
 which (if holds) gives us the index of the leftmost matched pattern. We use an auxilliary relation $\inbr{;}\subseteq\mathcal{V}\times\mathcal{P}$
-to specify the notion of a value matched by a single pattern (see Fig.~\ref{fig:match1pat}); the definition of ``$\xRightarrow{}{}$'' is then becomes
-straightforward (see Fig.~\ref{fig:matchpatts}).
+to specify the notion of a value matched by an individual pattern (see Fig.~\ref{fig:match1pat}). The rule \ruleno{Wildcard} says that
+a wildcard pattern ``\_'' matches any value, and \ruleno{Constructor} specifies that a constructor pattern matches exactly those values which
+have the same constuctor at the top level and all subvalues matched by corresponding subpatterns. The definition of ``$\xRightarrow{}{}$'' is
+shown on Fig.~\ref{fig:matchpatts}. An auxilliary relation ``$\xRightarrow{}{}_*$'' is introduced to specify the left-to-right matching strategy.
 
 \begin{figure}
    \renewcommand*{\arraystretch}{2}
    \[
    \begin{array}{cr}
      \inbr{v;\,\_} & \ruleno{Wildcard} \\
-     \trule{\inbr{v_i;\,p_i}}{\inbr{C^k\,v_1\dots v_k;\,C^k\,p_1\dots p_k}},\,k\ge 0 & \ruleno{Constructor}
+     \trule{\forall i\;\inbr{v_i;\,p_i}}{\inbr{C^k\,v_1\dots v_k;\,C^k\,p_1\dots p_k}},\,k\ge 0 & \ruleno{Constructor}
    \end{array}
    \]
    \caption{Matching against a single pattern}
@@ -48,7 +50,7 @@ straightforward (see Fig.~\ref{fig:matchpatts}).
    \begin{array}{cr}
      \trule{\inbr{v;\,p_1}}
            {\withenv{i}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}}} & \ruleno{MatchHead}\\
-     \trule{\neg\inbr{v;\,p_1}\quad\withenv{i+1}{\trans{\inbr{v;\,p_2,\dots,p_k}}{}{j}}}
+     \trule{\neg\inbr{v;\,p_1}\qquad\withenv{i+1}{\trans{\inbr{v;\,p_2,\dots,p_k}}{}{j}}}
            {\withenv{i}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{j}}} & \ruleno{MatchTail}\\
      \trule{\withenv{1}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}}}
            {\setsubarrow{}\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}} & \ruleno{Match}
@@ -58,98 +60,70 @@ straightforward (see Fig.~\ref{fig:matchpatts}).
    \label{fig:matchpatts}
 \end{figure}
 
-Matching scrutinee with single pattern is pretty straightforward and is described at Figure~\ref{fig:match1pat}.
+The relation ``$\xRightarrow{}{}$'' gives us a \emph{declarative} semantics of pattern matching. Since we are interested in
+synthesizing implementations, we need a \emph{programmatical} view on the same problem. Thus, we introduce a language $\mathcal S$
+(``switch language'') of test-and branch constructs:
 
-In practice pattern matching if performed against finite sequence of \emph{clauses} which consist of pattern and some code which will consider as an natural number equal to pattern index, for simplicity. The clauses are ordered, i.e. pattern matching tries one pattern after another and stops on the first pattern that suites the scrutinee. If no patterns suit the scrutinee the pattern set is called \emph{non-exhaustive} and result of pattern matching is decide by predefined code.   
- 
 
-We represent \emph{declarative semantics} of pattern matching (Figure~\ref{fig:match}) as a relation:
+\[
+\begin{array}{rcl}
+  \mathcal M & = & \bullet \\
+  &   & \mathcal M\,[\mathbb{N}] \\
+  \ir & = & \primi{return}\,\mathbb{N} \\
+  &   & \primi{switch}\;\mathcal{M}\;\primi{with}\; [\mathcal{C}\; \primi{\rightarrow}\; \ir]^*\;\primi{otherwise}\;\ir
+\end{array}
+\]
  
- \[
-  \sembr{s; ps; e_{fail}} = i \Leftrightarrow   match\, (s, ps, i)
- \]
- 
- where $s\in\mathcal{V}$ is a scrutinee, $ps\in\mathcal{P}^*$~--- an ordered list of patterns, and $i\in\mathbb{N}$~--- a natural number.
- This relation holds iff $s$ matches the $i$-th pattern of $ps$. For a fixed language of patterns $match$ can be implemented directly
- in \textsc{miniKanren} once and for all.
- 
- On the other hand, we introduce a simple language $\ir$ (semantics on Figure~\ref{fig:ir}) of test-and-branch constructs:
- 
- \[
- \begin{array}{rcl}
-   \mathcal M & = & \bullet \\
-              &   & \mathcal M\,[\mathbb{N}] \\
-   \ir & = & \primi{return}\,\mathbb{N} \\
-              &   & \primi{if}\;\mathcal{C}\;\mathcal{M}\;\primi{then}\;\ir\;\primi{else}\;\ir
- \end{array}
- \]
- 
- Here $\mathcal{M}$ stands for a \emph{matchable expression}, which is either a reference to a scrutinee ("$\bullet$") or
- a denotation of some indexed subvalue of a matchable expression. The programs in $\ir$ can discriminate on the
- structure of matchable expressions, testing their top constructors and eventually returning natural numbers as results.
- The language $\ir$ is similar to the intermediate representations for pattern matching code, used in 
- previous works on pattern matching implementation~\cite{maranget2001,maranget2008}.
- 
- 
- \begin{figure}
-    \[
-    \begin{array}{cr}
-      \dfrac{m \equiv \bullet} { m \rightrightarrows s} & 
- %      \ruleno{rule2}
-        \\[5mm]
-      \dfrac{m \equiv m'[i]\quad m'\rightrightarrows e\quad e\equiv C\;e_1\dots e_n\quad 1\le i\le n} { m \rightrightarrows e_i} & 
- %      \ruleno{rule2}
-        \\[5mm]
-      \dfrac{}{\primi{return}\ n \rightarrow n} &       
-        \\[5mm]
-      \dfrac{m \rightrightarrows e \quad e\equiv C\; e_1\dots e_n\quad th \rightarrow n} {\primi{if}\;\mathcal{C}\;m \; \primi{then}\;th\;\primi{else}\;el \rightarrow n} &       
- %     \ruleno{rule2}
-        \\[5mm]
-      \dfrac{m \rightrightarrows e \quad e\not\equiv C\; e_1\dots e_n\quad el \rightarrow n} {\primi{if}\;\mathcal{C}\;m\;\primi{then}\;th\;\primi{else}\;el \rightarrow n} &       
- %     \ruleno{rule2}
-    \end{array}
-    \]
-    \caption{Semantics of scrutinee slicing $\mathcal{M} \rightrightarrows \mathcal{V}$ with top-level scrutinee $s$ and semantics $\ir\rightarrow \mathcal{N}$  of $\ir\;$ language
-    }
-   \label{fig:ir}
- \end{figure}
- 
+Here $\mathcal{M}$ stands for a \emph{matchable expression}, which is either a reference to a scrutinee ``$\bullet$'' or
+a denotation of some indexed subvalue of a matchable expression. The programs in switch language can discriminate on the
+structure of matchable expressions, testing their top constructors and eventually returning natural numbers as results.
+The switch language is similar to the intermediate representations for pattern matching code used in 
+previous works on pattern matching implementation~\cite{maranget2001,maranget2008}.
 
-\section{Switch language}
+The semantics of the switch language is given by mean of relations ``$\xRightarrow{}{}_{\mathcal M}$'' and ``$\xRightarrow{}{}_{\mathcal S}$''
+(see Fig.~\ref{fig:matchexpr} and \ref{fig:test-and-branch}). The first one describes the semantics of matchable expression, while
+the second~--- the semantics of the switch language itself. In both cases the scrutinee is used as an environment.
 
- \[
- \begin{array}{rcl}
-   \mathcal M & = & \bullet \\
-              &   & \mathcal M\,[\mathbb{N}] \\
-   \ir & = & \primi{return}\,\mathbb{N} \\
-%              &   & \primi{if}\;\mathcal{C}\;\mathcal{M}\;\primi{then}\;\ir\;\primi{else}\;\ir\\
-              &   & \primi{switch}\;\mathcal{M}\;\primi{with}\; (\mathcal{C}\; \primi{\rightarrow}\; \ir)^*\;\primi{otherwise}\;\ir
- \end{array}
- \]
- 
- \begin{figure}
-    \[
-    \begin{array}{cr}
-      \dfrac{m \equiv \bullet} { m \rightrightarrows s} & 
- %      \ruleno{rule2}
-        \\[5mm]
-      \dfrac{m \equiv m'[i]\quad m'\rightrightarrows e\quad e\equiv C\;e_1\dots e_n\quad 1\le i\le n} { m \rightrightarrows e_i} & 
- %      \ruleno{rule2}
-        \\[5mm]
-      \dfrac{}{\primi{return}\ n \rightarrow n} &       
-        \\[5mm]
-      \dfrac{el \rightarrow n} {\primi{switch}\;m \; \primi{with}\;\varepsilon\;\primi{otherwise}\;el \rightarrow n} &       
-        \\[5mm]
-      \dfrac{m \rightrightarrows e \quad e\equiv C\; e_1\dots e_n\quad th \rightarrow n} {\primi{switch}\;m \; \primi{with}\;C\rightarrow th\; \mid\; morecases\;\primi{otherwise}\;el \rightarrow n} &       
-        \\[5mm]
-      \dfrac{m \rightrightarrows e \quad e\not\equiv C\; e_1\dots e_n\quad 
-       {\primi{switch}\;m \; \primi{with}\; morecases\;\primi{otherwise}\;el } \rightarrow n} {\primi{switch}\;m \; \primi{with}\;C\rightarrow th\; \mid\; morecases\;\primi{otherwise}\;el \rightarrow n} &       
- %     \ruleno{rule2}
-    \end{array}
-    \]
-    \caption{Semantics of scrutinee slicing $\mathcal{M} \rightrightarrows \mathcal{V}$ with top-level scrutinee $s$ and semantics $\ir\rightarrow \mathcal{N}$  of 
-    %$\ir\;$
-    (switch) language
-    }
-   \label{fig:ir_switch}
+
+\begin{figure}
+  \renewcommand*{\arraystretch}{2}
+  \setarrow{\xRightarrow}
+  \setsubarrow{_{\mathcal M}}
+  \[
+  \begin{array}{cr}
+    \withenv{v}{\trans{\bullet}{}{v}} & \ruleno{Scrutinee} \\
+    \trule{\withenv{v}{\trans{m}{}{C^k\,v_1,\dots,v_k}}}{\withenv{v}{\trans{m[i]}{}{v_i}}} & \ruleno{SubMatch} 
+  \end{array}
+  \]
+  \caption{Semantics of matchable expression}
+  \label{fig:matchexpr}
 \end{figure}
+
+
+\begin{figure}
+  \renewcommand*{\arraystretch}{3}
+  \setarrow{\xRightarrow}
+  \setsubarrow{_{\mathcal S}}
+  \[
+  \begin{array}{cr}
+    \withenv{v}{\trans{\primi{return}\;i}{}{i}} & \ruleno{Return}\\
+    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{C^k\,v_1,\dots,v_k}}}\qquad \withenv{v}{\trans{s}{}{i}}}
+          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchMatched}\\
+    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{D^n\,v_1,\dots,v_n}}}\qquad C^k\ne D^n\qquad \withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;s^*\;\primi{otherwise}\;s^\prime}{}{i}}}
+          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchNotMatched}\\
+    \trule{\withenv{v}{\trans{s}{}{i}}}{\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;\epsilon\;\primi{otherwise}\;s}{}{i}}} & \ruleno{SwitchOtherwise}
+  \end{array}
+  \]
+  \caption{Semantics of switch programs}
+  \label{fig:test-and-branch}
+\end{figure}
+
+With these definitions, we can formulate the \emph{pattern matching synthesis problem} as follows: for a given ordered sequence of patterns $p_1,\dots,p_k$ find
+a switch program $\pi$, such that
+
+\[
+\setarrow{\xRightarrow}
+\forall v\in \mathcal V,\; \forall 1\le i\le n : \trans{\inbr{v;\,p_1,\dots,p_n}}{}{i}\Leftrightarrow{\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi}{}{i}}}
+\]
+
+In other words, a program $\pi$ delivers a correct and complete implementation for pattern matching.
