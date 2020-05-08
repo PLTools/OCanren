@@ -5,6 +5,30 @@
     version={4.0},       % your choice
 ]{doclicense}            % your choice, see \doclicenseThis below
 
+\usepackage{alltt}
+%\usepackage{pslatex}
+%\usepackage{epigraph}
+%\usepackage{verbatim}
+\usepackage{latexsym}
+\usepackage{array}
+%\usepackage{comment}
+%\usepackage{makeidx}
+%\usepackage{indentfirst}
+%\usepackage{verbatim}
+%\usepackage{color}
+%\usepackage{url}
+%\usepackage{xspace}
+%\usepackage{hyperref}
+%\usepackage{stmaryrd}
+\usepackage{amsmath, amsthm, amssymb}
+%\usepackage{graphicx}
+%\usepackage{euscript}
+\usepackage{mathtools}
+%\usepackage{mathrsfs}
+%\usepackage{multirow,bigdelim}
+%\usepackage{subcaption}
+%\usepackage{placeins}
+
 %\geometry{
 %     top=18pt, bottom=14pt, inner=21pt, outer=21pt,
 %     paperwidth=5.5in, paperheight=8.5in,
@@ -97,8 +121,8 @@ language=ocanren
 \def\subarrow{}
 \newcommand{\setsubarrow}[1]{\def\subarrow{#1}}
 
-\newcommand{\trule}[2]{\frac{#1}{#2}}
-\newcommand{\crule}[3]{\frac{#1}{#2},\;{#3}}
+\newcommand{\trule}[2]{\dfrac{#1}{#2}}
+\newcommand{\crule}[3]{\dfrac{#1}{#2},\;{#3}}
 \newcommand{\withenv}[2]{{#1}\vdash{#2}}
 \newcommand{\trans}[3]{{#1}\transarrow{\padding{\textstyle #2}\padding}\subarrow{#3}}
 \newcommand{\ctrans}[4]{{#1}\transarrow{\padding#2\padding}\subarrow{#3},\;{#4}}
@@ -147,7 +171,7 @@ language=ocanren
 
 \begin{document}
 
-\title[Relational Synthesis of Pattern Matching]{Relational Synthesis of Pattern Matching}    
+\title[Relational Synthesis of Pattern Matching]{Relational Synthesis for Pattern Matching}    
 
 \titlenote{This work was partially suppored by the grant 18-01-00380 from The Russian Foundation for Basic Research} %% \titlenote is optional;
 
@@ -212,10 +236,8 @@ Effective compilation of pattern matching is important part in a compiler of typ
 
 \thispagestyle{empty}
 
+\input{patternMatching}
 \input{languages}
-%\input{path_search}
-%\input{relational_conversion}
-%\input{cpd}
 \input{evaluation}
 \input{conclusion}
 
