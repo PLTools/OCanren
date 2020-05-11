@@ -1,3 +1,11 @@
 \section{Evaluation}
 \label{sec:eva}
 
+
+\csvreader[tabular=|r|p{3cm}|p{1.5cm}|p{1.5cm}|p{1.2cm}|p{1cm}||p{1cm}|,
+table head=\hline & Name & 1st answer time & Answers requested& Answers found & Total search time & Prunes \\ \hline\hline,
+late after line=\\\hline]%
+{bench.csv}{}%
+{\thecsvrow & \csvcoli & \csvcolii& \csvcoliii & \csvcoliv & \csvcolv& \csvcolvi}
+
+

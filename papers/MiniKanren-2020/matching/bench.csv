@@ -1,0 +1,9 @@
+Name,First answer time, Answers requested, Answers found, All answers time,Pruning
+A|B|C,         2,all,1,1.7ms,100
+bool,         0,all,1,0.4ms,100
+bool*bool,         6,all,2,9.9ms,100
+bool*bool*bool (Maranget;page1),       324,all,3,727.9ms,100
+simple lists (from Maranget2008),         6,10,1,6.0ms,100
+simple nats (a la Maranget2008),        54,all,2,107.6ms,always
+two-nil lists (with cons),        70,10,1,70.2ms,100
+two-nil lists (with cons; simplified RHS),        49,10,2,257.5ms,100
