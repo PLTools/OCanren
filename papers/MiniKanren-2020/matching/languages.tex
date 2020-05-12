@@ -1,3 +1,4 @@
+\begin{comment}
 Algebraic data types are essential for typed functional programming and it's difficult to imagine effective compiler without effective compilation of pattern matching. 
 There are a few different approaches for compiling pattern mathcing. GHC is using influential paper~\cite{Jones1987}, OCaml is currently based on~\cite{maranget2001} although a work~\cite{maranget2008} can slightly improve effectiveness of generated code. 
 
@@ -6,6 +7,7 @@ Also there are a number of possible extensions of pattern matching itself (guard
 We present an approach to pattern matching code generation based on application of relational programming~\cite{TRS,WillThesis} and, in
  particular, relational interpreters~\cite{unified}. We expect that our approach can compile pattern mathcing to competitive code and will be easier to support during adding of new pattern matching extensions.
  
+\end{comment}
  We use a \emph{relational interpreter} for $\ir$
  
  \[
@@ -19,7 +21,7 @@ We present an approach to pattern matching code generation based on application 
  Within this setting, we can formulate the pattern-matching synthesis problem as follows: \emph{for a given ordered list of patterns $ps$ find a program $p$, such that}
  
  \[
- \forall s\in\mathcal{V},\,\forall i\in\mathbb{N},\,eval^o_{\ir}\, (s, p, i) \wedge\, match (s, ps, i)
+ \forall s\in\mathcal{V},\,\exists i,\,eval^o_{\ir}\, (s, p, i) \wedge\, match (s, ps, i)
  \]
  
  It is rather problematic to directly solve this synthesis problem with existing \textsc{miniKanren} implementations as

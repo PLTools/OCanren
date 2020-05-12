@@ -1,0 +1,97 @@
+\section{Introduction}
+
+Algebraic data types are essential for typed functional programming and it's difficult to imagine effective compiler without effective compilation of pattern matching. 
+There are a few different approaches for compiling pattern mathcing. GHC is using influential paper~\cite{Jones1987}, OCaml is currently based on~\cite{maranget2001} although a work~\cite{maranget2008} can slightly improve effectiveness of generated code. 
+
+The size of compiled code can significantly depend on the order of performed tests.
+The general advice is to check every expression not more than once. In example from~\cite{maranget2008} (figure~\ref{fig:match-example}) we can test start testing from $x$ and only after that check $y$ and $z$ (figure~\ref{fig:matching-example2}), or we can be smarter and start checking from $y$ (figure~\ref{fig:matching-example3}).
+
+
+\begin{figure}[ht]
+\begin{subfigure}[b]{0.2\linewidth}
+\centering
+\begin{lstlisting}
+match x,y,z with
+| _,F,T -> 1
+| F,T,_ -> 2
+| _,_,F -> 3
+| _,_,T -> 4
+\end{lstlisting}
+\caption{Pattern matching}
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[b]{0.32\linewidth}
+\centering
+\begin{lstlisting}
+if x then
+  if y then
+    if z then 4 else 3
+  else
+    if z then 1 else 3
+else
+  if y then 2
+  else
+    if z then 1 else 3
+\end{lstlisting}
+\caption{Correct but semi-optimal compilation}
+\label{fig:matching-example2}
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[b]{0.35\linewidth}
+\centering
+\begin{lstlisting}
+if y then
+  if x then
+    if z then 4 else 3
+  else 2
+else
+  if z then 1 else 3
+\end{lstlisting}
+\caption{Optimal compilation}
+\label{fig:matching-example3}
+\end{subfigure}
+\caption{Pattern matching compilation is non-trivial (example from~\cite{maranget2008}).}
+\label{fig:match-example}
+\end{figure}
+
+\begin{comment}
+
+
+\begin{figure}[ht]
+\begin{minipage}[b]{0.3\linewidth}
+\centering
+\label{fig:figure1}
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}[b]{0.3\linewidth}
+\centering
+\begin{lstlisting}
+switch x with 
+| true -> 
+    switch y with 
+    | true -> 
+       switch z with 
+       | true -> 4
+       | _ -> 3
+    | _ -> 
+      switch z with 
+      | true -> 1
+      | _ -> 3 
+| _ -> 
+   switch y with 
+   | true -> 2 
+   | _ -> if z then 1 else 3
+\end{lstlisting}
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}[b]{0.3\linewidth}
+\centering
+\end{minipage}
+\end{figure}
+\end{comment}
+
+Also there are a number of possible extensions of pattern matching itself (guards, non-linear patterns, active patterns) and extensions of possible matchable values (polymorphic variants in OCaml, for example). Although having all these extensions can be helpful for programming in practice, they can complicate compilation schema or make it very difficult to generate effective code. Supporting a large number  of extensions can seriously complicate compiler's implementation too.
+
+We present an approach to pattern matching code generation based on application of relational programming~\cite{TRS,WillThesis} and, in
+ particular, relational interpreters~\cite{unified}. We expect that our approach can compile pattern mathcing to competitive code and will be easier to support during adding of new pattern matching extensions.
+ 

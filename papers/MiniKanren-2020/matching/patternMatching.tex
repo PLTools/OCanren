@@ -74,7 +74,17 @@ We represent \emph{declarative semantics} of pattern matching (Figure~\ref{fig:m
  in \textsc{miniKanren} once and for all.
  
  On the other hand, we introduce a simple language $\ir$ (semantics on Figure~\ref{fig:ir}) of test-and-branch constructs:
- 
+
+\[
+\begin{array}{rcl}
+ \mathcal M & = & \bullet \\
+            &   & \mathcal M\,[\mathbb{N}] \\
+ \ir & = & \primi{return}\,\mathbb{N} \\
+%              &   & \primi{if}\;\mathcal{C}\;\mathcal{M}\;\primi{then}\;\ir\;\primi{else}\;\ir\\
+            &   & \primi{switch}\;\mathcal{M}\;\primi{with}\; (\mathcal{C}\; \primi{\rightarrow}\; \ir)^*\;\primi{otherwise}\;\ir
+\end{array}
+\] 
+\begin{comment}
  \[
  \begin{array}{rcl}
    \mathcal M & = & \bullet \\
@@ -83,49 +93,15 @@ We represent \emph{declarative semantics} of pattern matching (Figure~\ref{fig:m
               &   & \primi{if}\;\mathcal{C}\;\mathcal{M}\;\primi{then}\;\ir\;\primi{else}\;\ir
  \end{array}
  \]
- 
+\end{comment}
+
  Here $\mathcal{M}$ stands for a \emph{matchable expression}, which is either a reference to a scrutinee ("$\bullet$") or
  a denotation of some indexed subvalue of a matchable expression. The programs in $\ir$ can discriminate on the
  structure of matchable expressions, testing their top constructors and eventually returning natural numbers as results.
  The language $\ir$ is similar to the intermediate representations for pattern matching code, used in 
  previous works on pattern matching implementation~\cite{maranget2001,maranget2008}.
  
- 
- \begin{figure}
-    \[
-    \begin{array}{cr}
-      \dfrac{m \equiv \bullet} { m \rightrightarrows s} & 
- %      \ruleno{rule2}
-        \\[5mm]
-      \dfrac{m \equiv m'[i]\quad m'\rightrightarrows e\quad e\equiv C\;e_1\dots e_n\quad 1\le i\le n} { m \rightrightarrows e_i} & 
- %      \ruleno{rule2}
-        \\[5mm]
-      \dfrac{}{\primi{return}\ n \rightarrow n} &       
-        \\[5mm]
-      \dfrac{m \rightrightarrows e \quad e\equiv C\; e_1\dots e_n\quad th \rightarrow n} {\primi{if}\;\mathcal{C}\;m \; \primi{then}\;th\;\primi{else}\;el \rightarrow n} &       
- %     \ruleno{rule2}
-        \\[5mm]
-      \dfrac{m \rightrightarrows e \quad e\not\equiv C\; e_1\dots e_n\quad el \rightarrow n} {\primi{if}\;\mathcal{C}\;m\;\primi{then}\;th\;\primi{else}\;el \rightarrow n} &       
- %     \ruleno{rule2}
-    \end{array}
-    \]
-    \caption{Semantics of scrutinee slicing $\mathcal{M} \rightrightarrows \mathcal{V}$ with top-level scrutinee $s$ and semantics $\ir\rightarrow \mathcal{N}$  of $\ir\;$ language
-    }
-   \label{fig:ir}
- \end{figure}
- 
 
-\section{Switch language}
-
- \[
- \begin{array}{rcl}
-   \mathcal M & = & \bullet \\
-              &   & \mathcal M\,[\mathbb{N}] \\
-   \ir & = & \primi{return}\,\mathbb{N} \\
-%              &   & \primi{if}\;\mathcal{C}\;\mathcal{M}\;\primi{then}\;\ir\;\primi{else}\;\ir\\
-              &   & \primi{switch}\;\mathcal{M}\;\primi{with}\; (\mathcal{C}\; \primi{\rightarrow}\; \ir)^*\;\primi{otherwise}\;\ir
- \end{array}
- \]
  
  \begin{figure}
     \[
@@ -148,8 +124,37 @@ We represent \emph{declarative semantics} of pattern matching (Figure~\ref{fig:m
     \end{array}
     \]
     \caption{Semantics of scrutinee slicing $\mathcal{M} \rightrightarrows \mathcal{V}$ with top-level scrutinee $s$ and semantics $\ir\rightarrow \mathcal{N}$  of 
-    %$\ir\;$
-    (switch) language
+    $\ir\;$
+%    (switch) 
+    language
     }
    \label{fig:ir_switch}
 \end{figure}
+
+\begin{comment} 
+ \begin{figure}
+    \[
+    \begin{array}{cr}
+      \dfrac{m \equiv \bullet} { m \rightrightarrows s} & 
+ %      \ruleno{rule2}
+        \\[5mm]
+      \dfrac{m \equiv m'[i]\quad m'\rightrightarrows e\quad e\equiv C\;e_1\dots e_n\quad 1\le i\le n} { m \rightrightarrows e_i} & 
+ %      \ruleno{rule2}
+        \\[5mm]
+      \dfrac{}{\primi{return}\ n \rightarrow n} &       
+        \\[5mm]
+      \dfrac{m \rightrightarrows e \quad e\equiv C\; e_1\dots e_n\quad th \rightarrow n} {\primi{if}\;\mathcal{C}\;m \; \primi{then}\;th\;\primi{else}\;el \rightarrow n} &       
+ %     \ruleno{rule2}
+        \\[5mm]
+      \dfrac{m \rightrightarrows e \quad e\not\equiv C\; e_1\dots e_n\quad el \rightarrow n} {\primi{if}\;\mathcal{C}\;m\;\primi{then}\;th\;\primi{else}\;el \rightarrow n} &       
+ %     \ruleno{rule2}
+    \end{array}
+    \]
+    \caption{Semantics of scrutinee slicing $\mathcal{M} \rightrightarrows \mathcal{V}$ with top-level scrutinee $s$ and semantics $\ir\rightarrow \mathcal{N}$  of $\ir\;$ language
+    }
+   \label{fig:ir}
+ \end{figure}
+\end{comment} 
+
+%\section{Switch language}
+
