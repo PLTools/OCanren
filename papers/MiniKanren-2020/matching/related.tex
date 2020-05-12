@@ -1,0 +1,15 @@
+\section{Related works}
+\label{sec:related}
+
+Although semantics of pattern matching can be given as a sequence of srutinee's sub expression comparisons (Figure~\ref{fig:matchpatts}) effective compilers don't follow this approach. One can either optimise runtime cost by minimizing amount of checks performed or static cost by minimizing the size of generated code. \emph{Decision trees} are good for the first criteria, because they check every subexpression not more than once. \emph{Backtracking automata} are rather compact but in some cases can perform repeated checks.
+
+
+Minimizing the size of decision tree is  NP-hard (\cite{macqueen1985}, without proof) and usually various heuristics are applied during compilation, for example: count of nodes, length of the longest path, average length of all paths. The paper~\cite{Ramsey2000} performs experimental evaluation of these heuristics.
+
+The matching compilers for strict languages can work in \emph{direct} or \emph{indirect} styles. The first ones return effective code immediately. In the second style to construct final answer some post processing is required. It can vary from easy simplifications to complicated supercompilation techniques~\cite{Setsoft1996}. The main drawback of indirect style is that size of intermediate data structures can be exponentially large.
+
+For strict languages it is allowed to check sub expressions in any order. For lazy languages pattern matching should evaluate only these sub expressions which are necessary for performing pattern matching, if not careful pattern matching can change termination behavior of the program.  In general lazy languages setup more constraints on pattern matching and because of that allow lesser set of heuristics.
+
+A few approaches for checking sub expressions in lazy langauges has been proposed~\cite{Augustsson1985,Laville1991}. \cite{laville1991} models values in lazy languages using \emph{partial terms}, although this approach doesn't scale to types with infinite constructor sets (like integers). In  the \cite{suarez1993} the similar approach is extended by special treatment of overlapping patterns. Pattern matching has been compiled to decision trees~\cite{maranget1992} and later \cite{maranget1992} into \emph{decision DAGs} that allow in some cases to make code smaller.
+
+TODO: mention 3 papers about strict languages.
