@@ -1,3 +1,5 @@
+\section{Introduction}
+
 Algebraic data types are essential for typed functional programming and it's difficult to imagine effective compiler without effective compilation of pattern matching. 
 There are a few different approaches for compiling pattern mathcing. GHC is using influential paper~\cite{Jones1987}, OCaml is currently based on~\cite{maranget2001} although a work~\cite{maranget2008} can slightly improve effectiveness of generated code. 
 
@@ -5,63 +7,6 @@ Also there are a number of possible extensions of pattern matching itself (guard
 
 We present an approach to pattern matching code generation based on application of relational programming~\cite{TRS,WillThesis} and, in
  particular, relational interpreters~\cite{unified}. We expect that our approach can compile pattern mathcing to competitive code and will be easier to support during adding of new pattern matching extensions.
- 
- We use a \emph{relational interpreter} for $\ir$
- 
- \[
- eval^o_{\ir}\, (s, p, i)
- \]
- 
- Here $s$ and $i$ have the same meaning as in declarative semantics description, $p\in\ir$~--- a syntactic representation of
- a program in $\ir$. The relation $eval^o_{\ir}$ encodes the operational semantics of $\ir$; it holds, if
- evaluating $p$ for $s$ returns $i$. Being relational interpreter, however, $eval^o_{\ir}$ is capable of solving a
- synthesis problem: by a scrutinee $s$ and a number $i$ calculate a program $p$ which makes the relation to hold.
- Within this setting, we can formulate the pattern-matching synthesis problem as follows: \emph{for a given ordered list of patterns $ps$ find a program $p$, such that}
- 
- \[
- \forall s\in\mathcal{V},\,\forall i\in\mathbb{N},\,eval^o_{\ir}\, (s, p, i) \wedge\, match (s, ps, i)
- \]
- 
- It is rather problematic to directly solve this synthesis problem with existing \textsc{miniKanren} implementations as
- they provide a rather limited support for universal quantification~\cite{eigen,moiseenko}. However, in our concrete
- case there is a simple way to alleviate this problem. Indeed, we may replace universal quantification over $i$ by
- a finite conjunction, as the length of $ps$ is known at the synthesis time. As for the quantification over $s$, for
- any concrete $ps$ we may precompute a \emph{complete set of examples} $\mathcal{E}(ps)\subseteq\mathcal{V}$ with the following
- property:
- 
- \[
- \forall i\in\mathbb{N},\,(\forall s\in\mathcal{E}(ps),\,match\, (s, ps, i) \Leftrightarrow \forall s\in\mathcal{V},\,match\, (s, ps, i))
- \]
- 
- It easy to see, that for arbitrary $ps$ there exists a finite complete set of examples (indeed, any pattern describes the ``shape''
- of a scrutinee up to some finite depth, beyond which all scrutinees become indistinguishable). Thus, for a given $ps$ we may
- completely eliminate the quantification, reformulating the synthesis problem as
- 
- \[
- \bigwedge_{i\in[1\dots|ps|]}\,\bigwedge_{s\in\mathcal{E}(ps)} (eval^o_{\ir}\, (s, p, i) \wedge match\, (s, ps, i))
- \]
- 
- We implemented the synthesis framework using \textsc{OCanren}~--- an embedding of \textsc{miniKanren} into \textsc{OCaml}~\cite{ocanren},~---
- and evaluated it on the set of benchmarks, reported in the previous works on \emph{ad-hoc} algorithms for pattern matching
- code generation~\cite{maranget2001,maranget2008}. In comparison with a simplified setting, presented above, our implementation
- deals with a more elaborate pattern matching problem~--- in particular, we support \emph{guard expressions}, name bindings in
- patterns and incorporate a deterministic top-down matching strategy, which is common in functional languages.
- 
- Initially, our synthesis did not demonstrate good results. However, we applied the following techniques to improve both the performance
- and the quality of synthesized programs:
- 
- \begin{itemize}
- \item we restricted the shape of scrutinees using type information;
- \item we utilized tabling to memoize repeating search steps;
- \item we implemented a pruning technique, which makes the search stop exploring a certain branch if the program, synthesized so far,
-   contains too much nesting constructs (this factor can be precomputed by patterns analysis).
- \end{itemize}
- 
- With these adjustments, our synthesis framework in a negligible time provides the same results as those reported in the previous works.
- Our future steps include extending the pattern matching language to completely match that of \textsc{OCaml} (for
- now we do not support GADTs), integrate the synthesis into the existing \textsc{OCaml} compiler and evaluate it on a
- set of real-world programs. Another direction is extending the pattern matching language to incorporate features which
- are known to be hard, tedious or error-prone to implement (for example, non-linear patterns).
  
  \begin{comment}
  

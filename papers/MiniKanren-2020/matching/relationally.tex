@@ -1,0 +1,108 @@
+\section{Pattern Matching Synthesis, Relationally}
+
+Our idea of using relational programming for pattern matching synthesis is based on the following observations:
+
+\begin{itemize}
+\item For the switch language we can implement a relational interpreter $eval^o_\ir$ with the following property: for
+  arbitrary $v\in\mathcal V$, $\pi\in\ir$ and $i\in\mathbb N$
+ 
+  \[
+  \setarrow{\xRightarrow}
+  \setsubarrow{_\ir}
+   eval^o_\ir\, v\, \pi\, i \Leftrightarrow \withenv{v}{\trans{\pi}{}{i}}
+  \]
+
+  In other words, $eval^o_\ir$ interprets a program $\pi$ for a scrutinee $v$ and returns exactly the same branch (if any)
+  which is prescribed by the semantics of the switch language. 
+  
+\item On the other hand, we can directly encode the declarative semantics of pattern matching as a relational
+  program $match^o$ such that for arbitrary $v\in\mathcal V$, $p_i\in\mathcal P$ and $i\in\mathbb N$
+
+  \[
+  \setarrow{\xRightarrow}
+  match^o\,v\,p_1,\dots,p_k\,i \Leftrightarrow \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}
+  \]
+
+  Again, $match^o$ succeeds with $1\le i\le k$ iff $p_i$ is the leftmost pattern, matching $v$; otherwise it
+  succeeds with $i=k+1$.
+\end{itemize}
+
+Being relational, both $eval^o_\ir$ and $match^o$ do not just succeed or fail for ground arguments, but also can be \emph{queried} for
+arguments with free logical variables, thus performing a search for all substitutions for these variables which make the
+relation to hold. This observation leads us to the idea of utilizing the definition of pattern matching
+synthesis problem, replacing ``$\xRightarrow{}{}$'' with $match^o$, ``$\xRightarrow{}{}_{\mathcal S}$`` with $eval^o$,
+and $\pi$ with a free logical variable $\circled{?}$, which gives us the goal
+
+\[
+\forall v\in \mathcal V,\; \forall 1\le i\le n+1 : match^o\,v\,p_1,\dots,p_n\,i\Leftrightarrow eval^o\,v\,\circled{?}\,i
+\]
+
+This goal is, however, problematic from relational point of view due to a number of reasons.
+
+First, \textsc{miniKanren} provides rather a limited support for universal quantification. Apart from being inefficient from
+performance standpoint, existing implementations either do not support disequality constaints~\cite{eigen}
+or quantified qoals with infinite number of answers~\cite{moiseenko}. As we will see below, both restrictions are
+violated in our case. Second, there is no direct support for the equivalence of goals (``$\Leftrightarrow$''). Thus,
+reducing the original synthesis problem to a viable relational goal involves some ``massaging''.
+
+We eliminate the universal quantification over the infinite set of scrutinees, replacing it by a \emph{finite}
+conjunctions over the \emph{complete set of examples}. For a sequence of patterns $p^*$ the
+complete set of examples is a finite set of values $\mathcal{E}(p^*)\subseteq\mathcal{V}$ with the following
+property:
+
+\[
+\forall i\in\mathbb{N},\,(\forall v\in\mathcal{E}(p^*) : \trans{\inbr{v;\,p^*}}{}{i} \Leftrightarrow \forall w\in\mathcal{V}:\trans{\inbr{w;\,p^*}}{}{i})
+\]
+
+
+In particular, for a \emph{concrete} sequence of patterns $p_1,\dots,p_k$, $i\in\mathbb N$ and $v\in\mathcal V$
+a goal
+
+\[
+  eval^o_\ir\,v\,\circled{?}\,i \wedge match^o\,v\,p_1,\dots,p_k\,i
+\]
+
+specifies a search procedure for all switch programs ``$\circled{?}$'' which, being evaluated for $v$, give exactly the same result
+as matching against $p_1,\dots,p_k$ (here we denoted by ``$\circled{?}$'' a free logical variable).
+
+ 
+However, in our concrete
+ case there is a simple way to alleviate this problem. Indeed, we may replace universal quantification over $i$ by
+ a finite conjunction, as the length of $ps$ is known at the synthesis time. As for the quantification over $s$, for
+ any concrete $ps$ we may precompute a \emph{complete set of examples} $\mathcal{E}(ps)\subseteq\mathcal{V}$ with the following
+ property:
+ 
+ \[
+ \forall i\in\mathbb{N},\,(\forall s\in\mathcal{E}(ps),\,match\, (s, ps, i) \Leftrightarrow \forall s\in\mathcal{V},\,match\, (s, ps, i))
+ \]
+ 
+ It easy to see, that for arbitrary $ps$ there exists a finite complete set of examples (indeed, any pattern describes the ``shape''
+ of a scrutinee up to some finite depth, beyond which all scrutinees become indistinguishable). Thus, for a given $ps$ we may
+ completely eliminate the quantification, reformulating the synthesis problem as
+ 
+ \[
+ \bigwedge_{i\in[1\dots|ps|]}\,\bigwedge_{s\in\mathcal{E}(ps)} (eval^o_{\ir}\, (s, p, i) \wedge match\, (s, ps, i))
+ \]
+ 
+ We implemented the synthesis framework using \textsc{OCanren}~--- an embedding of \textsc{miniKanren} into \textsc{OCaml}~\cite{ocanren},~---
+ and evaluated it on the set of benchmarks, reported in the previous works on \emph{ad-hoc} algorithms for pattern matching
+ code generation~\cite{maranget2001,maranget2008}. In comparison with a simplified setting, presented above, our implementation
+ deals with a more elaborate pattern matching problem~--- in particular, we support \emph{guard expressions}, name bindings in
+ patterns and incorporate a deterministic top-down matching strategy, which is common in functional languages.
+ 
+ Initially, our synthesis did not demonstrate good results. However, we applied the following techniques to improve both the performance
+ and the quality of synthesized programs:
+ 
+ \begin{itemize}
+ \item we restricted the shape of scrutinees using type information;
+ \item we utilized tabling to memoize repeating search steps;
+ \item we implemented a pruning technique, which makes the search stop exploring a certain branch if the program, synthesized so far,
+   contains too much nesting constructs (this factor can be precomputed by patterns analysis).
+ \end{itemize}
+ 
+ With these adjustments, our synthesis framework in a negligible time provides the same results as those reported in the previous works.
+ Our future steps include extending the pattern matching language to completely match that of \textsc{OCaml} (for
+ now we do not support GADTs), integrate the synthesis into the existing \textsc{OCaml} compiler and evaluate it on a
+ set of real-world programs. Another direction is extending the pattern matching language to incorporate features which
+ are known to be hard, tedious or error-prone to implement (for example, non-linear patterns).
+ 

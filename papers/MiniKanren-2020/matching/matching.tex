@@ -20,7 +20,7 @@
 %\usepackage{xspace}
 %\usepackage{hyperref}
 %\usepackage{stmaryrd}
-\usepackage{amsmath, amsthm, amssymb}
+\usepackage{amsmath, amsthm}
 %\usepackage{graphicx}
 %\usepackage{euscript}
 \usepackage{mathtools}
@@ -162,12 +162,17 @@ language=ocanren
 \newcommand{\primi}[1]{\mathbf{#1}}
 \newcommand{\sem}[1]{\llbracket #1 \rrbracket}
 \newcommand{\ir}{\ensuremath{\mathcal{S}}}
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+    \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
 
 \let\emptyset\varnothing
 \let\eps\varepsilon
 
 \sloppy 
 
+
+\newtheorem{Observation}{Observation}
 
 \begin{document}
 
@@ -236,10 +241,12 @@ Effective compilation of pattern matching is important part in a compiler of typ
 
 \thispagestyle{empty}
 
+\input{intro}
 \input{patternMatching}
-%\input{languages}
-%\input{evaluation}
-%\input{conclusion}
+\input{relationally}
+\input{structural}
+\input{evaluation}
+\input{conclusion}
 
 \begin{comment}
 %% Acknowledgments
