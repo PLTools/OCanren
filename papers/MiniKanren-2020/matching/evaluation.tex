@@ -1,3 +1,15 @@
 \section{Evaluation}
 \label{sec:eva}
 
+\begin{figure}
+
+\csvreader[tabular=|r|p{3cm}|p{1cm}|p{1.5cm}||p{1.5cm}|p{1.2cm}|p{1cm}|,
+table head=\hline & Name & Prunes & Answers requested &  1st answer time & Answers found & Total search time \\ \hline\hline,
+late after line=\\\hline]%
+{bench.csv}{}%
+{\thecsvrow & \csvcoli & \csvcolii & \csvcoliii & \csvcoliv & \csvcolv & \csvcolvi }
+\caption{Benchmarks. Input data is on the left side of double dash $\mid\mid$ and result are on the right}
+\label{fig:bench}
+\end{figure}
+
+In the table~\ref{fig:bench} we summarize benchmarking results for our synthesis algorithm. Very often checks for size constraint of the current approximation of the answer lead to performance degradation because of these check is not cheap. But very rare checks of size constraint can lead to performance degradation too, because more search branches will be prunes later.

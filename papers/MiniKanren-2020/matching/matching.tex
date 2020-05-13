@@ -5,6 +5,7 @@
     version={4.0},       % your choice
 ]{doclicense}            % your choice, see \doclicenseThis below
 
+
 \usepackage{alltt}
 %\usepackage{pslatex}
 %\usepackage{epigraph}
@@ -28,15 +29,16 @@
 %\usepackage{multirow,bigdelim}
 %\usepackage{subcaption}
 %\usepackage{placeins}
+\usepackage{csvsimple}
 
 %\geometry{
 %     top=18pt, bottom=14pt, inner=21pt, outer=21pt,
 %     paperwidth=5.5in, paperheight=8.5in,
 %     }
-     
+%     
 \settopmatter{printacmref=false}
 \fancyfoot{}
-
+ 
 \makeatletter
 \def\@formatdoi#1{}
 \def\@permissionCodeOne{miniKanren.org/workshop}
@@ -75,8 +77,6 @@
 \usepackage{multirow}
 
 
-
-
 \usepackage{listings}
 \lstdefinelanguage{ocanren}{
 keywords={run, conde, fresh, let, in, match, with, when, class, type,
@@ -85,7 +85,7 @@ new, module, sig, deriving, datatype, struct, if, then, else, open, private, vir
 true, false},
 sensitive=true,
 commentstyle=\small\itshape\ttfamily,
-keywordstyle=\textbf,%\ttfamily\underline,
+keywordstyle=\ttfamily\textbf,
 identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,
@@ -171,7 +171,6 @@ language=ocanren
 
 \sloppy 
 
-
 \newtheorem{Observation}{Observation}
 
 \begin{document}
@@ -242,11 +241,17 @@ Effective compilation of pattern matching is important part in a compiler of typ
 \thispagestyle{empty}
 
 \input{intro}
+\input{intro1}
 \input{patternMatching}
 \input{relationally}
 \input{structural}
+\input{synthesis}
 \input{evaluation}
 \input{conclusion}
+
+\section{Appendix}
+\input{lst} 
+
 
 \begin{comment}
 %% Acknowledgments

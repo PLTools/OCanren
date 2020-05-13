@@ -20,15 +20,15 @@ We define a matching of a value $v$ (\emph{scrutinee}) against an ordered non-em
 relation
 
 \[
-\setarrow{\xRightarrow}
+\setarrow{\xrightarrow}
 \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i},\,1\le i\le k+1
 \]
 
 which gives us the index of the leftmost matched pattern or $k+1$ if no such pattern exists. We use an auxilliary relation $\inbr{;}\subseteq\mathcal{V}\times\mathcal{P}$
 to specify the notion of a value matched by an individual pattern (see Fig.~\ref{fig:match1pat}). The rule \ruleno{Wildcard} says that
 a wildcard pattern ``\_'' matches any value, and \ruleno{Constructor} specifies that a constructor pattern matches exactly those values which
-have the same constuctor at the top level and all subvalues matched by corresponding subpatterns. The definition of ``$\xRightarrow{}{}$'' is
-shown on Fig.~\ref{fig:matchpatts}. An auxilliary relation ``$\xRightarrow{}{}_*$'' is introduced to specify the left-to-right matching strategy, and we
+have the same constuctor at the top level and all subvalues matched by corresponding subpatterns. The definition of ``$\xrightarrow{}{}$'' is
+shown on Fig.~\ref{fig:matchpatts}. An auxilliary relation ``$\xrightarrow{}{}_*$'' is introduced to specify the left-to-right matching strategy, and we
 use current index as environment. An important rule $\ruleno{MatchOtherwise}$ specifies that if we exhausted all the patterns with no matching we stop with
 the current index (which in this case is equal to the number of patterns plus one).
 
@@ -46,7 +46,7 @@ the current index (which in this case is equal to the number of patterns plus on
 
 \begin{figure}
    \renewcommand*{\arraystretch}{3}
-   \setarrow{\xRightarrow}
+   \setarrow{\xrightarrow}
    \setsubarrow{_*}
    \[
    \begin{array}{cr}
@@ -63,7 +63,7 @@ the current index (which in this case is equal to the number of patterns plus on
    \label{fig:matchpatts}
 \end{figure}
 
-The relation ``$\xRightarrow{}{}$'' gives us a \emph{declarative} semantics of pattern matching. Since we are interested in
+The relation ``$\xrightarrow{}{}$'' gives us a \emph{declarative} semantics of pattern matching. Since we are interested in
 synthesizing implementations, we need a \emph{programmatical} view on the same problem. Thus, we introduce a language $\mathcal S$
 (the ``switch'' language) of test-and branch constructs:
 
@@ -82,14 +82,14 @@ structure of matching expressions, testing their top constructors and eventually
 The switch language is similar to the intermediate representations for pattern matching code used in 
 previous works on pattern matching implementation~\cite{maranget2001,maranget2008}.
 
-The semantics of the switch language is given by mean of relations ``$\xRightarrow{}{}_{\mathcal M}$'' and ``$\xRightarrow{}{}_{\mathcal S}$''
+The semantics of the switch language is given by mean of relations ``$\xrightarrow{}{}_{\mathcal M}$'' and ``$\xrightarrow{}{}_{\mathcal S}$''
 (see Fig.~\ref{fig:matchexpr} and \ref{fig:test-and-branch}). The first one describes the semantics of matching expression, while
 the second~--- the semantics of the switch language itself. In both cases the scrutinee is used as an environment.
 
 
 \begin{figure}
   \renewcommand*{\arraystretch}{2}
-  \setarrow{\xRightarrow}
+  \setarrow{\xrightarrow}
   \setsubarrow{_{\mathcal M}}
   \[
   \begin{array}{cr}
@@ -103,7 +103,7 @@ the second~--- the semantics of the switch language itself. In both cases the sc
 
 \begin{figure}
   \renewcommand*{\arraystretch}{3}
-  \setarrow{\xRightarrow}
+  \setarrow{\xrightarrow}
   \setsubarrow{_{\mathcal S}}
   \[
   \begin{array}{cr}
@@ -130,10 +130,10 @@ The following observations can be easily proven by structural induction.
 \end{Observation}
 
 \begin{Observation}
-  Relations ``$\xRightarrow{}{}$'' and ``$\xRightarrow{}{}_{\mathcal S}$'' are functional and deterministic respectively:
+  Relations ``$\xrightarrow{}{}$'' and ``$\xrightarrow{}{}_{\mathcal S}$'' are functional and deterministic respectively:
 
   \[
-  \setarrow{\xRightarrow}
+  \setarrow{\xrightarrow}
   \begin{array}{rcl}
     \forall p_1,\dots,p_k\in\mathcal P,\,\forall v\in \mathcal V,\,\forall \pi\in\mathcal S & : & |\{i\in\mathbb N\mid \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}\}|=1 \\
                                                                  &  & {\setsubarrow{_{\mathcal S}}|\{i\in\mathbb N\mid \withenv{v}{\trans{\pi}{}{i}}\}|\le 1}
@@ -145,8 +145,8 @@ With these definitions, we can formulate the \emph{pattern matching synthesis pr
 a switch program $\pi$, such that
 
 \[
-\setarrow{\xRightarrow}
-\forall v\in \mathcal V,\; \forall 1\le i\le n+1 : \trans{\inbr{v;\,p_1,\dots,p_n}}{}{i}\Leftrightarrow{\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi}{}{i}}}\eqno{\star}
+\setarrow{\xrightarrow}
+\forall v\in \mathcal V,\; \forall 1\le i\le n+1 : \trans{\inbr{v;\,p_1,\dots,p_n}}{}{i}\Longleftrightarrow{\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi}{}{i}}}\eqno{\star}
 \]
 
 In other words, program $\pi$ delivers a correct and complete implementation for pattern matching.
