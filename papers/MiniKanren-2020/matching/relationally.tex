@@ -1,4 +1,5 @@
 \section{Pattern Matching Synthesis, Relationally}
+\label{sec:relationally}
 
 In this section we describe a relational formulation for the pattern matching synthesis problem. Practically,
 this amounts to constructing a goal with a free variable, corresponding to the switch program to synthesize,
@@ -31,6 +32,8 @@ Our idea of using relational programming for pattern matching synthesis is based
   Again, $match^o$ succeeds with $1\le i\le k$ iff $p_i$ is the leftmost pattern, matching $v$; otherwise it
   succeeds with $i=k+1$.
 \end{itemize}
+
+We address the construction of relational interpreters for both semantics in Section~\ref{sec:relints}.
 
 Being relational, both $eval^o_\ir$ and $match^o$ do not just succeed or fail for ground arguments, but also can be \emph{queried} for
 arguments with free logical variables, thus performing a search for all substitutions for these variables which make the
@@ -66,7 +69,7 @@ property:
 In other words, if a program implements a correct and complete pattern matching for all values in a complete set of samples, then this
 program implements a correct and complete pattern matching for all values. The idea of using a complete set of samples originates from the following observation: each pattern
 describes a (potentially infinite) set of values, and pattern matching splits the set of all values into equavalence classes, each corresponding to a certain matching pattern. Thus,
-to form a complete set of samples it is enough to take a representative for each class. There are, however, some subtleties, which will be addressed below.
+to form a complete set of samples it is enough to take a representative for each class. There are, however, some subtleties, which will be addressed below (see Section~\ref{sec:samples}).
 
 \setarrow{\xrightarrow}
 
@@ -121,29 +124,25 @@ Thus, the goal we eventually came up with is
 
 \[
 \bigwedge_{v\in\mathcal{E}\,(p_1,\dots,p_k)}\mbox{\lstinline|fresh ($i$)|}\; \{match^o\,v\,p_1,\dots,p_k\,i \wedge eval^o_{\mathcal S}\,v\,\circled{?}\,i\}
+\eqno{\star\star}
 \]
 
-\begin{comment}
-We implemented the synthesis framework using \textsc{OCanren}~--- an embedding of \textsc{miniKanren} into \textsc{OCaml}~\cite{ocanren},~---
- and evaluated it on the set of benchmarks, reported in the previous works on \emph{ad-hoc} algorithms for pattern matching
- code generation~\cite{maranget2001,maranget2008}. In comparison with a simplified setting, presented above, our implementation
- deals with a more elaborate pattern matching problem~--- in particular, we support \emph{guard expressions}, name bindings in
- patterns and incorporate a deterministic top-down matching strategy, which is common in functional languages.
- 
- Initially, our synthesis did not demonstrate good results. However, we applied the following techniques to improve both the performance
- and the quality of synthesized programs:
- 
- \begin{itemize}
- \item we restricted the shape of scrutinees using type information;
- \item we utilized tabling to memoize repeating search steps;
- \item we implemented a pruning technique, which makes the search stop exploring a certain branch if the program, synthesized so far,
-   contains too much nesting constructs (this factor can be precomputed by patterns analysis).
- \end{itemize}
- 
- With these adjustments, our synthesis framework in a negligible time provides the same results as those reported in the previous works.
- Our future steps include extending the pattern matching language to completely match that of \textsc{OCaml} (for
- now we do not support GADTs), integrate the synthesis into the existing \textsc{OCaml} compiler and evaluate it on a
- set of real-world programs. Another direction is extending the pattern matching language to incorporate features which
- are known to be hard, tedious or error-prone to implement (for example, non-linear patterns).
- 
-\end{comment}
+\subsection{Dealing with a Complete Set of Samples}
+\label{sec:samples}
+
+A we observed before, a complete set of samples plays an important role in our approach: it allows us to eliminate universal quantification over the
+set of all values. However, in order to make this idea work, we need to modify the semantics of the switch language a little bit. 
+
+In order to construct a complete set of samples for a sequence of patterns $p_1,\dots,p_k$ we introduce a distinctive constructor ``$\bot$'' and
+convert each pattern $p_i$ into a \emph{value} $\sembr{p_i}$, defined as follows:
+
+\[
+\begin{array}{rcl}
+  \sembr{\_}               & = & \bot \\
+  \sembr{C^k\,p_1\dots p_k} & = & C^k\,\sembr{p_1}\dots\sembr{p_k}
+\end{array}
+\]
+
+
+\subsection{Constructing Relational Interpreters}
+\label{sec:relints}
