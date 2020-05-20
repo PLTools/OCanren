@@ -1,59 +1,56 @@
 \section{Evaluation}
 \label{sec:eval}
 
-%\begin{figure}
-%\csvreader[tabular=|r|p{3cm}|p{1cm}|p{1.5cm}||p{1.5cm}|p{1.2cm}|p{1cm}|,
-%table head=\hline & Name & Prunes & Answers requested &  1st answer time & Answers found & Total search time \\ \hline\hline,
-%late after line=\\\hline]%
-%{bench.csv}{}%
-%{\thecsvrow & \csvcoli & \csvcolii & \csvcoliii & \csvcoliv & \csvcolv & \csvcolvi }
-%\caption{Benchmarks. Input data is on the left side of double dash $\mid\mid$ and result are on the right}
-%\label{fig:bench}
-%\end{figure}
-
 \newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{#2}}}
 \newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
 \newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
 \begin{figure}[t]
-  \begin{tabular}{m{3cm}|cc||ccc}
-    \headl{3cm}{Patterns} & \head{1.5cm}{Pruning factor} & \headll{1.7cm}{Answers requested} & \head{1.5cm}{1st answer time (ms)} & \head{1.5cm}{Answers found} & \head{1.5cm}{Total search time (ms)}\\
+  \begin{tabular}{m{3cm}|cc||cccc}
+    \headl{3cm}{Patterns} & 
+    \head{1.5cm}{Pruning factor} & 
+    \headll{1.7cm}{Answers requested} & 
+    \head{1.5cm}{Examples count} & 
+    \head{1.5cm}{1st answer time (ms)} & 
+    \head{1.5cm}{Answers found} & 
+    \head{1.5cm}{Total search time (ms)}\\
     \hline
     \hline
     \begin{lstlisting}[basicstyle=\scriptsize]
 A
 B
 C
-    \end{lstlisting} &100&all&1&1&1.7\\
+    \end{lstlisting} &100&all&3&1&1&1.7\\
         \hline
     \begin{lstlisting}[basicstyle=\scriptsize]
 true
 false
-    \end{lstlisting} &100&all&0&1&0.4\\
+    \end{lstlisting} &100&all&2&0&1&0.4\\
         \hline
     \begin{lstlisting}[basicstyle=\scriptsize]
 (true, _)
 (_, true)
 (false, false)
-    \end{lstlisting} &100&all&6&2&10.9\\
+    \end{lstlisting} &100&all&4&6&2&10.9\\
         \hline
      \begin{lstlisting}[basicstyle=\scriptsize]
 (_, false, true)
 (false, true, _)
 (_, _, false)
 (_, _, true)
-    \end{lstlisting} &100&all&323&3&729.2\\
+    \end{lstlisting} &100&all&8&323&3&729.2\\
         \hline
      \begin{lstlisting}[basicstyle=\scriptsize]
 ([], _)
 (_. [])
 (_ :: _, _ :: _)
-    \end{lstlisting} &100&10&5&1&6.0\\
+    \end{lstlisting} &100&10&4&5&1&6.0\\
         \hline
      \begin{lstlisting}[basicstyle=\scriptsize]
 (Succ _, Succ _)
 (Zero, _)
 (_, Zero)
-    \end{lstlisting} &1&all&53&2&108.0\\
+    \end{lstlisting} &1&all&4&53&2&108.0
+    \\
         \hline
         \multirow{3}{*}{
           \parbox{3cm}{
@@ -63,14 +60,23 @@ false
 \lstinline[basicstyle=\scriptsize]|(Nil2, _)|\\[-1mm]
 \lstinline[basicstyle=\scriptsize]|(_, Nil2)|\\[-1mm]
 \lstinline[basicstyle=\scriptsize]|(_ :: _, _ :: _)|}}
-         & 1&10&643&2&3776.1\\[3mm]
-        \cline{2-6}
-      &10&10&95&2&540.4\\[3mm]
-        \cline{2-6}
-     &100&10&45&2&239.0                         
+         & 1&10&9&643&2&3776.1\\[3mm]
+        \cline{2-7}
+      &10&10&9&95&2&540.4\\[3mm]
+        \cline{2-7}
+     &100&10&9&45&2&239.0                         
   \end{tabular}
   \caption{The results of synthesis evaluation}
   \ref{fig:eval}
+\begin{comment}
+\csvreader[tabular=|r|p{3cm}|p{1cm}|p{1.5cm}||p{1.5cm}|p{1.5cm}|p{1.2cm}|p{1.5cm}|,
+table head=\hline & Name & Prunes & Answers requested &Example generated&  1st answer time & Answers found & Total search time \\ \hline\hline,
+late after line=\\\hline]%
+{bench.csv}{}%
+{\thecsvrow & \csvcoli & \csvcolii & \csvcoliii & \csvcoliv & \csvcolv & \csvcolvi& \csvcolvii }
+\caption{Benchmarks. Input data is on the left side of double dash $\mid\mid$ and result are on the right}
+\label{fig:bench} 
+\end{comment}
 \end{figure}
 
 In the table~\ref{fig:eval} we summarize benchmarking results for our synthesis algorithm.
