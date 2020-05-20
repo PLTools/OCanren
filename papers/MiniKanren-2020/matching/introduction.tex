@@ -1,12 +1,12 @@
 \section{Introduction}
 \label{sec:intro}
 
-Algebraic data types (ADT) is an important tool in functional programming which delivers a way to represent flexible and easy to manipulate data structures.
+Algebraic data types (ADT) are an important tool in functional programming which delivers a way to represent flexible and easy to manipulate data structures.
 To inspect the contents of ADT values a generic construct~--- \emph{pattern matching}~--- is used. Pattern matching can be considered as a generalization of
 conventional conditional control-flow construct ``\lstinline|if .. then .. else|'' and in principle can be decomposed into a nested hierarchy of those; from
 this standpoint the problem of pattern matching implementation can be considered trivial. However, some decompositions are obviously better than others. We
 repeat here an example from~\cite{maranget2008} to demonstrate this difference (see Fig.~\ref{fig:match-example}). Here we match a triple of boolean
-values $x$, $y$, and $z$ against four pattern (Fig.~\ref{fig:matching-example1}; we use \textsc{OCaml}~\cite{ocaml} as reference language). The na\"{i}ve
+values $x$, $y$, and $z$ against four patterns (Fig.~\ref{fig:matching-example1}; we use \textsc{OCaml}~\cite{ocaml} as reference language). The na\"{i}ve
 implementation of this example is shown on Fig.~\ref{fig:matching-example2}; however if we decide to match $y$ first the result becomes much
 better (Fig.~\ref{fig:matching-example3}).
 
@@ -96,57 +96,50 @@ switch x with
 
 
 %clasification 1
-Although semantics of pattern matching can be given as a sequence of srutinee's sub expression comparisons (Figure~\ref{fig:matchpatts}) effective compilers don't follow
-this approach. One can either optimise runtime cost by minimizing amount of checks performed or static cost by minimizing the size of generated code. \emph{Decision trees}~\cite{?}
-are good for the first criteria, because they check every subexpression not more than once. \emph{Backtracking automata} are rather compact but in some cases can perform
-repeated checks.
+%Although semantics of pattern matching can be given as a sequence of srutinee's sub expression comparisons (Figure~\ref{fig:matchpatts}) effective compilers don't follow
+%this approach. 
+
+The quality of pattern matching implementation can be measured in various ways. One can either optimise the runtime cost by minimizing amount of checks performed, or static
+cost by minimizing the size of generated code. \emph{Decision trees}~\cite{?} considered suitable for the first criterion as they check every subexpression no more than once.
+However, minimizing the size of decision tree is known to be NP-hard~\cite{baudinet1985tree}, and as a rule various heuristics, using, for example,
+the number of nodes, the length of the longest path, the average length of all paths are applied during compilation. In \cite{Scott2000WhenDM} the results of experimental
+evaluation of nine heuristics for Standard ML of New Jersey are reported.
+
+For minimizing the static cost \emph{backtracking automata} can be used since they admit a compact representation but in some cases can perform repeated checks.
 
 %clasification 2
-\emph{For strict languages} checking sub-expressions of scrutinee in any order is allowed. \emph{For lazy languages} pattern matching should evaluate only those sub-expressions which are
-necessary for performing pattern matching. If not careful pattern matching can change the termination behavior of the program. In general lazy languages setup more constraints on pattern matching and because of that allow lesser set of heuristics. Decision trees and backtracking automata can be used for compilation both  strict and lazy languages.
+There is a certain difference in dealing with pattern matching in strict and non-strict languages. For strict languages checking sub-expressions of scrutinee in any order is allowed.
+The pattern matching implementation for strict languages can operate in \emph{direct} or \emph{indirect} styles. In direct case an efficient implementation is constructed
+explicitly. In indirect the construction of implementation requires some post-processing, which can vary from easy simplifications to complicated supercompilation
+techniques~\cite{sestoft1996}. The main drawback of indirect approach is that the size of intermediate data structures can be exponentially large.
 
-%clasification 3
-The matching compilers for strict languages can work in \emph{direct} or \emph{indirect} styles. The first ones return efficient code immediately. In the second style to
-construct final answer some post processing is required. It can vary from easy simplifications to complicated supercompilation techniques~\cite{sestoft1996}. The main
-drawback of indirect style is that the size of intermediate data structures can be exponentially large.
-
-% about lazy languages
-A few approaches for checking sub-expressions in lazy languages has been proposed. In ~\cite{augustsson1985} simple left-to-right order of subexpression checking was proposed and was proved that it doesn't affect termination. The backtracking automaton being built has a form of a DAG to reduce code size. A few refinements has been added by~\cite{wadler1987} as a part of textbook~\cite{peytonjones1987} about implementing lazy functional languages. The implementation from this book is being used in the current version of GHC~\cite{ghc}. \cite{laville1991} models values in lazy languages
-using \emph{partial terms}, although it doesn't scale to types with infinite constructor sets (like integers). The approach doesn't test all subexpressions from left to right as~\cite{augustsson1985} but aims to not perform unnecessary check by constructing \emph{lazy automaton}. 
-%In~\cite{suarez1993} the similar approach is extended by special treatment of overlapping patterns.
-
-% about decision trees
-Pattern matching for lazy languages has been compiled also to decision trees~\cite{maranget1992} and later (\cite{maranget1994}) into
-\emph{decision DAGs} which allow in some cases to make code smaller.
-
-Minimizing the size of decision tree is known to be NP-hard~\cite{baudinet1985tree}, and as a rule various heuristics are applied during compilation, for example, the number of nodes,
-the length of the longest path, the average length of all paths. The paper~\cite{Scott2000WhenDM} performs experimental evaluation of nine heuristics on the base of for strict language Standard ML of New Jersey.
+For non-strict languages pattern matching should evaluate only those sub-expressions which are necessary for performing pattern matching. If not done carefully pattern matching can
+change the termination behavior of the program. In general non-strict languages put more constraints on pattern matching and thus admit a lesser set of heuristics. 
+A few approaches for checking sub-expressions in lazy languages have been proposed. In ~\cite{augustsson1985} a simple left-to-right order of subexpression checking was proposed
+and was proved that it doesn't affect termination. The backtracking automaton being built has a form of a DAG to reduce the code size. A few refinements have been added in~\cite{wadler1987}
+as a part of textbook~\cite{peytonjones1987} on implementation of lazy functional languages. The approach from this book is used in the current version of GHC~\cite{ghc}.
+\cite{laville1991} models values in lazy languages using \emph{partial terms}, although it doesn't scale to types with infinite constructor sets (like integers). The approach doesn't
+test all subexpressions from left to right as~\cite{augustsson1985} but is aimed at avoiding to perform unnecessary checks by constructing \emph{lazy automaton}. Pattern matching for
+lazy languages has been compiled also to decision trees~\cite{maranget1992} and later into \emph{decision DAGs} which allow in some cases to make the code
+smaller~\cite{maranget1994}.
 
 %about automata
 The inefficiency of backtracking automaton has been
 improved in~\cite{maranget2001}. The approach utilizes matrix representation for pattern matching. It splits the current matrix according to constructors in the
 first column and reduces the task to compiling matrices with less rows. The technique is indirect, in the end a few optimizations are performed by introducing
-special \emph{exit} nodes to the compiled representation. No preprocessing is required for this scheme: or-pattern receives a special treatment during compilation process.
+special \emph{exit} nodes to the compiled representation. %No preprocessing is required for this scheme: or-pattern receives a special treatment during compilation process.
 The approach from this paper is used in the current implementation of the \textsc{OCaml} compiler.
 
-Previous approach uses first column to split the matrix. In~\cite{maranget2008} the \emph{necessity} heuristic has been introduced which recommends which column should be
-used to perform the split. Good decision trees which are constructed in this work can perform better on corner cases than~\cite{maranget2001}, but for practical cases the
+The previous approach uses the first column to split the matrix. In~\cite{maranget2008} the \emph{neccessity} heuristic has been introduced which recommends which column should be
+used to perform the split. Good decision trees which are constructed in this work can perform better in corner cases than~\cite{maranget2001}, but for practical use the
 difference is insignificant.
-
 
 While existing approaches deliver appropriate solutions for certain forms of pattern matching construct, they have to be extended in an \emph{ad hoc} manner each time
 the syntax and semantics of pattern matching construct changes. For example, besides a simple conventional form of pattern matching there is a number of extensions:
-guards (first time appeared in KRC language,\cite{turner2013}), disjunctive patterns~\cite{?}, non-linear patterns~\cite{mcbride1969symbol}, active patterns~\cite{activepatterns}, pattern matching for polymorphic variants~\cite{Garrigue98} 
+guards (first time appeared in KRC language~\cite{turner2013}), disjunctive patterns~\cite{?}, non-linear patterns~\cite{mcbride1969symbol}, active patterns~\cite{activepatterns}, pattern matching for polymorphic variants~\cite{Garrigue98} 
 %and generalized algebraic datatypes~\cite{?}) 
 which require a separate customized algorithms to be developed.
 
-\begin{comment}
-\begin{minipage}[b]{0.5\textwidth}
-There are a few different approaches for compiling pattern mathcing. For example, \textsc{GHC}~\cite{?} uses that presented in an influential paper~\cite{Jones1987},
-implementation of pattern matching in \textsc{OCaml} is currently based on~\cite{maranget2001} although \cite{maranget2008} reports a slight improvements
-of generated code efficiency. 
-\end{minipage}
-\end{comment}
 
 We present an approach to pattern matching implementation based on application of relational programming~\cite{TRS,WillThesis} and, in particular, relational interpreters~\cite{unified}
 and relational conversion~\cite{lozov2017}. Our approach is based on relational representation of the top-level source language semantics of pattern matching on the one hand, and
