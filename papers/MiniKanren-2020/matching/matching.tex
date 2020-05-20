@@ -201,7 +201,16 @@ language=ocanren
 %% Note: \begin{abstract}...\end{abstract} environment must come
 %% before \maketitle command
 \begin{abstract}
-Effective compilation of pattern matching is important part in a compiler of typed functional language.  We address it via relational synthesis, the algorithm is searching for compiled representation which behaves well on full but finite set of examples and which is minimal. We also describe how to generate full set of examples and our  criteria of minimalism. The approach using relational synthesis seems to be more asily extensible than the default ones.
+  We apply relational programming techniques to the problem of synthesizing efficient implementation for pattern matching construct. Although in principle
+  pattern matching can be implemented in a trivial way, the result suffers from inefficiency in terms of both performance and code size. Thus, in practice of
+  functional languages implementation alternative, more elaborated, approaches are widely used. However, as there are multiple kinds and flavors of pattern
+  matching construct, these approaches have to be specifically developed and justified for each concrete inhabitant of pattern matching ``zoo''. We formulate
+  pattern matching synthesis problem in relational terms and develop a few optimizations which improve the efficiency of the synthesis and guarantee the
+  optimality of the result. Our approach is based on relational representation of both high-level semantics of pattern matching and the semantics of
+  an intermediate-level implementation language which makes it, in principle, more scalable as we only need to modify the high-level semantics in order
+  to synthesize the implementaion of a new feature. Our evaluation on a set of samples, taken from existing literature, shows, that our framwork is
+  capable of synthesizing optimal implementations in a negligible time. The in-depth stress evaluation on a number of artifitial banchmarks, however,
+  has shown the need for future improvements.
 \end{abstract}
 
 
@@ -223,13 +232,13 @@ Effective compilation of pattern matching is important part in a compiler of typ
 \end{CCSXML}
 
 \ccsdesc[500]{Software and its engineering~Constraint and logic languages}
-\ccsdesc[500]{Software and its engineering~Source code generation(FIXME)}
+\ccsdesc[500]{Software and its engineering~Source code generation}
 %% End of generated code
 
 
 %% Keywords
 %% comma separated list
-\keywords{relational programming, relational interpreters, search problems}  %% \keywords are mandatory in final camera-ready submission
+\keywords{relational programming, relational interpreters, pattern matching}  %% \keywords are mandatory in final camera-ready submission
 
 
 %% \maketitle
@@ -240,14 +249,13 @@ Effective compilation of pattern matching is important part in a compiler of typ
 
 \thispagestyle{empty}
 
-\input{intro}
-\input{intro1}
-\input{related}
+\input{introduction}
 \input{patternMatching}
 \input{relationally}
 \input{structural}
 \input{synthesis}
 \input{evaluation}
+%\input{related}
 \input{conclusion}
 
 \section{Appendix}

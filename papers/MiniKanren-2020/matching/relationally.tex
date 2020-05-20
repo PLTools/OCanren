@@ -68,8 +68,9 @@ property:
 
 In other words, if a program implements a correct and complete pattern matching for all values in a complete set of samples, then this
 program implements a correct and complete pattern matching for all values. The idea of using a complete set of samples originates from the following observation: each pattern
-describes a (potentially infinite) set of values, and pattern matching splits the set of all values into equavalence classes, each corresponding to a certain matching pattern. Thus,
-to form a complete set of samples it is enough to take a representative for each class. There are, however, some subtleties, which will be addressed below (see Section~\ref{sec:samples}).
+describes a (potentially infinite) set of values, and pattern matching splits the set of all values into equavalence classes, each corresponding to a certain matching pattern.
+Moreover, the values of different classes can be distinguished only by a looking down to a \emph{finite} depth (as different patterns can be distinguished in this way).
+The generation of complete sample set will be addressed below (see Section~\ref{sec:samples}).
 
 \setarrow{\xrightarrow}
 
@@ -127,22 +128,157 @@ Thus, the goal we eventually came up with is
 \eqno{\star\star}
 \]
 
-\subsection{Dealing with a Complete Set of Samples}
-\label{sec:samples}
+From relational point of view this is a pretty conventional goal which can be solved by virtually any descent \textsc{miniKanren} implementation in
+which the relations $eval^o_{\mathcal S}$ and $match^o$ can be encoded.
 
-A we observed before, a complete set of samples plays an important role in our approach: it allows us to eliminate universal quantification over the
-set of all values. However, in order to make this idea work, we need to modify the semantics of the switch language a little bit. 
-
-In order to construct a complete set of samples for a sequence of patterns $p_1,\dots,p_k$ we introduce a distinctive constructor ``$\bot$'' and
-convert each pattern $p_i$ into a \emph{value} $\sembr{p_i}$, defined as follows:
-
-\[
-\begin{array}{rcl}
-  \sembr{\_}               & = & \bot \\
-  \sembr{C^k\,p_1\dots p_k} & = & C^k\,\sembr{p_1}\dots\sembr{p_k}
-\end{array}
-\]
-
+Finally, we can make the following important observation. Obviously, any pattern matching synthesis problem has at least one trivial solution.
+This, due to the completeness of relational interleavling search~\cite{search,certifiedSemantics}, means that the goal above \emph{can not diverge} with
+no results. Actually it is rather easy to see that any pattern matching synthesis problem has \emph{infinitely many} solutions: indeed, having just
+one it is always possible to ``pump'' it with superfluous ``$\primi{otherwise}$'' clauses; thus, the goal above is \emph{refutationally
+complete}~\cite{WillThesis,DivergenceTest}. These observations justify the totality of our synthesis approach. In Section~\ref{sec:optimization} we show
+how we can make it to provide optimal solution.
 
 \subsection{Constructing Relational Interpreters}
 \label{sec:relints}
+
+In this section we address the implementation of relations $eval^o_{\mathcal S}$ and $match^o$. In principle, it amounts to accurate encoding of
+relations ``$\xRightarrow{}{}$'' and ``$\xRightarrow{}{}_{\mathcal S}$'' in \textsc{miniKanren} (in our case, \textsc{OCanren}). We, however,
+make use of relational conversion~\cite{conversion} tool, called \textsc{noCanren}, which automatically converts a subset of \textsc{OCaml} into
+\textsc{OCanren}. Thus, both interpreters are in fact implemented in \textsc{OCaml} and repeat corresponding inference rules almost
+literally in a familiar functional style. For example, functional implementation of declarative semantics looks like follows:
+
+\begin{lstlisting}
+   let rec $\inbr{v;\,p}$ =
+     match ($v$, $p$) with
+     | (_, Wildcard) -> true
+     | ($C^k\;v^*$, $C^k\;p^*$) -> list_all $\inbr{;}$ (list_combine $v^*$ $p^*$)
+     | _             -> false
+
+  let $match^o$ $v$ $p^*$ =
+    let rec inner $i$ $p^*$ =
+      match $p^*$ with
+      | []      -> $i$
+      | $p$ :: $p^*$ -> if $\inbr{v;\,p}$ then $i$ else inner S($i$) $p^*$
+    in inner O $p^*$
+\end{lstlisting}
+
+We mixed here the concrete syntax of \textsc{OCaml} and mathematical notation, used in the definition of the relation in question; the actual
+implementation only a few lines of code longer. Note, we use here natural numbers in Peano form and custom list processing functions in order
+to apply relational conversion later.
+
+Using relational conversion saves a lot of efforts as \textsc{OCanren} specifications tend to be much more verbose; in addition
+relational conversion implements some ``best practices'' in relational programming (for example, moves unifications forward in
+conjunctions and puts recursive calls last). Finally, it has to be taken into account that relational conversion of pattern matching introduces
+disequality constraints.
+
+\subsection{Dealing with a Complete Set of Samples}
+\label{sec:samples}
+
+As we mentioned above, a complete set of samples plays an important role in our approach: it allows us to eliminate universal quantification over the
+set of all values. As we replace the universal quantifier with a finite conjunction with one conjunct per sample value reducing the size of
+the set is an important task. At present time, however, we build excessively large (worst case exponential) number of samples. We discuss
+the issues with this choice in Section~\ref{src:evaluation} and consider developing a more advanced approach as the main direction for
+improvement.
+
+Our construction of complete set of samples is based upon the following simple observations. We simultaneously define \emph{depth} measure
+for patterns and sequence of patterns as follows:
+
+\[
+\begin{array}{rcl}
+   d\,(p_1,\dots,p_k)     & = & max\, \{ d\,(p_i)\}\\
+   d\,(\_)                 & = & 0 \\
+   d\,(C^k\,p_1,\dots p_k) & = & 1 + d\,(p_1,\dots,p_k)
+\end{array}
+\]
+
+As sequence of patterns is the single input in our synthesis approach we will call its depth \emph{synthesis depth}.
+
+Similarly, we define the depth of matching expressions
+
+\[
+\begin{array}{rcl}
+  d_{\mathcal M}\,(\bullet) & = & 1 \\
+  d_{\mathcal M}\,(m\,[i]) & = & 1 + d_{\mathcal M}\,(m)\\
+\end{array}
+\]
+
+and switch programs:
+
+\[
+\begin{array}{rcl}
+  d_{\mathcal S}\,(\primi{return}\;i)&=&0\\
+  d_{\mathcal S}\,(\primi{switch}\;m\;\primi{of}\;C_1\to s_1,\dots,C_k\to s_k\;\primi{otherwise}\;s)&=&max\,\{d_{\mathcal M}\,(m),\,d_{\mathcal S}\,(s_i),\,d_{\mathcal S}\,(s)\}
+\end{array}
+\]
+
+Informally, the depth of a switch program tells us how deep the program can look into a value. 
+
+From the definition of $\inbr{;}$ it immediately follows that a pattern $p$ can only discriminate values up to its depth $d\,(p)$: changing a value at the depth greater
+or equal than $d\,(p)$ cannot affect the fact of matching/non matching. This means that we can only consider switch programs of depth no greater than synthesis depth.
+But for these programs the set of all values with height no greater than synthesis depth forms a complete set of samples. Indeed, if the height of a value less or
+equal to the synthesis depth, then this value is a member of complete set of samples and by definition the bevaviour of the synthesized program on this value is
+correct. Otherwise there exists some value $s$ from the complete set of samples, such that given value can be obtained as an ``extension'' of $s$ at the
+depth greater than the synthesis depth. Since neither declarative semantics nor switch programs can descriminate values at this depth, they behavior for given value
+will coinside with that for $s$, which is correct by definition.
+
+The implementation of complete set generation, again, is done using relational conversion. Interestingly, the enumeration of all terms up to a certain depth
+can be acquired from a function which calculates the depth of a term: indeed, converting it into relation and then running with \emph{fixed} depth
+and \emph{free} term arguments delivers what we need. Thus, we add an extra conjunct which performs the enumeration of all values to the
+relational goal $\star\star$, getting the following form
+
+\[
+depth^o\,v\,n\wedge\mbox{\lstinline|fresh ($i$)|}\; \{match^o\,v\,p_1,\dots,p_k\,i \wedge eval^o_{\mathcal S}\,v\,\circled{?}\,i\}
+\eqno{\star\star\star}
+\]
+
+Here $n$ is a precomputed synthesis depth in Peano form.
+
+\begin{comment}
+\begin{figure}[ht]
+\begin{subfigure}[t]{0.2\linewidth}
+  \[
+  \{A^1,\,B^0,\,C^1,\,D^0\}
+  \]
+\vskip6mm
+\caption{Constructors}
+\label{fig:constructors}
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[t]{0.26\linewidth}
+  \[
+  \begin{array}{c}
+    C^1\,(A^1\,(B^0))\\
+    C^1\,(\_)\\
+    \_
+  \end{array}
+\]
+\caption{Patterns}
+\label{fig:patterns}
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[t]{0.33\linewidth}
+  \[
+  \begin{array}{lcl}
+     B             & \mapsto & 2 \\
+     D             & \mapsto & 2 \\
+     A\, (B)       & \mapsto & 2 \\
+     A\, (D)       & \mapsto & 2 \\
+     C\, (B)       & \mapsto & 1 \\
+     C\, (D)       & \mapsto & 1 \\
+     A\, (A\, (B)) & \mapsto & 2 \\
+     A\, (A\, (D)) & \mapsto & 2 \\
+     A\, (C\, (B)) & \mapsto & 2 \\
+     A\, (C\, (D)) & \mapsto & 2 \\
+     C\, (A\, (B)) & \mapsto & 0 \\
+     C\, (A\, (D)) & \mapsto & 1 \\
+     C\, (C\, (B)) & \mapsto & 1 \\
+     C\, (C\, (D)) & \mapsto & 1 
+  \end{array}
+  \]
+\caption{Generated samples}
+\label{fig:samples}
+\end{subfigure}
+\caption{Complete set of samples example} 
+\label{fig:complete-set-example}
+\end{figure}
+\end{comment}
