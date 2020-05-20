@@ -136,7 +136,7 @@ This, due to the completeness of relational interleavling search~\cite{search,ce
 no results. Actually it is rather easy to see that any pattern matching synthesis problem has \emph{infinitely many} solutions: indeed, having just
 one it is always possible to ``pump'' it with superfluous ``$\primi{otherwise}$'' clauses; thus, the goal above is \emph{refutationally
 complete}~\cite{WillThesis,DivergenceTest}. These observations justify the totality of our synthesis approach. In Section~\ref{sec:optimization} we show
-how we can make it to provide optimal solution.
+how we can make it provide optimal solution.
 
 \subsection{Constructing Relational Interpreters}
 \label{sec:relints}
@@ -191,7 +191,7 @@ for patterns and sequence of patterns as follows:
 \end{array}
 \]
 
-As sequence of patterns is the single input in our synthesis approach we will call its depth \emph{synthesis depth}.
+As a sequence of patterns is the single input in our synthesis approach we will call its depth \emph{synthesis depth}.
 
 Similarly, we define the depth of matching expressions
 
@@ -214,8 +214,8 @@ and switch programs:
 Informally, the depth of a switch program tells us how deep the program can look into a value. 
 
 From the definition of $\inbr{;}$ it immediately follows that a pattern $p$ can only discriminate values up to its depth $d\,(p)$: changing a value at the depth greater
-or equal than $d\,(p)$ cannot affect the fact of matching/non matching. This means that we can only consider switch programs of depth no greater than synthesis depth.
-But for these programs the set of all values with height no greater than synthesis depth forms a complete set of samples. Indeed, if the height of a value less or
+or equal than $d\,(p)$ cannot affect the fact of matching/non matching. This means that we can only consider switch programs of depth no greater than the synthesis depth.
+But for these programs the set of all values with height no greater than the synthesis depth forms a complete set of samples. Indeed, if the height of a value less or
 equal to the synthesis depth, then this value is a member of complete set of samples and by definition the bevaviour of the synthesized program on this value is
 correct. Otherwise there exists some value $s$ from the complete set of samples, such that given value can be obtained as an ``extension'' of $s$ at the
 depth greater than the synthesis depth. Since neither declarative semantics nor switch programs can descriminate values at this depth, they behavior for given value
@@ -224,11 +224,11 @@ will coinside with that for $s$, which is correct by definition.
 The implementation of complete set generation, again, is done using relational conversion. Interestingly, the enumeration of all terms up to a certain depth
 can be acquired from a function which calculates the depth of a term: indeed, converting it into relation and then running with \emph{fixed} depth
 and \emph{free} term arguments delivers what we need. Thus, we add an extra conjunct which performs the enumeration of all values to the
-relational goal $\star\star$, getting the following form
+relational goal $(\star\star)$, arriving at
 
 \[
 depth^o\,v\,n\wedge\mbox{\lstinline|fresh ($i$)|}\; \{match^o\,v\,p_1,\dots,p_k\,i \wedge eval^o_{\mathcal S}\,v\,\circled{?}\,i\}
-\eqno{\star\star\star}
+\eqno{(\star\star\star)}
 \]
 
 Here $n$ is a precomputed synthesis depth in Peano form.
