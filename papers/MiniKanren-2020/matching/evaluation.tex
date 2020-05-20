@@ -9,7 +9,7 @@
     \headl{3cm}{Patterns} & 
     \head{1.5cm}{Pruning factor} & 
     \headll{1.7cm}{Answers requested} & 
-    \head{1.5cm}{Examples count} & 
+    \head{2cm}{Generated examples count} & 
     \head{1.5cm}{1st answer time (ms)} & 
     \head{1.5cm}{Answers found} & 
     \head{1.5cm}{Total search time (ms)}\\
@@ -67,7 +67,7 @@ false
      &100&10&9&45&2&239.0                         
   \end{tabular}
   \caption{The results of synthesis evaluation}
-  \ref{fig:eval}
+  \label{fig:eval}
 \begin{comment}
 \csvreader[tabular=|r|p{3cm}|p{1cm}|p{1.5cm}||p{1.5cm}|p{1.5cm}|p{1.2cm}|p{1.5cm}|,
 table head=\hline & Name & Prunes & Answers requested &Example generated&  1st answer time & Answers found & Total search time \\ \hline\hline,
@@ -79,7 +79,19 @@ late after line=\\\hline]%
 \end{comment}
 \end{figure}
 
-In the table~\ref{fig:eval} we summarize benchmarking results for our synthesis algorithm.
-Very often checks for size constraint of the current approximation of the answer lead to performance degradation
-because of these check is not cheap. But very rare checks of size constraint can lead to performance degradation too,
+%In the table~\ref{fig:eval} we summarize benchmarking results for our synthesis algorithm.
+
+The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU @ 4.00GHz processor and 16GB of memory.
+For OCanren \mbox{ocaml-4.07.1+fp+flambda} was used.
+All benchmarks were executed in the natively compiled mode ten times, then average monotonic clock was taken. The results of the evaluation
+are shown on Figure~\ref{fig:eval}.
+
+In the table a double bar symbol ($\mid\mid$) separates input data from output data. The inputs are: patterns used in pattern matching, pruning factor $n$ means we perform check of structural constraint every $n$ unifications and how many answers were requested. On the right are outputs of algorithm: amount of examples being generated, running time before receiving first answer, how many answers were found in the end and total search time to get these answers.
+
+The first conclusion can be drawn from results is that a very often checking
+of the current approximation of the answer by size constraint
+cab lead to performance degradation
+because this check is not cheap. But we shouldn't do this check infinitely more seldom. It lead to performance degradation too,
 because more search branches will be prunes later.
+
+The 4th and 7th cases has similar input configuration and examples count but time differs linearly. This probably means that interleaving search of OCanren can be more lucky in some cases then in another.
