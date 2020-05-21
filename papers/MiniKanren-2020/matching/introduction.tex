@@ -140,17 +140,16 @@ guards (first time appeared in KRC language~\cite{turner2013}), disjunctive patt
 %and generalized algebraic datatypes~\cite{?}) 
 which require a separate customized algorithms to be developed.
 
-
 We present an approach to pattern matching implementation based on application of relational programming~\cite{TRS,WillThesis} and, in particular, relational interpreters~\cite{unified}
-and relational conversion~\cite{lozov2017}. Our approach is based on relational representation of the top-level source language semantics of pattern matching on the one hand, and
+and relational conversion~\cite{lozov2017}. Our approach is based on relational representation of the source language pattern matching semantics on the one hand, and
 the semantics of intermediate-level implementation language on the other. We formulate the condition for a correct and complete implementation of pattern matching and use it to
 construct a top-level goal which represents a search procedure for all correct and complete implementations. We also present a number of techniques which makes it possible to come up with an
-\emph{optimal} solution as well as optimizations to improve the performance of the search. Our implementation\footnote{\url{https://github.com/kakadu/pat-match}} makes use of
-\textsc{OCanren}\footnote{\url{https://github.com/JetBrains-Research/OCanren}}~--- a typed implementation of \textsc{miniKanren} for \textsc{OCaml}~\cite{OCanren},
-and \textsc{noCanren}\footnote{\url{https://github.com/Lozov-Petr/noCanren}}~--- a convertor from the subset of plain \textsc{OCaml} into \textsc{OCanren}~\cite{lozov2017}.
-An evaluation, performed for a set of benchmarks taken from other papers, initially has shown a good performance of our synthesizer. However, being aware of some pitfalls of
-our approach, we came up with a set of counterexamples, on which it did not provide any results in observable time, so we do not consider the problem completely solved.
-We also started a work on mechanized formalization\footnote{\url{https://github.com/dboulytchev/Coq-matching-workout}}, written in \textsc{Coq}~\cite{Coq}, to
+\emph{optimal} solution as well as optimizations to improve the performance of the search; similarly to many other prior works we use synthesized code size, which can be measured statically.
+Our implementation\footnote{\url{https://github.com/kakadu/pat-match}} makes use of \textsc{OCanren}\footnote{\url{https://github.com/JetBrains-Research/OCanren}}~--- a typed
+implementation of \textsc{miniKanren} for \textsc{OCaml}~\cite{OCanren}, and \textsc{noCanren}\footnote{\url{https://github.com/Lozov-Petr/noCanren}}~--- a convertor from the subset
+of plain \textsc{OCaml} into \textsc{OCanren}~\cite{lozov2017}. An evaluation, performed for a set of benchmarks taken from other papers, initially has shown a good performance of our synthesizer.
+However, being aware of some pitfalls of our approach, we came up with a set of counterexamples, on which it did not provide any results in observable time, so we do not consider the problem
+completely solved. We also started a work on mechanized formalization\footnote{\url{https://github.com/dboulytchev/Coq-matching-workout}}, written in \textsc{Coq}~\cite{Coq}, to
 make the justification of out approach more solid and easier to verify, but this formalization is not yet complete. 
 
  
