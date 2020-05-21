@@ -1,4 +1,4 @@
-\section{Optimization}
+\section{Implementation and Optimizations}
 \label{sec:optimization}
 
 In this section we address two aspects of our solution: a number of optimizations which make the search more efficient, and
@@ -10,7 +10,7 @@ of techniques, some of which require extending the implementation of the search.
 \begin{itemize}
 \item We make use of type information to restrict the subset of constructors which may appear in a certain branch of
   program being synthesized.
-\item We implement \emph{structural constraints} which allow to restrict the shape of terms during the search, and
+\item We implement \emph{structural constraint} which allows to restrict the shape of terms during the search, and
   utilize them to implement pruning.  
 \end{itemize}
 
@@ -18,5 +18,14 @@ In our formalization we do not make any use of types since as a rule type inform
 utilizing the properties of a concrete type system would make our approach too coupled with this particular type system, hampering
 its reusability for other languages. Nevertheless we may use a certain abstraction of type system which would deliver only
 that part of information which is essential for our approach to function. Currently, we calculate a type of any matching expression in
-program being generated and from this type extract the subset of constuctors which can appear when branching on this expression
-is performed. 
+program being generated and from this type extract the subset of constructors which can appear when branching on this expression
+is performed. Amount of these constructors restricts number of branches that corresponding \lstinline{switch }expression can have. In our implementation constructor names are ordered which restricts form of the branches even more.
+
+We also extended \textsc{OCanren} by a new primitive called \emph{structural constraint}. The pattern matching compilation problem described above doesn't aim to find \emph{all} compilations that agree with specification but to get a \emph{minimal} compiled representation with respect to designated metric. To do that our algorithm checks the current shape of the answer from time to time and if, for example, the answer is too large it prunes the search branch. When new answer is found it is being compared by size with the minimal answer already being found and if needed minimal answer is updated. 
+
+The structural constraint in principle can become violated after any unification that is performed during search. But the check of structural constraint can be rather expensive, so we also tried to perform this check every $n$ unifications for some natural number $n$. Postponing the check doesn't affect the correctness of algorithm: all answers behave according to specification. Also, it's worth to mention that 
+depth and type constraints can be implemented using structural constraint as a basis but our experiments showed that it will affect performance negatively.
+
+The description $\star\star\star$ of our algorithm is very high level. In the implementation there is a conjunct representing structural constraint on $\circled{?}$ variable. Dealing with depth and types is fused into 
+high-order relation $eval^o_{\mathcal S}$. This parameterisation gives more flexibility while experimenting with new ways to reduce search space.
+
