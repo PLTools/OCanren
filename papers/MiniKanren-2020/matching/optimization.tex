@@ -1,2 +1,22 @@
 \section{Optimization}
 \label{sec:optimization}
+
+In this section we address two aspects of our solution: a number of optimizations which make the search more efficient, and
+the way it ends up with the optimal solution.
+
+Relational goal in its final form, presented in the previous section, does not demonstrate a good performance. Thus, we apply a number
+of techniques, some of which require extending the implementation of the search. Namely, we apply the following optimizations:
+
+\begin{itemize}
+\item We make use of type information to restrict the subset of constructors which may appear in a certain branch of
+  program being synthesized.
+\item We implement \emph{structural constraints} which allow to restrict the shape of terms during the search, and
+  utilize them to implement pruning.  
+\end{itemize}
+
+In our formalization we do not make any use of types since as a rule type information does not affect matching. In addition,
+utilizing the properties of a concrete type system would make our approach too coupled with this particular type system, hampering
+its reusability for other languages. Nevertheless we may use a certain abstraction of type system which would deliver only
+that part of information which is essential for our approach to function. Currently, we calculate a type of any matching expression in
+program being generated and from this type extract the subset of constuctors which can appear when branching on this expression
+is performed. 
