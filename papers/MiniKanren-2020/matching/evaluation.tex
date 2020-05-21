@@ -81,12 +81,14 @@ late after line=\\\hline]%
 
 %In the table~\ref{fig:eval} we summarize benchmarking results for our synthesis algorithm.
 
-The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU @ 4.00GHz processor and 16GB of memory.
-For OCanren \mbox{ocaml-4.07.1+fp+flambda} was used.
-All benchmarks were executed in the natively compiled mode ten times, then average monotonic clock was taken. The results of the evaluation
-are shown on Figure~\ref{fig:eval}.
 
-In the table a double bar symbol ($\mid\mid$) separates input data from output data. The inputs are: patterns used in pattern matching, pruning factor $n$ means we perform check of structural constraint every $n$ unifications and how many answers were requested. On the right are outputs of algorithm: amount of examples being generated, running time before receiving first answer, how many answers were found in the end and total search time to get these answers.
+The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU @ 4.00GHz processor and 16GB of memory,
+\textsc{OCanren} was compiled with \mbox{ocaml-4.07.1+fp+flambda}. All benchmarks were executed in the native mode ten times,
+then average monotonic clock time was taken. The results of the evaluation are shown on Figure~\ref{fig:eval}.
+
+In the table the double bar separates input data from output. Inputs are: the patterns used for synthesis, the pruning factor,
+the requested number of answers. Outputs are: the size of generated complete samples set, the running time before receiving the first answer,
+the total number of programs synthesized, the total search time.
 
 The first conclusion can be drawn from results is that a very often checking
 of the current approximation of the answer by size constraint
@@ -94,4 +96,4 @@ cab lead to performance degradation
 because this check is not cheap. But we shouldn't do this check infinitely more seldom. It lead to performance degradation too,
 because more search branches will be prunes later.
 
-The 4th and 7th cases has similar input configuration and examples count but time differs linearly. This probably means that interleaving search of OCanren can be more lucky in some cases then in another.
+The 4th and 7th benchmarks have similar input configurations and examples count but time differs linearly. This probably means that interleaving search of OCanren can be more lucky in some cases then in another.
