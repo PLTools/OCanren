@@ -1,0 +1,96 @@
+\section{Naive uniform conjunction}
+
+% В данном разделе мы рассмотрим семантику реляционного языка, которая равномерно раскрывает конъюнкты. Также мы обсудим её достоинства и недостатки.
+In this section, we consider the semantics of \mk, which uniformly unfolds conjuncts. Also we discuss its advantages and disadvantages.
+
+% Вместо того чтобы в листе раскрывать самый левый конъюнкт до истощения, мы предлагаем зафиксировать количество раскруток N. Если после N раскруток левый конъюнкт не исчерпан, мы всё равно передадим управление следующему конъюнкту. Этот процесс будет продолжаться для всех конъюнктов в листе. Когда все конъюнкты будут раскручены N раз, мы снова перейдем к самому левому конъюнкту.
+Instead of unfolding the leftmost call to exhaustion in the leaf we suggest to fix the unfolding number $N$.  If, after N unfoldings, the leftmost call is not exhausted, we will still start to unfold the next call. This process will continue for all calls in the leaf. When all calls are unfolded $N$ times, we again go to the leftmost call.
+
+% Для реализации подобного поведения нам нужно обновить структуру состояний. Каждому вызову c_i в листе мы добавили натуральное число k_i, которое описывает оставшееся число разверток. Таким образом каждый вызов в состояние помечен счетчиком разверток. 
+To implement this behavior, we need to update the state structure
+\[
+\textgoth{T} = \inbr{\sigma, i, c_1^{k_1} : \ldots : c_n^{k_n} : \epsilon} \mid \textgoth{T} \circ \textgoth{T}.
+\]
+For each call $c_i$ in the leaf, we added a natural number $k_i$, which defines the remaining number of unfoldings. Therefore, each call to the state is marked with a unfolding counter. 
+
+% Отметим, что синтаксис, вспомогательная функция union, семантика развертки остается без изменений. Функция push также сохраняет свое поведение, однако теперь она принимает список меченых вызовов с дыркой и обновленное состояние. Дополнительно нам понадобится функция set, которая принимает состояние без меток и число. Это число присоединяется к каждому вызову в состояние. Таким образом мы получаем обновленное состояние.
+Note that the syntax, auxiliary function $union$, the semantics of unfolding remains unchanged. The function $push$ also remains its behavior, but now it gets a list of marked calls with the hole and an updated state. In addition, we need the function $set$ (fig.~\ref{fair:set-semantics}), which takes an old state without counters in leafs and a natural number. This number is attached to each call to the state. Thus, we get an updated state. 
+
+\begin{figure}[h!]
+\[
+set(T, i) =
+\left\{
+\begin{array}{rl}
+\inbr{\sigma, i, c_1^i : \ldots : c_n^i : \epsilon}, & \mbox{if } T = \inbr{\sigma, i, c_1 : \ldots : c_n : \epsilon} \\
+(set(T_1, i) \circ set(T_2, i)), & \mbox{if } T = (T_1 \circ T_2)
+\end{array}
+\right.
+\]
+\caption{Auxiliary function $set$}
+\label{fair:set-semantics}
+\end{figure}
+
+% Теперь мы готовы модернизировать семантику с направленной конъюнкцией. Новая семантика по-старому обрабатывает дизюнкцию, но конъюнкты исполняет равномерно.
+Now we are ready to modernize the semantics with directed conjunction. New semantics (fig.~\ref{fair:naive-semantics}) evaluates disjuncts in the old way, but it unfolds conjuncts uniformly.
+
+\begin{figure}[h!]
+\[\begin{array}{cr}
+
+      {\inbr{\sigma, i, \epsilon} \xrightarrow{\sigma} \emptyset}  
+&     \ruleno{Answer} \\[2mm]
+      {\inbr{\sigma, i, c_1^0 : \ldots : c_k^0 : \epsilon} \xrightarrow{\circ} (\sigma, i, c_1^N : \ldots : c_k^N : \epsilon)}
+&     \ruleno{ConjZero} \\[2mm]
+\dfrac{m > 0 \qquad (\sigma, i) \vdash c_{i+1} \Rightarrow T \qquad set(m - 1, T) = \bar{T}}
+      {\inbr{\sigma, i, c_1^0 : \ldots : c_i^0 : c_{i+1}^m : cs} \xrightarrow{\circ} push(c_1^0 : \ldots : c_i^0 : \Box : cs, \bar{T})}
+&     \ruleno{ConjUnfold} \\[2mm]
+\dfrac{T_1 \xrightarrow{\alpha} \emptyset}
+      {(T_1 \lor T_2) \xrightarrow{\alpha} T_2}
+&     \ruleno{Disj} \\[4mm]
+\dfrac{T_1 \xrightarrow{\alpha} \bar{T_1}}
+      {(T_1 \lor T_2) \xrightarrow{\alpha} (T_2 \lor\bar{T_1})}
+&     \ruleno{DisjStep} \\[4mm]
+\end{array}\]
+\caption{Simple fair semantics}
+\label{fair:naive-semantics}
+\end{figure}
+
+% Прежде всего отметим, что у семантики есть глобальный параметр N, который определяет количество разверток. Если этот параметр равен 1, то обработка конъюнтов будет весьма похода на обработку дизъюнктов. Как и в случае с дизъюнкцией мы переходим к развертке нового конъюнкта после каждого шага. Если параметр N устремить к бесконечности, то конъюнкция станет направленной. Действительно, мы никогда не обнулим счетчик самого левого конъюнкта и он будет разворачиваться до исчерпания.
+First of all, we note that semantics have a global parameter $N$, which determines the number of unfoldings. 
+If this parameter is 1, then the processing of conjunctions is very similar to the processing of disjunctions. 
+As in the case of the disjunction, we proceed to unfolding of a new conjunct after each step.If the parameter $N$ is tended to infinity, then the conjunction will become directional. Indeed, counter of the leftmost conjunct is never equal to zero and this conjunct will unfold until exhaustion.
+
+% Теперь рассмотрим семантику подробнее. Правила [Answer], [Disj] и [DisjStep] остались без изменений. Однако для обработки конъюнкции у нас два новых правила. Правило [ConjUnfold] разворачивает самый левый конъюнкт c_{i+1}, счетчик которого больше нуля. Ко всем вызовам в состоянии T, которое мы получили после развертки, необходимо прикрепить обновленный счетчик. Это мы делаем с помощью функции set. Если все вызовы к листе имеют счетчик, который равен нулю, то мы применяем правило [ConjZero]. Это правило обновляет все счетчики в листе. Теперь они снова равны N.
+Now we consider the semantics in more detail. The rules \rulen{Answer}, \rulen{Disj} and \rulen{DisjStep} remain unchanged. However, we have two new rules for handling conjunctions. The \rulen{ConjUnfold} rule unfolds the leftmost conjunction $c_{i + 1}$, whose counter $m$ is greater than zero. All calls in new state $T$, which we got after the unfolding, need to attach an updated counter. We do this using the function $set$. If all calls in the leaf have a zero-counter, then we apply the rule \rulen{ConjZero}. This rule updates all counters in the leaf. Now they are again equal to $N$.
+
+% Полученная семантика более справедливо распределяет ресурсы между конъюнктами. Благодаря этому выполнение реляционных запросов чаще сходится. Давайте вернемся к примеру отношения reverso. Как мы говорили ранее, при направленной конъюнкции, запрос \lstinline{(revers$^o$ [1, 2, 3] q)} сходится при прямом порядке конъюнктов и расходится при обратном. В то же время запрос \lstinline{(revers$^o$ q [1, 2, 3])} расхожится при прямом порядке конъюнктов, но сходится при обратном. В случае равномерной конъюнкции оба запроса сходятся при обоих порядках конъюнктов для любого параметра N.
+This semantics more fairly distributes resources between conjuncts. Because of this, relational queries converge more often. Let's go back to the \lstinline{revers$^o$} relation example (fig.~\ref{fair:lst-reverso}). As we said earlier for directed conjunction, the query \lstinline{(revers$^o$ [1, 2, 3] q)} converges in the direct order of conjuncts and diverges in the opposite order. At the same time, the query \lstinline{(revers$^o$ q [1, 2, 3])} diverges with the direct conjunct order, but converges with the opposite order. In the case of a uniform conjunction, both queries converge in both conjunct orders for any count of unfoldings $N$. 
+
+\begin{figure}[h!]
+\centering
+\begin{tabular}{c}
+\begin{lstlisting}
+let rec repeat$^o$ e l =
+  (l === []) \/
+  fresh (ls)
+    (l === e : ls /\ 
+     repeat$^o$ e ls)
+     
+let divergence$^o$ l = 
+  repeat$^o$ C$_1$ l /\ 
+  repeat$^o$ C$_2$ l
+\end{lstlisting}
+\end{tabular}
+
+\caption{Relational program to list producing}
+\label{fair:lst-repeato}
+\end{figure}
+
+% Более того, существуют примеры, которые расходятся при любом порядке конъюнктов в случае направленной конъюнкции. Но они сходятся при равномерной конъюнкции. Например, отношение \lstinline{divergence}. Данное отношение ищет такие списки, которые с одной стороны чочтоят только из термов $C_1$, а с другой --- только из термов $C_2$. Очевидно, что только пустой список обладает таким свойством.
+Moreover, there are examples that diverge for any order of conjunctions in the case of directed conjunctions. But they converge with a uniform conjunction.  For instance, the relation \lstinline{divergence$^o$} (fig.~\ref{fair:lst-repeato}). This relation searches for lists that on the one hand has terms \lstinline{C$_1$} only, and on the other, has terms \lstinline{C$_1$} only. Obviously, only an empty list has this property.
+
+% Мы найдем этот ответ, исполняя программу с направленной конъюнкцией. Однако, далее поиск ответов разойдется. Причем такой исход будет для любого порядка когъюнктов в программе. В то же время равномерная конъюнкция сходится для любого параметра N и при любом порядке конъюнктов.
+We can find this answer by evaluating query \lstinline{divergence$^o$ l} with directed conjunction. However, further the search for answers will diverge. And this outcome will be for any order of conjuncts in the program. At the same time, the uniform conjunction converges for any parameter $N$ and in any order conjunct.
+
+% Однако данный подход обладает нестабильной производительностью на практике. С одной стороны, при правильно подобранном количества разёрток $N$, эффективность равномерной конъюнкции сравнима с направленной конъюнкцией при оптимальном порядке конъюнктов. С другой стороны, при неправильно подобранном количестве разверток N, мы можем получить крайне неэффективное исполнение, которое в сотни раз медленнее направленной конъюнкции. Поэтому вместо фиксирования количества разверток, мы бы хотели подбирать его динамически для каждого конъюнкта.
+However, this approach has unstable performance in practice. On the one hand, with the right count of unfoldings $N$ the efficiency of a uniform conjunction is comparable to a directed conjunction with an optimal order of conjunctions. On the other hand, with the wrong count of unfoldings $N$, we can get an extremely inefficient evaluation, which is hundreds of times slower than the directed conjunction. Therefore, instead of count unfolding fixing, we would like to select it dynamically for each conjunct.
+

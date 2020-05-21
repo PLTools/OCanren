@@ -1,0 +1,97 @@
+\documentclass[acmlarge]{acmart}
+
+\setcopyright{acmcopyright}
+\copyrightyear{2020}
+\acmNumber{4}
+\acmMonth{8}
+
+\usepackage{listings}
+\usepackage[section]{placeins}
+\usepackage{multirow}
+\usepackage{pgfplots}
+\usepackage{yfonts}
+\usepackage{subcaption}
+
+\pgfplotsset{width=7cm,compat=1.8}
+
+\lstdefinelanguage{ocanren}{
+keywords={run, conde, fresh, let, in, match, with, when, class, type,
+object, method, of, rec, until, while, not, do, done, as, val, inherit,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+true, false},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\textbf,%\ttfamily\underline,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+mathescape=true,
+fontadjust=true,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
+morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+language=ocanren
+}
+
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
+\newcommand{\rulen}[1]{[\textsc{#1}]}
+\newcommand{\mk}[0]{\textsc{miniKanren}}
+\newcommand{\inbr}[1]{\langle #1 \rangle}
+
+\begin{document}
+
+\title{Fair relational conjunction}
+
+\author{Petr Lozov}
+\email{lozov.peter@gmail.com}        
+
+\author{Dmitry Boulytchev}
+\email{dboulytchev@math.spbu.ru}    
+
+\affiliation{
+  \institution{Saint Petersburg State University}
+  \country{Russia}                   
+}
+
+\affiliation{
+  \institution{JetBrains Research}   
+  \country{Russia}                   
+}
+
+\begin{abstract}
+  Abstract will be here.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10011007.10011006.10011008.10011009.10011015</concept_id>
+<concept_desc>Software and its engineering~Constraint and logic languages</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Software and its engineering~Constraint and logic languages}
+
+\keywords{relational programming, evaluation strategies}
+
+\maketitle
+
+\input{introduction}
+\input{classic-conjunction}
+\input{classic-semantics}
+\input{naive-fair-conjunction}
+\input{structural-recursion}
+\input{evaluation}
+\input{conclusion}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{fair-conj}
+
+
+\end{document}
+\endinput
+

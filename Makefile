@@ -55,7 +55,7 @@ cleanppx:
 	$(RM) -r _build/ppx _build/ppxnew
 
 ######################## Tests related stuff  ##########################
-REGRES_CASES := 000 002sort 001 004 005 006 007 009 010 011 013 014 015runaway 016sorto 017tabling 018prjc 019tablingCache 020
+REGRES_CASES := 000 002sort 001 004 005 006 007 009 010 011 013 014 015runaway 016sorto 017tabling 018prjc 019tablingCache 020 021structural
 
 define TESTRULES
 BYTE_TEST_EXECUTABLES += regression/test$(1).byte
