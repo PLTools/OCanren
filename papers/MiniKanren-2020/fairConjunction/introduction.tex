@@ -1,0 +1,14 @@
+\section{Introduction}
+
+The Reasoned Schemer~\cite{fair:TheReasonedSchemer}
+
+Quine Generation~\cite{fair:quines}
+
+% Проблема несправедливого поведения конъюнкции уже рассматривалась с нескольких разных точек зрения.
+The problem of unfair behavior of conjunction has already been examined from several different points of view.
+
+% Одним из аспектов несправедливого поведения конъюнкции является управления приоритетами вычисления независимых ветвей, которые порождает конъюнкция. В оригинальном языке больший приоритет отдается более ранней ветке. Однако существует подход, который позволяет сбалансировать время исполнения. Это делает поведение конъюнкции более справедливым, но чувствительность к порядку конъюнктов сохраняется.
+One aspect of the unfair behavior of a conjunction is to prioritize the evaluation of the independent branches that the conjunction generates. In the original \mk, a higher priority is given to an earlier branch. However, there is an approach~\cite{fair:towardsAM} that allows you to balance the time of the evaluation. This makes the conjunction behavior more fair, but the sensitivity to the order of the conjuncts remains.
+
+% Также конъюнкция становится более честной, если детектировать расхождение конъюнктов. Данный подход во время исполнения может обнаружить расхождение конъюкта. В этом случае данные, которые были получены при исполнении конъюнкта стираются. После чего происходит перестановка конъюнктов и продолжается исполнение программы. Данный подход оказывается эффективен на практике. Недостатком является консервативная перестановка конъюнктов, которпя не использует информацию, полученную при вычислении конъюнкта до перестановки.
+Also, the conjunction becomes more fair we will detect divergence of conjuncts. This approach~\cite{fair:DivTest} at run time can detect conjunct divergence. In this case, the data that was received during the evaluation of the conjunct is erased. After that there is a rearrangement of the conjuncts and the evaluation of the program continues. This approach is effective in practice. However, the conservative rearrangement of the conjuncts does not use the information obtained when evaluating the conjunct before the rearrangement.
