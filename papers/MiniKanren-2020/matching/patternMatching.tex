@@ -54,7 +54,7 @@ the current index (which in this case is equal to the number of patterns plus on
            {\withenv{i}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}}} & \ruleno{MatchHead}\\
      \trule{\neg\inbr{v;\,p_1}\qquad\withenv{i+1}{\trans{\inbr{v;\,p_2,\dots,p_k}}{}{j}}}
            {\withenv{i}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{j}}} & \ruleno{MatchTail}\\
-     \withenv{i}{\trans{\inbr{v;\,\epsilon}}{}{i}} & \ruleno{MatchOtherwise}\\
+     \withenv{i}{\trans{\inbr{v;\,\varepsilon}}{}{i}} & \ruleno{MatchOtherwise}\\
      \trule{\withenv{1}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}}}
            {\setsubarrow{}\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}} & \ruleno{Match}
    \end{array}
@@ -112,7 +112,7 @@ the second~--- the semantics of the switch language itself. In both cases the sc
           {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchMatched}\\
     \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{D^n\,v_1,\dots,v_n}}}\qquad C^k\ne D^n\qquad \withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;s^*\;\primi{otherwise}\;s^\prime}{}{i}}}
           {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchNotMatched}\\
-    \trule{\withenv{v}{\trans{s}{}{i}}}{\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;\epsilon\;\primi{otherwise}\;s}{}{i}}} & \ruleno{SwitchOtherwise}
+    \trule{\withenv{v}{\trans{s}{}{i}}}{\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;\varepsilon\;\primi{otherwise}\;s}{}{i}}} & \ruleno{SwitchOtherwise}
   \end{array}
   \]
   \caption{Semantics of switch programs}
