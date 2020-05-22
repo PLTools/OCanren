@@ -1,8 +1,9 @@
-\section{Review of syntax and semantics for the basic language}
+\section{The syntax and semantics of core language}
 
-In this section, we revisit our definition of syntax and two semantics for the basic language without disequality constraints and our main result~--- equivalence of the two semantics.
+In this section we recollect existing definitions of syntax and two semantics for the code language without disequality constraints and the main result~--- the equivalence
+of these two semantics~\cite{CeritfiedSemantics}.
 
-\subsection{Syntax of the basic language}
+\subsection{The Syntax of Core Language}
 \label{subsec_syntax}
 
 \begin{figure}[t]
@@ -23,11 +24,11 @@ In this section, we revisit our definition of syntax and two semantics for the b
   \mathcal{S} & = & \{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i;\}\; g & \mbox{specification}
 \end{array}
 \]
-\caption{The syntax of the basic language}
+\caption{The syntax of core language}
 \label{syntax}
 \end{figure}
 
-The syntax of the language is shown in Figure~\ref{syntax}. First, we fix a set of constructors $\mathcal{C}$ with known arities and consider
+The syntax of the language is shown on Fig.~\ref{syntax}. First, we fix a set of constructors $\mathcal{C}$ with known arities and consider
 a set of terms $\mathcal{T}_X$ with constructors as functional symbols and variables from $X$. We parameterize this set with an alphabet of
 variables since in the semantic description we will need \emph{two} kinds of variables. The first kind, \emph{syntactic} variables, is denoted
 by $\mathcal{X}$. We also consider an alphabet of \emph{relational symbols} $\mathcal{R}$ which are used to name relational definitions.
@@ -40,7 +41,8 @@ of relational definitions and a top-level goal. A top-level goal represents a se
 the free variables of the goal. The language we defined is first-order, as goals can not be passed as parameters,
 returned or constructed at runtime.
 
-As an example consider the specification for the standard \lstinline|append$^o$| relation and a query to it that splits the list consisting of three constants \lstinline|A|, \lstinline|B| and \lstinline|C| in two parts.
+As an example consider the specification for the standard \lstinline|append$^o$| relation and a query which splits a list containing
+three constants \lstinline|A|, \lstinline|B| and \lstinline|C| into two parts using every possible way:
 
 \begin{lstlisting}
   append$^o$ = fun x y xy .
@@ -57,7 +59,7 @@ As an example consider the specification for the standard \lstinline|append$^o$|
 
 For denotational semantics, we use a simple set-theoretic approach which can be considered as an analogy to the least Herbrand model for definite logic programs~\cite{LHM}.
 
-Intuitively, the mathematical model for every goal should be a finitary relation between semantic variables that occur free in this goal. We represent this relation as a set of total
+Intuitively, the mathematical model for every goal should be a relation between semantic variables that occur free in this goal. We represent this relation as a set of total
 functions 
 
 \[
@@ -134,7 +136,7 @@ representing functions $\mathfrak{F}\subseteq\mathcal{A}\to\mathcal{D}$:
 
 \end{itemize}
 
-The semantics for goals is shown on Figure~\ref{denotational_semantics_of_goals}.
+The semantics for goals is shown on Fig.~\ref{denotational_semantics_of_goals}.
 
 \begin{figure}[t]
   \[
@@ -170,7 +172,7 @@ of a body of each definition is evaluated with environment $\Gamma$.
 \subsection{Operational sematics}
 
 The operational semantics of \textsc{miniKanren}, which we described, corresponds to the known
-implementations with interleaving search. The semantics is given in the form of a labeled transition system (LTS~\cite{LTS}).
+implementations with interleaving search. The semantics is given in the form of a labeled transition system (LTS)~\cite{LTS}.
 
 The states in the transition system have the following shape:
 
@@ -224,7 +226,7 @@ variables. The substitution is one of the answers, and the number is threaded th
   \label{lts}
 \end{figure*}
 
-The transition rules are shown in Figure~\ref{lts}. The introduced transition system is completely deterministic.
+The transition rules are shown on Fig.~\ref{lts}. The introduced transition system is completely deterministic.
 
 A derivation sequence for a certain state $s$ determines a \emph{trace} $\tr{s}$~--- a finite or infinite sequence of answers. The trace corresponds to the stream of answers
 in the reference \textsc{miniKanren} implementations.
@@ -232,7 +234,7 @@ in the reference \textsc{miniKanren} implementations.
 \subsection{Semantics Equivalence}
 
 After we defined two different kinds of semantics for \textsc{miniKanren} we related them and showed that the results given by these two semantics are the same for any specification.
-By proving this equivalence we established \emph{completeness} of the search which means that the search will get all answers satisfying the described specification and only those.
+By proving this equivalence we established the \emph{completeness} of the search which means that the search will get all answers satisfying the described specification and only those.
 
 To do it we had to relate the answers produced by these two semantics as they have different forms: a trace of substitutions (along with numbers of allocated variables)
 for operational and a set of representing functions for denotational. There is a natural way to extend any substitution to a representing function: composing it with an arbitrary representing function will preserve all variable dependencies in the substitution. So we define a set of representing functions corresponding to substitution as follows:

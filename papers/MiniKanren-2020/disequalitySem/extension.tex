@@ -1,6 +1,6 @@
 \section{Extention with disequality constraints}
 
-In this section, we present extensions of our two semantics on the language with disequality constraints and revised version of the soundness and completeness theorem.
+In this section we present extensions of our two semantics for the language with disequality constraints and revised version of the soundness and completeness theorem.
 
 Disequality constraint introduces one additional type of base goal~--- a disequality of two terms: $t_1 \diseq t_2$
 
@@ -9,13 +9,13 @@ The extension of denotational semantics is straightforward (as disequality const
 \[ \sembr{t_1 \diseq t_2}  =  \{\reprfun \in \reprfunset \mid \overline{\reprfun}\,(t_1) \neq \overline{\reprfun}\,(t_2)\}, \]
 
 This definition for a new type of goals fits nicely into the general inductive definition of denotational semantics of an arbitrary goal
-and preserve its properties, such as completeness condition.
+and preserves its properties, such as completeness condition.
 
-In the operational case, we deviate from describing one specific search implementation, since there are several distinct ways to embed disequality constraints
+In the operational case we deviate from describing one specific search implementation since there are several distinct ways to embed disequality constraints
 in the language and we would like to be able to give semantics (and subsequently prove correctness) for all of them. Therefore we base the extended operational
 semantics on a number of abstract definitions concerning constraint stores for which different concrete implementations may be substituted.
 
-So we assume that we are given a set of constraint store objects, which we denote by $\cstore_\sigma$ (indexing every constraint store with
+We assume that we are given a set of constraint store objects, which we denote by $\cstore_\sigma$ (indexing every constraint store with
 some substitution $\sigma$ and assuming the store and the substitution are consistent with each other), and three following operations:
 
 \begin{enumerate}
@@ -26,7 +26,10 @@ some substitution $\sigma$ and assuming the store and the substitution are consi
   which may result in a new constraint store $\cstore^\prime_{\sigma \delta}$ or a failure $\bot$, if the constraint store is inconsistent with the new substitution.
 \end{enumerate}
 
-The change in operational semantics for the language with disequality constraints is now straightforward: we add a constraint store to a basic (leaf) state $\inbr{g, \sigma, \cstore_\sigma, n}$, as well as in the label form $(\sigma, \cstore_\sigma, n)$, and this store is simply transmitted in all the rules, except the ones for unification. We change the rules for unification using $\mathbf{update}$ operation and add the rules for disequality constraint using $\mathbf{add}$. In both cases, the search in the current branch is pruned if these primitives return $\bot$.
+The change in operational semantics for the language with disequality constraints is now straightforward: we add a constraint store to a basic (leaf) state $\inbr{g, \sigma, \cstore_\sigma, n}$,
+as well as in the label form $(\sigma, \cstore_\sigma, n)$, and this store is simply threaded through all the rules, except those for unification. We change the rules
+for unification using $\mathbf{update}$ operation and add the rules for disequality constraint using $\mathbf{add}$. In both cases, the search in the current branch is
+pruned if these primitives return $\bot$.
 
  \[
   \begin{array}{cr}
@@ -38,12 +41,12 @@ The change in operational semantics for the language with disequality constraint
   \end{array}
 \]
 
-The initial state naturally has an initial constraint store $\inbr{g, \eps, \cstoreinit, n}$.
+The initial state naturally contains an initial constraint store $\inbr{g, \eps, \cstoreinit, n}$.
 
 To state the soundness and completeness result now we need to revise our definition of the denotational analog of an answer $(\sigma, \cstore_\sigma, n)$
-since we have to take into account the restrictions that a constraint store $\cstore_\sigma$ encodes.
-To do it we need one more abstract definition~--- a denotational interpretation of a constraint store $\sembr{\cstore_\sigma}$ as a set of representing functions.
-We prove the soundness and completeness w.r.t. this interpretation and expect it to adequately reflect how the restrictions of constraint stores in the answers will be presented.
+since we have to take into account the restrictions which a constraint store $\cstore_\sigma$ encodes.
+To do this we need one more abstract definition~--- a denotational interpretation of a constraint store $\sembr{\cstore_\sigma}$ as a set of representing functions.
+We prove the soundness and completeness w.r.t. this interpretation and expect it to adequately reflect how the restrictions of constraint stores in the answers are presented.
 The denotational analog of operational semantics for an arbitrary extended state is then redefined as follows.
 
  \[
@@ -61,7 +64,7 @@ For any specification $\{\dots\}\; g$, for which the indices of all free variabl
 \end{theorem}
 
 To be able to prove it we, of course, need certain requirements for the given operations on constraint stores. We came up with the following list of sufficient
-conditions on them for soundness and completeness.
+conditions for soundness and completeness.
 
 \begin{enumerate}
 \item $\sembr{\cstoreinit} = \{\mathfrak{f}:\mathcal{A}\mapsto\mathcal{D}\}$;
@@ -71,27 +74,34 @@ conditions on them for soundness and completeness.
 \item $\csupdate{\cstore_\sigma}{\delta} = \bot \implies \sembr{\cstore_\sigma} \cap \sembr{\sigma \delta} = \emptyset$.
 \end{enumerate}
 
-These conditions state that given denotational interpretation and the given operations on constraint stores are adequate to each other.
+These conditions state that given denotational interpretation and given operations on constraint stores are adequate to each other.
+
 Condition 1 states that interpretation of the initial constraint store is the whole domain of representing function since it does not impose any restrictions.
-Conditions 2 states that when we add a constraint to a store $\cstore_\sigma$ the interpretation of the result contains exactly those functions that simultaneously belong to
-the interpretation of the store $\cstore_\sigma$ and satisfy the constraint if we consider only extensions of the substitution $\sigma$,
-and condition 3 states that addition could fail only if no such functions exist.
-Conditions 4 state that the result of updating a store with an additional substitution should have the same interpretation if we consider only extensions of the updated substitution,
-and condition 5 states that update could fail only if no such functions exist.
+
+Condition 2 states that when we add a constraint to a store $\cstore_\sigma$ the interpretation of the result contains exactly those functions which simultaneously belong to
+the interpretation of the store $\cstore_\sigma$ and satisfy the constraint if we consider only extensions of the substitution $\sigma$.
+
+Condition 3 states that addition could fail only if no such functions exist.
+
+Conditions 4 state that the result of updating a store with an additional substitution should have the same interpretation if we consider only extensions of the updated substitution.
+
+Condition 5 states that update could fail only if no such functions exist.
+
 The conditions 2-5 describe exactly what we need to prove the soundness and completeness for base goals (unification and disequality); at the same time,
 since these conditions have relatively simple intuitive meaning in terms of these two operations they are expected to hold naturally
 in all reasonable implementations of constraint stores.
 
 We can prove that this is enough for soundness and completeness to hold for an arbitrary goal. However,
-contrary to our expectations, the previous proof can not be just reused for all non-basic types of goals and has to be modified
+contrary to our expectations, the existing proof can not be just reused for all non-basic types of goals and has to be modified
 significantly in the case of \lstinline|fresh|. Specifically, we need one additional condition on constraint store in state $(\sigma, n, \cstore_\sigma)$:
 only the values on the first $n$ fresh variables determine whether a representing function belongs to the denotational semantics $\sembr{\sigma} \cap \sembr{\cstore_\sigma}$
 of the state (note the similarity to the completeness condition). Luckily, we can infer this property for all states that can be constructed by our operational
-semantics from the necessary conditions in the list above.
+semantics from the sufficient conditions above.
 
-Thus, for an arbitrary implementation, we need to give a formal definition of constraint store object and its denotational interpretation, provide three
+Thus for an arbitrary implementation we need to give a formal definition of constraint store object and its denotational interpretation, provide three
 operations for it and prove five conditions on them, and by this we ensure that for arbitrary specification the interpretations of all solutions found by the
-search in this version of MiniKanren will cover exactly the mathematical model of this specification.
+search in this version of \textsc{MiniKanren} will cover exactly the mathematical model of this specification.
 
-As well as our previous development this extension is certified in Coq\footnote{\url{https://github.com/dboulytchev/miniKanren-coq/tree/disequality}}. We describe operational semantics and its soundness and completeness as modules parametrized by the definitions of constraint
-stores and proofs of the necessary conditions for them.
+As well as our previous development this extension is certified in \textsc{Coq}\footnote{\url{https://github.com/dboulytchev/miniKanren-coq/tree/disequality}}.
+We describe operational semantics and its soundness and completeness as modules parametrized by the definitions of constraint
+stores and proofs of the sufficient conditions for them.
