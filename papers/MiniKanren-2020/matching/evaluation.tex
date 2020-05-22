@@ -93,8 +93,8 @@ In the table the double bar separates input data from output. Inputs are: the pa
 the requested number of answers. Outputs are: the size of generated complete samples set, the running time before receiving the
 first answer, the total number of programs synthesized, the total search time.
 
-Our approach currently does not work fast on a large benchmark from~\cite{maranget2008} (extracted from a bytecode
-machine for PCF~\cite{Plotkin1977LCFCA}). Complex data types exponentially increase number of samples and size of search space.
+Our approach currently does not work fast on a large benchmark (Figure~\ref{fig:pcf}) extracted from a bytecode
+machine for PCF. Complex data types exponentially increase number of samples and size of search space.
 
 %The first conclusion can be drawn from results is that a very often checking of the current approximation of the answer by size constraint
 %cab lead to performance degradation because this check is not cheap. But we shouldn't do this check infinitely more seldom. It lead to performance degradation too,
@@ -102,3 +102,30 @@ machine for PCF~\cite{Plotkin1977LCFCA}). Complex data types exponentially incre
 
 %The 4th and 7th benchmarks have similar input configurations and examples count but time differs linearly. This probably means that interleaving search of
 %OCanren can be more lucky in some cases then in another.
+
+\begin{figure}%[H]
+\centering
+\begin{tabular}{c} % tabular only for centering
+\begin{lstlisting}
+  let rec run a s c =
+    match a,s,c with
+    | (_,_,Ldi i::_) -> 1
+    | (_,_,Push::_)  -> 2
+    | (Int _,Val (Int _)::_,IOp _::_) -> 3
+    | (Int _,_,Test (_,_)::c) -> 4
+    | (Int _,_,Test (_,_)::c) -> 5
+    | (_,_,Extend::_) -> 6
+    | (_,_,Search _::_) -> 7
+    | (_,_,Pushenv::_) -> 8
+    | (_,Env e::s,Popenv::_) -> 9
+    | (_,_,Mkclos cc::_) -> 10
+    | (_,_,Mkclosrec _::_) -> 11
+    | (Clo (_,_), Val _::_, Apply::_) -> 12
+    | (_,(Code _::Env _::_),[]) -> 13
+    | (_,[],[]) -> 14
+\end{lstlisting}
+\end{tabular}
+\caption{An example from a bytecode machine for PCF~\cite{Plotkin1977LCFCA,maranget2008}}
+\label{fig:pcf}
+\end{figure}
+

@@ -197,7 +197,7 @@ If an answer is found during program evaluation it is indicated above the transi
      {\inbr{\sigma, i, \epsilon} \xrightarrow{\sigma} \emptyset}  
 &     \ruleno{Answer} \\[2mm]
 \dfrac{(\sigma, i) \vdash c \Rightarrow T}
-      {\inbr{\sigma, i, c : cs} \xrightarrow{\circ} push(\Box : cs, T)}
+      {\inbr{\sigma, i, c \land C} \xrightarrow{\circ} push(\Box \land C, T)}
 &     \ruleno{ConjUnfold} \\[2mm]
 \dfrac{T_1 \xrightarrow{\alpha} \emptyset}
       {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
@@ -227,7 +227,7 @@ It guarantees the completeness of the search.
 In order to make an initial state from a call $c$ we need to replace all its syntactic variables with semantic ones:
 
 \[
-\inbr{\{\}, n, c[x_0 \leftarrow \alpha_0, \ldots, x_{n-1} \leftarrow \alpha_{n-1}] : \epsilon}.
+\inbr{\{\}, n, c[x_0 \leftarrow \alpha_0, \ldots, x_{n-1} \leftarrow \alpha_{n-1}]}.
 \]
 
 % Данная семантика отличается от сертифицированной семантики и классических реализаций прежде всего размером шага. Операция развертки выполняет множество действий подряд, а в классическом случае после каждой элементарного действия выполняется интерливинг. Однако, общие черты данная семантика сохранила: дизъюнкты меняют порядок после каждого unfolding, а конъюнкты выполняются строго слева направо.
