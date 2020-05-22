@@ -9,7 +9,7 @@ Instead of unfolding the leftmost call to exhaustion in the leaf we suggest to f
 % Для реализации подобного поведения нам нужно обновить структуру состояний. Каждому вызову c_i в листе мы добавили натуральное число k_i, которое описывает оставшееся число разверток. Таким образом каждый вызов в состояние помечен счетчиком разверток. 
 To implement this behavior, we need to update the state structure
 \[
-\textgoth{T} = \inbr{\sigma, i, c_1^{k_1} \land \ldots \land c_n^{k_n} : \epsilon} \mid \textgoth{T} \lor \textgoth{T}.
+\textgoth{T} = \inbr{\sigma, i, c_1^{k_1} \land \ldots \land c_n^{k_n}} \mid \textgoth{T} \lor \textgoth{T}.
 \]
 For each call $c_i$ in the leaf, we added a natural number $k_i$, which defines the remaining number of unfoldings. Therefore, each call to the state is marked with a unfolding counter. 
 
