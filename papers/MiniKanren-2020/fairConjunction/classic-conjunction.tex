@@ -23,17 +23,10 @@ either converges in one recursion step or diverges. The conjunction \lstinline{(
 of \lstinline{freeze$^o$}. In the second case the relation \lstinline{freeze$^o$} diverges and does not produce any answer. As a result the second conjunct
 is never evaluated.
 
-% Конечно, данная проблема решается правилом, которому нужно следовать при работе с miniKanren: унификацию нужно ставить самым левым конъюнктом. Но иногда оба конъюнктв являются вызовами отношений. В частности отношение обращения списка revers, которое связывает произвольный список со списком, содержащим элементы в обратном порядке. В этом отношении есть пара конъюнктов append и revers. При таком порядке вызов revers сходится, но при обратном порядке он расходится. Более того при обратном порядке снижается скорость вычисления ответа. 
-The problem in this particular example can be alleviated by using a conventional rule for \mk, which says that unifications must be moved first in a cluster of conjunctions.
-But the rule does not work for clusters with more than one relational call. Consider, for instance, the relation \lstinline{revers$^o$} (Fig.~\ref{fair:lst-reverso}), which associates
-an arbitrary list with the list containing the same elements in reverse order. In this relation we can see a couple of conjuncts: \lstinline{revers$^o$} on line~\ref{fair:reverso-call} and
-\lstinline{append$^o$} on line~\ref{fair:appendo-call}. With this particular order, the call \lstinline{(revers$^o$ [1, 2, 3] q)} converges, but in reverse order it diverges after an answer
-is found. Moreover, the reverse order negatively affects the performance of answer evaluation.
-
-\begin{figure}[h]
+\begin{figure}[h!]
 \centering
 \begin{tabular}{cp{3cm}c}
-\begin{lstlisting}%[numbers=left,numberstyle=\small]
+\begin{lstlisting}[numbers=left,numberstyle=\small]
 let rec append$^o$ x y xy =
   (x === [] /\ y === xy) \/
   fresh (e xs xys) (
@@ -42,7 +35,7 @@ let rec append$^o$ x y xy =
     append$^o$ xs y xys)
 \end{lstlisting}
 & &
-\begin{lstlisting}%[firstnumber=7,numbers=left,numberstyle=\small,escapeinside={@}{@}]
+\begin{lstlisting}[firstnumber=7,numbers=left,numberstyle=\small,escapeinside={@}{@}]
 let rec revers$^o$ x y =
   (x === [] /\ y === []) \/
   fresh (e xs ys) (
@@ -55,6 +48,13 @@ let rec revers$^o$ x y =
 \caption{Relational list reversing}
 \label{fair:lst-reverso}
 \end{figure}
+
+% Конечно, данная проблема решается правилом, которому нужно следовать при работе с miniKanren: унификацию нужно ставить самым левым конъюнктом. Но иногда оба конъюнктв являются вызовами отношений. В частности отношение обращения списка revers, которое связывает произвольный список со списком, содержащим элементы в обратном порядке. В этом отношении есть пара конъюнктов append и revers. При таком порядке вызов revers сходится, но при обратном порядке он расходится. Более того при обратном порядке снижается скорость вычисления ответа. 
+The problem in this particular example can be alleviated by using a conventional rule for \mk, which says that unifications must be moved first in a cluster of conjunctions.
+But the rule does not work for clusters with more than one relational call. Consider, for instance, the relation \lstinline{revers$^o$} (Fig.~\ref{fair:lst-reverso}), which associates
+an arbitrary list with the list containing the same elements in reverse order. In this relation we can see a couple of conjuncts: \lstinline{revers$^o$} on line~\ref{fair:reverso-call} and
+\lstinline{append$^o$} on line~\ref{fair:appendo-call}. With this particular order, the call \lstinline{(revers$^o$ [1, 2, 3] q)} converges, but in reverse order it diverges after an answer
+is found. Moreover, the reverse order negatively affects the performance of answer evaluation.
 
 % В то же время, вызов revers при заданном порядке конъюнктов расходится, а при обратном сходится. В результате мы бы хотели разный порядок конъюнктов в зависимости от конкретных аргументов.
 
