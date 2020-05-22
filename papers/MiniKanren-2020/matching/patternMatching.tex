@@ -24,11 +24,11 @@ relation
 \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i},\,1\le i\le k+1
 \]
 
-which gives us the index of the leftmost matched pattern or $k+1$ if no such pattern exists. We use an auxilliary relation $\inbr{;}\subseteq\mathcal{V}\times\mathcal{P}$
+which gives us the index of the leftmost matched pattern or $k+1$ if no such pattern exists. We use an auxiliary relation $\inbr{;}\subseteq\mathcal{V}\times\mathcal{P}$
 to specify the notion of a value matched by an individual pattern (see Fig.~\ref{fig:match1pat}). The rule \ruleno{Wildcard} says that
 a wildcard pattern ``\_'' matches any value, and \ruleno{Constructor} specifies that a constructor pattern matches exactly those values which
-have the same constuctor at the top level and all subvalues matched by corresponding subpatterns. The definition of ``$\xrightarrow{}{}$'' is
-shown on Fig.~\ref{fig:matchpatts}. An auxilliary relation ``$\xrightarrow{}{}_*$'' is introduced to specify the left-to-right matching strategy, and we
+have the same constructor at the top level and all subvalues matched by corresponding subpatterns. The definition of ``$\xrightarrow{}{}$'' is
+shown on Fig.~\ref{fig:matchpatts}. An auxiliary relation ``$\xrightarrow{}{}_*$'' is introduced to specify the left-to-right matching strategy, and we
 use current index as environment. An important rule $\ruleno{MatchOtherwise}$ specifies that if we exhausted all the patterns with no matching we stop with
 the current index (which in this case is equal to the number of patterns plus one).
 
