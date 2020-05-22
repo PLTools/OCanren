@@ -3,8 +3,8 @@
 
 % В данном разделе мы представили результаты апробации трех семантик на нескольких примерах.
 In this section we present the results of evaluation of three semantics on a set of examples; the semantics were implemented in \textsc{Haskell} in the form of interpreters.
-For evaluation we've chosen two simple programs (list reversing and list sorting) and two more complicated (the ``Hanoi Towers''~\cite{?} solver and the
-``Bridge and torch''~\cite{?} problem solver).
+For evaluation we've chosen two simple programs (list reversing and list sorting) and two more complicated (the ``Hanoi Towers''\footnote{\url{https://en.wikipedia.org/wiki/Tower_of_Hanoi}} solver and the
+``Bridge and torch''\footnote{\url{https://en.wikipedia.org/wiki/Bridge_and_torch_problem}} problem solver).
 % Для каждой программы мы сделали две версии. Оптимистичная версия --- это программа, в которой мы вручную подобрали оптимальный порядок конъюнктов и пессиместичная версия --- программа с неоптимальным порядком конъюнктов. В последующих диаграммах и таблице указаны средние значения 10 запусков тестов. Также для наивной равномерной конъюнкции мы подобрали количество разверток вручную. Для равномерной конъюнкции, основанной на структурной рекурсии, N было фиксировано и равно 100.
 Each program was written in two versions: ``optimistic'' (with the order of important conjuncts set to provide the best performance) and ``pessimistic'' (with the order of important
 conjuncts set to provide the worst performance).
@@ -18,7 +18,7 @@ based on structural recursion the bound was set to 100.
   \centering
 \begin{tikzpicture}
 \begin{axis}[
-    ybar,
+    ybar, ymax = 2, ymin = 0.15,
     enlargelimits=0.3,
     width=5cm, height=5cm,
     legend style={at={(0.5,-0.2)},
@@ -40,7 +40,7 @@ based on structural recursion the bound was set to 100.
   \centering
 \begin{tikzpicture}
 \begin{axis}[
-    ybar, ymax = 2,
+    ybar, ymax = 2, ymin = 0.15,
     enlargelimits=0.3,
     width=5cm, height=5cm,
     legend style={at={(0.5,-0.2)},
@@ -66,7 +66,7 @@ based on structural recursion the bound was set to 100.
   \centering
 \begin{tikzpicture}
 \begin{axis}[
-    ybar, ymax = 16,
+    ybar, ymax = 16, ymin = 1.2,
     enlargelimits=0.3,
     width=5cm, height=5cm,
     legend style={at={(0.5,-0.2)},
@@ -88,7 +88,7 @@ based on structural recursion the bound was set to 100.
   \centering
 \begin{tikzpicture}
 \begin{axis}[
-    ybar,
+    ybar, ymax = 5, ymin = 0.375,
     enlargelimits=0.3,
     width=5cm, height=5cm,
     legend style={at={(0.5,-0.2)},
@@ -110,7 +110,7 @@ based on structural recursion the bound was set to 100.
 
 % На изображениях 12-15 представлены результаты апробации в виде столбцовых диаграмм. В оптимистичном случае результаты схожи для всех семантик. В пессиместичном случае время работы напрпавленной конъюнкции резко возрастает, время работы наивной равномерной конъюнкции также ворзрастает, но не так сильно. Равномерная конъюнкция, основанная на структурной рекурсии, демострирует схожую эффективность в сравнении с оптимистичным случаем.
 Fig.~\ref{fair:plot-reverso}-\ref{fair:plot-bridge} show the results of evaluation in the form of bar charts. In the optimistic case, the results are similar for all semantics.
-In the pessimistic case the evaluation time of the directrf conjunction rapidly increases, the evaluation time of the naive fair conjunction also increases, but not so much.
+In the pessimistic case the evaluation time of the directed conjunction rapidly increases, the evaluation time of the naive fair conjunction also increases, but not so much.
 The fair conjunction based on structural recursion demonstrates the similar efficiency as in the optimistic case.
 
 % Более подробно результаты представлены на изображении 16. Можно заметить, что время работы программы sorto в пессиместичном случае очень быстро растет с увеличением длины списка для направленной конъюнкции и наивной равномерной. В случае с равномерной конъюнкцией, основанной на структурной рекурсии, пессиместичный случай растет сопостовимо с оптимистичным.

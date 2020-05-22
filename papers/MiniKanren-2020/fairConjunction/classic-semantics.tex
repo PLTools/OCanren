@@ -13,7 +13,7 @@ Therefore, for this research, we have developed a new semantics which does not d
 % Семантика, которую мы предлагаем, основана на развертке вызовов отношений. На каждом шаге в текущем состоянии программы выбирается некоторый вызов, который разворачивается. Этот процесс продолжается, пока в текущем представлении остаются вызовы. Если на каком-то шаге состояние опустело, то вычисление сошлось. В противном случае вычисление расходится.
 
 The semantics which we propose is based on unfolding of relational calls. At each step we select a call from the current state of the program and unfold it.
-This process continues until no calls remain in the state. Below we define this semantics formally. If at some step the state becomes empty then the evaluation converges. Otherwise, the evaluation diverges.
+This process continues until no calls remain in the state. If at some step the state becomes empty then the evaluation converges. Otherwise, the evaluation diverges. Below we define this semantics formally.
 
 % Прежде всего мы определим синтаксис языка \mk на изображении 2. Конструкторы с арностью являются стандартным представлением данных. Синтаксические переменные необходимы для описания аргументов отношения и свежих переменных в операции fresh. Семантические переменные в исходной программе отсутствуют, однако они вводятся при исполнении операции fresh. Из конструкторов, синтаксический переменных и семантических переменных мы определили множество синтаксических термов и множество семантических переменных. Также мы определили множество имен отношений с арностью. Далее, мы определили цели. Цели являются унификацией термов, дизъюнкцией, конъюнкцией введением свежей переменной или вызовом отношения. Наконец мы определяем множество отношений. Каждое отношение состоит из имени с арностью, списка имен переменных и тела отношения.
 
@@ -102,7 +102,7 @@ T_1 \lor T_2, & \mbox{otherwise}
 
 % Если одно из состояний пустое, функция union вернёт второе. Если оба состояния не пусты, то функция вернёт объединенное состояние.
 
-If one of the states is empty $union$ returns the second state. If both states are not empty then the function returns the combined state.
+If one of the states is empty $union$ returns another state. If both states are not empty then the function returns the combined state.
 
 The next auxiliary function, $push$, is needed to construct the state after the unfolding:
 
@@ -110,7 +110,7 @@ The next auxiliary function, $push$, is needed to construct the state after the 
 push\,(C,\, T) =
 \left\{
 \begin{array}{rl}
-\inbr{\sigma, i, C_1 \land \bar{C} \land C_2}, & \mbox{if } T = \inbr{\sigma, i, \bar{C}} \mbox{ and } C = C_1 \land \Box \land C_2 \\
+\inbr{\sigma;\, i;\, C_1 \land \bar{C} \land C_2}, & \mbox{if } T = \inbr{\sigma;\, i;\, \bar{C}} \mbox{ and } C = C_1 \land \Box \land C_2 \\
 push\,(C, T_1) \lor push\,(C, T_2), & \mbox{if } T = T_1 \lor T_2
 \end{array}
 \right.
@@ -129,32 +129,32 @@ corresponds to the body of this relation. Since unfolding is a finite process we
 \begin{figure}[h!]
 \[\begin{array}{cr}
 
-\dfrac{ F = \lambda \bar{x}. b \qquad \inbr{\sigma, i, \epsilon} \vdash b[\bar{x} \leftarrow \bar{t}] \leadsto T}
+\dfrac{ F = \lambda \bar{x}. b \qquad \inbr{\sigma;\, i;\, \epsilon} \vdash b[\bar{x} \leftarrow \bar{t}] \leadsto T}
       {(\sigma, i) \vdash F(\bar{t}) \Rightarrow T}
-&     \ruleno{Unfold} \\[3mm]
+&     \ruleno{Unfold} \\[4mm]
 \dfrac{\not\exists \, mgu(t_1, t_2, \sigma)}
-      {\inbr{\sigma, i, C} \vdash (t_1 \equiv t_2) \leadsto \emptyset}
-&     \ruleno{UnifyFail}  \\[3mm]
+      {\inbr{\sigma;\, i;\, C} \vdash (t_1 \equiv t_2) \leadsto \emptyset}
+&     \ruleno{UnifyFail}  \\[4mm]
 \dfrac{\bar\sigma = mgu(t_1, t_2, \sigma)}
-      {\inbr{\sigma, i, C} \vdash (t_1 \equiv t_2) \leadsto \inbr{\bar\sigma, i, C}}
-&     \ruleno{UnifySuccess}  \\[3mm]
-      {\inbr{\sigma, i, C} \vdash F(\bar{t}) \leadsto \inbr{ \sigma, i, F(\bar{t}) \land C}}
+      {\inbr{\sigma;\, i;\, C} \vdash (t_1 \equiv t_2) \leadsto \inbr{\bar\sigma;\, i;\, C}}
+&     \ruleno{UnifySuccess}  \\[4mm]
+      {\inbr{\sigma;\, i;\, C} \vdash F(\bar{t}) \leadsto \inbr{\sigma;\, i;\, F(\bar{t}) \land C}}
 &     \ruleno{Call} \\[2mm]
-\dfrac{\inbr{\sigma, i+1, C} \vdash g[x \leftarrow \alpha_i] \leadsto T}
-      {\inbr{\sigma, i, C} \vdash \mbox{\lstinline|fresh|} \, x. \, g \leadsto T}
-&     \ruleno{Fresh}  \\[3mm]
-\dfrac{\inbr{\sigma, i, C} \vdash g_1 \leadsto T_1 \qquad \inbr{\sigma, i, C} \vdash g_2 \leadsto T_1}
-      {\inbr{\sigma, i, C} \vdash g_1 \lor g_2 \leadsto union(T_1, T_2)}
-&     \ruleno{DisjGoal}  \\[3mm]
+\dfrac{\inbr{\sigma;\, i+1;\, C} \vdash g[x \leftarrow \alpha_i] \leadsto T}
+      {\inbr{\sigma;\, i;\, C} \vdash \mbox{\lstinline|fresh|} \, x. \, g \leadsto T}
+&     \ruleno{Fresh}  \\[4mm]
+\dfrac{\inbr{\sigma;\, i;\, C} \vdash g_1 \leadsto T_1 \qquad \inbr{\sigma;\, i;\, C} \vdash g_2 \leadsto T_1}
+      {\inbr{\sigma;\, i;\, C} \vdash g_1 \lor g_2 \leadsto union(T_1, T_2)}
+&     \ruleno{DisjGoal}  \\[4mm]
 \dfrac{g \not= g_1 \lor g_2 \qquad T_1 \vdash g \leadsto T_3 \qquad T_2 \vdash g \leadsto T_4}
       {T_1 \lor T_2 \vdash g \leadsto union(T_3, T_4)}
-&     \ruleno{DisjState}  \\[3mm]
-\dfrac{\inbr{\sigma, i, C} \vdash g_1 \leadsto \emptyset}
-      {\inbr{\sigma, i, C} \vdash g_1 \land g_2 \leadsto \emptyset}
-&     \ruleno{ConjFail}  \\[3mm]
-\dfrac{\inbr{\sigma, i, C} \vdash g_1 \leadsto T \qquad T \vdash g_2 \leadsto \bar{T}}
-      {\inbr{\sigma, i, C} \vdash g_1 \land g_2 \leadsto \bar{T}}
-&     \ruleno{ConjSuccess}  \\[3mm]
+&     \ruleno{DisjState}  \\[4mm]
+\dfrac{\inbr{\sigma;\, i;\, C} \vdash g_1 \leadsto \emptyset}
+      {\inbr{\sigma;\, i;\, C} \vdash g_1 \land g_2 \leadsto \emptyset}
+&     \ruleno{ConjFail}  \\[4mm]
+\dfrac{\inbr{\sigma;\, i;\, C} \vdash g_1 \leadsto T \qquad T \vdash g_2 \leadsto \bar{T}}
+      {\inbr{\sigma;\, i;\, C} \vdash g_1 \land g_2 \leadsto \bar{T}}
+&     \ruleno{ConjSuccess}
 \end{array}\]
 
 \caption{Big step semantics of unfolding}
@@ -165,7 +165,7 @@ corresponds to the body of this relation. Since unfolding is a finite process we
 The top-level rule in \rulen{Unfold}. Thus, this is the only rule which infers ``$\Rightarrow$''. It starts the unfolding process of call $F$
 with the list of arguments $\bar{t}$ in the context of substitution $\sigma$ and counter of semantic variables $i$.
 First of all, the call $F$ is replaced by the body $b$ of the relation. Also the arguments $\bar{x}$ are substituted by terms $\bar{t}$ and
-the state $\inbr{\sigma, i, \epsilon}$ is initialized. Next, we evaluate the relation body into corresponding state using the rest of the rules.
+the state $\inbr{\sigma;\, i;\, \epsilon}$ is initialized. Next, we evaluate the relation body into corresponding state using the rest of the rules.
 
 % Правила [UnifyFail] и [UnifySuccess] исполняют унификацию. Если существует ноиболее общий унификатор (MGU), то мы применяем правило [UnifySuccess], которое обновляет подстановку. Если MGU не существует, то мы применияем правило [UnifyFail], что приводи к пустому состоянию.
 The rules \rulen{UnifyFail} and \rulen{UnifySuccess} perform unification. If the most general unifier (MGU) exists, then we apply rule \rulen{UnifySuccess},
@@ -197,10 +197,10 @@ symbol ``$\xrightarrow{}$''; otherwise, ``$\circ$'' is indicated.
 
 \begin{figure}[h!]
 \[\begin{array}{cr}
-     {\inbr{\sigma, i, \epsilon} \xrightarrow{\sigma} \emptyset}  
+     {\inbr{\sigma;\, i;\, \epsilon} \xrightarrow{\sigma} \emptyset}  
 &     \ruleno{Answer} \\[2mm]
 \dfrac{(\sigma, i) \vdash c \Rightarrow T}
-      {\inbr{\sigma, i, c \land C} \xrightarrow{\circ} push(\Box \land C, T)}
+      {\inbr{\sigma;\, i;\, c \land C} \xrightarrow{\circ} push(\Box \land C, T)}
 &     \ruleno{ConjUnfold} \\[2mm]
 \dfrac{T_1 \xrightarrow{\alpha} \emptyset}
       {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
@@ -218,7 +218,7 @@ If the current state is a leaf and does not contain any calls then we have an an
 
 % Если текущее состояние является листом, но содержит хотя бы один вызов, мы применяем правило [ConjUnfold]. Оно производит развертку самого левого вызова. Затем мы конструируем новое состояние из оставшищся вызовов и результата развертки с помощью функции push.
 Also, if the current state is a leaf but contains at least one call, we apply rule \rulen{ConjUnfold}. In this case we unfold the leftmost call $c$.
-Then we construct a new state from the remaining calls $cs$ and the unfolding result $T$ using function $push$.
+Then we construct a new state from the remaining calls $C$ and the unfolding result $T$ using function $push$.
 
 % Наконец, если текущее состояние является дизюнкцией, то мы производим вычисление в левом дизъюнкте T_1. В зависимости от результата мы приминяем или правило [Disj], или правило [DisjStep]. Первое правило соответствует пустому состоянию и возвращает второй дизъюнкт в качестве результата. Второе правило соответствует непустому состоянию и возвращает новое сотояние (T_2 \circ T_1). Перестановка дизъюнктов --- необходимое действие, которое называется интерливинг. Оно гарантирует полноту поиска.
 Finally, if the current state is a disjunction then we evaluate the left disjunct $T_1$. We apply either rule \rulen{Disj} or rule \rulen{DisjStep} depending
@@ -230,7 +230,7 @@ It guarantees the completeness of the search.
 In order to make initial state from a call $c$ we need to replace all its syntactic variables with semantic ones:
 
 \[
-\inbr{\{\}, n, c[x_0 \leftarrow \alpha_0, \ldots, x_{n-1} \leftarrow \alpha_{n-1}]}.
+\inbr{\{\};\, n;\, c[x_0 \leftarrow \alpha_0, \ldots, x_{n-1} \leftarrow \alpha_{n-1}]}.
 \]
 
 % Данная семантика отличается от сертифицированной семантики и классических реализаций прежде всего размером шага. Операция развертки выполняет множество действий подряд, а в классическом случае после каждой элементарного действия выполняется интерливинг. Однако, общие черты данная семантика сохранила: дизъюнкты меняют порядок после каждого unfolding, а конъюнкты выполняются строго слева направо.
