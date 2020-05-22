@@ -2,4 +2,5 @@
 *.log
 *.pdf
 *.synctex.gz
+.aspell.*
 

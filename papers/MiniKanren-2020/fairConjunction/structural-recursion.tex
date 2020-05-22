@@ -1,7 +1,7 @@
-\section{Uniform conjunction by structural recursion}
+\section{Fair conjunction by structural recursion}
 
 % В этой секции мы рассмотрим обобщенную семантику \mk с равномерной конъюнкцией, которая определяет глубину раскркутки динамически. Также мы рассмотрим её конкретную реализацию, основонную на структурной рекурсии отношений.
-In this section, we consider the generalized semantics of \mk with a uniform conjunction that determines the unfolding depth dynamically. We also consider its specific implementation, which is based on the structural recursion of relations.
+In this section, we consider the generalized semantics of \mk with a fair conjunction that determines the unfolding depth dynamically. We also consider its specific implementation, which is based on the structural recursion of relations.
 
 % В общем случае мы хотим параметризовать семантику предикатом. Этот предикат принимает вызов в качестве аргумента. Он возвращает истину, если конъюнкт необходимо раскручивать дальше. И возвращает ложь, если необходимо перейти к следующему конъюнкту. Также мы оставим параметр N, определяющий количество раскруток. Он необходим для обработки случая, когда предикат ложен для всех вызовов.
 In the general case, we want to parameterize semantics with a unfolding predicate $pred$. This predicate takes a substitution and a call as arguments. He returns \lstinline{true}, if the call needs to be unfolded further. And returns \lstinline{false}, if we need to move on to the next conjunct. We also leave the parameter $N$, which determines the count of unfoldings. It is necessary to handle the case when the predicate $pred$ is false for all calls in leaf.

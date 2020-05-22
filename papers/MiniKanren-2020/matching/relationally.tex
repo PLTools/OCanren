@@ -48,8 +48,8 @@ and $\pi$ with a free logical variable $\circled{?}$, which gives us the goal
 This goal, however, is problematic from relational point of view due to a number of reasons.
 
 First, \textsc{miniKanren} provides rather a limited support for universal quantification. Apart from being inefficient from
-the performance standpoint, existing implementations either do not coexist with disequality constaints~\cite{eigen}
-or do not support quantified qoals with infinite number of answers~\cite{moiseenko}. As we will see below, both restrictions are
+the performance standpoint, existing implementations either do not coexist with disequality constraints~\cite{eigen}
+or do not support quantified goals with infinite number of answers~\cite{moiseenko}. As we will see below, both restrictions are
 violated in our case. Second, there is no direct support for the equivalence of goals (``$\xLeftrightarrow{}{}$''). Thus,
 reducing the original synthesis problem to a viable relational goal involves some ``massaging''.
 
@@ -68,7 +68,7 @@ property:
 
 In other words, if a program implements a correct and complete pattern matching for all values in a complete set of samples, then this
 program implements a correct and complete pattern matching for all values. The idea of using a complete set of samples originates from the following observation: each pattern
-describes a (potentially infinite) set of values, and pattern matching splits the set of all values into equavalence classes, each corresponding to a certain matching pattern.
+describes a (potentially infinite) set of values, and pattern matching splits the set of all values into equivalence classes, each corresponding to a certain matching pattern.
 Moreover, the values of different classes can be distinguished only by a looking down to a \emph{finite} depth (as different patterns can be distinguished in this way).
 The generation of complete sample set will be addressed below (see Section~\ref{sec:samples}).
 
@@ -216,10 +216,10 @@ Informally, the depth of a switch program tells us how deep the program can look
 From the definition of $\inbr{;}$ it immediately follows that a pattern $p$ can only discriminate values up to its depth $d\,(p)$: changing a value at the depth greater
 or equal than $d\,(p)$ cannot affect the fact of matching/non matching. This means that we can only consider switch programs of depth no greater than the synthesis depth.
 But for these programs the set of all values with height no greater than the synthesis depth forms a complete set of samples. Indeed, if the height of a value less or
-equal to the synthesis depth, then this value is a member of complete set of samples and by definition the bevaviour of the synthesized program on this value is
+equal to the synthesis depth, then this value is a member of complete set of samples and by definition the behaviour of the synthesized program on this value is
 correct. Otherwise there exists some value $s$ from the complete set of samples, such that given value can be obtained as an ``extension'' of $s$ at the
-depth greater than the synthesis depth. Since neither declarative semantics nor switch programs can descriminate values at this depth, they behavior for given value
-will coinside with that for $s$, which is correct by definition.
+depth greater than the synthesis depth. Since neither declarative semantics nor switch programs can discriminate values at this depth, they behavior for given value
+will coincide with that for $s$, which is correct by definition.
 
 The implementation of complete set generation, again, is done using relational conversion. Interestingly, the enumeration of all terms up to a certain depth
 can be acquired from a function which calculates the depth of a term: indeed, converting it into relation and then running with \emph{fixed} depth

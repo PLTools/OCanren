@@ -99,7 +99,7 @@ switch x with
 %Although semantics of pattern matching can be given as a sequence of srutinee's sub expression comparisons (Figure~\ref{fig:matchpatts}) effective compilers don't follow
 %this approach. 
 
-The quality of pattern matching implementation can be measured in various ways. One can either optimise the runtime cost by minimizing amount of checks performed, or static
+The quality of pattern matching implementation can be measured in various ways. One can either optimise the run time cost by minimizing amount of checks performed, or static
 cost by minimizing the size of generated code. \emph{Decision trees}~\cite{?} considered suitable for the first criterion as they check every subexpression no more than once.
 However, minimizing the size of decision tree is known to be NP-hard~\cite{baudinet1985tree}, and as a rule various heuristics, using, for example,
 the number of nodes, the length of the longest path, the average length of all paths are applied during compilation. In \cite{Scott2000WhenDM} the results of experimental
@@ -130,7 +130,7 @@ first column and reduces the task to compiling matrices with less rows. The tech
 special \emph{exit} nodes to the compiled representation. %No preprocessing is required for this scheme: or-pattern receives a special treatment during compilation process.
 The approach from this paper is used in the current implementation of the \textsc{OCaml} compiler.
 
-The previous approach uses the first column to split the matrix. In~\cite{maranget2008} the \emph{neccessity} heuristic has been introduced which recommends which column should be
+The previous approach uses the first column to split the matrix. In~\cite{maranget2008} the \emph{necessity} heuristic has been introduced which recommends which column should be
 used to perform the split. Good decision trees which are constructed in this work can perform better in corner cases than~\cite{maranget2001}, but for practical use the
 difference is insignificant.
 
@@ -146,7 +146,7 @@ the semantics of intermediate-level implementation language on the other. We for
 construct a top-level goal which represents a search procedure for all correct and complete implementations. We also present a number of techniques which makes it possible to come up with an
 \emph{optimal} solution as well as optimizations to improve the performance of the search; similarly to many other prior works we use synthesized code size, which can be measured statically.
 Our implementation\footnote{\url{https://github.com/kakadu/pat-match}} makes use of \textsc{OCanren}\footnote{\url{https://github.com/JetBrains-Research/OCanren}}~--- a typed
-implementation of \textsc{miniKanren} for \textsc{OCaml}~\cite{OCanren}, and \textsc{noCanren}\footnote{\url{https://github.com/Lozov-Petr/noCanren}}~--- a convertor from the subset
+implementation of \textsc{miniKanren} for \textsc{OCaml}~\cite{OCanren}, and \textsc{noCanren}\footnote{\url{https://github.com/Lozov-Petr/noCanren}}~--- a converter from the subset
 of plain \textsc{OCaml} into \textsc{OCanren}~\cite{lozov2017}. An evaluation, performed for a set of benchmarks taken from other papers, initially has shown a good performance of our synthesizer.
 However, being aware of some pitfalls of our approach, we came up with a set of counterexamples, on which it did not provide any results in observable time, so we do not consider the problem
 completely solved. We also started a work on mechanized formalization\footnote{\url{https://github.com/dboulytchev/Coq-matching-workout}}, written in \textsc{Coq}~\cite{Coq}, to
