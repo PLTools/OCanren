@@ -1,6 +1,6 @@
 \section{The Semantics of Directed Conjunction}
 % В этом разделе мы введем операционную семантику малого шага для определения поведения оригинального miniKanren с направленной конъюнкцией.
-In this section we introduce the small step operational semantics to define the behavior of the original \mk with directed conjunction. 
+In this section we introduce a small step operational semantics to define the behavior of the original \mk with directed conjunction. 
 
 % Отметим, что на данный момент существует сертифицированная семантика языка miniKanren, однако она делает большие различия между первым и вторым конъюнктом, что сильно усложняет задачу перестановки конъюнктов в процессе исполнения программы. Поэтому для данной работы мы разработали новую семантику, которая изначально не делает различий между конъюнктами.
 
@@ -121,7 +121,7 @@ The second argument is the state which results from the unfolding. This function
 
 % Теперь мы определим семантику для операции развертки. Эта семантика приобразовывает вызов отношения и подстановку в состояние, которое соответствует телу этого отношения. Так как развертка вызова --- конечный процесс, мы можем описать развертку как семантику большого шага.
 Now we define the semantics for the unfolding operation. This semantics (Fig.~\ref{fair:unfolding-semantics}) evaluates a call of a relation and a substitution into a state which
-corresponds to the body of this relation. Since the call unfolding is finite process we can describe the unfolding in a big-step style.
+corresponds to the body of this relation. Since the call unfolding is a finite process we can describe the unfolding in a big-step style, defining a relation ``$\Rightarrow$''.
 
 \begin{figure}[h!]
 \[\begin{array}{cr}
@@ -159,8 +159,8 @@ corresponds to the body of this relation. Since the call unfolding is finite pro
 \end{figure}
 
 % Правило [Unfold] является внешним. Поэтому оно единственное содержит символ =>. Оно запускает процесс развертки вызова F(t) в контексте подстановки и счетчика семантических переменных. Прежде всего, вызов заменяется на тело отношения. Производится подстановка аргументов, инициализируется состояние. Далее запускается преобразование тела отношения в соответствующее состояние.
-The rule \rulen{Unfold} is external. Therefore, it is the only rule containing the ``$\Rightarrow$''. It starts the unfolding process of call $F$
-with еру list of arguments $\bar{t}$ in the context of substitution $\sigma$ and counter of semantic variables $i$.
+The top-level rule in \rulen{Unfold}. Thus, this is the only rule which infers ``$\Rightarrow$''. It starts the unfolding process of call $F$
+with the list of arguments $\bar{t}$ in the context of substitution $\sigma$ and counter of semantic variables $i$.
 First of all, the call $F$ is replaced by the body $b$ of the relation. Also the arguments $\bar{x}$ are substituted by terms $\bar{t}$ and
 the state $\inbr{\sigma, i, \epsilon}$ is initialized. Next, we evaluate the relation body into сorresponding state using the rest of the rules.
 
