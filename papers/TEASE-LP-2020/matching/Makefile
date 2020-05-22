@@ -13,7 +13,7 @@ $(OUT).pdf: $(FILES_TEX)
 
 celan: clean
 clean:
-	$(RM) *.bak *.out *.pdf
+	$(RM) *.bak *.out *.pdf *.log *.blg *.bbl *.synctex.gz *.aux
 
 spell:
 	aspell --lang=en --mode=tex check $(OUT).tex
