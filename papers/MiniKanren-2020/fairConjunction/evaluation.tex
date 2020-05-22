@@ -2,14 +2,14 @@
 \label{sec:eval}
 
 % В данном разделе мы представили результаты апробации трех семантик на нескольких примерах.
-In this section we present the results of evaluation of three semantics on a set of examples; the semantics were implemented in \textsc{Haskell} in the form of interpreters.
+In this section we present the results of the evaluation of three semantics on a set of examples; the semantics were implemented in \textsc{Haskell} in the form of interpreters.
 For evaluation we've chosen two simple programs (list reversing and list sorting) and two more complicated (the ``Hanoi Towers''\footnote{\url{https://en.wikipedia.org/wiki/Tower_of_Hanoi}} solver and the
 ``Bridge and torch''\footnote{\url{https://en.wikipedia.org/wiki/Bridge_and_torch_problem}} problem solver).
 % Для каждой программы мы сделали две версии. Оптимистичная версия --- это программа, в которой мы вручную подобрали оптимальный порядок конъюнктов и пессиместичная версия --- программа с неоптимальным порядком конъюнктов. В последующих диаграммах и таблице указаны средние значения 10 запусков тестов. Также для наивной равномерной конъюнкции мы подобрали количество разверток вручную. Для равномерной конъюнкции, основанной на структурной рекурсии, N было фиксировано и равно 100.
 Each program was written in two versions: ``optimistic'' (with the order of important conjuncts set to provide the best performance) and ``pessimistic'' (with the order of important
 conjuncts set to provide the worst performance).
 
-All benchmarks were run ten times, and average time was taken. For the naive fair conjunction we cherry-picked the best value of unfolding bound manually. For the fair conjunction
+All benchmarks were run ten times, and the average time was taken. For the naive fair conjunction we cherry-picked the best value of unfolding bound manually. For the fair conjunction
 based on structural recursion the bound was set to 100.
 
 \begin{figure}
@@ -111,14 +111,14 @@ based on structural recursion the bound was set to 100.
 % На изображениях 12-15 представлены результаты апробации в виде столбцовых диаграмм. В оптимистичном случае результаты схожи для всех семантик. В пессиместичном случае время работы напрпавленной конъюнкции резко возрастает, время работы наивной равномерной конъюнкции также ворзрастает, но не так сильно. Равномерная конъюнкция, основанная на структурной рекурсии, демострирует схожую эффективность в сравнении с оптимистичным случаем.
 Fig.~\ref{fair:plot-reverso}-\ref{fair:plot-bridge} show the results of evaluation in the form of bar charts. In the optimistic case, the results are similar for all semantics.
 In the pessimistic case the evaluation time of the directed conjunction rapidly increases, the evaluation time of the naive fair conjunction also increases, but not so much.
-The fair conjunction based on structural recursion demonstrates the similar efficiency as in the optimistic case.
+The fair conjunction based on structural recursion demonstrates a similar efficiency as in the optimistic case.
 
 % Более подробно результаты представлены на изображении 16. Можно заметить, что время работы программы sorto в пессиместичном случае очень быстро растет с увеличением длины списка для направленной конъюнкции и наивной равномерной. В случае с равномерной конъюнкцией, основанной на структурной рекурсии, пессиместичный случай растет сопостовимо с оптимистичным.
-The results are presented in more details on Fig.~\ref{fair:evaluation-table}. We can conclude that \lstinline{sort$^o$} runtime in the pessimistic case increases
+The results are presented in more detail in Fig.~\ref{fair:evaluation-table}. We can conclude that \lstinline{sort$^o$} runtime in the pessimistic case increases
 very rapidly with increasing the list length for directed and naive fair conjunctions. In the case of the fair conjunction based on structural recursion the running time in pessimistic case
 increases on a par with that in the optimistic one.
 
-\begin{figure}[h]
+\begin{figure}[]
   \small
   \centering
   \begin{tabular}{ c | c | c | c | c | c | c | c }
@@ -151,5 +151,5 @@ increases on a par with that in the optimistic one.
 \end{figure}
 
 % Подводя итог, равномерная конъюнкция, основанная на структурной рекурсии сопоставима по эффективности с направленной конъюнкцией. Более того, это конъюнкция слабо зависит от порядка конъюнктов.
-To summarize, the fair conjunction based on structural recursion does not introduce any essential overhead in comparison with directed conjunction in optimistic case. At the same time it
-weakly depends on the order of the conjuncts, and thus demonstrates much better performance in pessimistic case.
+To summarize, the fair conjunction based on structural recursion does not introduce any essential overhead in comparison with directed conjunction in an optimistic case. At the same time it
+weakly depends on the order of the conjuncts, and thus demonstrates much better performance in the pessimistic case.

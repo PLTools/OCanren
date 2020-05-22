@@ -55,11 +55,11 @@ The problem in this particular example can be alleviated by using a conventional
 But the rule does not work for clusters with more than one relational call. Consider, for instance, the relation \lstinline{revers$^o$} (Fig.~\ref{fair:lst-reverso}), which associates
 an arbitrary list with the list containing the same elements in reverse order. In this relation we can see a couple of conjuncts: \lstinline{revers$^o$} on line~\ref{fair:reverso-call} and
 \lstinline{append$^o$} on line~\ref{fair:appendo-call}. With this particular order, the call \lstinline{(revers$^o$ [1, 2, 3] q)} converges, but in reverse order it diverges after an answer
-is found. Moreover, the reverse order negatively affects the performance of answer evaluation.
+is found. Moreover, the reverse order negatively affects the performance of the answer evaluation.
 
 % В то же время, вызов revers при заданном порядке конъюнктов расходится, а при обратном сходится. В результате мы бы хотели разный порядок конъюнктов в зависимости от конкретных аргументов.
 
-At the same time the call \lstinline{(revers$^o$ q [1, 2, 3])} for given order of conjuncts diverges, and for reverse order it converges. As a result a
+At the same time the call \lstinline{(revers$^o$ q [1, 2, 3])} for a given order of conjuncts diverges, and for reverse order it converges. As a result a
 different order of conjuncts is desirable depending on their runtime values.
 
 % В следующих разделах мы предлжожим подход, который будет определять оптимальный порядок автоматически во время исполнения программы.
