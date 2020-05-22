@@ -5,15 +5,25 @@ form of constraint~--- unification of terms. While from a theoretical standpoint
 fresh variable introduction) form a Turing-complete basis, in practice of relational programming a number of extensions are often used to make specifications more
 expressive, concise or efficient. One of the most important extensions is \emph{disequality constraint}.
 
+Disequality constraint~\cite{Disunification} introduces one additional type of base goal~--- a disequality of two terms
+
+\[
+t_1 \diseq t_2
+\]
+
 The informal semantics of disequality constraint is complementary to that of unification: it puts certain restrictions on free variables in the terms which
 prevent them from turning into syntactically equal. Similarly to unification, whose evaluation results in a substitution, which is then threaded through
 the rest of computations, the effect of disequality constraint is recorded in a \emph{constraint store} which is later used to check the violation of
 disequalities~\cite{CKanren}.
 
 We present an extension of our prior work on certified semantics for core \textsc{miniKanren}~\cite{CertifiedSemantics}. In that work, we
-defined denotational semantics, similar to the least Herbrand model, and operational semantics, corresponding to conventional for \textsc{miniKanren}
-\emph{interleaving search}, and proved the soundness and completeness of the latter w.r.t. the former. The development was formally certified in
-\textsc{Coq} proof assistant, and a correct-by-construction interpreter was extracted.
+defined denotational and operational semantics and proved the soundness and completeness of the latter w.r.t. the former. 
+The main advantage of the operational semantics introduced there over the ones developed before~\cite{MechanisingMiniKanren, RelConversion, DivTest}
+was its ability to capture the conventional for \textsc{miniKanren} \emph{interleaving search}~\cite{Search} procedure.
+This allowed us to give the first to our knowledge formal proof of completeness of the interleaving search
+as the capability to reach all the solutions from denotational semantics
+(proof of completeness as the fairness of steams interleaving for a specific implementation was given in~\cite{SmallEmbedding}).
+The development was formally certified in \textsc{Coq} proof assistant~\cite{Coq}, and a correct-by-construction interpreter was extracted.
 
 The contribution of our current work is as follows:
 
