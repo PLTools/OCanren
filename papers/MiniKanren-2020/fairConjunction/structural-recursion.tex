@@ -1,10 +1,13 @@
 \section{Fair conjunction by structural recursion}
 
 % В этой секции мы рассмотрим обобщенную семантику \mk с равномерной конъюнкцией, которая определяет глубину раскркутки динамически. Также мы рассмотрим её конкретную реализацию, основонную на структурной рекурсии отношений.
-In this section, we consider the generalized semantics of \mk with a fair conjunction that determines the unfolding depth dynamically. We also consider its specific implementation, which is based on the structural recursion of relations.
+In this section we consider a generalized semantics of \mk with a fair conjunction which determines the unfolding bound dynamically. We also consider its specific implementation
+which makes use of structural recursion of relations.
 
 % В общем случае мы хотим параметризовать семантику предикатом. Этот предикат принимает вызов в качестве аргумента. Он возвращает истину, если конъюнкт необходимо раскручивать дальше. И возвращает ложь, если необходимо перейти к следующему конъюнкту. Также мы оставим параметр N, определяющий количество раскруток. Он необходим для обработки случая, когда предикат ложен для всех вызовов.
-In the general case, we want to parameterize semantics with a unfolding predicate $pred$. This predicate takes a substitution and a call as arguments. He returns \lstinline{true}, if the call needs to be unfolded further. And returns \lstinline{false}, if we need to move on to the next conjunct. We also leave the parameter $N$, which determines the count of unfoldings. It is necessary to handle the case when the predicate $pred$ is false for all calls in leaf.
+In the general case we want to parameterize the semantics with an unfolding predicate $pred$. This predicate takes a substitution and a call as arguments. It returns \lstinline{true}
+if the call needs to be unfolded further, and \lstinline{false}, if we need to move on to the next conjunct. We do not get rid of unfolding bound completely since it is still needed to handle
+the case when $pred$ is false for all calls in a leaf.
 
 \begin{figure}[h!]
 \[\begin{array}{cr}
@@ -32,10 +35,16 @@ In the general case, we want to parameterize semantics with a unfolding predicat
 \end{figure}
 
 % Семантика, параметризованная предикатом раскрутки представлена на изображении 10. Так как мы обновляем только поведение конъюнкции, то правила [Answer], [Disj] и [DisjStep]  остаются без изменений. Но за обработку конъюнкций теперь отвечают три обновленных правила. Если предикат истинен хотя бы для одного вызова, то мы применяем правило [ConjUnfoldPred] и раскручиваем самый левый такой вызов и уменьшаем его счетчик. Если предикат ложен на всех вызовах, но есть хотя бы один вызов с ненулевым счетчиком, то мы применяем правило [ConjUnfold] и раскручиваем самый левый такой вызов и уменьшаем его счетчик. Если предикат ложен на всех вызовах и все счетчики равны нулю, то мы применяем правило [ConjZero] и обновляем все счетчики.
-The semantics parameterized by the unfolding predicate are shown in Figure~\ref{fair:structural-recursion-semantics}. Since we are updating only conjunction behavior, the rules \rulen{Answer}, \rulen{Disj} and \rulen{DisjStep} remain unchanged. But three updated rules are responsible for handling conjunctions. If the predicate $pred$ is \lstinline{true} for at least one call, then we apply the \rulen{ConjUnfoldPred} rule, which unfolds the left-most such call and decrements its counter. If the predicate $pred$ is \lstinline{false} at all calls, but there is at least one call with a nonzero counter, then we apply the \rulen{ConjUnfold} rule, which unfolds the leftmost such call and decrements its counter. If the predicate is \lstinline{false} at all calls and all the counters are equal to zero, then we apply the \rulen{ConjZero} rule, which set all the counters to $N$.
+The semantics parameterized by the unfolding predicate is shown on Fig.~\ref{fair:structural-recursion-semantics}. Since we modify only the behavior of conjunction the rules \rulen{Answer},
+\rulen{Disj} and \rulen{DisjStep} remain unchanged. Three updated rules are responsible for conjunction behaviour. If the predicate $pred$ is \lstinline{true} for at least one call, then we
+apply the rule \rulen{ConjUnfoldPred}, which unfolds the leftmost such call and decrements its counter. If the predicate $pred$ is \lstinline{false} for all calls, but there is at least one
+call with a nonzero counter, then we apply the rule \rulen{ConjUnfold}, which unfolds the leftmost such call and decrements its counter. If the predicate is \lstinline{false} for all calls
+and all the counters are equal to zero, then we apply the rule \rulen{ConjZero}, which sets all the counters to unfolding bound.
 
 % В качестве предиката нам необходим критерий, отличающий вызов, который выгодно раскрутить сейчас от вызова, который стоит отложить. Мы предлагаем критерий, который корректно работает на отношениях со структурной рекурсией. У таких отношений есть хотя бы один аргумент, который структурно убывает с каждым шагом рекурсии. Это свойство позволит нам контролировать грубину раскрутки. Предлагаемый критерий состоит в следующем
-As a predicate, we need a criterion that distinguishes a call that is profitable to unfold now from a call that is worth deferring. We propose a criterion that works correctly structural recursion relations. Such relations have at least one argument that structurally decreases with each step of the recursion. This property will allow us to control the depth of unfolding. Proposed criterion is as follows
+As for the predicate, we need a criterion which can tell a call which is profitable to unfold now apart from a call which is worth deferring. We propose a criterion which works correctly
+for structurally recursive relations. Such relations have at least one argument which structurally decreases with each step of the recursion. This property allows us to control the depth
+of unfolding. We propose to use the following predicate:
 
 \[
 pred(\sigma, F^k(t_1, \ldots, t^k)) = \left\{
@@ -49,7 +58,10 @@ pred(\sigma, F^k(t_1, \ldots, t^k)) = \left\{
 \]
 
 % Пока хотя бы один аргумент, по которому ведется структурная рекурсия не является свободной переменной, мы продолжаем разворачивать этот вызов. Если все такие аргументы свободны, то в текущей подстановке отношение разойдется, поэтому мы переходим к вычислению следующего вызова. Так как аргументы структурной рекурсии убывают, то за конечное число шагов вычисление либо завершится, либо все аргументы структурной рекурсии станут свободными переменными.
-As long as at least one argument along which structural recursion is performed is not a free variable, we continue to unfold this call. If all such arguments are free, then the call will diverge in the current substitution, so we proceed to evaluate the next call. Since the arguments to structural recursion structurally decrease, in a finite number of steps, the evaluation will either complete, or all arguments of structural recursion will become free variables.
+
+As long as at least one argument along which structural recursion is performed is not a free variable, we continue to unfold this call. If all such arguments are free, then the call
+will diverge in the current substitution, so we proceed to evaluate the next call. Since structurally recursive arguments decrease, in a finite number of steps the evaluation will
+either complete, or all arguments of structural recursion will become free variables.
 
 
 \begin{figure}[h!]
@@ -64,14 +76,15 @@ let rec append$^o$ x y xy =
     append$^o$ xs y xys)
 \end{lstlisting}
 \end{tabular}
-
-
-\caption{Relational program to append lists}
+\caption{Relational concatenation}
 \label{fair:lst-appendo}
 \end{figure}
 
 % Например, отношение appendo является структурно рекурсивным по первому и третьему аргументу. Действительно, вложенный вызов appendo в качестве первого аргумента принимает xs, который является подтермом x. Также в качестве третьего аргумента appendo принимает xys, который является подтермом xy. Если хотя бы один из них --- список фиксированной длины, то отношение сойдется. В противном случае, оба имеют вид: $x = t_1 : \ldots t_n : \alpha$ и $xy = \bar{t}_1 : \ldots \bar{t}_m : \alpha$. Следовательно через max(n, m) шагов оба аргумента станут свободными перееменными. 
-For example, the \lstinline{append$^o$} (fig.~\ref{fair:lst-appendo}) relation is structurally recursive in the first and third arguments. Indeed, the nested call \lstinline{append$^o$} takes \lstinline{xs} as its first argument, which is a subterm of \lstinline{x}. Also, \lstinline{append$^o$} takes \lstinline{xys} as the third argument, which is a subterm of \lstinline{xy}. If at least one of them is a fixed-length list, then the relation will converge. Otherwise, $\mbox{\lstinline{x}} = t_1 : \ldots t_n : \alpha_1$ and $\mbox{\lstinline{xy}} = \bar{t}_1 : \ldots \bar{t}_m : \alpha_2$. Therefore, through $max(n, m)$ steps, both arguments become free variables.
+For example, the relation \lstinline{append$^o$} (Fig.~\ref{fair:lst-appendo}) is structurally recursive on its first and third arguments. Indeed, the nested call \lstinline{append$^o$}
+takes \lstinline{xs} as its first argument, which is a subterm of \lstinline{x}. Also, \lstinline{append$^o$} takes \lstinline{xys} as the third argument, which is a subterm of
+\lstinline{xy}. If at least one of them is a fixed-length list, then the relation will converge. Otherwise, $\mbox{\lstinline{x}} = t_1 : \ldots t_n : \alpha_1$
+and $\mbox{\lstinline{xy}} = \bar{t}_1 : \ldots \bar{t}_m : \alpha_2$. Therefore, in $max(n, m)$ steps, both arguments become free variables.
 
 % На текущий момент мы работаем над доказательством независимости данной семантики от порядка конъюнктов в случае, когда все отношения являются отношениями со структурной рекурсией.
-We are currently working on proving the independence of this semantics from the order of the conjuncts in the case when all relations are relations with structural recursion.
+We are currently working on proving the independence of this semantics from the order of the conjuncts in the case when all relations are structurally recursive.
