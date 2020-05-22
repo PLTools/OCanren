@@ -1,30 +1,28 @@
-\section{Semantics of Directed Conjunction}
+\section{The Semantics of Directed Conjunction}
 % В этом разделе мы введем операционную семантику малого шага для определения поведения оригинального miniKanren с направленной конъюнкцией.
-In this section we introduce the small step operational semantics to define the behavior of the original \mk~ with directed conjunction. 
+In this section we introduce the small step operational semantics to define the behavior of the original \mk with directed conjunction. 
 
 % Отметим, что на данный момент существует сертифицированная семантика языка miniKanren, однако она делает большие различия между первым и вторым конъюнктом, что сильно усложняет задачу перестановки конъюнктов в процессе исполнения программы. Поэтому для данной работы мы разработали новую семантику, которая изначально не делает различий между конъюнктами.
 
-Note, at the moment there is certified semantics~\cite{fair:semantics} of the \mk, however, it makes great differences between the first and second conjuncts, which greatly complicates the task of rearranging the conjuncts in the process of program evaluation. 
-Therefore, for this research, we have developed a new semantics that initially does not distinguish between conjuncts.
+Note, althought at the moment there exists a certified semantics~\cite{fair:semantics} of \mk, however, it makes a distinction between the first
+and the second conjuncts, which greatly complicates the task of rearranging the conjuncts in the process of program evaluation. 
+Therefore, for this research, we have developed a new semantics which does not distinguish between conjuncts from the start.
 
 % Семантика, которую мы предлагаем, основана на развертке вызовов отношений. На каждом шаге в текущем состоянии программы выбирается некоторый вызов, который разворачивается. Этот процесс продолжается, пока в текущем представлении остаются вызовы. Ниже мы опишим эту семантику более формально.
 
-The semantics that we offer are based on unfolding of the relation calls.
-At each step, we select a call from the current state of the program. 
-We are unfolding this call.
-This process continues while calls remain in the state of program. 
-Below we define this semantics more formally.
+The semantics that we propose is based on unfolding of relational calls. At each step we select a call from current state of the program and unfold it.
+This process continues until no calls remain in the state. Below we define this semantics formally.
 
 % Прежде всего мы определим синтаксис языка \mk на изображении 2. Конструкторы с арностью являются стандартным представлением данных. Синтаксические переменные необходимы для описания аргументов отношения и свежих переменных в операции fresh. Семантические переменные в исходной программе отсутствуют, однако они вводятся при исполнении операции fresh. Из конструкторов, синтаксический переменных и семантических переменных мы определили множество синтаксических термов и множество семантических переменных. Также мы определили множество имен отношений с арностью. Далее, мы определили цели. Цели являются унификацией термов, дизъюнкцией, конъюнкцией введением свежей переменной или вызовом отношения. Наконец мы определяем множество отношений. Каждое отношение состоит из имени с арностью, списка имен переменных и тела отношения.
 
-First of all, we define the syntax of the language \mk~ in figure~\ref{fair:syntax}.
-Constructors with arity $\mathcal{C}$ are a standard representation of data.
-Syntax variables $\mathcal{X}$ are needed to describe the relation arguments and the fresh variables in the \lstinline{fresh} operation.
-There are no semantic variables $\mathcal{A}$ in the source program, but they are introduced during the evaluation of the \lstinline{fresh} operation. 
-We define set of syntax terms $\mathcal{T}_\mathcal{X}$ and set of semantic terms $\mathcal{T}_\mathcal{A}$ using the constructors, syntax variables and semantic variables. 
-Also we define set of relation names with arity $\mathcal{F}$.
-Next, we describe goals $\mathcal{G}$. Goals are the unification of terms, disjunction, conjunction, the introduction of a fresh variable, or the call of a relation. 
-Finally, we define the set of relations $\mathcal{S}$. Each relation consists of the name with arity, the list of variable names, and the body of the relation.
+First, we define the syntax of the language (Fig.~\ref{fair:syntax}). We define the set of syntax terms $\mathcal{T}_\mathcal{X}$ and the set of semantic terms
+$\mathcal{T}_\mathcal{A}$ using constructors $\mathcal{C}$, syntactic variables $\mathcal{X}$ and semantic variables $\mathcal{A}$. Syntactic variables $\mathcal{X}$
+are needed to intriduce relation arguments and fresh variables. Semantic variables $\mathcal{A}$ can not occur in the source program, but they are introduced during
+the evaluation of  \lstinline{fresh} construct.
+
+Also we define the set $\mathcal{F}$ of relation names with arity. Next, we describe the set of goals $\mathcal{G}$. A goals is either a unification of terms, or a disjunction, conjunction, introduction
+of fresh variable, call of a relation. Finally, we define the set of relations $\mathcal{S}$. Each relation consists of the name with arity, the list of variable names,
+and the goal as its body.
 
 \begin{figure}[h]
 \[
@@ -55,23 +53,25 @@ Finally, we define the set of relations $\mathcal{S}$. Each relation consists of
     \mathcal{S} & = &F_i^{k_i} = \lambda \mathcal{X}_1 \ldots \mathcal{X}_n. \; \mathcal{G} & \mbox{relations}
   \end{array}
 \]
-    \caption{The syntax of the relational language}
+    \caption{The syntax of relational language}
     \label{fair:syntax}
 \end{figure}
 
 % Помимо синтаксиса нам понадбится промежуточное состояние реляционной программы. Это состояние является деревом дизъюнкций. Внутренние узел \circ соотвествует дизъюнкции двух состояний-потомков. Его листья содержат промежуточные подстановки, индекс семантических переменных i, и список вызовов. Подстановка --- это отображение из семантических переменных в семантические термы. Оно содержит информацию о текущих переменных и обновляется при исполнении унификаций. Индекс семантических переменных необходим для исполнения операции fresh, которая вводит семантическую переменную с новым индексом. Список вызовов содержит вызовы отношений c_i, которые необходимо довычислить в этой ветке. Список \epsilon соответствует пустому списку, а оператор (:) определяет добавление вызова в список.
 
-In addition to the syntax, we need an intermediate state of the relational program
+In addition to syntax we need an intermediate state of relational program
+
 \[
-\textgoth{T} = \inbr{\sigma, i, c_1 : \ldots : c_n : \epsilon} \mid \textgoth{T} \circ \textgoth{T} \mbox{, where } c_i = F_i^{k_i}(t_\mathcal{A}^1, \ldots, t_\mathcal{A}^{k_i}).
+\begin{array}{rcl}
+  \textgoth{T} & = & \textgoth{T} \circ \textgoth{T}\\
+               &   & \inbr{\sigma;\, i;\, c_1\dots c_n},\, c_j = F_j^{k_j}\,(t_\mathcal{A}^1,\dots,t_\mathcal{A}^{k_j})
+\end{array}
 \]
-This state is a disjunction tree. The internal node $(\circ)$ corresponds to the disjunction of two descendant states.
-Its leaves contain intermediate substitutions $\sigma$, counter of semantic variables $i$ and list of calls. 
-Substitution $\sigma$ is mapping from semantic variables to semantic terms. 
-It contains information about the current variables and is updated during the evaluation of unifications. 
-The counter of semantic variables is necessary to evaluate the \lstinline{fresh} operation, which introduces a semantic variable with a new counter.
-List of calls contains calls $c_i$ that must be evaluated in this branch.
-The list $\epsilon$ corresponds to an empty list, and the operator $(:)$ determines the addition of a call to the list.
+
+The state has a shape of disjunction tree. An internal node ``$\circ$'' corresponds to the disjunction of two descendant states.
+Its leaves contain intermediate substitutions $\sigma$, a counter of semantic variables $i$ and a list of calls. Substitution $\sigma$ is a
+mapping from semantic variables to semantic terms. The counter of semantic variables is necessary to evaluate the \lstinline{fresh} operation,
+which introduces a semantic variable with a new counter. The list of calls contains calls $c_i$ which must be evaluated in this branch.
 
 % Мы расширим множество состояний пустым состоянием, которое соотвествует завершению вычисления. 
 
