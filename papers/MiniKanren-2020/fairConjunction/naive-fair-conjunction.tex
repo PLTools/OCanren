@@ -9,20 +9,20 @@ Instead of unfolding the leftmost call to exhaustion in the leaf we suggest to f
 % Для реализации подобного поведения нам нужно обновить структуру состояний. Каждому вызову c_i в листе мы добавили натуральное число k_i, которое описывает оставшееся число разверток. Таким образом каждый вызов в состояние помечен счетчиком разверток. 
 To implement this behavior, we need to update the state structure
 \[
-\textgoth{T} = \inbr{\sigma, i, c_1^{k_1} : \ldots : c_n^{k_n} : \epsilon} \mid \textgoth{T} \circ \textgoth{T}.
+\textgoth{T} = \inbr{\sigma, i, c_1^{k_1} \land \ldots \land c_n^{k_n} : \epsilon} \mid \textgoth{T} \lor \textgoth{T}.
 \]
 For each call $c_i$ in the leaf, we added a natural number $k_i$, which defines the remaining number of unfoldings. Therefore, each call to the state is marked with a unfolding counter. 
 
 % Отметим, что синтаксис, вспомогательная функция union, семантика развертки остается без изменений. Функция push также сохраняет свое поведение, однако теперь она принимает список меченых вызовов с дыркой и обновленное состояние. Дополнительно нам понадобится функция set, которая принимает состояние без меток и число. Это число присоединяется к каждому вызову в состояние. Таким образом мы получаем обновленное состояние.
-Note that the syntax, auxiliary function $union$, the semantics of unfolding remains unchanged. The function $push$ also remains its behavior, but now it gets a list of marked calls with the hole and an updated state. In addition, we need the function $set$ (fig.~\ref{fair:set-semantics}), which takes an old state without counters in leafs and a natural number. This number is attached to each call to the state. Thus, we get an updated state. 
+Note that the syntax, auxiliary function $union$, the semantics of unfolding remains unchanged. The function $push$ also remains its behavior, but now it gets a conjunction of marked calls with the hole and an updated state. In addition, we need the function $set$ (fig.~\ref{fair:set-semantics}), which takes an old state without counters in leafs and a natural number. This number is attached to each call to the state. Thus, we get an updated state. 
 
 \begin{figure}[h!]
 \[
 set(T, i) =
 \left\{
 \begin{array}{rl}
-\inbr{\sigma, i, c_1^i : \ldots : c_n^i : \epsilon}, & \mbox{if } T = \inbr{\sigma, i, c_1 : \ldots : c_n : \epsilon} \\
-(set(T_1, i) \circ set(T_2, i)), & \mbox{if } T = (T_1 \circ T_2)
+\inbr{\sigma, i, c_1^i \land \ldots \land c_n^i}, & \mbox{if } T = \inbr{\sigma, i, c_1 \land \ldots \land c_n} \\
+set(T_1, i) \lor set(T_2, i), & \mbox{if } T = T_1 \lor T_2
 \end{array}
 \right.
 \]
@@ -38,16 +38,16 @@ Now we are ready to modernize the semantics with directed conjunction. New seman
 
       {\inbr{\sigma, i, \epsilon} \xrightarrow{\sigma} \emptyset}  
 &     \ruleno{Answer} \\[2mm]
-      {\inbr{\sigma, i, c_1^0 : \ldots : c_k^0 : \epsilon} \xrightarrow{\circ} (\sigma, i, c_1^N : \ldots : c_k^N : \epsilon)}
+      {\inbr{\sigma, i, c_1^0 \land \ldots \land c_k^0} \xrightarrow{\circ} (\sigma, i, c_1^N \land \ldots \land c_k^N)}
 &     \ruleno{ConjZero} \\[2mm]
 \dfrac{m > 0 \qquad (\sigma, i) \vdash c_{i+1} \Rightarrow T \qquad set(m - 1, T) = \bar{T}}
-      {\inbr{\sigma, i, c_1^0 : \ldots : c_i^0 : c_{i+1}^m : cs} \xrightarrow{\circ} push(c_1^0 : \ldots : c_i^0 : \Box : cs, \bar{T})}
+      {\inbr{\sigma, i, c_1^0 \land \ldots \land c_i^0 \land c_{i+1}^m \land C} \xrightarrow{\circ} push(c_1^0 \land \ldots \land c_i^0 \land \Box \land C, \bar{T})}
 &     \ruleno{ConjUnfold} \\[2mm]
 \dfrac{T_1 \xrightarrow{\alpha} \emptyset}
-      {(T_1 \lor T_2) \xrightarrow{\alpha} T_2}
+      {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
 &     \ruleno{Disj} \\[4mm]
 \dfrac{T_1 \xrightarrow{\alpha} \bar{T_1}}
-      {(T_1 \lor T_2) \xrightarrow{\alpha} (T_2 \lor\bar{T_1})}
+      {T_1 \lor T_2 \xrightarrow{\alpha} T_2 \lor\bar{T_1}}
 &     \ruleno{DisjStep} \\[4mm]
 \end{array}\]
 \caption{Simple fair semantics}
