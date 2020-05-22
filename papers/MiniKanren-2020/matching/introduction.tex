@@ -100,7 +100,12 @@ switch x with
 %this approach. 
 
 The quality of pattern matching implementation can be measured in various ways. One can either optimise the run time cost by minimizing amount of checks performed, or static
-cost by minimizing the size of generated code. \emph{Decision trees}~\cite{?} considered suitable for the first criterion as they check every subexpression no more than once.
+cost by minimizing the size of generated code. \emph{Decision trees}
+%~\cite{?} 
+% I removed cite because 
+% 1) can't find a good citation for it not in the field of compilers
+% 2) folks in other papers don't refernece them. Only backtracking automata are begin referenced
+considered suitable for the first criterion as they check every subexpression no more than once.
 However, minimizing the size of decision tree is known to be NP-hard~\cite{baudinet1985tree}, and as a rule various heuristics, using, for example,
 the number of nodes, the length of the longest path, the average length of all paths are applied during compilation. In \cite{Scott2000WhenDM} the results of experimental
 evaluation of nine heuristics for Standard ML of New Jersey are reported.
@@ -117,7 +122,8 @@ For non-strict languages pattern matching should evaluate only those sub-express
 change the termination behavior of the program. In general non-strict languages put more constraints on pattern matching and thus admit a lesser set of heuristics. 
 A few approaches for checking sub-expressions in lazy languages have been proposed. In ~\cite{augustsson1985} a simple left-to-right order of subexpression checking was proposed
 and was proved that it doesn't affect termination. The backtracking automaton being built has a form of a DAG to reduce the code size. A few refinements have been added in~\cite{wadler1987}
-as a part of textbook~\cite{peytonjones1987} on implementation of lazy functional languages. The approach from this book is used in the current version of GHC~\cite{ghc}.
+as a part of textbook~\cite{peytonjones1987} on implementation of lazy functional languages. The approach from this book is used in the current version of GHC~\cite{marlow2012the}.
+%~\footnote{The Glasgow Haskel Compiler, \url{http://www.haskell.org/ghc/}}
 \cite{laville1991} models values in lazy languages using \emph{partial terms}, although it doesn't scale to types with infinite constructor sets (like integers). The approach doesn't
 test all subexpressions from left to right as~\cite{augustsson1985} but is aimed at avoiding to perform unnecessary checks by constructing \emph{lazy automaton}. Pattern matching for
 lazy languages has been compiled also to decision trees~\cite{maranget1992} and later into \emph{decision DAGs} which allow in some cases to make the code
@@ -136,7 +142,7 @@ difference is insignificant.
 
 While existing approaches deliver appropriate solutions for certain forms of pattern matching construct, they have to be extended in an \emph{ad hoc} manner each time
 the syntax and semantics of pattern matching construct changes. For example, besides a simple conventional form of pattern matching there is a number of extensions:
-guards (first time appeared in KRC language~\cite{turner2013}), disjunctive patterns~\cite{?}, non-linear patterns~\cite{mcbride1969symbol}, active patterns~\cite{activepatterns}, pattern matching for polymorphic variants~\cite{Garrigue98} 
+guards (first time appeared in KRC language~\cite{turner2013}), disjunctive patterns~\cite{ocaml}, non-linear patterns~\cite{mcbride1969symbol}, active patterns~\cite{activepatterns}, pattern matching for polymorphic variants~\cite{Garrigue98} 
 %and generalized algebraic datatypes~\cite{?}) 
 which require a separate customized algorithms to be developed.
 
