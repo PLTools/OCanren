@@ -1,7 +1,7 @@
-\section{Uniform conjunction by structural recursion}
+\section{Fair conjunction by structural recursion}
 
 % В этой секции мы рассмотрим обобщенную семантику \mk с равномерной конъюнкцией, которая определяет глубину раскркутки динамически. Также мы рассмотрим её конкретную реализацию, основонную на структурной рекурсии отношений.
-In this section, we consider the generalized semantics of \mk with a uniform conjunction that determines the unfolding depth dynamically. We also consider its specific implementation, which is based on the structural recursion of relations.
+In this section, we consider the generalized semantics of \mk with a fair conjunction that determines the unfolding depth dynamically. We also consider its specific implementation, which is based on the structural recursion of relations.
 
 % В общем случае мы хотим параметризовать семантику предикатом. Этот предикат принимает вызов в качестве аргумента. Он возвращает истину, если конъюнкт необходимо раскручивать дальше. И возвращает ложь, если необходимо перейти к следующему конъюнкту. Также мы оставим параметр N, определяющий количество раскруток. Он необходим для обработки случая, когда предикат ложен для всех вызовов.
 In the general case, we want to parameterize semantics with a unfolding predicate $pred$. This predicate takes a substitution and a call as arguments. He returns \lstinline{true}, if the call needs to be unfolded further. And returns \lstinline{false}, if we need to move on to the next conjunct. We also leave the parameter $N$, which determines the count of unfoldings. It is necessary to handle the case when the predicate $pred$ is false for all calls in leaf.
@@ -74,4 +74,5 @@ let rec append$^o$ x y xy =
 For example, the \lstinline{append$^o$} (fig.~\ref{fair:lst-appendo}) relation is structurally recursive in the first and third arguments. Indeed, the nested call \lstinline{append$^o$} takes \lstinline{xs} as its first argument, which is a subterm of \lstinline{x}. Also, \lstinline{append$^o$} takes \lstinline{xys} as the third argument, which is a subterm of \lstinline{xy}. If at least one of them is a fixed-length list, then the relation will converge. Otherwise, $\mbox{\lstinline{x}} = t_1 : \ldots t_n : \alpha_1$ and $\mbox{\lstinline{xy}} = \bar{t}_1 : \ldots \bar{t}_m : \alpha_2$. Therefore, through $max(n, m)$ steps, both arguments become free variables.
 
 % На текущий момент мы работаем над доказательством независимости данной семантики от порядка конъюнктов в случае, когда все отношения являются отношениями со структурной рекурсией.
-We are currently working on proving the independence of this semantics from the order of the conjuncts in the case when all relations are relations with structural recursion.
+We are currently working on proving the independence of this semantics from the order of the 
+uncts in the case when all relations are relations with structural recursion.
