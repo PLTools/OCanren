@@ -27,7 +27,7 @@ Our approach to finding an optimal solution in fact implements branch-and-bound 
 \begin{itemize}
 \item We construct a trivial solution, which gives us the first estimation.
 \item During the search we prune all partial solutions whose size exceeds current estimation. We can do this due to
-  the top-down nature of partual solution construction.
+  the top-down nature of partial solution construction.
 \item When we come up with a better solution we remember it and update current estimation.
 \end{itemize}
 
