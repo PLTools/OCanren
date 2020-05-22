@@ -1,0 +1,486 @@
+\def\pgfsysdriver{pgfsys-dvipdfm.def}
+\documentclass[aspectratio=169
+  , xcolor={svgnames}
+  , hyperref={ colorlinks,citecolor=Blue
+             , linkcolor=DarkRed,urlcolor=DarkBlue}
+  , russian
+  ]{beamer}
+\usetheme{CambridgeUS}
+\usefonttheme{professionalfonts}
+
+% get rid of header navigation bar
+\setbeamertemplate{headline}{}
+% get rid of bottom navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+\usepackage{pgfpages}
+%\setbeamertemplate{note page}[plain]
+%\setbeameroption{show notes on second screen=right}
+
+\usepackage{bibentry}
+\usepackage{cite}
+%\usepackage{natbib}
+\def\newblock{\hskip .11em plus .33em minus .07em}
+% get rid of footer
+%\setbeamertemplate{footline}{}
+
+\input{heading.tex}
+
+\usepackage{subcaption}
+\usepackage{etoolbox}
+
+
+\usepackage{exercise}
+\usepackage{tikz}
+ \usepackage{tikz-qtree}
+\usetikzlibrary{trees}
+\usepackage[edges]{forest}
+\forestset{.style={
+%  for tree={l=1em, l sep=1em, s sep=1em}
+  forked edges,
+    for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
+        rounded corners  }
+  }}
+
+\newcommand{\lstquot}[1]{``\lstinline{#1}''}
+\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+\newcommand\false{$f\!alse$}
+\newcommand\myif{i\!f}
+
+
+\def\transarrow{\xrightarrow}
+\newcommand{\setarrow}[1]{\def\transarrow{#1}}
+
+\def\padding{\phantom{X}}
+\newcommand{\setpadding}[1]{\def\padding{#1}}
+
+\def\subarrow{}
+\newcommand{\setsubarrow}[1]{\def\subarrow{#1}}
+
+\newcommand{\trule}[2]{\dfrac{#1}{#2}}
+\newcommand{\crule}[3]{\dfrac{#1}{#2},\;{#3}}
+\newcommand{\withenv}[2]{{#1}\vdash{#2}}
+\newcommand{\trans}[3]{{#1}\transarrow{\padding{\textstyle #2}\padding}\subarrow{#3}}
+\newcommand{\ctrans}[4]{{#1}\transarrow{\padding#2\padding}\subarrow{#3},\;{#4}}
+\newcommand{\llang}[1]{\mbox{\lstinline[mathescape]|#1|}}
+\newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
+\newcommand{\inbr}[1]{\left<{#1}\right>}
+\newcommand{\highlight}[1]{\color{red}{#1}}
+%\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
+\newcommand{\rulename}[1]{\textsc{#1}}
+\newcommand{\inmath}[1]{\mbox{$#1$}}
+\newcommand{\lfp}[1]{fix_{#1}}
+\newcommand{\gfp}[1]{Fix_{#1}}
+\newcommand{\vsep}{\vspace{-2mm}}
+\newcommand{\supp}[1]{\scriptsize{#1}}
+\renewcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\cd}[1]{\texttt{#1}}
+\newcommand{\free}[1]{\boxed{#1}}
+\newcommand{\binds}{\;\mapsto\;}
+\newcommand{\dbi}[1]{\mbox{\bf{#1}}}
+\newcommand{\sv}[1]{\mbox{\textbf{#1}}}
+\newcommand{\bnd}[2]{{#1}\mkern-9mu\binds\mkern-9mu{#2}}
+\newcommand{\meta}[1]{{\mathcal{#1}}}
+\newcommand{\dom}[1]{\mathtt{dom}\;{#1}}
+%\newcommand{\primi}[2]{\mathbf{#1}\;{#2}}
+\renewcommand{\dom}[1]{\mathcal{D}om\,({#1})}
+\newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
+\newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
+\newcommand{\tr}[1]{\mathcal{T}r_{#1}}
+\newcommand{\diseq}{\not\equiv}
+\newcommand{\reprfunset}{\mathcal{R}}
+\newcommand{\reprfun}{\mathfrak{f}}
+\newcommand{\cstore}{\Omega}
+\newcommand{\cstoreinit}{\cstore_\epsilon^{init}}
+\newcommand{\csadd}[3]{add(#1, #2 \diseq #3)}  %{#1 + [#2 \diseq #3]}
+\newcommand{\csupdate}[2]{update(#1, #2)}  %{#1 \cdot #2}
+\newcommand{\primi}[1]{\mathbf{#1}}
+\newcommand{\sem}[1]{\llbracket #1 \rrbracket}
+\newcommand{\ir}{\ensuremath{\mathcal{S}}}
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+    \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
+
+\let\emptyset\varnothing
+\let\eps\varepsilon
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\title{Relational Synthesis for Pattern Matching}
+
+\date{May 2020}
+
+
+\newcommand{\verbatimfont}[1]{\def\verbatim@font{#1}}
+\usepackage{verbatimbox}
+
+
+\begin{document}
+\maketitle
+
+% For every picture that defines or uses external nodes, you'll have to
+% apply the 'remember picture' style. To avoid some typing, we'll apply
+% the style to all pictures.
+\tikzstyle{every picture}+=[remember picture] 
+
+% By default all math in TikZ nodes are set in inline mode. Change this to
+% displaystyle so that we don't get small fractions.
+\everymath{\displaystyle}
+
+% Uncomment these lines for an automatically generated outline.
+\begin{frame}{Pattern matching}
+Effective compilation of pattern matching is essential for functional programming
+\vspace{1cm}
+
+Two main approaches to compile:
+\begin{itemize}
+\item decision diagrams
+\begin{itemize}
+\item guaranteed amount of checks performed (speed)
+\end{itemize}
+\item backtracking automaton
+\begin{itemize}
+\item guaranteed code size
+\end{itemize}
+\end{itemize}
+  \note{}
+%  \note[enumerate]
+%  {
+%  \item Stress this first.
+%  \item Then this.
+%  }
+  
+\end{frame}
+
+
+\begin{frame}[fragile]{An example of matching and it's two compiled represenations}
+\begin{figure}[ht]
+\begin{subfigure}[b]{0.2\linewidth}
+\centering
+\begin{lstlisting}
+match x,y,z with
+| _,F,T -> 1
+| F,T,_ -> 2
+| _,_,F -> 3
+| _,_,T -> 4
+\end{lstlisting}
+\caption{Pattern matching}
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[b]{0.32\linewidth}
+\centering
+\begin{lstlisting}
+if x then
+  if y then
+    if z then 4 else 3
+  else
+    if z then 1 else 3
+else
+  if y then 2
+  else
+    if z then 1 else 3
+\end{lstlisting}
+\caption{Correct but semi-optimal compilation}
+\label{fig:matching-example2}
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[b]{0.35\linewidth}
+\centering
+\begin{lstlisting}
+if y then
+  if x then
+    if z then 4 else 3
+  else 2
+else
+  if z then 1 else 3
+\end{lstlisting}
+\caption{Optimal compilation}
+\label{fig:matching-example3}
+\end{subfigure}
+\caption{Pattern matching compilation is non-trivial (example from~\cite{maranget2008}).}
+\label{fig:match-example}
+\end{figure}
+ \note{This is an example from Luc Maranget's paper.
+ 
+ Pattern matchin is on the left. We can start testing from $x$, and then $y$ and $z$, it will give us a program with 6 $if$ constructions. But we can start testing from $y$ and if it is $false$ we can not test $x$. It will give us a program with four tests.}
+\end{frame}
+
+\begin{frame}{Our goal}
+Do \emph{not compile} with specific algorithm but \emph{synthesize} compiled representation on large enough but finite set of examples
+\vspace{1cm}
+
+Minimization criteria: less checks performed.
+\vspace{1cm}
+
+We are going to use relational programming for this, more precise OCanren~\cite{OCanrenWeb} from miniKanren~\cite{MiniKanrenWeb} family.
+\vspace{1cm}
+
+
+Our repo on Github: ~\cite{Repo}.
+\end{frame}
+
+
+\begin{frame}[fragile]{Pattern matching syntax}
+\begin{figure}[ht]
+\begin{subfigure}[b]{0.3\linewidth}
+\[
+ \begin{array}{rcll}
+    \mathcal{C} & = & \{ C_1^{k_1}, \dots, C_n^{k_n} \}\\
+    \mathcal{V} & = & \mathcal{C}\,\mathcal{V}^*\\  
+    \mathcal{P} & = & \_ \mid \mathcal{C}\,\mathcal{P}^*
+ \end{array}
+\]
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[b]{0.5\linewidth}
+\[
+\begin{array}{rcl}
+  \mathcal M & = & \bullet \\
+  &   & \mathcal M\,[\mathbb{N}] \\
+  \ir & = & \primi{return}\,\mathbb{N} \\
+  &   & \primi{switch}\;\mathcal{M}\;\primi{with}\; [\mathcal{C}\; \primi{\rightarrow}\; \ir]^*\;\primi{otherwise}\;\ir
+\end{array}
+\]
+\end{subfigure}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Example 1 (1/2)}
+\begin{figure}
+\begin{subfigure}[b]{0.3\linewidth}
+\begin{forest}
+  forked edges,
+  for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
+      rounded corners  },
+  highlight/.style={    thick,    font=\sffamily\bfseries  }
+    [{pats}
+      [{Cons}
+      [{Cons}
+            [{\_}]
+            [{\_}]
+      ]
+      [{\_}]
+      ]
+      [{\_}]
+    ]
+\end{forest}
+\end{subfigure}
+\hspace{3.5cm}
+\begin{subfigure}[b]{0.4\linewidth}
+\begin{minted}{ocaml}
+match (s : unit list) with 
+| _ :: _ :: _ -> 1
+| _           -> 2
+\end{minted}
+\vspace{1cm}
+\begin{itemize}
+\item Pattern matching (above)
+\item with two branches
+\end{itemize}
+\end{subfigure}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Example 1 (2/2)}
+\begin{figure}
+\begin{subfigure}[b]{0.3\linewidth}
+\begin{forest}
+  forked edges,
+  for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
+      rounded corners  },
+  highlight/.style={    thick,    font=\sffamily\bfseries  }
+    [{all}
+    [{Cons}
+      [{unit}]
+      [{Cons}
+            [{unit}]
+            [{Nil}]
+      ]      
+    ]
+    [{Cons} [{unit}]  [{Nil}]]
+    [{Nil}]
+    ]
+\end{forest}
+\end{subfigure}
+\hspace{3.5cm}
+\begin{subfigure}[b]{0.4\linewidth}
+\begin{minted}{ocaml}
+match (s : unit list) with 
+| _ :: _ :: _ -> 1
+| _           -> 2
+\end{minted}
+\vspace{1cm}
+\begin{itemize}
+\item Pattern matching (above)
+\item with example bound by height of patterns 
+\end{itemize}
+\end{subfigure}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]{Example 2 }
+\begin{figure}
+\begin{subfigure}[b]{0.3\linewidth}
+\begin{forest}
+  forked edges,
+  for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
+      rounded corners  },
+  highlight/.style={    thick,    font=\sffamily\bfseries  }
+    [{pats}
+      [{Nil}]
+      [{\_}]
+    ]
+\end{forest}
+\end{subfigure}
+\hspace{.5cm}
+\begin{subfigure}[b]{0.6\linewidth}
+\begin{minted}{ocaml}
+match (s : unit list) with 
+| []  -> 1
+| _   -> 2
+\end{minted}
+\vspace{1cm}
+\begin{itemize}
+\item All inhabitants bound by height = 1 -- is a set of single inhabitant
+\item It is not enough
+\item We should test at least on some expression of height 2 (\mintinline{ocaml}{unit :: []}, at least)
+\end{itemize}
+\end{subfigure}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Current algorithm for examples generation}
+\begin{figure}
+\begin{subfigure}[b]{0.45\linewidth}
+Algorithm:
+\begin{itemize}
+\item Evaluate height of patterns $h$
+\item Synthesize all inhabitants, but
+\item on depth $h+1$ use single predefined per type inhabitant 
+\end{itemize}
+\end{subfigure}
+\hspace{.5cm}
+\begin{subfigure}[b]{0.45\linewidth}
+Pros and cons:
+\begin{itemize}
+\item[\texttt{+}] It is correct
+\item[\texttt{-}] Exponential size of patterns
+\end{itemize}
+\vspace{1cm}
+We are currently working on
+\begin{itemize}
+\item When we can generate less examples?
+\item Overall synthesis speed
+\begin{itemize}
+\item it not only depend on a number of examples
+\end{itemize}
+\end{itemize}
+\end{subfigure}
+\end{figure}
+\vspace{1cm}\pause
+\begin{center}
+{\Huge Thanks!}
+\end{center}
+\end{frame}
+
+\begin{comment}
+\begin{frame}[fragile]{Pattern matching semantics}
+\begin{figure}[ht]
+\begin{subfigure}[b]{0.3\linewidth}
+\[
+ \begin{array}{rcll}
+    \mathcal{C} & = & \{ C_1^{k_1}, \dots, C_n^{k_n} \}\\
+    \mathcal{V} & = & \mathcal{C}\,\mathcal{V}^*\\  
+    \mathcal{P} & = & \_ \mid \mathcal{C}\,\mathcal{P}^*
+ \end{array}
+\]
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[b]{0.4\linewidth}
+ \renewcommand*{\arraystretch}{1.5}
+ \[
+ \begin{array}{cr}
+   \inbr{v;\,\_} & \ruleno{Wildcard} \\
+   \trule{\forall i\;\inbr{v_i;\,p_i}}{\inbr{C^k\,v_1\dots v_k;\,C^k\,p_1\dots p_k}},\,k\ge 0 & \ruleno{Constructor}
+ \end{array}
+ \]
+\end{subfigure}
+\end{figure}
+
+\begin{figure}
+   \renewcommand*{\arraystretch}{2}
+%   \setarrow{\xrightarrow}
+   \setsubarrow{_*}
+   \[
+   \begin{array}{cr}
+     \trule{\inbr{v;\,p_1}}
+           {\withenv{i}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}}} & \ruleno{MatchHead}\\
+     \trule{\neg\inbr{v;\,p_1}\qquad\withenv{i+1}{\trans{\inbr{v;\,p_2,\dots,p_k}}{}{j}}}
+           {\withenv{i}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{j}}} & \ruleno{MatchTail}\\
+     \withenv{i}{\trans{\inbr{v;\,\eps}}{}{i}} & \ruleno{MatchOtherwise}\\
+     \trule{\withenv{1}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}}}
+           {\setsubarrow{}\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}} & \ruleno{Match}
+   \end{array}
+   \]
+\end{figure}
+\note{
+This is pretty standart pattern mathcing semantics. Because of this talk is prerecorded you can easily pause and look into it more closely
+
+Our syntax supports only constructors and wild cards. Pattern vriables can be easily added after right matching branch is decided.
+}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{figure}
+\begin{subfigure}[b]{1\linewidth}
+\[
+\begin{array}{rcl}
+  \mathcal M & = & \bullet \\
+  &   & \mathcal M\,[\mathbb{N}] \\
+  \ir & = & \primi{return}\,\mathbb{N} \\
+  &   & \primi{switch}\;\mathcal{M}\;\primi{with}\; [\mathcal{C}\; \primi{\rightarrow}\; \ir]^*\;\primi{otherwise}\;\ir
+\end{array}
+\]
+\end{subfigure}
+\begin{subfigure}[b]{1\linewidth}
+\renewcommand*{\arraystretch}{3}
+\setarrow{\xrightarrow}
+\setsubarrow{_{\mathcal S}}
+  \[
+  \begin{array}{cr}
+    \withenv{v}{\trans{\primi{return}\;i}{}{i}} &  %\ruleno{Return}
+    \\
+    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{C^k\,v_1,\dots,v_k}}}\qquad \withenv{v}{\trans{s}{}{i}}}
+          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & 
+          %\ruleno{SwitchMatched}
+          \\
+    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{D^n\,v_1,\dots,v_n}}}\qquad C^k\ne D^n\qquad \withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;s^*\;\primi{otherwise}\;s^\prime}{}{i}}}
+          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} &
+           %\ruleno{SwitchNotMatched}
+          \\
+    \trule{\withenv{v}{\trans{s}{}{i}}}{\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;\eps\;\primi{otherwise}\;s}{}{i}}} & %\ruleno{SwitchOtherwise}
+  \end{array}
+  \]
+\end{subfigure}
+\end{figure}
+\end{frame}
+\end{comment}
+
+\begin{frame}[t, allowframebreaks]
+\frametitle{References}
+\bibliographystyle{amsalpha}
+\bibliography{references}
+\vspace{1cm}
+\end{frame}
+
+\end{document}

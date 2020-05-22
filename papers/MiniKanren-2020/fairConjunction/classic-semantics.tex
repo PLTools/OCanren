@@ -8,10 +8,10 @@ Note, althought at the moment there exists a certified semantics~\cite{fair:sema
 and the second conjuncts, which greatly complicates the task of rearranging the conjuncts in the process of program evaluation. 
 Therefore, for this research, we have developed a new semantics which does not distinguish between conjuncts from the start.
 
-% Семантика, которую мы предлагаем, основана на развертке вызовов отношений. На каждом шаге в текущем состоянии программы выбирается некоторый вызов, который разворачивается. Этот процесс продолжается, пока в текущем представлении остаются вызовы. Ниже мы опишим эту семантику более формально.
+% Семантика, которую мы предлагаем, основана на развертке вызовов отношений. На каждом шаге в текущем состоянии программы выбирается некоторый вызов, который разворачивается. Этот процесс продолжается, пока в текущем представлении остаются вызовы. Если на каком-то шаге состояние опустело, то вычисление сошлось. В противном случае вычисление расходится.
 
 The semantics that we propose is based on unfolding of relational calls. At each step we select a call from current state of the program and unfold it.
-This process continues until no calls remain in the state. Below we define this semantics formally.
+This process continues until no calls remain in the state. Below we define this semantics formally. If at some step the state is empty, then the evaluation converges. Otherwise, the evaluation diverges.
 
 % Прежде всего мы определим синтаксис языка \mk на изображении 2. Конструкторы с арностью являются стандартным представлением данных. Синтаксические переменные необходимы для описания аргументов отношения и свежих переменных в операции fresh. Семантические переменные в исходной программе отсутствуют, однако они вводятся при исполнении операции fresh. Из конструкторов, синтаксический переменных и семантических переменных мы определили множество синтаксических термов и множество семантических переменных. Также мы определили множество имен отношений с арностью. Далее, мы определили цели. Цели являются унификацией термов, дизъюнкцией, конъюнкцией введением свежей переменной или вызовом отношения. Наконец мы определяем множество отношений. Каждое отношение состоит из имени с арностью, списка имен переменных и тела отношения.
 
@@ -63,15 +63,15 @@ In addition to syntax we need an intermediate state of relational program
 
 \[
 \begin{array}{rcl}
-  \textgoth{T} & = & \textgoth{T} \circ \textgoth{T}\\
-               &   & \inbr{\sigma;\, i;\, c_1\dots c_n},\, c_j = F_j^{k_j}\,(t_\mathcal{A}^1,\dots,t_\mathcal{A}^{k_j})
+  \textgoth{T} & = & \textgoth{T} \lor \textgoth{T}\\
+               &   & \inbr{\sigma;\, i;\, c_1 \land \dots \land c_n},\; c_j = F_j^{k_j}\,(t_\mathcal{A}^1,\dots,t_\mathcal{A}^{k_j}).
 \end{array}
 \]
 
-The state has a shape of disjunction tree. An internal node ``$\circ$'' corresponds to the disjunction of two descendant states.
-Its leaves contain intermediate substitutions $\sigma$, a counter of semantic variables $i$ and a list of calls. Substitution $\sigma$ is a
+The state has a shape of disjunction tree. An internal node ``$\lor$'' corresponds to the disjunction of two descendant states.
+Its leaves contain intermediate substitutions $\sigma$, a counter of semantic variables $i$ and a conjunction of calls. Substitution $\sigma$ is a
 mapping from semantic variables to semantic terms. The counter of semantic variables is necessary to evaluate the \lstinline{fresh} operation,
-which introduces a semantic variable with a new counter. The list of calls contains calls $c_i$ which must be evaluated in this branch.
+which introduces a semantic variable with a new counter. The conjunction of calls contains calls $c_i$ which must be evaluated in this branch. The number of conjuncts in a conjunction may be zero. Such a conjunction is denoted by $\epsilon$.
 
 % Мы расширим множество состояний пустым состоянием, которое соотвествует завершению вычисления. 
 
@@ -91,7 +91,7 @@ union(T_1, T_2) =
 \begin{array}{rl}
 T_2, & \mbox{if } T_1 = \emptyset \\
 T_1, & \mbox{if } T_1 \not= \emptyset \mbox{ and } T_2 = \emptyset \\
-(T_1 \circ T_2), & \mbox{otherwise}
+T_1 \lor T_2, & \mbox{otherwise}
 \end{array}
 \right.
 \]
@@ -108,8 +108,8 @@ If one of the states is empty, the function $union$ returns the second state. If
 push(C, T) =
 \left\{
 \begin{array}{rl}
-\inbr{\sigma, i, c_1 : \ldots : c_i : \bar{c_1} : \ldots : \bar{c_k} : cs}, & \mbox{if } T = \inbr{\sigma, i, \bar{c_1} : \ldots : \bar{c_k} : \epsilon} \mbox{ and } C = c_1 : \ldots : c_i : \Box : cs \\
-(push(C, T_1) \circ push(C, T_2)), & \mbox{if } T = (T_1 \circ T_2)
+\inbr{\sigma, i, C_1 \land \bar{C} \land C_2}, & \mbox{if } T = \inbr{\sigma, i, \bar{C}} \mbox{ and } C = C_1 \land \Box \land C_2 \\
+push(C, T_1) \lor push(C, T_2), & \mbox{if } T = T_1 \lor T_2
 \end{array}
 \right.
 \]
@@ -120,7 +120,7 @@ push(C, T) =
 % Следующая вспомогательная функция push (изображение 4) необходима для конструирования состояние после развертки. Первый аргумент --- это список вызовов, который содержит дырку. На этом месте стоял вызов, который мы развернули. Второй аргумент --- состояние, которое является результатом развертки. Данная функция рекурсивно проходит по состоянию, а в каждом листе объединяет вызовы с дыкой и вызовы из листа. 
 
 The following auxiliary push function (fig.~\ref{fair:push-semantics}) is needed to construct the state after the unfolding. 
-The first argument of this function is a call list that contains a hole. 
+The first argument of this function is a conjunction of calls that contains a hole $\Box$. 
 The hole corresponds to the position of the call that we unfold. 
 The second argument is the state that results from the unfolding. 
 This function recursively traverse by state, and for any leafs it combines calls with hole and leaf calls.
@@ -135,27 +135,27 @@ Now we define the semantics for the unfolding operation. This semantics (fig.~\r
       {(\sigma, i) \vdash F(\bar{t}) \Rightarrow T}
 &     \ruleno{Unfold} \\[3mm]
 \dfrac{\not\exists \, mgu(t_1, t_2, \sigma)}
-      {\inbr{\sigma, i, cs} \vdash (t_1 \equiv t_2) \leadsto \emptyset}
+      {\inbr{\sigma, i, C} \vdash (t_1 \equiv t_2) \leadsto \emptyset}
 &     \ruleno{UnifyFail}  \\[3mm]
 \dfrac{\bar\sigma = mgu(t_1, t_2, \sigma)}
-      {\inbr{\sigma, i, cs} \vdash (t_1 \equiv t_2) \leadsto \inbr{\bar\sigma, i, cs}}
+      {\inbr{\sigma, i, C} \vdash (t_1 \equiv t_2) \leadsto \inbr{\bar\sigma, i, C}}
 &     \ruleno{UnifySuccess}  \\[3mm]
-      {\inbr{\sigma, i, cs} \vdash F(\bar{t}) \leadsto \inbr{ \sigma, i, F(\bar{t}) : cs}}
+      {\inbr{\sigma, i, C} \vdash F(\bar{t}) \leadsto \inbr{ \sigma, i, F(\bar{t}) \land C}}
 &     \ruleno{Call} \\[2mm]
-\dfrac{\inbr{\sigma, i+1, cs} \vdash g[x \leftarrow \alpha_i] \leadsto T}
-      {\inbr{\sigma, i, cs} \vdash (\mbox{\lstinline|fresh|} \, x. \, g) \leadsto T}
+\dfrac{\inbr{\sigma, i+1, C} \vdash g[x \leftarrow \alpha_i] \leadsto T}
+      {\inbr{\sigma, i, C} \vdash \mbox{\lstinline|fresh|} \, x. \, g \leadsto T}
 &     \ruleno{Fresh}  \\[3mm]
-\dfrac{\inbr{\sigma, i, cs} \vdash g_1 \leadsto T_1 \qquad \inbr{\sigma, i, cs} \vdash g_2 \leadsto T_1}
-      {\inbr{\sigma, i, cs} \vdash (g_1 \lor g_2) \leadsto union(T_1, T_2)}
+\dfrac{\inbr{\sigma, i, C} \vdash g_1 \leadsto T_1 \qquad \inbr{\sigma, i, C} \vdash g_2 \leadsto T_1}
+      {\inbr{\sigma, i, C} \vdash g_1 \lor g_2 \leadsto union(T_1, T_2)}
 &     \ruleno{DisjGoal}  \\[3mm]
 \dfrac{g \not= g_1 \lor g_2 \qquad T_1 \vdash g \leadsto T_3 \qquad T_2 \vdash g \leadsto T_4}
-      {(T_1 \circ T_2) \vdash g \leadsto union(T_3, T_4)}
+      {T_1 \lor T_2 \vdash g \leadsto union(T_3, T_4)}
 &     \ruleno{DisjState}  \\[3mm]
-\dfrac{\inbr{\sigma, i, cs} \vdash g_1 \leadsto \emptyset}
-      {\inbr{\sigma, i, cs} \vdash (g_1 \land g_2) \leadsto \emptyset}
+\dfrac{\inbr{\sigma, i, C} \vdash g_1 \leadsto \emptyset}
+      {\inbr{\sigma, i, C} \vdash g_1 \land g_2 \leadsto \emptyset}
 &     \ruleno{ConjFail}  \\[3mm]
-\dfrac{\inbr{\sigma, i, cs} \vdash g_1 \leadsto T \qquad T \vdash g_2 \leadsto \bar{T}}
-      {\inbr{\sigma, i, cs} \vdash (g_1 \land g_2) \leadsto \bar{T}}
+\dfrac{\inbr{\sigma, i, C} \vdash g_1 \leadsto T \qquad T \vdash g_2 \leadsto \bar{T}}
+      {\inbr{\sigma, i, C} \vdash g_1 \land g_2 \leadsto \bar{T}}
 &     \ruleno{ConjSuccess}  \\[3mm]
 \end{array}\]
 
@@ -173,7 +173,7 @@ First of all, the call $F$ is replaced by the body $b$ of the relation. Also the
 The rules \rulen{UnifyFail} and \rulen{UnifySuccess} perform unification. If the most common unifier (MGU) exists, then we apply the \rulen{UnifySuccess} rule, which updates the substitution $\sigma$. If the MGU does not exist, then we apply the \rulen{UnifyFail} rule, which leads to an empty state.
 
 % Так как развертка должна развернуть вызов ровно один раз, все вложенные вызовы мы оставляем без изменений. Данное поведение описано в правиле [Call]. Вложенный вызов не вычисляется, а помещаяется в список вызовов состояния.
-Since this semantics should unfold the call exactly once, we leave all the nested calls unchanged. This behavior is described in the \rulen{Call} rule. The nested call is not evaluated, but placed on the call list, which is contained into the state.
+Since this semantics should unfold the call exactly once, we leave all the nested calls unchanged. This behavior is described in the \rulen{Call} rule. The nested call is not evaluated, but added to the conjunction, which is contained into the state.
 
 % Правило [Fresh] соответствует введению свежей переменной. В данном правиле мы заменяем синтаксическую переменную на семантическую переменную. Также мы увеличиваем счетчик семантических переменных. 
 The \rulen{Fresh} rule corresponds to the introduction of a fresh variable. In this rule, we replace a syntax variable $x$ with a semantic variable $\alpha_i$. We also increment the counter of semantic variables.
@@ -197,10 +197,10 @@ Now we have everything we need to define the semantics of a relational language 
       {\inbr{\sigma, i, c : cs} \xrightarrow{\circ} push(\Box : cs, T)}
 &     \ruleno{ConjUnfold} \\[2mm]
 \dfrac{T_1 \xrightarrow{\alpha} \emptyset}
-      {(T_1 \lor T_2) \xrightarrow{\alpha} T_2}
+      {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
 &     \ruleno{Disj} \\[4mm]
 \dfrac{T_1 \xrightarrow{\alpha} \bar{T_1}}
-      {(T_1 \lor T_2) \xrightarrow{\alpha} (T_2 \lor\bar{T_1})}
+      {T_1 \lor T_2 \xrightarrow{\alpha} T_2 \lor\bar{T_1}}
 &     \ruleno{DisjStep} \\[4mm]
 \end{array}\]
 \caption{Semantics with directed conjunction}

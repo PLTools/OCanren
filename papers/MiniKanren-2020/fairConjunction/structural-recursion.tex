@@ -12,19 +12,19 @@ In the general case, we want to parameterize semantics with a unfolding predicat
       {\inbr{\sigma, i, \epsilon} \xrightarrow{\sigma} \emptyset}  
 &     \ruleno{Answer} \\[2mm]
 \dfrac{\bigvee_{j=1}^k pred(\sigma, c_j) = \bot}
-      {\inbr{\sigma, i, c_1^0 : \ldots : c_k^0 : \epsilon} \xrightarrow{\circ} \inbr{\sigma, i, c_1^N : \ldots : c_k^N : \epsilon}}
+      {\inbr{\sigma, i, c_1^0 \land \ldots \land c_k^0} \xrightarrow{\circ} \inbr{\sigma, i, c_1^N \land \ldots \land c_k^N}}
 &     \ruleno{ConjZero} \\[4mm]
 \dfrac{m_{i+1} \not= 0 \qquad \bigvee_{j=1}^k pred(\sigma, c_j) = \bot \qquad (\sigma, i) \vdash c_{i+1} \Rightarrow T \qquad set(m_{i+1} - 1, T) = \bar{T}}
-      {\inbr{\sigma, i, c_1^0 : \ldots : c_i^0 : c_{i+1}^{m_{i+1}} : \ldots : c_k^{m_k}} \xrightarrow{\circ} push(c_1^0 : \ldots : c_i^0 : \Box : c_{i+2}^{m_{i+2}} : \ldots : c_k^{m_k}, \bar{T})}
+      {\inbr{\sigma, i, c_1^0 \land \ldots \land c_i^0 \land c_{i+1}^{m_{i+1}} \land C} \xrightarrow{\circ} push(c_1^0 \land \ldots \land c_i^0 \land \Box \land C, \bar{T})}
 &     \ruleno{ConjUnfold} \\[4mm]
 \dfrac{\bigvee_{j=1}^i pred(\sigma, c_j) = \bot \qquad pred(\sigma, c_{i+1}) = \top \qquad (\sigma, i) \vdash c_{i+1} \Rightarrow T \qquad set(m_{i+1} - 1, T) = \bar{T}}
-      {\inbr{\sigma, i, c_1^{m_1} : \ldots : c_i^{m_i} : c_{i+1}^{m_{i+1}} : cs} \xrightarrow{\circ} push(c_1^{m_1} : \ldots : c_i^{m_i} : \Box : cs, \bar{T})}
+      {\inbr{\sigma, i, C_1 \land c_i^{m_i} \land C_2} \xrightarrow{\circ} push(C_1 \land \Box \land C_2, \bar{T})}
 &     \ruleno{ConjUnfoldPred} \\[4mm]
 \dfrac{T_1 \xrightarrow{\alpha} \emptyset}
-      {(T_1 \lor T_2) \xrightarrow{\alpha} T_2}
+      {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
 &     \ruleno{Disj} \\[4mm]
 \dfrac{T_1 \xrightarrow{\alpha} \bar{T_1}}
-      {(T_1 \lor T_2) \xrightarrow{\alpha} (T_2 \lor\bar{T_1})}
+      {T_1 \lor T_2 \xrightarrow{\alpha} T_2 \lor\bar{T_1}}
 &     \ruleno{DisjStep} \\[4mm]
 \end{array}\]
 \caption{Semantics of fair conjunction by structural recursion}
