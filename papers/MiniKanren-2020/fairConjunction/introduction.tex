@@ -6,8 +6,10 @@
 %computations in the form of compact declarative specifications. For instance, quine generator~\cite{fair:quines}, proof checker and theorem prover~\cite{fair:teorem-prover},
 %interpreter to perform example-based program synthesis~\cite{fair:seven} has declarative solution of \mk.
 
-However, \emph{conjunction}, one of \mk operators, has somewthat imperative flavor. The evaluation of the conjuncts is asymmetrical and the order of conjuncts affects not only the performance
-of the program, but even the convergence. As a result, the order of conjuncts determines control flow in relational program. We may call this directed behaviour of conjunction \textit{unfair}.
+\mk~\cite{fair:TheReasonedSchemer,fair:micro} is known for its capability to express solutions for complex problems~\cite{fair:quines,fair:teorem-prover,fair:seven}
+in the form of compact declarative specifications. However, \emph{conjunction} in \mk has somewthat imperative flavor. The evaluation of conjunction is asymmetrical
+and the order of conjuncts affects not only the performance of the program, but even the convergence. As a result, the order of conjuncts determines control flow in
+relational program. We may call this directed behaviour of conjunction \textit{unfair}.
 
 % Проблема несправедливого поведения конъюнкции уже рассматривалась с нескольких разных точек зрения. Одним из аспектов несправедливого поведения конъюнкции является управления приоритетами вычисления независимых ветвей, которые порождает конъюнкция. В оригинальном языке больший приоритет отдается более ранней ветке. Однако существует подход, который позволяет сбалансировать время исполнения. Это делает поведение конъюнкции более справедливым, но чувствительность к порядку конъюнктов сохраняется. Также конъюнкция становится более честной, если детектировать расхождение конъюнктов. Данный подход во время исполнения может обнаружить расхождение конъюкта. В этом случае данные, которые были получены при исполнении конъюнкта стираются. После чего происходит перестановка конъюнктов и продолжается исполнение программы. Данный подход оказывается эффективен на практике. Недостатком является консервативная перестановка конъюнктов, которпя не использует информацию, полученную при вычислении конъюнкта до перестановки.
 The problem of unfair behavior of conjunction has already been examined from several different points of view. One aspect of the unfair behavior of conjunction is to prioritize the
