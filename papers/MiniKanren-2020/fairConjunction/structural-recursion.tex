@@ -74,5 +74,4 @@ let rec append$^o$ x y xy =
 For example, the \lstinline{append$^o$} (fig.~\ref{fair:lst-appendo}) relation is structurally recursive in the first and third arguments. Indeed, the nested call \lstinline{append$^o$} takes \lstinline{xs} as its first argument, which is a subterm of \lstinline{x}. Also, \lstinline{append$^o$} takes \lstinline{xys} as the third argument, which is a subterm of \lstinline{xy}. If at least one of them is a fixed-length list, then the relation will converge. Otherwise, $\mbox{\lstinline{x}} = t_1 : \ldots t_n : \alpha_1$ and $\mbox{\lstinline{xy}} = \bar{t}_1 : \ldots \bar{t}_m : \alpha_2$. Therefore, through $max(n, m)$ steps, both arguments become free variables.
 
 % На текущий момент мы работаем над доказательством независимости данной семантики от порядка конъюнктов в случае, когда все отношения являются отношениями со структурной рекурсией.
-We are currently working on proving the independence of this semantics from the order of the 
-uncts in the case when all relations are relations with structural recursion.
+We are currently working on proving the independence of this semantics from the order of the conjuncts in the case when all relations are relations with structural recursion.
