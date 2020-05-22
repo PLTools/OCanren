@@ -124,7 +124,7 @@ language=minikanren
 \newcommand{\csupdate}[2]{update(#1, #2)}  %{#1 \cdot #2}
 \newcommand{\primi}[1]{\mathbf{#1}}
 \newcommand{\sem}[1]{\llbracket #1 \rrbracket}
-\newcommand{\ir}{\ensuremath{\mathcal{I\!R}}}
+\newcommand{\ir}{\ensuremath{\mathcal{S}}}
 
 \let\emptyset\varnothing
 \let\eps\varepsilon
@@ -170,56 +170,83 @@ where $s\in\mathcal{V}$ is a scrutinee, $ps\in\mathcal{P}^*$~--- an ordered list
 This relation holds iff $s$ matches the $i$-th pattern of $ps$. For a fixed language of patterns $match$ can be implemented directly
 in \textsc{miniKanren} once and for all.
 
-On the other hand, we introduce a simple language $\mathcal{B}$ of test-and-branch constructs:
+On the other hand, we introduce a simple language $\ir$ of test-and-branch constructs:
 
 \[
 \begin{array}{rcl}
   \mathcal M & = & \bullet \\
-             &   & \mathcal M\,[\mathbb{N}] \\
-  \mathcal B & = & \primi{return}\,\mathbb{N} \\
-             &   & \primi{if}\;\mathcal{C}\;\mathcal{M}\;\primi{then}\;\mathcal{B}\;\primi{else}\;\mathcal{B}
+  &   & \mathcal M\,[\mathbb{N}] \\
+  \ir & = & \primi{return}\,\mathbb{N} \\
+  &   & \primi{switch}\;\mathcal{M}\;\primi{with}\; [\mathcal{C}\; \primi{\rightarrow}\; \ir]^*\;\primi{otherwise}\;\ir
 \end{array}
 \]
 
+%\[
+%\begin{array}{rcl}
+%  \mathcal M & = & \bullet \\
+%             &   & \mathcal M\,[\mathbb{N}] \\
+%  \mathcal B & = & \primi{return}\,\mathbb{N} \\
+%             &   & \primi{if}\;\mathcal{C}\;\mathcal{M}\;\primi{then}\;\mathcal{B}\;\primi{else}\;\mathcal{B}
+%\end{array}
+%\]
+
 Here $\mathcal{M}$ stands for a \emph{matchable expression}, which is either a reference to a scrutinee ("$\bullet$") or
-a denotation of some indexed subvalue of a matchable expression. The programs in $\mathcal{B}$ can discriminate on the
+a denotation of some indexed subvalue of a matchable expression. The programs in $\ir$ can discriminate on the
 structure of matchable expressions, testing their top constructors and eventually returning natural numbers as results.
-The language $\mathcal{B}$ is similar to the intermediate representations for pattern matching code, used in 
+The language $\ir$ is similar to the intermediate representations for pattern matching code, used in 
 previous works on pattern matching implementation~\cite{maranget2001,maranget2008}.
 
-We use a \emph{relational interpreter} for $\mathcal{B}$
+We use a \emph{relational interpreter} for $\ir$
 
 \[
-eval^o_{\mathcal B}\, (s, p, i)
+eval^o_{\ir}\, (s, p, i)
 \]
 
-Here $s$ and $i$ have the same meaning as in declarative semantics description, $p\in\mathcal{B}$~--- a syntactic representation of
-a program in $\mathcal{B}$. The relation $eval^o_{\mathcal B}$ encodes the operational semantics of $\mathcal{B}$; it holds, if
-evaluating $p$ for $s$ returns $i$. Being relational interpreter, however, $eval^o_{\mathcal B}$ is capable of solving a
+Here $s$ and $i$ have the same meaning as in declarative semantics description, $p\in\ir$~--- a syntactic representation of
+a program in $\ir$. The relation $eval^o_{\ir}$ encodes the operational semantics of $\ir$; it holds, if
+evaluating $p$ for $s$ returns $i$. Being relational interpreter, however, $eval^o_{\ir}$ is capable of solving a
 synthesis problem: by a scrutinee $s$ and a number $i$ calculate a program $p$ which makes the relation to hold.
 Within this setting, we can formulate the pattern-matching synthesis problem as follows: \emph{for a given ordered list of patterns $ps$ find a program $p$, such that}
 
 \[
-\forall s\in\mathcal{V},\,\forall i\in\mathbb{N},\,eval^o_{\mathcal B}\, (s, p, i) \wedge\, match (s, ps, i)
+\forall s\in\mathcal{V},\,\exists i\in\mathbb{N},\,eval^o_{\ir}\, (s, p, i) \wedge\, match (s, ps, i)
 \]
 
 It is rather problematic to directly solve this synthesis problem with existing \textsc{miniKanren} implementations as
 they provide a rather limited support for universal quantification~\cite{eigen,moiseenko}. However, in our concrete
-case there is a simple way to alleviate this problem. Indeed, we may replace universal quantification over $i$ by
+case there is a straightforward way to alleviate this problem. Indeed, we may replace universal quantification over $i$ by
 a finite conjunction, as the length of $ps$ is known at the synthesis time. As for the quantification over $s$, for
-any concrete $ps$ we may precompute a \emph{complete set of examples} $\mathcal{E}(ps)\subseteq\mathcal{V}$ with the following
+any concrete $ps$ and type of scrutinee we may compute a \emph{complete set of examples} $\mathcal{E}(ps)\subseteq\mathcal{V}$ with the following
 property:
 
+%\[
+%\forall s\in\mathcal{E}(ps)\; \exists i\in\mathbb{N}\,(match\, (s, ps, i) \Leftrightarrow \forall s\in\mathcal{V},\,match\, (s, ps, i))
+%\]
+
 \[
-\forall i\in\mathbb{N},\,(\forall s\in\mathcal{E}(ps),\,match\, (s, ps, i) \Leftrightarrow \forall s\in\mathcal{V},\,match\, (s, ps, i))
+\setarrow{\xrightarrow}
+\begin{array}{rcl}
+  \forall p\in\mathcal S & : & [\forall s\in\mathcal{E}(ps),\,\forall i\in\mathbb{N} : 
+  match\, (s, ps, i)
+  %\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} 
+  \Longleftrightarrow
+  %{\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi}{}{i}}}
+  eval^o_{\ir}\, (s, p, i) 
+  ] \Longrightarrow \\
+                          &   & [\forall s\in\mathcal V,\,\forall i\in\mathbb{N} : %\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}
+                          match\, (s, ps, i)
+                           \Longleftrightarrow  %{\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi}{}{i}}}
+                          eval^o_{\ir}\, (s, p, i) 
+                          ]
+\end{array}
 \]
 
-It easy to see, that for arbitrary $ps$ there exists a finite complete set of examples (indeed, any pattern describes the ``shape''
-of a scrutinee up to some finite depth, beyond which all scrutinees become indistinguishable). Thus, for a given $ps$ we may
-completely eliminate the quantification, reformulating the synthesis problem as
+It easy to see, that for arbitrary $ps$ there exists a finite complete set of examples (indeed, any patterns describes the ``shape''
+of a scrutinee up to some finite depth, beyond which all scrutinees become indistinguishable). Thus, for a given $ps$ and a type $\tau$ of scrutinee we may
+completely eliminate the quantification by enumerating all inhabitants of type $\tau$ up to finite depth, reformulating the synthesis problem as
 
 \[
-\bigwedge_{i\in[1\dots|ps|]}\,\bigwedge_{s\in\mathcal{E}(ps)} (eval^o_{\mathcal B}\, (s, p, i) \wedge match\, (s, ps, i))
+\bigwedge_{i\in[1\dots|ps|]}\,\bigwedge_{s\in\mathcal{E}(ps)} (eval^o_{\ir}\, (s, p, i) \wedge match\, (s, ps, i))
 \]
 
 We implemented the synthesis framework using \textsc{OCanren}~--- an embedding of \textsc{miniKanren} into \textsc{OCaml}~\cite{ocanren},~---
@@ -232,14 +259,16 @@ Initially, our synthesis did not demonstrate good results. However, we applied t
 and the quality of synthesized programs:
 
 \begin{itemize}
-\item we restricted the shape of scrutinees using type information;
-\item we utilized tabling to memoize repeating search steps;
+%\item we restricted the shape of scrutinees using type information;
+%\item we utilized tabling to memoize repeating search steps;
 \item we implemented a pruning technique, which makes the search stop exploring a certain branch if the program, synthesized so far,
   contains too much nesting constructs (this factor can be precomputed by patterns analysis).
+  
+\item we restricted amount of \lstinline|switch| branches using type information about subexpressions of scrutinee.
 \end{itemize}
 
-With these adjustments, our synthesis framework in a negligible time provides the same results as those reported in the previous works.
-Our future steps include extending the pattern matching language to completely match that of \textsc{OCaml} (for
+With these adjustments, our synthesis framework in a negligible time provides the same results as those reported in the previous works. However for most types of scrutinee an amount of required examples and size of search space is  exponential.
+Our future steps (besides performance optimizations) include extending the pattern matching language to completely match that of \textsc{OCaml} (for
 now we do not support GADTs), integrate the synthesis into the existing \textsc{OCaml} compiler and evaluate it on a
 set of real-world programs. Another direction is extending the pattern matching language to incorporate features which
 are known to be hard, tedious or error-prone to implement (for example, non-linear patterns).
