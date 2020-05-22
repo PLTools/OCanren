@@ -1,85 +1,6 @@
 \section{Evaluation}
 \label{sec:eval}
 
-\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{#2}}}
-\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
-\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
-\begin{figure}[t]
-  %\begin{tabular}{|c|m{3cm}|cc||cccc}
-  \begin{tabular}{|m{3cm}|cc||cccc|}
-%    \headl{.5cm}{}    &
-    \headl{3cm}{Patterns} & 
-    \head{1.5cm}{Size constraint} & 
-    \headll{1.7cm}{Answers requested} & 
-    \head{2cm}{Number of samples} & 
-    \head{1.5cm}{1st answer time (ms)} & 
-    \head{1.5cm}{Answers found} & 
-    \head{1.5cm}{Total search time (ms)}\\
-    \hline
-    \hline
-    %1&
-    \begin{lstlisting}[basicstyle=\scriptsize]
-A
-B
-C
-    \end{lstlisting} &100&all&3&1&1&1\\
-        \hline
-%        2&
-    \begin{lstlisting}[basicstyle=\scriptsize]
-true
-false
-    \end{lstlisting} &100&all&2&<1&1&<1\\
-        \hline
-%        3&
-            \begin{lstlisting}[basicstyle=\scriptsize]
-(true, _)
-(_, true)
-(false, false)
-    \end{lstlisting} &100&all&4&6&2&10\\
-        \hline
-%        4&
-     \begin{lstlisting}[basicstyle=\scriptsize]
-(_, false, true)
-(false, true, _)
-(_, _, false)
-(_, _, true)
-    \end{lstlisting} &100&all&8&323&3&729\\
-        \hline
-%        5&
-     \begin{lstlisting}[basicstyle=\scriptsize]
-([], _)
-(_. [])
-(_ :: _, _ :: _)
-    \end{lstlisting} &100&10&4&5&1&6\\
-        \hline
-%        6&
-     \begin{lstlisting}[basicstyle=\scriptsize]
-(Succ _, Succ _)
-(Zero, _)
-(_, Zero)
-    \end{lstlisting} &1&all&4&53&2&108
-    \\
-        \hline
-%        \mbox{7}&
-        \multirow{3}{*}{
-          \parbox{3cm}{
-            \vskip2mm
-\lstinline[basicstyle=\scriptsize]|(Nil, _)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(_, Nil)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(Nil2, _)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(_, Nil2)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(_ :: _, _ :: _)|}}
-         & 1&10&9&643&2&3776\\[3mm]
-        \cline{2-7}
-      &10&10&9&95&2&540\\[3mm]
-        \cline{2-7}
-     &100&10&9&45&2&239                    \\ \hline
-  \end{tabular}
-  \caption{The results of synthesis evaluation}
-  \label{fig:eval}
-
-\end{figure}
-
 %In the table~\ref{fig:eval} we summarize benchmarking results for our synthesis algorithm.
 
 We performed an evaluation of the pattern matching synthesizer on a number of benchmarks.
@@ -93,8 +14,9 @@ In the table the double bar separates input data from output. Inputs are: the pa
 the requested number of answers. Outputs are: the size of generated complete samples set, the running time before receiving the
 first answer, the total number of programs synthesized, the total search time.
 
-Our approach currently does not work fast on a large benchmark (Figure~\ref{fig:pcf}) extracted from a bytecode
-machine for PCF. Complex data types exponentially increase number of samples and size of search space.
+Our approach currently does not work fast on a large benchmark. On Fig.~\ref{fig:pcf} we cite an example extracted from a bytecode
+machine for PCF~\cite{Plotkin1977LCFCA,maranget2008}. For such complex examples (in terms of type definition complexity and number and size of patterns)
+both the size of the search space and the number of samples is too large fro our approach to work so far.
 
 %The first conclusion can be drawn from results is that a very often checking of the current approximation of the answer by size constraint
 %cab lead to performance degradation because this check is not cheap. But we shouldn't do this check infinitely more seldom. It lead to performance degradation too,
@@ -106,7 +28,7 @@ machine for PCF. Complex data types exponentially increase number of samples and
 \begin{figure}%[H]
 \centering
 \begin{tabular}{c} % tabular only for centering
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\scriptsize]
   let rec run a s c =
     match a,s,c with
     | (_,_,Ldi i::_) -> 1
@@ -125,7 +47,7 @@ machine for PCF. Complex data types exponentially increase number of samples and
     | (_,[],[]) -> 14
 \end{lstlisting}
 \end{tabular}
-\caption{An example from a bytecode machine for PCF~\cite{Plotkin1977LCFCA,maranget2008}}
+\caption{An example from a bytecode machine for PCF}
 \label{fig:pcf}
 \end{figure}
 

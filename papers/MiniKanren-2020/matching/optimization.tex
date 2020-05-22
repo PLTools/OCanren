@@ -1,3 +1,87 @@
+
+
+
+\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{#2}}}
+\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
+\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
+\begin{figure}[t]
+  %\begin{tabular}{|c|m{3cm}|cc||cccc}
+  \begin{tabular}{|m{3cm}|cc||cccc|}
+%    \headl{.5cm}{}    &
+    \headl{3cm}{Patterns} & 
+    \head{1.5cm}{Size constraint} & 
+    \headll{1.7cm}{Answers requested} & 
+    \head{2cm}{Number of samples} & 
+    \head{1.5cm}{1st answer time (ms)} & 
+    \head{1.5cm}{Answers found} & 
+    \head{1.5cm}{Total search time (ms)}\\
+    \hline
+    \hline
+    %1&
+    \begin{lstlisting}[basicstyle=\scriptsize]
+A
+B
+C
+    \end{lstlisting} &100&all&3&1&1&1\\
+        \hline
+%        2&
+    \begin{lstlisting}[basicstyle=\scriptsize]
+true
+false
+    \end{lstlisting} &100&all&2&<1&1&<1\\
+        \hline
+%        3&
+            \begin{lstlisting}[basicstyle=\scriptsize]
+(true, _)
+(_, true)
+(false, false)
+    \end{lstlisting} &100&all&4&6&2&10\\
+        \hline
+%        4&
+     \begin{lstlisting}[basicstyle=\scriptsize]
+(_, false, true)
+(false, true, _)
+(_, _, false)
+(_, _, true)
+    \end{lstlisting} &100&all&8&323&3&729\\
+        \hline
+%        5&
+     \begin{lstlisting}[basicstyle=\scriptsize]
+([], _)
+(_. [])
+(_ :: _, _ :: _)
+    \end{lstlisting} &100&10&4&5&1&6\\
+        \hline
+%        6&
+     \begin{lstlisting}[basicstyle=\scriptsize]
+(Succ _, Succ _)
+(Zero, _)
+(_, Zero)
+    \end{lstlisting} &1&all&4&53&2&108
+    \\
+        \hline
+%        \mbox{7}&
+        \multirow{3}{*}{
+          \parbox{3cm}{
+            \vskip2mm
+\lstinline[basicstyle=\scriptsize]|(Nil, _)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(_, Nil)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(Nil2, _)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(_, Nil2)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(_ :: _, _ :: _)|}}
+         & 1&10&9&643&2&3776\\[3mm]
+        \cline{2-7}
+      &10&10&9&95&2&540\\[3mm]
+        \cline{2-7}
+     &100&10&9&45&2&239                    \\ \hline
+  \end{tabular}
+  \caption{The results of synthesis evaluation}
+  \label{fig:eval}
+
+\end{figure}
+
+%\FloatBarrier
+
 \section{Implementation and Optimizations}
 \label{sec:optimization}
 
@@ -24,6 +108,8 @@ In our implementation we assume the constructor set ordered, and we consider onl
 
 Our approach to finding an optimal solution in fact implements branch-and-bound strategy. The birds-eye view on our plan is as follows:
 
+\FloatBarrier
+
 \begin{itemize}
 \item We construct a trivial solution, which gives us the first estimation.
 \item During the search we prune all partial solutions whose size exceeds current estimation. We can do this due to
@@ -39,4 +125,3 @@ some known constraints like \lstinline|absent$^o$| or \lstinline|symbol$^o$|~\ci
 so they can be widely used in solving other problems as well. Note, we could implement other constraints we considered (on the
 depth of switch programs, on the type of scrutinee) as structural. However, our experience has shown that this leads to
 a less efficient implementation. Since these constraints are inherent to the problem, we kept them ``hard coded''.
-
