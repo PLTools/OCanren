@@ -1,14 +1,16 @@
 \section{Conclusion and future work}
 
-We presented algorithm for pattern matching compilation via program synthesis. The performance of proposed approach is very sensitive of the shape of scrutinee's type. 
-But it can incrementally produce new compilation schemes,  step by step producing more performant answers while other approaches to compilation always return single compilation scheme.
+We presented an approach for pattern matching implementation synthesis using relational programming. Currently, it demonstrates a good performance only
+on a very small problems. The performance can be improved by searching for new ways to prune the search space and by speeding up the implementation of
+relations and structural constraints. Also it can be interesting to integrate structural constraints more closely into \textsc{OCanren} core.
+Discovering an optimal order of samples and reducing the complete set of samples is another direction for research.
 
-The performance can be improved by searching new ways to cut search space and by speeding up implementation of relations and of structural constraint. Also it can be interesting to integrate structural constraint more closely to \textsc{OCanren} core. Optimal order of samples and ways to reduce required number samples for special cases of patterns and scrutinee's type were not studied too.
+The language of intermediate representation can be altered, too. It is interesting to add to intermediate language so-called \emph{exit nodes}
+described in~\cite{maranget2001}. The straightforward implementation of them might require nominal unification, but we are not aware of any
+\textsc{miniKanren} implementation in which both disequality constraints and nominal unification~\cite{alphaKanren} coexist nicely.
 
-The language of compiled representation can be altered too. It is interesting to add to intermediate language so called \emph{exit nodes} described in~\cite{maranget2001}.
-Straightforward implementation of them will require nominal unification but we are not aware of \textsc{miniKanren} implementation that has both disequality constraints and nominal unification~\cite{alphaKanren}.
-
-At the moment we support only simple pattern matching without any extensions. It looks    technically easy to extend our approach for non-linear and or- patterns. It will increase search space and new optimizations may be required.
+At the moment we support only simple pattern matching without any extensions. It looks technically easy to extend our approach with
+non-linear and disjunctive patterns. It will, however, increase the search space and might require more optimizations.
 
 
 
