@@ -264,7 +264,7 @@ and the quality of synthesized programs:
 %\item we restricted the shape of scrutinees using type information;
 %\item we utilized tabling to memoize repeating search steps;
 \item we implemented a pruning technique, which makes the search stop exploring a certain branch if the program, synthesized so far,
-  contains too much nesting constructs (this factor can be precomputed by patterns analysis) or is strictly worse then already synthesized one.
+  contains too much nesting constructs (this factor can be precomputed by patterns analysis) or is strictly worse then already synthesized one;
   
 \item we restricted amount of \lstinline|switch| branches using type information about subexpressions of scrutinee.
 \end{itemize}
