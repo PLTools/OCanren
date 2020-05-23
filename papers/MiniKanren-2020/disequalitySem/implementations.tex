@@ -1,6 +1,6 @@
 \section{Concrete Implementations}
 
-In this section we define two concrete implementations of constraint stores which can be incorporated in operational semantics: the trivial one
+In this section, we define two concrete implementations of constraint stores which can be incorporated in operational semantics: the trivial one
 (implementation A) and the one which is close to existing real implementation in a certain version of \textsc{miniKanren}~\cite{CKanren} (implementation B).
 
 \subsection{Implementation A}
@@ -19,8 +19,9 @@ The interpretation of such constraint store is the set of all representing funct
 
 \[ \sembr{\cstore_\sigma} = \{\reprfun \colon \mathcal{A}\mapsto\mathcal{D} \mid \forall (t_1, t_2) \in \cstore_\sigma, \; \overline{\reprfun}\,(t_1) \neq \overline{\reprfun}\,(t_2)\} \]
 
-This is a correct implementation (although for the full implementation an implementation should find a way to present restrictions stored this way
-in answers adequately) and it satisfies the sufficient conditions for completeness trivially. In particular, it does not use information acquired
+This is a correct implementation (although for the full implementation we should find a way to present restrictions stored this way
+in answers adequately) and it satisfies the sufficient conditions for completeness trivially, but it is not very practical.
+In particular, it does not use information acquired
 from disequalities to halt the search in case of contradiction and it can return meaningless answers with empty interpretations
 (such as $([\alpha_0 \mapsto 5], [\alpha_0 \neq 5], 1)$).
 
@@ -35,7 +36,7 @@ In this version, every constraint is represented as a substitution containing va
 
 \[ \cstore_\sigma \subset_m \Sigma \]
 
-So if a constraint store $\cstore_\sigma$ contains a substitution $\omega$ the set of representing functions prohibited by it is $\sembr{\sigma \omega}$
+So if a constraint store $\cstore_\sigma$ contains a substitution $\omega$ the set of representing functions prohibited by it is $\sembr{\sigma \omega}$,
 which provides the following denotational interpretation for a constraint store:
 
 \[ \sembr{\cstore_\sigma} = \bigcap_{\omega \in \cstore_\sigma} \overline{ \sembr{\sigma \omega} } \]
@@ -56,7 +57,7 @@ When we encounter a disequality for two terms we try to unify them and update co
 \]
 
 If terms are not unifiable, there is no need to change the constraint store. If they are unified by current substitution the constraint is already violated and we signal fail.
-Otherwise, the most general unifier is an appropriate representation for this constraint.
+Otherwise, the most general unifier is an appropriate representation of this constraint.
 
 When updating constraint store with an additional substitution $\delta$ we try to update each individual constraint substitution by treating it
 as a list of pairs of terms that should not be unified (the first element of each pair is a variable), applying $\delta$ to these terms and trying to
@@ -75,7 +76,7 @@ We construct the updated constraint store from the results of all constraint upd
 \]
 
 If any constraint is violated by the additional substitution we signal fail, otherwise we take in the store updated constraints
-(and some constraints are thrown away as they are no longer be violated).
+(and some constraints are thrown away as they can no longer be violated).
 
 The sufficient conditions for completeness can be proven for this implementation too, but it requires a rigorous case analysis
-and relies significantly on certain properties of substitution constructed by \textsc{miniKanren} search, so by now we only have a pen-and-paper proof.
+and relies significantly on certain properties of substitutions constructed by \textsc{miniKanren} search, so by now we only have a pen-and-paper proof.

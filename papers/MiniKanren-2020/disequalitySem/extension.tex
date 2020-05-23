@@ -1,6 +1,6 @@
 \section{Extention with disequality constraints}
 
-In this section we present extensions of our two semantics for the language with disequality constraints and revised version of the soundness and completeness theorem.
+In this section, we present extensions of our two semantics for the language with disequality constraints and revised version of the soundness and completeness theorem.
 
 Disequality constraint introduces one additional type of base goal~--- a disequality of two terms: $t_1 \diseq t_2$
 
@@ -98,8 +98,8 @@ only the values on the first $n$ fresh variables determine whether a representin
 of the state (note the similarity to the completeness condition). Luckily, we can infer this property for all states that can be constructed by our operational
 semantics from the sufficient conditions above.
 
-Thus for an arbitrary implementation we need to give a formal definition of constraint store object and its denotational interpretation, provide three
-operations for it and prove five conditions on them, and by this we ensure that for arbitrary specification the interpretations of all solutions found by the
+Thus for an arbitrary implementation, we need to give a formal definition of constraint store object and its denotational interpretation, provide three
+operations for it and prove five conditions on them, and by this, we ensure that for arbitrary specification the interpretations of all solutions found by the
 search in this version of \textsc{MiniKanren} will cover exactly the mathematical model of this specification.
 
 As well as our previous development this extension is certified in \textsc{Coq}\footnote{\url{https://github.com/dboulytchev/miniKanren-coq/tree/disequality}}.
