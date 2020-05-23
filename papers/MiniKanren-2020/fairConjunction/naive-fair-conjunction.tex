@@ -29,11 +29,11 @@ calls with the hole and a state in a new form. In addition we need yet another f
 attached to each call in the state:
 
 \[
-set(T, i) =
+set(T, m) =
 \left\{
 \begin{array}{rl}
-\inbr{\sigma;\, i;\, c_1^i \land \ldots \land c_n^i}, & \mbox{if } T = \inbr{\sigma;\, i;\, c_1 \land \ldots \land c_n} \\
-set(T_1, i) \lor set(T_2, i), & \mbox{if } T = T_1 \lor T_2
+\inbr{\sigma;\, i;\, c_1^m \land \ldots \land c_n^m}, & \mbox{if } T = \inbr{\sigma;\, i;\, c_1 \land \ldots \land c_n} \\
+set(T_1, m) \lor set(T_2, m), & \mbox{if } T = T_1 \lor T_2
 \end{array}
 \right.
 \]
@@ -68,9 +68,9 @@ First of all, we note that semantics depends on unfolding bound. If the bound is
 disjunction, we switch to the unfolding of a next conjunct after each step. If the bound is set to infinity, then the conjunction will behave like in the directed case. Indeed,
 the counter of the leftmost conjunct will never become zero and this conjunct will unfold until completion.
 
-% Теперь рассмотрим семантику подробнее. Правила [Answer], [Disj] и [DisjStep] остались без изменений. Однако для обработки конъюнкции у нас два новых правила. Правило [ConjUnfold] разворачивает самый левый конъюнкт c_{i+1}, счетчик которого больше нуля. Ко всем вызовам в состоянии T, которое мы получили после развертки, необходимо прикрепить обновленный счетчик. Это мы делаем с помощью функции set. Если все вызовы к листе имеют счетчик, который равен нулю, то мы применяем правило [ConjZero]. Это правило обновляет все счетчики в листе. Теперь они снова равны N.
+% Теперь рассмотрим семантику подробнее. Правила [Answer], [Disj] и [DisjStep] остались без изменений. Однако для обработки конъюнкции у нас два новых правила. Правило [ConjUnfold] разворачивает самый левый конъюнкт c_k, счетчик которого больше нуля. Ко всем вызовам в состоянии T, которое мы получили после развертки, необходимо прикрепить обновленный счетчик. Это мы делаем с помощью функции set. Если все вызовы к листе имеют счетчик, который равен нулю, то мы применяем правило [ConjZero]. Это правило обновляет все счетчики в листе. Теперь они снова равны N.
 Now we consider the semantics in more detail. The rules \rulen{Answer}, \rulen{Disj} and \rulen{DisjStep} remain unchanged. However, we introduced two new rules for handling conjunctions.
-The rule \rulen{ConjUnfold} unfolds the leftmost conjunct $c_{i + 1}$ whose counter $m$ is greater than zero. All calls in the new state $T$, which we have after the unfolding,
+The rule \rulen{ConjUnfold} unfolds the leftmost conjunct $c_k$ whose counter $m$ is greater than zero. All calls in the new state $T$, which we have after the unfolding,
 require to attach an updated counter; we do this using the function $set$. If all calls in the leaf have a zero counter, then we apply the rule \rulen{ConjZero}.
 This rule updates all counters in the leaf, setting them all to unfolding bound.
 
