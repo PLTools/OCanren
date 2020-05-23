@@ -254,7 +254,7 @@ During synthesis we aim to generate programs that have less checks in its' bodie
 We implemented the synthesis framework using \textsc{OCanren}~--- an embedding of \textsc{miniKanren} into \textsc{OCaml}~\cite{ocanren},~---
 and evaluated it on the set of benchmarks, reported in the previous works on \emph{ad-hoc} algorithms for pattern matching
 code generation~\cite{maranget2001,maranget2008}. In comparison with a simplified setting, presented above, our implementation
-deals with a more elaborate pattern matching problem~--- in particular, we support can \emph{guard expressions}, name bindings in
+deals with a more elaborate pattern matching problem~--- in particular, we can support \emph{guard expressions}, name bindings in
 patterns and incorporate a deterministic top-down matching strategy, which is common in functional languages. Of course, conventional techniques to deal with these are still applicable, although, for example, for guards it will require postprocessing of generated programs.
 
 Initially, our synthesis did not demonstrate adequate results. However, we applied the following techniques to improve both the performance
@@ -266,7 +266,7 @@ and the quality of synthesized programs:
 \item we implemented a pruning technique, which makes the search stop exploring a certain branch if the program, synthesized so far,
   contains too much nesting constructs (this factor can be precomputed by patterns analysis) or is strictly worse then already synthesized one;
   
-\item we restricted amount of \lstinline|switch| branches using type information about subexpressions of scrutinee.
+\item we restricted the number of \lstinline|switch| branches using type information about subexpressions of scrutinee.
 \end{itemize}
 
 With these adjustments, our synthesis framework in a negligible time provides the same results as those reported in the previous works. However for most types of scrutinee an amount of required examples and size of search space is  exponential.
