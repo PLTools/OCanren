@@ -1,7 +1,7 @@
 \section{The syntax and semantics of core language}
 
-In this section we recollect existing definitions of syntax and two semantics for the code language without disequality constraints and the main result~--- the equivalence
-of these two semantics~\cite{CeritfiedSemantics}.
+In this section, we recollect existing definitions of the syntax and the two semantics for the core language without disequality constraints and the main result~--- the equivalence
+of these two semantics~\cite{CertifiedSemantics}.
 
 \subsection{The Syntax of Core Language}
 \label{subsec_syntax}
@@ -28,7 +28,7 @@ of these two semantics~\cite{CeritfiedSemantics}.
 \label{syntax}
 \end{figure}
 
-The syntax of the language is shown on Fig.~\ref{syntax}. First, we fix a set of constructors $\mathcal{C}$ with known arities and consider
+The syntax of the language is shown in Fig.~\ref{syntax}. First, we fix a set of constructors $\mathcal{C}$ with known arities and consider
 a set of terms $\mathcal{T}_X$ with constructors as functional symbols and variables from $X$. We parameterize this set with an alphabet of
 variables since in the semantic description we will need \emph{two} kinds of variables. The first kind, \emph{syntactic} variables, is denoted
 by $\mathcal{X}$. We also consider an alphabet of \emph{relational symbols} $\mathcal{R}$ which are used to name relational definitions.
@@ -42,7 +42,7 @@ the free variables of the goal. The language we defined is first-order, as goals
 returned or constructed at runtime.
 
 As an example consider the specification for the standard \lstinline|append$^o$| relation and a query which splits a list containing
-three constants \lstinline|A|, \lstinline|B| and \lstinline|C| into two parts using every possible way:
+three constants \lstinline|A|, \lstinline|B| and \lstinline|C| into two parts in every possible way:
 
 \begin{lstlisting}
   append$^o$ = fun x y xy .
@@ -50,14 +50,14 @@ three constants \lstinline|A|, \lstinline|B| and \lstinline|C| into two parts us
     (fresh h t ty .
        (x  === Cons (h, t))  /\
        (xy === Cons (h, ty)) /\
-       (append$^o$ y t ty)
+       (append$^o$ t y ty)
     );
   append$^o$ x y (Cons (A, Cons (B, Cons (C, Nil))))
 \end{lstlisting}
 
 \subsection{Denotational sematics}
 
-For denotational semantics, we use a simple set-theoretic approach which can be considered as an analogy to the least Herbrand model for definite logic programs~\cite{LHM}.
+For denotational semantics, we use a simple set-theoretic approach which can be considered analogous to the least Herbrand model for definite logic programs~\cite{LHM}.
 
 Intuitively, the mathematical model for every goal should be a relation between semantic variables that occur free in this goal. We represent this relation as a set of total
 functions 
@@ -226,7 +226,7 @@ variables. The substitution is one of the answers, and the number is threaded th
   \label{lts}
 \end{figure*}
 
-The transition rules are shown on Fig.~\ref{lts}. The introduced transition system is completely deterministic.
+The transition rules are shown in Fig.~\ref{lts}. The introduced transition system is completely deterministic.
 
 A derivation sequence for a certain state $s$ determines a \emph{trace} $\tr{s}$~--- a finite or infinite sequence of answers. The trace corresponds to the stream of answers
 in the reference \textsc{miniKanren} implementations.
@@ -237,7 +237,7 @@ After we defined two different kinds of semantics for \textsc{miniKanren} we rel
 By proving this equivalence we established the \emph{completeness} of the search which means that the search will get all answers satisfying the described specification and only those.
 
 To do it we had to relate the answers produced by these two semantics as they have different forms: a trace of substitutions (along with numbers of allocated variables)
-for operational and a set of representing functions for denotational. There is a natural way to extend any substitution to a representing function: composing it with an arbitrary representing function will preserve all variable dependencies in the substitution. So we define a set of representing functions corresponding to substitution as follows:
+for operational and a set of representing functions for denotational. There is a natural way to extend any substitution to a representing function: composing it with an arbitrary representing function will preserve all variable dependencies in the substitution. So we defined a set of representing functions corresponding to substitution as follows:
 
 \[
 \sembr{\sigma} = \{\overline{\mathfrak f} \circ \sigma \mid \mathfrak{f}:\mathcal{A}\mapsto\mathcal{D}\}
@@ -250,7 +250,7 @@ then defined as a union of sets for all substitution in the trace:
 \sembr{s}_{op} = \cup_{(\sigma, n) \in \tr{s}} \sembr{\sigma}
 \]
 
-This allows us to state the theorem relating two semantics.
+This allowed us to state the theorem relating two semantics.
 
 \begin{theorem}[Operational semantics soundness and completeness]
 For any specification $\{\dots\}\; g$, for which the indices of all free variables in $g$ are limited by some number $n$
