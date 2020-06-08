@@ -536,4 +536,4 @@ module Tabling =
       !g
   end
 
-
+let id x = x

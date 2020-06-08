@@ -125,6 +125,8 @@ val reify : VarEnv.t -> ('a, 'a logic) injected -> 'a logic
 
 val prjc : (int -> 'a list -> 'a) -> VarEnv.t -> ('a, 'a logic) injected -> 'a
 
+val project : ('a, 'b) reified -> 'a
+  
 (** Building reifiers for a custom type compositionally *)
 
 module Fmap : functor (T : T1) ->

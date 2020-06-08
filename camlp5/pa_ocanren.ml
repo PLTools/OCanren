@@ -76,7 +76,7 @@ let rec fix_term e =
          )
      )
   | <:expr< ( $list:ts$ ) >> ->
-     (* isolated tuple case (not an arguments to a constructor *)
+     (* isolated tuple case (not an argument to a constructor *)
      (match ts with
       | [e] -> fix_term e
       | _   -> fold_right1 (fun e tup -> <:expr< OCanren.Std.pair $e$ $tup$ >> ) @@ List.map fix_term ts
@@ -95,7 +95,7 @@ let is_operator =
   List.iter (fun x -> Hashtbl.add ht x true)
     ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"];
   List.iter (fun x -> Hashtbl.add ct x true)
-    ['!'; '&'; '*'; '+'; '-'; '/'; ':'; '<'; '='; '>'; '@'; '^'; '|'; '~';
+    ['!'; '*'; '+'; '-'; '/'; ':'; '<'; '='; '>'; '@'; '^'; '~';
      '?'; '%'; '.'; '$'];
   fun x ->
     try Hashtbl.find ht x with
@@ -159,7 +159,7 @@ let rec decorate_type ctyp =
   | <:ctyp< list $y$ >>      -> <:ctyp< OCanren.Std.List.logic $decorate_type y$ >>                               
   | <:ctyp< option $y$ >>    -> <:ctyp< OCanren.Std.Option.logic $decorate_type y$ >>                               
   | <:ctyp< $x$ $y$ >>       -> let t = <:ctyp< $x$ $decorate_type y$ >> in <:ctyp< OCanren.logic $t$ >>
-  | <:ctyp< $p$ . $t$ >>     -> <:ctyp< $ctyp$ Ocanren.logic >>
+  | <:ctyp< $p$ . $t$ >>     -> <:ctyp< OCanren.logic $ctyp$ >>
   | <:ctyp< ( $list:ts$ ) >> -> fold_right1 (fun t1 t2 -> <:ctyp< OCanren.Std.Pair.logic $t1$ $t2$ >> ) @@ List.map decorate_type ts
   | _                        -> ctyp
   
@@ -170,7 +170,7 @@ EXTEND
     [ RIGHTA
       [ i = LIDENT -> <:expr< $lid:i$ >>
       | i = UIDENT -> <:expr< $uid:i$ >>
-      | "("; op=operator_rparen -> <:expr< $lid:op$ >>
+      | "("; op=operator_rparen -> <:expr< $lid:op$ >> 
       | i = UIDENT; "."; j = SELF ->
           let rec loop m =
             function
@@ -179,7 +179,7 @@ EXTEND
           in
           loop <:expr< $uid:i$ >> j
     ]];
-  
+
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
     [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
@@ -218,7 +218,7 @@ EXTEND
   ];
 
   ocanren_embedding: [
-    [ "ocanren"; "("; e=ocanren_expr; ")" -> e ]
+    [ "ocanren"; "{"; e=ocanren_expr; "}" -> e ]
   ];
 
   ocanren_expr: [
@@ -240,23 +240,24 @@ EXTEND
       | l=ocanren_term; op=operator; r=ocanren_term   -> let p = <:expr< $lid:op$ >> in
                                                          let a = <:expr< $p$ $l$ >> in
                                                          <:expr< $a$ $r$ >>
-      | h=ocanren_term; t=LIST0 ocanren_term          -> List.fold_left (fun l r -> <:expr< $l$ $r$ >>) h t 
-      | "("; op=operator_rparen                       -> <:expr< $lid:op$ >> 
-      | "("; e=ocanren_expr; ")"                      -> e
+      | x=ocanren_term                                -> x
+      | "{"; e=ocanren_expr; "}"                      -> e 
       | "||"; "("; es=LIST1 ocanren_expr SEP ";"; ")" -> <:expr< OCanren.conde $list_of_list es$ >> 
       | "&&"; "("; es=LIST1 ocanren_expr SEP ";"; ")" ->
          let op = <:expr< $lid:"?&"$ >> in
          let id = <:expr< OCanren . $op$ >> in
-         <:expr< $id$ $list_of_list es$ >> 
+         <:expr< $id$ $list_of_list es$ >>  
     ]
   ];
   
   ocanren_term: [[
-    t=ocanren_term' -> fix_term t
+    t=ocanren_term' -> fix_term t 
   ]];
   
   ocanren_term':  [
-    "top" [ "!"; "("; e=expr; ")" -> e
+    "app"  LEFTA  [ l=SELF; r=SELF -> <:expr< $l$ $r$ >>] |      
+    "list" RIGHTA [ l=SELF; "::"; r=SELF -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ] |    
+    "primary" [ "!"; "("; e=expr; ")" -> e
     | c=INT ->
       let n = <:expr< $int:c$ >> in
       <:expr< OCanren.Std.nat $n$ >>
@@ -273,23 +274,17 @@ EXTEND
        | [] -> <:expr< OCanren.Std.nil () >>
        | _  -> List.fold_right (fun x l -> <:expr< OCanren.Std.List.cons $x$ $l$ >> ) ts <:expr< OCanren.Std.nil () >>
       )
-    ] |
-    RIGHTA [ l=ocanren_term'; "::"; r=ocanren_term' -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ] |
-    ["("; ts=LIST0 ocanren_term' SEP ","; ")" ->
+    | "("; op=operator_rparen                  -> <:expr< $lid:op$ >>  
+    | "("; ts=LIST0 ocanren_term' SEP ","; ")" ->
       (match ts with
        | []  -> <:expr< OCanren.inj (OCanren.lift ()) >>
        | [t] -> t
        | _   -> <:expr< ( $list:ts$ ) >>
-     ) 
-    | c=long_ident; args=OPT ocanren_args ->
-       match args with None -> c | Some args -> List.fold_left (fun l r -> <:expr< $l$ $r$ >>) c args
-    ]
+      )
+    ] |    
+    [ long_ident ] 
   ];
-
-  ocanren_args: [[
-    "("; args=LIST1 ocanren_term' SEP ","; ")" -> args
-  ]];
   
-  ctyp: [[ "ocanren"; "("; t=ctyp; ")" -> decorate_type t ]];
+  ctyp: [[ "ocanren"; "{"; t=ctyp; "}" -> decorate_type t ]];
   
 END;

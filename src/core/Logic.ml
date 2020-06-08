@@ -91,6 +91,8 @@ let rec prjc of_int env x =
   | Some v -> let i, cs = Term.Var.reify (prjc of_int env) v in of_int i cs
   | None   -> Obj.magic x
 
+let project rr = rr#prj
+
 module type T1 =
   sig
     type 'a t

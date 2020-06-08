@@ -290,24 +290,23 @@ val qrstu : unit ->
            (('a1 -> 'b1 -> 'c1 -> 'd1 -> 'e1 -> 'f1) ->
             'a1 * ('b1 * ('c1 * ('d1 * 'e1))) -> 'f1)
 
- (** Tabling primitives.
-     Tabling allows to cache answers of the goal between different queries.
+(** Tabling primitives.
+    Tabling allows to cache answers of the goal between different queries.
 
-    Usage:
-      General form : [Tabling.tabled/tabledrec n g] where [n] is the number of parameters and [g] is the goal.
-      Returns modified `tabled` goal.
+  Usage:
+    General form : [Tabling.tabled/tabledrec n g] where [n] is the number of parameters and [g] is the goal.
+    Returns modified `tabled` goal.
 
-      1) For non-recursive goals:
+    1) For non-recursive goals:
 
-        [let g = Tabling.(tabled two) (fun q r -> q === r)]
+       [let g = Tabling.(tabled two) (fun q r -> q === r)]
 
-      2) For recursive goals:
-        In this case it is necessery to `abstract` from recursive calls.
-        The goal should take additional (first) argument [grec] and use it instead of recursive calls to itself.
+    2) For recursive goals:
+       In this case it is necessery to `abstract` from recursive calls.
+       The goal should take additional (first) argument [grec] and use it instead of recursive calls to itself.
 
-        [let g = Tabling.(tabledrec one) (fun grec q -> (q === O) ||| (fresh (n) (q === S n) &&& (grec n)))]
- *)
-
+       [let g = Tabling.(tabledrec one) (fun grec q -> (q === O) ||| (fresh (n) (q === S n) &&& (grec n)))]
+*)
 module Tabling :
   sig
     val succ : (unit -> (('a -> 'b) -> 'c) * ('d -> 'e -> 'f)) ->
@@ -360,3 +359,5 @@ module Tabling :
       (('b -> 'c) -> 'd) -> 'b -> 'c
   end
 
+(** Identity (can be used in [run] to return the stream unchanged) *)
+val id : 'a -> 'a
