@@ -31,7 +31,7 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
   <td>OCanren</td>
 </tr>
 
-<tr style="vertical-align:top">
+<tr valign="top">
   <td>
 
   ```prolog
