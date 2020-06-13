@@ -24,17 +24,54 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
 
 `miniKanren` is an embedded language for constraint/logic/relational programming.
 
-| Prolog                    | miniKanren                       | OCanren                   |
-|---------------------------|----------------------------------|---------------------------|
-| `app([], X, X).`          | `(define appendo               ` | `let rec appendo x y z =` |
-| `app([Y|Z], X, [Y,T]) :-` | ` (lambda (l s ls)             ` | `  ocanren {`             |
-| `  app (Z, X, T).`        | `   (conde                     ` | `    x == [] & y == z |`  |
-|                           | `    [(== '() l) (== s ls)]    ` | `    fresh h, t, ty in`   |
-|                           | `     [(fresh (a d res)        ` | `      x == h :: t  &`    |
-|                           | `       (== `(,a . ,d) l)      ` | `      z == h :: ty &`    |
-|                           | `       (== `(,a . ,res) ls)   ` | `      appendo t y ty`    |
-|                           | `        (appendo d s res))])))` | `  }`                     |
-|                           |                                  |                           |
+<table>
+<tr>
+  <td>Prolog</td>
+  <td>miniKanren</td>
+  <td>OCanren</td>
+</tr>
+
+<tr>
+  <td>
+
+  ```prolog
+  app([], X, X).       
+  app([Y|Z], X, [Y,T]) :-
+     app (Z, X, T).          
+  ```
+  
+  </td>
+  <td>
+
+  ```scheme
+  (define appendo              
+   (lambda (l s ls)          
+     (conde                    
+      [(== '() l) (== s ls)]   
+       [(fresh (a d res)      
+         (== `(,a . ,d) l)     
+         (== `(,a . ,res) ls) 
+         (appendo d s res))])))
+  ```
+
+  </td>
+  <td>
+
+  ```ocaml
+  let rec appendo x y z =
+  ocanren {             
+    x == [] & y == z |
+    fresh h, t, ty in
+      x == h :: t  &
+      z == h :: ty &
+      appendo t y ty
+  }
+  ```
+
+  </td>
+</tr>
+
+<\table>
 
 ## OCanren vs. miniKanren
 
