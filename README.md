@@ -2,45 +2,41 @@
 
 # Table of Contents
 
-- [OCanren](#ocanren)
-  - [Installation](#installation)
+- [Introduction](#introduction)
+  - [What is miniKanren](#what-is-minikenren)
   - [OCanren vs. miniKanren](#ocanren-vs-minikanren)
   - [Injecting and Projecting User-Type Data](#injecting-and-projecting-user-type-data)
   - [Bool, Nat, List](#bool-nat-list)
   - [Syntax Extensions](#syntax-extensions)
   - [Run](#run)
   - [Sample](#sample)
+- [Installation](##installation)
 - [More info](#more-info)
 
-# OCanren
+# Introduction
 
-OCanren is a strongly-typed embedding of [miniKanren](http://minikanren.org) relational
-programming language into [OCaml](http://ocaml.org). Nowadays, implementation of
-OCanren strongly reminds [faster-miniKanren](https://github.com/michaelballantyne/faster-miniKanren).
-Previous implementation was based on
-[microKanren](http://webyrd.net/scheme-2013/papers/HemannMuKanren2013.pdf)
+`OCanren` is a strongly-typed embedding of relational programming language [miniKanren](http://minikanren.org) 
+into [OCaml](http://ocaml.org). Nowadays, the implementation of `OCanren` strongly reminds [faster-miniKanren](https://github.com/michaelballantyne/faster-miniKanren).
+Previous implementation was based on [microKanren](http://webyrd.net/scheme-2013/papers/HemannMuKanren2013.pdf)
 with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis2011.pdf).
 
-## Installation
+## What is miniKanren
 
-OCanren can be installed using [opam](https://opam.ocaml.org/doc/Install.html) 2.x. Frist,
-install opam itself and right compiler version.
+`miniKanren` is an embedded language for constraint/logic/relational programming.
 
-- either `opam init -c 4.07.1+fp+flambda` for fresh opam installation
-- or `opam switch create 4.07.1+fp+flambda` to install right version of OCaml compiler
-- `eval $(opam env)`
+| Prolog                    | miniKanren                       | OCanren                   |
+|---------------------------|----------------------------------|---------------------------|
+| `app([], X, X).`          | `(define appendo               ` | `let rec appendo x y z =` |
+| `app([Y|Z], X, [Y,T]) :-` | ` (lambda (l s ls)             ` | `  ocanren {`             |
+| `  app (Z, X, T).`        | `   (conde                     ` | `    x == [] & y == z |`  |
+|                           | `    [(== '() l) (== s ls)]    ` | `    fresh h, t, ty in`   |
+|                           | `     [(fresh (a d res)        ` | `      x == h :: t  &`    |
+|                           | `       (== `(,a . ,d) l)      ` | `      z == h :: ty &`    |
+|                           | `       (== `(,a . ,res) ls)   ` | `      appendo t y ty`    |
+|                           | `        (appendo d s res))])))` | `  }`                     |
+|                           |                                  |                           |
 
-Then, install dependencies and `OCanren`:
-
-- `opam pin add GT https://github.com/JetBrains-Research/GT.git -n -y`
-- `git clone https://github.com/JetBrains-Research/OCanren.git ocanren && cd ocanren`
-- `opam install . --deps-only --yes`
-- `make`
-- `make tests`
-
-Expected workflow: add new test to try something out.
-
-## OCanren vs miniKanren
+## OCanren vs. miniKanren
 
 The correspondence between original miniKanren and OCanren constructs is shown below:
 
@@ -388,6 +384,25 @@ repr
 
 There also syntax extensions for simplifyng developing data type for OCanren
 but they are not fully documented.
+
+# Installation
+
+`OCanren` can be installed using [opam](https://opam.ocaml.org/doc/Install.html) 2.x. Frist,
+install `opam` itself and relevant `OCaml` version:
+
+- either `opam init -c 4.07.1+fp+flambda` for fresh `opam` installation
+- or `opam switch create 4.07.1+fp+flambda` to install the right version of `OCaml` compiler
+- `eval $(opam env)`
+
+Then, install the dependencies and `OCanren` itself:
+
+- `opam pin add GT https://github.com/JetBrains-Research/GT.git -n -y`
+- `git clone https://github.com/JetBrains-Research/OCanren.git ocanren && cd ocanren`
+- `opam install . --deps-only --yes`
+- `make`
+- `make tests`
+
+Expected workflow: add new test to try something out.
 
 # More info
 

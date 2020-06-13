@@ -34,12 +34,12 @@ with show, gmap
 (* List of moves *)
 @type moves = int move GT.list with show   
 (* ... logically *)
-@type lmoves = ocanren {int move list} with show
+@type lmoves = ocanren {int move GT.list} with show
                                                                                                                                          
 (* State: distance, amount of fuel, list of fuel dumps *)
 @type state = int * int * (int * int) GT.list with show
 (* ... logically *)                                                        
-@type lstate = ocanren {int * int * (int * int) list} with show
+@type lstate = ocanren {int * int * (int * int) GT.list} with show
                                                                                                     
 (* Reification primitives *)
 module M = Fmap (struct type 'a t = 'a move let fmap f = gmap(move) f end)
@@ -53,7 +53,7 @@ let fill     x = inj @@ M.distrib (Fill     x)
      d       : a distance
      stations: a list of stations
      q       : q --- an optional amount of fuel at the station
- *)
+*)
 let rec lookupo d stations q =
   let open Nat in
   ocanren {
