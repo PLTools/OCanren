@@ -31,8 +31,8 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
   <td>OCanren</td>
 </tr>
 
-<tr>
-  <td style="vertical-align:top">
+<tr style="vertical-align:top">
+  <td>
 
   ```prolog
   app([], X, X).       
@@ -41,7 +41,7 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
   ```
   
   </td>
-  <td style="vertical-align:top">
+  <td>
 
   ```scheme
   (define appendo              
@@ -55,7 +55,7 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
   ```
 
   </td>
-  <td style="vertical-align:top">
+  <td>
 
   ```ocaml
   let rec appendo x y z =
