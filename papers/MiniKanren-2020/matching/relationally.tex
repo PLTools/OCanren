@@ -143,7 +143,9 @@ how we can make it provide optimal solution.
 \label{sec:relints}
 
 In this section we address the implementation of relations $eval^o_{\mathcal S}$ and $match^o$. In principle, it amounts to accurate encoding of
-relations ``$\xRightarrow{}{}$'' and ``$\xRightarrow{}{}_{\mathcal S}$'' in \textsc{miniKanren} (in our case, \textsc{OCanren}). We, however,
+relations 
+``$\xRightarrow{}{}\!\!$'' and ``$\xRightarrow{}{}_{\!\!\mathcal S}$'' 
+in \textsc{miniKanren} (in our case, \textsc{OCanren}). We, however,
 make use of a relational conversion~\cite{conversion} tool, called \textsc{noCanren}, which automatically converts a subset of \textsc{OCaml} into
 \textsc{OCanren}. Thus, both interpreters are in fact implemented in \textsc{OCaml} and repeat corresponding inference rules almost
 literally in a familiar functional style. For example, functional implementation of a declarative semantics looks like follows:
