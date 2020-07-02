@@ -1,0 +1,53 @@
+\section{Evaluation}
+\label{sec:eval}
+
+%In the table~\ref{fig:eval} we summarize benchmarking results for our synthesis algorithm.
+
+We performed an evaluation of the pattern matching synthesizer on a number of benchmarks.
+The majority of benchmarks were prepared manually; we didn't use any specific benchmark sets mentioned in literature~\cite{Scott2000WhenDM} yet.
+The 4th benchmark was taken from~\cite{maranget2008}, we used it in Section~\ref{sec:intro} as the first example. 
+The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU @ 4.00GHz processor and 8GB of memory,
+\textsc{OCanren} was compiled with \mbox{ocaml-4.07.1+fp+flambda}. All benchmarks were executed in the native mode ten times,
+then average monotonic clock time was taken. The results of the evaluation are shown on Figure~\ref{fig:eval}.
+
+In the table the double bar separates input data from output. Inputs are: the patterns used for synthesis,
+the requested number of answers and the pruning factor. For example, in the first benchmark pruning factor equals 100 which means that structural constraint is checked every 100 unifications. Outputs are: the size of generated complete samples set, the running time before receiving the
+first answer, the total number of programs synthesized, the total search time.
+
+Our approach currently does not work fast on a large benchmark. On Fig.~\ref{fig:pcf} we cite an example extracted from a bytecode
+machine for PCF~\cite{Plotkin1977LCFCA,maranget2008}. For such complex examples (in terms of type definition complexity and number and size of patterns)
+both the size of the search space and the number of samples is too large for our approach to work so far.
+
+%The first conclusion can be drawn from results is that a often checking of the current approximation of the answer by size constraint
+%cab lead to performance degradation because this check is not cheap. But we shouldn't do this check infinitely more seldom. It lead to performance degradation too,
+%because more search branches will be prunes later.
+
+%The 4th and 7th benchmarks have similar input configurations and examples count but time differs linearly. This probably means that interleaving search of
+%OCanren can be more lucky in some cases then in another.
+
+\begin{figure}%[H]
+\centering
+\begin{tabular}{c} % tabular only for centering
+\begin{lstlisting}[basicstyle=\scriptsize]
+  let rec run a s c =
+    match a,s,c with
+    | (_,_,Ldi i::_) -> 1
+    | (_,_,Push::_)  -> 2
+    | (Int _,Val (Int _)::_,IOp _::_) -> 3
+    | (Int _,_,Test (_,_)::c) -> 4
+    | (Int _,_,Test (_,_)::c) -> 5
+    | (_,_,Extend::_) -> 6
+    | (_,_,Search _::_) -> 7
+    | (_,_,Pushenv::_) -> 8
+    | (_,Env e::s,Popenv::_) -> 9
+    | (_,_,Mkclos cc::_) -> 10
+    | (_,_,Mkclosrec _::_) -> 11
+    | (Clo (_,_), Val _::_, Apply::_) -> 12
+    | (_,(Code _::Env _::_),[]) -> 13
+    | (_,[],[]) -> 14
+\end{lstlisting}
+\end{tabular}
+\caption{An example from a bytecode machine for PCF}
+\label{fig:pcf}
+\end{figure}
+

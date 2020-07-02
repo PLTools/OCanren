@@ -1,0 +1,80 @@
+\section{Synthesis algorithm}
+
+
+The synthesis procedure takes the following as an input:
+\begin{itemize}
+\item List of matching clauses: ground patterns and RHSes (integers).
+\item Type information about the scrutinee: a list of constructor descriptions. Every constructor description is a tag (constructor name) and list of type information about constructor's arguments.
+\item A procedure for generating inhabitants of the type of scrutinee.
+\item How many different programs in $\ir$ we need to synthesize
+\end{itemize}
+
+The synthesis procedure performs the following steps:
+\begin{itemize}
+\item Compile pattern matching naively to get upper bound of the size of the synthesized program.
+\item Estimate height of patterns and generate set of examples S.
+\item (Optional) Check that program compiled naively agrees with declarative semantics
+\item Construct a formula to synthesize a program $p$ in $\ir$ language that for every $ex\in S$:
+\begin{itemize}
+\item if declarative semantics for given $ex$ hits a branch $n$ than synthesized program return $n$ for this $ex$;
+\item if declarative semantics can't hit any branch (because of non-exhaustive pattern set) and returns an $r$ then synthesized code evaluates to $r$ for this $ex$.
+\end{itemize}
+\item Add a height constraint to formula above and perform miniKanren search.
+\item Return required about of answers as a result.
+\end{itemize}
+
+\subsection{Generating inhabitants}
+The idea is simple: we try all possible constructors and inhabit constructor's arguments using appropriate functions. To inhabit concrete types we rely on function defined above, to inhabit recursive type we perform a recursive call, to inhabit type variables we use relation that are passed to main inhabitance function.
+
+This is an example of OCanren relation that inhabits linked lists.
+\begin{lstlisting}
+  let rec inhabitants_of_list inh_arg rez =
+    conde
+      [ (rez === Std.List.nil ())
+      ; fresh (x tl)
+          (Std.List.cons x tl === rez)
+          (inh_arg x)
+          (inhabitants_of_list inh_arg tl)
+      ]
+\end{lstlisting}
+
+For concrete set of ground patterns we know a maximum height of these patterns. To perform an elimination of $\forall$ quantifier (described in~\ref{ch:xxx}) we need to generate inhabitants bound by maximum height. It require a small modification of relation above.
+
+\begin{lstlisting}
+  let rec inhabitants_of_list$^{bound}$ height inh_arg rez =
+    conde
+      [ (height === zero) &&& (rez === default_inhabitant)
+      ; fresh (prev)
+          (Nat.succ prev === height)
+          (conde
+            [ (rez === Std.nil ())
+            ; fresh (size_tl h tl)
+                (Std.List.cons h tl === r)
+                (inh_arg prev h)
+                (inhabitants_of_list$^{bound}$ prev inh_arg tl)
+            ])
+      ]
+\end{lstlisting}
+
+The idea is that we track expected height of expression explicitly in $height$ argument. When we introduce a new constructor we decrease height by one. Reaching zero height means that in pattern matching we hit a wildcard and it doesn't matter for pattern matching which expression it is -- we can genrate default one.
+
+For now height of patterns is computed once as a miximum of all patterns' height. 
+When pattern matching looks deep into one constructor and performs shallow lookup to the second one using maximum height as a bound will leads to generating too many examples for the second constructor. The example synthesis can be improved by using a prefix tree of constructor names instead of maximum height.
+
+\subsection{Running search}
+During search structural constraint is used to estimate lower bound of size of a program in $\ir$ language. The programs can be not fully ground, i.e. can contain holes represened as logical variable.
+\begin{itemize}
+\item Size of single switch is count of it's branches.
+\item Size of integer is a zero.
+\item Size of logic variable is zero because it can be substituted to integer and we are computing a lower bound.
+\item Whole program in $\ir$ consists of finite amout of switches, we evaluate a sum of these switches' sizes.
+\end{itemize}
+
+We get an initial lower bound from the program compiled naively.
+
+If structural constraint discovers that size of result program in current search subtree is larger than out upper bound it prunes this subtree. This is correct because the size of answer in current subtree can't become smaller: unification only adds new information and disequality constraints are not taken to account.
+
+Running a relation gives us answers one by one. If new answer's size is smaller that our upper bound we upgrade the upper bound. If size constraint is checked every substitution extension than we get answers in non-increasing order of sizes.
+
+\subsection{Synthesis relation implementation}
+Copy-paste from commented code

@@ -1,0 +1,16 @@
+\section{Conclusion and future work}
+
+We presented an approach for pattern matching implementation synthesis using relational programming. Currently, it demonstrates a good performance only
+on a very small problems. The performance can be improved by searching for new ways to prune the search space and by speeding up the implementation of
+relations and structural constraints. Also it could be interesting to integrate structural constraints more closely into \textsc{OCanren}'s core.
+Discovering an optimal order of samples and reducing the complete set of samples is another direction for research.
+
+The language of intermediate representation can be altered, too. It is interesting to add to an intermediate language so-called \emph{exit nodes}
+described in~\cite{maranget2001}. The straightforward implementation of them might require nominal unification, but we are not aware of any
+\textsc{miniKanren} implementation in which both disequality constraints and nominal unification~\cite{alphaKanren} coexist nicely.
+
+At the moment we support only simple pattern matching without any extensions. It looks technically easy to extend our approach with
+non-linear and disjunctive patterns. It will, however, increase the search space and might require more optimizations.
+
+
+
