@@ -59,7 +59,7 @@ For concrete set of ground patterns we know a maximum height of these patterns. 
 The idea is that we track expected height of expression explicitly in $height$ argument. When we introduce a new constructor we decrease height by one. Reaching zero height means that in pattern matching we hit a wildcard and it doesn't matter for pattern matching which expression it is -- we can genrate default one.
 
 For now height of patterns is computed once as a miximum of all patterns' height. 
-When pattern matching looks deep into one constructor and performs very shallow lookup to the second one using maximum height as a bound will leads to generating too many examples for the second constructor. The example synthesis can be improved by using a prefix tree of constructor names instead of maximum height.
+When pattern matching looks deep into one constructor and performs shallow lookup to the second one using maximum height as a bound will leads to generating too many examples for the second constructor. The example synthesis can be improved by using a prefix tree of constructor names instead of maximum height.
 
 \subsection{Running search}
 During search structural constraint is used to estimate lower bound of size of a program in $\ir$ language. The programs can be not fully ground, i.e. can contain holes represened as logical variable.

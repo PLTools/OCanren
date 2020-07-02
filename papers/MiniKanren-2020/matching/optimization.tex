@@ -88,7 +88,7 @@ false
 In this section we address two aspects of our solution: a number of optimizations which make the search more efficient, and
 the way it ends up with the optimal solution.
 
-Relational goal in its final form, presented in the previous section, does not demonstrate a good performance. Thus, we apply a number
+The relational goal in its final form, presented in the previous section, does not demonstrate good performance. Thus, we apply a number
 of techniques, some of which require extending the implementation of the search. Namely, we apply the following optimizations:
 
 \begin{itemize}
@@ -102,11 +102,11 @@ In our formalization we do not make any use of types since as a rule type inform
 utilizing the properties of a concrete type system would make our approach too coupled with this particular type system, hampering
 its reusability for other languages. Nevertheless we may use a certain abstraction of type system which would deliver only
 that part of information which is essential for our approach to function. Currently, we calculate the type of any matching expression in
-program being synthesized and from this type extract the subset of constructors which can appear when branching on this expression
-is performed. The number of these constructors restricts the number of branches which corresponding $\primi{switch}$ expression can have.
+the program being synthesized and from this type extract the subset of constructors which can appear when branching on this expression
+is performed. The number of these constructors restricts the number of branches which a corresponding $\primi{switch}$ expression can have.
 In our implementation we assume the constructor set ordered, and we consider only ordered branches, which restricts branching even more.
 
-Our approach to finding an optimal solution in fact implements branch-and-bound strategy. The birds-eye view on our plan is as follows:
+Our approach to finding an optimal solution in fact implements branch-and-bound strategy. The birds-eye view of our plan is as follows:
 
 \FloatBarrier
 
@@ -114,10 +114,10 @@ Our approach to finding an optimal solution in fact implements branch-and-bound 
 \item We construct a trivial solution, which gives us the first estimation.
 \item During the search we prune all partial solutions whose size exceeds current estimation. We can do this due to
   the top-down nature of partial solution construction.
-\item When we come up with a better solution we remember it and update current estimation.
+\item When we come up with a better solution we remember it and update current a estimate.
 \end{itemize}
 
-This strategy inevitably delivers us the optimal solution since there are only finitely many switch programs, shorter than trivial solution.
+\noindent This strategy inevitably delivers us the optimal solution since there are only finitely many switch programs, shorter than trivial solution.
 
 In order to implement this strategy we extended \textsc{OCanren} with a new primitive called \emph{structural constraint}, which may
 fail on some terms depending on some criterion specified by an end-user. Structural constraints can be seen as a generalization of

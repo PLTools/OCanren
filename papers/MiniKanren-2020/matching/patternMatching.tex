@@ -1,9 +1,9 @@
 \section{The Pattern Matching Synthesis Problem}
 
 We start from a simplified view on pattern matching which does not incorporate some practically important aspects of the construct such as
-name bindings in patterns, guards or even semantic actions in branches. However, it in a purified form represents the essence of pattern
-matching as ``inspect-and-branch'' procedure. Once we come up with the solution for the essential part of the problem we embellish it with
-other features to a complete form.
+name bindings in patterns, guards or even semantic actions in branches. In a purified form, however, it  represents the essence of pattern
+matching as an ``inspect-and-branch'' procedure. Once we come up with the solution for the essential part of the problem we embellish it with
+other features until it reaches a complete form.
 
 First, we introduce a finite set of \emph{constructors} $\mathcal C$, equipped with arities, a set of values $\mathcal{V}$
 and a set of patterns $\mathcal{P}$:
@@ -16,7 +16,7 @@ and a set of patterns $\mathcal{P}$:
  \end{array}
 \]
 
-We define a matching of a value $v$ (\emph{scrutinee}) against an ordered non-empty sequence of patterns $p_1,\dots,p_k$ by mean of the following
+We define a matching of a value $v$ (\emph{scrutinee}) against an ordered non-empty sequence of patterns $p_1,\dots,p_k$ by means of the following
 relation
 
 \[
@@ -27,9 +27,11 @@ relation
 which gives us the index of the leftmost matched pattern or $k+1$ if no such pattern exists. We use an auxiliary relation $\inbr{;}\subseteq\mathcal{V}\times\mathcal{P}$
 to specify the notion of a value matched by an individual pattern (see Fig.~\ref{fig:match1pat}). The rule \ruleno{Wildcard} says that
 a wildcard pattern ``\_'' matches any value, and \ruleno{Constructor} specifies that a constructor pattern matches exactly those values which
-have the same constructor at the top level and all subvalues matched by corresponding subpatterns. The definition of ``$\xrightarrow{}{}$'' is
-shown on Fig.~\ref{fig:matchpatts}. An auxiliary relation ``$\xrightarrow{}{}_*$'' is introduced to specify the left-to-right matching strategy, and we
-use current index as environment. An important rule $\ruleno{MatchOtherwise}$ specifies that if we exhausted all the patterns with no matching we stop with
+have the same constructor at the top level and all subvalues matched by corresponding subpatterns. The definition of ``$\xrightarrow{}{\!\!}$'' is
+shown on Fig.~\ref{fig:matchpatts}. An auxiliary relation
+ ``$\xrightarrow{}{}_{\!\!*}$'' 
+is introduced to specify the left-to-right matching strategy, and we
+use current index as an environment. An important rule, $\ruleno{MatchOtherwise}$ specifies that if we exhausted all the patterns with no matching we stop with
 the current index (which in this case is equal to the number of patterns plus one).
 
 \begin{figure}
@@ -63,7 +65,7 @@ the current index (which in this case is equal to the number of patterns plus on
    \label{fig:matchpatts}
 \end{figure}
 
-The relation ``$\xrightarrow{}{}$'' gives us a \emph{declarative} semantics of pattern matching. Since we are interested in
+The relation ``$\xrightarrow{}{}\!\!$'' gives us a \emph{declarative} semantics of pattern matching. Since we are interested in
 synthesizing implementations, we need a \emph{programmatical} view on the same problem. Thus, we introduce a language $\mathcal S$
 (the ``switch'' language) of test-and branch constructs:
 
@@ -77,14 +79,14 @@ synthesizing implementations, we need a \emph{programmatical} view on the same p
 \]
  
 Here $\mathcal{M}$ stands for a \emph{matching expression}, which is either a reference to a scrutinee ``$\bullet$'' or
-a denotation of some indexed subvalue of a matching expression. Programs in the switch language can discriminate on the
+an indexed subexpression of scrutinee. Programs in the switch language can discriminate based on the
 structure of matching expressions, testing their top-level constructors and eventually returning natural numbers as results.
 The switch language is similar to the intermediate representations for pattern matching code used in 
 previous works on pattern matching implementation~\cite{maranget2001,maranget2008}.
 
-The semantics of the switch language is given by mean of relations ``$\xrightarrow{}{}_{\mathcal M}$'' and ``$\xrightarrow{}{}_{\mathcal S}$''
+The semantics of the switch language is given by mean of relations ``$\xrightarrow{}{}_{\!\!\!\mathcal M}$'' and ``$\xrightarrow{}{}_{\!\!\mathcal S}$''
 (see Fig.~\ref{fig:matchexpr} and \ref{fig:test-and-branch}). The first one describes the semantics of matching expression, while
-the second~--- the semantics of the switch language itself. In both cases the scrutinee is used as an environment.
+the second describes the semantics of the switch language itself. In both cases the scrutinee $v$ is used as an environment ($v\vdash$).
 
 
 \begin{figure}
@@ -94,7 +96,7 @@ the second~--- the semantics of the switch language itself. In both cases the sc
   \[
   \begin{array}{cr}
     \withenv{v}{\trans{\bullet}{}{v}} & \ruleno{Scrutinee} \\
-    \trule{\withenv{v}{\trans{m}{}{C^k\,v_1,\dots,v_k}}}{\withenv{v}{\trans{m[i]}{}{v_i}}} & \ruleno{SubMatch} 
+    \trule{\withenv{v}{\trans{m}{}{C^k v_1\dots v_k}}}{\withenv{v}{\trans{m[i]}{}{v_i}}} & \ruleno{SubMatch} 
   \end{array}
   \]
   \caption{Semantics of matching expression}
@@ -108,9 +110,9 @@ the second~--- the semantics of the switch language itself. In both cases the sc
   \[
   \begin{array}{cr}
     \withenv{v}{\trans{\primi{return}\;i}{}{i}} & \ruleno{Return}\\
-    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{C^k\,v_1,\dots,v_k}}}\qquad \withenv{v}{\trans{s}{}{i}}}
+    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{C^k\ v_1 \dots v_k}}}\qquad \withenv{v}{\trans{s}{}{i}}}
           {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchMatched}\\
-    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{D^n\,v_1,\dots,v_n}}}\qquad C^k\ne D^n\qquad \withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;s^*\;\primi{otherwise}\;s^\prime}{}{i}}}
+    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{D^n\  v_1 \dots v_n}}}\qquad C^k\ne D^n\qquad \withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;s^*\;\primi{otherwise}\;s^\prime}{}{i}}}
           {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchNotMatched}\\
     \trule{\withenv{v}{\trans{s}{}{i}}}{\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;\varepsilon\;\primi{otherwise}\;s}{}{i}}} & \ruleno{SwitchOtherwise}
   \end{array}

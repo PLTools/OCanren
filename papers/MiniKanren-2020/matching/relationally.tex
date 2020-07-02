@@ -2,7 +2,7 @@
 \label{sec:relationally}
 
 In this section we describe a relational formulation for the pattern matching synthesis problem. Practically,
-this amounts to constructing a goal with a free variable, corresponding to the switch program to synthesize,
+this amounts to constructing a goal with a free variable corresponding to the switch program to synthesize
 for (arbitrary) list of patterns. In order to come up with a tractable goal certain steps have to be performed.
 We first describe the general idea, and then consider these steps is details.
 
@@ -37,20 +37,20 @@ We address the construction of relational interpreters for both semantics in Sec
 
 Being relational, both $eval^o_\ir$ and $match^o$ do not just succeed or fail for ground arguments, but also can be \emph{queried} for
 arguments with free logical variables, thus performing a search for all substitutions for these variables which make the
-relation to hold. This observation leads us to the idea of utilizing the definition of pattern matching
-synthesis problem, replacing ``$\xrightarrow{}{}$'' with $match^o$, ``$\xrightarrow{}{}_{\mathcal S}$`` with $eval^o$,
+relation hold. This observation leads us to the idea of utilizing the definition of the pattern matching
+synthesis problem, replacing ``$\xrightarrow{}{}\!\!$'' with $match^o$, ``$\xrightarrow{}{}_{\!\!\!\mathcal S}$`` with $eval^o$,
 and $\pi$ with a free logical variable $\circled{?}$, which gives us the goal
 
 \[
 \forall v\in \mathcal V,\; \forall 1\le i\le n+1 : match^o\,v\,p_1,\dots,p_n\,i\Longleftrightarrow eval^o\,v\,\circled{?}\,i
 \]
 
-This goal, however, is problematic from relational point of view due to a number of reasons.
+\noindent This goal, however, is problematic from relational point of view due to a number of reasons.
 
 First, \textsc{miniKanren} provides rather a limited support for universal quantification. Apart from being inefficient from
-the performance standpoint, existing implementations either do not coexist with disequality constraints~\cite{eigen}
+a performance standpoint, existing implementations either do not coexist with disequality constraints~\cite{eigen}
 or do not support quantified goals with infinite number of answers~\cite{moiseenko}. As we will see below, both restrictions are
-violated in our case. Second, there is no direct support for the equivalence of goals (``$\xLeftrightarrow{}{}$''). Thus,
+violated in our case. Second, there is no direct support for the equivalence of goals (``$\Leftrightarrow$''). Thus,
 reducing the original synthesis problem to a viable relational goal involves some ``massaging''.
 
 We eliminate the universal quantification over the infinite set of scrutinees, replacing it by a \emph{finite}
@@ -78,7 +78,8 @@ To eliminate the universal quantification over the set of answers we rely on the
 of patterns, for every value $v$ there is exactly one answer value $i$, such that $\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}$. We can reformulate this property as
 
 \[
-\exists i\, \forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longrightarrow  j=i
+\exists i:\, \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longrightarrow  
+\big(\forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{j} \Longrightarrow  j=i\large\big)
 \]
 
 Thus, we can replace universal quantification over the sets of answers by existential one, for which we have an efficient relational counterpart~--- the ``\lstinline|fresh|''
@@ -114,7 +115,7 @@ But, by the determinism of the switch language semantics, it immediately follows
 \neg\;(\withenv{v}{\trans{\pi}{}{j}})
 \]
 
-Alternatively, we could switch to a more explicit relational representation of both semantics, adding extra boolean argument to
+Alternatively\footnote{\color{red} Reviewer N1 said that passage about bool argument is unclear and may be omitted (or described with more details)}, we could switch to a more explicit relational representation of both semantics, adding an extra boolean argument to
 both $eval^o_{\mathcal S}$ and $match^o$ and using the same fresh variable $b$ in the query of interest:
 
 \[
@@ -128,7 +129,7 @@ Thus, the goal we eventually came up with is
 \eqno{(\star\star)}
 \]
 
-From relational point of view this is a pretty conventional goal which can be solved by virtually any descent \textsc{miniKanren} implementation in
+From relational point of view this is a pretty conventional goal which can be solved by virtually any decent \textsc{miniKanren} implementation in
 which the relations $eval^o_{\mathcal S}$ and $match^o$ can be encoded.
 
 Finally, we can make the following important observation. Obviously, any pattern matching synthesis problem has at least one trivial solution.
@@ -143,9 +144,9 @@ how we can make it provide optimal solution.
 
 In this section we address the implementation of relations $eval^o_{\mathcal S}$ and $match^o$. In principle, it amounts to accurate encoding of
 relations ``$\xRightarrow{}{}$'' and ``$\xRightarrow{}{}_{\mathcal S}$'' in \textsc{miniKanren} (in our case, \textsc{OCanren}). We, however,
-make use of relational conversion~\cite{conversion} tool, called \textsc{noCanren}, which automatically converts a subset of \textsc{OCaml} into
+make use of a relational conversion~\cite{conversion} tool, called \textsc{noCanren}, which automatically converts a subset of \textsc{OCaml} into
 \textsc{OCanren}. Thus, both interpreters are in fact implemented in \textsc{OCaml} and repeat corresponding inference rules almost
-literally in a familiar functional style. For example, functional implementation of declarative semantics looks like follows:
+literally in a familiar functional style. For example, functional implementation of a declarative semantics looks like follows:
 
 \begin{lstlisting}
    let rec $\inbr{v;\,p}$ =
@@ -176,12 +177,12 @@ disequality constraints.
 
 As we mentioned above, a complete set of samples plays an important role in our approach: it allows us to eliminate universal quantification over the
 set of all values. As we replace the universal quantifier with a finite conjunction with one conjunct per sample value reducing the size of
-the set is an important task. At present time, however, we build excessively large (worst case exponential) number of samples. We discuss
+the set is an important task. At the present time, however, we build an excessively large (worst case exponential of depth) number of samples. We discuss
 the issues with this choice in Section~\ref{sec:eval} and consider developing a more advanced approach as the main direction for
 improvement.
 
-Our construction of complete set of samples is based upon the following simple observations. We simultaneously define \emph{depth} measure
-for patterns and sequence of patterns as follows:
+Our construction of a complete set of samples is based upon the following simple observations. We simultaneously define the \emph{depth} measure
+for patterns and sequences of patterns as follows:
 
 \[
 \begin{array}{rcl}
@@ -191,7 +192,7 @@ for patterns and sequence of patterns as follows:
 \end{array}
 \]
 
-As a sequence of patterns is the single input in our synthesis approach we will call its depth \emph{synthesis depth}.
+\noindent As a sequence of patterns is the single input in our synthesis approach we will call its depth \emph{synthesis depth}.
 
 Similarly, we define the depth of matching expressions
 
@@ -214,15 +215,15 @@ and switch programs:
 Informally, the depth of a switch program tells us how deep the program can look into a value. 
 
 From the definition of $\inbr{;}$ it immediately follows that a pattern $p$ can only discriminate values up to its depth $d\,(p)$: changing a value at the depth greater
-or equal than $d\,(p)$ cannot affect the fact of matching/non matching. This means that we can only consider switch programs of depth no greater than the synthesis depth.
+or equal than $d\,(p)$ cannot affect the fact of matching/non matching. This means that we need only consider switch programs of depth no greater than the synthesis depth.
 But for these programs the set of all values with height no greater than the synthesis depth forms a complete set of samples. Indeed, if the height of a value less or
-equal to the synthesis depth, then this value is a member of complete set of samples and by definition the behaviour of the synthesized program on this value is
+equal to the synthesis depth, then this value is a member of complete set of samples and by definition the behavior of the synthesized program on this value is
 correct. Otherwise there exists some value $s$ from the complete set of samples, such that given value can be obtained as an ``extension'' of $s$ at the
-depth greater than the synthesis depth. Since neither declarative semantics nor switch programs can discriminate values at this depth, they behavior for given value
-will coincide with that for $s$, which is correct by definition.
+depth greater than the synthesis depth. Since neither declarative semantics nor switch programs can discriminate values at this depth, they behavior for a given value
+will coincide with the correct-by-definition behavior for  $s$.
 
-The implementation of complete set generation, again, is done using relational conversion. Interestingly, the enumeration of all terms up to a certain depth
-can be acquired from a function which calculates the depth of a term: indeed, converting it into relation and then running with \emph{fixed} depth
+The implementation of complete set generation, again, is done using relational conversion. The enumeration of all terms up to a certain depth
+can be acquired from a function which calculates the depth of a term: indeed, converting it into a relation and then running with \emph{fixed} depth
 and \emph{free} term arguments delivers what we need. Thus, we add an extra conjunct which performs the enumeration of all values to the
 relational goal $(\star\star)$, arriving at
 
