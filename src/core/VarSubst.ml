@@ -16,6 +16,13 @@
  * (enclosed in the file COPYING).
  *)
 
+type stat = {mutable walk_count : int}
+
+let stat = {walk_count = 0}
+         
+let walk_counter () = stat.walk_count
+let walk_incr () = stat.walk_count <- stat.walk_count + 1
+
 module Binding =
   struct
     type t =
@@ -55,9 +62,10 @@ let split s = Term.VarMap.fold (fun var term xs -> Binding.({var; term})::xs) s 
 
 type lterm = Var of Term.Var.t | Value of Term.t
 
-let rec walk env subst x =
+let walk env subst x =
   (* walk var *)
   let rec walkv env subst v =
+    walk_incr ();
     VarEnv.check_exn env v;
     match v.Term.Var.subst with
     | Some term -> walkt env subst (Obj.magic term)
@@ -66,6 +74,7 @@ let rec walk env subst x =
         with Not_found -> Var v
   (* walk term *)
   and walkt env subst t =
+    walk_incr ();
     match VarEnv.var env t with
     | Some v -> walkv env subst v
     | None   -> Value t
@@ -111,7 +120,7 @@ let rec occurs env subst var term =
 
 let extend ~scope env subst var term  =
   (* if occurs env subst var term then raise Occurs_check *)
-  occurs env subst var term;
+  if Runconf.do_occurs_check () then occurs env subst var term; 
     (* assert (VarEnv.var env var <> VarEnv.var env term); *)
 
   (* It is safe to modify variables destructively if the case of scopes match.
@@ -121,7 +130,7 @@ let extend ~scope env subst var term  =
    * 2) If we do unification after a fresh, then in case of failure it doesn't matter if
    *    the variable is be distructively substituted: we will not look on it in future.
    *)
-  if (scope = var.scope) && (scope <> Term.Var.non_local_scope)
+  if (scope = var.Term.Var.scope) && (scope <> Term.Var.non_local_scope)
   then begin
     var.subst <- Some (Obj.repr term);
     subst

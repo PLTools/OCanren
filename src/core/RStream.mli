@@ -84,3 +84,10 @@ val hd : 'a t -> 'a
 
 (** [tl s] gets a tail of the stream *)
 val tl : 'a t -> 'a t
+
+(** Gets a counter *)
+val unwrap_suspended_counter : unit -> int
+val force_counter            : unit -> int
+val from_fun_counter         : unit -> int
+val bind_counter             : unit -> int
+val mplus_counter            : unit -> int

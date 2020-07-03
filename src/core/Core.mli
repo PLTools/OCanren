@@ -361,3 +361,10 @@ module Tabling :
 
 (** Identity (can be used in [run] to return the stream unchanged) *)
 val id : 'a -> 'a
+
+(** Unification counter *)
+val unification_counter : unit -> int                 
+val unification_time    : unit -> Mtime.span
+val conj_counter        : unit -> int
+val disj_counter        : unit -> int
+val delay_counter       : unit -> int                                    

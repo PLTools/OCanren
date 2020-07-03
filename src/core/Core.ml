@@ -18,6 +18,36 @@
 
 open Logic
 
+type stat = {
+    mutable unification_count : int;
+    mutable unification_time  : Mtime.span;
+    mutable conj_counter      : int;
+    mutable disj_counter      : int;
+    mutable delay_counter     : int
+}
+
+let stat = {
+    unification_count = 0;
+    unification_time  = Mtime.Span.zero;
+    conj_counter      = 0;
+    disj_counter      = 0;
+    delay_counter     = 0
+}
+         
+let unification_counter () = stat.unification_count
+let unification_time    () = stat.unification_time 
+let conj_counter        () = stat.conj_counter 
+let disj_counter        () = stat.disj_counter 
+let delay_counter       () = stat.delay_counter 
+                          
+let unification_incr     () = stat.unification_count <- stat.unification_count + 1
+let unification_time_incr t =
+  stat.unification_time <- Mtime.Span.add stat.unification_time (t ())
+
+let conj_counter_incr  () = stat.conj_counter  <- stat.conj_counter + 1
+let disj_counter_incr  () = stat.disj_counter  <- stat.disj_counter + 1
+let delay_counter_incr () = stat.delay_counter <- stat.delay_counter + 1
+
 module Answer :
   sig
     (* [Answer.t] - a type that represents (untyped) answer to a query *)
@@ -242,9 +272,11 @@ let success st = RStream.single st
 let failure _  = RStream.nil
 
 let (===) x y st =
+  unification_incr ();
+  let t = Timer.make () in
   match State.unify x y st with
-  | Some st -> success st
-  | None    -> failure st
+  | Some st -> unification_time_incr t; success st
+  | None    -> unification_time_incr t; failure st
 
 let unify = (===)
           
@@ -255,9 +287,13 @@ let (=/=) x y st =
 
 let diseq = (=/=)
           
-let delay g st = RStream.from_fun (fun () -> g () st)
+let delay g st =
+  delay_counter_incr ();
+  RStream.from_fun (fun () -> g () st)
 
-let conj f g st = RStream.bind (f st) g
+let conj f g st =
+  conj_counter_incr ();
+  RStream.bind (f st) g
 
 let structural var rr k st =
   match Term.var var with
@@ -273,7 +309,10 @@ let (?&) gs = List.fold_right (&&&) gs success
 
 let disj_base f g st = RStream.mplus (f st) (RStream.from_fun (fun () -> g st))
 
-let disj f g st = let st = State.new_scope st in disj_base f g |> (fun g -> RStream.from_fun (fun () -> g st))
+let disj f g st =
+  disj_counter_incr ();
+  let st = State.new_scope st in
+  disj_base f g |> (fun g -> RStream.from_fun (fun () -> g st))
 
 let (|||) = disj
 

@@ -19,8 +19,11 @@
 include Logic
 include Core
 
-module Stream = RStream
-
+module Stream  = RStream
+module Peep    = Peep
+module Runconf = Runconf
+module Timer   = Timer
+               
 module Std =
   struct
 

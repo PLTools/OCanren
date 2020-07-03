@@ -82,3 +82,6 @@ module Answer :
   end
 
 val reify : VarEnv.t -> t -> 'a -> Answer.t
+
+(** Walk counter *)
+val walk_counter : unit -> int                 
