@@ -1,30 +1,24 @@
-\documentclass[a4paper,UKenglish,cleveref,autoref]{lipics-v2019}
-%This is a template for producing LIPIcs articles. 
-%See lipics-manual.pdf for further information.
-%for A4 paper format use option "a4paper", for US-letter use option "letterpaper"
-%for british hyphenation rules use option "UKenglish", for american hyphenation rules use option "USenglish"
-%for section-numbered lemmas etc., use "numberwithinsect"
-%for enabling cleveref support, use "cleveref"
-%for enabling cleveref support, use "autoref"
+%\documentclass[a4paper,UKenglish,cleveref,autoref]{lipics-v2019}
 
-
-%\graphicspath{{./graphics/}}%helpful if your graphic files are in another directory
-
-%\bibliographystyle{plainurl}% the mandatory bibstyle
+\documentclass[runningheads]{llncs}
 
 \usepackage{amsmath,amssymb}
-%\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
 \usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{listings}
 \usepackage{comment}
 \usepackage{indentfirst}
 \usepackage{hyperref}
-\usepackage{amsthm}
+%\usepackage{amsthm}
 \usepackage{stmaryrd}
 \usepackage{eufrak}
 \usepackage{lstcoq}
 \usepackage{placeins}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+\usepackage{soul}
 %\newtheorem{theorem}{Theorem}
 %\newtheorem{lemma}{Lemma}
 %\newtheorem{corollary}{Corollary}
@@ -63,6 +57,12 @@ language=minikanren
   \fi
   \SavedLstInline
 }
+
+\usepackage{todonotes}
+\newcommand{\rednote}[1]{\todo[inline, color=red!20]{#1}}
+\newcommand{\orangenote}[1]{\todo[inline, color=orange!20]{#1}}
+\newcommand{\forestnote}[1]{\todo[inline, color=ForestGreen!20]{#1}}
+\newcommand{\myhl}[2]{\colorbox{#1!50}{\parbox{\textwidth}{#2}}}
 
 \def\transarrow{\xrightarrow}
 \newcommand{\setarrow}[1]{\def\transarrow{#1}}
@@ -104,6 +104,7 @@ language=minikanren
 \newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
 \newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
 \newcommand{\tr}[1]{\mathcal{T}r_{#1}}
+\newcommand{\step}{\circ}
 
 \newcommand{\searchRule}[6] {
   #1, #2 \vdash (#3, #4) \xRightarrow{#5} #6}
@@ -118,43 +119,15 @@ language=minikanren
 
 \sloppy
 
-\bibliographystyle{plainurl}% the mandatory bibstyle
+\title{Certified Semantics for Relational Programming}
 
-\title{Certified Semantics for Relational Programming} %TODO Please add
-
-\author{}{}{}{}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional
-
-%\Copyright{}%TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
-
-
-%\category{}%optional, e.g. invited paper
-
-%\relatedversion{}%optional, e.g. full version hosted on arXiv, HAL, or other respository/website
-%\relatedversion{A full version of the paper is available at \url{...}.}
-
-%\supplement{}%optional, e.g. related research data, source code, ... hosted on a repository like zenodo, figshare, GitHub, ...
-
-%\funding{(Optional) general funding statement \dots}%optional, to capture a funding statement, which applies to all authors. Please enter author specific funding statements as fifth argument of the \author macro.
-
-%\acknowledgements{I want to thank \dots}%optional
-
-%\nolinenumbers %uncomment to disable line numbering
-
-%\hideLIPIcs  %uncomment to remove references to LIPIcs series (logo, DOI, ...), e.g. when preparing a pre-final version to be uploaded to arXiv or another public repository
-
-%Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\EventEditors{John Q. Open and Joan R. Access}
-\EventNoEds{2}
-\EventLongTitle{42nd Conference on Very Important Topics (CVIT 2016)}
-\EventShortTitle{CVIT 2016}
-\EventAcronym{CVIT}
-\EventYear{2016}
-\EventDate{December 24--27, 2016}
-\EventLocation{Little Whinging, United Kingdom}
-\EventLogo{}
-\SeriesVolume{42}
-\ArticleNo{23}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\author{Anonymus author}
+%
+\authorrunning{Anonymus author}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{Anonymus institute}
 
 \begin{document}
 
@@ -176,6 +149,7 @@ language=minikanren
 \input{denotational.tex}
 \input{operational.tex}
 \input{equivalence.tex}
+\input{specification.tex}
 \input{applications.tex}
 \input{relworks.tex}
 \input{conclusion.tex}
@@ -187,7 +161,11 @@ language=minikanren
 
 %% Please use bibtex, 
 
+\bibliographystyle{splncs04}
 \bibliography{main}
+
+\appendix
+\input{appendix.tex}
 
 \end{document}
 

@@ -96,15 +96,11 @@ which maps terms to terms:
 \end{array}
 \]
 
-{ \color{red}
-
 Let us have two terms $t_1, t_2\in\mathcal{T_A}$. If there is a unifier for $t_1$ and $t_2$ then, clearly, there is a substitution $\theta$ which
 turns both $t_1$ and $t_2$ into the same \emph{ground} term (we do not require $\theta$ to be the most general). Thus, $\theta$ maps
 (some) variables into ground terms, and its application to $t_{1(2)}$ is exactly $\overline{\theta}(t_{1(2)})$. This reasoning can be
 performed in the opposite direction: a unification $t_1\equiv t_2$ defines the set of all representing functions $\mathfrak{f}$ for which
 $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$.
-
-}
 
 We remind the conventional notions of pointwise modification of a function
 
@@ -135,18 +131,21 @@ representing functions $\mathfrak{F}\subseteq\mathcal{A}\to\mathcal{D}$:
 \]
 
 Now we are ready to specify the semantics for goals (see Figure~\ref{denotational_semantics_of_goals}).
- We've already given the motivation for
-  the semantics of unification: the condition $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$ gives us the set of all (otherwise
+We've already given the motivation for
+the semantics of unification: the condition $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$ gives us the set of all (otherwise
   unrestricted) representing functions which ``equate'' terms $t_1$ and $t_2$.
   Set union and intersection provide a conventional interpretation
-for disjunction and conjunction of goals. Now for the case of ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
+for disjunction and conjunction of goals. In the case is of a relational invocation we unfold the definition of the corresponding
+relational symbol and substitute its formal parameters with actual ones.
+
+The only non-trivial case is that of ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
 not free in $g$, and substitute $x$ with $\alpha$. Then we calculate the semantics of $g\,[\alpha/x]$. The interesting part is the next step:
 as $x$ can not be free in ``\lstinline|fresh $x$ . $g$|'', we need to generalize the result over $\alpha$ since in our model the semantics of a
 goal specifies a relation over its free variables. We introduce some nondeterminism by choosing arbitrary $\alpha$, but we can prove that with different
-choices of free variable the semantics of a goal does not change:
+choices of free variable the semantics of a goal does not change.
 
 \begin{lemma}
-\label{ChangeFreeVarLemma}
+\label{lem:den_sem_change_var}
 For any goal 
 
 \[
@@ -164,29 +163,12 @@ if $\mathfrak{f} \in \sembr{g\,[\alpha/x]}$, then for any representing function 
 it is true that
 
 \[
-\mathfrak{f}' \in \sembr{g\,[\beta/x]}
+\mathfrak{f}' \in \sembr{g\,[\beta/x]}.
 \]
 \end{lemma}
 %\begin{proof}
-  The proof turned out to be the most cumbersome among all others. \orangenote{\textbf{Более подробное доказательство в аппендикс, а здесь вставить:}
-, in case of nested ‘fresh’, details may be found in the appendix.} {\color{orange} In the case of nested ``\lstinline|fresh|'' we have to construct two
-  intermediate representing functions with different values on three points (one of which is non-free variable which is not equal to
-  any of those we have, so we also have to prove that there is always exists ``other fresh variable'') and then examine the four cases
-  with different relations (equal or not equal) between substituted variables. We also have to use the goal consistency condition here. }
+  The proof turned out to be the most cumbersome among all others in the case where $g$ is a nested \lstinline|fresh| contruct. In that case, we have to constructively build two representing (including an intermediate one for an intermediate goal) by point modification. The details of this proof can be found in the appendix, the full proof script is in the specification in Coq.
 %\end{proof}
-
-\begin{comment} We introduce some nondeterminism by choosing arbitrary $\alpha$, but we have proven by
-structural induction that with different choices of free variable the semantics of a goal does not change (and this proof turned out to
-be the most cumbersome among all others). 
-\end{comment}
-
-\orangenote{\textbf{Поместить перед семантикой fresh}}
-{\color{orange}
-
-The final case is a relational invocation, in which we unfold the definition of the corresponding
-relational symbol and substitute its formal parameters with actual ones.
-
-}
 
 \begin{figure}[t]
   \[
@@ -219,45 +201,14 @@ Here is an example of denotational semantics of a goal:
 \]
 
 In the end, we've got the set of representing functions, each of which restricts only the value of the free variable $\alpha$.
-
-To formalize denotational semantics in \textsc{Coq} we can define representing functions simply as \textsc{Coq} functions:
-
-\begin{lstlisting}[language=Coq]
-   Definition repr_fun : Set := name -> ground_term.
-\end{lstlisting}
-
-We define the semantics via the inductive proposition ``\lstinline|in_denotational_sem_goal|'' (with notation ``\lstinline[mathescape=true]{[| $\bullet$ , $\bullet$ |]}'')
-such that
-
-\[
-\forall g,\mathfrak{f}\;:\;\mbox{\lstinline|in_denotational_sem_goal|}\;g\;\mathfrak{f}\Longleftrightarrow\mathfrak{f}\in\sembr{g}
-\]
-
-\begin{comment}
-The head of the definition is as follows
-
-\begin{lstlisting}[language=Coq,morekeywords={where,at,level}]
-  Reserved Notation "[| g , f |]" (at level 0).
-  Inductive in_denotational_sem_goal :
-    goal -> repr_fun -> Prop :=
-    ...
-  where "[| g , f |]" := (in_denotational_sem_goal g f).
-\end{lstlisting}
-
-and the body just goes through the cases shown in Fig.~\ref{denotational_semantics_of_goals}.
-\end{comment}
   
-We formulate the following important \emph{completeness condition} for the semantics of a goal $g$:
+We prove the following important \emph{closedness condition} for the semantics of a goal $g$.
 
-\begin{lemma}[Completeness condition]
-\label{CompletenessConditionLemma}
-For any goal $g$ and two representing functions ${\mathfrak f}$ and ${\mathfrak f'}$, such that $\left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}$
-\[ {\mathfrak f} \in \sembr{g} \Leftrightarrow {\mathfrak f'} \in \sembr{g} \]
+\begin{lemma}[Closedness condition]
+\label{lem:closedness_condition}
+For any goal $g$ and two representing functions ${\mathfrak f}$ and ${\mathfrak f'}$, such that $\left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}$,
+\[ {\mathfrak f} \in \sembr{g} \Leftrightarrow {\mathfrak f'} \in \sembr{g}. \]
 \end{lemma}
-\begin{proof}
-  The proof is by induction on evidence. The only non-trivial case is when the goal is a ``\lstinline|fresh|'' construct, there we need to change the value of
-  the given function in one point to apply the inductive hypothesis.
-\end{proof}
 
 \begin{comment}
 \[
@@ -266,19 +217,4 @@ For any goal $g$ and two representing functions ${\mathfrak f}$ and ${\mathfrak 
 \end{comment}
 
 In other words, representing functions for a goal $g$ restrict only the values of free variables of $g$ and do not introduce any ``hidden'' correlations.
-This condition guarantees that our semantics is complete in the sense that it does not introduce artificial restrictions for the relation it defines.
-
-\begin{comment}
-We prove that the semantics of goals always satisfies this condition:
-
-The following lemma proves that the semantics of goals always satisfies this condition:
-
-\begin{lstlisting}[language=Coq]
-  Lemma completeness_condition (f f' : repr_fun) (g : goal),
-    (forall x, is_fv_of_goal x g -> gt_eq (f x) (f' x)) ->
-    [| g , f |] ->
-    [| g , f' |].
-\end{lstlisting}
-
-Here ``\lstinline[language=Coq]{gt_eq}'' stands for the equality of ground terms.
-\end{comment}
+This condition guarantees that our semantics is closed in the sense that it does not introduce artificial restrictions for the relation it defines.
