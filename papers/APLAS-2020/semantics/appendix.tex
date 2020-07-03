@@ -339,7 +339,7 @@ The proof of completeness is less trivial. It goes by induciton on level of boun
 \item In case of relational invocation we simply use the induction hypothesis about the previous level.
 \end{itemize}
 
-The specification of semantics for SLD resolution with cut simply repeats the just described specification of semantics for interleaving search with minimal modification. Specifically, we introduce one additional type of goal (\lstinline|Cut|), in denotational semantics cuts correspond to the whole domain of representing functions, in operational semantics we introduce division in sum states and a cut signal into transitions and add rules described in sections~\ref{sld} and \ref{cut} in the transition system. 
+The specification of semantics for SLD resolution with cut simply repeats the just described specification of semantics for interleaving search with minimal modification. Specifically, we introduce one additional type of goal (\lstinline|Cut|), in denotational semantics cuts correspond to the whole domain of representing functions, in operational semantics we introduce division in sum states and a cut signal into transitions. 
 
 \begin{lstlisting}
   Inductive cutting_mark : Set :=
@@ -355,5 +355,44 @@ The specification of semantics for SLD resolution with cut simply repeats the ju
   Inductive eval_step_SLD :
      nt_state -> label -> cut_signal -> state -> Set := ...
 \end{lstlisting}
+
+In the semantics the rule \textsc{[ConjStepAns]} is replaced with
+
+\[
+\begin{array}{cr}
+  \dfrac{s \xrightarrow{(\sigma, n)} s'}{(s \otimes g) \xrightarrow{\circ} (\inbr{g, \sigma, n} \circledast (s' \otimes g))} & \ruleno{ConjStepAns} 
+\end{array}
+\]
+
+The rules for ``$\circledast$'' evaluation mirror those for ``$\oplus$'', so we omit them.
+
+The signal itself is risen when a ``cut'' construct is encountered:
+
+\[
+\begin{array}{cr}
+  \inbr{!, \sigma, n} \xrightarrow{(\sigma, n)}_c \Diamond &\ruleno{Cut} 
+\end{array}
+\]
+
+When the signal is being propagated through ``$\oplus$'' and ``$\circledast$'' nodes, their right branches are cut out, and for ``$\circledast$'' the
+propagation continues (see Fig.~\ref{cut-signal-propagation}). In the case of ``$\otimes$'' nodes the signal is simply propagated; we omit the rules since they mirror the regular ones.
+
+\begin{figure*}
+\[
+\begin{array}{cr|cr}
+  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} \Diamond} & \ruleno{PlusStopC}&
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}\\
+  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} s'_1} &\ruleno{PlusStepC}&
+  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{PlusStepAnsC}\\
+  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ}_c \Diamond} & \ruleno{AstStopC}&
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}\\
+  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ}_c s'_1} &\ruleno{AstStepC}&
+  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}
+\end{array}
+\]
+\caption{Cut signal propagation rules}
+\label{cut-signal-propagation}
+\end{figure*}
+%\FloatBarrier
 
 We then repeat the soundness proof for these semantics with minor changes (and skip the completeness proof, since it does not hold for SLD resolution).

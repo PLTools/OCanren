@@ -131,54 +131,9 @@ In denotational semantics, we interpret ``cut'' as success (thus, denotationally
 modify SLD semantics in such a way that a ``cut'' cuts all other branches of all enclosing nodes, marked with ``$\oplus$'', up to
 the moment when the evaluation of the disjunct, containing the ``cut'', was started. It is easy to see that this node will always
 be the nearest ``$\oplus$'', derived from the disjunction. Unfortunately, in the tree other ``$\oplus$'' nodes can
-appear due to the evaluation of ``$\otimes$'' nodes, thus we need a way to distinguish these two sorts of ``$\oplus$''. We
-denote the new sort of nodes as ``$\circledast$'', and modify the definition of states.
-
-{ \color{orange}
-
-In the semantics the rule \textsc{[ConjStepAns]} is replaced with
-
-\[
-\begin{array}{cr}
-  \dfrac{s \xrightarrow{(\sigma, n)} s'}{(s \otimes g) \xrightarrow{\circ} (\inbr{g, \sigma, n} \circledast (s' \otimes g))} & \ruleno{ConjStepAns} 
-\end{array}
-\]
-
-The rules for ``$\circledast$'' evaluation mirror those for ``$\oplus$'', so we omit them.
-
-We need a separate kind of transitions to propagate the signal for cutting the branches $\xrightarrow{\circ}_c$/$\xrightarrow{(\sigma, n)}_c$.
-
-The signal itself is risen when a ``cut'' construct is encountered:
-
-\[
-\begin{array}{cr}
-  \inbr{!, \sigma, n} \xrightarrow{(\sigma, n)}_c \Diamond &\ruleno{Cut} 
-\end{array}
-\]
-
-When the signal is being propagated through ``$\oplus$'' and ``$\circledast$'' nodes, their right branches are cut out, and for ``$\circledast$'' the
-propagation continues (see Fig.~\ref{cut-signal-propagation}). In the case of ``$\otimes$'' nodes the signal is simply propagated; we omit the rules since they mirror the regular ones.
-
-}
-
-\begin{figure*}
-\color{orange}
-\[
-\begin{array}{cr|cr}
-  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} \Diamond} & \ruleno{PlusStopC}&
-  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}\\
-  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} s'_1} &\ruleno{PlusStepC}&
-  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{PlusStepAnsC}\\
-  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ}_c \Diamond} & \ruleno{AstStopC}&
-  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}\\
-  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ}_c s'_1} &\ruleno{AstStepC}&
-  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}
-\end{array}
-\]
-\caption{Cut signal propagation rules}
-\label{cut-signal-propagation}
-\end{figure*}
-%\FloatBarrier
+appear due to the evaluation of ``$\otimes$'' nodes, thus we need a way to distinguish these two sorts of ``$\oplus$'' (we
+denote the new sort of nodes as ``$\circledast$''). We also introduce a separate kind of transitions to propagate the signal for cutting the branches $\xrightarrow{l}_c$.
+More details about this chages in defintion and transition rules for them can be found in the appendix.
 
 For this semantics, we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
 we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut'' (since we do not have other semantics of ``cut'' to compare with).
