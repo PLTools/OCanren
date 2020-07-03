@@ -433,6 +433,7 @@ install `opam` itself and relevant `OCaml` version:
 
 Then, install the dependencies and `OCanren` itself:
 
+- `opam install mtime`
 - `opam pin add GT https://github.com/JetBrains-Research/GT.git -n -y`
 - `git clone https://github.com/JetBrains-Research/OCanren.git ocanren && cd ocanren`
 - `opam install . --deps-only --yes`
