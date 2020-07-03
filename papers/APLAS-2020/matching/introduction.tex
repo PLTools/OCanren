@@ -11,10 +11,10 @@ implementation of this example is shown on Fig.~\ref{fig:matching-example2}; how
 better (Fig.~\ref{fig:matching-example3}).
 
 \begin{figure}[ht]
-\begin{subfigure}[t]{0.2\linewidth}
+\begin{subfigure}[t]{0.25\linewidth}
 \centering
 \begin{lstlisting}
-match x, y, z with
+match x,y,z with
 | _, F, T -> 1
 | F, T, _ -> 2
 | _, _, F -> 3
@@ -25,7 +25,7 @@ match x, y, z with
 \label{fig:matching-example1}
 \end{subfigure}
 \hspace{0.5cm}
-\begin{subfigure}[t]{0.26\linewidth}
+\begin{subfigure}[t]{0.3\linewidth}
 \centering
 \begin{lstlisting}
 if x then
@@ -38,11 +38,11 @@ else
   else
     if z then 1 else 3
 \end{lstlisting}
-\caption{A correct but non-optimal\\\phantom{(b)~}implementation}
+\caption{A correct but non-optimal implementation}
 \label{fig:matching-example2}
 \end{subfigure}
-\hspace{0.5cm}
-\begin{subfigure}[t]{0.33\linewidth}
+\hspace{1.0cm}
+\begin{subfigure}[t]{0.3\linewidth}
 \centering
 \begin{lstlisting}
 if y then
