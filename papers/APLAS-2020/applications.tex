@@ -17,14 +17,9 @@ for example:
 \end{itemize}
 
 Note that this way we can guarantee only the preservation of results as \emph{sets of ground terms}; the other aspects of program behavior,
-such as termination, may be affected by some of these transformations. 
+such as termination, may be affected by some of these transformations\footnote{Possible slowdown and loss of termination after reorderings in conjunction is a famous example of this phenomenon in \textsc{miniKanren}, known as conjunction non-comutativity~\cite{WillThesis}.}.
 
-As an example of these transformations application we consider the transformation from \textsc{Prolog} to conventional \textsc{miniKanren} and,
-more interesting, in the opposite direction.
-
-\orangenote{Описание трансформаций можно перенести в аппендикс}
-{ \color{orange}
-
+\begin{comment}
 Since in \textsc{Prolog} a rather limited form of goals (an implicit conjunction of atoms) is used the conversion to \textsc{miniKanren} is easy:
 
 \begin{itemize}
@@ -97,30 +92,16 @@ will be as follows:
     append (T, Y, TY).
 \end{lstlisting}
 
+\end{comment}
+
+{\color{red} ?????????
+
+We can use these substantiated transformations, for example, to convert an arbitrary \textsc{miniKanren} specification into a form analogous to a specifications in \textsc{Prolog}.
+With this conversion we can not only interpret \textsc{Prolog} specifications in interleaving semantics, but we also can, using the certified framework we developed, describe conventional \textsc{Prolog} search strategies.
 }
 
-These transformations show that we can, for example, interpret \textsc{Prolog} specifications in interleaving semantics; moreover, we can,
-using the certified framework we developed, describe conventional \textsc{Prolog} search strategies.
-
-\begin{figure*}
-\[
-\begin{array}{cr|cr}
-  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} \Diamond} & \ruleno{PlusStopC}&
-  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}\\
-  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} s'_1} &\ruleno{PlusStepC}&
-  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{PlusStepAnsC}\\
-  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ}_c \Diamond} & \ruleno{AstStopC}&
-  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}\\
-  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ}_c s'_1} &\ruleno{AstStepC}&
-  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}
-\end{array}
-\]
-\caption{Cut signal propagation rules}
-\label{cut-signal-propagation}
-\end{figure*}
-%\FloatBarrier
-
 \subsection{SLD Semantics}
+\label{sld}
 
 The conventional for \textsc{Prolog} SLD search differs from the interleaving one in just one aspect~--- it does not perform interleaving.
 Thus, changing just two rules in the operational semantics converts interleaving search into the depth-first one:
@@ -136,6 +117,7 @@ With this definition we can almost completely reuse the mechanized proof of soun
 can no longer be proven (as it does not hold anymore).
 
 \subsection{Cut}
+\label{cut}
 
 Dealing with the ``cut'' construct is known to be a cornerstone feature in the study of operational semantics for \textsc{Prolog}. It turned out that
 in our case the semantics of ``cut'' can be expressed naturally (but a bit verbose). Unlike SLD-resolution, it does not amount to an incremental
@@ -145,18 +127,14 @@ The key observation in dealing with the ``cut'' in our setting is that a state i
 search tree (including all backtracking possibilities). This opens the opportunity to organize proper ``navigation'' through the tree
 to reflect the effect of ``cut''.
 
-First, we add ``cut'' as a new sort of goals:
-
-\begin{lstlisting}[language=Coq]
-  Inductive goal : Set := ... | Cut : goal.
-\end{lstlisting}
-
 In denotational semantics, we interpret ``cut'' as success (thus, denotationally we treat all cuts as ``green''). Operationally, we
 modify SLD semantics in such a way that a ``cut'' cuts all other branches of all enclosing nodes, marked with ``$\oplus$'', up to
 the moment when the evaluation of the disjunct, containing the ``cut'', was started. It is easy to see that this node will always
 be the nearest ``$\oplus$'', derived from the disjunction. Unfortunately, in the tree other ``$\oplus$'' nodes can
 appear due to the evaluation of ``$\otimes$'' nodes, thus we need a way to distinguish these two sorts of ``$\oplus$''. We
 denote the new sort of nodes as ``$\circledast$'', and modify the definition of states.
+
+{ \color{orange}
 
 In the semantics the rule \textsc{[ConjStepAns]} is replaced with
 
@@ -181,63 +159,34 @@ The signal itself is risen when a ``cut'' construct is encountered:
 When the signal is being propagated through ``$\oplus$'' and ``$\circledast$'' nodes, their right branches are cut out, and for ``$\circledast$'' the
 propagation continues (see Fig.~\ref{cut-signal-propagation}). In the case of ``$\otimes$'' nodes the signal is simply propagated; we omit the rules since they mirror the regular ones.
 
-For this semantics, we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
-we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut'' (since we do not have other semantics of ``cut'' to compare with).
+}
 
-{ \color{red}
-
-Nevertheless, we can demonstrate a plausible behavior of extracted reference interpreter using ``litmus tests''.
-
-Consider the following specification:
-
-
-\begin{lstlisting}[language=Prolog,numbers=left,stepnumber=1]
-a(0).
-a(1).
-
-b(2, 0).
-b(X, Y) :- a(X), !, a(Y).
-b(3, 0).
-
-c(4, 0, 0, 0).
-c(W, X, Y, Z) :- a(W), b(X, Y), a(Z).
-c(5, 0, 0, 0).
-\end{lstlisting}
-
-Strictly speaking, integer literals can not be used in the language we defined; however we can replace them by Peano-encoded
-integers with the same result. The query we are interested in is ``\lstinline|c(W, X, Y, Z)|''. The answers of its
-evaluation using our certified interpreter are shown below:
-
+\begin{figure*}
+\color{orange}
 \[
-\begin{array}{|cccc|}
-\hline
-W & X & Y & Z \\
-\hline
-4 & 0 & 0 & 0 \\
-0 & 2 & 0 & 0 \\
-0 & 2 & 0 & 1 \\
-0 & 0 & 0 & 0 \\
-0 & 0 & 0 & 1 \\
-0 & 0 & 1 & 0 \\
-0 & 0 & 1 & 1 \\
-1 & 2 & 0 & 0 \\
-1 & 2 & 0 & 1 \\
-1 & 0 & 0 & 0 \\
-1 & 0 & 0 & 1 \\
-1 & 0 & 1 & 0 \\
-1 & 0 & 1 & 1 \\
-5 & 0 & 0 & 0 \\
-\hline
+\begin{array}{cr|cr}
+  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} \Diamond} & \ruleno{PlusStopC}&
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}\\
+  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} s'_1} &\ruleno{PlusStepC}&
+  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{PlusStepAnsC}\\
+  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ}_c \Diamond} & \ruleno{AstStopC}&
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}\\
+  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ}_c s'_1} &\ruleno{AstStepC}&
+  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}
 \end{array}
 \]
+\caption{Cut signal propagation rules}
+\label{cut-signal-propagation}
+\end{figure*}
+%\FloatBarrier
 
-These answers are exactly those (including the order) delivered by SWI-Prolog.
-
-}
+For this semantics, we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
+we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut'' (since we do not have other semantics of ``cut'' to compare with).
+Nevertheless, we can demonstrate a plausible behavior using extracted reference interpreter.
 
 \subsection{Reference Interpreters}
 
-Using \textsc{Coq} extraction mechanism, we extracted two reference interpreters from out definitions and theorems: one for conventional
+Using \textsc{Coq} extraction mechanism, we extracted two reference interpreters from our definitions and theorems: one for conventional
 \textsc{miniKanren} with interleaving search and another one for SLD search with cut. These interpreters can be used to practically investigate the behaviour
 of specifications in unclear, complex or corner cases. Our experience has shown that these interpreters demonstrate the expected behavior
 in all cases.

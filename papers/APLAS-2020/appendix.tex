@@ -1,0 +1,359 @@
+\section{Technical Appendix: Details of the Coq Specification and Proofs}
+\label{appendix}
+
+The Coq specification consists of three parts: specification of preliminary notions that we use in the semantics, specification of the language and semantics for interleaving search, specification of the language extended with cut and semantics for SLD resolution with cut (which repeats the previous part with only a few modifications).
+
+Preliminary notions are notions from unification theory and streams.
+
+From unification theory we need (finitary) terms, substitutions and operations on them (application to a term, composition). But the most important notion we have to formalize here is the most general unifier. As was described in the section~\ref{specification} we define it as an inductive relation.
+
+\begin{lstlisting}[language=Coq]
+  Inductive mgu : term -> term -> option subst -> Set := ...
+\end{lstlisting}
+
+It uses an auxilary function that finds the leftmost mismatch of the two terms (if there is any).
+
+Then we prove by well-founded induction that this relation is a function and it satisfies the defining properties of MGU.
+
+\begin{lstlisting}[language=Coq]
+  Lemma mgu_result_$\texttt{exists}$ : forall t1 t2, {r & mgu t1 t2 r}.
+  Lemma mgu_result_unique : forall t1 t2 r r',
+      mgu t1 t2 r -> mgu t1 t2 r' ->r = r'.
+  Definition unifier (s : subst) (t1 t2 : term) : Prop :=
+    apply_subst s t1 = apply_subst s t2.
+  Lemma mgu_unifies: forall t1 t2 s,
+    mgu t1 t2 (Some s) -> unifier s t1 t2.
+  Definition more_general (m s : subst) : Prop :=
+    exists (s' : subst),
+    forall (t : term),
+      apply_subst s t = apply_subst s' (apply_subst m t).
+  Lemma mgu_most_general : forall t1 t2 m,
+      mgu t1 t2 (Some m) ->
+      forall (s : subst), unifier s t1 t2 -> more_general m s.
+  Lemma mgu_non_unifiable : forall t1 t2,
+      mgu t1 t2 None -> forall s,  ~ (unifier s t1 t2).
+\end{lstlisting}
+
+For this well-founded induction we use the number of free variables in argument terms as a well-founded order on pairs of terms:
+
+\begin{lstlisting}[language=Coq]
+  Definition terms := term * term.
+  Definition fvOrder (t : terms) :=
+    length (union (fv_term (fst t)) (fv_term (snd t))).
+  Definition fvOrderRel (t p : terms) :=
+    fvOrder t < fvOrder p.
+  Lemma fvOrder_wf : well_founded fvOrderRel.
+\end{lstlisting}
+
+Possibly infinite streams is a coinductive data type.
+
+\begin{lstlisting}[language=Coq]
+  Context {A : Set}.
+  CoInductive stream : Set :=
+  | Nil : stream
+  | Cons : A -> stream -> stream.
+\end{lstlisting}
+
+However some of its properties we are working with make sense only when defined inductively:
+
+\begin{lstlisting}[language=Coq]
+  Inductive in_stream : A -> stream -> Prop := ...
+  Inductive finite : stream -> Prop := ...
+\end{lstlisting}
+
+For the equality of streams we need to define a new coinductive proposition instead of using the standard syntactic equality in order for coinductive proofs to work~\cite{CPDT}.
+
+\begin{lstlisting}[language=Coq]
+  CoInductive equal_streams : stream -> stream -> Prop :=
+  | eqsNil  :  equal_streams Nil Nil
+  | eqsCons : forall h1 h2 t1 t2,
+                       h1 = h2 ->
+                       equal_streams t1 t2 ->
+                       equal_streams (Cons h1 t1) (Cons h2 t2).
+\end{lstlisting}
+
+Here we also define a relation for one-by-one interleaving of streams, that we will use to describe the evaluation of dijunstions in the operational semantics.
+
+\begin{lstlisting}[language=Coq]
+  CoInductive interleave : stream -> stream -> stream -> Prop :=
+  | interNil : forall s s', equal_streams s s' -> interleave Nil s s'
+  | interCons : forall h t s rs,
+                interleave s t rs ->
+                interleave (Cons h t) s (Cons h rs).
+\end{lstlisting}
+
+This allows us to prove the expected properties of interleaving in a more general setting of arbitrary streams.
+
+\begin{lstlisting}[language=Coq]
+  Lemma interleave_in : forall s1 s2 s,
+    interleave s1 s2 s ->
+    forall x, in_stream x s <-> in_stream x s1 \/ in_stream x s2.
+  Lemma interleave_finite : forall s1 s2 s,
+    interleave s1 s2 s ->
+    (finite s <-> finite s1 /\ finite s2).
+\end{lstlisting}
+
+The syntax of the language can be formalized in \textsc{Coq} in a natural way via inductive data types. Thanks to the higher-order syntax we need to work explicitly only with semantic variables. We use type ``\lstinline[language=Coq]{name}'' for all named entities (variables, constructors and relations), and we define it simply as natural numbers.
+
+As it was noted in the section~\ref{specification} all terms in our specification have arities either zero or two.
+
+\begin{lstlisting}[language=Coq] 
+   Inductive term : Set :=
+   | Var : name -> term
+   | Cst : name -> term
+   | Con : name -> term -> term -> term.
+\end{lstlisting}
+
+And all relations have exactly one argument.
+
+\begin{lstlisting}[language=Coq]
+   Definition rel : Set := term -> goal.
+\end{lstlisting}
+
+We introduce one additional auxilary type of goals~--- \emph{failure}~--- for deliberately unsuccessful computation (empty stream). As a result, the definition of goals looks as follows.
+
+\begin{lstlisting}[language=Coq] 
+   Inductive goal : Set :=
+   | Fail   : goal
+   | Unify  : term -> term -> goal
+   | Disj   : goal -> goal -> goal
+   | Conj   : goal -> goal -> goal
+   | Fresh  : (name -> goal) -> goal
+   | Invoke : name -> term -> goal.
+\end{lstlisting}
+
+Note the use of HOAS in fresh variable introduction.
+
+We define sets of free variables for terms naturally as \textsc{Coq} sets.
+
+\begin{lstlisting}[language=Coq,mathescape=true] 
+   Fixpoint fv_term (t : term) : $\mbox{\small{set}}$ name :=
+     ...
+\end{lstlisting}
+
+And we use them to define ground terms as a subset type.
+
+\begin{lstlisting}[language=Coq]
+   Definition ground_term : Set :=
+     {t : term | fv_term t = empty_set name}.
+\end{lstlisting}
+
+However, for goals it was more convenient to define a set of free variables as a proposition.
+
+\begin{lstlisting}[language=Coq]
+   Inductive is_fv_of_goal (n : name) : goal -> Prop :=
+     ...
+\end{lstlisting}
+
+We use it to state our two explicit requirements on the syntax representation: consistency of bindings and absence of unbound variables in definitions of relations. The second one is easy to describe.
+
+\begin{lstlisting}[language=Coq] 
+  Definition closed_goal_in_context 
+    (c : list name) (g : goal) : Prop :=
+      forall n, is_fv_of_goal n g -> In n c.
+  Definition closed_rel (r : rel) : Prop :=
+    forall (arg : term),
+    closed_goal_in_context (fv_term arg) (r arg).
+\end{lstlisting}
+
+Consistency is based on the variable renaming. It turned out to be rather non-trivial to define regular variable renaming for goals in higher-order syntax, but for our purposes
+a weaker version which deals with only non-free variables is sufficient.
+
+\begin{lstlisting}[language=Coq]
+   Inductive renaming (old_x : name) (new_x : name) :
+       goal -> goal -> Prop :=
+   ...
+   | rFreshNFV : forall fg,
+                 (~is_fv_of_goal old_x (Fresh fg)) ->
+                 renaming old_x new_x (Fresh fg) (Fresh fg)
+   | rFreshFV : forall fg rfg,
+                (is_fv_of_goal old_x (Fresh fg)) ->
+                (forall y, (~is_fv_of_goal y (Fresh fg)) ->
+                      renaming old_x new_x (fg y) (rfg y)) ->
+                renaming old_x new_x (Fresh fg) (Fresh rfg)
+   ...
+\end{lstlisting}
+
+The consistency for goals and relations then can be defined as follows.
+
+\begin{lstlisting}[language=Coq]
+   Definition consistent_binding (b : name -> goal) : Prop :=
+     forall x y, (~ is_fv_of_goal x (Fresh b)) ->
+           renaming x y (b x) (b y).
+   Inductive consistent_goal : goal -> Prop :=
+     ...
+   Definition consistent_function
+     (f : term -> goal) : Prop :=
+     forall a1 a2 t, renaming a1 a2 (f t)
+                     (f (apply_subst [(a1, Var a2)] t)).
+   Definition consistent_rel (r : rel) : Prop :=
+     forall (arg : term), consistent_goal (r arg) /\
+                     consistent_function r.
+\end{lstlisting}
+
+In the snippet above the ``\lstinline[language=Coq]{consistent_goal}'' property inductively ensures that all bindings occurring
+in the goal are consistent and ``\lstinline[language=Coq]{apply_subst [(a1, Var a2)] t}'' in ``\lstinline[language=Coq]{consistent_function}''
+definition renames a variable \lstinline[language=Coq]{a1} into in \lstinline[language=Coq]{a2} term \lstinline[language=Coq]{t}.
+
+We set an arbitrary environment (a map from a relational symbol to a definition of relation with described requirements) to use further throughout the formalization.
+Failure goals allow us to define it as a total function.
+
+\begin{lstlisting}[language=Coq]
+   Definition def : Set := 
+     {r : rel | closed_rel r /\ consistent_rel r}.
+   Definition env : Set := name -> def.
+   Axiom Prog : env.
+\end{lstlisting}
+
+To formalize denotational semantics in \textsc{Coq} we can define representing functions simply as \textsc{Coq} functions.
+
+\begin{lstlisting}[language=Coq]
+   Definition repr_fun : Set := name -> ground_term.
+\end{lstlisting}
+
+We define the semantics via the inductive proposition ``\lstinline|in_denotational_sem_goal|'' (with notation ``\lstinline[mathescape=true]{[| $\bullet$ , $\bullet$ |]}'')
+such that
+
+\[
+\forall g,\mathfrak{f}\;:\;\mbox{\lstinline|in_denotational_sem_goal|}\;g\;\mathfrak{f}\Longleftrightarrow\mathfrak{f}\in\sembr{g}
+\]
+
+The head of the definition is as follows.
+
+\begin{lstlisting}[language=Coq,morekeywords={where,at,level}]
+  Reserved Notation "[| g , f |]" (at level 0).
+  Inductive in_denotational_sem_goal :
+    goal -> repr_fun -> Prop :=
+    ...
+  where "[| g , f |]" := (in_denotational_sem_goal g f).
+\end{lstlisting}
+
+and the body just goes through the cases shown in Fig.~\ref{denotational_semantics_of_goals}.
+
+We also need to explicitly define the bounded version of denotational semantics described in the section~\ref{equivalence}.
+
+\begin{lstlisting}[language=Coq,morekeywords={where,at,level}]
+  Reserved Notation "[| n | g , f |]" (at level 0).
+  Inductive in_denotational_sem_lev_goal :
+    nat -> goal -> repr_fun -> Prop :=
+    ...
+  | dslgInvoke : forall l r t f,
+      [| l  | proj1_sig (Prog r) t , f |] ->
+      [| S l | Invoke r t , f |]
+  where "[| n | g , f |]" :=
+    (in_denotational_sem_lev_goal n g f).
+\end{lstlisting}
+
+Recall that the environment ``\lstinline[language=Coq]|Prog|'' maps every relational symbol to the definition of relation,
+which is a pair of a function from terms to goals and a proof that it is closed and consistent.
+So ``\lstinline[language=Coq]|(proj1_sig (Prog r) t)|'' here simply takes the body of the corresponding relation.
+
+The lemma relating bounded and unbounded denotational semantics in \textsc{Coq} looks as follows.
+
+\begin{lstlisting}[language=Coq] 
+  Lemma in_denotational_sem_some_lev:
+    forall (g : goal) (f : repr_fun),
+      [| g , f |] -> exists l, [| l | g , f |].
+\end{lstlisting}
+
+We prove two important properties of the denotational semantics: lemma~\ref{lem:den_sem_change_var} that state that choice of a subsituted fresh variable doesn't matter and the closedness condition (lemma~\ref{lem:closedness_condition}). Both proofs go by straightforward structural induction, except for the case of fresh variable introduction in the first lemma, which is actually quite non-trivial (and took the most efforts among all our proofs), so lets look at this case in more detail.
+
+So we have a nested fresh variable introduction $\mbox{\lstinline|fresh|}\,y\,.\,g'$ as the goal $g$. $g'$ may contain syntactic variables $x$ and $y$ (the case when $g$ does not contain syntactic variable $x$ is trivial and we have to consider it separately). By the statement of the lemma and the definition of denotational semantics we have ${\mathfrak f'_1} \in \sembr{g'\,[\alpha_1/x]\,[\alpha_3/x]}$, where $\alpha_3$ is some fresh semantic variable, and ${\mathfrak f'_1}$ is some representing function that may differ from ${\mathfrak f_1}$ only on variable $\alpha_3$. Variable $\alpha_3$ may not be equal to $\alpha_1$, but may be equal to $\alpha_2$ and further in proof we sometimes have to consider these two cases separetly, because they are essentially different. We should find some fresh variable $\alpha_4$ and representing function ${\mathfrak f'_2} \in \sembr{g'\,[\alpha_2/x]\,[\alpha_4/x]}$ that may differ from ${\mathfrak f_2}$ only on variable $\alpha_4$.
+
+Among different options we considered, the easiest choice for a variable $\alpha_4$ turned out to be the freshest variable (one that does not equal any of mentioned above and that does not occur in the goal $g'$). Then we need to move from the function ${\mathfrak f'_1}$ to the function ${\mathfrak f'_2}$ by applying the induction hypothesis twice (since now we change two substituted variables simultaneously). To do this we need to carefully change the values of the function on a few suitable points. It turned out, we have to change the values on all four mentioned variables. First, we build an intermediate function ${\mathfrak f'_{1.5}} = {\mathfrak f'_1}[\alpha_3\gets {\mathfrak f_2}(\alpha_3)][\alpha_4\gets {\mathfrak f'_1}(\alpha_3)]$ that should belong to an intermediate semantics $\sembr{g'\,[\alpha_1/x]\,[\alpha_4/x]}$. Then we build a final function ${\mathfrak f'_2} = {\mathfrak f'_{1.5}}[\alpha_1\gets {\mathfrak f_2}(\alpha_1)][\alpha_2\gets {\mathfrak f'_{1.5}}(\alpha_1)]$ on top of it. For both transitions, we carefully check that all conditions on two functions from the statement of the lemma (and, therefore, from the induction hypothesis) are satisfied by examination of values of the functions on all mentioned variables.
+
+For operational semantics, the described transition relation can be encoded naturally as an inductively defined proposition (here ``\lstinline|state|''
+stands for a non-terminal state and ``\lstinline|state|'' --- for an arbitrary one).
+
+\begin{lstlisting}[language=Coq]
+  Inductive eval_step :
+    nt_state -> label -> state -> Set := ...
+\end{lstlisting}
+
+We state the fact that our system is deterministic through the existence and uniqueness of a transition for every state:
+
+\begin{lstlisting}[language=Coq]
+  Lemma eval_step_$\texttt{exists}$ : forall (nst : nt_state),
+    {l : label & {st : state & eval_step nst l st}}.
+  Lemma eval_step_unique : forall (nst : nt_state),
+      (l1 l2 : label)
+      (st1 st2 : state'),
+    eval_step nst l1 st1 ->
+    eval_step nst l2 st2 ->
+    l1 = l2 /\ st1 = st2.
+\end{lstlisting}
+
+Then we define a trace coinductively as a stream of labels in transition steps and prove that there exists a unique trace from any extended state:
+
+\begin{lstlisting}[language=Coq]
+  Definition trace : Set := $@$stream label.
+  CoInductive op_sem : state -> trace -> Set :=
+  | osStop : op_sem Stop Nil
+  | osState : forall nst l st t,
+      eval_step nst l st ->
+      op_sem st t ->
+      op_sem (State nst) (Cons l t).
+  Lemma op_sem_$\texttt{exists}$ (st : state):
+    {t : trace & op_sem st t}.
+  Lemma op_sem_unique:
+    forall st t1 t2,
+      op_sem st t1 ->
+      op_sem st t2 ->
+      equal_streams t1 t2.
+\end{lstlisting}
+
+And we prove important properties of operational semantics (lemmas~\ref{lem:well_formedness_preservation}, \ref{lem:sum_answers}, \ref{lem:prod_answers} and \ref{lem:disj_termination}).
+
+Finally, we prove both soundness and completeness of the operational semantics of the interleaving search w.r.t. the denotational one.
+The statements of the theorems are as follows.
+
+\begin{lstlisting}[language=Coq]]
+  Theorem search_correctness:
+    forall (g : goal) (k : nat) (f : repr_fun) (t : trace),
+      closed_goal_in_context (first_nats k) g) ->
+      op_sem (State (Leaf g empty_subst k)) t) ->
+      {| t , f |} ->
+      [| g , f |].
+  Theorem search_completeness:
+    forall (g : goal) (k : nat) (f : repr_fun) (t : trace),
+      consistent_goal g ->
+      closed_goal_in_context (first_nats k) g ->
+      op_sem (State (Leaf g empty_subst k)) t ->
+      [| g , f |] ->
+      exists (f' : repr_fun),
+        {| t , f' |} /\
+        forall (x : var), In x (first_nats k) -> f x = f' x.
+\end{lstlisting}
+
+Note that we need the consistency requirement only for the completeness, not for the soundeness.
+
+The proof of soundness is by straightforward structural induciton, it is divided between lemmas~\ref{lem:answer_soundness} and \ref{lem:next_state_soundness}.
+
+The proof of completeness is less trivial. It goes by induciton on level of bounded denotational semantics, then by structural induction on goal.
+
+\begin{itemize}
+\item In case of unification $t_1\equiv t_2$ we need to show that any representing function that unifies terms $t_1$ and $t_2$ and is an extension of $\sigma$ also is an extentsion of $mgu\,(t_1 \sigma, t_2 \sigma) \circ \sigma$. This requires some observations about representing functions, most importantly the fact that for any representing function $f$, unifying two terms, there exists a unifying substitution for these terms, for which $f$ is an extension.
+\item In case of disjunction we apply lemma~\ref{lem:sum_answers} to induction hypotheses.
+\item In case of conjunction we apply lemma~\ref{lem:prod_answers} to induction hypotheses. Note that we use two nested inductions instead of one induction on evidence because of this case: we need to apply an induction hypothesis to different representing functions (which may have different values on non-allocated free variables) and otherwise the induction hypotheses would not be flexible enough.
+\item The case of fresh variable introduction is the most difficult. We can not simply use induction hypothesis, because it has a goal with an arbitrary fresh variable substituted (see definition of denotational semantics on figure~\ref{denotational_semantics_of_goals}), but we need to relate two semantics of the goal with exactly the first non-allocated variable substituted (from transition in operational semantics, see figure~\ref{lts}). To overcome this inconsistency, we apply lemma~\ref{lem:den_sem_change_var} about changing substituted fresh variable. When we do this, we loose equality of values of representing functions on the first non-allocated variable. It is exactly the place where the proof of the strong version of the completeness theorem (without the restriction of domains of representing functions on allocated variables) would fail (as explained in the section~\ref{equivalence}, the strong version of the completeness theorem does not hold).
+\item In case of relational invocation we simply use the induction hypothesis about the previous level.
+\end{itemize}
+
+The specification of semantics for SLD resolution with cut simply repeats the just described specification of semantics for interleaving search with minimal modification. Specifically, we introduce one additional type of goal (\lstinline|Cut|), in denotational semantics cuts correspond to the whole domain of representing functions, in operational semantics we introduce division in sum states and a cut signal into transitions and add rules described in sections~\ref{sld} and \ref{cut} in the transition system. 
+
+\begin{lstlisting}
+  Inductive cutting_mark : Set :=
+  | StopCutting : cutting_mark
+  | KeepCutting : cutting_mark.
+  Inductive nt_state : Set :=
+  ...
+  | Sum  : cutting_mark -> nt_state -> nt_state -> nt_state
+  ...
+  Inductive cut_signal : Set :=
+  | NoCutting  : cut_signal
+  | YesCutting : cut_signal.
+  Inductive eval_step_SLD :
+     nt_state -> label -> cut_signal -> state -> Set := ...
+\end{lstlisting}
+
+We then repeat the soundness proof for these semantics with minor changes (and skip the completeness proof, since it does not hold for SLD resolution).

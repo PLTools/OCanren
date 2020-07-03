@@ -18,24 +18,18 @@ unification algorithms are given in \textsc{LCF}, \textsc{Alf}, \textsc{Coq} and
 order lexicographically ordered tuples, containing the information about the number of different free variables and the sizes of
 the arguments, is used. We implemented a similar approach, but we separated the test for the non-matching case into a dedicated
 function. Thus, we make a recursive call only when the current substitution extension is guaranteed, which allows us to use the
-number of different free variables as the order. Alternatively, in~\cite{StructuralMGU} a structurally recursive definition of
-unification algorithm is given; this is achieved by indexing the arguments with the numbers of their free variables.
+number of different free variables as the order. An alternative approach suggested in~\cite{StructuralMGU} gives a structurally recursive definition of
+unification algorithm; this is achieved by indexing the arguments with the numbers of their free variables.
 
-The use of higher-order abstract syntax (HOAS) for dealing with language constructs in \textsc{Coq} was addressed in earlier work~\cite{HOASinCoq},
-where it was employed to describe lambda calculus. The inconsistency phenomenon of HOAS representation, mentioned in Section~\ref{language}, is called
+The use of higher-order abstract syntax (HOAS) for dealing with language constructs in \textsc{Coq} was addressed in early work~\cite{HOASinCoq},
+where it was employed to describe lambda calculus. The inconsistency phenomenon of HOAS representation, mentioned in Section~\ref{specification}, is called
 there ``exotic terms'' and is handled using a dedicated inductive predicate ``\lstinline|Valid_v|''. The predicate has a non-trivial implementation based
 on subtle observations on bindings behavior. Our case, however, is much simpler: there is not much variety in ``exotic terms'' (for example, we do not have
-reductions in terms), and our predicate ``\lstinline|consistent_binding|'' can be considered as a limited version of ``\lstinline|Valid_v|'' for a
-smaller language.
+reductions in terms), and our consistency predicate can be considered as a limited version of ``\lstinline|Valid_v|'' for a bigger language.
 
 The study of formal semantics for \textsc{miniKanren} is also not a completely novel venture. In~\cite{RelConversion} a non-deterministic
 small-step semantics is described, and in~\cite{DivTest} a big-step semantics for a finite number of answers is given;
 neither uses proof mechanization and in both works the interleaving is not addressed. 
-
-The most important property of interleaving search~--- completeness~--- was postulated in the introductory paper~\cite{Search}, and is delivered by
-all major implementations. In~\cite{2016} a proof of completeness for a specific implementation of miniKanren is presented; however, the completeness is understood there as a
-preservation of all answers during the interleaving of answer streams, i.e. in a more narrow sense than in our case since no relation
-to denotational semantics is established{\color{red}; additionally, no proof mechanization is used.}
 
 The work of~\cite{MechanisingMiniKanren} can be considered as our direct predecessor. It also introduces both denotational and
 operational semantics and presents a \textsc{HOL}-certified proof for the soundness of the latter w.r.t. the former. The denotational
@@ -44,3 +38,8 @@ On the other hand, the operational semantics is nondeterministic (similarly to~\
 impossible to express interleaving and extract the interpreter in a direct way. In addition, a specific form of ``executable semantics''
 is introduced, but its connection to the other two is not established. Finally, no completeness result is presented.
 We consider our completeness proof as an essential improvement. 
+
+The most important property of interleaving search~--- completeness~--- was postulated in the introductory paper~\cite{Search}, and is delivered by
+all major implementations. In~\cite{2016} a proof of completeness for a specific implementation of \textsc{miniKanren} is presented; however, the completeness is understood there as a
+preservation of all answers during the interleaving of answer streams, i.e. in a more narrow sense than in our case since no relation
+to denotational semantics is established.

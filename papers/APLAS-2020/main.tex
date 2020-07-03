@@ -4,7 +4,7 @@
 
 \usepackage{amsmath,amssymb}
 \usepackage[utf8]{inputenc}
-\usepackage[main=russian,english]{babel}
+\usepackage[english]{babel}
 \usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{listings}
@@ -104,6 +104,7 @@ language=minikanren
 \newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
 \newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
 \newcommand{\tr}[1]{\mathcal{T}r_{#1}}
+\newcommand{\step}{\circ}
 
 \newcommand{\searchRule}[6] {
   #1, #2 \vdash (#3, #4) \xRightarrow{#5} #6}
@@ -148,6 +149,7 @@ language=minikanren
 \input{denotational.tex}
 \input{operational.tex}
 \input{equivalence.tex}
+\input{specification.tex}
 \input{applications.tex}
 \input{relworks.tex}
 \input{conclusion.tex}
@@ -161,6 +163,9 @@ language=minikanren
 
 \bibliographystyle{splncs04}
 \bibliography{main}
+
+\appendix
+\input{appendix.tex}
 
 \end{document}
 
