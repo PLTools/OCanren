@@ -4,9 +4,13 @@
 \newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{#2}}}
 \newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
 \newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
-\begin{figure}[t]
+
+\begin{table}[t]
+  \caption{The results of synthesis evaluation}\label{fig:eval}
+    
   %\begin{tabular}{|c|m{3cm}|cc||cccc}
   \begin{tabular}{|m{3cm}|cc||cccc|}
+
 %    \headl{.5cm}{}    &
     \headl{3cm}{Patterns} & 
     \head{1.5cm}{Size constraint} & 
@@ -75,10 +79,8 @@ false
         \cline{2-7}
      &100&10&9&45&2&239                    \\ \hline
   \end{tabular}
-  \caption{The results of synthesis evaluation}
-  \label{fig:eval}
 
-\end{figure}
+\end{table}
 
 %\FloatBarrier
 
@@ -107,8 +109,6 @@ is performed. The number of these constructors restricts the number of branches 
 In our implementation we assume the constructor set ordered, and we consider only ordered branches, which restricts branching even more.
 
 Our approach to finding an optimal solution in fact implements branch-and-bound strategy. The birds-eye view of our plan is as follows:
-
-\FloatBarrier
 
 \begin{itemize}
 \item We construct a trivial solution, which gives us the first estimation.

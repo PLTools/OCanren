@@ -1,6 +1,6 @@
 .PHONY: celan clean all might might-weasel might-passive might-dups
 
-MAIN=matching
+MAIN=matching-aplas
 .PHONY: $(MAIN).pdf clean
 
 all: $(MAIN).pdf

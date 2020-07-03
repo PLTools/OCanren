@@ -1,0 +1,55 @@
+\section{Structural constraint}
+
+\subsection{OCanren refresher}
+
+During search process all OCanren's values are represented by special type ($\{\alpha,\;\beta\}$) that denotes a value of type $\alpha$  being injected in logical domain. The first type parameter $\alpha$ is the type for ground values which don't contain logic variables. The second type parameter $\beta$ is a logical representation of type $\alpha$ where types of its subvalues are enriched by a type of logic values. Conversion from $\alpha$ to $\beta$ is total but conversion in other direction is partial.
+
+
+\begin{lstlisting}
+   type $[\alpha]$ = Var of int * anchor | Value of $\alpha$
+\end{lstlisting}
+% TODO: about constraints 
+
+The type for logic values (denoted as $[\cdot]$) essentially is either value as it is or a variable index with disequality constraints added to this variable. This type is used in the second type parameter of injected values, and is never used in first type parameter. For example, logic values that should be integers will have type $\{\primi{int},\;[\primi{int}] \}$.
+
+When search is finished we perform \emph{reification}: a conversion of values from injected representation of type $\{\alpha,\;\beta\}$ to logical of type $\beta$. Reifiers for simple types (integer, string) are predefined and reifiers for composite types are constructable by the framework.
+
+Runnable queries have type $\primi{goal}$. Relations are OCaml functions that take injected values and return a goal. For example, relation which connects a value with list that contain this value will have the following type signature:
+
+\begin{lstlisting}
+val list_member$^o$: $\{\alpha,\beta\}$ -> $\{\alpha\; \primi{list},\beta\; [\primi{list}]\}$ -> goal
+\end{lstlisting}
+
+\subsection{Structural constraint}
+
+The primitive for introducing new structural constraint has the signature:
+
+\begin{lstlisting}
+type result = Violated | NotViolated
+val structural: $\{\alpha,\beta\}$ -> (helper ->  $\{\alpha,\beta\}$ -> $\beta$)  -> ($\beta$ -> result) ->   goal
+\end{lstlisting}
+
+It takes the value which is attached to the constraint, reification function to convert injected value to browsable (?) representation and evaluation function which decicde whether or not we should continue search. Reification function is constructable by framework but implementation of evaluation function is free from any limitations, programmer can even run separate OCanren query there.
+
+Creating of a new constraint attaches it to entire search subtree. The constraint check is performed on every extension of substitution, after checking disequality constraints.
+
+TODO:
+
+\subsection{Using a structural constraint}
+
+As example of structural constraint we show the one which inspired by \emph{absento} constraint from seminal paper~\cite{Untagged}: it takes a list of string in logical daomain and stops the search is the list containts string \texttt{"closure"}.
+
+\begin{lstlisting}
+let absento s = 
+  let rec helper = $\primi{function}$
+  | Value (Cons (s2, _)) when s2 = s -> Violated 
+  | Value (Cons (_, tl))  -> helper tl
+  | _ -> NotViolated
+  in
+  helper
+  
+(* later *)
+fresh (...)
+  ...
+  (structural var (reify$_{list}$ reify$_{string}$) (absento "closure"))
+\end{lstlisting}

@@ -1,0 +1,141 @@
+
+\usepackage{alltt}
+%\usepackage{pslatex}
+%\usepackage{epigraph}
+%\usepackage{verbatim}
+\usepackage{latexsym}
+\usepackage{array}
+\usepackage{comment}
+%\usepackage{makeidx}
+%\usepackage{indentfirst}
+%\usepackage{verbatim}
+%\usepackage{color}
+%\usepackage{url}
+%\usepackage{xspace}
+%\usepackage{hyperref}
+%\usepackage{stmaryrd}
+\usepackage{amsmath}
+\usepackage{amssymb}  % mathcal
+%\usepackage{graphicx}
+%\usepackage{euscript}
+\usepackage{mathtools}
+%\usepackage{mathrsfs}
+%\usepackage{multirow,bigdelim}
+%\usepackage{subcaption}
+%\usepackage{placeins}
+\usepackage{csvsimple}
+\usepackage{array}
+
+%\geometry{
+%     top=18pt, bottom=14pt, inner=21pt, outer=21pt,
+%     paperwidth=5.5in, paperheight=8.5in,
+%     }
+\usepackage{color}
+
+
+
+%% Some recommended packages.
+\usepackage{booktabs}   %% For formal tables:
+                        %% http://ctan.org/pkg/booktabs
+\usepackage{subcaption} %% For complex figures with subfigures/subcaptions
+                        %% http://ctan.org/pkg/subcaption
+\usepackage{multirow}
+
+\usepackage{placeins}
+
+\usepackage{listings}
+\lstdefinelanguage{ocanren}{
+keywords={run, conde, fresh, let, in, match, with, when, class, type,
+object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+true, false},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily,
+%keywordstyle=\ttfamily\textbf,
+keywordstyle=\textbf,
+%  LLNCS template screws bold typewriter font. So I swiched to non-tt keywords. 
+% Kakadu
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+mathescape=true,
+fontadjust=true,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
+morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+%mathescape=true,
+%basicstyle=\small,
+%identifierstyle=\ttfamily,
+%keywordstyle=\bfseries,
+%commentstyle=\scriptsize\rmfamily,
+%basewidth={0.5em,0.5em},
+%fontadjust=true,
+language=ocanren
+}
+
+\newcommand{\lstquot}[1]{``\lstinline{#1}''}
+\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+\newcommand\false{$f\!alse$}
+\newcommand\myif{i\!f}
+
+
+\def\transarrow{\xrightarrow}
+\newcommand{\setarrow}[1]{\def\transarrow{#1}}
+
+\def\padding{\phantom{X}}
+\newcommand{\setpadding}[1]{\def\padding{#1}} 
+
+\def\subarrow{}
+\newcommand{\setsubarrow}[1]{\def\subarrow{#1}}
+
+\newcommand{\trule}[2]{\dfrac{#1}{#2}}
+\newcommand{\crule}[3]{\dfrac{#1}{#2},\;{#3}}
+\newcommand{\withenv}[2]{{#1}\vdash{#2}}
+\newcommand{\trans}[3]{{#1}\transarrow{\padding{\textstyle #2}\padding}\subarrow{#3}}
+\newcommand{\ctrans}[4]{{#1}\transarrow{\padding#2\padding}\subarrow{#3},\;{#4}}
+\newcommand{\llang}[1]{\mbox{\lstinline[mathescape]|#1|}}
+\newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
+\newcommand{\inbr}[1]{\left<{#1}\right>}
+\newcommand{\highlight}[1]{\color{red}{#1}}
+%\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
+\newcommand{\rulename}[1]{\textsc{#1}}
+\newcommand{\inmath}[1]{\mbox{$#1$}}
+\newcommand{\lfp}[1]{fix_{#1}}
+\newcommand{\gfp}[1]{Fix_{#1}}
+\newcommand{\vsep}{\vspace{-2mm}}
+\newcommand{\supp}[1]{\scriptsize{#1}}
+\renewcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\cd}[1]{\texttt{#1}}
+\newcommand{\free}[1]{\boxed{#1}}
+\newcommand{\binds}{\;\mapsto\;}
+\newcommand{\dbi}[1]{\mbox{\bf{#1}}}
+\newcommand{\sv}[1]{\mbox{\textbf{#1}}}
+\newcommand{\bnd}[2]{{#1}\mkern-9mu\binds\mkern-9mu{#2}}
+\newcommand{\meta}[1]{{\mathcal{#1}}}
+\newcommand{\dom}[1]{\mathtt{dom}\;{#1}}
+%\newcommand{\primi}[2]{\mathbf{#1}\;{#2}}
+\renewcommand{\dom}[1]{\mathcal{D}om\,({#1})}
+\newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
+\newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
+\newcommand{\tr}[1]{\mathcal{T}r_{#1}}
+\newcommand{\diseq}{\not\equiv}
+\newcommand{\reprfunset}{\mathcal{R}}
+\newcommand{\reprfun}{\mathfrak{f}}
+\newcommand{\cstore}{\Omega}
+\newcommand{\cstoreinit}{\cstore_\epsilon^{init}}
+\newcommand{\csadd}[3]{add(#1, #2 \diseq #3)}  %{#1 + [#2 \diseq #3]}
+\newcommand{\csupdate}[2]{update(#1, #2)}  %{#1 \cdot #2}
+\newcommand{\primi}[1]{\mathbf{#1}}
+\newcommand{\sem}[1]{\llbracket #1 \rrbracket}
+\newcommand{\ir}{\ensuremath{\mathcal{S}}}
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+    \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
+
+\let\emptyset\varnothing
+\let\eps\varepsilon
+
+\newtheorem{Observation}{Observation}

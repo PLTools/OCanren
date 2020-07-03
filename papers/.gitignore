@@ -3,4 +3,5 @@
 *.pdf
 *.synctex.gz
 .aspell.*
+*.out
 
