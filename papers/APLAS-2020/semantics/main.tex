@@ -19,11 +19,28 @@
 \usepackage[dvipsnames]{xcolor}
 \usepackage{tcolorbox}
 \usepackage{soul}
+\usepackage{enumitem}
+\setlist{nosep}
+%\usepackage{biblatex}
+
+\let\llncssubparagraph\subparagraph
+%% Provide a definition to \subparagraph to keep titlesec happy
+\let\subparagraph\paragraph
+%% Load titlesec
+%% Revert \subparagraph to the llncs definition
+\usepackage{titlesec}
+\let\subparagraph\llncssubparagraph
+
+\titlespacing*{\section}{0pt}{1ex plus 1ex minus .2ex}{1ex plus .2ex}
+\titlespacing*{\subsection}{0pt}{1ex plus 1ex minus .2ex}{1ex plus .2ex}
+\titlespacing*{\paragraph}{0pt}{0ex}{1em}
+
 %\newtheorem{theorem}{Theorem}
 %\newtheorem{lemma}{Lemma}
 %\newtheorem{corollary}{Corollary}
 \newtheorem{hyp}{Hypothesis}
 %\newtheorem{definition}{Definition}
+
 
 \lstdefinelanguage{minikanren}{
 basicstyle=\normalsize,
@@ -121,15 +138,23 @@ language=minikanren
 
 \title{Certified Semantics for Relational Programming}
 
-\author{Anonymus author}
+\author{Anonymous author}
 %
-\authorrunning{Anonymus author}
+\authorrunning{Anonymous author}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-\institute{Anonymus institute}
+\institute{Anonymous institute}
 
 \begin{document}
+
+\setlength{\belowcaptionskip}{-5pt}
+\setlength{\abovecaptionskip}{0pt}
+
+\setlength{\abovedisplayskip}{-3pt}
+\setlength{\belowdisplayskip}{-2pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayshortskip}{2pt}
 
 \maketitle
 
@@ -159,9 +184,10 @@ language=minikanren
 %% Bibliography
 %%
 
-%% Please use bibtex, 
+%% Please use bibtex,
 
-\bibliographystyle{splncs04}
+%\renewcommand\bibliographytypesize{\small}
+\bibliographystyle{abbrv} %{splncs04}
 \bibliography{main}
 
 \appendix

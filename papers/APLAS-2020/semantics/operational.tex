@@ -58,7 +58,7 @@ L = \step \mid \Sigma\times \mathbb{N}
 The label ``$\step$'' is used to mark those steps which do not provide an answer; otherwise, a transition is labeled by a pair of a substitution and a number of allocated
 variables. The substitution is one of the answers, and the number is threaded through the derivation to keep track of allocated variables.
 
-\begin{figure*}
+\begin{figure*}[t]
   \renewcommand{\arraystretch}{1.6}
   \[
   \begin{array}{cr}
@@ -82,7 +82,7 @@ variables. The substitution is one of the answers, and the number is threaded th
   \label{lts}
 \end{figure*}
 
-The transition rules are shown in Figure~\ref{lts}. The first two rules specify the semantics of unification. If two terms are not unifiable under the current substitution
+The transition rules are shown in Fig.~\ref{lts}. The first two rules specify the semantics of unification. If two terms are not unifiable under the current substitution
 $\sigma$ then the evaluation stops with no answer; otherwise, it stops with the most general unifier applied to a current substitution as an answer.
 
 The next two rules describe the steps performed when disjunction or conjunction is encountered on the top level of the current goal. For disjunction, it schedules both goals (using ``$\oplus$'') for
@@ -107,8 +107,8 @@ There was, however, some freedom in choosing the order of evaluation for conjunc
 disjunction states. For example, instead of evaluating the left substate first we could choose to evaluate the right one, etc. In each concrete case, we would
 end up with a different (but still deterministic) system that would prescribe different semantics to a concrete goal. This choice reflects the inherent
 non-deterministic nature of search in relational (and, more generally, logical) programming. However, as long as deterministic search procedures
-are sound and complete, we can consider them ``equivalent''\footnote{There still can be differences in observable behavior of concrete goals under different
-sound and complete search strategies. For example, a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}.
+are sound and complete, we can consider them ``equivalent''.\footnote{There still can be differences in observable behavior of concrete goals under different
+sound and complete search strategies. For example, a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}
 
 It is easy to prove that transitions preserve well-formedness of states.
 
@@ -129,7 +129,7 @@ For any non-termial states $s_1$ and $s_2$, $\tr{s_1 \oplus s_2} = \tr{s_1} \cup
 
 \begin{lemma}
 \label{lem:prod_answers}
-For any nontermial state $s$ and goal $g$,  $\tr{s \otimes g} = \bigcup_{(\sigma, n) \in \tr{s}} \tr{\inbr{g, \sigma, n}}$.
+For any nontermial state $s$ and goal $g$,  \mbox{$\tr{s \otimes g} = \bigcup_{(\sigma, n) \in \tr{s}} \tr{\inbr{g, \sigma, n}}$}.
 \end{lemma}
 
 We also can easily desribe the criterion of termination for disjunctions.
@@ -139,4 +139,4 @@ We also can easily desribe the criterion of termination for disjunctions.
 For any goals $g_1$ and $g_2$, sunbstitution $\sigma$, and number $n$, the trace from the state $\inbr{g_1 \vee g_2, \sigma, n}$ is finite iff the traces from both $\inbr{g_1, \sigma, n}$ and $\inbr{g_2, \sigma, n}$ are finite.
 \end{lemma}
 
-These simple statements already allow us to prove two important properties of interleaving search as colloraries: `fairness' of disjuction~--- the fact that trace for disjunction contains all the answers from both streams for disjuncts~--- and `commutativity' of disjunctions~--- the fact that swapping two disjuncts (at the top level) does not change the termination of the goal evaluation. 
+These simple statements already allow us to prove two important properties of interleaving search as colloraries: the ``fairness'' of disjuction~--- the fact that trace for disjunction contains all the answers from both streams for disjuncts~--- and the ``commutativity'' of disjunctions~--- the fact that swapping two disjuncts (at the top level) does not change the termination of the goal evaluation. 

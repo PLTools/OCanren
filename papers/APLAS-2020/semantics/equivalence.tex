@@ -58,16 +58,12 @@ This allows us to state theorems relating two semantics.
 
 \begin{theorem}[Operational semantics soundness]
 \label{lem:soundness}
-If indices of all free variables in a goal $g$ are limited by some number $n$, then
-
-\[
-\sembr{\inbr{g, \epsilon, n}}_{op} \subset \sembr{g}.
-\]
+If indices of all free variables in a goal $g$ are limited by some number $n$, then $\sembr{\inbr{g, \epsilon, n}}_{op} \subset \sembr{g}$.
 \end{theorem}
 
 It can be proven by nested induction, but first, we need to generalize the statement so that the inductive hypothesis would be strong enough for the inductive step.
 To do so, we define denotational semantics not only for goals but for arbitrarily states. Note that this definition does not need to have any intuitive
-interpretation, it is introduced only for the proof to go smoothly. The definition of the denotational semantics for extended states is shown on Figure~\ref{denotational_semantics_of_states}.
+interpretation, it is introduced only for the proof to go smoothly. The definition of the denotational semantics for extended states is shown on Fig.~\ref{denotational_semantics_of_states}.
 The generalized version of the theorem uses it.
 
 \begin{figure}[t]
@@ -98,14 +94,12 @@ and the next state are subsets of the denotational semantics for the initial sta
 
 \begin{lemma}[Soundness of the answer]
 \label{lem:answer_soundness}
-For any transition $s \xrightarrow{(\sigma, n)} s'$,
-$\sembr{\sigma} \subset \sembr{s}$.
+For any transition $s \xrightarrow{(\sigma, n)} s'$, \mbox{$\sembr{\sigma} \subset \sembr{s}$}.
 \end{lemma}
 
 \begin{lemma}[Soundness of the next state]
 \label{lem:next_state_soundness}
-For any transition $s \xrightarrow{l} s'$,
-$\sembr{s'} \subset \sembr{s}$.
+For any transition $s \xrightarrow{l} s'$, \mbox{$\sembr{s'} \subset \sembr{s}$}.
 \end{lemma}
 
 It would be tempting to formulate the completeness of operational semantics as soundness with the inverted inclusion, but it does not hold in such generality.
@@ -116,8 +110,8 @@ compromise our promise to prove the completeness of the search as \textsc{miniKa
 which are allocated in the beginning.
 
 \begin{theorem}[Operational semantics completeness]
-\label{lem:gen_completeness}
-If indices of all free variables in a goal $g$ are limited by some number $n$, then
+%\label{lem:gen_completeness}
+If the indices of all free variables in a goal $g$ are limited by some number $n$, then
 
 \[
 \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}\} \subset \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \epsilon, n}}_{op}\}.

@@ -1,3 +1,4 @@
+\begin{comment}
 \begin{figure}[t]
 \[
 \begin{array}{rcl}
@@ -15,6 +16,7 @@
   \caption{Substitutions for terms and goals}
   \label{substitution}
 \end{figure}
+\end{comment}
 
 \section{Denotational Semantics}
 \label{denotational}
@@ -102,8 +104,8 @@ turns both $t_1$ and $t_2$ into the same \emph{ground} term (we do not require $
 performed in the opposite direction: a unification $t_1\equiv t_2$ defines the set of all representing functions $\mathfrak{f}$ for which
 $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$.
 
-We remind the conventional notions of pointwise modification of a function
-
+We will use the conventional notions of pointwise modification of a function $f\,[x\gets v]$
+\begin{comment}
 \[
 f\,[x\gets v]\,(z)=\left\{
 \begin{array}{rcl}
@@ -112,8 +114,10 @@ f\,[x\gets v]\,(z)=\left\{
 \end{array}
 \right.
 \]
+\end{comment}
+and substitution $g\,[t/x]$ of a free variable $x$ with a term $t$ in a goal (or a term) $g$.
 
-and substitution of a free variable with a term in terms and goals (see Figure~\ref{substitution}).
+%(see Figure~\ref{substitution}).
 
 For a representing function $\mathfrak{f}:\mathcal{A}\to\mathcal{D}$ and a semantic variable $\alpha$ we define
 the following \emph{generalization} operation:
@@ -130,7 +134,7 @@ representing functions $\mathfrak{F}\subseteq\mathcal{A}\to\mathcal{D}$:
   \mathfrak{F}\uparrow\alpha = \bigcup_{\mathfrak{f}\in\mathfrak{F}}(\mathfrak{f}\uparrow\alpha)
 \]
 
-Now we are ready to specify the semantics for goals (see Figure~\ref{denotational_semantics_of_goals}).
+Now we are ready to specify the semantics for goals (see Fig.~\ref{denotational_semantics_of_goals}).
 We've already given the motivation for
 the semantics of unification: the condition $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$ gives us the set of all (otherwise
   unrestricted) representing functions which ``equate'' terms $t_1$ and $t_2$.
@@ -146,25 +150,15 @@ choices of free variable the semantics of a goal does not change.
 
 \begin{lemma}
 \label{lem:den_sem_change_var}
-For any goal 
-
-\[
-\mbox{\lstinline|fresh|}\;x\,.\,g
-\]
-
-for any two variables $\alpha$ and $\beta$ which are not free in this goal,
+For any goal \lstinline|fresh $x$ . $g$|, for any two variables $\alpha$ and $\beta$ which are not free in this goal,
 if $\mathfrak{f} \in \sembr{g\,[\alpha/x]}$, then for any representing function $\mathfrak{f}'$, such that
 
 \begin{enumerate}
-\item $\mathfrak{f}'(\beta) = \mathfrak{f}(\alpha)$,
-\item $\forall \gamma: \gamma \neq \alpha \land \gamma \neq \beta,\; \mathfrak{f}'(\gamma) = \mathfrak{f}(\gamma)$,
+\item $\mathfrak{f}'(\beta) = \mathfrak{f}(\alpha)$
+\item $\forall \gamma: \gamma \neq \alpha \land \gamma \neq \beta,\; \mathfrak{f}'(\gamma) = \mathfrak{f}(\gamma)$
 \end{enumerate}
 
-it is true that
-
-\[
-\mathfrak{f}' \in \sembr{g\,[\beta/x]}.
-\]
+\noindent it is true that $\mathfrak{f}' \in \sembr{g\,[\beta/x]}$.
 \end{lemma}
 %\begin{proof}
   The proof turned out to be the most cumbersome among all others in the case where $g$ is a nested \lstinline|fresh| contruct. In that case, we have to constructively build two representing (including an intermediate one for an intermediate goal) by point modification. The details of this proof can be found in the appendix, the full proof script is in the specification in Coq.
@@ -184,6 +178,7 @@ it is true that
   \label{denotational_semantics_of_goals}
 \end{figure}
 
+\begin{comment}
 Here is an example of denotational semantics of a goal:
 
 %\renewcommand{\overset}[2]{#2}
@@ -201,13 +196,14 @@ Here is an example of denotational semantics of a goal:
 \]
 
 In the end, we've got the set of representing functions, each of which restricts only the value of the free variable $\alpha$.
-  
-We prove the following important \emph{closedness condition} for the semantics of a goal $g$.
+\end{comment}
+
+We can prove the following important \emph{closedness condition} for the semantics of a goal $g$.
 
 \begin{lemma}[Closedness condition]
 \label{lem:closedness_condition}
-For any goal $g$ and two representing functions ${\mathfrak f}$ and ${\mathfrak f'}$, such that $\left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}$,
-\[ {\mathfrak f} \in \sembr{g} \Leftrightarrow {\mathfrak f'} \in \sembr{g}. \]
+For any goal $g$ and two representing functions ${\mathfrak f}$ and ${\mathfrak f'}$, such that $\left.{\mathfrak f}\right|_{FV(g)} = \left.{\mathfrak f'}\right|_{FV(g)}$, it is true, that
+${\mathfrak f} \in \sembr{g} \Leftrightarrow {\mathfrak f'} \in \sembr{g}$.
 \end{lemma}
 
 \begin{comment}
