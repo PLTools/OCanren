@@ -71,7 +71,8 @@ In other words, if a program implements a correct and complete pattern matching 
 program implements a correct and complete pattern matching for all values. The idea of using a complete set of samples originates from the following observation: each pattern
 describes a (potentially infinite) set of values, and pattern matching splits the set of all values into equivalence classes, each corresponding to a certain matching pattern.
 Moreover, the values of different classes can be distinguished only by looking down to a \emph{finite} depth (as different patterns can be distinguished in this way).
-The generation of complete sample set will be addressed below (see Section~\ref{sec:samples}).
+The generation of complete sample set will be addressed below (see Section~\ref{sec:samples}). Example-based program synthesis is not a completely new technique in relational
+programming~\cite{unified}; in our case, however, we can ensure the correctness of the synthesis result, while in previous reports it had to be established externally.
 
 \setarrow{\xrightarrow}
 

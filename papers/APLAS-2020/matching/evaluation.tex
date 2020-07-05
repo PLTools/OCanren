@@ -1,3 +1,103 @@
+\newcommand{\lheadl}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
+\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{#2}}}
+\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
+\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
+
+\begin{table}[t]
+  \caption{The results of synthesis evaluation}\label{fig:eval}
+    
+  %\begin{tabular}{|c|m{3cm}|cc||cccc}
+  \begin{tabular}{|m{3cm}|cc||cccc|}
+\hline
+%    \headl{.5cm}{}    &
+    \lheadl{3cm}{Patterns} & 
+    \head{1.5cm}{Size constraint} & 
+    \headll{1.7cm}{Answers requested} & 
+    \head{2cm}{Number of samples} & 
+    \head{1.5cm}{1st answer time (ms)} & 
+    \head{1.5cm}{Answers found} & 
+    \headl{1.5cm}{Total search time (ms)}\\
+    \hline
+    \hline
+    %1&
+    \begin{lstlisting}[basicstyle=\scriptsize]
+A
+B
+C
+    \end{lstlisting} &100&all&3&1&2&2\\
+        \hline
+%        2&
+    \begin{lstlisting}[basicstyle=\scriptsize]
+true
+false
+    \end{lstlisting} &100&all&2&$<$1&1&$<$1\\
+        \hline
+%        3&
+            \begin{lstlisting}[basicstyle=\scriptsize]
+(true, _)
+(_, true)
+(false, false)
+    \end{lstlisting} &100&all&4&5&1&6\\
+        \hline
+%        4&
+     \begin{lstlisting}[basicstyle=\scriptsize]
+(_, false, true)
+(false, true, _)
+(_, _, false)
+(_, _, true)
+    \end{lstlisting} &100&all&8&1s&3&2s\\
+        \hline
+%        5&
+%     \begin{lstlisting}[basicstyle=\scriptsize]
+%([], _)
+%(_, [])
+%(_ :: _, _ :: _)
+%    \end{lstlisting} &100&10&4&5&1&6\\
+%        \hline
+%        6&
+     \begin{lstlisting}[basicstyle=\scriptsize]
+(Succ _, Succ _)
+(Zero, _)
+(_, Zero)
+    \end{lstlisting} &1&all&4&30&1&30
+    \\
+        \hline
+%        \mbox{7}&
+        \multirow{3}{*}{
+          \parbox{3cm}{
+            \vskip2mm
+\lstinline[basicstyle=\scriptsize]|(Nil, _)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(_, Nil)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(Nil2, _)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(_, Nil2)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(Cons (_, _),Cons(_, _))|}}
+         & 1&10&9&388&3&2.6s\\[3mm]
+        \cline{2-7}
+      &10&10&9&55&3&367\\[3mm]
+        \cline{2-7}
+     &100&10&9&24&3&157                    \\ 
+      \hline
+     \begin{lstlisting}[basicstyle=\scriptsize]
+(_,_, (Ldi _)::_)
+(_,_, (Push _)::_)
+    \end{lstlisting} &777&all&5&11&1&30\\
+        \hline      
+        \multirow{3}{*}{
+          \parbox{3cm}{
+            \vskip2mm
+\lstinline[basicstyle=\scriptsize]|(_,_, (Ldi _)::_)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(_,_, (Push _)::_)|\\[-1mm]
+\lstinline[basicstyle=\scriptsize]|(Int(_),_, (IOp _)::_)|\\[-1mm]
+}}
+     &100&all&20&1.7s&3&11s                    \\[3mm]
+             \cline{2-7}
+     &777&all&20&1.3s&3&11s\\ \hline
+  \end{tabular}
+
+\end{table}
+
+\FloatBarrier
+
 \section{Evaluation}
 \label{sec:eval}
 

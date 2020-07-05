@@ -1,105 +1,3 @@
-
-
-\newcommand{\lheadl}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
-\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{#2}}}
-\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
-\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
-
-\begin{table}[t]
-  \caption{The results of synthesis evaluation}\label{fig:eval}
-    
-  %\begin{tabular}{|c|m{3cm}|cc||cccc}
-  \begin{tabular}{|m{3cm}|cc||cccc|}
-\hline
-%    \headl{.5cm}{}    &
-    \lheadl{3cm}{Patterns} & 
-    \head{1.5cm}{Size constraint} & 
-    \headll{1.7cm}{Answers requested} & 
-    \head{2cm}{Number of samples} & 
-    \head{1.5cm}{1st answer time (ms)} & 
-    \head{1.5cm}{Answers found} & 
-    \headl{1.5cm}{Total search time (ms)}\\
-    \hline
-    \hline
-    %1&
-    \begin{lstlisting}[basicstyle=\scriptsize]
-A
-B
-C
-    \end{lstlisting} &100&all&3&1&2&2\\
-        \hline
-%        2&
-    \begin{lstlisting}[basicstyle=\scriptsize]
-true
-false
-    \end{lstlisting} &100&all&2&$<$1&1&$<$1\\
-        \hline
-%        3&
-            \begin{lstlisting}[basicstyle=\scriptsize]
-(true, _)
-(_, true)
-(false, false)
-    \end{lstlisting} &100&all&4&5&1&6\\
-        \hline
-%        4&
-     \begin{lstlisting}[basicstyle=\scriptsize]
-(_, false, true)
-(false, true, _)
-(_, _, false)
-(_, _, true)
-    \end{lstlisting} &100&all&8&1s&3&2s\\
-        \hline
-%        5&
-%     \begin{lstlisting}[basicstyle=\scriptsize]
-%([], _)
-%(_, [])
-%(_ :: _, _ :: _)
-%    \end{lstlisting} &100&10&4&5&1&6\\
-%        \hline
-%        6&
-     \begin{lstlisting}[basicstyle=\scriptsize]
-(Succ _, Succ _)
-(Zero, _)
-(_, Zero)
-    \end{lstlisting} &1&all&4&30&1&30
-    \\
-        \hline
-%        \mbox{7}&
-        \multirow{3}{*}{
-          \parbox{3cm}{
-            \vskip2mm
-\lstinline[basicstyle=\scriptsize]|(Nil, _)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(_, Nil)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(Nil2, _)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(_, Nil2)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(Cons (_, _),Cons(_, _))|}}
-         & 1&10&9&388&3&2.6s\\[3mm]
-        \cline{2-7}
-      &10&10&9&55&3&367\\[3mm]
-        \cline{2-7}
-     &100&10&9&24&3&157                    \\ 
-      \hline
-     \begin{lstlisting}[basicstyle=\scriptsize]
-(_,_, (Ldi _)::_)
-(_,_, (Push _)::_)
-    \end{lstlisting} &777&all&5&11&1&30\\
-        \hline      
-        \multirow{3}{*}{
-          \parbox{3cm}{
-            \vskip2mm
-\lstinline[basicstyle=\scriptsize]|(_,_, (Ldi _)::_)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(_,_, (Push _)::_)|\\[-1mm]
-\lstinline[basicstyle=\scriptsize]|(Int(_),_, (IOp _)::_)|\\[-1mm]
-}}
-     &100&all&20&1.7s&3&11s                    \\[3mm]
-             \cline{2-7}
-     &777&all&20&1.3s&3&11s\\ \hline
-  \end{tabular}
-
-\end{table}
-
-%\FloatBarrier
-
 \section{Implementation and Optimizations}
 \label{sec:optimization}
 
@@ -112,8 +10,11 @@ of techniques, some of which require extending the implementation of the search.
 \begin{itemize}
 \item We make use of type information to restrict the subset of constructors which may appear in a certain branch of
   program being synthesized.
+\item After a complete set of samples is generated, we use it to put auxilliary constraints on matching expressions. For example,
+  if we can detect that a matching expression points to a subexpression of scrutinee which can start with a single constructor (like
+  tuples), and prohibit it from being considered during the synthesis.
 \item We implement \emph{structural constraints} which allow us to restrict the shape of terms during the search, and
-  utilize them to implement pruning.  
+  utilize them to implement pruning.
 \end{itemize}
 
 In our formalization we do not make any use of types since as a rule type information does not affect matching. In addition,
@@ -130,7 +31,7 @@ Our approach to finding an optimal solution in fact implements branch-and-bound 
 \item We construct a trivial solution, which gives us the first estimation.
 \item During the search we prune all partial solutions whose size exceeds current estimation. We can do this due to
   the top-down nature of partial solution construction.
-\item When we come up with a better solution we remember it and update current a estimate.
+\item When we come up with a better solution we remember it and update current estimation.
 \end{itemize}
 
 \noindent This strategy inevitably delivers us the optimal solution since there are only finitely many switch programs, shorter than trivial solution.
@@ -143,7 +44,6 @@ depth of switch programs, on the type of scrutinee) as structural.
 %\footnote{\textcolor{red}{I don't entirely understand this sentence}}.
 However, our experience has shown that this leads to
 a less efficient implementation. Since these constraints are inherent to the problem, we kept them hardcoded.
-
 
 \subsection{Reducing the Complete Set of Samples}
 \label{sec:reduced-samples}
@@ -191,10 +91,8 @@ The complete set of samples then can be the following 3-element set:
 where underlined expression are chosen arbitrarily. A straightforward algorithm from the section~\ref{sec:samples} would generate the larger set of $3^2$ examples.
 
 The set $s^\cup$ can be used for sample enumeration in the following manner. During the enumeration we hold current matching expression which will be used to
-access current subtree of the sample. If that expression does not belong to $s^\cup$, we can choose an arbitrary inhabitant; if not we recursively
-enumerate all possible constructors of this subexpresion.
+access current subtree of the sample. If that expression does not belong to $s^\cup$, we can choose an arbitrary inhabitant; if not we enumerate all
+possible top-level constructors for this subexpression and recurse. The correctness of this algorithm relies on the fact that if an expression does
+not belong to $s^\cup$, then all its extensions also does not belong to $s^\cup$.
 
-The correctness of this algorithm relies on the fact that if an expression does not belong to $s^\cup$, then all its extensions also does not belong to $s^\cup$.
-This means that further reductions of $s^\cup$ set can be performed after sample enumeration. These reductions can, for example, remove matching expressions which
-point to subexpressions starting from a single constructor (like tuples).
 
