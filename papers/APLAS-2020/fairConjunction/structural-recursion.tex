@@ -1,0 +1,91 @@
+\section{Fair conjunction by structural recursion}
+\label{sec:structural}
+
+% В этой секции мы рассмотрим обобщенную семантику \mk с равномерной конъюнкцией, которая определяет глубину раскркутки динамически. Также мы рассмотрим её конкретную реализацию, основонную на структурной рекурсии отношений.
+In this section we consider a generalized semantics of \mk with a fair conjunction which determines the unfolding bound dynamically. We also consider its specific implementation
+which makes use of structural recursion of relations.
+
+% В общем случае мы хотим параметризовать семантику предикатом. Этот предикат принимает вызов в качестве аргумента. Он возвращает истину, если конъюнкт необходимо раскручивать дальше. И возвращает ложь, если необходимо перейти к следующему конъюнкту. Также мы оставим параметр N, определяющий количество раскруток. Он необходим для обработки случая, когда предикат ложен для всех вызовов.
+In the general case we want to parameterize the semantics with an unfolding predicate $pred$. This predicate takes a substitution and a call as arguments. It returns \lstinline{true}
+if the call needs to be unfolded further, and \lstinline{false}, if we need to move on to the next conjunct. We do not get rid of the unfolding bound completely since it is still needed to handle
+the case when $pred$ is false for all calls in a leaf.
+
+\begin{figure}[h!]
+\[\begin{array}{cr}
+
+      {\inbr{\sigma;\, i;\, \epsilon} \xrightarrow{\sigma} \emptyset}  
+&     \ruleno{Answer} \\[2mm]
+\dfrac{\bigvee_{j=1}^n pred(\sigma, c_j) = \bot}
+      {\inbr{\sigma;\, i;\, c_1^0 \land \ldots \land c_n^0} \xrightarrow{\circ} \inbr{\sigma;\, i;\, c_1^N \land \ldots \land c_n^N}}
+&     \ruleno{ConjZero} \\[4mm]
+\dfrac{m_k > 0 \qquad \bigvee_{j=1}^n pred(\sigma, c_j) = \bot \qquad (\sigma, i) \vdash c_k \Rightarrow T \qquad set(T, m_k - 1) = \bar{T}}
+      {\inbr{\sigma;\, i;\, c_1^0 \land \ldots \land c_{k-1}^0 \land c_k^{m_k} \land \ldots \land c_n^{m_n}} \xrightarrow{\circ} push(c_1^0 \land \ldots \land c_i^0 \land \Box \land \ldots \land c_n^{m_n}, \bar{T})}
+&     \ruleno{ConjUnfold} \\[4mm]
+\dfrac{\bigvee_{j=1}^{k-1} pred(\sigma, c_j) = \bot \quad pred(\sigma, c_k) = \top \quad (\sigma, i) \vdash c_k \Rightarrow T \quad set(T, \max(0, \, m_k - 1)) = \bar{T}}
+      {\inbr{\sigma;\, i;\, c_1^{m_1} \land \ldots \land c_{k-1}^{m_{k-1}} \land c_k^{m_k} \land C_2} \xrightarrow{\circ} push(c_1^{m_1} \land \ldots \land c_{k-1}^{m_{k-1}} \land \Box \land C_2, \bar{T})}
+&     \ruleno{ConjUnfoldPred} \\[4mm]
+\dfrac{T_1 \xrightarrow{\alpha} \emptyset}
+      {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
+&     \ruleno{Disj} \\[4mm]
+\dfrac{T_1 \xrightarrow{\alpha} \bar{T_1} \qquad \bar{T_1} \not= \emptyset}
+      {T_1 \lor T_2 \xrightarrow{\alpha} T_2 \lor\bar{T_1}}
+&     \ruleno{DisjStep}
+\end{array}\]
+\caption{Semantics of fair conjunction by structural recursion}
+\label{fair:structural-recursion-semantics}
+\end{figure}
+
+% Семантика, параметризованная предикатом раскрутки представлена на изображении 10. Так как мы обновляем только поведение конъюнкции, то правила [Answer], [Disj] и [DisjStep]  остаются без изменений. Но за обработку конъюнкций теперь отвечают три обновленных правила. Если предикат истинен хотя бы для одного вызова, то мы применяем правило [ConjUnfoldPred] и раскручиваем самый левый такой вызов и уменьшаем его счетчик. Если предикат ложен на всех вызовах, но есть хотя бы один вызов с ненулевым счетчиком, то мы применяем правило [ConjUnfold] и раскручиваем самый левый такой вызов и уменьшаем его счетчик. Если предикат ложен на всех вызовах и все счетчики равны нулю, то мы применяем правило [ConjZero] и обновляем все счетчики.
+The semantics parameterized by the unfolding predicate is shown in Fig.~\ref{fair:structural-recursion-semantics}. Since we modify only the behavior of conjunction the rules \rulen{Answer},
+\rulen{Disj} and \rulen{DisjStep} remain unchanged. Three updated rules are responsible for conjunction behavior. If the predicate $pred$ is $\top$ for at least one call, then we
+apply the rule \rulen{ConjUnfoldPred}, which unfolds the leftmost such call and decrements its counter. If the predicate $pred$ is $\bot$ for all calls, but there is at least one
+call with a nonzero counter, then we apply the rule \rulen{ConjUnfold}, which unfolds the leftmost such call and decrements its counter. If the predicate is $\bot$ for all calls
+and all the counters are equal to zero, then we apply the rule \rulen{ConjZero}, which sets all the counters to unfolding bound.
+
+% В качестве предиката нам необходим критерий, отличающий вызов, который выгодно раскрутить сейчас от вызова, который стоит отложить. Мы предлагаем критерий, который корректно работает на отношениях со структурной рекурсией. У таких отношений есть хотя бы один аргумент, который структурно убывает с каждым шагом рекурсии. Это свойство позволит нам контролировать грубину раскрутки. Предлагаемый критерий состоит в следующем
+As for the predicate, we need a criterion that can tell a call that is profitable to unfold now apart from a call which is worth deferring. We propose a criterion that works correctly
+for structurally recursive relations. Such relations have at least one argument which structurally decreases with each step of the recursion. This property allows us to control the depth
+of unfolding. We propose to use the following predicate:
+
+\[
+pred(\sigma, F^k(t_1, \ldots, t_k)) = \left\{
+\begin{array}{cl}
+      & \mbox{if } F^k \mbox{ is structural recursion relation, } \\
+\top, & i \mbox { is number of structural recursion argument, } \\
+      & t_i \mbox { is not fresh variable in } \sigma \\
+\bot, & \mbox{otherwise.}
+\end{array}
+\right.
+\]
+
+% Пока хотя бы один аргумент, по которому ведется структурная рекурсия не является свободной переменной, мы продолжаем разворачивать этот вызов. Если все такие аргументы свободны, то в текущей подстановке отношение разойдется, поэтому мы переходим к вычислению следующего вызова. Так как аргументы структурной рекурсии убывают, то за конечное число шагов вычисление либо завершится, либо все аргументы структурной рекурсии станут свободными переменными.
+
+As long as at least one argument along which structural recursion is performed is not a free variable, we continue to unfold this call. If all such arguments are free, then the call
+will diverge in the current substitution, so we proceed to evaluate the next call. Since structurally recursive arguments decrease, in a finite number of steps the evaluation will
+either complete, or all arguments of structural recursion will become free variables.
+
+
+\begin{figure}[h!]
+\centering
+\begin{tabular}{c}
+\begin{lstlisting}
+let rec append$^o$ x y xy =
+  (x === [] /\ y === xy) \/
+  fresh (e xs xys) (
+    x === e : xs /\ 
+    xs === e : xys /\ 
+    append$^o$ xs y xys)
+\end{lstlisting}
+\end{tabular}
+\caption{Relational concatenation}
+\label{fair:lst-appendo}
+\end{figure}
+
+% Например, отношение appendo является структурно рекурсивным по первому и третьему аргументу. Действительно, вложенный вызов appendo в качестве первого аргумента принимает xs, который является подтермом x. Также в качестве третьего аргумента appendo принимает xys, который является подтермом xy. Если хотя бы один из них --- список фиксированной длины, то отношение сойдется. В противном случае, оба имеют вид: $x = t_1 : \ldots t_n : \alpha$ и $xy = \bar{t}_1 : \ldots \bar{t}_m : \alpha$. Следовательно через max(n, m) шагов оба аргумента станут свободными перееменными. 
+For example, the relation \lstinline{append$^o$} (Fig.~\ref{fair:lst-appendo}) is structurally recursive on its first and third arguments. Indeed, the nested call \lstinline{append$^o$}
+takes \lstinline{xs} as its first argument, which is a subterm of \lstinline{x}. Also, \lstinline{append$^o$} takes \lstinline{xys} as the third argument, which is a subterm of
+\lstinline{xy}. If at least one of them is a fixed-length list, then the relation will converge. Otherwise, $\mbox{\lstinline{x}} \equiv t_1 : \ldots t_n : \alpha_1$
+and $\mbox{\lstinline{xy}} \equiv \bar{t}_1 : \ldots \bar{t}_m : \alpha_2$. Therefore, in $max(n, m)$ steps, both arguments become free variables.
+
+% На текущий момент мы работаем над доказательством независимости данной семантики от порядка конъюнктов в случае, когда все отношения являются отношениями со структурной рекурсией.
+We are currently working on proving the independence of this semantics from the order of the conjuncts in the case when all relations are structurally recursive.

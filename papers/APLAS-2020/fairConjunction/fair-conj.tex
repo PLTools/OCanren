@@ -1,0 +1,78 @@
+\documentclass[runningheads]{llncs}
+
+
+\usepackage{listings}
+\usepackage[section]{placeins}
+\usepackage{multirow}
+\usepackage{pgfplots}
+\usepackage{yfonts}
+\usepackage{subcaption}
+\usepackage{xspace}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{comment}
+\usepackage{url}
+
+\pgfplotsset{width=7cm,compat=1.8}
+
+\lstdefinelanguage{ocanren}{
+keywords={run, conde, fresh, let, in, match, with, when, class, type,
+object, method, of, rec, until, while, not, do, done, as, val, inherit,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+true, false},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\textbf,%\ttfamily\underline,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+mathescape=true,
+fontadjust=true,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
+morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+language=ocanren
+}
+
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
+\newcommand{\rulen}[1]{[\textsc{#1}]}
+\newcommand{\mk}{\textsc{miniKanren}\xspace}
+\newcommand{\inbr}[1]{\langle #1 \rangle}
+\renewcommand{\emptyset}{\varnothing}
+
+
+\begin{document}
+
+\title{On Fair Relational Conjunction}
+
+\author{Anonymous author(s)}
+\institute{Anonymous institute}
+
+\maketitle
+
+\begin{abstract}
+We present a new, more symmetric evaluation strategy for conjunctions in \mk. Unlike the original unfair directed conjunction, our approach controls the order of conjunct execution based on the properties of structurally recursive relations. In this paper we describe operational semantics for both ``classical'' and ``fair'' conjunctions. We also compare the performance of classical and fair conjunctions on a number of examples and discuss the results of the evaluation.
+\end{abstract}
+
+
+\keywords{relational programming, miniKanren, evaluation strategies, operational semantics}
+
+\thispagestyle{empty}
+
+\input{introduction}
+\input{classic-conjunction}
+\input{classic-semantics}
+\input{naive-fair-conjunction}
+\input{structural-recursion}
+\input{evaluation}
+\input{conclusion}
+
+\bibliographystyle{abbrv}
+\bibliography{fair-conj}
+
+
+\end{document}
+\endinput
+
