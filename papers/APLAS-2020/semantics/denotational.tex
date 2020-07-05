@@ -21,7 +21,7 @@
 \section{Denotational Semantics}
 \label{denotational}
 
-In this section we present a denotational semantics for the language we defined above. We use a simple set-theoretic
+In this section, we present a denotational semantics for the language we defined above. We use a simple set-theoretic
 approach analogous to the least Herbrand model for definite logic programs~\cite{LHM}.
 Strictly speaking, instead of developing it from scratch we could have just described the conversion of specifications
 into definite logic form and took their least Herbrand model. However, in that case, we would still need to define
@@ -161,7 +161,7 @@ if $\mathfrak{f} \in \sembr{g\,[\alpha/x]}$, then for any representing function 
 \noindent it is true that $\mathfrak{f}' \in \sembr{g\,[\beta/x]}$.
 \end{lemma}
 %\begin{proof}
-  The proof turned out to be the most cumbersome among all others in the case where $g$ is a nested \lstinline|fresh| contruct. In that case, we have to constructively build two representing (including an intermediate one for an intermediate goal) by point modification. The details of this proof can be found in the appendix, the full proof script is in the specification in Coq.
+  The proof turned out to be the most cumbersome among all others in the case where $g$ is a nested \lstinline|fresh| contruct. In that case, we have to constructively build two representing (including an intermediate one for an intermediate goal) by pointwise modification. The details of this proof can be found in the Appendix~\ref{appendix_den_sem_change_var_proof}, the full proof script is in the specification in Coq.
 %\end{proof}
 
 \begin{figure}[t]
