@@ -139,24 +139,30 @@ In order to implement this strategy we extended \textsc{OCanren} with a new prim
 fail on some terms depending on some criterion specified by an end-user. Structural constraints can be seen as a generalization of
 some known constraints like \lstinline|absent$^o$| or \lstinline|symbol$^o$|~\cite{Untagged} in existing \textsc{miniKanren} implementations, 
 so they can be widely used in solving other problems as well. Note, we could implement other constraints we considered (on the
-depth of switch programs, on the type of scrutinee) as structural\footnote{\textcolor{red}{I don't entirely understand this sentence}}. However, our experience has shown that this leads to
-a less efficient implementation. Since these constraints are inherent to the problem, we kept them ``hard coded''.
+depth of switch programs, on the type of scrutinee) as structural.
+%\footnote{\textcolor{red}{I don't entirely understand this sentence}}.
+However, our experience has shown that this leads to
+a less efficient implementation. Since these constraints are inherent to the problem, we kept them hardcoded.
 
 
-\subsection{Reducing a Complete Set of Samples}
+\subsection{Reducing the Complete Set of Samples}
 \label{sec:reduced-samples}
 
-Although, in the general case an exponential number of samples is required, in corner cases a complete set of examples can be minimized. For example, for the following pattern matching 
+Although in general our approach requires an exponential number of samples to be generated, in some cases a complete set of examples can be reduced.
+For example, for the following pattern matching problem
 
-\begin{lstlisting}
-match (x : (int list  * int list)) with 
-| (_, _ :: _ :: _) -> ...
-| (_, _ :: _)      -> ...
-\end{lstlisting}
+\[
+\begin{array}{l}
+\mbox{\lstinline|(_, _ :: _ :: _)|} \\
+\mbox{\lstinline|(_, _ :: _)|}
+\end{array}
+\]
 
-\noindent synthesized program should not investigate left subtree of scrutinee because original pattern matching doesn't care about contents of this subtree and removing this check will give shorter (i.e. more optimal) solution.
+the synthesized program should not investigate the left subtree of the scrutinee since its contents can not alter the behaviour of pattern matching.
 
-Possible matchable values  from $\mathcal{M}$ that appear in programs from  $\mathcal{S}$  should also be restricted by the same arguments that are described in section \ref{sec:samples}. The set $s^\cup$ of these possible matchable values, that essentially describe paths to "interesting" subexpressions of the scrutinee, can be computed statically before synthesis procedure.
+The set of admissible matching values $s^\cup$ also can be restricted using the same arguments which we described in Section~\ref{sec:samples}.
+This set essentially describes the paths to the ``interesting'' subexpressions of the scrutinee, and it can be computed statically before
+the synthesis procedure:
 
 \[
 \begin{array}{rcl}
@@ -166,11 +172,29 @@ Possible matchable values  from $\mathcal{M}$ that appear in programs from  $\ma
 \end{array}
 \]
 
-\noindent For the example above, the set  $s^\cup$ will be 
-$\{\bullet, \bullet[1], \bullet[1][1]\}$. The complete set of examples could be the following 3-element set:
-\lstinline=($\underline{[]}$, [])=, \lstinline=($\underline{[]}$, $\underline{42}$ :: [])= and  \lstinline=($\underline{[]}$, $\underline{42}$ :: $\underline{42}$ :: $\underline{[]}$)= where underlined expression are chosen arbitrarily. The straightforward algorithm from the section \ref{sec:samples} would geenrate the larger set of $3^2$ examples.
+For the example above, the set  $s^\cup$ is
 
-The set $s^\cup$ can be used for sample enumeration, for example, in the following manner. During enumeration we keep current matchable that will be used to access current subtree of the sample. If that matchable $\notin s^\cup$ we can put arbitrary inhabitant here. And if not then we perform structural recursion for all possible constructors of this subexpresion.
+\[
+\{\bullet, \bullet[1], \bullet[1][1]\}
+\]
 
-The correctness of the algorithm relies on the fact that if matchable  $m \notin s^\cup$ then all extensions of $m$ that look deeper in that subtree also $\notin s^\cup$. It means that further reductions of $s^\cup$ set should be performed after samples enumeration. These reductions could be, for example, removing matchables that point to subexpressions which always start from single constructor (like tuples).
+The complete set of samples then can be the following 3-element set:
+
+\[
+\begin{array}{l}
+  \mbox{\lstinline|($\underline{[]}$, [])|}\\
+  \mbox{\lstinline|($\underline{[]}$, $\;\underline{42}\;$ :: [])|}\\
+  \mbox{\lstinline|($\underline{[]}$, $\;\underline{42}\;$ :: $\;\underline{42}\;$ :: $\;\underline{[]}$)|}
+\end{array}
+\]
+
+where underlined expression are chosen arbitrarily. A straightforward algorithm from the section~\ref{sec:samples} would generate the larger set of $3^2$ examples.
+
+The set $s^\cup$ can be used for sample enumeration in the following manner. During the enumeration we hold current matching expression which will be used to
+access current subtree of the sample. If that expression does not belong to $s^\cup$, we can choose an arbitrary inhabitant; if not we recursively
+enumerate all possible constructors of this subexpresion.
+
+The correctness of this algorithm relies on the fact that if an expression does not belong to $s^\cup$, then all its extensions also does not belong to $s^\cup$.
+This means that further reductions of $s^\cup$ set can be performed after sample enumeration. These reductions can, for example, remove matching expressions which
+point to subexpressions starting from a single constructor (like tuples).
 
