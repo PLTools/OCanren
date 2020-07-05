@@ -3,7 +3,7 @@
 The study of formal semantics for logic programming languages, in the first place \textsc{Prolog}, is a well-established research domain. Early
 works~\cite{JonesMycroftSemantics,DebrayMishraSemantics} addressed the computational aspects of both pure \textsc{Prolog} and its extension
 with the cut construct. Recently, the application of certified/mechanized approaches came into focus as well. In particular,
-in~\cite{CertifiedPrologEquivalences} the equivalence of a few differently defined operational semantics
+in~\cite{CertifiedPrologEquivalences} the equivalence of a few differently defined semantics
 for pure \textsc{Prolog} is proven, and in~\cite{CeritfiedDenotationalCut} a denotational semantics for \textsc{Prolog} with cut is presented; both
 works provide \textsc{Coq}-mechanised proofs. It is interesting that the former one also advocates the use of higher-order
 abstract syntax. We are not aware of any prior works on certified semantics for \textsc{Prolog} which contributed a correct-by-construction
@@ -19,7 +19,7 @@ order lexicographically ordered tuples, containing the information about the num
 the arguments, is used. We implemented a similar approach, but we separated the test for the non-matching case into a dedicated
 function. Thus, we make a recursive call only when the current substitution extension is guaranteed, which allows us to use the
 number of different free variables as the order. An alternative approach suggested in~\cite{StructuralMGU} gives a structurally recursive definition of
-unification algorithm; this is achieved by indexing the arguments with the numbers of their free variables.
+the unification algorithm; this is achieved by indexing the arguments with the numbers of their free variables.
 
 The use of higher-order abstract syntax (HOAS) for dealing with language constructs in \textsc{Coq} was addressed in early work~\cite{HOASinCoq},
 where it was employed to describe lambda calculus. The inconsistency phenomenon of HOAS representation, mentioned in Section~\ref{specification}, is called
@@ -40,6 +40,6 @@ is introduced, but its connection to the other two is not established. Finally, 
 We consider our completeness proof as an essential improvement. 
 
 The most important property of interleaving search~--- completeness~--- was postulated in the introductory paper~\cite{Search}, and is delivered by
-all major implementations. In~\cite{2016} a proof of completeness for a specific implementation of \textsc{miniKanren} is presented; however, the completeness is understood there as a
-preservation of all answers during the interleaving of answer streams, i.e. in a more narrow sense than in our case since no relation
+all major implementations. In~\cite{2016} a proof of completeness for a specific implementation of \textsc{miniKanren} is presented; however, the completeness is understood there as
+preservation of all answers during the interleaving of answer streams, i.e. in a more narrow sense than in our work since no relation
 to denotational semantics is established.

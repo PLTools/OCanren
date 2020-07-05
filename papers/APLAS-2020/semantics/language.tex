@@ -41,7 +41,7 @@
 \section{The Language}
 \label{language}
  
-In this section we introduce the syntax of the language we use throughout the paper, describe the informal semantics and give some examples.
+In this section, we introduce the syntax of the language we use throughout the paper, describe the informal semantics, and give some examples.
 
 The syntax of the language is shown in Fig.~\ref{syntax}. First, we fix a set of constructors $\mathcal{C}$ with known arities and consider
 a set of terms $\mathcal{T}_X$ with constructors as functional symbols and variables from $X$. We parameterize this set with an alphabet of
@@ -96,22 +96,23 @@ append$^o$ = fun x y xy .
  (fresh h t ty .
    (x  === Cons (h, t))  /\
    (xy === Cons (h, ty)) /\
-(append$^o$ t y ty));
+   (append$^o$ t y ty));
+
+revers$^o$ x x
 \end{lstlisting} &
 \begin{lstlisting}
 revers$^o$ = fun x y .
  ((x === Nil) /\ (y === Nil)) \/
- (fresh h t t' .
+ (fresh h t tr .
    (x === Cons (h, t)) /\
-   (append$^o$ t' (Cons (h, Nil)) y) /\
-   (revers$^o$ t t'));
-revers$^o$ x x
+   (append$^o$ tr (Cons (h, Nil)) y) /\
+   (revers$^o$ t tr));
 \end{lstlisting}
 \end{tabular}
 
 Here we defined\footnote{We respect here a conventional tradition for \textsc{miniKanren} programming to superscript all relational names with ``$^o$''.}
 two relational symbols~--- ``\lstinline|append$^o$|'' and ``\lstinline|revers$^o$|'',~--- and specified a top-level goal ``\lstinline|revers$^o$ x x|''.
-The symbol ``\lstinline|append$^o$|'' defines a relational concatenation of lists~--- it takes three arguments and performs a case analysis on the first one. If the
+The symbol ``\lstinline|append$^o$|'' defines a relation of concatenation of lists~--- it takes three arguments and performs a case analysis on the first one. If the
 first argument is an empty list (``\lstinline|Nil|''), then the second and the third arguments are unified. Otherwise, the first argument is deconstructed into a head ``\lstinline|h|''
 and a tail ``\lstinline|t|'', and the tail is concatenated with the second argument using a recursive call to ``\lstinline|append$^o$|'' and additional variable ``\lstinline|ty|'', which
 represents the concatenation of ``\lstinline|t|'' and ``\lstinline|y|''. Finally, we unify ``\lstinline|Cons (h, ty)|'' with ``\lstinline|xy|'' to form a final constraint. Similarly,
