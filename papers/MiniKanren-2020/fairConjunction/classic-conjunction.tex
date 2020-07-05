@@ -2,13 +2,12 @@
 \label{sec:directed}
 
 % В этом разделе мы рассмотрим реляционный язык miniKanren с классической направленной конъюнкцией, изучим достоинства и недостатки направленной конъюнкции на примерах.
-In this section we consider the classic directed conjunction in original \mk and demonstrate its advantages and drawbacks on examples. 
+In this section we consider the classic directed conjunction in the original \mk and demonstrate its advantages and drawbacks on examples. 
 
 % В языке miniKanren между операциями дизъюнкции и конъюнкции есть существенная разница. Дизъюнкция вычисляет свои аргументы попеременно, что приводит к равномерному вычислению двух дизъюнктов. Такого поведения дизъюнкции достаточно для полного поиска ответов. Конъюнкция же извлекает ответы из первого конъюнкта, на которых вычисляет второй конъюнкт. С одной стороны, такая конъюнкция проста в реализации и позволяет явно задать порядок исполнения конъюнктов. С другой стороны, эта конъюнкция ассиметрична. Более того, она может сходиться при одном порядке конъюнктов, но расходиться при другом. Например, отнонение freeze в зависимости от аргумента либо сходится за один шаг рекурсии, либо расходится. Тогда конъюнкция вида (=== /\ freeze) сходится, но при перестановке конъюнктов мы получаем расхождение. Действительно, в первом случае первый конъюнкт производит ровно один ответ, который противоречит унификации в теле отношения freeze. Во втором случае отношение freeze разойдется и не произведет ни одного ответа и второй конъюнкт вычислен не будет. 
 
 In \mk there is a significant difference between disjunction and conjunction evaluation strategy. The arguments of disjunction are evaluated
-in \emph{interleaving} manner, switching elementary evaluation steps between disjuncts, which provides the completeness of the search.
-
+in an \emph{interleaving} manner, switching elementary evaluation steps between disjuncts, which provides the completeness of the search.
 Conjunction, on the other hand, waits for the answers from the first conjunct and then calculates the second conjunct in the context of each answer.
 
 On the one hand, this strategy is easy to implement and allows one to explicitly specify the order of evaluation when this order is essential.
@@ -19,10 +18,9 @@ For example, the relation
    let rec freeze$^o$ x = x ===  true /\ freeze$^o$ x
 \end{lstlisting}
 
-either converges in one recursion step or diverges. The conjunction \lstinline{(x === false/\ freeze$^o$ x)} converges, but the same conjunction with the reverse order of conjuncts
+\noindent either converges in one recursion step or diverges. The conjunction \lstinline{(x === false/\ freeze$^o$ x)} converges, but the same conjunction with the reverse order of conjuncts
 \lstinline{(freeze$^o$ x /\ x === false)} diverges. Indeed, in the first case the first conjunct produces exactly one answer which contradicts the unification in the body
-of \lstinline{freeze$^o$}. In the second case the relation \lstinline{freeze$^o$} diverges and does not produce any answer. As a result the second conjunct
-is never evaluated.
+of \lstinline{freeze$^o$}. In the second case the relation \lstinline{freeze$^o$} diverges and does not produce any answer. As a result we will never begin to evaluate the second conjunct.
 
 \begin{figure}[h!]
 \centering
@@ -59,7 +57,7 @@ is found. Moreover, the reverse order negatively affects the performance of the 
 
 % В то же время, вызов revers при заданном порядке конъюнктов расходится, а при обратном сходится. В результате мы бы хотели разный порядок конъюнктов в зависимости от конкретных аргументов.
 
-At the same time the call \lstinline{(revers$^o$ q [1, 2, 3])} for a given order of conjuncts diverges, and for reverse order it converges. As a result a
+At the same time the call \lstinline{(revers$^o$ q [1, 2, 3])} for a given order of conjuncts diverges, and for the reverse order it converges. As a result a
 different order of conjuncts is desirable depending on their runtime values.
 
 % В следующих разделах мы предлжожим подход, который будет определять оптимальный порядок автоматически во время исполнения программы.
