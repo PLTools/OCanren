@@ -18,7 +18,8 @@ For example, the relation
    let rec freeze$^o$ x = x ===  true /\ freeze$^o$ x
 \end{lstlisting}
 
-\noindent either converges in one recursion step or diverges. The conjunction \lstinline{(x === false/\ freeze$^o$ x)} converges, but the same conjunction with the reverse order of conjuncts
+\noindent either converges in one recursion step or diverges. The conjunction \linebreak
+\lstinline{(x === false/\ freeze$^o$ x)} converges, but the same conjunction with the reverse order of conjuncts
 \lstinline{(freeze$^o$ x /\ x === false)} diverges. Indeed, in the first case the first conjunct produces exactly one answer which contradicts the unification in the body
 of \lstinline{freeze$^o$}. In the second case the relation \lstinline{freeze$^o$} diverges and does not produce any answer. As a result we will never begin to evaluate the second conjunct.
 

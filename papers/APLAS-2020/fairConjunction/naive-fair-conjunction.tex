@@ -99,8 +99,8 @@ let divergence$^o$ l =
 
 % Полученная семантика более справедливо распределяет ресурсы между конъюнктами. Благодаря этому выполнение реляционных запросов чаще сходится. Давайте вернемся к примеру отношения reverso. Как мы говорили ранее, при направленной конъюнкции, запрос \lstinline{(revers$^o$ [1, 2, 3] q)} сходится при прямом порядке конъюнктов и расходится при обратном. В то же время запрос \lstinline{(revers$^o$ q [1, 2, 3])} расхожится при прямом порядке конъюнктов, но сходится при обратном. В случае равномерной конъюнкции оба запроса сходятся при обоих порядках конъюнктов для любого параметра N.
 This semantics more fairly distributes resources between conjuncts. Because of this, relational queries converge more often. Let's go back to the \lstinline{revers$^o$} example
-(Fig.~\ref{fair:lst-reverso}). As we said earlier, for directed conjunction the query \lstinline{(revers$^o$ [1, 2, 3] q)} converges in the specified order of conjuncts and diverges
-in the reverse order. At the same time, the query \lstinline{(revers$^o$ q [1, 2, 3])} diverges in the specified conjunct order but converges in the reverse order. In the case of fair conjunction,
+(Fig.~\ref{fair:lst-reverso}). As we said earlier, for directed conjunction the query \linebreak \lstinline{(revers$^o$ [1, 2, 3] q)} converges in the specified order of conjuncts and diverges
+in the reverse order. At the same time, the query\lstinline{(revers$^o$ q [1, 2, 3])} diverges in the specified conjunct order but converges in the reverse order. In the case of fair conjunction,
 however, both queries converge in both conjunct orders for any finite unfolding bound.
 
 % Более того, существуют примеры, которые расходятся при любом порядке конъюнктов в случае направленной конъюнкции. Но они сходятся при равномерной конъюнкции. Например, отношение \lstinline{divergence}. Данное отношение ищет такие списки, которые с одной стороны чочтоят только из термов $C_1$, а с другой --- только из термов $C_2$. Очевидно, что только пустой список обладает таким свойством.

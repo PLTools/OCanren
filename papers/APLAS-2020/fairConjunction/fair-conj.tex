@@ -1,25 +1,4 @@
-\documentclass[acmlarge,anonymous=true]{acmart}
-\usepackage[
-    type={CC},           % your choice
-    modifier={by-sa},    % your choice
-    version={4.0},       % your choice
-]{doclicense}  
-
-\settopmatter{printacmref=false}
-\fancyfoot{}
-
-\makeatletter
-\def\@formatdoi#1{}
-\def\@permissionCodeOne{miniKanren.org/workshop}
-\def\@copyrightpermission{\doclicenseThis} 
-\def\@copyrightowner{Copyright held by the author(s).}
-\makeatother
-
-\copyrightyear{2020}
-\setcopyright{rightsretained}
-
-\acmMonth{8}
-\acmArticle{3}
+\documentclass[runningheads]{llncs}
 
 
 \usepackage{listings}
@@ -29,6 +8,10 @@
 \usepackage{yfonts}
 \usepackage{subcaption}
 \usepackage{xspace}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{comment}
+\usepackage{url}
 
 \pgfplotsset{width=7cm,compat=1.8}
 
@@ -57,55 +40,24 @@ language=ocanren
 \newcommand{\rulen}[1]{[\textsc{#1}]}
 \newcommand{\mk}{\textsc{miniKanren}\xspace}
 \newcommand{\inbr}[1]{\langle #1 \rangle}
+\renewcommand{\emptyset}{\varnothing}
 
-\let\oldemptyset\emptyset
-\let\emptyset\varnothing
 
 \begin{document}
 
 \title{On Fair Relational Conjunction}
 
-\author{Petr Lozov}
-\email{lozov.peter@gmail.com}        
+\author{Anonymous author(s)}
+\institute{Anonymous institute}
 
-\author{Dmitry Boulytchev}
-\email{dboulytchev@math.spbu.ru}    
-
-\affiliation{
-  \institution{Saint Petersburg State University}
-  \country{Russia}                   
-}
-
-\affiliation{
-  \institution{JetBrains Research}   
-  \country{Russia}                   
-}
+\maketitle
 
 \begin{abstract}
 We present a new, more symmetric evaluation strategy for conjunctions in \mk. Unlike the original unfair directed conjunction, our approach controls the order of conjunct execution based on the properties of structurally recursive relations. In this paper we describe operational semantics for both ``classical'' and ``fair'' conjunctions. We also compare the performance of classical and fair conjunctions on a number of examples and discuss the results of the evaluation.
 \end{abstract}
 
-\begin{CCSXML}
-<ccs2012>
-   <concept>
-       <concept_id>10011007.10011006.10011008.10011009.10011015</concept_id>
-       <concept_desc>Software and its engineering~Constraint and logic languages</concept_desc>
-       <concept_significance>500</concept_significance>
-       </concept>
-   <concept>
-       <concept_id>10011007.10011006.10011039.10011311</concept_id>
-       <concept_desc>Software and its engineering~Semantics</concept_desc>
-       <concept_significance>500</concept_significance>
-       </concept>
- </ccs2012>
-\end{CCSXML}
-
-\ccsdesc[500]{Software and its engineering~Constraint and logic languages}
-\ccsdesc[500]{Software and its engineering~Semantics}
 
 \keywords{relational programming, miniKanren, evaluation strategies, operational semantics}
-
-\maketitle
 
 \thispagestyle{empty}
 
@@ -117,7 +69,7 @@ We present a new, more symmetric evaluation strategy for conjunctions in \mk. Un
 \input{evaluation}
 \input{conclusion}
 
-\bibliographystyle{ACM-Reference-Format}
+\bibliographystyle{abbrv}
 \bibliography{fair-conj}
 
 
