@@ -146,7 +146,7 @@ which require a separate customized algorithms to be developed.
 \begin{comment}
 There are a few different approaches for compiling pattern matching. GHC is using influential paper~\cite{Jones1987}, OCaml is currently based on~\cite{maranget2001} although a work~\cite{maranget2008} can slightly improve effectiveness of generated code. 
 
-Although semantics of pattern matching can be given as a sequence of scrutinee's sub expression comparisons (Figure~\ref{fig:matchpatts}) effective compilers don't follow this approach. One can either optimise run time cost by minimizing amount of checks performed or static cost by minimizing the size of generated code. \emph{Decision trees} are good for the first criteria, because they check every subexpression not more than once. \emph{Backtracking automata} are rather compact but in some cases can perform repeated checks.
+Although semantics of pattern matching can be given as a sequence of scrutinee's sub expression comparisons (Fig.~\ref{fig:matchpatts}) effective compilers don't follow this approach. One can either optimise run time cost by minimizing amount of checks performed or static cost by minimizing the size of generated code. \emph{Decision trees} are good for the first criteria, because they check every subexpression not more than once. \emph{Backtracking automata} are rather compact but in some cases can perform repeated checks.
 
 
 Minimizing the size of decision tree is  NP-hard (\cite{baudinet1985tree}, without proof) and usually heuristics are applied during compilation, for example: count of nodes, length of the longest path, average length of all paths. The paper~\cite{Scott2000WhenDM} performs experimental evaluation of 9  heuristics on the base of for Standard ML of New Jersey.

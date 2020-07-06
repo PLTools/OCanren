@@ -253,7 +253,7 @@ EXTEND
   ocanren_term: [[
     t=ocanren_term' -> fix_term t 
   ]];
-  
+
   ocanren_term':  [
     "app"  LEFTA  [ l=SELF; r=SELF -> <:expr< $l$ $r$ >>] |      
     "list" RIGHTA [ l=SELF; "::"; r=SELF -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ] |    

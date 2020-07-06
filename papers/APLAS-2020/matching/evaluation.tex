@@ -98,20 +98,25 @@ We performed an evaluation of the pattern matching synthesizer on a number of be
 The majority of benchmarks were prepared manually; we didn't use any specific benchmark sets mentioned in literature~\cite{Scott2000WhenDM} yet.
 The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU @ 4.00GHz processor and 8GB of memory,
 \textsc{OCanren} was compiled with \mbox{ocaml-4.07.1+fp+flambda}. All benchmarks were executed in the native mode ten times,
-then average monotonic clock time was taken. The results of the evaluation are shown on Figure~\ref{fig:eval}.
+then average monotonic clock time was taken. The results of the evaluation are shown in Table.~\ref{fig:eval}.
 
 In the table the double bar separates input data from output. %Inputs are: 
-The patterns used for synthesis are the input of synthesis algorithm.
+The patterns used for synthesis form the input of synthesis algorithm.
 %and the requested number of answers. 
 Outputs are: the size of generated complete samples set, the running time before receiving the
 first answer, the total number of programs synthesized, the total search time.
 In all benchmarks the structural constraint is being checked every 100 unifications and all answers were requested.
 
-The 4th benchmark was taken from~\cite{maranget2008}, we used it in %Section~\ref{sec:intro} (
-Figure~\ref{fig:match-example}
- as the first example. In that benchmark 
+We also give an example of synthesized program for the 4th benchmark, which was taken from~\cite{maranget2008}. We used this benchmark in the Section~\ref{sec:related}
+ %Section~\ref{sec:intro} (
+as the first example (see Fig.~\ref{fig:match-example}).
+%In this benchmark 
 %The fourth benchmark is an example mentioned on %figure~\ref{fig:matching-example1}. In this example
- all \lstinline=switch= expressions will have two branches, so they are equivalent to \lstinline=if= expressions. Our algorithm starts synthesis and in about 1 seconds discovers first answer in language $\mathcal{S}$ which is equivalent to the solution from Figure~\ref{fig:matching-example2} and consists of 6 \lstinline=switch= expressions. In about half a second it synthesizes next answer that has 5 \lstinline=switch= expressions:
+%all \lstinline|switch| expressions will have two branches, so they are equivalent to \lstinline|if| expressions.
+
+Our algorithm starts the
+synthesis and in about 1 second discovers the first answer, which is equivalent to the solution on Fig.~\ref{fig:matching-example2} and
+consists of 6 \lstinline|switch| expressions. In about half a second it synthesizes a better answer with 5 \lstinline|switch| expressions:
 
 \begin{lstlisting}
 switch $\bullet[0]$ with
@@ -122,10 +127,12 @@ switch $\bullet[0]$ with
         | true -> 2
         | _ -> (switch $\bullet[2]$ with  | true -> 1 | _ -> 3))
 \end{lstlisting}
-\noindent And again after about half of a second it synthesizes the optimal answer from Figure~\ref{fig:matching-example3} of size 4. Then it searches for an answer that has less then 4 switch expressions for some time, fails to find one and finishes the synthesis. The time between the start and the end of synthesis is shown in the last column.
 
-Our approach currently does not work fast on a large benchmark. On Fig.~\ref{fig:pcf} we cite an example extracted from a bytecode
-machine for PCF~\cite{maranget2008,Plotkin1977LCFCA}. For such complex examples (in terms of type definition complexity and number and size of patterns)
+And after about half a second it synthesizes the optimal answer of size 4. Then it searches for an answer which would have less than 4 switch expressions
+for some time, fails to find one and finishes the synthesis. The time between the start and the end of synthesis is shown in the last column of Table.~\ref{fig:eval}.
+
+Our approach currently does not work fast for large benchmarks. On Fig.~\ref{fig:pcf} we cite an example extracted from a bytecode
+machine for PCF~\cite{maranget2008,Plotkin1977LCFCA}. For such a complex examples (in terms of type definition complexity and the number and size of patterns)
 both the size of the search space and the number of samples is too large for our approach to work so far.
 
 %The first conclusion can be drawn from results is that a often checking of the current approximation of the answer by size constraint
