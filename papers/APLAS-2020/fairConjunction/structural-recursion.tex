@@ -20,10 +20,10 @@ the case when $pred$ is false for all calls in a leaf.
 &     \ruleno{ConjZero} \\[4mm]
 \dfrac{m_k > 0 \qquad \bigvee_{j=1}^n pred(\sigma, c_j) = \bot \qquad (\sigma, i) \vdash c_k \Rightarrow T \qquad set(T, m_k - 1) = \bar{T}}
       {\inbr{\sigma;\, i;\, c_1^0 \land \ldots \land c_{k-1}^0 \land c_k^{m_k} \land \ldots \land c_n^{m_n}} \xrightarrow{\circ} push(c_1^0 \land \ldots \land c_i^0 \land \Box \land \ldots \land c_n^{m_n}, \bar{T})}
-&     \ruleno{ConjUnfold} \\[4mm]
-\dfrac{\bigvee_{j=1}^{k-1} pred(\sigma, c_j) = \bot \quad pred(\sigma, c_k) = \top \quad (\sigma, i) \vdash c_k \Rightarrow T \quad set(T, \max(0, \, m_k - 1)) = \bar{T}}
+&     \ruleno{ConjUnfold$\bot$} \\[4mm]
+\dfrac{\bigvee_{j=1}^{k-1} pred(\sigma, c_j)\! =\! \bot \quad pred(\sigma, c_k) \!=\! \top \quad (\sigma, i) \!\vdash\! c_k \!\Rightarrow\! T \quad set(T, \max(0, m_k \!-\! 1)) \!=\! \bar{T}}
       {\inbr{\sigma;\, i;\, c_1^{m_1} \land \ldots \land c_{k-1}^{m_{k-1}} \land c_k^{m_k} \land C_2} \xrightarrow{\circ} push(c_1^{m_1} \land \ldots \land c_{k-1}^{m_{k-1}} \land \Box \land C_2, \bar{T})}
-&     \ruleno{ConjUnfoldPred} \\[4mm]
+&     \ruleno{ConjUnfold$\top$} \\[4mm]
 \dfrac{T_1 \xrightarrow{\alpha} \emptyset}
       {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
 &     \ruleno{Disj} \\[4mm]
@@ -38,8 +38,8 @@ the case when $pred$ is false for all calls in a leaf.
 % Семантика, параметризованная предикатом раскрутки представлена на изображении 10. Так как мы обновляем только поведение конъюнкции, то правила [Answer], [Disj] и [DisjStep]  остаются без изменений. Но за обработку конъюнкций теперь отвечают три обновленных правила. Если предикат истинен хотя бы для одного вызова, то мы применяем правило [ConjUnfoldPred] и раскручиваем самый левый такой вызов и уменьшаем его счетчик. Если предикат ложен на всех вызовах, но есть хотя бы один вызов с ненулевым счетчиком, то мы применяем правило [ConjUnfold] и раскручиваем самый левый такой вызов и уменьшаем его счетчик. Если предикат ложен на всех вызовах и все счетчики равны нулю, то мы применяем правило [ConjZero] и обновляем все счетчики.
 The semantics parameterized by the unfolding predicate is shown in Fig.~\ref{fair:structural-recursion-semantics}. Since we modify only the behavior of conjunction the rules \rulen{Answer},
 \rulen{Disj} and \rulen{DisjStep} remain unchanged. Three updated rules are responsible for conjunction behavior. If the predicate $pred$ is $\top$ for at least one call, then we
-apply the rule \rulen{ConjUnfoldPred}, which unfolds the leftmost such call and decrements its counter. If the predicate $pred$ is $\bot$ for all calls, but there is at least one
-call with a nonzero counter, then we apply the rule \rulen{ConjUnfold}, which unfolds the leftmost such call and decrements its counter. If the predicate is $\bot$ for all calls
+apply the rule \rulen{ConjUnfold$\top$}, which unfolds the leftmost such call and decrements its counter. If the predicate $pred$ is $\bot$ for all calls, but there is at least one
+call with a nonzero counter, then we apply the rule \rulen{ConjUnfold$\bot$}, which unfolds the leftmost such call and decrements its counter. If the predicate is $\bot$ for all calls
 and all the counters are equal to zero, then we apply the rule \rulen{ConjZero}, which sets all the counters to unfolding bound.
 
 % В качестве предиката нам необходим критерий, отличающий вызов, который выгодно раскрутить сейчас от вызова, который стоит отложить. Мы предлагаем критерий, который корректно работает на отношениях со структурной рекурсией. У таких отношений есть хотя бы один аргумент, который структурно убывает с каждым шагом рекурсии. Это свойство позволит нам контролировать грубину раскрутки. Предлагаемый критерий состоит в следующем

@@ -2,8 +2,41 @@
 \label{sec:eval}
 
 % В данном разделе мы представили результаты апробации трех семантик на нескольких примерах.
-In this section we present the results of the evaluation of three semantics on a set of examples; the semantics were implemented in \textsc{Haskell} in the form of interpreters.
-For evaluation we've chosen two simple programs (list reversing and list sorting) and three more complicated (the ``Hanoi Towers''\footnote{\url{https://en.wikipedia.org/wiki/Tower_of_Hanoi}} solver, the
+In this section we compare the possibilities of a fair conjunction based on structural recursion with a similar approach based on the divergence test of conjuncts~\cite{fair:DivTest}. Also we present the results of the evaluation of three semantics on a set of examples; the semantics were implemented in \textsc{Haskell} in the form of interpreters.
+
+\begin{figure}[h!]
+\centering
+\begin{tabular}{c}
+\begin{lstlisting}
+let rec add$^o$ x y xy =
+  (x === Zero /\ y === xy) \/
+  fresh (x') (
+    x === Succ x' /\ 
+    add$^o$ x' (Succ y) xy)
+\end{lstlisting}
+\end{tabular}
+\caption{Relational addition of Peano numbers}
+\label{fair:lst-addo}
+\end{figure}
+
+Indeed, the approach based on the divergence test has similar behavior. When evaluating the conjunct before performing the unfolding, we compute the predicate. And depending on the result, we either perform the unfolding or begin to evaluate another conjunct. However, this approach has two key differences.
+
+First, it uses a different predicate that detects a divergence. The predicate of the approach based on the divergence test is follow: if the call in the current conjunct is more general than one of the previous calls, it is necessary to evaluate another conjunct. Both predicates are not always effective. Our predicate based on structural recursion is obviously not effective in relations without structural recursion. In this case, a naive fair conjunction will be used.
+At the same time, the predicate based on the divergence test is also not effective for some programs. For example, query \lstinline{add$^o$ q Zero Zero} of relation \lstinline{add$^o$} (Fig.~\ref{fair:lst-addo}) diverges but not one of the calls in the sequence of evaluation 
+\begin{lstlisting}
+add$^o$ q   Zero               Zero, 
+add$^o$ q$_1$ (Succ Zero)          Zero, 
+add$^o$ q$_2$ (Succ (Succ Zero)) Zero, 
+...
+\end{lstlisting}
+\noindent is more general than its predecessors. As a result, the conjunction \linebreak \lstinline{(add$^o$ q Zero Zero /\ q === Zero)} will give right answer and diverge. At the same time, the relation \lstinline{add$^o$} is structurally recursive in the first argument and this argument is fresh. Therefore, our approach will evaluate the second conjunct and then the first conjunct will converge.
+
+Second, the approach based on the divergence test moves to another conjunct in a different way. When we want to evaluate the conjunction \lstinline{(A /\ B)} we will evaluate the first conjunct \lstinline{A}. If after some steps we get \lstinline{A$'$} which diverges, we change the order in the original conjunction and begin to evaluate \lstinline{(B /\ A)}. In other words, we are looking for a converging conjunct to be evaluated first. This behavior selects the optimal order of the conjuncts, but is not applicable in the case when all the conjuncts diverge, if they evaluate in isolation. Thus, the query \lstinline{divergence$^o$ l} (see Fig.~\ref{fair:lst-repeato}) will detect divergence in both conjuncts, then will stop and report the impossibility to continue the evaluation. At the same time our approach allows to find the answer and prove the absence of other answers.
+
+To summarize, our approach and the approach based on the divergence test may be ineffective on some examples, and our approach saves more information when moving to another conjunct, which allows us to correctly evaluate some diverging programs.
+
+
+Now we will discuss evaluation. For evaluation we've chosen two simple programs (list reversing and list sorting) and three more complicated (the ``Hanoi Towers''\footnote{\url{https://en.wikipedia.org/wiki/Tower_of_Hanoi}} solver, the
 ``Bridge and torch problem''\footnote{\url{https://en.wikipedia.org/wiki/Bridge_and_torch_problem}} solver and ``Water pouring puzzle''\footnote{\url{https://en.wikipedia.org/wiki/Water_pouring_puzzle}} solver).
 % Для каждой программы мы сделали две версии. Оптимистичная версия --- это программа, в которой мы вручную подобрали оптимальный порядок конъюнктов и пессиместичная версия --- программа с неоптимальным порядком конъюнктов. В последующих диаграммах и таблице указаны средние значения 10 запусков тестов. Также для наивной равномерной конъюнкции мы подобрали количество разверток вручную. Для равномерной конъюнкции, основанной на структурной рекурсии, N было фиксировано и равно 100.
 Each program was written in two versions: ``optimistic'' (with the order of important conjuncts set to provide the best performance) and ``pessimistic'' (with the order of important
