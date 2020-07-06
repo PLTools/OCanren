@@ -122,10 +122,10 @@ switch $\bullet[0]$ with
         | true -> 2
         | _ -> (switch $\bullet[2]$ with  | true -> 1 | _ -> 3))
 \end{lstlisting}
-\noindent And again after about half of a second it synthesizes the optimal answer from Figure~\ref{fig:matching-example3} of size 4. Then it search for answer that has less then 4 switch expressions for some time, fails to find one and finishes the synthesis. The time between the start and the end of synthesis is shown in the last column.
+\noindent And again after about half of a second it synthesizes the optimal answer from Figure~\ref{fig:matching-example3} of size 4. Then it searches for an answer that has less then 4 switch expressions for some time, fails to find one and finishes the synthesis. The time between the start and the end of synthesis is shown in the last column.
 
 Our approach currently does not work fast on a large benchmark. On Fig.~\ref{fig:pcf} we cite an example extracted from a bytecode
-machine for PCF~\cite{Plotkin1977LCFCA,maranget2008}. For such complex examples (in terms of type definition complexity and number and size of patterns)
+machine for PCF~\cite{maranget2008,Plotkin1977LCFCA}. For such complex examples (in terms of type definition complexity and number and size of patterns)
 both the size of the search space and the number of samples is too large for our approach to work so far.
 
 %The first conclusion can be drawn from results is that a often checking of the current approximation of the answer by size constraint
