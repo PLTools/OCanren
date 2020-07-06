@@ -1,13 +1,72 @@
-\section{Directed Conjunction}
+\section{Introduction in \mk}
 \label{sec:directed}
 
 % В этом разделе мы рассмотрим реляционный язык miniKanren с классической направленной конъюнкцией, изучим достоинства и недостатки направленной конъюнкции на примерах.
-In this section we consider the classic directed conjunction in the original \mk and demonstrate its advantages and drawbacks on examples. 
+In this section we briefly describe the original \mk and consider an example. Also we consider features of the classic directed conjunction of the original \mk and demonstrate its advantages and drawbacks on examples. 
+
+The main syntactic notion of \mk is the \textbf{goal}. There are only four syntactic forms of goals. Result of \mk program evaluation is a lazy, possibly endless stream of answers. Answers are presented as a substitutions.
+
+\begin{itemize}
+    \item[$\bullet$] Unification~\cite{fair:unify} $t_1 \equiv t_2$ where $t_1, t_2$ are some terms that contain constructors and variables. Unification is the basic combinator to create goals. If $t1, t2$ are correctly unified, then the goal is considered successful. In this case the result of unification is singleton stream which contains the most common unifier of $t_1, t_2$. Otherwise, the goal is failed and result is empty stream.
+    \item[$\bullet$] Disjunction $g_1 \lor g_2$ where $g_1, g_2$ are some goals. Both goals are evaluated independently. Result of disjunction is union of answers for $g_1$ and $g_2$.
+    \item[$\bullet$] Conjunction ($g_1 \land g_2$) where $g_1, g_2$ are some goals. First, we evaluate goal $g_1$. And then we independently evaluate goal $g_2$ in the context of each answer for $g_1$. As a result, we get answers for both $g_1$ and the $g_2$.
+    \item[$\bullet$] Fresh variable introduction (\!$\lstinline{fresh} (x). \, g$) where $x$ is a variable and $g$ is a goal. This combinator is used to enter the fresh variable$x$ into the goal $g$.
+\end{itemize}
+
+\begin{figure}[h!]
+\centering
+\begin{tabular}{c}
+\begin{lstlisting}[numbers=left,numberstyle=\small]
+let rec append$^o$ x y xy =
+  (x === [] /\ y === xy) \/
+  fresh (e xs xys) (
+    x === e : xs /\ 
+    xs === e : xys /\ 
+    append$^o$ xs y xys)
+\end{lstlisting}
+\end{tabular}
+\caption{Relational list concatenation}
+\label{fair:lst-appendo}
+\end{figure}
+
+As an example, consider the relational relation of concatenation of two lists (Fig.~\ref{fair:lst-appendo}). The relation \lstinline|append$^o$ x y xy| should be interpreted as the following statement: concatenation of lists \lstinline|x| and \lstinline|y| equals list \lstinline|xy|.
+
+\begin{figure}[h!]
+\centering
+\begin{tabular}{c}
+\lstinline|fresh (x) (append$^o$ [1] [2] x)| $\Rightarrow$ \lstinline|{x = [1,2]}| \\
+(a) \\[5mm]
+\lstinline|fresh (x) (append$^o$ [1] x[1,2,3])| \!$\Rightarrow$ \lstinline|{x = [2,3]}|\\
+(b) \\[5mm]
+\lstinline|fresh (x y) (append$^o$ x y[1,2])| $\Rightarrow \left\{
+\begin{array}{ll}
+\mbox{\lstinline{x = [],}}    & \mbox{\lstinline{y = [1,2];}} \\
+\mbox{\lstinline{x = [1],}}   & \mbox{\lstinline{y = [2];}} \\
+\mbox{\lstinline{x = [1,2],}} & \mbox{\lstinline{y = []}} \\
+\end{array} \right\}$ \\
+(c) \\[5mm]
+\lstinline|fresh (x y) (append$^o$ x [1] y)| $\Rightarrow \left\{
+\begin{array}{ll}
+\mbox{\lstinline{x = [],}}    & \mbox{\lstinline{y = [1];}} \\
+\mbox{\lstinline{x = [}} \alpha_1\! \mbox{\lstinline{],}} & \mbox{\lstinline{y = [}} \alpha_1\! \mbox{\lstinline{,1];}} \\
+\mbox{\lstinline{x = [}} \alpha_1, \alpha_2\! \mbox{\lstinline{],}} & \mbox{\lstinline{y = [}} \alpha_1, \alpha_2\! \mbox{\lstinline{,1];}} \\
+...
+\end{array} \right\}$ \\
+(d)\\[5mm]
+\lstinline|fresh (a x) (append$^o$ [a] x [])| $\Rightarrow$ \lstinline|{}|\\
+(e) 
+\end{tabular}
+\caption{Examples of using relation \lstinline|append$^o$|}
+\label{fair:appendo-examples}
+\end{figure}
+
+Consider several different queries for the relation \lstinline|append$^o$| (Fig.~\ref{fair:appendo-examples}). First of all we can concatenate two lists (Fig~\ref{fair:appendo-examples}a). Also we can find list suffix (Fig.~\ref{fair:appendo-examples}b). Moreover we can synthesize finite stream of all list pairs of for a given concatenation result (Fig.~\ref{fair:appendo-examples}c) or infinite stream of all lists with a given suffix (Fig.~\ref{fair:appendo-examples}d). Finally we can prove some properties of the relation. In particular, singleton list is not a prefix of an empty list (Fig.~\ref{fair:appendo-examples}e).
+\subsection{Directed Conjunction}
 
 % В языке miniKanren между операциями дизъюнкции и конъюнкции есть существенная разница. Дизъюнкция вычисляет свои аргументы попеременно, что приводит к равномерному вычислению двух дизъюнктов. Такого поведения дизъюнкции достаточно для полного поиска ответов. Конъюнкция же извлекает ответы из первого конъюнкта, на которых вычисляет второй конъюнкт. С одной стороны, такая конъюнкция проста в реализации и позволяет явно задать порядок исполнения конъюнктов. С другой стороны, эта конъюнкция ассиметрична. Более того, она может сходиться при одном порядке конъюнктов, но расходиться при другом. Например, отнонение freeze в зависимости от аргумента либо сходится за один шаг рекурсии, либо расходится. Тогда конъюнкция вида (=== /\ freeze) сходится, но при перестановке конъюнктов мы получаем расхождение. Действительно, в первом случае первый конъюнкт производит ровно один ответ, который противоречит унификации в теле отношения freeze. Во втором случае отношение freeze разойдется и не произведет ни одного ответа и второй конъюнкт вычислен не будет. 
 
 In \mk there is a significant difference between disjunction and conjunction evaluation strategy. The arguments of disjunction are evaluated
-in an \emph{interleaving} manner, switching elementary evaluation steps between disjuncts, which provides the completeness of the search.
+in an \emph{interleaving}~\cite{fair:interleaving} manner, switching elementary evaluation steps between disjuncts, which provides the completeness of the search.
 Conjunction, on the other hand, waits for the answers from the first conjunct and then calculates the second conjunct in the context of each answer.
 
 On the one hand, this strategy is easy to implement and allows one to explicitly specify the order of evaluation when this order is essential.
@@ -25,17 +84,8 @@ of \lstinline{freeze$^o$}. In the second case the relation \lstinline{freeze$^o$
 
 \begin{figure}[h!]
 \centering
-\begin{tabular}{cp{3cm}c}
-\begin{lstlisting}%[numbers=left,numberstyle=\small]
-let rec append$^o$ x y xy =
-  (x === [] /\ y === xy) \/
-  fresh (e xs xys) (
-    x === e : xs /\ 
-    xs === e : xys /\ 
-    append$^o$ xs y xys)
-\end{lstlisting}
-& &
-\begin{lstlisting}%[firstnumber=7,numbers=left,numberstyle=\small,escapeinside={@}{@}]
+\begin{tabular}{c}
+\begin{lstlisting}[firstnumber=7,numbers=left,numberstyle=\small,escapeinside={@}{@}]
 let rec revers$^o$ x y =
   (x === [] /\ y === []) \/
   fresh (e xs ys) (

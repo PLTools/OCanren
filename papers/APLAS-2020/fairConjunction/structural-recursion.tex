@@ -12,7 +12,6 @@ the case when $pred$ is false for all calls in a leaf.
 
 \begin{figure}[h!]
 \[\begin{array}{cr}
-
       {\inbr{\sigma;\, i;\, \epsilon} \xrightarrow{\sigma} \emptyset}  
 &     \ruleno{Answer} \\[10mm]
 \dfrac{\bigvee_{j=1}^n pred(\sigma, c_j) = \bot}
@@ -88,25 +87,8 @@ As long as at least one argument along which structural recursion is performed i
 will diverge in the current substitution, so we proceed to evaluate the next call. Since structurally recursive arguments decrease, in a finite number of steps the evaluation will
 either complete, or all arguments of structural recursion will become free variables.
 
-
-\begin{figure}[h!]
-\centering
-\begin{tabular}{c}
-\begin{lstlisting}
-let rec append$^o$ x y xy =
-  (x === [] /\ y === xy) \/
-  fresh (e xs xys) (
-    x === e : xs /\ 
-    xs === e : xys /\ 
-    append$^o$ xs y xys)
-\end{lstlisting}
-\end{tabular}
-\caption{Relational concatenation}
-\label{fair:lst-appendo}
-\end{figure}
-
 % Например, отношение appendo является структурно рекурсивным по первому и третьему аргументу. Действительно, вложенный вызов appendo в качестве первого аргумента принимает xs, который является подтермом x. Также в качестве третьего аргумента appendo принимает xys, который является подтермом xy. Если хотя бы один из них --- список фиксированной длины, то отношение сойдется. В противном случае, оба имеют вид: $x = t_1 : \ldots t_n : \alpha$ и $xy = \bar{t}_1 : \ldots \bar{t}_m : \alpha$. Следовательно через max(n, m) шагов оба аргумента станут свободными перееменными. 
-For example, the relation \lstinline{append$^o$} (Fig.~\ref{fair:lst-appendo}) is structurally recursive on its first and third arguments. Indeed, the nested call \lstinline{append$^o$}
+For example, the relation \lstinline{append$^o$} (Fig.~\ref{fair:lst-appendo} from section~\ref{sec:directed}) is structurally recursive on its first and third arguments. Indeed, the nested call \lstinline{append$^o$}
 takes \lstinline{xs} as its first argument, which is a subterm of \lstinline{x}. Also, \lstinline{append$^o$} takes \lstinline{xys} as the third argument, which is a subterm of
 \lstinline{xy}. If at least one of them is a fixed-length list, then the relation will converge. Otherwise, $\mbox{\lstinline{x}} \equiv t_1 : \ldots t_n : \alpha_1$
 and $\mbox{\lstinline{xy}} \equiv \bar{t}_1 : \ldots \bar{t}_m : \alpha_2$. Therefore, in $max(n, m)$ steps, both arguments become free variables.
