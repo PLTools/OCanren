@@ -14,19 +14,43 @@ the case when $pred$ is false for all calls in a leaf.
 \[\begin{array}{cr}
 
       {\inbr{\sigma;\, i;\, \epsilon} \xrightarrow{\sigma} \emptyset}  
-&     \ruleno{Answer} \\[2mm]
+&     \ruleno{Answer} \\[10mm]
 \dfrac{\bigvee_{j=1}^n pred(\sigma, c_j) = \bot}
       {\inbr{\sigma;\, i;\, c_1^0 \land \ldots \land c_n^0} \xrightarrow{\circ} \inbr{\sigma;\, i;\, c_1^N \land \ldots \land c_n^N}}
-&     \ruleno{ConjZero} \\[4mm]
-\dfrac{m_k > 0 \qquad \bigvee_{j=1}^n pred(\sigma, c_j) = \bot \qquad (\sigma, i) \vdash c_k \Rightarrow T \qquad set(T, m_k - 1) = \bar{T}}
-      {\inbr{\sigma;\, i;\, c_1^0 \land \ldots \land c_{k-1}^0 \land c_k^{m_k} \land \ldots \land c_n^{m_n}} \xrightarrow{\circ} push(c_1^0 \land \ldots \land c_i^0 \land \Box \land \ldots \land c_n^{m_n}, \bar{T})}
-&     \ruleno{ConjUnfold$\bot$} \\[4mm]
-\dfrac{\bigvee_{j=1}^{k-1} pred(\sigma, c_j)\! =\! \bot \quad pred(\sigma, c_k) \!=\! \top \quad (\sigma, i) \!\vdash\! c_k \!\Rightarrow\! T \quad set(T, \max(0, m_k \!-\! 1)) \!=\! \bar{T}}
-      {\inbr{\sigma;\, i;\, c_1^{m_1} \land \ldots \land c_{k-1}^{m_{k-1}} \land c_k^{m_k} \land C_2} \xrightarrow{\circ} push(c_1^{m_1} \land \ldots \land c_{k-1}^{m_{k-1}} \land \Box \land C_2, \bar{T})}
-&     \ruleno{ConjUnfold$\top$} \\[4mm]
+      &  \ruleno{ConjZero} \\[10mm]
+      \dfrac{\begin{array}{c}
+          m_k > 0 \\
+          \bigvee_{j=1}^n pred(\sigma, c_j) = \bot \\
+          (\sigma, i) \vdash c_k \Rightarrow T \\
+          set(T, m_k - 1) = \bar{T}
+          \end{array}
+      }
+            {
+              \begin{array}{rcl}
+                \inbr{\sigma;\, i;\, c_1^0 \land \ldots \land c_{k-1}^0 \land c_k^{m_k} \land \ldots \land c_n^{m_n}} & \xrightarrow{\circ} & \\
+                \multicolumn{3}{c}{\phantom{XXXXXX}push(c_1^0 \land \ldots \land c_i^0 \land \Box \land \ldots \land c_n^{m_n}, \bar{T})}
+              \end{array}
+              }
+      &     \ruleno{ConjUnfold} \\[10mm]
+      
+      \dfrac{
+        \begin{array}{c}
+          \bigvee_{j=1}^{k-1} pred(\sigma, c_j) = \bot \\
+          pred(\sigma, c_k) = \top \\
+          (\sigma, i) \vdash c_k \Rightarrow T \\
+          set(T, \max(0, \, m_k - 1)) = \bar{T}
+        \end{array}
+      }
+            {
+              \begin{array}{rcl}
+                \inbr{\sigma;\, i;\, c_1^{m_1} \land \ldots \land c_{k-1}^{m_{k-1}} \land c_k^{m_k} \land C_2} &\xrightarrow{\circ} & \\
+                \multicolumn{3}{c}{\phantom{XXXXXX}push(c_1^{m_1} \land \ldots \land c_{k-1}^{m_{k-1}} \land \Box \land C_2, \bar{T})}
+              \end{array}
+            }
+&     \ruleno{ConjUnfoldPred} \\[10mm]
 \dfrac{T_1 \xrightarrow{\alpha} \emptyset}
       {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
-&     \ruleno{Disj} \\[4mm]
+&     \ruleno{Disj} \\[10mm]
 \dfrac{T_1 \xrightarrow{\alpha} \bar{T_1} \qquad \bar{T_1} \not= \emptyset}
       {T_1 \lor T_2 \xrightarrow{\alpha} T_2 \lor\bar{T_1}}
 &     \ruleno{DisjStep}

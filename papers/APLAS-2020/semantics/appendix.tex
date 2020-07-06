@@ -1,19 +1,44 @@
 \clearpage
 
-\section{\textsc{Coq} Specification and Proofs}
-\label{appendix_a}
+\section{Details of Proofs}
+\label{appendix_proofs}
+
+\subsection{Proof of the Lemma~\ref{lem:den_sem_change_var}}
+\label{appendix_den_sem_change_var_proof}
+
+The proof goes by structural induction, all cases naturally use inductive hypotheses, except for the case of fresh variable introduction. We examine this case in more detail.
+
+We have a nested fresh variable introduction $\mbox{\lstinline|fresh|}\,y\,.\,g'$ as the goal $g$. $g'$ may contain syntactic variables $x$ and $y$ (the case when $g$ does not contain syntactic variable $x$ is trivial and we have to consider it separately). By the statement of the lemma and the definition of denotational semantics we have ${\mathfrak f'_1} \in \sembr{g'\,[\alpha_1/x]\,[\alpha_3/y]}$, where $\alpha_3$ is some fresh semantic variable, and ${\mathfrak f'_1}$ is some representing function which may differ from ${\mathfrak f_1}$ only on variable $\alpha_3$. Variable $\alpha_3$ may not be equal to $\alpha_1$, but may be equal to $\alpha_2$ and further in proof we sometimes have to consider these two cases separetly, because they are essentially different. We should find some fresh variable $\alpha_4$ and representing function ${\mathfrak f'_2} \in \sembr{g'\,[\alpha_2/x]\,[\alpha_4/y]}$ that may differ from ${\mathfrak f_2}$ only on variable $\alpha_4$.
+
+Among different options we considered, the easiest choice for a variable $\alpha_4$ turned out to be the freshest possible variable (one that is not equal to any of the mentioned above and that does not occur in the goal $g'$). Then we need to move from the function ${\mathfrak f'_1}$ to the function ${\mathfrak f'_2}$ by applying the induction hypothesis twice (since now we change two substituted variables simultaneously). To do this we need to carefully change the values of the function on a few suitable points. It turned out, that we have to change the values on all four mentioned variables. First, we build an intermediate function ${\mathfrak f'_{1.5}} = {\mathfrak f'_1}[\alpha_3\gets {\mathfrak f_2}(\alpha_3)][\alpha_4\gets {\mathfrak f'_1}(\alpha_3)]$ that should belong to an intermediate semantics $\sembr{g'\,[\alpha_1/x]\,[\alpha_4/y]}$. Then we build a final function ${\mathfrak f'_2} = {\mathfrak f'_{1.5}}[\alpha_1\gets {\mathfrak f_2}(\alpha_1)][\alpha_2\gets {\mathfrak f'_{1.5}}(\alpha_1)]$ on top of it. For both transitions, we carefully check that all conditions on two functions from the statement of the lemma (and, therefore, from the induction hypothesis) are satisfied by examination of values of the functions on all mentioned variables.
+
+\subsection{Proof of Generalized Completeness}
+\label{appendix_gen_completeness_proof}
+
+The proof goes by induction on the level of bounded denotational semantics, then by structural induction on the goal.
+
+\begin{itemize}
+\item In case of unification $t_1\equiv t_2$ we need to show that any representing function that unifies terms $t_1$ and $t_2$ and is an extension of $\sigma$ also is an extension of $mgu\,(t_1 \sigma, t_2 \sigma) \circ \sigma$. This requires some observations about representing functions, most importantly the fact that for any representing function $f$, unifying two terms, there exists a unifying substitution for these terms, for which $f$ is an extension.
+\item In case of disjunction we apply lemma~\ref{lem:sum_answers} to induction hypotheses.
+\item In case of conjunction we apply lemma~\ref{lem:prod_answers} to induction hypotheses. Note that we use two nested inductions instead of one induction on evidence because of this case: we need to apply an induction hypothesis to different representing functions (which may have different values on non-allocated free variables), and otherwise the induction hypotheses would not be flexible enough.
+\item In the case of fresh variable introduction, we can not simply use induction hypothesis, because it has a goal with an arbitrary fresh variable substituted (see definition of denotational semantics on Fig.~\ref{denotational_semantics_of_goals}), but we need to relate two semantics of the goal with exactly the first non-allocated variable substituted (from transition in operational semantics, see Fig.~\ref{lts}). To overcome this inconsistency, we apply lemma~\ref{lem:den_sem_change_var} about changing substituted fresh variable. When we do this, we lose the equality of values of representing functions on the first non-allocated variable. It is exactly the place where the proof of the strong version of the completeness theorem (without the restriction of domains of representing functions on allocated variables) fails (as explained in the section~\ref{equivalence}, the strong version of the completeness theorem does not hold).
+\item In case of relational invocation we simply use the induction hypothesis about the previous level.
+\end{itemize}
+
+\section{\textsc{Coq} Specification}
+\label{appendix_coq}
 
 The \textsc{Coq} specification consists of three parts: specification of preliminary notions that we use in the semantics, specification of the language and semantics for interleaving search, specification of the language extended with cut and semantics for SLD resolution with cut (which repeats the previous part with only a few modifications).
 
 Preliminary notions are notions from unification theory and definition of streams.
 
-From unification theory we need (finitary) terms, substitutions and operations on them (application to a term, composition). But the most important notion we have to formalize here is the most general unifier. As it was described in the section~\ref{specification}, we define it as an inductive relation.
+From unification theory we need (finitary) terms, substitutions, and operations on them (application to a term, composition). The most important notion we have to formalize here is the most general unifier. As it was described in the section~\ref{specification}, we define it as an inductive relation.
 
 \begin{lstlisting}[language=Coq]
   Inductive mgu : term -> term -> option subst -> Set := ...
 \end{lstlisting}
 
-It uses an auxilary function that finds the leftmost mismatch of the two terms (if there is any).
+It uses an auxiliary function that finds the leftmost mismatch of the two terms (if there is any).
 
 Then we prove by well-founded induction that this relation is a function and it satisfies the defining properties of MGU:
 
@@ -84,7 +109,7 @@ Here we also define a relation for one-by-one interleaving of streams which we w
                 interleave (Cons h t) s (Cons h rs).
 \end{lstlisting}
 
-This allows us to prove the expected properties of interleaving in a more general setting of arbitrary streams:
+This allows us to prove the expected properties of interleaving in a more general setting of arbitrary streams.
 
 \begin{lstlisting}[language=Coq]
   Lemma interleave_in : forall s1 s2 s,
@@ -95,7 +120,7 @@ This allows us to prove the expected properties of interleaving in a more genera
     (finite s <-> finite s1 /\ finite s2).
 \end{lstlisting}
 
-The syntax of the language can be formalized in \textsc{Coq} in a natural way via inductive data types. Thanks to the higher-order syntax we need to work explicitly only with semantic variables. We use type ``\lstinline[language=Coq]{name}'' for all named entities (variables, constructors and relations), and we define it simply as natural numbers.
+The syntax of the language can be formalized in \textsc{Coq} in a natural way via inductive data types. Thanks to the higher-order syntax we need to work explicitly only with semantic variables. We use type ``\lstinline[language=Coq]{name}'' for all named entities (variables, constructors, and relations), and we define it simply as natural numbers.
 
 As it was noted in the section~\ref{specification} all terms in our specification have arities either zero or two:
 
@@ -159,7 +184,7 @@ We use it to state our two explicit requirements on the syntax representation: t
 \end{lstlisting}
 
 The consistency is based on variable renaming. It turned out to be rather non-trivial to define regular variable renaming for goals in higher-order syntax, but for our purposes
-a weaker version, which deals with only non-free variables, is sufficient:
+a weaker version, which deals only with non-free variables, is sufficient:
 
 \begin{lstlisting}[language=Coq]
    Inductive renaming (old_x : name) (new_x : name) :
@@ -230,7 +255,7 @@ The head of the definition is as follows:
   where "[| g , f |]" := (in_denotational_sem_goal g f).
 \end{lstlisting}
 
-and the body just goes through the cases shown on Fig.~\ref{denotational_semantics_of_goals}.
+and the body just goes through the cases shown in Fig.~\ref{denotational_semantics_of_goals}.
 
 We also need to explicitly define the bounded version of denotational semantics described in the section~\ref{equivalence}:
 
@@ -258,13 +283,9 @@ The lemma relating bounded and unbounded denotational semantics in \textsc{Coq} 
       [| g , f |] -> exists l, [| l | g , f |].
 \end{lstlisting}
 
-We prove two important properties of the denotational semantics: lemma~\ref{lem:den_sem_change_var} that states that the choice of a subsituted fresh variable doesn't matter, and the closedness condition (lemma~\ref{lem:closedness_condition}). Both proofs go by a straightforward structural induction, except for the case of fresh variable introduction in the first lemma, which is actually quite non-trivial (and took the most efforts among all our proofs), so lets look at this case in more detail.
+We prove two important properties of the denotational semantics: lemma~\ref{lem:den_sem_change_var} that states that the choice of a subsituted fresh variable doesn't matter, and the closedness condition (lemma~\ref{lem:closedness_condition}). The second proof is by a straightforward structural induction, the structure of the first one is described in the section~\ref{appendix_den_sem_change_var_proof}.
 
-We have a nested fresh variable introduction $\mbox{\lstinline|fresh|}\,y\,.\,g'$ as the goal $g$. $g'$ may contain syntactic variables $x$ and $y$ (the case when $g$ does not contain syntactic variable $x$ is trivial and we have to consider it separately). By the statement of the lemma and the definition of denotational semantics we have ${\mathfrak f'_1} \in \sembr{g'\,[\alpha_1/x]\,[\alpha_3/x]}$, where $\alpha_3$ is some fresh semantic variable, and ${\mathfrak f'_1}$ is some representing function which may differ from ${\mathfrak f_1}$ only on variable $\alpha_3$. Variable $\alpha_3$ may not be equal to $\alpha_1$, but may be equal to $\alpha_2$ and further in proof we sometimes have to consider these two cases separetly, because they are essentially different. We should find some fresh variable $\alpha_4$ and representing function ${\mathfrak f'_2} \in \sembr{g'\,[\alpha_2/x]\,[\alpha_4/x]}$ that may differ from ${\mathfrak f_2}$ only on variable $\alpha_4$.
-
-Among different options we considered, the easiest choice for a variable $\alpha_4$ turned out to be the freshest variable (one that does not equal any of mentioned above and that does not occur in the goal $g'$). Then we need to move from the function ${\mathfrak f'_1}$ to the function ${\mathfrak f'_2}$ by applying the induction hypothesis twice (since now we change two substituted variables simultaneously). To do this we need to carefully change the values of the function on a few suitable points. It turned out, that we have to change the values on all four mentioned variables. First, we build an intermediate function ${\mathfrak f'_{1.5}} = {\mathfrak f'_1}[\alpha_3\gets {\mathfrak f_2}(\alpha_3)][\alpha_4\gets {\mathfrak f'_1}(\alpha_3)]$ that should belong to an intermediate semantics $\sembr{g'\,[\alpha_1/x]\,[\alpha_4/x]}$. Then we build a final function ${\mathfrak f'_2} = {\mathfrak f'_{1.5}}[\alpha_1\gets {\mathfrak f_2}(\alpha_1)][\alpha_2\gets {\mathfrak f'_{1.5}}(\alpha_1)]$ on top of it. For both transitions, we carefully check that all conditions on two functions from the statement of the lemma (and, therefore, from the induction hypothesis) are satisfied by examination of values of the functions on all mentioned variables.
-
-For operational semantics, the described transition relation can be encoded naturally as an inductively defined proposition (here ``\lstinline|state|''
+For operational semantics, the described transition relation can be encoded naturally as an inductively defined proposition (here ``\lstinline|nt_state|''
 stands for a non-terminal state and ``\lstinline|state|''~--- for arbitrary one):
 
 \begin{lstlisting}[language=Coq]
@@ -309,11 +330,11 @@ And we prove the important properties of operational semantics (lemmas~\ref{lem:
 Finally, we prove both soundness and completeness of the operational semantics of the interleaving search w.r.t. the denotational one.
 The statements of the theorems are as follows:
 
-\begin{lstlisting}[language=Coq]]
+\newpage \begin{lstlisting}[language=Coq]]
   Theorem search_correctness:
     forall (g : goal) (k : nat) (f : repr_fun) (t : trace),
-      closed_goal_in_context (first_nats k) g) ->
-      op_sem (State (Leaf g empty_subst k)) t) ->
+      closed_goal_in_context (first_nats k) g ->
+      op_sem (State (Leaf g empty_subst k)) t ->
       {| t , f |} ->
       [| g , f |].
   Theorem search_completeness:
@@ -327,42 +348,11 @@ The statements of the theorems are as follows:
         forall (x : var), In x (first_nats k) -> f x = f' x.
 \end{lstlisting}
 
-Note that we need the consistency requirement only for the completeness, not for the soundeness.
+Note that we need the consistency requirement only for completeness, not for soundness.
 
-The proof of soundness is by a straightforward structural induciton, it is divided between lemmas~\ref{lem:answer_soundness} and \ref{lem:next_state_soundness}.
+The proof of soundness is by a straightforward structural induction, it is divided between lemmas~\ref{lem:answer_soundness} and \ref{lem:next_state_soundness}. The proof of completeness is described in the section~\ref{appendix_gen_completeness_proof}.
 
-The proof of completeness is less trivial. It goes by induciton on the level of bounded denotational semantics, then by structural induction on the goal.
-
-\begin{itemize}
-\item In case of unification $t_1\equiv t_2$ we need to show that any representing function that unifies terms $t_1$ and $t_2$ and is an extension of $\sigma$ also is an extentsion of $mgu\,(t_1 \sigma, t_2 \sigma) \circ \sigma$. This requires some observations about representing functions, most importantly the fact that for any representing function $f$, unifying two terms, there exists a unifying substitution for these terms, for which $f$ is an extension.
-\item In case of disjunction we apply lemma~\ref{lem:sum_answers} to induction hypotheses.
-\item In case of conjunction we apply lemma~\ref{lem:prod_answers} to induction hypotheses. Note that we use two nested inductions instead of one induction on evidence because of this case: we need to apply an induction hypothesis to different representing functions (which may have different values on non-allocated free variables), otherwise the induction hypotheses would not be flexible enough.
-\item The case of fresh variable introduction is the most difficult. We can not simply use induction hypothesis, because it has a goal with an arbitrary fresh variable substituted (see definition of denotational semantics on Fig.~\ref{denotational_semantics_of_goals}), but we need to relate two semantics of the goal with exactly the first non-allocated variable substituted (from transition in operational semantics, see Fig.~\ref{lts}). To overcome this inconsistency, we apply lemma~\ref{lem:den_sem_change_var} about changing substituted fresh variable. When we do this, we lose the equality of values of representing functions on the first non-allocated variable. It is exactly the place where the proof of the strong version of the completeness theorem (without the restriction of domains of representing functions on allocated variables) fails (as explained in the section~\ref{equivalence}, the strong version of the completeness theorem does not hold).
-\item In case of relational invocation we simply use the induction hypothesis about the previous level.
-\end{itemize}
-
-\section{SLD Resolution with Cut}
-\label{appendix_b}
-
-\begin{figure*}[t]
-\[
-\begin{array}{crc|ccr}
-  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} \Diamond} & \ruleno{PlusStopC}& & &
-  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{PlusStopAnsC}\\
-  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} s'_1} &\ruleno{PlusStepC}& & &
-  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{PlusStepAnsC}\\
-  \dfrac{s_1 \xrightarrow{\circ}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\circ}_c \Diamond} & \ruleno{AstStopC}& & &
-  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}\\
-  \dfrac{s_1 \xrightarrow{\circ}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\circ}_c s'_1} &\ruleno{AstStepC}& & &
-  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}
-\end{array}
-\]
-\caption{Cut signal propagation rules}
-\label{cut-signal-propagation}
-\end{figure*}
-%\FloatBarrier
-
-The specification of semantics for SLD resolution with cut simply repeats the described specification of semantics for interleaving search with minimal modification. Specifically, we introduce one additional type of goal (\lstinline|Cut|), in denotational semantics cuts correspond to the whole domain of representing functions, in operational semantics we introduce division in sum states and a cut signal into transitions:
+The specification of semantics for SLD resolution with cut simply repeats the just described specification of semantics for interleaving search with minimal modification. Specifically, we introduce one additional type of goal (\lstinline|Cut|), in denotational semantics cuts correspond to the whole domain of representing functions, in operational semantics we distinguish two kinds of \lstinline|Sum| state, introduce possible cut signal into the definition of transitions and add rules described in the section~\ref{appendix_cut} to the transition system. 
 
 \begin{lstlisting}
   Inductive cutting_mark : Set :=
@@ -379,26 +369,67 @@ The specification of semantics for SLD resolution with cut simply repeats the de
      nt_state -> label -> cut_signal -> state -> Set := ...
 \end{lstlisting}
 
-In denotational semantics, we interpret ``cut'' as success (thus, denotationally we treat all cuts as ``green''). Operationally, we
-modify SLD semantics in such a way that a ``cut'' cuts all other branches of all enclosing nodes, marked with ``$\oplus$'', up to
-the moment when the evaluation of the disjunct, containing the ``cut'', was started. It is easy to see that this node will always
-be the nearest ``$\oplus$'', derived from the disjunction. Unfortunately, in the tree other ``$\oplus$'' nodes can
-appear due to the evaluation of ``$\otimes$'' nodes, thus we need a way to distinguish these two sorts of ``$\oplus$'' (we
-denote the new sort of nodes as ``$\circledast$''). We also introduce a separate kind of transitions to propagate the signal for cutting the branches $\xrightarrow{l}_c$.
-More details about this chages in defintion and transition rules for them can be found in the appendix.
+We then repeat the soundness proof for these semantics with minor changes (and skip the completeness proof, since it does not hold for SLD resolution).
 
-In the semantics the rule \textsc{[ConjStepAns]} is replaced with
+\section{SLD Resolution with Cut}
+\label{appendix_cut}
+
+\begin{figure*}[t]
+\[
+  \begin{array}{cr}
+    \dfrac{s_1 \xrightarrow{\step} \Diamond}{(s_1 \circledast s_2) \xrightarrow{\step} s_2} & \ruleno{AstStop}\\
+    \dfrac{s_1 \xrightarrow{r} \Diamond}{(s_1 \circledast s_2) \xrightarrow{r} s_2} & \ruleno{AstStopAns}\\
+    \dfrac{s_1 \xrightarrow{\step} s'_1}{(s_1 \circledast s_2) \xrightarrow{\step} (s_2 \circledast s'_1)} &\ruleno{AstStep}\\
+    \dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \circledast s_2) \xrightarrow{r} (s_2 \circledast s'_1)} &\ruleno{AstStepAns}\\
+  \end{array}
+\]
+\caption{Rules for ``$\circledast$'' evaluation}
+\label{asterisk-rules}
+\end{figure*}
+
+\begin{figure*}[t]
+\[
+\begin{array}{crc|ccr}
+  \dfrac{s_1 \xrightarrow{\step}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{\step} \Diamond} & \ruleno{SumStopC}& & &
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \oplus s_2) \xrightarrow{r} \Diamond} & \ruleno{SumStopAnsC}\\
+  \dfrac{s_1 \xrightarrow{\step}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{\step} s'_1} &\ruleno{SumStepC}& & &
+  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \oplus s_2) \xrightarrow{r} s'_1} &\ruleno{SumStepAnsC}\\
+  \dfrac{s_1 \xrightarrow{\step}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{\step}_c \Diamond} & \ruleno{AstStopC}& & &
+  \dfrac{s_1 \xrightarrow{r}_c \Diamond}{(s_1 \circledast s_2) \xrightarrow{r}_c \Diamond} & \ruleno{AstStopAnsC}\\
+  \dfrac{s_1 \xrightarrow{\step}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{\step}_c s'_1} &\ruleno{AstStepC}& & &
+  \dfrac{s_1 \xrightarrow{r}_c s'_1}{(s_1 \circledast s_2) \xrightarrow{r}_c s'_1} &\ruleno{AstStepAnsC}\\
+  \dfrac{s \xrightarrow{\step}_c \Diamond}{(s \otimes g) \xrightarrow{\step}_c \Diamond} & \ruleno{ProdStopC}& & &
+  \dfrac{s \xrightarrow{(\sigma, n)}_c \Diamond}{(s \otimes g) \xrightarrow{\step}_c \inbr{g, \sigma, n}} & \ruleno{ProdStopAnsC}\\
+  \dfrac{s \xrightarrow{\step}_c s'}{(s \otimes g) \xrightarrow{\step}_c (s' \otimes g)} &\ruleno{ProdStepC}& & &
+  \dfrac{s \xrightarrow{(\sigma, n)}_c s'}{(s \otimes g) \xrightarrow{\step}_c (\inbr{g, \sigma, n} \circledast (s' \otimes g))} &\ruleno{ProdStepAnsC}
+\end{array}
+\]
+\caption{Cut signal propagation rules}
+\label{cut-signal-propagation}
+\end{figure*}
+%\FloatBarrier
+
+The semantics for SLD resolution with cut is built upon our usual semantics for SLD resolution described in section~\ref{sld} using a few additional constructs and rules for them.
+
+We introduce one additional type of goal --- ``cut''. In denotational semantics, we interpret cut as success (thus, denotationally we treat all cuts as green).
+
+Operationally, we modify SLD semantics in such a way that a cut cuts all other branches of all enclosing nodes, marked with ``$\oplus$'', up to
+the moment when the evaluation of the disjunct, containing the cut, was started. It is easy to see that this node will always
+be the nearest ``$\oplus$'', derived from the disjunction. Unfortunately, in the tree other ``$\oplus$'' nodes can
+appear due to the evaluation of ``$\otimes$'' nodes, thus we need a way to distinguish these two sorts of ``$\oplus$''. We introduce a separate kind of state ``$\circledast$'' for the sums of goals created during the evaluation of ``$\otimes$'' nodes.
+
+Therefore, in the semantics the rule \textsc{[ProdStepAns]} is replaced with the following.
 
 \[
 \begin{array}{cr}
-  \dfrac{s \xrightarrow{(\sigma, n)} s'}{(s \otimes g) \xrightarrow{\circ} (\inbr{g, \sigma, n} \circledast (s' \otimes g))} & \ruleno{ConjStepAns} 
+  \dfrac{s \xrightarrow{(\sigma, n)} s'}{(s \otimes g) \xrightarrow{\circ} (\inbr{g, \sigma, n} \circledast (s' \otimes g))} & \ruleno{ProdStepAns} 
 \end{array}
 \]
 \vskip3mm
 
-The rules for ``$\circledast$'' evaluation mirror those for ``$\oplus$'', so we omit them.
+The rules for ``$\circledast$'' evaluation mirror those for ``$\oplus$'' (see Fig.~\ref{asterisk-rules}).
 
-The signal itself is risen when a ``cut'' construct is encountered:
+To perform the cutting of the branches, we introduce a separate kind of transitions to propagate the signal for cutting (denoted by $\xrightarrow{l}_c$). The signal is risen when a ``cut'' construct is encountered.
 
 \[
 \begin{array}{cr}
@@ -408,6 +439,4 @@ The signal itself is risen when a ``cut'' construct is encountered:
 \vskip3mm
 
 When the signal is being propagated through ``$\oplus$'' and ``$\circledast$'' nodes, their right branches are cut out, and for ``$\circledast$'' the
-propagation continues (see Fig.~\ref{cut-signal-propagation}). In the case of ``$\otimes$'' nodes the signal is simply propagated; we omit the rules since they mirror the regular ones.
-
-We then repeat the soundness proof for these semantics with minor changes (and skip the completeness proof, since it does not hold for SLD resolution).
+propagation continues; in the case of ``$\otimes$'' nodes the signal is simply propagated (see Fig.~\ref{cut-signal-propagation}).

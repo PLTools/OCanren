@@ -1,3 +1,94 @@
+\newcommand{\lheadl}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
+\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{#2}}}
+\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
+\newcommand{\lheadll}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
+\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
+
+\begin{table}[t]
+  \caption{The results of synthesis evaluation}\label{fig:eval}
+    
+  %\begin{tabular}{|c|m{3cm}|cc||cccc}
+  \begin{tabular}{|m{3.5cm}||cccc|}
+\hline
+%    \headl{.5cm}{}    &
+    \lheadll{3cm}{Patterns} & 
+%    \head{1.5cm}{Size constraint} & 
+%    \headll{1.7cm}{Answers requested} & 
+    \head{2cm}{Number of samples} & 
+    \head{1.5cm}{1st answer time (ms)} & 
+    \head{1.5cm}{Answers found} & 
+    \headl{1.5cm}{Total search time (ms)}\\
+    \hline
+    \hline
+    %1&
+    \begin{lstlisting}[basicstyle=\scriptsize]
+A
+B
+C
+    \end{lstlisting}&3&1&2&2\\
+        \hline
+%        2&
+    \begin{lstlisting}[basicstyle=\scriptsize]
+true
+false
+    \end{lstlisting} &2&$<$1&1&$<$1\\
+        \hline
+%        3&
+            \begin{lstlisting}[basicstyle=\scriptsize]
+(true, _)
+(_, true)
+(false, false)
+    \end{lstlisting} &4&5&1&6\\
+        \hline
+%        4&
+     \begin{lstlisting}[basicstyle=\scriptsize]
+(_, false, true)
+(false, true, _)
+(_, _, false)
+(_, _, true)
+    \end{lstlisting} &8&$\sim$1000&3&$\sim$2000\\
+        \hline
+%        5&
+%     \begin{lstlisting}[basicstyle=\scriptsize]
+%([], _)
+%(_, [])
+%(_ :: _, _ :: _)
+%    \end{lstlisting} &100&10&4&5&1&6\\
+%        \hline
+%        6&
+     \begin{lstlisting}[basicstyle=\scriptsize]
+(Succ _, Succ _)
+(Zero, _)
+(_, Zero)
+    \end{lstlisting} &4&30&1&30
+    \\
+        \hline
+     \begin{lstlisting}[basicstyle=\scriptsize]
+(Nil, _)
+(_, Nil)
+(Nil2, _)
+(_, Nil2)
+(Cons (_, _),Cons(_, _))
+    \end{lstlisting}
+     &9&24&3&157                    \\ 
+      \hline
+     \begin{lstlisting}[basicstyle=\scriptsize]
+(_, _, (Ldi _)::_)
+(_, _, (Push _)::_)
+    \end{lstlisting} &5&11&1&30\\
+        \hline      
+        \begin{lstlisting}[basicstyle=\scriptsize]
+(_, _, (Ldi _)::_)
+(_, _, (Push _)::_)
+(Int(_), _, (IOp _)::_)
+\end{lstlisting}
+     &20&$\sim$1700&3&$\sim$11000                    \\ \hline
+  \end{tabular}
+
+\end{table}
+
+\FloatBarrier
+
 \section{Evaluation}
 \label{sec:eval}
 
@@ -5,17 +96,43 @@
 
 We performed an evaluation of the pattern matching synthesizer on a number of benchmarks.
 The majority of benchmarks were prepared manually; we didn't use any specific benchmark sets mentioned in literature~\cite{Scott2000WhenDM} yet.
-The 4th benchmark was taken from~\cite{maranget2008}, we used it in Section~\ref{sec:intro} as the first example. 
 The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU @ 4.00GHz processor and 8GB of memory,
 \textsc{OCanren} was compiled with \mbox{ocaml-4.07.1+fp+flambda}. All benchmarks were executed in the native mode ten times,
-then average monotonic clock time was taken. The results of the evaluation are shown on Figure~\ref{fig:eval}.
+then average monotonic clock time was taken. The results of the evaluation are shown in Table.~\ref{fig:eval}.
 
-In the table the double bar separates input data from output. Inputs are: the patterns used for synthesis,
-the requested number of answers and the pruning factor. For example, in the first benchmark pruning factor equals 100 which means that structural constraint is checked every 100 unifications. Outputs are: the size of generated complete samples set, the running time before receiving the
+In the table the double bar separates input data from output. %Inputs are: 
+The patterns used for synthesis form the input of synthesis algorithm.
+%and the requested number of answers. 
+Outputs are: the size of generated complete samples set, the running time before receiving the
 first answer, the total number of programs synthesized, the total search time.
+In all benchmarks the structural constraint is being checked every 100 unifications and all answers were requested.
 
-Our approach currently does not work fast on a large benchmark. On Fig.~\ref{fig:pcf} we cite an example extracted from a bytecode
-machine for PCF~\cite{Plotkin1977LCFCA,maranget2008}. For such complex examples (in terms of type definition complexity and number and size of patterns)
+We also give an example of synthesized program for the 4th benchmark, which was taken from~\cite{maranget2008}. We used this benchmark in the Section~\ref{sec:related}
+ %Section~\ref{sec:intro} (
+as the first example (see Fig.~\ref{fig:match-example}).
+%In this benchmark 
+%The fourth benchmark is an example mentioned on %figure~\ref{fig:matching-example1}. In this example
+%all \lstinline|switch| expressions will have two branches, so they are equivalent to \lstinline|if| expressions.
+
+Our algorithm starts the
+synthesis and in about 1 second discovers the first answer, which is equivalent to the solution on Fig.~\ref{fig:matching-example2} and
+consists of 6 \lstinline|switch| expressions. In about half a second it synthesizes a better answer with 5 \lstinline|switch| expressions:
+
+\begin{lstlisting}
+switch $\bullet[0]$ with
+| true -> (switch $\bullet[2]$ with  
+           | true -> (switch $\bullet[1]$ with  | true -> 4 | _ -> 1)
+           | _ -> 3)
+| _ -> (switch $\bullet[1]$ with  
+        | true -> 2
+        | _ -> (switch $\bullet[2]$ with  | true -> 1 | _ -> 3))
+\end{lstlisting}
+
+And after about half a second it synthesizes the optimal answer of size 4. Then it searches for an answer which would have less than 4 switch expressions
+for some time, fails to find one and finishes the synthesis. The time between the start and the end of synthesis is shown in the last column of Table.~\ref{fig:eval}.
+
+Our approach currently does not work fast for large benchmarks. On Fig.~\ref{fig:pcf} we cite an example extracted from a bytecode
+machine for PCF~\cite{maranget2008,Plotkin1977LCFCA}. For such a complex examples (in terms of type definition complexity and the number and size of patterns)
 both the size of the search space and the number of samples is too large for our approach to work so far.
 
 %The first conclusion can be drawn from results is that a often checking of the current approximation of the answer by size constraint

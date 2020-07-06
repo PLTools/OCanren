@@ -1,9 +1,9 @@
 \section{The Pattern Matching Synthesis Problem}
 
-We start from a simplified view on pattern matching which does not incorporate some practically important aspects of the construct such as
+We describe here a simplified view on pattern matching which does not incorporate some practically important aspects of the construct such as
 name bindings in patterns, guards or even semantic actions in branches. In a purified form, however, it  represents the essence of pattern
-matching as an ``inspect-and-branch'' procedure. Once we come up with the solution for the essential part of the problem we embellish it with
-other features until it reaches a complete form.
+matching as an ``inspect-and-branch'' procedure. Other features can be easily added later once a solution for the essential part of the problem
+is found.
 
 First, we introduce a finite set of \emph{constructors} $\mathcal C$, equipped with arities, a set of values $\mathcal{V}$
 and a set of patterns $\mathcal{P}$:
@@ -34,7 +34,7 @@ is introduced to specify the left-to-right matching strategy, and we
 use current index as an environment. An important rule, $\ruleno{MatchOtherwise}$ specifies that if we exhausted all the patterns with no matching we stop with
 the current index (which in this case is equal to the number of patterns plus one).
 
-\begin{figure}
+\begin{figure}[t]
    \renewcommand*{\arraystretch}{2}
    \[
    \begin{array}{cr}
@@ -46,7 +46,7 @@ the current index (which in this case is equal to the number of patterns plus on
    \label{fig:match1pat}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[t]
    \renewcommand*{\arraystretch}{3}
    \setarrow{\xrightarrow}
    \setsubarrow{_*}
@@ -79,7 +79,7 @@ synthesizing implementations, we need a \emph{programmatical} view on the same p
 \]
  
 Here $\mathcal{M}$ stands for a \emph{matching expression}, which is either a reference to a scrutinee ``$\bullet$'' or
-an indexed subexpression of scrutinee. Programs in the switch language can discriminate based on the
+a (multiply) indexed subexpression of a scrutinee. Programs in the switch language can discriminate on the
 structure of matching expressions, testing their top-level constructors and eventually returning natural numbers as results.
 The switch language is similar to the intermediate representations for pattern matching code used in 
 previous works on pattern matching implementation~\cite{maranget2001,maranget2008}.
@@ -89,7 +89,7 @@ The semantics of the switch language is given by mean of relations ``$\xrightarr
 the second describes the semantics of the switch language itself. In both cases the scrutinee $v$ is used as an environment ($v\vdash$).
 
 
-\begin{figure}
+\begin{figure}[t]
   \renewcommand*{\arraystretch}{2}
   \setarrow{\xrightarrow}
   \setsubarrow{_{\mathcal M}}
@@ -103,17 +103,30 @@ the second describes the semantics of the switch language itself. In both cases 
   \label{fig:matchexpr}
 \end{figure}
 
-\begin{figure}
-  \renewcommand*{\arraystretch}{3}
+\begin{figure}[t]
   \setarrow{\xrightarrow}
   \setsubarrow{_{\mathcal S}}
   \[
   \begin{array}{cr}
-    \withenv{v}{\trans{\primi{return}\;i}{}{i}} & \ruleno{Return}\\
-    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{C^k\ v_1 \dots v_k}}}\qquad \withenv{v}{\trans{s}{}{i}}}
-          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchMatched}\\
-    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{D^n\  v_1 \dots v_n}}}\qquad C^k\ne D^n\qquad \withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;s^*\;\primi{otherwise}\;s^\prime}{}{i}}}
-          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchNotMatched}\\
+    \withenv{v}{\trans{\primi{return}\;i}{}{i}} & \ruleno{Return}\\[10mm]
+    
+    \trule{\renewcommand*{\arraystretch}{1}
+           \begin{array}{c}        
+              {\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{C^k\ v_1 \dots v_k}}} \\
+              \withenv{v}{\trans{s}{}{i}}
+           \end{array}
+          }    
+          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchMatched}\\[10mm]
+          
+    \trule{\renewcommand*{\arraystretch}{1}
+           \begin{array}{c}        
+             {\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{D^n\  v_1 \dots v_n}}}\\
+             C^k\ne D^n\\
+             \withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;s^*\;\primi{otherwise}\;s^\prime}{}{i}}
+           \end{array}
+          }
+          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & \ruleno{SwitchNotMatched}\\[10mm]
+          
     \trule{\withenv{v}{\trans{s}{}{i}}}{\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;\varepsilon\;\primi{otherwise}\;s}{}{i}}} & \ruleno{SwitchOtherwise}
   \end{array}
   \]
