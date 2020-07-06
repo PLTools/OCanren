@@ -81,7 +81,7 @@ of patterns, for every value $v$ there is exactly one answer value $i$, such tha
 
 \[
 \exists i:\, \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longrightarrow  
-\big(\forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{j} \Longrightarrow  j=i\large\big)
+\large\big(\forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{j} \Longrightarrow  j=i\large\big)
 \]
 
 Thus, we can replace universal quantification over the sets of answers by existential one, for which we have an efficient relational counterpart~--- the ``\lstinline|fresh|''
@@ -128,7 +128,7 @@ match^o\,v\,p_1,\dots,p_k\,i\,b \wedge eval^o_{\mathcal S}\,v\,\pi\,i\,b
 Thus, the goal we eventually came up with is
 
 \[
-\bigwedge_{v\in\mathcal{E}\,(p_1,\dots,p_k)}\mbox{\lstinline|fresh ($i$)|}\; \{match^o\,v\,p_1,\dots,p_k\,i \wedge eval^o_{\mathcal S}\,v\,\circled{?}\,i\}
+\bigwedge_{v\in\mathcal{E}\,(p_1,\dots,p_k)}\mbox{\lstinline|fresh ($i$)|}\; \{match^o\ v\,\ p_1,\dots,p_k\ i \ \wedge \ eval^o_{\mathcal S}\,v\,\circled{?}\ i \}
 \eqno{(\star\star)}
 \]
 

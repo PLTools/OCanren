@@ -7,16 +7,19 @@ implementation stimulated the development of various advanced techniques which p
 results as a baseline for a case study of relational synthesis\footnote{We have to note that this term is overloaded and can be used to refer to completely
 different approaches than we utilize.}~--- an approach for program synthesis based on application of relational programming~\cite{TRS,WillThesis}, and,
 in particular, relational interpreters~\cite{unified} and relational conversion~\cite{conversion}. Relational programming can be considered as a specific form
-of constraint logic programming centered around \textsc{miniKanren}, a combinator-based DSL, implemented for a number of host languages.\footnote{\url{minikanren.org}}
-Unlike \textsc{Prolog}, which employs a deterministic depth-first search, \textsc{miniKanren} advocates a completely declarative approach, in which a user is not
+of constraint logic programming centered around \textsc{miniKanren}\footnote{\url{http://minikanren.org}}, a combinator-based DSL, implemented for a number of host languages.
+Unlike \textsc{Prolog}, which employs a deterministic depth-first search, \textsc{miniKanren} advocates a 
+%completely 
+more
+declarative approach, in which a user is not
 allowed to rely on a concrete search discipline, which means, that the specifications, written in \textsc{miniKanren}, are understood much more symmetrically.
 The distinctive feature of \textsc{miniKanren} is complete \emph{interleaving search}~\cite{search}. The basic constraint is unification with occurs check, although
 advanced implementations support other primitive constructs, such as disequality or finite-domain constraints~\cite{CKanren}. Syntactically, \textsc{miniKanren} is mutually
 convertible to \textsc{Prolog}, but, unlike latter, makes use of explicit logical connectives (conjunction and disjunction), existential quantification and unification.
-
+ 
 A distinctive application of relational programming is implementing \emph{relational interpreters}~\cite{Untagged}. Unlike conventional interpreters, which for a program and
 input value produce output, relational interpreters can operate in various directions: for example, they are capable of computing an input value for a given
-program and a given output, or even synthesize a program for a given pairs of input-output values. The latter case forms a basis for program synthesis~\cite{unified,eigen}.
+program and a given output, or even synthesize a program for a given pairs of input-output values. The latter case forms a basis for program synthesis~\cite{eigen,unified}.
 
 Our approach is based on relational representation of the source language pattern matching semantics on the one hand, and
 the semantics of the intermediate-level implementation language on the other. We formulate the condition necessary for a correct and complete implementation of pattern matching and use it to

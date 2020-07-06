@@ -117,7 +117,7 @@ techniques~\cite{sestoft1996}. The main drawback of indirect approach is that th
 
 For non-strict languages pattern matching should evaluate only those sub-expressions which are necessary for performing pattern matching. If not done carefully pattern matching can
 change the termination behavior of the program. In general non-strict languages put more constraints on pattern matching and thus admit a smaller  set of heuristics. 
-A few approaches for checking sub-expressions in lazy languages have been proposed. In ~\cite{augustsson1985} a simple left-to-right order of subexpression checking was proposed
+A few approaches for checking sub-expressions in lazy languages have been proposed. In~\cite{augustsson1985} a simple left-to-right order of subexpression checking was proposed
 with a proof that this particular order doesn't affect termination. The backtracking automaton being built takes a form of a DAG to reduce the code size. A few refinements have been added in~\cite{wadler1987}
 as a part of textbook~\cite{peytonjones1987} on the implementation of lazy functional languages. The approach from this book is used in the current version of GHC~\cite{marlow2012the}.
 %~\footnote{The Glasgow Haskel Compiler, \url{http://www.haskell.org/ghc/}}

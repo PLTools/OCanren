@@ -46,24 +46,25 @@
 
 \usepackage{placeins}
 
+\usepackage{lmodern}
+
 \usepackage{listings}
 \lstdefinelanguage{ocanren}{
 keywords={run, conde, fresh, let, in, match, with, when, class, type,
 object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
-new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure, switch, 
 true, false},
 sensitive=true,
 commentstyle=\small\itshape\ttfamily,
-%keywordstyle=\ttfamily\textbf,
-keywordstyle=\textbf,
-%  LLNCS template screws bold typewriter font. So I swiched to non-tt keywords. 
-% Kakadu
+keywordstyle=\ttfamily\textbf,
 identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,
 mathescape=true,
 fontadjust=true,
-literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1 
+%{[]}{{\texttt|[]|}}1
+,
 morecomment=[s]{(*}{*)}
 }
 
@@ -142,3 +143,4 @@ language=ocanren
 \let\eps\varepsilon
 
 \newtheorem{Observation}{Observation}
+
