@@ -10,7 +10,7 @@ of techniques, some of which require extending the implementation of the search.
 \begin{itemize}
 \item We make use of type information to restrict the subset of constructors which may appear in a certain branch of
   program being synthesized.
-\item After a complete set of samples is generated, we use it to put auxilliary constraints on matching expressions. For example,
+\item After a complete set of samples is generated, we use it to put auxiliary constraints on matching expressions. For example,
   if we can detect that a matching expression points to a subexpression of scrutinee which can start with a single constructor (like
   tuples), and prohibit it from being considered during the synthesis.
 \item We implement \emph{structural constraints} which allow us to restrict the shape of terms during the search, and
