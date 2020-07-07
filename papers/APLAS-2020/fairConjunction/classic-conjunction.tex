@@ -2,7 +2,7 @@
 \label{sec:directed}
 
 % В этом разделе мы рассмотрим реляционный язык miniKanren с классической направленной конъюнкцией, изучим достоинства и недостатки направленной конъюнкции на примерах.
-In this section we briefly describe \mk and give an example of relational definition. Also we consider some distinctive features of the classical directed
+In this section we briefly describe \mk and give an example of the relational definition. Also we consider some distinctive features of the classical directed
 conjunction of \mk and demonstrate its advantages and drawbacks using examples. 
 
 \begin{figure}[b]
@@ -22,7 +22,7 @@ let rec append$^o$ x y xy =
 \vspace{-5mm}
 \end{figure}
 
-The main syntactic notion of \mk is \textbf{goal}. There are only four syntactic forms of goals:
+The main syntactic notion of \mk is \textbf{goal}. There are only four syntactic forms of goals.
 
 \begin{itemize}
 \item[$\bullet$] Unification~\cite{fair:unify} $t_1 \equiv t_2$, where $t_1, t_2$ are some terms that contain constructors and variables. Unification is the basic
@@ -72,7 +72,7 @@ the concatenation of lists \lstinline|x| and \lstinline|y| equals list \lstinlin
 We consider a few different queries for the relation \lstinline|append$^o$| (Fig.~\ref{fair:appendo-examples}). First of all, we can concatenate two lists
 (Fig~\ref{fair:appendo-examples}a). Also we can find a list suffix (Fig.~\ref{fair:appendo-examples}b). Moreover, we can synthesize a finite stream of all
 list pairs which, being concatenated, deliver given result (Fig.~\ref{fair:appendo-examples}c) or an infinite stream of all lists with a given suffix (Fig.~\ref{fair:appendo-examples}d).
-Finally, we can prove some properties of the relations. In particular, a singleton list is not a prefix of an empty list (Fig.~\ref{fair:appendo-examples}e).
+Finally, we can prove some properties of relations. In particular, a singleton list is not a prefix of an empty list (Fig.~\ref{fair:appendo-examples}e).
 
 \subsection{Directed Conjunction}
 

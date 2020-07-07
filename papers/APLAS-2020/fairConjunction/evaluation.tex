@@ -19,12 +19,12 @@ let rec add$^o$ x y xy =
 \label{fair:lst-addo}
 \end{figure}
 
-The approach based on the divergence test has a similar to ours behavior. When evaluating a conjunct before unfolding, we compute the predicate. And depending on the result, we either perform
+The approach based on the divergence test has similar to our behavior. When evaluating a conjunct before unfolding, we compute the predicate. And depending on the result, we either perform
 the unfolding or begin to evaluate another conjunct. However, this approach has two key differences.
 
 First, it uses a different predicate that detects a divergence. The predicate is as follows: if a call in the current conjunct is more general than one of the enclosing ones to the same relation, it
-is necessary to evaluate another conjunct. Both predicates are not always effecient. Our predicate based on structural recursion is obviously not effecient in relations without structural recursion.
-In this case, a naive fair conjunction will be used. At the same time, the predicate based on the divergence test is also not effecient for some programs. For example,
+is necessary to evaluate another conjunct. Both predicates are not always efficient. Our predicate based on structural recursion is obviously not efficient in relations without structural recursion.
+In this case, a naive fair conjunction will be used. At the same time, the predicate based on the divergence test is also not efficient for some programs. For example,
 a query \lstinline{add$^o$ q Zero Zero} of relation \lstinline{add$^o$} (Fig.~\ref{fair:lst-addo}) diverges but no one of the calls in the sequence of evaluation
 
 \begin{lstlisting}
@@ -44,7 +44,7 @@ In other words, we are looking for a converging conjunct to be evaluated first. 
 all the conjuncts diverge, being evaluated in isolation. Thus, the query \lstinline{divergence$^o$ l} (see Fig.~\ref{fair:lst-repeato}) will detect divergence in both conjuncts,
 then will stop and report the impossibility to continue the evaluation. At the same time our approach allows to find the answer and prove the absence of other answers.
 
-To summarize, our approach and the approach based on the divergence test may be ineffecient on some examples, and our approach saves more information when moving to another conjunct,
+To summarize, our approach and the approach based on the divergence test may be inefficient on some examples, and our approach saves more information when moving to another conjunct,
 which allows us to correctly evaluate some diverging programs.
 
 \begin{figure}
