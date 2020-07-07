@@ -18,9 +18,7 @@ The main syntactic notion of \mk is \textbf{goal}. There are only four syntactic
   to be used in the goal $g$.
 \end{itemize}
 
-The result of \mk program evaluation is a lazy, possibly infinite stream of answers, represented as substitutions.
-
-\begin{figure}[h!]
+\begin{figure}[b]
 \centering
 \begin{tabular}{c}
 \begin{lstlisting}[numbers=left,numberstyle=\small]
@@ -34,7 +32,10 @@ let rec append$^o$ x y xy =
 \end{tabular}
 \caption{Relational list concatenation}
 \label{fair:lst-appendo}
+\vspace{-5mm}
 \end{figure}
+
+The result of \mk program evaluation is a lazy, possibly infinite stream of answers, represented as substitutions.
 
 As an example we consider a relational definition of list concatenation (Fig.~\ref{fair:lst-appendo}). The relation \lstinline|append$^o$ x y xy| can be interpreted as the following:
 the concatenation of lists \lstinline|x| and \lstinline|y| equals list \lstinline|xy|.

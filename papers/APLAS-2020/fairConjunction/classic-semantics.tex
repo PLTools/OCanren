@@ -109,12 +109,12 @@ If one of the states is empty $union$ returns another state. If both states are 
 The next auxiliary function, $push$, is needed to construct the state after the unfolding:
 
 \[
-push\,(C,\, T) =
+push(C, T) =
 \left\{
 \begin{array}{rl}
 \emptyset, &  \mbox{if } T = \emptyset \\
-\inbr{\sigma;\, i;\, C_1 \land \bar{C} \land C_2}, & \mbox{if } T = \inbr{\sigma;\, i;\, \bar{C}} \mbox{ and } C = C_1 \land \Box \land C_2 \\
-push\,(C, T_1) \lor push\,(C, T_2), & \mbox{if } T = T_1 \lor T_2
+\inbr{\sigma;\, i;\, C_1 \land \bar{C} \land C_2}, & \mbox{if } T = \inbr{\sigma;\, i;\, \bar{C}} \mbox{ and } C \!=\! C_1\! \land\! \Box\! \land\! C_2 \\
+push(C, T_1) \lor push(C, T_2), & \mbox{if } T = T_1 \lor T_2
 \end{array}
 \right.
 \]
@@ -146,7 +146,7 @@ corresponds to the body of this relation. Since unfolding is a finite process we
       {\inbr{\sigma;\, i;\, C} \vdash F(\bar{t}) \leadsto \inbr{\sigma;\, i;\, F(\bar{t}) \land C}}
 &     \ruleno{Call} \\[2mm]
 \dfrac{\inbr{\sigma;\, i+1;\, C} \vdash g[x \leftarrow \alpha_i] \leadsto T}
-      {\inbr{\sigma;\, i;\, C} \vdash \mbox{\lstinline|fresh|} \, x. \, g \leadsto T}
+      {\inbr{\sigma;\, i;\, C} \vdash \mbox{\lstinline|fresh|} (x)\, g \leadsto T}
 &     \ruleno{Fresh}  \\[4mm]
 \dfrac{\inbr{\sigma;\, i;\, C} \vdash g_1 \leadsto T_1 \qquad \inbr{\sigma;\, i;\, C} \vdash g_2 \leadsto T_1}
       {\inbr{\sigma;\, i;\, C} \vdash g_1 \lor g_2 \leadsto union(T_1, T_2)}
