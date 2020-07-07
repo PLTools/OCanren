@@ -5,19 +5,6 @@
 In this section we briefly describe \mk and give an example of relational definition. Also we consider some distinctive features of the classical directed
 conjunction of \mk and demonstrate its advantages and drawbacks using examples. 
 
-The main syntactic notion of \mk is \textbf{goal}. There are only four syntactic forms of goals:
-
-\begin{itemize}
-\item[$\bullet$] Unification~\cite{fair:unify} $t_1 \equiv t_2$, where $t_1, t_2$ are some terms that contain constructors and variables. Unification is the basic
-  construct to create goals. If $t1, t2$ are unified, then the goal is considered successful. In this case the result of unification is a singleton stream which
-  contains the most common unifier of $t_1, t_2$. Otherwise, the goal is failed and result is empty stream.
-\item[$\bullet$] Disjunction $g_1 \lor g_2$, where $g_1, g_2$ are some goals. Both goals are evaluated independently. The result of disjunction is the union of answers for $g_1$ and $g_2$.
-\item[$\bullet$] Conjunction $g_1 \land g_2$, where $g_1, g_2$ are some goals. First, we evaluate the goal $g_1$, and then we evaluate the goal $g_2$ in the context of each
-  answer for $g_1$. As a result, we get answers for both $g_1$ and the $g_2$ simultaneously.
-\item[$\bullet$] Fresh variable introduction \!$\lstinline{fresh} (x). \, g$, where $x$ is a variable and $g$ is a goal. This construct is used to introduce a fresh variable $x$
-  to be used in the goal $g$.
-\end{itemize}
-
 \begin{figure}[b]
 \centering
 \begin{tabular}{c}
@@ -34,6 +21,19 @@ let rec append$^o$ x y xy =
 \label{fair:lst-appendo}
 \vspace{-5mm}
 \end{figure}
+
+The main syntactic notion of \mk is \textbf{goal}. There are only four syntactic forms of goals:
+
+\begin{itemize}
+\item[$\bullet$] Unification~\cite{fair:unify} $t_1 \equiv t_2$, where $t_1, t_2$ are some terms that contain constructors and variables. Unification is the basic
+  construct to create goals. If $t1, t2$ are unified, then the goal is considered successful. In this case the result of unification is a singleton stream which
+  contains the most common unifier of $t_1, t_2$. Otherwise, the goal is failed and result is empty stream.
+\item[$\bullet$] Disjunction $g_1 \lor g_2$, where $g_1, g_2$ are some goals. Both goals are evaluated independently. The result of disjunction is the union of answers for $g_1$ and $g_2$.
+\item[$\bullet$] Conjunction $g_1 \land g_2$, where $g_1, g_2$ are some goals. First, we evaluate the goal $g_1$, and then we evaluate the goal $g_2$ in the context of each
+  answer for $g_1$. As a result, we get answers for both $g_1$ and the $g_2$ simultaneously.
+\item[$\bullet$] Fresh variable introduction \!$\lstinline{fresh} (x). \, g$, where $x$ is a variable and $g$ is a goal. This construct is used to introduce a fresh variable $x$
+  to be used in the goal $g$.
+\end{itemize}
 
 The result of \mk program evaluation is a lazy, possibly infinite stream of answers, represented as substitutions.
 
