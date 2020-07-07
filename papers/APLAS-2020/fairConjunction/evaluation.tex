@@ -2,7 +2,7 @@
 \label{sec:eval}
 
 % В данном разделе мы представили результаты апробации трех семантик на нескольких примерах.
-In this section we compare the possibilities of a fair conjunction based on structural recursion with a similar approach based on the divergence test of conjuncts~\cite{fair:DivTest}. Also we present the results of the evaluation of three semantics on a set of examples; the semantics were implemented in \textsc{Haskell} in the form of interpreters.
+In this section we compare the capabilities of a fair conjunction based on structural recursion with a similar approach based on the divergence test of conjuncts~\cite{fair:DivTest}. Also we present the results of the evaluation of three semantics on a set of examples; the semantics were implemented in \textsc{Haskell} in the form of interpreters.
 
 \begin{figure}[h!]
 \centering
@@ -19,21 +19,33 @@ let rec add$^o$ x y xy =
 \label{fair:lst-addo}
 \end{figure}
 
-Indeed, the approach based on the divergence test has similar behavior. When evaluating the conjunct before performing the unfolding, we compute the predicate. And depending on the result, we either perform the unfolding or begin to evaluate another conjunct. However, this approach has two key differences.
+The approach based on the divergence test has a similar to ours behavior. When evaluating a conjunct before unfolding, we compute the predicate. And depending on the result, we either perform
+the unfolding or begin to evaluate another conjunct. However, this approach has two key differences.
 
-First, it uses a different predicate that detects a divergence. The predicate of the approach based on the divergence test is follow: if the call in the current conjunct is more general than one of the previous calls, it is necessary to evaluate another conjunct. Both predicates are not always effective. Our predicate based on structural recursion is obviously not effective in relations without structural recursion. In this case, a naive fair conjunction will be used.
-At the same time, the predicate based on the divergence test is also not effective for some programs. For example, query \lstinline{add$^o$ q Zero Zero} of relation \lstinline{add$^o$} (Fig.~\ref{fair:lst-addo}) diverges but not one of the calls in the sequence of evaluation 
+First, it uses a different predicate that detects a divergence. The predicate is as follows: if a call in the current conjunct is more general than one of the enclosing ones to the same relation, it
+is necessary to evaluate another conjunct. Both predicates are not always effecient. Our predicate based on structural recursion is obviously not effecient in relations without structural recursion.
+In this case, a naive fair conjunction will be used. At the same time, the predicate based on the divergence test is also not effecient for some programs. For example,
+a query \lstinline{add$^o$ q Zero Zero} of relation \lstinline{add$^o$} (Fig.~\ref{fair:lst-addo}) diverges but no one of the calls in the sequence of evaluation
+
 \begin{lstlisting}
 add$^o$ q   Zero               Zero, 
 add$^o$ q$_1$ (Succ Zero)          Zero, 
 add$^o$ q$_2$ (Succ (Succ Zero)) Zero, 
 ...
 \end{lstlisting}
-\noindent is more general than its predecessors. As a result, the conjunction \linebreak \lstinline{(add$^o$ q Zero Zero /\ q === Zero)} will give right answer and diverge. At the same time, the relation \lstinline{add$^o$} is structurally recursive in the first argument and this argument is fresh. Therefore, our approach will evaluate the second conjunct and then the first conjunct will converge.
 
-Second, the approach based on the divergence test moves to another conjunct in a different way. When we want to evaluate the conjunction \lstinline{(A /\ B)} we will evaluate the first conjunct \lstinline{A}. If after some steps we get \lstinline{A$'$} which diverges, we change the order in the original conjunction and begin to evaluate \lstinline{(B /\ A)}. In other words, we are looking for a converging conjunct to be evaluated first. This behavior selects the optimal order of the conjuncts, but is not applicable in the case when all the conjuncts diverge, if they evaluate in isolation. Thus, the query \lstinline{divergence$^o$ l} (see Fig.~\ref{fair:lst-repeato}) will detect divergence in both conjuncts, then will stop and report the impossibility to continue the evaluation. At the same time our approach allows to find the answer and prove the absence of other answers.
+is more general than its predecessors. As a result, the conjunction \linebreak \lstinline{(add$^o$ q Zero Zero /\ q === Zero)} will give a correct answer and diverge. At the same time,
+the relation \lstinline{add$^o$} is structurally recursive in the first argument and this argument is fresh. Therefore, our approach will evaluate the second conjunct and then
+the first conjunct will converge.
 
-To summarize, our approach and the approach based on the divergence test may be ineffective on some examples, and our approach saves more information when moving to another conjunct, which allows us to correctly evaluate some diverging programs.
+Second, the approach based on the divergence test moves to another conjunct in a different way. When we want to evaluate a conjunction \lstinline{(A /\ B)} we evaluate the first
+conjunct \lstinline{A}. If after some steps we get \lstinline{A$'$} which diverges, we change the order in the original conjunction and begin to evaluate \lstinline{(B /\ A)}.
+In other words, we are looking for a converging conjunct to be evaluated first. This behavior selects the optimal order of the conjuncts, but is not applicable in the case when
+all the conjuncts diverge, being evaluated in isolation. Thus, the query \lstinline{divergence$^o$ l} (see Fig.~\ref{fair:lst-repeato}) will detect divergence in both conjuncts,
+then will stop and report the impossibility to continue the evaluation. At the same time our approach allows to find the answer and prove the absence of other answers.
+
+To summarize, our approach and the approach based on the divergence test may be ineffecient on some examples, and our approach saves more information when moving to another conjunct,
+which allows us to correctly evaluate some diverging programs.
 
 \begin{figure}
 \centering
