@@ -9,7 +9,8 @@ We first describe the general idea, and then consider these steps is details.
 Our idea of using relational programming for pattern matching synthesis is based on the following observations:
 
 \begin{itemize}
-\item For the switch language we can implement a relational interpreter $eval^o_\ir$ with the following property: for
+\item For the switch language we can implement a relational interpreter\footnote{Conventionally for \textsc{miniKanren},
+  the names of relations are superscripted by ``$^o$''.} $eval^o_\ir$ with the following property: for
   arbitrary $v\in\mathcal V$, $\pi\in\ir$ and $i\in\mathbb N$
  
   \[
@@ -70,7 +71,8 @@ In other words, if a program implements a correct and complete pattern matching 
 program implements a correct and complete pattern matching for all values. The idea of using a complete set of samples originates from the following observation: each pattern
 describes a (potentially infinite) set of values, and pattern matching splits the set of all values into equivalence classes, each corresponding to a certain matching pattern.
 Moreover, the values of different classes can be distinguished only by looking down to a \emph{finite} depth (as different patterns can be distinguished in this way).
-The generation of complete sample set will be addressed below (see Section~\ref{sec:samples}).
+The generation of complete sample set will be addressed below (see Section~\ref{sec:samples}). Example-based program synthesis is not a completely new technique in relational
+programming~\cite{unified}; in our case, however, we can ensure the correctness of the synthesis result, while in previous reports it had to be established externally.
 
 \setarrow{\xrightarrow}
 
@@ -79,7 +81,7 @@ of patterns, for every value $v$ there is exactly one answer value $i$, such tha
 
 \[
 \exists i:\, \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longrightarrow  
-\big(\forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{j} \Longrightarrow  j=i\large\big)
+\large\big(\forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{j} \Longrightarrow  j=i\large\big)
 \]
 
 Thus, we can replace universal quantification over the sets of answers by existential one, for which we have an efficient relational counterpart~--- the ``\lstinline|fresh|''
@@ -115,17 +117,18 @@ But, by the determinism of the switch language semantics, it immediately follows
 \neg\;(\withenv{v}{\trans{\pi}{}{j}})
 \]
 
+\begin{comment}
 Alternatively\footnote{\color{red} Reviewer N1 said that passage about bool argument is unclear and may be omitted (or described with more details)}, we could switch to a more explicit relational representation of both semantics, adding an extra boolean argument to
 both $eval^o_{\mathcal S}$ and $match^o$ and using the same fresh variable $b$ in the query of interest:
 
 \[
 match^o\,v\,p_1,\dots,p_k\,i\,b \wedge eval^o_{\mathcal S}\,v\,\pi\,i\,b
 \]
-
+\end{comment}
 Thus, the goal we eventually came up with is
 
 \[
-\bigwedge_{v\in\mathcal{E}\,(p_1,\dots,p_k)}\mbox{\lstinline|fresh ($i$)|}\; \{match^o\,v\,p_1,\dots,p_k\,i \wedge eval^o_{\mathcal S}\,v\,\circled{?}\,i\}
+\bigwedge_{v\in\mathcal{E}\,(p_1,\dots,p_k)}\mbox{\lstinline|fresh ($i$)|}\; \{match^o\ v\,\ p_1,\dots,p_k\ i \ \wedge \ eval^o_{\mathcal S}\,v\,\circled{?}\ i \}
 \eqno{(\star\star)}
 \]
 
@@ -165,8 +168,8 @@ literally in a familiar functional style. For example, functional implementation
     in inner O $p^*$
 \end{lstlisting}
 
-We mixed here the concrete syntax of \textsc{OCaml} and mathematical notation, used in the definition of the relation in question; the actual
-implementation only a few lines of code longer. Note, we use here natural numbers in Peano form and custom list processing functions in order
+We mixed here the concrete syntax of \textsc{OCaml} and mathematical notation, used in the definition of the relation in question, to underline their similarity;
+the actual implementation only a few lines of code longer. Note, we use here natural numbers in Peano form and custom list processing functions in order
 to apply relational conversion later.
 
 Using relational conversion saves a lot of efforts as \textsc{OCanren} specifications tend to be much more verbose; in addition
@@ -210,7 +213,8 @@ and switch programs:
 \[
 \begin{array}{rcl}
   d_{\mathcal S}\,(\primi{return}\;i)&=&0\\
-  d_{\mathcal S}\,(\primi{switch}\;m\;\primi{of}\;C_1\to s_1,\dots,C_k\to s_k\;\primi{otherwise}\;s)&=&max\,\{d_{\mathcal M}\,(m),\,d_{\mathcal S}\,(s_i),\,d_{\mathcal S}\,(s)\}
+  d_{\mathcal S}\,(\primi{switch}\;m\;\primi{of}\;C_1\to s_1,\dots,C_k\to s_k\;\primi{otherwise}\;s)&=&\\
+  \multicolumn{3}{c}{\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad max\,\{d_{\mathcal M}\,(m),\,d_{\mathcal S}\,(s_i),\,d_{\mathcal S}\,(s)\}}
 \end{array}
 \]
 

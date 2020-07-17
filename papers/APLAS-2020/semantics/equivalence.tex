@@ -14,8 +14,8 @@ for the operational one and a set of representing functions for the denotational
 \item terms in the domain of representing function are ground.
 \end{itemize}
 
-Therefore we can easily extend (perhaps ambiguously) any substitution to a representing function by composing it with an arbitrary representing function which preserves
-all variable dependencies in the substitution. So we can define a set of representing functions corresponding to a substitution as follows:
+Therefore we can easily extend (perhaps ambiguously) any substitution to a representing function by composing it with an arbitrary representing function preserving
+all variable dependencies in the substitution. So we can define a set of representing functions that correspond to a substitution as follows:
 
 \[
 \sembr{\sigma} = \{\overline{\mathfrak f} \circ \sigma \mid \mathfrak{f}:\mathcal{A}\mapsto\mathcal{D}\}
@@ -54,27 +54,23 @@ In \textsc{Coq} we again use a proposition instead:
 \end{lstlisting}
 \end{comment}
 
-This allows us to state theorems relating two semantics.
+This allows us to state theorems relating the two semantics.
 
 \begin{theorem}[Operational semantics soundness]
 \label{lem:soundness}
-If indices of all free variables in a goal $g$ are limited by some number $n$, then
-
-\[
-\sembr{\inbr{g, \epsilon, n}}_{op} \subset \sembr{g}.
-\]
+If indices of all free variables in a goal $g$ are limited by some number $n$, then $\sembr{\inbr{g, \epsilon, n}}_{op} \subset \sembr{g}$.
 \end{theorem}
 
 It can be proven by nested induction, but first, we need to generalize the statement so that the inductive hypothesis would be strong enough for the inductive step.
 To do so, we define denotational semantics not only for goals but for arbitrarily states. Note that this definition does not need to have any intuitive
-interpretation, it is introduced only for the proof to go smoothly. The definition of the denotational semantics for extended states is shown on Figure~\ref{denotational_semantics_of_states}.
+interpretation, it is introduced only for the proof to go smoothly. The definition of the denotational semantics for extended states is shown on Fig.~\ref{denotational_semantics_of_states}.
 The generalized version of the theorem uses it.
 
 \begin{figure}[t]
   \[
   \begin{array}{ccl}
     \sembr{\Diamond}&=&\emptyset\\
-    \sembr{\inbr{g, \sigma, n}}&=&\sembr{g}\cap[\sigma]\\
+    \sembr{\inbr{g, \sigma, n}}&=&\sembr{g}\cap\sembr{\sigma}\\
     \sembr{s_1 \oplus s_2}&=&\sembr{s_1}\cup\sembr{s_2}\\
     \sembr{s \otimes g}&=&\sembr{s}\cap\sembr{g}\\
   \end{array}
@@ -98,26 +94,24 @@ and the next state are subsets of the denotational semantics for the initial sta
 
 \begin{lemma}[Soundness of the answer]
 \label{lem:answer_soundness}
-For any transition $s \xrightarrow{(\sigma, n)} s'$,
-$\sembr{\sigma} \subset \sembr{s}$.
+For any transition $s \xrightarrow{(\sigma, n)} \hat{s}$, \mbox{$\sembr{\sigma} \subset \sembr{s}$}.
 \end{lemma}
 
 \begin{lemma}[Soundness of the next state]
 \label{lem:next_state_soundness}
-For any transition $s \xrightarrow{l} s'$,
-$\sembr{s'} \subset \sembr{s}$.
+For any transition $s \xrightarrow{l} \hat{s}$, \mbox{$\sembr{\hat{s}} \subset \sembr{s}$}.
 \end{lemma}
 
 It would be tempting to formulate the completeness of operational semantics as soundness with the inverted inclusion, but it does not hold in such generality.
-The reason for this is that the denotational semantics encodes only the dependencies between free variables of a goal, which is reflected by the completeness condition,
+The reason for this is that the denotational semantics encodes only the dependencies between free variables of a goal, which is reflected by the closedness condition,
 while the operational semantics may also contain dependencies between semantic variables allocated in \lstinline|fresh| constructs. Therefore we formulate completeness
 with representing functions restricted on the semantic variables allocated in the beginning (which includes all free variables of a goal). This does not
 compromise our promise to prove the completeness of the search as \textsc{miniKanren} provides the result as substitutions only for queried variables,
 which are allocated in the beginning.
 
 \begin{theorem}[Operational semantics completeness]
-\label{lem:gen_completeness}
-If indices of all free variables in a goal $g$ are limited by some number $n$, then
+%\label{lem:gen_completeness}
+If the indices of all free variables in a goal $g$ are limited by some number $n$, then
 
 \[
 \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}\} \subset \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \epsilon, n}}_{op}\}.
@@ -131,7 +125,7 @@ to states of the shape $\inbr{g, \sigma, n}$. We also need to introduce one more
 \sembr{\bullet}^l : \mathcal{G} \to 2^{\mathcal{A}\to\mathcal{D}}
 \]
 
-Instead of always unfolding the definition of a relation for invocation goal, it does so only the given number of times. So for a given set of relational
+Instead of always unfolding the definition of relation for invocation goal, it does so only given number of times. So for a given set of relational
 definitions $\{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i\}$ the definition of bounded denotational semantics is exactly the same as for the conventional denotational semantics, except that for the invocation case we have
 
 \[
@@ -144,7 +138,7 @@ It is convenient to define bounded semantics for level zero as the empty set:
 \sembr{g}^{0} = \emptyset
 \]
 
-The bounded denotational semantics is an approximation of the conventional denotational semantics; it is clear that any answer in the conventional denotational semantics will also be in the bounded denotational semantics for some level.
+The bounded denotational semantics is an approximation of the conventional denotational semantics; it is clear that any answer in conventional denotational semantics will also be in bounded denotational semantics for some level.
 
 \begin{lemma}
 $\sembr{g} \subset \cup_l \sembr{g}^l$
@@ -161,4 +155,4 @@ For any set of relational definitions, for any level $l$, for any well-formed st
 \]
 \end{lemma}
 
-The proof is by the induction on the level $l$. The induction step is proven by structural induction on the goal $g$. We use lemmas~\ref{lem:sum_answers} and~\ref{lem:prod_answers} for evaluation of a disjunction and a conjunction respectivly, and lemma~\ref{lem:den_sem_change_var} in the case of fresh variable intriduction to move from an arbitrary semantic variable in denotational semantics to the next allocated fresh variable. The details of this proof may be found in the appendix, the full proof script is in the specification in Coq.
+The proof is by the induction on level $l$. The induction step is proven by structural induction on goal $g$. We use lemmas~\ref{lem:sum_answers} and~\ref{lem:prod_answers} for evaluation of a disjunction and a conjunction respectively, and lemma~\ref{lem:den_sem_change_var} in the case of fresh variable introduction to move from an arbitrary semantic variable in denotational semantics to the next allocated fresh variable. The details of this proof may be found in the Appendix~\ref{appendix_gen_completeness_proof}, the full proof script is in the specification in Coq.

@@ -3,7 +3,7 @@
 In the context of this paper, we understand ``relational programming'' as a puristic form of logic programming with all extra-logical
 features banned. Specifically, we use \textsc{miniKanren} as an exemplary language; \textsc{miniKanren} can be seen as
 a logical language with explicit connectives, existentials and unification, and is mutually convertible to the pure logical subset of
-\textsc{Prolog}\footnote{A detailed \textsc{Prolog}-to-\textsc{miniKanren} comparison can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}.
+\textsc{Prolog}.\footnote{A detailed \textsc{Prolog}-to-\textsc{miniKanren} comparison can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}
 Unlike \textsc{Prolog}, which relies on SLD-resolution, most \textsc{miniKanren} implementations use a monadic \emph{interleaving
 search}, which is known to be complete~\cite{2016}.
 \textsc{miniKanren} is designed as a shallow DSL which may help to equip the host language with logical reasoning features. This
@@ -15,12 +15,13 @@ their semantics explained in terms of a \textsc{Scheme} implementation. We argue
 fragile and not self-sufficient since it relies on concrete implementation languages' semantics and therefore is not stable under the host language replacement.
 In addition, the justification of important properties of relational programs (for example, refutational completeness~\cite{WillThesis}) becomes cumbersome.
 
+\begin{comment}
 There were some previous attempts to define a formal semantics for \textsc{miniKanren}. In~\cite{MechanisingMiniKanren} formal definitions
 for denotational and non-deterministic operational semantics were given and the soundness result was proven; the development was mechanized in HOL. 
 \cite{RelConversion} presented a variant of nondeterministic operational semantics, and~\cite{DivTest} used another variant of finite-set semantics.
 None of the previous approaches were capable of reflecting the distinctive property of \textsc{miniKanren}'s search~--- \emph{interleaving}~\cite{Search},
 thus deviating from the conventional understanding of the language.
-
+\end{comment}
 %Moreover, one of the most important features of the language~--- the completeness of the search~--- was never addressed.
 
 In this paper, we present a formal semantics for core \textsc{miniKanren} and prove some of its basic properties. First,

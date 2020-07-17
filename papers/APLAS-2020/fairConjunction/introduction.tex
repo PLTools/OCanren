@@ -1,0 +1,30 @@
+\section{Introduction}
+
+%Declarative programming is a programming paradigm, which allows to express the logic of a computation without describing its control flow. One of the declarative languages
+%is relational language \mk~\cite{fair:TheReasonedSchemer}. This minimalistic language has only few operators. This minimalistic language consists of only a few operators,
+%and its minimal implementation~\cite{fair:micro} contains only 54 code lines of Racket. Despite its modest size, \mk is Turing complete and allows to express complex
+%computations in the form of compact declarative specifications. For instance, quine generator~\cite{fair:quines}, proof checker and theorem prover~\cite{fair:teorem-prover},
+%interpreter to perform example-based program synthesis~\cite{fair:seven} has declarative solution of \mk.
+
+\mk~\cite{fair:TheReasonedSchemer,fair:micro} is known for its capability to express solutions for complex problems~\cite{fair:seven,fair:quines,fair:theorem-prover}
+in the form of compact declarative specifications. This minimalistic language has various extensions~\cite{fair:CKanren,fair:WillThesis,fair:alphaKanren,fair:Guided} designed to increase its expressiveness and declarativeness. However, \emph{conjunction} in \mk has somewhat imperative flavor. The evaluation of conjunction is asymmetrical
+and the order of conjuncts affects not only the performance of the program but even the convergence. As a result, the order of conjuncts determines control flow in
+a relational program. We may call this directed behavior of conjunction \textit{unfair}.
+
+% Проблема несправедливого поведения конъюнкции уже рассматривалась с нескольких разных точек зрения. Одним из аспектов несправедливого поведения конъюнкции является управления приоритетами вычисления независимых ветвей, которые порождает конъюнкция. В оригинальном языке больший приоритет отдается более ранней ветке. Однако существует подход, который позволяет сбалансировать время исполнения. Это делает поведение конъюнкции более справедливым, но чувствительность к порядку конъюнктов сохраняется. Также конъюнкция становится более честной, если детектировать расхождение конъюнктов. Данный подход во время исполнения может обнаружить расхождение конъюкта. В этом случае данные, которые были получены при исполнении конъюнкта стираются. После чего происходит перестановка конъюнктов и продолжается исполнение программы. Данный подход оказывается эффективен на практике. Недостатком является консервативная перестановка конъюнктов, которпя не использует информацию, полученную при вычислении конъюнкта до перестановки.
+The problem of unfair behavior of conjunction has already been examined from several different points of view. One aspect of the unfair behavior of conjunction is to prioritize the
+evaluation of the independent branches which conjunction generates. In the original \mk a higher priority is given to an earlier branch. However, there is an approach~\cite{fair:towardsAM}
+which allows one to balance the evaluation time of different branches. This makes the conjunction behavior fairer, but the order of the conjuncts still affects both performance and convergence.
+Also, the conjunction can be made fairer if we are capable of detecting the divergence in its conjuncts. The approach~\cite{fair:DivTest} detects the divergence at run time and
+performs switching of conjuncts. In this case, the data that was received during the evaluation of the diverging conjunct is erased. The approach turned out to be efficient in practice.
+However, the conservative rearrangement of the conjuncts does not use the information obtained when evaluating the conjunct before the rearrangement. There are also examples for
+this approach where the order of the conjuncts affects convergence.
+
+The contribution of this paper is a more declarative approach to the evaluation of relational programs of \mk. This approach executes the conjuncts alternately, choosing a more optimal execution order.
+The fair conjunction that we propose is comparable in efficiency to the classic unfair one, but the order of the conjuncts weakly affects both efficiency and convergence. Our approach also 
+demonstrates a more convergent behavior: we present some examples where classical conjunction diverges for any order of conjuncts while the fair conjunction converges.
+
+The paper is organized as follows. In Section~\ref{sec:directed} we informally describe \mk and discuss the advantages and drawbacks of the classical directed conjunction. Section~\ref{sec:directed-semantics} contains a
+description of \mk syntax as well as operational semantics based on the unfolding operation. In Section~\ref{sec:naive} we present the semantics of a naive fair conjunction,
+and in Section~\ref{sec:structural} we extend these semantics by controlling the conjunction order based on structural recursion. Section~\ref{sec:eval} is devoted to the evaluation
+and performance comparison on different semantics in the form of interpreters. Since the approach based on divergence test~\cite{fair:DivTest} is most similar to our approach, we also provide an elaborated comparison in the section. The final section concludes.

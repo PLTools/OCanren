@@ -1,12 +1,12 @@
 \section{Applications}
 \label{applications}
 
-In this section we consider some applications of the framework and results, described in the previous sections.
+In this section, we consider some applications of the framework and results, described in the previous sections.
 
 \subsection{Correctness of Transformations}
 
 One important immediate corollary of the equivalence theorems we have proven is the justification of correctness for certain program transformations.
-The completeness of interleaving search guarantees the correctness of any transformation which preserves the denotational semantics,
+The completeness of interleaving search guarantees the correctness of any transformation that preserves the denotational semantics,
 for example:
 
 \begin{itemize}
@@ -17,10 +17,10 @@ for example:
 \end{itemize}
 
 Note that this way we can guarantee only the preservation of results as \emph{sets of ground terms}; the other aspects of program behavior,
-such as termination, may be affected by some of these transformations\footnote{Possible slowdown and loss of termination after reorderings in conjunction is a famous example of this phenomenon in \textsc{miniKanren}, known as conjunction non-comutativity~\cite{WillThesis}.}.
+such as termination, may be affected by some of these transformations.\footnote{Possible slowdown and loss of termination after reorderings in conjunction is a famous example of this phenomenon in \textsc{miniKanren}, known as conjunction non-comutativity~\cite{WillThesis}.}
 
 \begin{comment}
-Since in \textsc{Prolog} a rather limited form of goals (an implicit conjunction of atoms) is used the conversion to \textsc{miniKanren} is easy:
+Since in \textsc{Prolog} a rather limited form of goals (implicit conjunction of atoms) is used the conversion to \textsc{miniKanren} is easy:
 
 \begin{itemize}
   \item the built-in constructors in \textsc{Prolog} terms (for example, for lists) are converted into \textsc{miniKanren} representation;
@@ -94,11 +94,15 @@ will be as follows:
 
 \end{comment}
 
-{\color{red} ?????????
+One of the applications for these transformations is a conversion from/to \textsc{Prolog}. As both languages use essentially the same fragment of first-order logic,
+their programs are mutually convertible. The conversion from \textsc{Prolog} to \textsc{miniKanren} is simpler as the latter admits a reacher syntax of goals. The inverse
+conversion involves the transformation into a DNF and splitting the disjunction into a number of separate clauses. This transformation, in particular, makes it possible to
+reuse our approach to describe the semantics of \textsc{Prolog} as well. In the following sections we briefly address this problem.
 
-We can use these substantiated transformations, for example, to convert an arbitrary \textsc{miniKanren} specification into a form analogous to a specifications in \textsc{Prolog}.
+\begin{comment}
+We can use these substantiated transformations, for example, to convert an arbitrary \textsc{miniKanren} specification into a form analogous to specifications in \textsc{Prolog}.
 With this conversion we can not only interpret \textsc{Prolog} specifications in interleaving semantics, but we also can, using the certified framework we developed, describe conventional \textsc{Prolog} search strategies.
-}
+\end{comment}
 
 \subsection{SLD Semantics}
 \label{sld}
@@ -107,11 +111,12 @@ The conventional for \textsc{Prolog} SLD search differs from the interleaving on
 Thus, changing just two rules in the operational semantics converts interleaving search into the depth-first one:
 
 \[
-  \begin{array}{cr}
-    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s'_1 \oplus s_2)} &\ruleno{DisjStep}\\
+  \begin{array}{crcr}
+    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s'_1 \oplus s_2)} &\ruleno{DisjStep}&
     \dfrac{s_1 \xrightarrow{r} s'_1}{(s_1 \oplus s_2) \xrightarrow{r} (s'_1 \oplus s_2)} &\ruleno{DisjStepAns}
   \end{array}
 \]
+\vskip3mm
 
 With this definition we can almost completely reuse the mechanized proof of soundness (with minor changes); the completeness, however,
 can no longer be proven (as it does not hold anymore).
@@ -121,27 +126,19 @@ can no longer be proven (as it does not hold anymore).
 
 Dealing with the ``cut'' construct is known to be a cornerstone feature in the study of operational semantics for \textsc{Prolog}. It turned out that
 in our case the semantics of ``cut'' can be expressed naturally (but a bit verbose). Unlike SLD-resolution, it does not amount to an incremental
-change in semantics description. It also would work only for programs, directly converted from \textsc{Prolog} specifications.
+change in semantics description. It also would work only for programs directly converted from \textsc{Prolog} specifications.
 
 The key observation in dealing with the ``cut'' in our setting is that a state in our semantics, in fact, encodes the whole current
 search tree (including all backtracking possibilities). This opens the opportunity to organize proper ``navigation'' through the tree
-to reflect the effect of ``cut''.
-
-In denotational semantics, we interpret ``cut'' as success (thus, denotationally we treat all cuts as ``green''). Operationally, we
-modify SLD semantics in such a way that a ``cut'' cuts all other branches of all enclosing nodes, marked with ``$\oplus$'', up to
-the moment when the evaluation of the disjunct, containing the ``cut'', was started. It is easy to see that this node will always
-be the nearest ``$\oplus$'', derived from the disjunction. Unfortunately, in the tree other ``$\oplus$'' nodes can
-appear due to the evaluation of ``$\otimes$'' nodes, thus we need a way to distinguish these two sorts of ``$\oplus$'' (we
-denote the new sort of nodes as ``$\circledast$''). We also introduce a separate kind of transitions to propagate the signal for cutting the branches $\xrightarrow{l}_c$.
-More details about this chages in defintion and transition rules for them can be found in the appendix.
+to reflect the effect of ``cut''. The details of the semantic description can be found in the Appendix~\ref{appendix_cut}.
 
 For this semantics, we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
 we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut'' (since we do not have other semantics of ``cut'' to compare with).
-Nevertheless, we can demonstrate a plausible behavior using extracted reference interpreter.
+Nevertheless, we can demonstrate a plausible behavior using the extracted reference interpreter.
 
 \subsection{Reference Interpreters}
 
 Using \textsc{Coq} extraction mechanism, we extracted two reference interpreters from our definitions and theorems: one for conventional
 \textsc{miniKanren} with interleaving search and another one for SLD search with cut. These interpreters can be used to practically investigate the behaviour
-of specifications in unclear, complex or corner cases. Our experience has shown that these interpreters demonstrate the expected behavior
+of specifications in unclear, complex, or corner cases. Our experience has shown that these interpreters demonstrate the expected behavior
 in all cases.

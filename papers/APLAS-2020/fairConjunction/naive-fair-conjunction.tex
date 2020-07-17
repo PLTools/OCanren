@@ -62,7 +62,7 @@ but it unfolds conjuncts fairly.
       {T_1 \lor T_2 \xrightarrow{\alpha} T_2 \lor\bar{T_1}}
 &     \ruleno{DisjStep}
 \end{array}\]
-\caption{Simple fair semantics}
+\caption{Naive fair semantics}
 \label{fair:naive-semantics}
 \end{figure}
 
@@ -77,7 +77,13 @@ The rule \rulen{ConjUnfold} unfolds the leftmost conjunct $c_k$ whose counter $m
 require to attach an updated counter; we do this using the function $set$. If all calls in the leaf have a zero counter, then we apply the rule \rulen{ConjZero}.
 This rule updates all counters in the leaf, setting them all to unfolding bound.
 
-\begin{figure}[h]
+% Полученная семантика более справедливо распределяет ресурсы между конъюнктами. Благодаря этому выполнение реляционных запросов чаще сходится. Давайте вернемся к примеру отношения reverso. Как мы говорили ранее, при направленной конъюнкции, запрос \lstinline{(revers$^o$ [1, 2, 3] q)} сходится при прямом порядке конъюнктов и расходится при обратном. В то же время запрос \lstinline{(revers$^o$ q [1, 2, 3])} расхожится при прямом порядке конъюнктов, но сходится при обратном. В случае равномерной конъюнкции оба запроса сходятся при обоих порядках конъюнктов для любого параметра N.
+This semantics more fairly distributes resources between conjuncts. Because of this, relational queries converge more often. Let's go back to the \lstinline{revers$^o$} example
+(Fig.~\ref{fair:lst-reverso}). As we said earlier, for directed conjunction the query \linebreak \lstinline{(revers$^o$ [1, 2, 3] q)} converges in the specified order of conjuncts and diverges
+in the reverse order. At the same time, the query\lstinline{(revers$^o$ q [1, 2, 3])} diverges in the specified conjunct order but converges in the reverse order. In the case of fair conjunction,
+however, both queries converge in both conjunct orders for any finite unfolding bound.
+
+\begin{figure}[h!]
 \centering
 \begin{tabular}{c}
 \begin{lstlisting}
@@ -96,12 +102,6 @@ let divergence$^o$ l =
 \caption{An example to demonstrate fair conjunction superiority}
 \label{fair:lst-repeato}
 \end{figure}
-
-% Полученная семантика более справедливо распределяет ресурсы между конъюнктами. Благодаря этому выполнение реляционных запросов чаще сходится. Давайте вернемся к примеру отношения reverso. Как мы говорили ранее, при направленной конъюнкции, запрос \lstinline{(revers$^o$ [1, 2, 3] q)} сходится при прямом порядке конъюнктов и расходится при обратном. В то же время запрос \lstinline{(revers$^o$ q [1, 2, 3])} расхожится при прямом порядке конъюнктов, но сходится при обратном. В случае равномерной конъюнкции оба запроса сходятся при обоих порядках конъюнктов для любого параметра N.
-This semantics more fairly distributes resources between conjuncts. Because of this, relational queries converge more often. Let's go back to the \lstinline{revers$^o$} example
-(Fig.~\ref{fair:lst-reverso}). As we said earlier, for directed conjunction the query \lstinline{(revers$^o$ [1, 2, 3] q)} converges in the specified order of conjuncts and diverges
-in the reverse order. At the same time, the query \lstinline{(revers$^o$ q [1, 2, 3])} diverges in the specified conjunct order but converges in the reverse order. In the case of fair conjunction,
-however, both queries converge in both conjunct orders for any finite unfolding bound.
 
 % Более того, существуют примеры, которые расходятся при любом порядке конъюнктов в случае направленной конъюнкции. Но они сходятся при равномерной конъюнкции. Например, отношение \lstinline{divergence}. Данное отношение ищет такие списки, которые с одной стороны чочтоят только из термов $C_1$, а с другой --- только из термов $C_2$. Очевидно, что только пустой список обладает таким свойством.
 Moreover, some examples diverge for any order of conjuncts in case of directed conjunction but converge in case of fair conjunction (see Fig.~\ref{fair:lst-repeato}).
