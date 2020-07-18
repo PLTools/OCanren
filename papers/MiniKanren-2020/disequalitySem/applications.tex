@@ -6,7 +6,7 @@ state and prove some of its other important properties. Thanks to our completene
 where the reasoning is much easier.
 
 For example, we can specify contradictory answers with empty interpretation, which we pointed out for the trivial implementation from the previous section,
-and prove that there are no such anwers in the realistic implementation iff there are infinitely many constructors in the language. So, for the realistic implementation the following holds iff the set of constructors is infinite:
+and prove that there are no such answers in the realistic implementation if and only if there are infinitely many constructors in the language. So, for the realistic implementation the following holds iff the set of constructors is infinite:
 
 \begin{lemma}
 For any goal $g$, if all free variables in it belong to the set $\{\alpha_1,\dots,\alpha_n\}$, then
@@ -23,7 +23,7 @@ then
 \[ \sembr{\sigma} \cap \sembr{\cstore_\sigma} \neq \emptyset. \]
 \end{lemma}
 
-Another example of appliation is the justification of optimizations in constraint store implementation. For example, the following obvious (in denotational context) statement
+Another example of application is the justification of optimizations in constraint store implementation. For example, the following obvious (in denotational context) statement
 allows deleting subsumed constraints in the realistic implementation.
 
 \begin{lemma}
