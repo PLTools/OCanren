@@ -101,11 +101,11 @@ append$^o$ = fun x y xy .
 revers$^o$ x x
 \end{lstlisting} &
 \begin{lstlisting}
-revers$^o$ = fun x y .
- ((x === Nil) /\ (y === Nil)) \/
+revers$^o$ = fun x xr .
+ ((x === Nil) /\ (xr === Nil)) \/
  (fresh h t tr .
    (x === Cons (h, t)) /\
-   (append$^o$ tr (Cons (h, Nil)) y) /\
+   (append$^o$ tr (Cons (h, Nil)) xr) /\
    (revers$^o$ t tr));
 \end{lstlisting}
 \end{tabular}
