@@ -115,12 +115,15 @@ But, by the determinism of the switch language semantics, it immediately follows
 \neg\;(\withenv{v}{\trans{\pi}{}{j}})
 \]
 
+\begin{comment}
 Alternatively\footnote{\color{red} Reviewer N1 said that passage about bool argument is unclear and may be omitted (or described with more details)}, we could switch to a more explicit relational representation of both semantics, adding an extra boolean argument to
 both $eval^o_{\mathcal S}$ and $match^o$ and using the same fresh variable $b$ in the query of interest:
 
 \[
 match^o\,v\,p_1,\dots,p_k\,i\,b \wedge eval^o_{\mathcal S}\,v\,\pi\,i\,b
 \]
+
+\end{comment} 
 
 Thus, the goal we eventually came up with is
 
