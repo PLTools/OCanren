@@ -56,7 +56,7 @@ goal does not put any constraints on ``\lstinline|y|'' and ``\lstinline|z|'', so
 This answer can be seen as the following ternary relation over the set of all ground terms:
 
 \[
-\{(\mbox{\lstinline|Cons ($\beta$, $\,\gamma$)|}, \beta, \gamma) \mid \beta\in\mathcal{D},\,\gamma\in\mathcal{D}\}\subset\mathcal{D}^3
+\{(\mbox{\lstinline|Cons ($\beta$, $\,\gamma$)|}, \beta, \gamma) \mid \beta\in\mathcal{D},\,\gamma\in\mathcal{D}\}\subseteq\mathcal{D}^3
 \]
 
 The order of ``dimensions'' is important, since each dimension corresponds to a certain free variable. Our main idea is to represent this relation as a set of total
@@ -161,7 +161,7 @@ if $\mathfrak{f} \in \sembr{g\,[\alpha/x]}$, then for any representing function 
 \noindent it is true that $\mathfrak{f}' \in \sembr{g\,[\beta/x]}$.
 \end{lemma}
 %\begin{proof}
-  The proof turned out to be the most cumbersome among all others in the case where $g$ is a nested \lstinline|fresh| contruct. In that case, we have to constructively build two representing (including an intermediate one for an intermediate goal) by pointwise modification. The details of this proof can be found in the Appendix~\ref{appendix_den_sem_change_var_proof}, the full proof script is in the specification in Coq.
+  The proof turned out to be the most cumbersome among all others in the case where $g$ is a nested \lstinline|fresh| contruct. In that case, we have to constructively build two representing functions (including an intermediate one for an intermediate goal) by pointwise modification. The details of this proof can be found in the Appendix~\ref{appendix_den_sem_change_var_proof}, the full proof script is in the specification in Coq.
 %\end{proof}
 
 \begin{figure}[t]

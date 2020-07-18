@@ -1,4 +1,4 @@
- \documentclass[acmlarge,anonymous=true]{acmart}
+\documentclass[acmlarge]{acmart}
 
 %% Bibliography style
 \bibliographystyle{ACM-Reference-Format}
@@ -117,7 +117,7 @@ language=minikanren
 \newcommand{\reprfunset}{\mathcal{R}}
 \newcommand{\reprfun}{\mathfrak{f}}
 \newcommand{\cstore}{\Omega}
-\newcommand{\cstoreinit}{\cstore_\epsilon^{init}}
+\newcommand{\cstoreinit}{\cstore_\epsilon^{\mathit{init}}}
 \newcommand{\csadd}[3]{\mathbf{add}\,(#1, #2 \diseq #3)}  %{#1 + [#2 \diseq #3]}
 \newcommand{\csupdate}[2]{\mathbf{update}\,(#1, #2)}  %{#1 \cdot #2}
 \newcommand{\cupdate}[2]{\mathbf{update_{constr}}\,(#1, #2)}  %{#1 \cdot #2}
@@ -142,7 +142,7 @@ language=minikanren
 \title{Certified Semantics for Disequality} %% [Short Title] is optional;
                                            %% when present, will be used in
                                            %% header instead of Full Title.
-\titlenote{This work was partially suppored by the grant 18-01-00380 from The Russian Foundation for Basic Research} %% \titlenote is optional;
+\titlenote{The reported study was funded by RFBR, project number 18-01-00380} %% \titlenote is optional;
                                         %% can be repeated if necessary;
                                         %% contents suppressed with 'anonymous'
 %\subtitle{Subtitle}                     %% \subtitle is optional
@@ -183,10 +183,10 @@ language=minikanren
 %% Note: \begin{abstract}...\end{abstract} environment must come
 %% before \maketitle command
 \begin{abstract}
-We present an extension of the prior work on certified semantics for core miniKanren, introducing disequality constraints in the language.
+We present an extension of our prior work on certified semantics for core miniKanren, introducing disequality constraints in the language.
 Semantics is parameterized by an exact definition of constraint stores, allowing us to cover different implementations, and we provide a list of sufficient conditions on this definition for search completeness.
 We also give two examples of concrete implementations of constraint stores that satisfy those sufficient conditions.
-The description and proofs are partially certified in Coq and a correct-by-construction interpreter is extracted.
+The description and proofs for parameterized semantics and both implementations are certified in Coq and two correct-by-construction interpreters are extracted.
 \end{abstract}
 
 

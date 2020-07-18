@@ -26,9 +26,9 @@ thus deviating from the conventional understanding of the language.
 
 In this paper, we present a formal semantics for core \textsc{miniKanren} and prove some of its basic properties. First,
 we define denotational semantics similar to the least Herbrand model for definite logic programs~\cite{LHM}; then
-we describe operational semantics with interleaving in terms of a labeled transition system. Finally, we prove the soundness and
+we describe operational semantics with interleaving in terms of a labeled transition system. Finally, we prove soundness and
 completeness of the operational semantics w.r.t the denotational one. We support our development with a formal specification
-using the \textsc{Coq}~\cite{Coq} proof assistant, thus outsourcing the burden of proof checking to the automatic tool and
+using the \textsc{Coq} proof assistant~\cite{Coq}, thus outsourcing the burden of proof checking to the automatic tool and
 deriving a certified reference interpreter via the extraction mechanism. As a rather straightforward extension of our
 main result, we also provide a certified operational semantics (and a reference interpreter) for SLD resolution with cut, a new result
 to our knowledge; while this step brings us out of purely relational domain, it still can be interesting on its own.
