@@ -40,7 +40,7 @@ We will operate with the well-formed states only, which are defined as follows.
   
   \begin{itemize}
   \item $\diamond$ is well-formed;
-  \item $\inbr{g, \sigma, n}$ is well-formed iff $\fv{g}\cup\dom{\sigma}\cup\ran{\sigma}\subset\{\alpha_1,\dots,\alpha_n\}$;
+  \item $\inbr{g, \sigma, n}$ is well-formed iff $\fv{g}\cup\dom{\sigma}\cup\ran{\sigma}\subseteq\{\alpha_1,\dots,\alpha_n\}$;
   \item $s_1\oplus s_2$ is well-formed iff $s_1$ and $s_2$ well-formed;
   \item $s\otimes g$ is well-formed iff $s$ is well-formed and for all leaf triplets $\inbr{\_,\_,n}$ in $s$ it is true that $\fv{g}\subseteq\{\alpha_1,\dots,\alpha_n\}$.
   \end{itemize}
@@ -128,7 +128,7 @@ For any non-termial states $s_1$ and $s_2$, $\tr{s_1 \oplus s_2} = \tr{s_1} \cup
 
 \begin{lemma}
 \label{lem:prod_answers}
-For any nontermial state $s$ and goal $g$,  \mbox{$\tr{s \otimes g} = \bigcup_{(\sigma, n) \in \tr{s}} \tr{\inbr{g, \sigma, n}}$}.
+For any nontermial state $s$ and goal $g$,  \mbox{$\tr{s \otimes g} \supseteq \bigcup_{(\sigma, n) \in \tr{s}} \tr{\inbr{g, \sigma, n}}$}.
 \end{lemma}
 
 We also can easily describe the criterion of termination for disjunctions.

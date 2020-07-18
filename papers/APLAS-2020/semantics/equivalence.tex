@@ -58,7 +58,7 @@ This allows us to state theorems relating the two semantics.
 
 \begin{theorem}[Operational semantics soundness]
 \label{lem:soundness}
-If indices of all free variables in a goal $g$ are limited by some number $n$, then $\sembr{\inbr{g, \epsilon, n}}_{op} \subset \sembr{g}$.
+If indices of all free variables in a goal $g$ are limited by some number $n$, then $\sembr{\inbr{g, \epsilon, n}}_{op} \subseteq \sembr{g}$.
 \end{theorem}
 
 It can be proven by nested induction, but first, we need to generalize the statement so that the inductive hypothesis would be strong enough for the inductive step.
@@ -84,7 +84,7 @@ The generalized version of the theorem uses it.
 For any well-formed state $\hat{s}$
 
 \[
-\sembr{\hat{s}}_{op} \subset \sembr{\hat{s}}.
+\sembr{\hat{s}}_{op} \subseteq \sembr{\hat{s}}.
 \]
 \end{lemma}
 
@@ -94,12 +94,12 @@ and the next state are subsets of the denotational semantics for the initial sta
 
 \begin{lemma}[Soundness of the answer]
 \label{lem:answer_soundness}
-For any transition $s \xrightarrow{(\sigma, n)} \hat{s}$, \mbox{$\sembr{\sigma} \subset \sembr{s}$}.
+For any transition $s \xrightarrow{(\sigma, n)} \hat{s}$, \mbox{$\sembr{\sigma} \subseteq \sembr{s}$}.
 \end{lemma}
 
 \begin{lemma}[Soundness of the next state]
 \label{lem:next_state_soundness}
-For any transition $s \xrightarrow{l} \hat{s}$, \mbox{$\sembr{\hat{s}} \subset \sembr{s}$}.
+For any transition $s \xrightarrow{l} \hat{s}$, \mbox{$\sembr{\hat{s}} \subseteq \sembr{s}$}.
 \end{lemma}
 
 It would be tempting to formulate the completeness of operational semantics as soundness with the inverted inclusion, but it does not hold in such generality.
@@ -114,7 +114,7 @@ which are allocated in the beginning.
 If the indices of all free variables in a goal $g$ are limited by some number $n$, then
 
 \[
-\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}\} \subset \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \epsilon, n}}_{op}\}.
+\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}\} \subseteq \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \epsilon, n}}_{op}\}.
 \]
 \end{theorem}
 
@@ -141,7 +141,7 @@ It is convenient to define bounded semantics for level zero as the empty set:
 The bounded denotational semantics is an approximation of the conventional denotational semantics; it is clear that any answer in conventional denotational semantics will also be in bounded denotational semantics for some level.
 
 \begin{lemma}
-$\sembr{g} \subset \cup_l \sembr{g}^l$
+$\sembr{g} \subseteq \cup_l \sembr{g}^l$
 \end{lemma}
 
 Now the generalized version of the completeness theorem is as follows.
@@ -151,7 +151,7 @@ Now the generalized version of the completeness theorem is as follows.
 For any set of relational definitions, for any level $l$, for any well-formed state $\inbr{g, \sigma, n}$,
 
 \[
-\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}^l \cap \sembr{\sigma}\} \subset \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \sigma, n}}_{op}\}.
+\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}^l \cap \sembr{\sigma}\} \subseteq \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \sigma, n}}_{op}\}.
 \]
 \end{lemma}
 

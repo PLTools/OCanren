@@ -1,9 +1,11 @@
 \section{Concrete Implementations}
+\label{sec:implementations}
 
-In this section, we define two concrete implementations of constraint stores which can be incorporated in operational semantics: the trivial one
-(implementation A) and the one which is close to existing real implementation in a certain version of \textsc{miniKanren}~\cite{CKanren} (implementation B).
+In this section, we define two concrete implementations of constraint stores which can be incorporated in operational semantics: the trivial one and the one, which is close to existing real implementation in a certain version of \textsc{miniKanren}~\cite{CKanren}. We prove that they satisfy the sufficient condintion for search completeness from the previous sectiob
+n. Both implementations are certified in \textsc{Coq}, which allowed us to extract two correct-by-construction interpreters for \textsc{miniKanren} with
+disequality constraints.
 
-\subsection{Implementation A}
+\subsection{Trivial Implementation}
 
 This trivial implementation simply stores all pairs of terms, which the search encounters, in a multiset and never uses them:
 
@@ -21,14 +23,9 @@ The interpretation of such constraint store is the set of all representing funct
 
 This is a correct implementation (although for the full implementation we should find a way to present restrictions stored this way
 in answers adequately) and it satisfies the sufficient conditions for completeness trivially, but it is not very practical.
-In particular, it does not use information acquired
-from disequalities to halt the search in case of contradiction and it can return meaningless answers with empty interpretations
-(such as $([\alpha_0 \mapsto 5], [\alpha_0 \neq 5], 1)$).
+In particular, it does not use information acquired from disequalities to halt the search in case of contradiction and it can return contradictory answers with the final disequality constraint violated by the final substitution (such as $([\alpha_0 \mapsto 5], [\alpha_0 \neq 5], 1)$): since such answers have empty interpretations, their presence does not affect search completeness.
 
-We certified this implementation in \textsc{Coq}, which allowed us to extract a correct-by-construction interpreter for \textsc{miniKanren} with
-disequality constraints.
-
-\subsection{Implementation B}
+\subsection{ReaIistic mplementation}
 
 This implementation is more similar to those in existing \textsc{miniKanren} implementations and takes an approach that is close to one described is~\cite{CKanren}.
 
@@ -78,5 +75,4 @@ We construct the updated constraint store from the results of all constraint upd
 If any constraint is violated by the additional substitution we signal fail, otherwise we take in the store updated constraints
 (and some constraints are thrown away as they can no longer be violated).
 
-The sufficient conditions for completeness can be proven for this implementation too, but it requires a rigorous case analysis
-and relies significantly on certain properties of substitutions constructed by \textsc{miniKanren} search, so by now we only have a pen-and-paper proof.
+We proved the sufficient conditions for completeness for this implementation too, but it required us to prove first that all substitutions constructed by miniKanren search have a specific form. Namely, a current subsitution $\sigma$ at any point of the search (started from the initial state) is always \emph{narrowing} --- which means that $\ran{\sigma} \cap \dom{\sigma} = \emptyset$ --- and every time a current substitution $\sigma$ is updated by composing with some substitution $\delta$ (in rule $\ruleno{UnifySuccess}$) this substitution is \emph{extending} --- which means that $\dom{\delta} \cap \dom{\sigma} = \emptyset \land \ran{\delta} \cap \dom{\sigma} = \emptyset$.
