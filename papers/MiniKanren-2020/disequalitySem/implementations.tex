@@ -1,8 +1,7 @@
 \section{Concrete Implementations}
 \label{sec:implementations}
 
-In this section, we define two concrete implementations of constraint stores which can be incorporated in operational semantics: the trivial one and the one, which is close to existing real implementation in a certain version of \textsc{miniKanren}~\cite{CKanren}. We prove that they satisfy the sufficient condintion for search completeness from the previous sectiob
-n. Both implementations are certified in \textsc{Coq}, which allowed us to extract two correct-by-construction interpreters for \textsc{miniKanren} with
+In this section, we define two concrete implementations of constraint stores which can be incorporated in operational semantics: the trivial one and the one, which is close to existing real implementation in a certain version of \textsc{miniKanren}~\cite{CKanren}. We prove that they satisfy the sufficient conditions for search completeness from the previous section. Both implementations are certified in \textsc{Coq}, which allowed us to extract two correct-by-construction interpreters for \textsc{miniKanren} with
 disequality constraints.
 
 \subsection{Trivial Implementation}
@@ -25,7 +24,7 @@ This is a correct implementation (although for the full implementation we should
 in answers adequately) and it satisfies the sufficient conditions for completeness trivially, but it is not very practical.
 In particular, it does not use information acquired from disequalities to halt the search in case of contradiction and it can return contradictory answers with the final disequality constraint violated by the final substitution (such as $([\alpha_0 \mapsto 5], [\alpha_0 \neq 5], 1)$): since such answers have empty interpretations, their presence does not affect search completeness.
 
-\subsection{ReaIistic mplementation}
+\subsection{ReaIistic Implementation}
 
 This implementation is more similar to those in existing \textsc{miniKanren} implementations and takes an approach that is close to one described is~\cite{CKanren}.
 
