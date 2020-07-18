@@ -5,7 +5,8 @@ form of constraint~--- unification of terms. While from a theoretical standpoint
 fresh variable introduction) form a Turing-complete basis, in practice of relational programming a number of extensions are often used to make specifications more
 expressive, concise or efficient. One of the most important extensions is \emph{disequality constraint}.
 
-Disequality constraint~\cite{Disunification} introduces one additional type of base goal~--- a disequality of two terms
+A generic concept of domain-specific constraints in logic programming is studied in details in~\cite{CLP}; more specifically, disequality constraint~\cite{Disunification}
+introduces one additional type of base goal~--- a disequality of two terms
 
 \[
 t_1 \diseq t_2
@@ -24,6 +25,10 @@ This allowed us to give the first to our knowledge formal proof of completeness 
 as the capability to reach all the solutions from denotational semantics
 (proof of completeness as the fairness of steams interleaving for a specific implementation was given in~\cite{SmallEmbedding}).
 The development was formally certified in \textsc{Coq} proof assistant~\cite{Coq}, and a correct-by-construction interpreter was extracted.
+
+To some extent our work follows the conventional roadmap of adding constraints to a pure logic/relational language~\cite{CLP}; the difference is that, first,
+we use a specific constraint and a concrete solver, and second, we prove all the results with regard to conventional for \textsc{miniKanren} interleaving
+search (versus a very generic and abstract breadth-first search in~\cite{CLP}).
 
 The contribution of our current work is as follows:
 
