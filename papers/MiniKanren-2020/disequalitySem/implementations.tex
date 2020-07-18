@@ -37,7 +37,7 @@ which provides the following denotational interpretation for a constraint store:
 
 \[ \sembr{\cstore_\sigma} = \bigcap_{\omega \in \cstore_\sigma} \overline{ \sembr{\sigma \omega} } \]
 
-We start with the empty store
+We start with an empty store
 
 \[ \cstoreinit = \emptyset \]
 
@@ -52,10 +52,10 @@ When we encounter a disequality for two terms we try to unify them and update co
     \end{cases}
 \]
 
-If terms are not unifiable, there is no need to change the constraint store. If they are unified by current substitution the constraint is already violated and we signal fail.
+If the terms are not unifiable, there is no need to change the constraint store. If they are unified by current substitution the constraint is already violated and we signal a failure.
 Otherwise, the most general unifier is an appropriate representation of this constraint.
 
-When updating constraint store with an additional substitution $\delta$ we try to update each individual constraint substitution by treating it
+When updating a constraint store with an additional substitution $\delta$ we try to update each individual constraint substitution by treating it
 as a list of pairs of terms that should not be unified (the first element of each pair is a variable), applying $\delta$ to these terms and trying to
 unify all pairs simultaniously:
 
@@ -71,7 +71,7 @@ We construct the updated constraint store from the results of all constraint upd
 \end{cases}
 \]
 
-If any constraint is violated by the additional substitution we signal fail, otherwise we take in the store updated constraints
+If any constraint is violated by the additional substitution we signal a failure, otherwise we take in the store the updated constraints
 (and some constraints are thrown away as they can no longer be violated).
 
-We proved the sufficient conditions for completeness for this implementation too, but it required us to prove first that all substitutions constructed by miniKanren search have a specific form. Namely, a current subsitution $\sigma$ at any point of the search (started from the initial state) is always \emph{narrowing} --- which means that $\ran{\sigma} \cap \dom{\sigma} = \emptyset$ --- and every time a current substitution $\sigma$ is updated by composing with some substitution $\delta$ (in rule $\ruleno{UnifySuccess}$) this substitution is \emph{extending} --- which means that $\dom{\delta} \cap \dom{\sigma} = \emptyset \land \ran{\delta} \cap \dom{\sigma} = \emptyset$.
+We proved the sufficient conditions for completeness for this implementation, too, but it required us to prove first that all substitutions constructed by \textsc{miniKanren} search have a specific form. Namely, a current subsitution $\sigma$ at any point of the search (started from the initial state) is always \emph{narrowing} --- which means that $\ran{\sigma} \cap \dom{\sigma} = \emptyset$ --- and every time a current substitution $\sigma$ is updated by composing with some substitution $\delta$ (in rule $\ruleno{UnifySuccess}$) this substitution is \emph{extending} --- which means that $\dom{\delta} \cap \dom{\sigma} = \emptyset \land \ran{\delta} \cap \dom{\sigma} = \emptyset$.
