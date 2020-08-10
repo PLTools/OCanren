@@ -1,7 +1,12 @@
 *.aux
 *.log
-*.pdf
-*.synctex.gz
-.aspell.*
+*.nav 
 *.out
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+
+*.pdf
+.aspell.*
 
