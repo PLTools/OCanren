@@ -26,7 +26,7 @@ the semantics of the intermediate-level implementation language on the other. We
 construct a top-level goal which represents a search procedure for all correct and complete implementations. We also present a number of techniques which make it possible to come up with an
 \emph{optimal} solution as well as optimizations to improve the performance of the search. Similarly to many other prior works we use the size of the synthesized code, which can be measured
 statically, to distinguish better programs. Our implementation\footnote{\url{https://github.com/kakadu/pat-match}} makes use of \textsc{OCanren}\footnote{\url{https://github.com/JetBrains-Research/OCanren}}~--- a typed implementation of \textsc{miniKanren} for \textsc{OCaml}~\cite{OCanren}, and \textsc{noCanren}\footnote{\url{https://github.com/Lozov-Petr/noCanren}}~--- a converter from the subset
-of plain \textsc{OCaml} into \textsc{OCanren}~\cite{conversion}. On an initial  evaluation, performed for a set of benchmarks taken from other papers, showed our synthesizer performing well.
+of plain \textsc{OCaml} into \textsc{OCanren}~\cite{conversion}. An initial  evaluation, performed for a set of benchmarks taken from other papers, showed our synthesizer performing well.
 However, being aware of some pitfalls of our approach, we came up with a set of counterexamples on which it did not provide any results in observable time, so we do not consider the problem
 completely solved. We also started to work on mechanized formalization\footnote{\url{https://github.com/dboulytchev/Coq-matching-workout}}, written in \textsc{Coq}~\cite{Coq}, to
 make the justification of our approach more solid and easier to verify, but this formalization is not yet complete. 
