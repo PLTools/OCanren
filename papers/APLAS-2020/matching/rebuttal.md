@@ -131,7 +131,7 @@ In the Evaluation section, it is better to show the difference of code size betw
 
 The sample set is exponential in general, so there are cases when described optimization is not applicable. For example, we can enumerate all binary trees to certain depth and convert each inhabitant into pattern, using wildcard only for elemnts of the tree. We will get 2^depth patterns and so many examples.
 
-But in many cases decribed optimization can seriously reduce examples set. For example, for last benchmark enumerating all inhabitants to certain depth will give 6393 examples, which are reduced to 20 using optimization. The real amount of examples highly depends on a number of constructor in scrutinee's type an on wildcard placement in patterns. Maybe we should add type information for PCF example to show significance of complexity of scrutinee's type.
+But in many cases decribed optimization can seriously reduce examples set. For example, for last benchmark enumerating all inhabitants to certain depth will give 6393 examples, which are reduced to 20 using optimization. The real amount of examples highly depends on a number of constructor in scrutinee's type an on wildcards placement in patterns. Maybe we should add type information for PCF example to show significance of complexity of scrutinee's type.
 
 > In section 2 (related work), you say that constructing a minimal decision tree is NP-hard, but the approach you're proposing seems to be at least exponential time (and space) due to explicitly enumerating an exponentially large sample set. How does your approach compare experimentally to just minimizing decision trees?
 
@@ -141,4 +141,4 @@ Our goal is to 1) speedup synthesis enough and 2) embed our approach into OCaml 
 
 ##### #46C
 
-Вроде явных вопрос не задано, наверное ничего не надо для него (или если толко лимит в 500 слов позволит)
+Вроде явных вопросов не задано, наверное ничего не надо для него (или если толко лимит в 500 слов позволит, а пока позволяет)
