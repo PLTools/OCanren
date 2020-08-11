@@ -12,7 +12,7 @@ let (!!!) = Obj.magic;;
 
 @type var_idx = GT.int with fmt
 @type term = Var of var_idx | Const of GT.int with fmt
-@type item =
+@type phormula =
   | FMDom of var_idx * GT.int GT.list
   | FMLT of term * term
   | FMLE of term * term
@@ -21,8 +21,9 @@ let (!!!) = Obj.magic;;
   with fmt
 
 type inti = (int, int logic) injected
-type ph_desc = item list
-type t = (VarSet.t * ph_desc) list
+type ph_desc = phormula list
+type item = VarSet.t * ph_desc
+type t = item list
 
 let var_of_idx idx = Aez.Hstring.make (sprintf "x%d" idx)
 let decl_var idx =
@@ -63,7 +64,7 @@ let check_item_list is =
       | FMNEQ(a,b) ->
 (*          Format.printf "%s %d\n%!" __FILE__ __LINE__;*)
           Solver.assume ~id @@ wrap_binop F.Neq a b
-      | (FMDom(v,xs)) as xxx ->
+      | (FMDom(v,xs)) ->
 (*          Format.printf "%s %d %a\n%!" __FILE__ __LINE__ (GT.fmt item) xxx;*)
           Solver.assume ~id @@
           make F.Or (xs |> Stdlib.List.map (fun n ->
@@ -126,7 +127,7 @@ let lookup a b (set,is) =
 *)
 
 
-let add_binop op (a: inti) (b:inti) (set,is) : t option =
+let add_binop op (a: inti) (b:inti) (set,is) : item =
   let set, ta, tb =
     let f set x = match Term.var x with
       | None   -> (set, Const (Obj.magic x))
@@ -136,31 +137,13 @@ let add_binop op (a: inti) (b:inti) (set,is) : t option =
     let set,tb = f set !!!b in
     (set, ta, tb)
   in
-  let is = (op ta tb)::is in
+  let is = (op ta tb) :: is in
   (set, is)
 
-let check (_,is) =
-  if check_item_list is
-  then Some (set, is)
+let check store =
+  if check_item_list @@ snd store
+  then Some store
   else None
-
-let neq x y t = check @@ add_binop (fun a b -> FMEQ  (a,b)) x y t
-let eq  x y t = check @@ add_binop (fun a b -> FMNEQ (a,b)) x y t
-let lt  x y t = check @@ add_binop (fun a b -> FMLT  (a,b)) x y t
-let (=/=) = neq
-
-let domain v ints (set,is) =
-  let (set,v) =
-    match Term.var v with
-    | None -> failwith "should not happen"
-    | Some v  -> (VarSet.add v set, v)
-  in
-  let d = FMDom (v.Term.Var.index, ints) in
-  let is = d::is in
-  if check_item_list is
-  then Some (set, is)
-  else None
-
 
 
 let rec fold_cps ~f ~init xs =
@@ -172,10 +155,10 @@ let empty () = []
 
 exception Bad
 type lookup_rez =
-  | One of VarSet.t * ph_desc
+  | One of (VarSet.t * ph_desc)
   | Zero
 
-let recheck _env _subst t _prefix =
+let recheck_helper1 op (store: t) a b =
   let open Subst in
   (* We should iter prefix and see if some new substitution affect our constraints.
      In some cases our constraints can be merged
@@ -184,13 +167,15 @@ let recheck _env _subst t _prefix =
   let on_var_and_term v term store =
     try
       let ans =
-        fold_cps ~init:[] store (fun acc (set,is) tl k ->
+        fold_cps ~init:[] store ~f:(fun acc (set,is) tl k ->
           if VarSet.mem v set
           then
-            let st = add_binop (fun a b -> FMEQ (a,b)) !!!v !!!term in
+            let st = add_binop op !!!v !!!term (set, is) in
             match check st with
             | None -> raise Bad
-            | Some -> acc @ (set,st) :: tl
+            | Some item -> acc @ item :: tl
+          else
+            k ( (set,is) :: acc)
         )
       in
       (* If something bad happends on the way -- exception *)
@@ -199,31 +184,104 @@ let recheck _env _subst t _prefix =
   in
 
   let on_two_vars v1 v2 store =
+    let ext_set set = VarSet.(add v1 (add v2 set)) in
     let ans =
-      fold_cps ~init:(Zero,[]) store (fun acc (set,is) tl k ->
-        if VarSet.mem v set
-        then
+      fold_cps ~init:(Zero,[]) store ~f:(fun acc ((set,is) as a) tl k ->
+        if VarSet.mem v1 set || VarSet.mem v2 set
+        then begin
+            match acc with
+            | Zero,tl -> k (One a, tl)
+            | One (s2,is2),tl2 ->
+                let s3 = VarSet.(add v1 (add v2 (union s2 set))) in
+                let is3 = Stdlib.List.append is is2 in
+                (One (s3,is3), Stdlib.List.append tl2 tl)
+        end else
+          let v,xs = acc in
+          k (v,a::xs)
       )
     in
-    match ans with
-    | (Zero,_) ->
-        let s = VarSet.(add v1 (add v2 empty)) in
-        add_binop (fun a b -> FMEQ (a,b)) !!!v1 !!!v2 (empty ())
-    | One (set,is),tl ->
 
+    let (set,is,tl) =
+      match ans with
+      | Zero, tl -> (VarSet.empty, [], tl)
+      | One (s,is),tl -> (s,is,tl)
+    in
+
+    (* we need to prepend to tail new pack of constraints *)
+    let set = ext_set set in
+    let h = add_binop op !!!v1 !!!v2 (set,is) in
+    match check h with
+      | Some h -> Some (h::tl)
+      | None -> None
   in
 
-  Stdlib.List.fold_left (fun acc bin ->
-    (* TODO: optimize with early exit *)
-    match acc with
-    | None -> None
-    | Some (set, t) when VarSet.mem bin.Subst.Binding.var set ->
-        eq !!!(bin.Binding.var) !!!(bin.Binding.term) (set,t)
-    | _ -> acc
-  ) (Some t) _prefix
+  match Term.(var a, var b) with
+  | None,None when !!!a = !!!b -> Some store
+  | None,None                  -> None
+  | Some v1, Some v2 -> on_two_vars v1 v2 store
+  | Some v, x
+  | x, Some v -> on_var_and_term v x store
 
-let check ((set,is) as t) =
-  if check_item_list is
-  then Some t
-  else None
+let recheck_helper op (store: t) (_prefix : Subst.Binding.t list) =
+  try
+    Some (fold_cps ~init:store _prefix ~f:(fun acc bin _tl k ->
+(*
+      let acc =
+        match Term.var bin.Binding.term with
+        | Some v2 -> on_two_vars bin.Binding.var v2 acc
+        | None -> on_var_and_term bin.Binding.var !!!(bin.Binding.term) acc
+      in*)
+      let open Subst in
+      match recheck_helper1 op !!!(bin.Binding.var) !!!(bin.Binding.term) acc with
+      | None -> raise Bad
+      | Some ans -> k ans
+    ))
+  with Bad -> None
+
+let recheck _env _subst (store: t) (_prefix : Subst.Binding.t list) =
+  recheck_helper (fun a b -> FMEQ (a,b)) store _prefix
+
+let check store : t option =
+  try
+    store |> Stdlib.List.iter (fun (_set,is) ->
+      if not (check_item_list is) then raise Bad
+    );
+    Some store
+  with Bad -> None
+
+
+
+let neq x y store =
+  recheck_helper1 (fun a b -> FMNEQ (a,b)) store x y
+
+let eq  x y store : t option =
+  recheck_helper1 (fun a b -> FMEQ (a,b)) store x y
+
+let lt  x y store =
+  recheck_helper1 (fun a b -> FMLT (a,b)) store x y
+
+let (=/=) = neq
+
+let domain (v: inti) ints store =
+  let v =
+    match Term.var !!!v with
+    | None -> failwith "should not happen"
+    | Some v  -> v
+  in
+
+  try
+    fold_cps ~init:[] store ~f:(fun acc (set,is) tl k ->
+      if VarSet.mem v set
+      then begin
+        let d = FMDom (v.Term.Var.index, ints) in
+        let is = d::is in
+        if check_item_list is
+        then (VarSet.add v set, is) :: (acc @ tl)
+        else raise Bad
+      end else
+        k ((set,is)::acc)
+    ) |> (fun x -> Some x)
+  with Bad -> None
+
+
 
