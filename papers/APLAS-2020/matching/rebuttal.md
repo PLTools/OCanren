@@ -63,25 +63,25 @@ The majority of the paper describes the encoding of pattern matching synthesis a
 
 The main technical questions I was left with relate to the generation of the "complete set of samples". The authors say that, in order to work around a lack of universal quantifiers in MiniKanren, they generate a set of concrete inputs for the synthesis procedure that is exponential in the depth of the synthesis problem (which itself is linear in the size of the pattern matching expression). They then describe an optimization which reduces the size of this set. My questions are:
 
-    Is the size of the sample set still exponential after their optimization? (I couldn't figure this out directly from the definition, or from the experimental results table).
+- Is the size of the sample set still exponential after their optimization? (I couldn't figure this out directly from the definition, or from the experimental results table).
 
-    How important is the size of this set, and in particular is the size of this set the thing that prevents the example in Figure 6 from going through? It seems like an optimally small sample set would be relatively straightforward to compute by hand (although I might be wrong about that), so it would be interesting to know whether the example in Figure 6 goes through with a manually constructed sample set or not.
+- How important is the size of this set, and in particular is the size of this set the thing that prevents the example in Figure 6 from going through? It seems like an optimally small sample set would be relatively straightforward to compute by hand (although I might be wrong about that), so it would be interesting to know whether the example in Figure 6 goes through with a manually constructed sample set or not.
 
-    In section 2 (related work), you say that constructing a minimal decision tree is NP-hard, but the approach you're proposing seems to be at least exponential time (and space) due to explicitly enumerating an exponentially large sample set. How does your approach compare experimentally to just minimizing decision trees?
+- In section 2 (related work), you say that constructing a minimal decision tree is NP-hard, but the approach you're proposing seems to be at least exponential time (and space) due to explicitly enumerating an exponentially large sample set. How does your approach compare experimentally to just minimizing decision trees?
 
 As stated above, the experimental section is a little weak and in particular doesn't include a comparison to other tools (the authors say that they have taken their benchmark set largely from the literature, so it seems odd to not compare to the tools the benchmarks were taken from).
 
 Regarding the typos, there are quite a few (although they're mostly minor), so the authors should go through and proof read once more before final submission. Some examples:
 
-    Abstract -- "We present a completely declarative approach to synthesizing pattern matching construct implementation based on application of relational programming" -> "...synthesizing pattern matching construct implementations based on the application of relational programming".
+- Abstract -- "We present a completely declarative approach to synthesizing pattern matching construct implementation based on application of relational programming" -> "...synthesizing pattern matching construct implementations based on the application of relational programming".
 
-    Section 1 -- "On an initial evaluation ... showed our synthesizer performing well" -> "An initial evaluation ... showed our synthesizer performing well".
+- Section 1 -- "On an initial evaluation ... showed our synthesizer performing well" -> "An initial evaluation ... showed our synthesizer performing well".
 
-    Section 2 -- "...minimizing the size of decision tree -> "...minimizing the size of a decision tree".
+- Section 2 -- "...minimizing the size of decision tree -> "...minimizing the size of a decision tree".
 
-    Section 4 -- "We first describe the general idea, and then consider these steps is details" -> "...and then consider the steps in detail".
+- Section 4 -- "We first describe the general idea, and then consider these steps is details" -> "...and then consider the steps in detail".
 
-    Section 5 -- "if we can detect ... , and prohibit" -> "if we can detect ... , we can prohibit"
+- Section 5 -- "if we can detect ... , and prohibit" -> "if we can detect ... , we can prohibit"
 
 ### Review #46C
 
@@ -89,11 +89,11 @@ Overall merit 3. Weak accept
 
 Reviewer expertise 2. Some familiarity
 
-####### Paper summary
+###### Paper summary
 
 This paper proposes a new approach to synthesize pattern matching expressions to optimize program sizes using relational programming. The approach constructs a relation between matching expressions and switch programs to check the validity of synthesized switch programs and uses miniKanren to search for an optimized program. The relational interpreter has a key role to make the relation of semantic equivalence between two languages. The authors show that it is capable to synthesize switch programs for a number of benchmarks.
 
-####### Comments for author
+###### Comments for author
 
 Strengths:
 
@@ -131,13 +131,13 @@ In the Evaluation section, it is better to show the difference of code size betw
 
 The sample set is exponential in general, so there are cases when described optimization is not applicable. For example, we can enumerate all binary trees to certain depth and convert each inhabitant into pattern, using wildcard only for elemnts of the tree. We will get 2^depth patterns and so many examples.
 
-But in many cases decribed optimization can seriously reduce examples set. For example, for last benchmark enumerating all inhabitants to certain depth will give 6393 examples, which are reduced to 20 using optimization. The real amount of examples highly depends on a number of constructor in scrutinee's type an on wildcard placement in patterns.
+But in many cases decribed optimization can seriously reduce examples set. For example, for last benchmark enumerating all inhabitants to certain depth will give 6393 examples, which are reduced to 20 using optimization. The real amount of examples highly depends on a number of constructor in scrutinee's type an on wildcard placement in patterns. Maybe we should add type information for PCF example to show significance of complexity of scrutinee's type.
 
 > In section 2 (related work), you say that constructing a minimal decision tree is NP-hard, but the approach you're proposing seems to be at least exponential time (and space) due to explicitly enumerating an exponentially large sample set. How does your approach compare experimentally to just minimizing decision trees?
 
 > As stated above, the experimental section is a little weak and in particular doesn't include a comparison to other tools (the authors say that they have taken their benchmark set largely from the literature, so it seems odd to not compare to the tools the benchmarks were taken from).
 
-Our goal is to 1) speedup synthesis enough and 2) embed our approach into OCaml compiler. In the current state it seems too early to compare synthesis to state of art methods like described in L.Maranget's papers 2001&2008.
+Our goal is to 1) speedup synthesis enough and 2) embed our approach into OCaml compiler. In the current state it seems too early to compare spped of synthesis to the state-of-art methods like the ones described in L.Maranget's papers 2001&2008.
 
 ##### #46C
 
