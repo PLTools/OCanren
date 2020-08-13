@@ -119,26 +119,30 @@ In the Evaluation section, it is better to show the difference of code size betw
 
 ##### #46A
 
-> I enjoyed this paper. I think it tackles an important and interesting problem. However, I was left feeling that I want a bit more, or at least more discussion of the alternative approaches to the problem. You should at least have a control to benchmark against. Have you considered other approaches to pattern matching synthesis? Have you considered stochastic methods, for instance, for obtaining (good enough) results more quickly?
+> Have you considered stochastic methods, for instance, for obtaining (good enough) results more quickly?
 
-Я хз что ему на это отвечать
+Not yet.
 
 ##### #46B
 
-> Is the size of the sample set still exponential after their optimization? (I couldn't figure this out directly from the definition, or from the experimental results table).
+> Is the size of the sample set still exponential after their optimization?
 
 > How important is the size of this set, and in particular is the size of this set the thing that prevents the example in Figure 6 from going through? It seems like an optimally small sample set would be relatively straightforward to compute by hand (although I might be wrong about that), so it would be interesting to know whether the example in Figure 6 goes through with a manually constructed sample set or not.
 
-The sample set is exponential in general, so there are cases when described optimization is not applicable. For example, we can enumerate all binary trees to certain depth and convert each inhabitant into pattern, using wildcard only for elemnts of the tree. We will get 2^depth patterns and so many examples.
+The sample set is exponential in general, so there are cases when described optimization is not applicable. For example, we can enumerate all binary trees to certain depth and convert each inhabitant into pattern, using wildcard only for elements of the tree. We will get 2^depth patterns and so many examples.
 
-But in many cases decribed optimization can seriously reduce examples set. For example, for last benchmark enumerating all inhabitants to certain depth will give 6393 examples, which are reduced to 20 using optimization. The real amount of examples highly depends on a number of constructor in scrutinee's type an on wildcards placement in patterns. Maybe we should add type information for PCF example to show significance of complexity of scrutinee's type.
+But in many cases decribed optimization can seriously reduce examples set. The real amount of examples highly depends on a number of constructors in scrutinee's type an on wildcards placement in patterns. Maybe we should add type information for PCF example to show significance of complexity of scrutinee's type.
 
-> In section 2 (related work), you say that constructing a minimal decision tree is NP-hard, but the approach you're proposing seems to be at least exponential time (and space) due to explicitly enumerating an exponentially large sample set. How does your approach compare experimentally to just minimizing decision trees?
+Last benchmark is reduced version of the one from Figure 6 not only by patterns, but also by amount of constructors in scrutinee's type. It requires 20 examples for synthesis. If we reuse types from benchmark on Figure 6 then we will generate 364 examples. The full example from figure 6 will require 11102 examples. But if we change `Val (Int _)::_` to `(Val _)::_` in the 3rd clause then depth of the second component of scrutinee will be less and count of examples will be reduced to 2366. All numbers with described optimization enabled.
+
+> ..., you say that constructing a minimal decision tree is NP-hard, but the approach you're proposing seems to be at least exponential time (and space) due to explicitly enumerating an exponentially large sample set. How does your approach compare experimentally to just minimizing decision trees?
 
 > As stated above, the experimental section is a little weak and in particular doesn't include a comparison to other tools (the authors say that they have taken their benchmark set largely from the literature, so it seems odd to not compare to the tools the benchmarks were taken from).
 
-Our goal is to 1) speedup synthesis enough and 2) embed our approach into OCaml compiler. In the current state it seems too early to compare spped of synthesis to the state-of-art methods like the ones described in L.Maranget's papers 2001&2008.
+Our goal is to 1) speedup synthesis enough to deal with PCF example; and 2) embed our approach into OCaml compiler. In the current state it seems too early to compare speed of synthesis to the state-of-art methods like the ones described in L.Maranget's papers. There approach from 2008 paper demostraints significant result only on PCF example (as said in the end of chapter 9 of 2008 paper).
 
 ##### #46C
 
-Вроде явных вопросов не задано, наверное ничего не надо для него (или если толко лимит в 500 слов позволит, а пока позволяет)
+> In the Evaluation section, it is better to show the difference of code size between the first answer and the last optimal answer in the table.
+
+We will do it in the next version of the paper.
