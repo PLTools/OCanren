@@ -119,7 +119,7 @@ In the Evaluation section, it is better to show the difference of code size betw
 
 ##### #46A
 
-> Have you considered stochastic methods, for instance, for obtaining (good enough) results more quickly?
+> Have you considered stochastic methods, .... for obtaining (good enough) results more quickly?
 
 Not yet.
 
@@ -131,13 +131,13 @@ Not yet.
 
 The sample set is exponential in general, so there are cases when described optimization is not applicable. For example, we can enumerate all binary trees to certain depth and convert each inhabitant into pattern, using wildcard only for elements of the tree. We will get 2^depth patterns and so many examples.
 
-But in many cases decribed optimization can seriously reduce examples set. The real amount of examples highly depends on a number of constructors in scrutinee's type an on wildcards placement in patterns. Maybe we should add type information for PCF example to show significance of complexity of scrutinee's type.
+But in many cases decribed optimization can seriously reduce examples set. The real amount of examples highly depends on a number of constructors in scrutinee's type an on wildcards placement in patterns. We will add type information to the paper for PCF example to show significance of complexity of scrutinee's type.
 
 Last benchmark is reduced version of the one from Figure 6 not only by patterns, but also by amount of constructors in scrutinee's type. It requires 20 examples for synthesis. If we reuse types from benchmark on Figure 6 then we will generate 364 examples. The full example from figure 6 will require 11102 examples. But if we change `Val (Int _)::_` to `(Val _)::_` in the 3rd clause then depth of the second component of scrutinee will be less and count of examples will be reduced to 2366. All numbers with described optimization enabled.
 
 > ..., you say that constructing a minimal decision tree is NP-hard, but the approach you're proposing seems to be at least exponential time (and space) due to explicitly enumerating an exponentially large sample set. How does your approach compare experimentally to just minimizing decision trees?
 
-> As stated above, the experimental section is a little weak and in particular doesn't include a comparison to other tools (the authors say that they have taken their benchmark set largely from the literature, so it seems odd to not compare to the tools the benchmarks were taken from).
+> ..., the experimental section is a little weak and in particular doesn't include a comparison to other tools (the authors say that they have taken their benchmark set largely from the literature, so it seems odd to not compare to the tools the benchmarks were taken from).
 
 Our goal is to 1) speedup synthesis enough to deal with PCF example; and 2) embed our approach into OCaml compiler. In the current state it seems too early to compare speed of synthesis to the state-of-art methods like the ones described in L.Maranget's papers. There approach from 2008 paper demostraints significant result only on PCF example (as said in the end of chapter 9 of 2008 paper).
 
