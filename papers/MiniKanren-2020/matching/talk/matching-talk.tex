@@ -1,4 +1,4 @@
-\def\pgfsysdriver{pgfsys-dvipdfm.def}
+\def\pgfsysdriver{pgfsys-dvipdfm.def} % required for tress inside
 \documentclass[aspectratio=169
   , xcolor={svgnames}
   , hyperref={ colorlinks,citecolor=Blue
@@ -105,10 +105,15 @@
 \let\emptyset\varnothing
 \let\eps\varepsilon
 
-
-
-
-
+% for fancy table
+\newcommand{\lheadl}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}|}{{#2}}}
+\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{\small #2}}}
+\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{\small #2}}}
+\newcommand{\lheadll}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}||}{\textbf{\small #2}}}
+\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{\small #2}}}
+\usepackage{longtable}
+\newcommand{\nodata}{}
+\newcommand{\tablenotemark}[1]{#1}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -135,9 +140,9 @@
 % By default all math in TikZ nodes are set in inline mode. Change this to
 % displaystyle so that we don't get small fractions.
 \everymath{\displaystyle}
-
+%\begin{comment}
 % Uncomment these lines for an automatically generated outline.
-\begin{frame}{Pattern matching}
+\begin{frame}{Pattern Matching}
 Effective compilation of pattern matching is essential for functional programming
 \vspace{1cm}
 
@@ -163,7 +168,7 @@ Two main approaches to compile:
 \end{frame}
 
 
-\begin{frame}[fragile]{An example of pattern matching and it's two compiled represenations}
+\begin{frame}[fragile]{An Example of Pattern Aatching and It's Two Compiled Representations}
 \begin{figure}[ht]
 \begin{subfigure}[b]{0.25\linewidth}
 %\centering
@@ -215,7 +220,7 @@ else
  Pattern matchin is on the left. We can start testing from $x$, and then $y$ and $z$, it will give us a program with 6 $if$ constructions. But we can start testing from $y$ and if it is $false$ we can not test $x$. It will give us a program with four tests.}
 \end{frame}
 
-\begin{frame}{Our method: synthesis + relational interpreter}
+\begin{frame}{Our Method: Synthesis + Relational Interpreter}
 Do \emph{not compile} with specific algorithm but \emph{synthesize} compiled representation on large enough but finite set of examples
 \vspace{1cm}
 
@@ -230,7 +235,7 @@ Our repo on Github: ~\cite{Repo}.
 \end{frame}
 
 
-\begin{frame}[fragile]{Pattern matching syntax}
+\begin{frame}[fragile]{Pattern Matching Syntax}
 \begin{figure}[ht]
 \begin{subfigure}[b]{0.3\linewidth}
 \[
@@ -255,6 +260,8 @@ Our repo on Github: ~\cite{Repo}.
 \end{figure}
 \vspace{0.5cm}
 Things that are omitted for simplicity: guards, pattern variables
+
+TODO: program size here?
 \end{frame}
 
 \begin{frame}[fragile]{Example 1 (1/2)}
@@ -291,6 +298,7 @@ match (s : unit list) with
 \end{itemize}
 \end{subfigure}
 \end{figure}
+
 \end{frame}
 
 \begin{frame}[fragile]{Example 1 (2/2)}
@@ -501,6 +509,198 @@ where $\mathcal{B}$ is any value of type \lstinline=bool=.
 %$\text{T}\!\!\! \text{F}$
 \end{frame}
 
+
+%\end{comment}
+
+\begin{frame}[fragile,allowframebreaks]{Experiments}
+%\begin{table}[H]
+  \begin{longtable}{|m{3.5cm}||cccccc|}
+\hline
+    \lheadll{3cm}{Patterns} & 
+%    \head{1.5cm}{Size constraint} & 
+%    \headll{1.7cm}{Answers requested} & 
+    \head{1.5cm}{\scriptsize \# samples} & 
+    \head{1.5cm}{\scriptsize 1st answer size} & 
+    \head{1.5cm}{\scriptsize 1st answer time (ms)} & 
+    \head{1.5cm}{\scriptsize Answers found} & 
+    \head{1.5cm}{\scriptsize Last answer size} & 
+    \headl{1.5cm}{\scriptsize Total search time (ms)}
+\endhead
+    \hline
+    \hline
+\begin{comment}
+    \texttt{
+A
+B
+C }&3&&1&2&&2\\ \hline
+
+    \begin{lstlisting}[basicstyle=\scriptsize]
+true
+false
+    \end{lstlisting} &2&&$<$1&1&&$<$1\\
+        \hline
+\end{comment}
+            \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em,aboveskip=-1em]
+(true, _) 
+(_, true)
+(false, false)
+\end{lstlisting}  &4&2&5&1&2&6\\
+        \hline
+     \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em,aboveskip=-1em]
+(_, false, true)
+(false, true, _)
+(_, _, false) 
+(_, _, true)
+\end{lstlisting}   &8&6&$\sim$1000&3&4&$\sim$2000\\
+        \hline
+%        5&
+%     \begin{lstlisting}[basicstyle=\scriptsize]
+%([], _)
+%(_, [])
+%(_ :: _, _ :: _)
+%    \end{lstlisting} &100&10&4&5&1&6\\
+%        \hline
+%        6&
+     \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em,aboveskip=-1em]
+type nat = Z 
+         | S of nat
+  
+(Succ _, Succ _)
+(Zero, _)
+(_, Zero)    \end{lstlisting} &4&2&30&1&2&30
+    \\
+        \hline
+     \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em,aboveskip=-1em]
+type 'a list = 
+| Nil 
+| Nil2 
+| Cons of 'a * 'a list     
+
+(Nil, _)
+(_, Nil)
+(Nil2, _)
+(_, Nil2)
+(Cons(_,_),Cons(_,_))
+    \end{lstlisting}
+     &9&5&24&3& 5  &157                    \\ 
+      \hline
+%      \hline
+     \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em,aboveskip=-1em]
+type code = 
+| Push 
+|Ldi of int 
+| IOp of int 
+| Int of int 
+type prog = code list 
+type item = 
+| Val of code 
+| Env of int 
+| Code of int
+type stack = item list 
+
+match (code, stack,prog) 
+(_, _, (Ldi _)::_)
+(_, _, (Push _)::_)
+    \end{lstlisting} &5&3&11&1&3&30\\
+        \hline      
+        \newpage
+        \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em,aboveskip=-1em]
+(_, _, (Ldi _)::_)
+(_, _, (Push _)::_)
+(Int(_), _, (IOp _)::_)
+\end{lstlisting}
+     &20&7&$\sim$1700&3&5&$\sim$11000                    \\ \hline
+  \end{longtable}
+
+\end{frame}
+
+\begin{frame}[fragile]{Bad Example from PCF Interpreter (1/?)}
+\begin{figure}
+\begin{subfigure}[b]{0.6\linewidth}
+\begin{lstlisting}[basicstyle=\small]
+let rec run a s c =
+  match a,s,c with
+  | (_,_,Ldi i::_) -> 1
+  | (_,_,Push::_)  -> 2
+  | (Int _,Val (Int _)::_,IOp _::_) -> 3
+  | (Int _,_,Test (_,_)::c) -> 4
+  | (Int _,_,Test (_,_)::c) -> 5
+  | (_,_,Extend::_) -> 6
+  | (_,_,Search _::_) -> 7
+  | (_,_,Pushenv::_) -> 8
+  | (_,Env e::s,Popenv::_) -> 9
+  | (_,_,Mkclos cc::_) -> 10
+  | (_,_,Mkclosrec _::_) -> 11
+  | (Clo (_,_), Val _::_, Apply::_) -> 12
+  | (_,(Code _::Env _::_),[]) -> 13
+  | (_,[],[]) -> 14
+\end{lstlisting}
+\end{subfigure}
+\hspace{.5cm}
+\begin{subfigure}[b]{0.3\linewidth}
+Doesn't currently work because types are too large (11102).\\
+
+But for reduced example we can synthesize the answer
+\vspace{1cm}
+\end{subfigure}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Bad Example from PCF Interpreter (2/?)}
+\begin{figure}
+\begin{subfigure}[b]{0.45\linewidth}
+\begin{lstlisting}[basicstyle=\small]
+type code = 
+| Push 
+| Ldi of int 
+| IOp of int 
+| Int of int 
+type prog = code list 
+type item = 
+| Val of code 
+| Env of int 
+| Code of int
+type stack = item list 
+
+match (code, stack,prog) with
+| (_, _, (Ldi _)::_) -> 1
+| (_, _, (Push _)::_) -> 2
+\end{lstlisting}
+\begin{onlyenv}<2->
+\begin{lstlisting}[basicstyle=\small,aboveskip=-0.5em]
+| (Int _, _, (IOp _)::_) -> 3
+\end{lstlisting}
+\end{onlyenv}
+\end{subfigure}
+\hspace{.5cm}
+\begin{subfigure}[b]{0.45\linewidth}
+\begin{overlayarea}{7cm}{6cm}
+Example is reduces by 
+\begin{itemize}
+\item types 
+\item clauses
+\end{itemize}
+For two clauses we require 5 examples 
+\vspace{1cm}
+
+\begin{onlyenv}<2->
+For three clauses and same types we require 20 examples
+\begin{itemize}
+\item in 1,5s it gives first answer of size 7
+\item in next half a second it gives 2nd and 3rd(last) answers of size 6 and 5
+\item in the end it 10s proves that no shorter answers exist
+\end{itemize}
+%\begin{lstlisting}[basicstyle=\small,aboveskip=-0.5em]
+%| (Int _, _, (IOp _)::_) -> 3
+%\end{lstlisting}
+\end{onlyenv}
+\end{overlayarea}
+\vspace{1cm}
+\end{subfigure}
+\end{figure}
+
+\end{frame}
+
 \begin{frame}{Conclusions and Future Work}
 \begin{itemize}
 \item An approach shows correct results on small problems...
@@ -514,96 +714,11 @@ where $\mathcal{B}$ is any value of type \lstinline=bool=.
 \end{frame}
 
 \begin{frame}
-
 %\vspace{1cm}\pause
 \begin{center}
 {\Huge Thanks!}
 \end{center}
 \end{frame}
-
-
-\begin{comment}
-\begin{frame}[fragile]{Pattern matching semantics}
-\begin{figure}[ht]
-\begin{subfigure}[b]{0.3\linewidth}
-\[
- \begin{array}{rcll}
-    \mathcal{C} & = & \{ C_1^{k_1}, \dots, C_n^{k_n} \}\\
-    \mathcal{V} & = & \mathcal{C}\,\mathcal{V}^*\\  
-    \mathcal{P} & = & \_ \mid \mathcal{C}\,\mathcal{P}^*
- \end{array}
-\]
-\end{subfigure}
-\hspace{0.5cm}
-\begin{subfigure}[b]{0.4\linewidth}
- \renewcommand*{\arraystretch}{1.5}
- \[
- \begin{array}{cr}
-   \inbr{v;\,\_} & \ruleno{Wildcard} \\
-   \trule{\forall i\;\inbr{v_i;\,p_i}}{\inbr{C^k\,v_1\dots v_k;\,C^k\,p_1\dots p_k}},\,k\ge 0 & \ruleno{Constructor}
- \end{array}
- \]
-\end{subfigure}
-\end{figure}
-
-\begin{figure}
-   \renewcommand*{\arraystretch}{2}
-%   \setarrow{\xrightarrow}
-   \setsubarrow{_*}
-   \[
-   \begin{array}{cr}
-     \trule{\inbr{v;\,p_1}}
-           {\withenv{i}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}}} & \ruleno{MatchHead}\\
-     \trule{\neg\inbr{v;\,p_1}\qquad\withenv{i+1}{\trans{\inbr{v;\,p_2,\dots,p_k}}{}{j}}}
-           {\withenv{i}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{j}}} & \ruleno{MatchTail}\\
-     \withenv{i}{\trans{\inbr{v;\,\eps}}{}{i}} & \ruleno{MatchOtherwise}\\
-     \trule{\withenv{1}{\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}}}
-           {\setsubarrow{}\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}} & \ruleno{Match}
-   \end{array}
-   \]
-\end{figure}
-\note{
-This is pretty standart pattern mathcing semantics. Because of this talk is prerecorded you can easily pause and look into it more closely
-
-Our syntax supports only constructors and wild cards. Pattern vriables can be easily added after right matching branch is decided.
-}
-\end{frame}
-
-\begin{frame}[fragile]
-\begin{figure}
-\begin{subfigure}[b]{1\linewidth}
-\[
-\begin{array}{rcl}
-  \mathcal M & = & \bullet \\
-  &   & \mathcal M\,[\mathbb{N}] \\
-  \ir & = & \primi{return}\,\mathbb{N} \\
-  &   & \primi{switch}\;\mathcal{M}\;\primi{with}\; [\mathcal{C}\; \primi{\rightarrow}\; \ir]^*\;\primi{otherwise}\;\ir
-\end{array}
-\]
-\end{subfigure}
-\begin{subfigure}[b]{1\linewidth}
-\renewcommand*{\arraystretch}{3}
-\setarrow{\xrightarrow}
-\setsubarrow{_{\mathcal S}}
-  \[
-  \begin{array}{cr}
-    \withenv{v}{\trans{\primi{return}\;i}{}{i}} &  %\ruleno{Return}
-    \\
-    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{C^k\,v_1,\dots,v_k}}}\qquad \withenv{v}{\trans{s}{}{i}}}
-          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} & 
-          %\ruleno{SwitchMatched}
-          \\
-    \trule{{\setsubarrow{_{\mathcal M}}\withenv{v}{\trans{m}{}{D^n\,v_1,\dots,v_n}}}\qquad C^k\ne D^n\qquad \withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;s^*\;\primi{otherwise}\;s^\prime}{}{i}}}
-          {\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;[C^k\to s]s^*\;\primi{otherwise}\;s^\prime}{}{i}}} &
-           %\ruleno{SwitchNotMatched}
-          \\
-    \trule{\withenv{v}{\trans{s}{}{i}}}{\withenv{v}{\trans{\primi{switch}\;m\;\primi{with}\;\eps\;\primi{otherwise}\;s}{}{i}}} & %\ruleno{SwitchOtherwise}
-  \end{array}
-  \]
-\end{subfigure}
-\end{figure}
-\end{frame}
-\end{comment}
 
 \begin{frame}[t, allowframebreaks]
 \frametitle{References}
