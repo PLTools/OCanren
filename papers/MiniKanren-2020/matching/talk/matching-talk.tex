@@ -168,7 +168,7 @@ Two main approaches to compile:
 \end{frame}
 
 
-\begin{frame}[fragile]{An Example of Pattern Aatching and It's Two Compiled Representations}
+\begin{frame}[fragile]{An Example of Pattern Matching and It's Two Compiled Representations}
 \begin{figure}[ht]
 \begin{subfigure}[b]{0.25\linewidth}
 %\centering
@@ -392,6 +392,7 @@ Wrong set of examples:
 \begin{itemize}
 \item \verb=Nil=
 \end{itemize}
+\vspace{1cm}
 \end{subfigure}
 \hspace{.5cm}
 \begin{subfigure}[b]{0.6\linewidth}
@@ -433,7 +434,7 @@ Algorithm briefly:
 Pros and cons:
 \begin{itemize}
 \item[\texttt{+}] It is correct
-\item[\texttt{-}] Exponential size of patterns
+\item[\texttt{-}] Exponential by height number of patterns required
 \end{itemize}
 %\vspace{1cm}
 %We are currently working on
@@ -638,7 +639,7 @@ let rec run a s c =
 \end{subfigure}
 \hspace{.5cm}
 \begin{subfigure}[b]{0.3\linewidth}
-Doesn't currently work because types are too large (11102).\\
+Doesn't currently work because types are too large (11102 examples being generated).\\
 
 But for reduced example we can synthesize the answer
 \vspace{1cm}
@@ -708,7 +709,7 @@ For three clauses and same types we require 20 examples
 \begin{itemize}
 \item Reification for structural constraints can be made faster (lazy computations)
 \item Use finite-domain constraints instead of disequality constraints 
-\item Memoization is not used (because of presence of disequality constrains)
+\item Memoization is not used (because of presence of disequality constraints)
 \end{itemize}
 \end{itemize}
 \end{frame}
