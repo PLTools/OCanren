@@ -224,10 +224,10 @@ else
 Do \emph{not compile} with specific algorithm but \emph{synthesize} compiled representation on large enough but finite set of examples
 \vspace{1cm}
 
-Minimization criteria: less checks written in synthesized program.
+Fast $\Leftrightarrow$ Small: synthesized program should contain less checks.
 \vspace{1cm}
 
-We are going to use relational programming, more precisely OCanren~\cite{OCanrenWeb} from miniKanren~\cite{MiniKanrenWeb} family.
+We are using relational programming, more precisely OCanren~\cite{OCanrenWeb} from miniKanren~\cite{MiniKanrenWeb} family.
 \vspace{1cm}
 
 
@@ -262,6 +262,77 @@ Our repo on Github: ~\cite{Repo}.
 Things that are omitted for simplicity: guards, pattern variables
 
 TODO: program size here?
+\end{frame}
+
+\begin{frame}[fragile]{Minimization Criterion for Synthesized Program}
+\begin{figure}
+\begin{subfigure}[b]{0.3\linewidth}
+$$
+\begin{array}{l}
+\primi{switch}\;\mathcal{M}\;\primi{with}\; \\
+\mathcal{C}_1\; \primi{\rightarrow}\; \ir_1\\
+\dots \\
+\mathcal{C}_n\; \primi{\rightarrow}\; \ir_n\\
+\primi{otherwise}\;\ir\\
+\end{array}\\
+$$
+$$
+\Updownarrow
+$$
+$$
+\begin{array}{l}
+\primi{if}\; \mathcal{M} = \mathcal{C}_1\;\primi{then}\; \ir_1\\
+\dots \\
+\primi{else if}\; \mathcal{M} = \mathcal{C}_n\; \primi{then}\;  \ir_n\\
+\primi{else}\;\ir\\
+\end{array}\\
+$$
+\vspace{1cm}
+
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[b]{0.6\linewidth}
+A single switch with $n$ branches roughly can be expressed as $n$ \texttt{if}s\\
+
+Let's say that size of
+\begin{itemize}
+\item  $\primi{switch}$ is \# of branches
+\item $\primi{return}$ = 0
+\item whole program in $\ir$ is $\Sigma$ of sizes of $\primi{switch}$es in it
+\end{itemize}
+Our minimization criterion: reduce size of synthesized program\\
+
+But there are other criteria:
+\begin{itemize}
+\item Less depth 
+\item Less branching factors
+\item etc.
+\end{itemize}
+\end{subfigure}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{The Idea about Generating Examples}
+For every concrete pattern matching we know:
+\begin{itemize}
+\item type of scrutinee
+\item pattern used in it
+\begin{itemize}
+\item maximum depth of these patterns
+\end{itemize}
+\end{itemize}
+
+
+\begin{alertblock}{Idea}
+Let's generate all inhabitants of the scrutinee's type until certain depth an use them as examples
+\end{alertblock}
+
+\begin{itemize}
+\item[+] Is correct (proved in Coq)
+\item[-] Number of examples is exponential
+\end{itemize}
+
 \end{frame}
 
 \begin{frame}[fragile]{Example 1 (1/2)}
@@ -703,23 +774,29 @@ For three clauses and same types we require 20 examples
 \end{frame}
 
 \begin{frame}{Conclusions and Future Work}
-\begin{itemize}
-\item An approach shows correct results on small problems...
-\item ... but performs not fast enough
+
+An approach shows correct results on small problems...
+ but performs not fast enough\\
+ 
+Areas for possible improvements:
 \begin{itemize}
 \item Reification for structural constraints can be made faster (lazy computations)
 \item Use finite-domain constraints instead of disequality constraints 
 \item Memoization is not used (because of presence of disequality constraints)
+\item More clever way to generate less examples
 \end{itemize}
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-%\vspace{1cm}\pause
+\vspace{1cm}\pause
 \begin{center}
 {\Huge Thanks!}
 \end{center}
 \end{frame}
+
+%\begin{frame}
+%%\vspace{1cm}\pause
+%\begin{center}
+%{\Huge Thanks!}
+%\end{center}
+%\end{frame}
 
 \begin{frame}[t, allowframebreaks]
 \frametitle{References}
