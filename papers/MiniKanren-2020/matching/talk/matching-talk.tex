@@ -220,18 +220,14 @@ else
  Pattern matchin is on the left. We can start testing from $x$, and then $y$ and $z$, it will give us a program with 6 $if$ constructions. But we can start testing from $y$ and if it is $false$ we can not test $x$. It will give us a program with four tests.}
 \end{frame}
 
-\begin{frame}{Our Method: Synthesis + Relational Interpreter}
-Do \emph{not compile} with specific algorithm but \emph{synthesize} compiled representation on large enough but finite set of examples
-\vspace{1cm}
-
-Fast $\Leftrightarrow$ Small: synthesized program should contain less checks.
-\vspace{1cm}
-
-We are using relational programming, more precisely OCanren~\cite{OCanrenWeb} from miniKanren~\cite{MiniKanrenWeb} family.
-\vspace{1cm}
-
-
-Our repo on Github: ~\cite{Repo}.
+\begin{frame}{Contributions}
+\Large
+\begin{enumerate}
+\item[I] Synthesis via combination of two relational interpreters
+\item[II] Replacing $\forall$ quantifier by finite set of examples
+\item[III] Branch and bound optimization of synthesis using \emph{structural constraint}
+%\item[IV] Extension of OCanren called \emph{structural constraint}
+\end{enumerate}
 \end{frame}
 
 
@@ -261,59 +257,38 @@ Our repo on Github: ~\cite{Repo}.
 \vspace{0.5cm}
 Things that are omitted for simplicity: guards, pattern variables
 
-TODO: program size here?
+%TODO: program size here?
 \end{frame}
 
-\begin{frame}[fragile]{Minimization Criterion for Synthesized Program}
-\begin{figure}
-\begin{subfigure}[b]{0.3\linewidth}
-$$
-\begin{array}{l}
-\primi{switch}\;\mathcal{M}\;\primi{with}\; \\
-\mathcal{C}_1\; \primi{\rightarrow}\; \ir_1\\
-\dots \\
-\mathcal{C}_n\; \primi{\rightarrow}\; \ir_n\\
-\primi{otherwise}\;\ir\\
-\end{array}\\
-$$
-$$
-\Updownarrow
-$$
-$$
-\begin{array}{l}
-\primi{if}\; \mathcal{M} = \mathcal{C}_1\;\primi{then}\; \ir_1\\
-\dots \\
-\primi{else if}\; \mathcal{M} = \mathcal{C}_n\; \primi{then}\;  \ir_n\\
-\primi{else}\;\ir\\
-\end{array}\\
-$$
+\begin{frame}{Contribution 1: Synthesis Algorithm}
+%High-level description:
+\[
+%depth^o\,v\,n \;\; \wedge \;\;
+\forall v \quad \forall  (1\le\!i\le \!k\!+\!1) \quad
+%\mbox{\lstinline|fresh ($i$)|}\; \{
+(match^o\,v\,\,p_1,\dots,p_k\,\,i) \;\; \Leftrightarrow \;
+eval^o_{\mathcal S}\,v\,\circled{?}\,i
+%\}
+\]
+
+\begin{itemize}
+%\item $depth^o\,v\,n$ generates examples bound by depth $n$
+%\item $\forall v$ -- all possible scrutinees
+%\item $\forall i$ -- all possible branches
+\item $match^o\,v\,\,p_1,\dots,p_k\,\,i$ -- declarative interpreter of pattern matching, for every  possible scrutinee $v$ returns single branch $i$ 
+\item $\circled{?}$ is a program to be synthesized
+\item $eval^o_{\mathcal S}\,v\,\circled{?}\,i$ -- declarative interpreter of $\mathcal S$, ensures that synthesized $\circled{?}$ on example $v$ resolves to right branch $i$
+\end{itemize}
 \vspace{1cm}
-
-\end{subfigure}
-\hspace{1cm}
-\begin{subfigure}[b]{0.6\linewidth}
-A single switch with $n$ branches roughly can be expressed as $n$ \texttt{if}s\\
-
-Let's say that size of
 \begin{itemize}
-\item  $\primi{switch}$ is \# of branches
-\item $\primi{return}$ = 0
-\item whole program in $\ir$ is $\Sigma$ of sizes of $\primi{switch}$es in it
+\item[\faGood] It's easy to implement $match^o$ and  $eval^o$ (even for extension of pattern matching)
+\item[\faBad]  No universal quantifier in miniKanren with disequality constraints
 \end{itemize}
-Our minimization criterion: reduce size of synthesized program\\
-
-But there are other criteria:
-\begin{itemize}
-\item Less depth 
-\item Less branching factors
-\item etc.
-\end{itemize}
-\end{subfigure}
-\end{figure}
 
 \end{frame}
 
-\begin{frame}{The Idea about Generating Examples}
+
+\begin{frame}{Contribution 2: Eliminating $\forall$ by Generating a Finite Set of Examples}
 For every concrete pattern matching we know:
 \begin{itemize}
 \item type of scrutinee
@@ -323,17 +298,33 @@ For every concrete pattern matching we know:
 \end{itemize}
 \end{itemize}
 
-
-\begin{alertblock}{Idea}
+\begin{alertblock}{\textbf{Idea}}
 Let's generate all inhabitants of the scrutinee's type until certain depth an use them as examples
 \end{alertblock}
 
 \begin{itemize}
-\item[+] Is correct (proved in Coq)
-\item[-] Number of examples is exponential
+\item[\faGood] Is correct (proved in Coq)
+\item[\faBad] Number of examples is exponential
 \end{itemize}
-
 \end{frame}
+
+\begin{comment}
+\begin{frame}{Our Method: Synthesis + Relational Interpreter}
+Do \emph{not compile} with specific algorithm but \emph{synthesize} compiled representation on large enough but finite set of examples
+\vspace{1cm}
+
+Fast $\Leftrightarrow$ Small: synthesized program should contain less checks.
+\vspace{1cm}
+
+We are using relational programming, more precisely OCanren~\cite{OCanrenWeb} from miniKanren~\cite{MiniKanrenWeb} family.
+\vspace{1cm}
+
+
+Our repo on Github: ~\cite{Repo}.
+\end{frame}
+\end{comment}
+
+
 
 \begin{frame}[fragile]{Example 1 (1/2)}
 \begin{figure}
@@ -403,8 +394,8 @@ match (s : unit list) with
 \vspace{1cm}
 \begin{itemize}
 \item Pattern matching (above)
-\item height = 3
-\item with examples bounded by the height of patterns 
+\item depth = 3
+\item with examples bounded by the depth of patterns 
 \end{itemize}
 \end{subfigure}
 \end{figure}
@@ -435,7 +426,7 @@ match (s : unit list) with
 \end{lstlisting}
 \vspace{1cm}
 \begin{itemize}
-\item All inhabitants bound by height = 1 -- is a set of single element
+\item All inhabitants bound by depth = 1 -- is a set of single element
 \item It is not enough
 \item We should test at least on an expression that starts from Cons  (\lstinline{unit :: []}, for instance)
 \item but if we don't do that...
@@ -495,7 +486,7 @@ behaves the same on our set of examples
 \begin{subfigure}[b]{0.45\linewidth}
 Algorithm briefly:
 \begin{itemize}
-\item Evaluate height of patterns $h$
+\item Evaluate depth of patterns $h$
 \item Synthesize all inhabitants, but
 \item on depth $h+1$ use single predefined per type inhabitant 
 \end{itemize}
@@ -504,8 +495,8 @@ Algorithm briefly:
 \begin{subfigure}[b]{0.45\linewidth}
 Pros and cons:
 \begin{itemize}
-\item[\texttt{+}] It is correct
-\item[\texttt{-}] Exponential by height number of patterns required
+\item[\faGood] Is correct (proved in Coq)
+\item[\faBad] Number of examples is exponential
 \end{itemize}
 %\vspace{1cm}
 %We are currently working on
@@ -518,43 +509,6 @@ Pros and cons:
 %\end{itemize}
 \end{subfigure}
 \end{figure}
-
-\end{frame}
-
-
-\begin{frame}{Synthesis Algorithm, More Formally }
-High-level description:
-\[
-depth^o\,v\,n \;\; \wedge \;\;
-\mbox{\lstinline|fresh ($i$)|}\; \{match^o\,v\,\,p_1,\dots,p_k\,\,i \;\;\wedge \;
-eval^o_{\mathcal S}\,v\,\circled{?}\,i\}
-\]
-
-\begin{itemize}
-\item $depth^o\,v\,n$ generates examples bound by depth $n$
-\item $match^o\,v\,\,p_1,\dots,p_k\,\,i$ resolves branch $i$ for concrete example $v$
-\item $\circled{?}$ is a program to be synthesized
-\item $eval^o_{\mathcal S}\,v\,\circled{?}\,i$ ensures that synthesized $\circled{?}$ on example $v$ resolves to right branch $i$
-\end{itemize}
-
-
-\end{frame}
-
-\begin{frame}{Improvement: Cutting bad branches}
-
-Our answer is always in single variable -- $\circled{?}$ and during the search we \emph{only} extend it with new switch branches\\
-
-\begin{alertblock}{Idea}
-If current estimate is longer than shortest answer already found -- cut this branch
-\end{alertblock}
-
-Is implemented as new primitive called \emph{structural constraint}:
-\begin{itemize}
-\item Takes a logic value and performs reification in current state
-\item Takes a predicate which investigates reified value 
-\item If there are too many branches in it then stop the search ($failure^o$)
-\item Otherwise: continue search without changing state ($success^o$)
-\end{itemize}
 
 \end{frame}
 
@@ -576,13 +530,108 @@ We can statically decide that
 \end{itemize}
 \vspace{.5cm}
 
-So, we can run synthesis only on two examples $\{(\mathcal{B},\mathcal{B},\text{T}),(\mathcal{B},\mathcal{B},\text{F})\}$
-where $\mathcal{B}$ is any value of type \lstinline=bool=.
+\begin{itemize}
+\item So, we can run synthesis only on two examples $\{(\mathcal{B},\mathcal{B},\text{T}),(\mathcal{B},\mathcal{B},\text{F})\}$
+where $\mathcal{B}$ is any value of type \lstinline=bool=
+\item if we \textbf{forbid investigation of  some subtrees} of examples
+\end{itemize}
+
 %$\text{T}\!\!\! \text{F}$
 \end{frame}
 
 
-%\end{comment}
+\begin{frame}{Contribution 3: Branch and Bound Optimization}
+Our answer is always in single variable -- $\circled{?}$ and during the search we \emph{only} extend it with new $\primi{switch}$es \\
+
+\begin{alertblock}{\textbf{Idea}}
+If current estimate is longer than shortest answer already found -- cut this branch
+\end{alertblock}
+
+Requires modified miniKanren's \lstinline=run= primitive: for every answer found we 
+\begin{itemize}
+\item evaluate it's size
+\item update already found minimum
+\end{itemize}
+
+Cutting bad search branches is implemented using new primitive called  \emph{structural constraint}
+
+\end{frame}
+
+\begin{frame}{Contribution 3: Branch and bound optimization. Structural constraint}
+New primitive called \emph{structural constraint}:
+\begin{itemize}
+\item Takes a logic value and performs reification in current state
+\item Takes a predicate which investigates reified value 
+\item If there are too many branches in it then stop the search ($failure^o$)
+\item Otherwise: continue search without changing state ($success^o$)
+\end{itemize}
+\vspace{1em}
+Peculiarities:
+\begin{itemize}
+\item Used to count size of current estimate
+\item May take or not take into account disequality constraints
+\item Can be used to implement $absent^o$ or similar constraints
+\item Deals with reified values $\Rightarrow$ can be slow
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Minimization Criterion for Synthesized Program}
+\begin{figure}
+\begin{subfigure}[b]{0.3\linewidth}
+$$
+\begin{array}{l}
+\primi{switch}\;\mathcal{M}\;\primi{with}\; \\
+\mathcal{C}_1\; \primi{\rightarrow}\; \ir_1\\
+\dots \\
+\mathcal{C}_n\; \primi{\rightarrow}\; \ir_n\\
+\primi{otherwise}\;\ir\\
+\end{array}\\
+$$
+$$
+\Updownarrow
+$$
+$$
+\begin{array}{l}
+\primi{if}\; \mathcal{M} = \mathcal{C}_1\;\primi{then}\; \ir_1\\
+\dots \\
+\primi{else if}\; \mathcal{M} = \mathcal{C}_n\; \primi{then}\;  \ir_n\\
+\primi{else}\;\ir\\
+\end{array}\\
+$$
+\vspace{1cm}
+
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[b]{0.6\linewidth}
+A single switch with $n$ branches roughly can be expressed as $n$ \texttt{if}s\\
+
+Let's say that size of
+\begin{itemize}
+\item  $\primi{switch}$ is \# of branches
+\item $\primi{return}$ = 0
+\item whole program in $\ir$ is $\Sigma$ of sizes of $\primi{switch}$es in it
+\end{itemize}
+Our minimization criterion: reduce size of synthesized program\\
+
+But there are other criteria:
+\begin{itemize}
+\item Less depth 
+\item Less branching factor
+\item etc.
+\end{itemize}
+\end{subfigure}
+\end{figure}
+
+\end{frame}
+
+
+
+
+
+\begin{comment}
+
 
 \begin{frame}[fragile,allowframebreaks]{Experiments}
 %\begin{table}[H]
@@ -600,18 +649,18 @@ where $\mathcal{B}$ is any value of type \lstinline=bool=.
 \endhead
     \hline
     \hline
-\begin{comment}
-    \texttt{
-A
-B
-C }&3&&1&2&&2\\ \hline
 
-    \begin{lstlisting}[basicstyle=\scriptsize]
-true
-false
-    \end{lstlisting} &2&&$<$1&1&&$<$1\\
-        \hline
-\end{comment}
+%    \texttt{
+%A
+%B
+%C }&3&&1&2&&2\\ \hline
+%
+%    \begin{lstlisting}[basicstyle=\scriptsize]
+%true
+%false
+%    \end{lstlisting} &2&&$<$1&1&&$<$1\\
+%        \hline
+
             \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em,aboveskip=-1em]
 (true, _) 
 (_, true)
@@ -684,6 +733,61 @@ match (code, stack,prog)
      &20&7&$\sim$1700&3&5&$\sim$11000                    \\ \hline
   \end{longtable}
 
+\end{frame}
+
+\end{comment}
+
+\begin{frame}[fragile]
+\begin{figure}
+\begin{subfigure}[b]{0.48\linewidth}
+     \begin{lstlisting}[basicstyle=\small,belowskip=1em,aboveskip=0em]
+(_, false, true) -> 1
+(false, true, _) -> 2
+(_, _, false) -> 3
+(_, _, true) -> 4
+\end{lstlisting}
+Answer of size 6 (in 1.6 seconds)
+\begin{lstlisting}[basicstyle=\scriptsize,belowskip=0em]
+switch $\bullet$[0] with  
+| true -> 
+    (switch $\bullet$[1] with  
+    | true -> 
+        (switch $\bullet$[2] with true -> 4 | _ -> 3)
+    | _ -> 
+        (switch $\bullet$[2] with true -> 1 | _ -> 3))  
+| _ -> 
+    (switch $\bullet$[1] with  
+    | true -> 2   
+    | _ -> 
+         (switch $\bullet$[2] with true -> 1 | _ -> 3))
+\end{lstlisting}
+\end{subfigure}
+%\hspace{.5cm}
+\begin{subfigure}[b]{0.48\linewidth}
+Answer of size 5 (in +0.4 seconds)
+\begin{lstlisting}[basicstyle=\scriptsize,belowskip=1em]
+switch $\bullet$[0] with  
+| true -> 
+    (switch $\bullet$[2] with  
+    | true -> 
+       (switch $\bullet$[1] with true -> 4 | _ -> 1)
+    | _ -> 3 )  
+| _ -> 
+  (switch $\bullet$[1] with  
+  | true -> 2   
+  | _ -> (switch $\bullet$[2] with  true -> 1 | _ -> 3))
+\end{lstlisting}
+Answer of size 4 (in +0.7 seconds)
+\begin{lstlisting}[basicstyle=\scriptsize,belowskip=0em]
+switch $\bullet$[1] with  
+| true -> 
+   (switch $\bullet$[0] with  
+   | true -> (switch $\bullet$[2] with true -> 4 | _ -> 3)
+   | _ -> 2) 
+| _ -> (switch $\bullet$[2] with true -> 1 | _ -> 3)
+\end{lstlisting}
+\end{subfigure}
+\end{figure}
 \end{frame}
 
 \begin{frame}[fragile]{Bad Example from PCF Interpreter (1/?)}
@@ -775,8 +879,18 @@ For three clauses and same types we require 20 examples
 
 \begin{frame}{Conclusions and Future Work}
 
+Contributions:
+\begin{enumerate}
+\item[I] Synthesis via combination of two relational interpreters
+\item[II] Replacing $\forall$ quantifier by finite set of examples
+\item[III] Branch and bound optimization of synthesis using \emph{structural constraint}
+%\item[IV] Extension of OCanren called \emph{structural constraint}
+\end{enumerate}
+\vspace{1em}
+
 An approach shows correct results on small problems...
  but performs not fast enough\\
+\vspace{1em}
  
 Areas for possible improvements:
 \begin{itemize}
@@ -785,7 +899,7 @@ Areas for possible improvements:
 \item Memoization is not used (because of presence of disequality constraints)
 \item More clever way to generate less examples
 \end{itemize}
-\vspace{1cm}\pause
+\vspace{1em}\pause
 \begin{center}
 {\Huge Thanks!}
 \end{center}
