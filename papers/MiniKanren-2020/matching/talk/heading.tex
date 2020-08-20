@@ -102,8 +102,9 @@ language=ocanren
 
 %\usepackage[cache=true]{minted}
 
-\author[]{\underline{Dmitry Kosarev} \textsuperscript{1,2} \and Dmitry Boulytchev\inst{1,2}}
-\institute[]{\textsuperscript{1} JetBrains Research \and \inst{2} Saint-Petersburg University}
+\author[Dmitry Kosarev]{\underline{Dmitry Kosarev}  \and Dmitry Boulytchev}
+\institute[]{\textsuperscript{1} JetBrains Research, Programming Languages and Tools Lab
+ \and \inst{2} Saint-Petersburg University}
 
 \addtobeamertemplate{title page}{}{
   \begin{center}{\tiny Build date: \today}\end{center}
@@ -140,11 +141,12 @@ morecomment=[s]{(*}{*)}
 \lstdefinelanguage{ocaml}{
 keywords={@type, function, fun, let, in, match, with, when, class, type,
 nonrec, object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit, and,
-new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure, switch,
 lazy, assert, true, false, end},
 sensitive=true,
 commentstyle=\small\itshape\ttfamily,
 keywordstyle=\ttfamily\bfseries, %\underbar,
+%identifierstyle=\fontfamily{cmtt}\selectfont\ttfamily,
 identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,

@@ -115,6 +115,23 @@
 \newcommand{\nodata}{}
 \newcommand{\tablenotemark}[1]{#1}
 
+\newcommand{\contributions}{
+\begin{enumerate}
+\item[I] Synthesis via combination of two relational interpreters
+\item[II] Replacing $\forall$ quantifier by a finite set of examples
+\item[III] Branch and bound optimization of synthesis using \emph{structural constraints}
+%\item[IV] Extension of OCanren called \emph{structural constraint}
+\end{enumerate}
+}
+
+\newcommand{\treeboolsexample}[1] {
+\begin{lstlisting}[basicstyle=\small,belowskip=1em,aboveskip=0em]
+(_, false, true) -> 1
+(false, true, _) -> 2
+(_, _, false) -> 3
+(_, _, true) -> 4
+\end{lstlisting}
+}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -122,7 +139,7 @@
 
 \title{Relational Synthesis for Pattern Matching}
 
-\date{miniKanren Workshop, August 2020}
+\date{\textsc{miniKanren} Workshop, August 2020}
 
 
 \newcommand{\verbatimfont}[1]{\def\verbatim@font{#1}}
@@ -130,7 +147,22 @@
 
 
 \begin{document}
-\maketitle
+{
+\begin{frame}[fragile]
+  \begin{tabular}{p{5.5cm} p{5.5cm}}
+   \begin{center}
+%      \includegraphics[height=1.5cm]{pictures/jetbrainsResearch.pdf}
+    \end{center}
+    &
+    \begin{center}
+   %   \includegraphics[height=1.5cm]{pictures/SPbGU_Logo.png}
+    \end{center}
+  \end{tabular}
+  \titlepage
+\end{frame}
+}
+
+%\maketitle
 
 % For every picture that defines or uses external nodes, you'll have to
 % apply the 'remember picture' style. To avoid some typing, we'll apply
@@ -143,8 +175,10 @@
 %\begin{comment}
 % Uncomment these lines for an automatically generated outline.
 \begin{frame}{Pattern Matching}
-Effective compilation of pattern matching is essential for functional programming
+Efficient compilation of pattern matching is essential for functional programming
 \vspace{1cm}
+
+%\includegraphics{pictures/SPbGU_Logo.png}
 
 Two main approaches to compile:
 \begin{itemize}
@@ -158,20 +192,14 @@ Two main approaches to compile:
 \end{itemize}\pause
 \item \textbf{synthesis} (our approach)
 \end{itemize}
-  \note{}
-%  \note[enumerate]
-%  {
-%  \item Stress this first.
-%  \item Then this.
-%  }
-  
+% \note{}
+
 \end{frame}
 
 
 \begin{frame}[fragile]{An Example of Pattern Matching and It's Two Compiled Representations}
-\begin{figure}[ht]
-\begin{subfigure}[b]{0.25\linewidth}
-%\centering
+\begin{figure}[t]
+\begin{subfigure}[t]{0.25\linewidth}
 \begin{lstlisting}
 match x,y,z with
 | _,F,T -> 1
@@ -182,8 +210,7 @@ match x,y,z with
 \caption{Pattern matching}
 \end{subfigure}
 \hspace{0.5cm}
-\begin{subfigure}[b]{0.32\linewidth}
-%\centering
+\begin{subfigure}[t]{0.32\linewidth}
 \begin{lstlisting}
 if x then
   if y then
@@ -196,10 +223,9 @@ else
     if z then 1 else 3
 \end{lstlisting}
 \caption{Correct but semi-optimal compilation}
-\label{fig:matching-example2}
 \end{subfigure}
 \hspace{0.5cm}
-\begin{subfigure}[b]{0.3\linewidth}
+\begin{subfigure}[t]{0.3\linewidth}
 \centering
 \begin{lstlisting}
 if y then
@@ -210,10 +236,8 @@ else
   if z then 1 else 3
 \end{lstlisting}
 \caption{Optimal compilation}
-\label{fig:matching-example3}
 \end{subfigure}
-\caption{Pattern matching compilation can be non-trivial (example from~\cite{maranget2008}).}
-\label{fig:match-example}
+\caption{Pattern matching compilation can be non-trivial (example from~\cite{maranget2008}).}\label{fig:match-example}
 \end{figure}
  \note{This is an example from Luc Maranget's paper.
  
@@ -222,28 +246,30 @@ else
 
 \begin{frame}{Contributions}
 \Large
-\begin{enumerate}
-\item[I] Synthesis via combination of two relational interpreters
-\item[II] Replacing $\forall$ quantifier by finite set of examples
-\item[III] Branch and bound optimization of synthesis using \emph{structural constraint}
-%\item[IV] Extension of OCanren called \emph{structural constraint}
-\end{enumerate}
+\contributions
 \end{frame}
 
 
 \begin{frame}[fragile]{Pattern Matching Syntax}
 \begin{figure}[ht]
-\begin{subfigure}[b]{0.3\linewidth}
-\[
+\begin{subfigure}[t]{0.4\linewidth}
+$$
  \begin{array}{rcll}
     \mathcal{C} & = & \{ C_1^{k_1}, \dots, C_n^{k_n} \}\\
     \mathcal{V} & = & \mathcal{C}\,\mathcal{V}^*\\  
     \mathcal{P} & = & \_ \mid \mathcal{C}\,\mathcal{P}^*
  \end{array}
-\]
+$$
+%TODO: paterrn matching task
+$$
+ \begin{array}{c}
+\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}\\
+1\leqslant i\leqslant k+1
+ \end{array}
+$$
 \end{subfigure}
 \hspace{0.5cm}
-\begin{subfigure}[b]{0.5\linewidth}
+\begin{subfigure}[t]{0.5\linewidth}
 \[
 \begin{array}{rcl}
   \mathcal M & = & \bullet \\
@@ -260,11 +286,11 @@ Things that are omitted for simplicity: guards, pattern variables
 %TODO: program size here?
 \end{frame}
 
-\begin{frame}{Contribution 1: Synthesis Algorithm}
+\begin{frame}{Synthesis Algorithm}
 %High-level description:
 \[
 %depth^o\,v\,n \;\; \wedge \;\;
-\forall v \quad \forall  (1\le\!i\le \!k\!+\!1) \quad
+\forall v \quad \forall  (1\leqslant\!i\leqslant \!k\!+\!1) \quad
 %\mbox{\lstinline|fresh ($i$)|}\; \{
 (match^o\,v\,\,p_1,\dots,p_k\,\,i) \;\; \Leftrightarrow \;
 eval^o_{\mathcal S}\,v\,\circled{?}\,i
@@ -275,9 +301,9 @@ eval^o_{\mathcal S}\,v\,\circled{?}\,i
 %\item $depth^o\,v\,n$ generates examples bound by depth $n$
 %\item $\forall v$ -- all possible scrutinees
 %\item $\forall i$ -- all possible branches
-\item $match^o\,v\,\,p_1,\dots,p_k\,\,i$ -- declarative interpreter of pattern matching, for every  possible scrutinee $v$ returns single branch $i$ 
+\item $match^o\,v\,\,p_1,\dots,p_k\,\,i$ -- a declarative interpreter of pattern matching, for every  possible scrutinee $v$ returns a single branch $i$ 
 \item $\circled{?}$ is a program to be synthesized
-\item $eval^o_{\mathcal S}\,v\,\circled{?}\,i$ -- declarative interpreter of $\mathcal S$, ensures that synthesized $\circled{?}$ on example $v$ resolves to right branch $i$
+\item $eval^o_{\mathcal S}\,v\,\circled{?}\,i$ -- a declarative interpreter of $\mathcal S$, ensures that synthesized program $\circled{?}$ on example $v$ returns a correct branch index $i$
 \end{itemize}
 \vspace{1cm}
 \begin{itemize}
@@ -288,23 +314,24 @@ eval^o_{\mathcal S}\,v\,\circled{?}\,i
 \end{frame}
 
 
-\begin{frame}{Contribution 2: Eliminating $\forall$ by Generating a Finite Set of Examples}
+\begin{frame}{2Eliminating $\forall$ by Generating a Finite Set of Examples}
 For every concrete pattern matching we know:
 \begin{itemize}
-\item type of scrutinee
-\item pattern used in it
+\item the type of scrutinee
+\item all its patterns 
 \begin{itemize}
-\item maximum depth of these patterns
+\item maximal depth of these patterns
 \end{itemize}
 \end{itemize}
 
 \begin{alertblock}{\textbf{Idea}}
-Let's generate all inhabitants of the scrutinee's type until certain depth an use them as examples
+Let's generate all inhabitants of the scrutinee's type until certain depth and use them as examples
 \end{alertblock}
+\vspace{1cm}
 
 \begin{itemize}
-\item[\faGood] Is correct (proved in Coq)
-\item[\faBad] Number of examples is exponential
+%\item[\faGood] Is correct (proved in Coq)
+\item[\faBad] The number of examples is  worst case exponential
 \end{itemize}
 \end{frame}
 
@@ -326,114 +353,224 @@ Our repo on Github: ~\cite{Repo}.
 
 
 
-\begin{frame}[fragile]{Example 1 (1/2)}
-\begin{figure}
-\begin{subfigure}[b]{0.3\linewidth}
-\begin{forest}
-  forked edges,
-  for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
-      rounded corners  },
-  highlight/.style={    thick,    font=\sffamily\bfseries  }
-    [{pats}
-      [{Cons}
-      [{Cons}
-            [{\_}]
-            [{\_}]
-      ]
-      [{\_}]
-      ]
-      [{\_}]
-    ]
-\end{forest}
-\end{subfigure}
-\hspace{3.5cm}
-\begin{subfigure}[b]{0.4\linewidth}
+\begin{frame}[fragile]{Example 1: Three Examples is a Complete Set}
+\centering
+\begin{minipage}{.381\textwidth}
 \begin{lstlisting}{ocaml}
 match (s : unit list) with 
 | _ :: _ :: _ -> 1
 | _           -> 2
 \end{lstlisting}
-\vspace{1cm}
-\begin{itemize}
-\item Pattern matching (above)
-\item with two branches
-\end{itemize}
+\end{minipage}
+
+\begin{figure}
+\begin{subfigure}[t]{0.3\linewidth}
+\begin{subfigure}[b][4cm][t]{0.2\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node {Cons}
+    child { node {\phantom{1}\_\phantom{1}} }
+    child { node {Cons}
+      child { node  {\phantom{1}\_\phantom{1}} }
+      child { node {\phantom{1}\_\phantom{1}} } 
+    };
+\end{tikzpicture}
+\end{subfigure}
+\hspace{2cm}
+\begin{subfigure}[b][4cm][t]{0.1\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node {\phantom{1}\_\phantom{1}};
+\end{tikzpicture}
+\end{subfigure}
+\caption{Patterns}
+\end{subfigure}
+\hspace{1.5cm}
+\begin{subfigure}[t]{0.5\linewidth}
+\begin{subfigure}[b][4cm][t]{0.2\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=green!20}]]
+  \node {Cons}
+    child { node {()} }
+    child { node {Cons}
+      child { node {()} }
+      child { node { Nil } } 
+    };
+\end{tikzpicture}
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[b][4cm][t]{0.15\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=green!20}]]
+  \node {Cons}
+    child { node {()} }
+    child { node { Nil} } ;
+\end{tikzpicture}
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[b][4cm][t]{0.15\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    , top color=white, bottom color=green!20}]]
+  \node {Nil};
+\end{tikzpicture}
+\end{subfigure}
+\caption{Three examples}
 \end{subfigure}
 \end{figure}
-
 \end{frame}
 
-\begin{frame}[fragile]{Example 1 (2/2)}
-\begin{figure}
-\begin{subfigure}[b]{0.3\linewidth}
-\begin{forest}
-  forked edges,
-  for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
-      rounded corners  },
-  highlight/.style={    thick,    font=\sffamily\bfseries  }
-    [{3 \\ examples}
-    [{Cons}
-      [{Unit}]
-      [{Cons}
-            [{Unit}]
-            [{Nil}]
-      ]      
-    ]
-    [{Cons} [{Unit}]  [{Nil}]]
-    [{Nil}]
-    ]
-\end{forest}
-\end{subfigure}
-\hspace{4.5cm}
-\begin{subfigure}[b]{0.35\linewidth}
+
+\begin{frame}[fragile]{Example 2: Not a Complete Set of Examples}
+\begin{minipage}{0.4\linewidth}
 \begin{lstlisting}{ocaml}
-match (s : unit list) with 
-| _ :: _ :: _ -> 1
-| _           -> 2
-\end{lstlisting}
-\vspace{1cm}
-\begin{itemize}
-\item Pattern matching (above)
-\item depth = 3
-\item with examples bounded by the depth of patterns 
-\end{itemize}
-\end{subfigure}
-\end{figure}
-\end{frame}
-
-
-\begin{frame}[fragile]{Example 2 (1/2) }
-\begin{figure}
-\begin{subfigure}[b]{0.3\linewidth}
-\begin{forest}
-  forked edges,
-  for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
-      rounded corners  },
-  highlight/.style={    thick,    font=\sffamily\bfseries  }
-    [{pats}
-      [{Nil}]
-      [{\_}]
-    ]
-\end{forest}
-\end{subfigure}
-\hspace{.5cm}
-\begin{subfigure}[b]{0.6\linewidth}
-%\texttt{hello [] 111}
-\begin{lstlisting}[language=ocaml]
 match (s : unit list) with 
 | []  -> 1
 | _   -> 2
 \end{lstlisting}
-\vspace{1cm}
-\begin{itemize}
-\item All inhabitants bound by depth = 1 -- is a set of single element
-\item It is not enough
-\item We should test at least on an expression that starts from Cons  (\lstinline{unit :: []}, for instance)
-\item but if we don't do that...
-\end{itemize}
+\end{minipage}
+\begin{minipage}{0.55\linewidth}
+%\begin{itemize}
+%\item 
+Two patterns:\\
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node { Nil };
+\end{tikzpicture}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node {\phantom{1}\_\phantom{1}};
+\end{tikzpicture}
+\vspace{1em}
+
+The set of examples bound by depth 1 is a singleton set\\
+\begin{tikzpicture}[sibling distance=2em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    , top color=white, bottom color=green!20}]]
+  \node {Nil};
+\end{tikzpicture}
+\vspace{1em}
+
+This program behave well on the set of examples \\
+$$
+ \begin{array}{ll}
+    \primi{switch} \dots \primi{with}   & \\
+    |\ \text{Nil} \rightarrow 1  & \\  
+    |\ \primi{otherwise} \rightarrow  1 & 
+ \end{array}
+$$
+%\item 
+but is wrong 
+\end{minipage}
+\end{frame}
+
+\begin{comment}
+\begin{frame}[fragile]{Example 2 (1/2) }
+\centering
+\begin{minipage}{.381\textwidth}
+\begin{lstlisting}{ocaml}
+match (s : unit list) with 
+| []  -> 1
+| _   -> 2
+\end{lstlisting}
+\end{minipage}
+
+
+\begin{figure}
+\begin{subfigure}[b][2cm][b]{0.2\linewidth}
+\begin{subfigure}[t][.5cm][t]{0.2\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node { Nil };
+\end{tikzpicture}
+\end{subfigure}
+\hspace{.5cm}
+\begin{subfigure}[t][.5cm][t]{0.1\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node {\phantom{1}\_\phantom{1}};
+\end{tikzpicture}
+\end{subfigure}
+\caption{Two patterns}
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[b]{0.1\linewidth}
+%\begin{subfigure}[b][.5cm][b]{0.15\linewidth}
+\begin{tikzpicture}[sibling distance=2em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    , top color=white, bottom color=green!20}]]
+  \node {Nil};
+\end{tikzpicture}
+\caption{Single example}
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[b]{0.3\linewidth}
+$$
+ \begin{array}{ll}
+    \primi{switch} \dots \primi{with}   & \\
+    |\ \text{Nil} \rightarrow 1  & \\  
+    |\ \primi{otherwise} \rightarrow  1 & 
+ \end{array}
+$$
+\caption{Potential incorrect program}
 \end{subfigure}
 \end{figure}
 \end{frame}
+
+\end{comment}
+
+%\begin{figure}
+%\begin{subfigure}[b]{0.3\linewidth}
+%\begin{forest}
+%  forked edges,
+%  for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
+%      rounded corners  },
+%  highlight/.style={    thick,    font=\sffamily\bfseries  }
+%    [{pats}
+%      [{Nil}]
+%      [{\_}]
+%    ]
+%\end{forest}
+%\end{subfigure}
+%\hspace{.5cm}
+%\begin{subfigure}[b]{0.6\linewidth}
+%%\texttt{hello [] 111}
+%\begin{lstlisting}[language=ocaml]
+%match (s : unit list) with 
+%| []  -> 1
+%| _   -> 2
+%\end{lstlisting}
+%\vspace{1cm}
+%\begin{itemize}
+%\item All inhabitants bound by depth = 1 -- is a set of single element
+%\item It is not enough
+%\item We should test at least on an expression that starts from Cons  (\lstinline{unit :: []}, for instance)
+%\item but if we don't do that...
+%\end{itemize}
+%\end{subfigure}
+%\end{figure}
+%\end{frame}
+
+\begin{comment}
 
 \begin{frame}[fragile]{Example 2 (2/2) }
 \begin{figure}
@@ -481,23 +618,27 @@ behaves the same on our set of examples
 \end{figure}
 \end{frame}
 
+\end{comment}
+
 \begin{frame}{Current Algorithm for Examples Generation}
 \begin{figure}
-\begin{subfigure}[b]{0.45\linewidth}
+\begin{subfigure}[b]{0.75\linewidth}
 Algorithm briefly:
 \begin{itemize}
-\item Evaluate depth of patterns $h$
+\item Evaluate the depth of patterns $h$
 \item Synthesize all inhabitants, but
-\item on depth $h+1$ use single predefined per type inhabitant 
+\item on depth $h+1$ use a single predefined per type inhabitant 
+\end{itemize}
+\vspace{1cm}
+
+\begin{itemize}
+%\item[\faGood] Is correct (proved in Coq)
+\item[\faBad] The number of examples is  worst case exponential
 \end{itemize}
 \end{subfigure}
 \hspace{.5cm}
 \begin{subfigure}[b]{0.45\linewidth}
-Pros and cons:
-\begin{itemize}
-\item[\faGood] Is correct (proved in Coq)
-\item[\faBad] Number of examples is exponential
-\end{itemize}
+
 %\vspace{1cm}
 %We are currently working on
 %\begin{itemize}
@@ -521,55 +662,59 @@ match (s : bool * bool * bool) with
 | (_,_,T) -> 1
 \end{lstlisting}
 \vspace{.5cm}
-We can statically decide that 
+We can statically determine that 
 
 \begin{itemize}
-\item There are $2^3$ inhabitants of type \lstinline=bool * bool * bool=.
+\item There are $2^3$ inhabitants of type \lstinline=bool * bool * bool=
 \item No need to  check that scrutinee is a triple
-\item No need to look at 1st and 2nd subtrees of triple (only 3rd matters)
+\item No need to look at the 1st and  the 2nd subtrees of a triple (only the 3rd matters)
 \end{itemize}
 \vspace{.5cm}
 
-\begin{itemize}
-\item So, we can run synthesis only on two examples $\{(\mathcal{B},\mathcal{B},\text{T}),(\mathcal{B},\mathcal{B},\text{F})\}$
+
+So, we can run the synthesis only on two examples $\{(\mathcal{B},\mathcal{B},\text{T}),(\mathcal{B},\mathcal{B},\text{F})\}$
 where $\mathcal{B}$ is any value of type \lstinline=bool=
-\item if we \textbf{forbid investigation of  some subtrees} of examples
-\end{itemize}
+if we \textbf{forbid the investigation of  some subtrees} of examples
+
 
 %$\text{T}\!\!\! \text{F}$
 \end{frame}
 
 
-\begin{frame}{Contribution 3: Branch and Bound Optimization}
-Our answer is always in single variable -- $\circled{?}$ and during the search we \emph{only} extend it with new $\primi{switch}$es \\
+\begin{frame}{Branch and Bound Optimization}
+The synthesis answer is stored in variable $\circled{?}$ and 
+%Synthesis answer is stored in variable $\circled{?}$ and 
+%Our answer is always in single variable -- $\circled{?}$ and 
+during the search we \emph{only} extend it with new $\primi{switch}$es \\
 
 \begin{alertblock}{\textbf{Idea}}
-If current estimate is longer than shortest answer already found -- cut this branch
+If current estimate is longer than the shortest answer already found -- cut this branch
 \end{alertblock}
 
-Requires modified miniKanren's \lstinline=run= primitive: for every answer found we 
+Requires a modified miniKanren's \lstinline=run= primitive: for every answer found we 
 \begin{itemize}
 \item evaluate it's size
 \item update already found minimum
 \end{itemize}
 
-Cutting bad search branches is implemented using new primitive called  \emph{structural constraint}
+Pruning search branches is implemented using a new primitive called  \emph{structural constraint}
 
 \end{frame}
 
-\begin{frame}{Contribution 3: Branch and bound optimization. Structural constraint}
-New primitive called \emph{structural constraint}:
+\begin{frame}{Structural constraint}
+A new primitive called \emph{structural constraint}:
 \begin{itemize}
-\item Takes a logic value and performs reification in current state
-\item Takes a predicate which investigates reified value 
-\item If there are too many branches in it then stop the search ($failure^o$)
-\item Otherwise: continue search without changing state ($success^o$)
+\item Takes a logic value and performs reification in a current state
+\item Takes a predicate which inspects the reified value 
+\item If there are too many branches, stops the search ($failure^o$)
+\item Otherwise continues search without changing the state ($success^o$)
 \end{itemize}
 \vspace{1em}
-Peculiarities:
+%Peculiarities:
+Subtleties:
 \begin{itemize}
-\item Used to count size of current estimate
-\item May take or not take into account disequality constraints
+\item Used to count the size of current estimate
+\item May take or may not take into account disequality constraints
 \item Can be used to implement $absent^o$ or similar constraints
 \item Deals with reified values $\Rightarrow$ can be slow
 \end{itemize}
@@ -605,20 +750,20 @@ $$
 \end{subfigure}
 \hspace{1cm}
 \begin{subfigure}[b]{0.6\linewidth}
-A single switch with $n$ branches roughly can be expressed as $n$ \texttt{if}s\\
+A single switch with $n$ branches roughly can be encoded as $n$ \texttt{if}s\\
 
-Let's say that size of
+Let's say that the size of
 \begin{itemize}
-\item  $\primi{switch}$ is \# of branches
-\item $\primi{return}$ = 0
-\item whole program in $\ir$ is $\Sigma$ of sizes of $\primi{switch}$es in it
+\item  $\primi{switch}$ is the number of branches
+\item $\primi{return}$ is 0
+\item the whole program in $\ir$ is the sum of sizes of its $\primi{switch}$es 
 \end{itemize}
-Our minimization criterion: reduce size of synthesized program\\
+Our minimization criterion: reduce the size of synthesized program\\
 
-But there are other criteria:
+But there can be other criteria:
 \begin{itemize}
-\item Less depth 
-\item Less branching factor
+\item The  depth 
+\item The branching factor
 \item etc.
 \end{itemize}
 \end{subfigure}
@@ -737,10 +882,70 @@ match (code, stack,prog)
 
 \end{comment}
 
-\begin{frame}[fragile]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Evaluation: matching three boolean values}
+\begin{minipage}[c][5cm][t]{0.35\linewidth}
+\begin{lstlisting}[basicstyle=\small,belowskip=1em,aboveskip=0em]
+(_, false, true) -> 1
+(false, true, _) -> 2
+(_, _, false) -> 3
+(_, _, true) -> 4
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.63\linewidth}
+\begin{onlyenv}<1>
+Answer of size 6 (in 1.6 seconds)
+\begin{lstlisting}[basicstyle=\small,belowskip=0em]
+switch $\bullet$[0] with  
+| true -> 
+    (switch $\bullet$[1] with  
+    | true -> 
+        (switch $\bullet$[2] with true -> 4 | _ -> 3)
+    | _ -> 
+        (switch $\bullet$[2] with true -> 1 | _ -> 3))  
+| _ -> 
+    (switch $\bullet$[1] with  
+    | true -> 2   
+    | _ -> 
+         (switch $\bullet$[2] with true -> 1 | _ -> 3))
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<2>
+Answer of size 5 (in +0.4 seconds)
+\begin{lstlisting}[basicstyle=\small,belowskip=1em]
+switch $\bullet$[0] with  
+| true -> 
+    (switch $\bullet$[2] with  
+    | true -> 
+       (switch $\bullet$[1] with true -> 4 | _ -> 1)
+    | _ -> 3 )  
+| _ -> 
+    (switch $\bullet$[1] with  
+    | true -> 2   
+    | _ -> (switch $\bullet$[2] with  true -> 1 | _ -> 3))
+\end{lstlisting}
+\end{onlyenv}
+\begin{onlyenv}<3>
+Answer of size 4 (in +0.7 seconds)
+\begin{lstlisting}[basicstyle=\small,belowskip=0em]
+switch $\bullet$[1] with  
+| true -> 
+    (switch $\bullet$[0] with  
+    | true -> (switch $\bullet$[2] with true -> 4 | _ -> 3)
+    | _ -> 2) 
+| _ -> 
+    (switch $\bullet$[2] with true -> 1 | _ -> 3)
+\end{lstlisting}
+\end{onlyenv}
+\end{minipage}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{comment}
+\begin{frame}[fragile]{Evaluation (1/3)}
 \begin{figure}
 \begin{subfigure}[b]{0.48\linewidth}
-     \begin{lstlisting}[basicstyle=\small,belowskip=1em,aboveskip=0em]
+\begin{lstlisting}[basicstyle=\small,belowskip=1em,aboveskip=0em]
 (_, false, true) -> 1
 (false, true, _) -> 2
 (_, _, false) -> 3
@@ -790,41 +995,44 @@ switch $\bullet$[1] with
 \end{figure}
 \end{frame}
 
-\begin{frame}[fragile]{Bad Example from PCF Interpreter (1/?)}
+
+content
+\end{comment}
+
+\begin{frame}[fragile]{Performance problem (1/2)}
 \begin{figure}
-\begin{subfigure}[b]{0.6\linewidth}
-\begin{lstlisting}[basicstyle=\small]
-let rec run a s c =
-  match a,s,c with
-  | (_,_,Ldi i::_) -> 1
-  | (_,_,Push::_)  -> 2
-  | (Int _,Val (Int _)::_,IOp _::_) -> 3
-  | (Int _,_,Test (_,_)::c) -> 4
-  | (Int _,_,Test (_,_)::c) -> 5
-  | (_,_,Extend::_) -> 6
-  | (_,_,Search _::_) -> 7
-  | (_,_,Pushenv::_) -> 8
-  | (_,Env e::s,Popenv::_) -> 9
-  | (_,_,Mkclos cc::_) -> 10
-  | (_,_,Mkclosrec _::_) -> 11
-  | (Clo (_,_), Val _::_, Apply::_) -> 12
-  | (_,(Code _::Env _::_),[]) -> 13
-  | (_,[],[]) -> 14
+\begin{subfigure}[b]{0.5\linewidth}
+\begin{lstlisting}[basicstyle=\small,language=ocaml]
+match a,s,c with
+| (_,_,Ldi i::_) -> 1
+| (_,_,Push::_)  -> 2
+| (Int _,Val (Int _)::_,IOp _::_) -> 3
+| (Int _,_,Test (_,_)::c) -> 4
+| (Int _,_,Test (_,_)::c) -> 5
+| (_,_,Extend::_) -> 6
+| (_,_,Search _::_) -> 7
+| (_,_,Pushenv::_) -> 8
+| (_,Env e::s,Popenv::_) -> 9
+| (_,_,Mkclos cc::_) -> 10
+| (_,_,Mkclosrec _::_) -> 11
+| (Clo (_,_), Val _::_, Apply::_) -> 12
+| (_,(Code _::Env _::_),[]) -> 13
+| (_,[],[]) -> 14
 \end{lstlisting}
 \end{subfigure}
-\hspace{.5cm}
-\begin{subfigure}[b]{0.3\linewidth}
-Doesn't currently work because types are too large (11102 examples being generated).\\
+\hspace{1cm}
+\begin{subfigure}[b]{0.35\linewidth}
+Doesn't currently work because the types are too large (11102 examples  generated).\\
 
-But for reduced example we can synthesize the answer
+%But for a reduced example we can synthesize the answer
 \vspace{1cm}
 \end{subfigure}
 \end{figure}
 \end{frame}
 
-\begin{frame}[fragile]{Bad Example from PCF Interpreter (2/?)}
+\begin{frame}[fragile]{Performance problem (2/2)}
 \begin{figure}
-\begin{subfigure}[b]{0.45\linewidth}
+\begin{subfigure}[b][6cm][b]{0.45\linewidth}
 \begin{lstlisting}[basicstyle=\small]
 type code = 
 | Push 
@@ -842,7 +1050,10 @@ match (code, stack,prog) with
 | (_, _, (Ldi _)::_) -> 1
 | (_, _, (Push _)::_) -> 2
 \end{lstlisting}
-\begin{onlyenv}<2->
+\begin{onlyenv}<1>
+\vspace{4mm}
+\end{onlyenv}
+\begin{onlyenv}<2>
 \begin{lstlisting}[basicstyle=\small,aboveskip=-0.5em]
 | (Int _, _, (IOp _)::_) -> 3
 \end{lstlisting}
@@ -856,15 +1067,14 @@ Example is reduces by
 \item types 
 \item clauses
 \end{itemize}
-For two clauses we require 5 examples 
-\vspace{1cm}
+For two clauses we require 5 examples \\\vspace{1em}
 
 \begin{onlyenv}<2->
-For three clauses and same types we require 20 examples
+For three clauses and the same types we require 20 examples
 \begin{itemize}
-\item in 1,5s it gives first answer of size 7
-\item in next half a second it gives 2nd and 3rd(last) answers of size 6 and 5
-\item in the end it 10s proves that no shorter answers exist
+\item in 1,5s it gives the  1st answer of size 7
+\item in the next half a second it gives the 2nd and the 3rd (last) answers of sizes 6 and 5
+\item in the end it in 10s proves that no shorter answers exist
 \end{itemize}
 %\begin{lstlisting}[basicstyle=\small,aboveskip=-0.5em]
 %| (Int _, _, (IOp _)::_) -> 3
@@ -878,14 +1088,7 @@ For three clauses and same types we require 20 examples
 \end{frame}
 
 \begin{frame}{Conclusions and Future Work}
-
-Contributions:
-\begin{enumerate}
-\item[I] Synthesis via combination of two relational interpreters
-\item[II] Replacing $\forall$ quantifier by finite set of examples
-\item[III] Branch and bound optimization of synthesis using \emph{structural constraint}
-%\item[IV] Extension of OCanren called \emph{structural constraint}
-\end{enumerate}
+Contributions: \contributions
 \vspace{1em}
 
 An approach shows correct results on small problems...
@@ -905,14 +1108,7 @@ Areas for possible improvements:
 \end{center}
 \end{frame}
 
-%\begin{frame}
-%%\vspace{1cm}\pause
-%\begin{center}
-%{\Huge Thanks!}
-%\end{center}
-%\end{frame}
-
-\begin{frame}[t, allowframebreaks]
+\begin{frame}%[t, allowframebreaks]
 \frametitle{References}
 \bibliographystyle{amsalpha}
 \bibliography{references}
