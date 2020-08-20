@@ -97,7 +97,7 @@
 
 \newcommand{\nredrule}[3]{
   \begin{array}{cl}
-    \textsf{[{#1}]}& 
+    \textsf{[{#1}]}&
     \begin{array}{c}
       #2 \\
       \hline
@@ -110,10 +110,13 @@
     \textsf{[{#1}]} & \raisebox{-1pt}{\ensuremath{#2}}
   \end{array}}
 
+\definecolor{myRed}{rgb}{0.5, 0, 0}
+\definecolor{myBlue}{rgb}{0, 0, 0.6}
+
 \lstdefinelanguage{ocaml}{
-keywords={let, begin, end, in, match, type, and, fun, 
+keywords={let, begin, end, in, match, type, and, fun,
 function, try, with, class, object, method, of, rec, until,
-while, not, do, done, as, val, inherit, module, sig, @type, struct, 
+while, not, do, done, as, val, inherit, module, sig, @type, struct,
 if, then, else, open, virtual, new, fresh, conde, run},
 sensitive=true,
 basicstyle=\small,
@@ -123,7 +126,9 @@ identifierstyle=\ttfamily,
 basewidth={0.5em,0.5em},
 columns=fixed,
 fontadjust=true,
-moredelim=**[is][\color{red}]{@}{@},
+moredelim=**[is][\ttfamily]{~}{~},
+moredelim=**[is][\color{myRed}]{@}{@},
+moredelim=**[is][\color{myBlue}]{<}{>},
 literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\&\&\&}{{$\wedge$}}2 {|||}{{$\vee$}}2 {^}{{$\uparrow$}}1,
 morecomment=[s]{(*}{*)}
 }
@@ -176,11 +181,9 @@ language=ocaml
 \newcommand{\inbr}[1]{\langle #1 \rangle}
 \renewcommand{\emptyset}{\varnothing}
 
-\definecolor{myRed}{rgb}{0.6, 0, 0}
-
 \setbeamertemplate{footline}[frame number]
 \setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{blocks}[rounded][shadow=true] 
+\setbeamertemplate{blocks}[rounded][shadow=true]
 \beamertemplateballitem
 
 \mode<presentation>{
@@ -189,7 +192,7 @@ language=ocaml
 
 \theoremstyle{definition}
 
-\title{On Fair Conjunction 
+\title{On Fair Conjunction
 }
 
 
@@ -217,74 +220,144 @@ language=ocaml
   \titlepage
 \end{frame}
 
-\begin{frame}[fragile]{Conjunction in ~\mk}
+\begin{frame}[fragile]{Conjunction in ~\!\mk}
 Operation to find common answers for several goals
 \vskip5mm
 \begin{itemize}
-  \item[$\bullet$] Asymmetrical operation
-  \vskip2mm
-  \item[$\bullet$] Order of conjuncts affects 
+  \item[$\bullet$] Left-biased operation
+  \vskip3mm
+  \item[$\bullet$] The order of conjuncts doesn't affect search completeness
+  \vskip4mm
+  \item[$\bullet$] The order of conjuncts affects
   \begin{itemize}
-    \normalsize	
+    \normalsize
     \item[$\circ$] Performance
-    \pause
-    \item[$\circ$] \textbf{Convergence}
+    \item[$\circ$] Convergence
   \end{itemize}
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Conjunction Example (1/2)}
+\begin{frame}[fragile]{Example}
 \begin{center}
-\begin{tabular}{c}
+\begin{tabular}{cp{5mm}|p{5mm}c}
 \begin{lstlisting}
-let reverse$^o$ x y = conde [ 
-  x === [] &&& y === []; 
-  fresh (a xs ys) 
-    (x === a :: xs)
-    (append$^o$ ys [a] y)
-    (reverse$^o$ xs ys)
-\end{lstlisting} \\
-\end{tabular}
-\end{center}
-\vskip1cm
-\pause
-\begin{center}
-\begin{tabular}{c}
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)]
+\end{lstlisting} &&&
 \begin{lstlisting}
-     run$^*$ q (reverse$^o$ [1;2;3] q) $\rightarrow$ [ [3;2;1], ...
-$\pause$
-     run$^*$ q (reverse$^o$ q [1;2;3]) $\rightarrow$ [ [3;2;1] ]
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)]
+\end{lstlisting} \pause
+\\[5mm] &&&
+\\[5mm]
+\begin{lstlisting}
+ run$^*$ q (sort$^o$ [4;3;2;1] q) $$
+\end{lstlisting} &&&
+\begin{lstlisting}
+ run$^*$ q (sort$^o$ [4;3;2;1] q) $$
+\end{lstlisting}\\
+$\downarrow$ &&& $\downarrow$ \\
+\begin{lstlisting}
+[q = [1;2;3;4]]
 \end{lstlisting}
+&&&
+\begin{lstlisting}
+[q = [1;2;3;4]; ...
+\end{lstlisting} \\ &&&
 \end{tabular}
 \end{center}
-
 \end{frame}
 
-\begin{frame}[fragile]{Conjunction Example (2/2)}
+\begin{frame}[fragile, noframenumbering]{Example}
 \begin{center}
-\begin{tabular}{c}
-\begin{lstlisting}
-let reverse$^o$ x y = conde [ 
-  x === [] &&& y === []; 
-  fresh (a xs ys) 
-    (x === a :: xs)
-    (reverse$^o$ xs ys)
-    (append$^o$ ys [a] y)
-\end{lstlisting} \\
-\end{tabular}
-\end{center}
-\vskip1cm
-\pause
-\begin{center}
-\begin{tabular}{c}
-\begin{lstlisting}
-     run$^*$ q (reverse$^o$ [1;2;3] q) $\rightarrow$ [ [3;2;1] ]
-$\pause$
-     run$^*$ q (reverse$^o$ q [1;2;3]) $\rightarrow$ [ [3;2;1], ...
-\end{lstlisting}
-\end{tabular}
-\end{center}
+\begin{tabular}{cp{5mm}|p{5mm}c}
 
+\begin{lstlisting}
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)]
+\end{lstlisting} &&&
+\begin{lstlisting}
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)]
+\end{lstlisting}
+\\[5mm] &&&
+\\[5mm]
+\begin{lstlisting}
+ run$^1$ q (sort$^o$ [4;3;2;1] q) $$
+\end{lstlisting} &&&
+\begin{lstlisting}
+ run$^1$ q (sort$^o$ [4;3;2;1] q) $$
+\end{lstlisting} \\
+$\downarrow$ &&& $\downarrow$ \\
+\begin{lstlisting}
+[q = [1;2;3;4]]
+\end{lstlisting}
+&&&
+\begin{lstlisting}
+[q = [1;2;3;4]]
+\end{lstlisting} \\
+{\small (0.424s)} &&&
+{\small (3.924s)}
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile, noframenumbering]{Example}
+\begin{center}
+\begin{tabular}{cp{5mm}|p{5mm}c}
+
+\begin{lstlisting}
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)]
+\end{lstlisting} &&&
+\begin{lstlisting}
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)]
+\end{lstlisting}
+\\[5mm] &&&
+\\[5mm]
+\begin{lstlisting}
+run$^1$ q (sort$^o$ [5;4;3;2;1] q)
+\end{lstlisting} &&&
+\begin{lstlisting}
+run$^1$ q (sort$^o$ [5;4;3;2;1] q)
+\end{lstlisting} \\
+$\downarrow$ &&& $\downarrow$ \\
+\begin{lstlisting}
+[q = [1;2;3;4;5]]
+\end{lstlisting}
+&&&
+\begin{lstlisting}
+(???)
+\end{lstlisting} \\
+{\small (0.430s)} &&&
+{\small ($>$300s)}
+\end{tabular}
+\end{center}
 \end{frame}
 
 \begin{frame}[fragile]{Fair Conjunction}
@@ -294,216 +367,103 @@ $g_1 \; \land \; g_2$ converges $\;\Leftrightarrow\;$ $g_2 \; \land \; g_1$ conv
 
 \vskip1cm
 \textbf{Goal} \\
-Introduce fair conjunction into the \mk
+Introduce fair conjunction into \mk
 
 \end{frame}
 
-\begin{frame}{Talk Outline}
-
-\begin{enumerate}
-  \item Semantics of directed conjunction
-  \vskip6mm
-  \item Semantics of naive fair conjunction
-  \vskip6mm
-  \item Semantics of fair conjunction by structural recursion
-\end{enumerate}
-
+\begin{frame}[fragile]{From Disjunction to Conjunction}
+\begin{center}
+    \mk disjunction is fair due to \emph{interleaving} search
+    \vskip1cm
+    Disjunction interleaves evaluation steps of disjuncts
+    \vskip1cm
+    Let's try to interleave evaluation steps of conjuncts
+\end{center}
 \end{frame}
 
-\begin{frame}[fragile]{Semantics of Directed Conjunction}
+\begin{frame}[fragile]{Naive Fair Conjunction Algorithm}
+
+\begin{center}
+\emph{Unfolding bound} $\textcolor{myRed}{N}$ is parameter of algorithm
+\end{center}
+\vskip5mm
 \begin{itemize}
-    \item[$\bullet$] Described as a \emph{deterministic Labeled Transition System}
-    \item[$\bullet$] Supports interleaving of clauses
-    \item[$\bullet$] The state uniformly stores all conjuncts
-    \item[$\bullet$] Minimum step is unfolding of one relational call
+    \item[$\bullet$] Conjuncts are unfolded from left to right
+    \item[$\bullet$] Each conjunt is unfolded no more than $\textcolor{myRed}{N}$ times
+    \item[$\bullet$] If all conjuncts was unfolded $\textcolor{myRed}{N}$ times, then again go to the leftmost conjunct
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Some Definitions}
-\textbf{States:}
-\[
-\begin{array}{rcll}
-  c & = & F\,(t_1,\dots,t_k) & \mbox{relational call} \\
-  T & = & T \lor T & \mbox{disjunction state} \\
-               & \mid & \inbr{\sigma;\, c_1 \land \dots \land c_n} & \mbox{leaf state}\\[2mm]
-T & +=& \emptyset & \mbox{empty state}
-\end{array}
-\]
 
-\textbf{Transitions:}
-\[
-\begin{array}{cl}
-T \xrightarrow{\circ} T  & \mbox{step without answer} \\
-T \xrightarrow{\sigma} T & \mbox{step with answer } \sigma
-\end{array}
-\]
-\end{frame}
-
-\begin{frame}[fragile]{Unfolding}
-$unfold(\sigma, F\,(t_1,\dots,t_k)) = T$
-\vskip1cm
-
-Unfolding steps:
-\begin{enumerate}
-    \item Replace $F$ by body of relation $F$
-    \item Substitute arguments $t_1,\dots,t_k$ to the body
-    \item Evaluate all fresh variable introductions and unifications using substitution $\sigma$ 
-    \item Reduce to disjunctive normal form and represent as a state
-\end{enumerate}
-
-\end{frame}
-
-\begin{frame}[fragile]{Unfolding: Example}
-  \begin{center}
-  \begin{tabular}{c}
-\begin{lstlisting}
-let reverse$^o$ x y = conde [ 
-  x === [] &&& y === []; 
-  fresh (a xs ys) 
-    (x === a :: xs)
-    (reverse$^o$ xs ys)
-    (append$^o$ ys [a] y)
-\end{lstlisting} \\
-\end{tabular}
-\vskip1cm
-\begin{tabular}{rcll}
-  $unfold(\set{},$ \lstinline|reverse$^o$ $\alpha$ []| $)$ & = & 
-  $\inbr{\set{\alpha = \lstinline|[]|}; \epsilon}$ \\
-  & $\lor$ & $\langle\set{\alpha = \alpha_1 \lstinline|::| \alpha_2};$ & \lstinline|reverse$^o$ $\alpha_2$ $\alpha_3$| $\land$ \\
-  & & & \lstinline|append$^o$ $\alpha_3$ [$\alpha_1$] []|$\rangle$
-\end{tabular}
-  \end{center}
-\end{frame}
-
-\begin{frame}[fragile]{Semantics of Directed Conjunction (1/2)}
-\[\begin{array}{cr}
-     {\inbr{\sigma;\, \epsilon} \xrightarrow{\sigma} \emptyset}  
-&     \ruleno{Answer} \\[4mm]
-\dfrac{T_1 \xrightarrow{\alpha} \emptyset}
-      {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
-&     \ruleno{Disj} \\[8mm]
-\dfrac{T_1 \xrightarrow{\alpha} \bar{T_1} \qquad \bar{T_1} \not= \emptyset}
-      {T_1 \lor T_2 \xrightarrow{\alpha} T_2 \lor\bar{T_1}}
-&     \ruleno{DisjStep}
-\end{array}\]
-\end{frame}
-
-\begin{frame}[fragile]{Semantics of directed conjunction (2/2)}
-
+\begin{frame}[fragile]{Example}
 \begin{center}
-    Directed conjunction always evaluates the first conjunct 
-\end{center}
+\begin{tabular}{cp{5mm}|p{5mm}c}
 
-\[\begin{array}{cr}
-\dfrac{unfold(\sigma, c) = T}
-      {\inbr{\sigma;\, c \land C} \xrightarrow{\circ} push(\Box \land C, T)}
-&     \ruleno{ConjUnfold}
-\end{array}\]
+\begin{lstlisting}
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)]
+\end{lstlisting} &&&
+\begin{lstlisting}
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)]
+\end{lstlisting}
+\\[5mm] &&&
+\\[5mm]
+\begin{lstlisting}
+run$^*$ q (sort$^o$ [5;4;3;2;1] q)
+\end{lstlisting} &&&
+\begin{lstlisting}
+run$^*$ q (sort$^o$ [5;4;3;2;1] q)
+\end{lstlisting} \\
+$\qquad\quad$ $\downarrow$ $\scriptstyle (\textcolor{myRed}{N} = 100)$ &&&
+$\qquad\;\;$ $\downarrow$ $\scriptstyle (\textcolor{myRed}{N} = 11)$ \\
+\begin{lstlisting}
+[q = [1;2;3;4;5]]
+\end{lstlisting}
+&&&
+\begin{lstlisting}
+[q = [1;2;3;4;5]]
+\end{lstlisting} \\
+{\small (0.428s)} &&&
+{\small (0.969s)}
+\end{tabular}
+\end{center}
 \end{frame}
 
 \begin{frame}[fragile]{Naive Fair Conjunction}
 \begin{itemize}
-    \item[$\bullet$] \emph{Unfolding bound} $\textcolor{myRed}{N}$ is global parameter of semantics
-    \item[$\bullet$] Conjuncts unfold from left to right
-    \item[$\bullet$] Each conjunt unfolds no more than $\textcolor{myRed}{N}$ times
-    \item[$\bullet$] If all conjuncts are unfolded $\textcolor{myRed}{N}$ times, then again go to the leftmost conjunct
+    \item[$\boldsymbol{+}$] Better convergence than left-biased conjunction
+    \vskip3mm
+    \item[$\boldsymbol{+}$] Better performance at matched \emph{unfolding bound} $\textcolor{myRed}{N}$
+    \vskip3mm
+    \item[$\boldsymbol{-}$] Optimal $\textcolor{myRed}{N}$ must be selected for each program
+    \vskip3mm
+    \item[$\boldsymbol{-}$]  $\textcolor{myRed}{N}$ is common for all conjuncts
+    \vskip3mm
+    \item[$\boldsymbol{-}$] First conjunct switching is after $\textcolor{myRed}{N}$ steps
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Updated States}
-
-\[
-\begin{array}{rcll}
-  c & = & F^{\textcolor{myRed}{k}}\,(t_1,\dots,t_k) & \mbox{relational \underline{marked} call} \\
-  T & = & T \lor T & \mbox{disjunction state} \\
-               & \mid & \inbr{\sigma;\, c_1 \land \dots \land c_n} & \mbox{leaf state}\\[2mm]
-T & +=& \emptyset & \mbox{empty state}
-\end{array}
-\]
-
-\end{frame}
-
-\begin{frame}[fragile]{Semantics of Naive Fair Conjunction}
-
+\begin{frame}[fragile]{Dynamic Unfolding Bound}
 \begin{center}
-    Naive fair conjunction unfolds each conjunct $N$ times
+    \emph{Unfolding predicate} $\textcolor{myRed}{pred}$ determines when to reorder conjuncts
 \end{center}
-
-\[\begin{array}{cr}
-      {\inbr{\sigma;\, c_1^0 \land \ldots \land c_n^0} \xrightarrow{\circ} (\sigma, i, c_1^N \land \ldots \land c_n^N)}
-&     \ruleno{ConjZero} \\[8mm]
-\dfrac{\begin{array}{c}
-      c_k^m \mbox{ is the first conjunct with } m > 0 \\ 
-      unfold(\sigma, c_k) = T \qquad set(T, m - 1) = \bar{T}
-      \end{array}}
-      {
-      \inbr{\sigma;\, C_1 \land c_k^m \land C_2} \xrightarrow{\circ} push(C_1 \land \Box \land C_2, \bar{T})
-      }
-&     \ruleno{ConjUnfold}
-\end{array}\]
-\end{frame}
-
-\begin{frame}[fragile]{Naive Fair Conjunction: Example}
-\begin{center}
-\begin{tabular}{m{15em}c}
-\begin{lstlisting}
-let rec repeat e l =
-  (l === []) |||
-  (fresh (ls)
-    (l === e : ls)
-    (repeat e ls))
-\end{lstlisting} &
-\begin{lstlisting}
-let divergence l = 
-  repeat C$_1$ l &&& 
-  repeat C$_2$ l
-$\,$
-$\,$
-$\,$
-\end{lstlisting}
-\end{tabular}
-
-\begin{tabular}{rl}
-                      & 
-\lstinline|$\langle\set{}$; divergence$^2$ $\alpha_0\rangle$| \\ \pause
-$\xrightarrow{\circ}\!\!\!\!$ &
-\lstinline|$\langle\set{}$; repeat$^1$ C$_1$ $\alpha_0$ $\land$ repeat$^1$ C$_2$ $\alpha_0\rangle$| \\ \pause
-$\xrightarrow{\circ}\!\!\!\!$ &
-\lstinline|$\langle\{\alpha_0 =$ []$\}$; repeat$^1$ C$_2$ $\alpha_0\rangle$ $\lor$ $\langle\{\alpha_0 =$ C$_1$:$\,\alpha_1\}$; repeat$^0$ C$_1$ $\alpha_1$ $\land$ repeat$^1$ C$_2$ $\alpha_0\rangle$| \\ \pause
-$\xrightarrow{\circ}\!\!\!\!$ &
-\lstinline|$\langle\{\alpha_0 =$ C$_1$:$\,\alpha_1\}$; repeat$^0$ C$_1$ $\alpha_1$ $\land$ repeat$^1$ C$_2$ $\alpha_0\rangle$ $\lor$ $\langle\{\alpha_0 =$ []$\}$; $\epsilon\rangle$| \\ \pause
-$\xrightarrow{\circ}\!\!\!\!$ &
-\lstinline|$\langle\{\alpha_0 =$ []$\}$; $\epsilon\rangle$| $\xrightarrow{\{\alpha_0 = []\}} \emptyset$ \\
-\end{tabular}
-\end{center}
-\end{frame}
-
-\begin{frame}[fragile]{Drawbacks of Naive Fair Conjunction}
+$$\textcolor{myRed}{pred} : Substs \times Calls \rightarrow \set{\bot; \top}$$
 \begin{itemize}
-    \item[$\bullet$] \emph{Unfolding bound} $\textcolor{myRed}{N}$ is global parameter of semantics
-    \vskip5mm
-    \item[$\bullet$] Inference length critically depends on \emph{unfolding bound}
-    \vskip5mm
-    \item[$\bullet$] Optimal \emph{unfolding bound} must be selected for each program
+    \item[$\bullet$] $\top \Leftrightarrow$ continue conjunct evaluation
+    \item[$\bullet$] $\bot \Leftrightarrow$ stop conjunct evaluation and go to another conjunct
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Fair Conjunction by Structural Recursion}
-$$\textcolor{myRed}{pred} : Subst \times Calls \rightarrow \set{\bot; \top}$$
-\vskip5mm
-\begin{itemize}
-    \item[$\bullet$] $\textcolor{myRed}{pred}$ is \emph{unfolding predicate}
-    \begin{itemize}
-        \normalsize	
-        \item[$\circ$] $\top \Leftrightarrow$ call should unfold
-        \item[$\circ$] $\bot \Leftrightarrow$ call shouldn't unfold
-    \end{itemize}
-    \item[$\bullet$] Conjuncts unfold from left to right
-    \item[$\bullet$] Each conjunt unfolds while $\textcolor{myRed}{pred}$ is $\top$
-    \item[$\bullet$] If $\textcolor{myRed}{pred}$ is $\bot$ for all calls we use naive fair conjunction behavior
-    
-\end{itemize}
-\end{frame}
+
 
 \begin{frame}[fragile]{Structural Recursion}
 \begin{center}
@@ -548,42 +508,73 @@ pred(\sigma, F^k(t_1, \ldots, t_k)) = \left\{
 \]
 \end{frame}
 
-\begin{frame}[fragile]{Semantics of Fair Conjunction by Structural Recursion (1/2)}
-\vskip3mm
-\centering
-If $pred$ is $\bot$ for all calls we use naive fair conjunction
-\[\begin{array}{cr}
-\dfrac{\bigwedge_{j=1}^n pred(\sigma, c_j) = \bot}
-      {\inbr{\sigma;\, i;\, c_1^0 \land \ldots \land c_n^0} \xrightarrow{\circ} \inbr{\sigma;\, i;\, c_1^N \land \ldots \land c_n^N}}
-      &  \ruleno{ConjZero} \\[10mm]
-      \dfrac{\begin{array}{c}
-          \bigwedge_{j=1}^n pred(\sigma, c_j) = \bot \\
-           c_k^m \mbox{ is the first conjunct with } m > 0 \\ 
-           unfold(\sigma, c_k) = T \qquad set(T, m - 1) = \bar{T}
-          \end{array}
-      }
-      {
-      \inbr{\sigma;\, C_1 \land c_k^m \land C_2} \xrightarrow{\circ} push(C_1 \land \Box \land C_2, \bar{T})
-      }
-      &     \ruleno{ConjUnfold}
-\end{array}\]
+\begin{frame}[fragile]{Fair Conjunction by Structural Recursion Algorithm}
+\begin{center}
+\emph{Unfolding predicate} $\textcolor{myRed}{pred}$ is parameter of algorithm
+\end{center}
+$$\textcolor{myRed}{pred} : Substs \times Calls \rightarrow \set{\bot; \top}$$
+\vskip5mm
+\begin{itemize}
+
+    \item[$\bullet$] Conjuncts are unfolded from left to right
+    \item[$\bullet$] Each conjunt is unfolded while $\textcolor{myRed}{pred}$ is $\top$
+    \item[$\bullet$] If $\textcolor{myRed}{pred}$ is $\bot$ for all conjunts we use naive fair conjunction behavior
+
+\end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Semantics of Fair Conjunction by Structural Recursion (2/2)}
+\begin{frame}[fragile, noframenumbering]{Example}
+\begin{center}
+\begin{tabular}{cp{5mm}|p{5mm}c}
 
-\[\begin{array}{cr}
-      \dfrac{
-        \begin{array}{cc}
-          \bigwedge_{j=1}^{k-1} pred(\sigma, c_j) = \bot &
-          pred(\sigma, c_k) = \top \\
-          unfold(\sigma, c_k) = T & set(T, \max(0, \, m_k\!- 1)) = \bar{T}
-        \end{array}
-      }
-            {
-      \inbr{\sigma;\, C_1 \land c_k^m \land C_2} \xrightarrow{\circ} push(C_1 \land \Box \land C_2, \bar{T})
-            }
-&     \ruleno{ConjPred} \\[10mm]
-\end{array}\]
+\begin{lstlisting}
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)]
+\end{lstlisting} &&&
+\begin{lstlisting}
+let sort$^o$ x y = conde [
+  x === [] &&& y === [];
+  fresh (a xs ys)
+    (y === a :: ys)
+    (~<sort$^{\textcolor{myBlue}{o}}$ xs ys>~)
+    (~@smallest$^{\textcolor{myRed}{o}}$ x a xs@~)]
+\end{lstlisting}
+\\[5mm] &&&
+\\[5mm]
+\begin{lstlisting}
+ run$^1$ q (sort$^o$ [5;4;3;2;1] q) $$
+\end{lstlisting} &&&
+\begin{lstlisting}
+ run$^1$ q (sort$^o$ [5;4;3;2;1] q) $$
+\end{lstlisting} \\
+$\downarrow$ &&& $\downarrow$ \\
+\begin{lstlisting}
+[q = [1;2;3;4;5]]
+\end{lstlisting}
+&&&
+\begin{lstlisting}
+[q = [1;2;3;4;5]]
+\end{lstlisting} \\
+{\small (0.433s)} &&&
+{\small (0.432s)}
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Fair Conjunction by Structural Recursion}
+\begin{itemize}
+    \item[$\boldsymbol{+}$] Same convergence as naive fair conjunction
+    \vskip3mm
+    \item[$\boldsymbol{+}$] Better performance than left-biased and naive fair conjunctions
+    \vskip3mm
+    \item[$\boldsymbol{+}$] Instant switching of conjuncts in case of divergence
+    \vskip3mm
+    \item[$\boldsymbol{-}$] If relation is without structural recursion it becomes naive fair conjunction
+\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Evaluation: Optimistic Case}
@@ -628,7 +619,7 @@ If $pred$ is $\bot$ for all calls we use naive fair conjunction
 \end{tikzpicture}
 \end{frame}
 
-\begin{frame}[fragile]{Conclusions}
+\begin{frame}[fragile]{More in the Paper}
 \begin{itemize}
      \item[$\bullet$] Another one formal semantics for \mk with directed conjunction
     \vskip5mm
@@ -646,7 +637,7 @@ If $pred$ is $\bot$ for all calls we use naive fair conjunction
     \vskip5mm
     \item[$\bullet$] Formally prove equivalence with denotational semantics
     \vskip5mm
-    \item[$\bullet$] Formally prove conjunction fairness 
+    \item[$\bullet$] Formally prove conjunction fairness
 \end{itemize}
 \end{frame}
 
