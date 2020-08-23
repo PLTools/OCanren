@@ -16,7 +16,6 @@
  * (enclosed in the file COPYING).
  *)
 
-<<<<<<< HEAD:src/core/RStream.ml
 type stat = {
     mutable unwrap_suspended_counter : int;
     mutable force_counter            : int;
@@ -47,10 +46,8 @@ let bind_counter_incr () = stat.bind_counter <- stat.bind_counter + 1
 
 let mplus_counter () = stat.mplus_counter
 let mplus_counter_incr () = stat.mplus_counter <- stat.mplus_counter + 1
-=======
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
->>>>>>> get back old simpler names for modules:src/core/Stream.ml
 
 type 'a t =
   | Nil
@@ -70,7 +67,7 @@ let from_fun zz =
   Thunk zz
 
 let suspend ~is_ready f = Waiting [{is_ready; zz=f}]
- 
+
 let rec of_list = function
 | []    -> Nil
 | x::xs -> Cons (x, of_list xs)
@@ -87,7 +84,7 @@ let rec mplus xs ys =
   | Nil           -> force ys
   | Cons (x, xs)  -> cons x (from_fun @@ fun () -> mplus (force ys) xs)
   | Thunk   _     -> from_fun (fun () -> mplus (force ys) xs)
-  | Waiting ss    -> 
+  | Waiting ss    ->
     let ys = force ys in
     (* handling waiting streams is tricky *)
     match unwrap_suspended ss, ys with
@@ -114,12 +111,12 @@ and unwrap_suspended ss =
     | None , ss  -> Waiting ss
 
 let rec bind s f =
-  bind_counter_incr (); 
+  bind_counter_incr ();
   match s with
   | Nil           -> Nil
   | Cons (x, s)   -> mplus (f x) (from_fun (fun () -> bind (force s) f))
   | Thunk zz      -> from_fun (fun () -> bind (zz ()) f)
-  | Waiting ss    -> 
+  | Waiting ss    ->
     match unwrap_suspended ss with
     | Waiting ss ->
       let helper {zz} as s = {s with zz = fun () -> bind (zz ()) f} in
