@@ -292,11 +292,11 @@ let diseq = (=/=)
 
 let delay g st =
   delay_counter_incr ();
-  RStream.from_fun (fun () -> g () st)
+  Stream.from_fun (fun () -> g () st)
 
 let conj f g st =
   conj_counter_incr ();
-  RStream.bind (f st) g
+  Stream.bind (f st) g
 
 let structural var rr k st =
   match Term.var var with
@@ -312,14 +312,10 @@ let (?&) gs = List.fold_right (&&&) gs success
 
 let disj_base f g st = Stream.mplus (f st) (Stream.from_fun (fun () -> g st))
 
-<<<<<<< HEAD
 let disj f g st =
   disj_counter_incr ();
   let st = State.new_scope st in
-  disj_base f g |> (fun g -> RStream.from_fun (fun () -> g st))
-=======
-let disj f g st = let st = State.new_scope st in disj_base f g |> (fun g -> Stream.from_fun (fun () -> g st))
->>>>>>> get back old simpler names for modules
+  disj_base f g |> (fun g -> Stream.from_fun (fun () -> g st))
 
 let (|||) = disj
 

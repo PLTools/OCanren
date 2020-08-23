@@ -5,7 +5,7 @@
 )
 
 (rule
-  (targets camlp5-flags.cfg gt-flags.cfg logger-flags.cfg)
+  (targets camlp5-flags.cfg gt-flags.cfg gt-flags-native.cfg logger-flags.cfg stublibs-dir.cfg)
   (action (run ./discover.exe -all-flags))
 )
 

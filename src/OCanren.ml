@@ -19,7 +19,7 @@
 include Logic
 include Core
 
-module Stream  = RStream
+module Stream  = Stream
 module Peep    = Peep
 module Runconf = Runconf
 module Timer   = Timer

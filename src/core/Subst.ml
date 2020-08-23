@@ -68,7 +68,6 @@ let walk env subst x =
   (* walk var *)
   let rec walkv env subst v =
     walk_incr ();
-    VarEnv.check_exn env v;
     Env.check_exn env v;
     match v.Term.Var.subst with
     | Some term -> walkt env subst (Obj.magic term)
@@ -78,7 +77,6 @@ let walk env subst x =
   (* walk term *)
   and walkt env subst t =
     walk_incr ();
-    match VarEnv.var env t with
     match Env.var env t with
     | Some v -> walkv env subst v
     | None   -> Value t
