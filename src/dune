@@ -1,16 +1,9 @@
 (include_subdirs unqualified)
 
 (library
-  (name OCanren)
-  (public_name OCanren)
-  (libraries GT)
-  (preprocess
-    (action
-      (run camlp5
-        %{read-lines:../config/camlp5-flags.cfg}
-        %{read-lines:../config/gt-flags.cfg}
-        %{input-file})
-    )
-  )
-)
-
+ (name OCanren)
+ (public_name OCanren)
+ (libraries GT mtime.clock.os)
+ (preprocess (action
+   (run %{workspace_root}/camlp5/pp5+gt+plugins+ocanren+o.byte %{input-file})))
+   )

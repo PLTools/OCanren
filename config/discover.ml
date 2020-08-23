@@ -51,6 +51,12 @@ let discover_camlp5_dir cfg =
     Cfg.Process.run_capture_exn cfg
       "ocamlfind" ["query"; "camlp5"]
 
+let discover_stubs_dir cfg =
+  let s = String.trim @@ Cfg.Process.run_capture_exn cfg "ocamlfind" ["query"; "camlp5"] in
+(*  let s = String.concat " " s in*)
+  Cfg.Flags.write_lines "stublibs-dir.cfg" @@
+  [Printf.sprintf "%s/../stublibs" s]
+
 let discover_camlp5_flags cfg =
   let camlp5_dir = discover_camlp5_dir cfg in
   let camlp5_archives =
@@ -63,9 +69,14 @@ let discover_camlp5_flags cfg =
 let discover_gt_flags cfg =
   let gt_archives =
     Cfg.Process.run_capture_exn cfg
-      "ocamlfind" ["query"; "-pp"; "camlp5"; "-a-format"; "-predicates"; "byte"; "GT,GT.syntax.all"]
+      "ocamlfind" ["query"; "-pp"; "camlp5"; "-a-format"; "-predicates"; "byte"; "GT,GT.syntax"]
   in
-  Cfg.Flags.write_lines "gt-flags.cfg" @@ extract_words gt_archives
+  Cfg.Flags.write_lines "gt-flags.cfg" @@ extract_words gt_archives;
+  let gt_archives_native =
+    Cfg.Process.run_capture_exn cfg
+      "ocamlfind" ["query"; "-pp"; "camlp5"; "-a-format"; "-predicates"; "native"; "GT,GT.syntax"]
+  in
+  Cfg.Flags.write_lines "gt-flags-native.cfg" @@ extract_words gt_archives_native
 
 let discover_logger_flags cfg =
   (* logger has two kinds of CMOs: two from camlp5 (pr_o and pr_dump) and one for logger.
@@ -159,7 +170,7 @@ let () =
     if !camlp5_flags || !all_flags || !all then
       discover_camlp5_flags cfg ;
     if !gt_flags || !all_flags || !all then
-      discover_gt_flags cfg ;
+      (discover_stubs_dir cfg; discover_gt_flags cfg);
     if !logger_flags || !all_flags || !all then
       discover_logger_flags cfg ;
     ()

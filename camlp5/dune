@@ -3,6 +3,31 @@
   (public_name OCanren.syntax)
   (libraries camlp5)
   (preprocess
-      (action (run camlp5 %{read-lines:../config/camlp5-flags.cfg} %{input-file}))
+      (action (run %{workspace_root}/camlp5/pp5+dump.byte %{input-file}))
   )
+)
+
+
+(rule
+  (targets pp5+gt+plugins+ocanren+dump.exe)
+  (deps  pa_ocanren.cmxa)
+  (action  (run mkcamlp5.opt -package camlp5,GT-p5,GT.syntax.show pa_o.cmx %{deps} pr_dump.cmx -o %{targets} ))
+)
+
+(rule
+  (targets pp5+gt+plugins+ocanren+o.byte)
+  (deps  pa_ocanren.cma)
+  (action  (run mkcamlp5 -package camlp5,GT-p5 pr_dump.cmo -o %{targets} -verbose))
+)
+
+(rule
+  (targets pp5+gt+plugins+ocanren+logger+dump.exe)
+  (deps  pa_ocanren.cmxa)
+  (action  (run mkcamlp5.opt -package camlp5,GT-p5,GT.syntax.show,logger pa_o.cmx %{deps} pa_log.cmx pr_dump.cmx -o %{targets} ))
+)
+
+
+(rule
+  (targets pp5+dump.byte)
+  (action  (run mkcamlp5 -package camlp5 pa_o.cmo pr_dump.cmo -o %{targets}))
 )
