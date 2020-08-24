@@ -11,19 +11,33 @@
 (rule
   (targets pp5+gt+plugins+ocanren+dump.exe)
   (deps  pa_ocanren.cmxa)
-  (action  (run mkcamlp5.opt -package camlp5,GT-p5,GT.syntax.show pa_o.cmx %{deps} pr_dump.cmx -o %{targets} ))
+  (action  (run mkcamlp5.opt
+    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.show,GT.syntax.map,GT.syntax.html,GT.syntax.eq,GT.syntax.compare,GT.syntax.foldl,GT.syntax.foldr,GT.syntax.fmt,logger
+    %{deps} pr_dump.cmx -o %{targets} ))
 )
 
 (rule
   (targets pp5+gt+plugins+ocanren+o.byte)
   (deps  pa_ocanren.cma)
-  (action  (run mkcamlp5 -package camlp5,GT-p5 pr_dump.cmo -o %{targets} -verbose))
+  (action  (run mkcamlp5
+    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.show,GT.syntax.map,GT.syntax.html,GT.syntax.eq,GT.syntax.compare,GT.syntax.foldl,GT.syntax.foldr,GT.syntax.fmt
+    pa_extend.cmo q_MLast.cmo pr_o.cmo -o %{targets} -verbose))
 )
 
 (rule
   (targets pp5+gt+plugins+ocanren+logger+dump.exe)
   (deps  pa_ocanren.cmxa)
-  (action  (run mkcamlp5.opt -package camlp5,GT-p5,GT.syntax.show,logger pa_o.cmx %{deps} pa_log.cmx pr_dump.cmx -o %{targets} ))
+  (action  (run mkcamlp5.opt
+    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.show,GT.syntax.map,GT.syntax.html,GT.syntax.eq,GT.syntax.compare,GT.syntax.foldl,GT.syntax.foldr,GT.syntax.fmt,logger
+    %{deps} pr_dump.cmx -o %{targets} ))
+)
+
+(rule
+  (targets pp5+gt+plugins+ocanren+logger+o.byte)
+  (deps  pa_ocanren.cma)
+  (action  (run mkcamlp5
+    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.show,GT.syntax.map,GT.syntax.html,GT.syntax.eq,GT.syntax.compare,GT.syntax.foldl,GT.syntax.foldr,GT.syntax.fmt,logger
+    %{deps} pr_dump.cmo -o %{targets} ))
 )
 
 

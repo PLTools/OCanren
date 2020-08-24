@@ -29,15 +29,15 @@ open OCanren.Std
 | Backward of 'nat
 | Unload   of 'nat
 | Fill     of 'nat
-with show, gmap
+with show, gmap;;
 
 (* List of moves *)
-@type moves = int move GT.list with show   
+@type moves = int move GT.list with show;;
 (* ... logically *)
-@type lmoves = ocanren {int move GT.list} with show
+@type lmoves = ocanren {int move GT.list} with show;;
                                                                                                                                          
 (* State: distance, amount of fuel, list of fuel dumps *)
-@type state = int * int * (int * int) GT.list with show
+@type state = int * int * (int * int) GT.list with show;;
 (* ... logically *)                                                        
 @type lstate = ocanren {int * int * (int * int) GT.list} with show
                                                                                                     
