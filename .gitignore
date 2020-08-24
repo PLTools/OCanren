@@ -10,3 +10,5 @@ _build
 /node_modules
 /.vscode
 .merlin
+/oc-qtc*
+

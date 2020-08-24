@@ -74,8 +74,8 @@ let reify_state =
 
 let reify_solution s = s#reify @@ List.reify reify;;
 
-@type state    = ocanren (((bool * bool) * (bool * bool)) * ((bool * bool) * (bool * bool))) with show
-@type solution = ocanren (move list) with show 
+@type state    = ocanren {((bool * bool) * (bool * bool)) * ((bool * bool) * (bool * bool))} with show
+@type solution = ocanren {move list} with show
 
 let id x = x
              
