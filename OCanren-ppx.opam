@@ -1,7 +1,7 @@
+version: "0.0.3"
 opam-version: "2.0"
 
 name: "OCanren-ppx"
-version: "0.0.2"
 
 maintainer: "Dmitrii Kosarev kakadu.hafanana@gmail.com"
 

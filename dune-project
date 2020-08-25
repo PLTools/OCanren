@@ -1,11 +1,12 @@
-(lang dune 2.0)
+(lang dune 2.5)
 
 (name OCanren)
 
-(version 0.0.3)
 
 (package
+ (version 0.0.3)
  (name OCanren))
 
 (package
+ (version 0.0.3)
  (name OCanren-ppx))
