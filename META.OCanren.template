@@ -1,0 +1,29 @@
+version = "0.0.2"
+description = ""
+requires = "GT mtime.clock.os"
+archive(byte) = "OCanren.cma"
+archive(native) = "OCanren.cmxa"
+plugin(byte) = "OCanren.cma"
+plugin(native) = "OCanren.cmxs"
+package "syntax" (
+  directory = "syntax"
+  version = "0.0.2"
+  description = ""
+  requires = "camlp5"
+  archive(syntax,preprocessor) = "pa_ocanren.cma"
+  archive(byte) = "pa_ocanren.cma"
+  archive(native) = "pa_ocanren.cmxa"
+  plugin(byte) = "pa_ocanren.cma"
+  plugin(native) = "pa_ocanren.cmxs"
+)
+package "tester" (
+  directory = "tester"
+  version = "0.0.2"
+  description = ""
+  requires = "OCanren"
+  archive(byte) = "tester.cma"
+  archive(native) = "tester.cmxa"
+  plugin(byte) = "tester.cma"
+  plugin(native) = "tester.cmxs"
+)
+ 
