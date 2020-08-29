@@ -4,6 +4,8 @@
  (name OCanren)
  (public_name OCanren)
  (libraries GT mtime.clock.os)
- (preprocess (action
-   (run %{workspace_root}/camlp5/pp5+gt+plugins+ocanren+o.byte %{input-file})))
-   )
+ (flags
+  (:standard -short-paths))
+ (preprocess
+  (action
+   (run %{workspace_root}/camlp5/pp5+gt+plugins+ocanren+o.byte %{input-file}))))

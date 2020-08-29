@@ -363,8 +363,22 @@ module Tabling :
 val id : 'a -> 'a
 
 (** Unification counter *)
-val unification_counter : unit -> int                 
+val unification_counter : unit -> int
 val unification_time    : unit -> Mtime.span
 val conj_counter        : unit -> int
 val disj_counter        : unit -> int
-val delay_counter       : unit -> int                                    
+val delay_counter       : unit -> int
+
+
+val debug_var : ('a, 'b) injected -> (('a,'b) injected -> Env.t -> 'b) -> ('b list -> goal) -> goal
+
+val only_head : goal -> goal
+
+module PrunesControl : sig
+  val reset : unit -> unit
+  val enable_skips: on:bool -> unit
+  val set_max_skips: int -> unit
+  val incr : unit -> unit
+  val is_exceeded: unit -> bool
+  val skipped_prunes : unit -> int
+end
