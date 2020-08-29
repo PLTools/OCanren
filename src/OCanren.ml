@@ -68,5 +68,6 @@ module Std =
 
 
     let structural = Core.structural
-
+    let debug_var = Core.debug_var
+    let only_head = Core.only_head
   end
