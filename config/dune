@@ -10,7 +10,7 @@
 )
 
 (rule
-  (targets tests.txt tests.dune)
+  (targets tests.txt dune.tests)
   (alias discover-tests)
   (deps tests.dune.tpl (source_tree ../regression))
   (mode (promote-into ../regression))

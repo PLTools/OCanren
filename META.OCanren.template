@@ -1,24 +1,27 @@
-version = "0.0.2"
-description = ""
+version = "0.0.3"
+description = "Typed embedding of relational programmng language miniKanren to OCaml"
 requires = "GT mtime.clock.os"
 archive(byte) = "OCanren.cma"
 archive(native) = "OCanren.cmxa"
 plugin(byte) = "OCanren.cma"
 plugin(native) = "OCanren.cmxs"
+
 package "syntax" (
   directory = "syntax"
-  version = "0.0.2"
-  description = ""
+  version = "0.0.3"
+  description = "Camlp5 syntax extensions"
   requires = "camlp5"
   archive(syntax,preprocessor) = "pa_ocanren.cma"
+  archive(syntax,preprocessor,native) = "pa_ocanren.cmxa"
   archive(byte) = "pa_ocanren.cma"
   archive(native) = "pa_ocanren.cmxa"
   plugin(byte) = "pa_ocanren.cma"
   plugin(native) = "pa_ocanren.cmxs"
 )
+
 package "tester" (
   directory = "tester"
-  version = "0.0.2"
+  version = "0.0.3"
   description = ""
   requires = "OCanren"
   archive(byte) = "tester.cma"
@@ -26,4 +29,34 @@ package "tester" (
   plugin(byte) = "tester.cma"
   plugin(native) = "tester.cmxs"
 )
- 
+
+package "ppx" (
+  requires(ppx_driver) = "ocanren.ppx.repr,ocanren.ppx.fresh"
+
+  package "repr" (
+    description = "PPX syntax extension which  similar to logger-p5"
+    requires(ppx_driver) = "ppxlib"
+    archive(ppx_driver,byte) = "ppx_repr.cma"
+    archive(ppx_driver,native) = "ppx_repr.cmxa"
+    plugin(ppx_driver,byte) = "ppx_repr.cma"
+    plugin(ppx_driver,native) = "ppx_repr.cmxs"
+    # This line makes things transparent for people mixing preprocessors
+    # and normal dependencies
+    requires(-ppx_driver) = ""
+    ppx(-ppx_driver,-custom_ppx) = "./pp_repr.native --as-ppx"
+  )
+  package "fresh" (
+    description = "PPX syntax extension for convenient creating fresh variables in OCanren"
+    requires(ppx_driver) = "ppxlib"
+    archive(ppx_driver,byte) = "ppx_fresh.cma"
+    archive(ppx_driver,native) = "ppx_fresh.cmxa"
+    plugin(ppx_driver,byte) = "ppx_fresh.cma"
+    plugin(ppx_driver,native) = "ppx_fresh.cmxs"
+    # This line makes things transparent for people mixing preprocessors
+    # and normal dependencies
+    requires(-ppx_driver) = ""
+    ppx(-ppx_driver,-custom_ppx) = "./pp_fresh.native --as-ppx"
+  )
+)
+
+

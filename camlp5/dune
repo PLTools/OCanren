@@ -12,7 +12,7 @@
   (targets pp5+gt+plugins+ocanren+dump.exe)
   (deps  pa_ocanren.cmxa)
   (action  (run mkcamlp5.opt
-    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.show,GT.syntax.map,GT.syntax.html,GT.syntax.eq,GT.syntax.compare,GT.syntax.foldl,GT.syntax.foldr,GT.syntax.fmt,logger
+    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
     %{deps} pr_dump.cmx -o %{targets} ))
 )
 
@@ -20,24 +20,24 @@
   (targets pp5+gt+plugins+ocanren+o.byte)
   (deps  pa_ocanren.cma)
   (action  (run mkcamlp5
-    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.show,GT.syntax.map,GT.syntax.html,GT.syntax.eq,GT.syntax.compare,GT.syntax.foldl,GT.syntax.foldr,GT.syntax.fmt
-    pa_extend.cmo q_MLast.cmo pr_o.cmo -o %{targets} -verbose))
+    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.all
+    pa_extend.cmo q_MLast.cmo pr_o.cmo -o %{targets}))
 )
 
 (rule
   (targets pp5+gt+plugins+ocanren+logger+dump.exe)
   (deps  pa_ocanren.cmxa)
   (action  (run mkcamlp5.opt
-    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.show,GT.syntax.map,GT.syntax.html,GT.syntax.eq,GT.syntax.compare,GT.syntax.foldl,GT.syntax.foldr,GT.syntax.fmt,logger
-    %{deps} pr_dump.cmx -o %{targets} ))
+    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
+    %{deps} pr_dump.cmx -o %{targets} -))
 )
 
 (rule
   (targets pp5+gt+plugins+ocanren+logger+o.byte)
   (deps  pa_ocanren.cma)
   (action  (run mkcamlp5
-    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.show,GT.syntax.map,GT.syntax.html,GT.syntax.eq,GT.syntax.compare,GT.syntax.foldl,GT.syntax.foldr,GT.syntax.fmt,logger
-    %{deps} pr_dump.cmo -o %{targets} ))
+    -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
+    %{deps} pr_o.cmo -o %{targets} ))
 )
 
 

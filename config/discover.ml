@@ -118,7 +118,7 @@ let discover_logger_flags cfg =
 (* generates build rules for `test*.exe` *)
 let gen_tests_dune _ tests =
   let tpl_fn = "tests.dune.tpl" in
-  let dune_fn = "tests.dune" in
+  let dune_fn = "dune.tests" in
   let tpl = read_file tpl_fn in
   let re = Str.regexp "%{tests}" in
   let tests = String.concat "\n    " tests in
