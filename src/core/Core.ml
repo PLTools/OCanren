@@ -149,7 +149,7 @@ module Prunes : sig
   val empty   : t
   (* Returns false when constraints are violated *)
   val recheck : t -> Env.t -> Subst.t -> rez
-  val check_one : t -> Env.t -> Subst.t -> Term.VarTbl.key -> rez
+  val check_last : t -> Env.t -> Subst.t -> rez
   val extend  : t -> Term.VarTbl.key -> ('a, 'b) reifier -> 'b cond -> t
 end = struct
   type rez = Violated | NonViolated
@@ -158,32 +158,81 @@ end = struct
   type 'b cond = 'b -> bool
   type cond_untyped = Obj.t -> bool
 
-  type t = (reifier_untyped * cond_untyped) Term.VarMap.t
+  let make_untyped : ('a, 'b) reifier -> 'b cond -> reifier_untyped * cond_untyped =
+    fun a b -> Obj.magic (a,b)
 
-  let empty = Term.VarMap.empty
-
-  let check_one map env subst term =
-    try
-      let (reifier, cond) = Term.VarMap.find term map in
-      let reified = reifier env (Obj.magic @@ Subst.apply env subst term) in
-      if cond reified
-      then NonViolated
-      else Violated
-    with Not_found -> NonViolated
+  type t = (Obj.t * (reifier_untyped * cond_untyped)) list
+  let empty = []
 
   exception Fail
+
+  let check_last map env subst =
+    try
+      let (term, (reifier, checker)) = List.hd map in
+      let reified = reifier env (Obj.magic @@ Subst.apply env subst term) in
+      if not (checker reified) then raise Fail;
+      NonViolated
+    with Not_found -> NonViolated
+       | Fail -> Violated
+
+
   let recheck ps env s =
     try
-      Term.VarMap.iter (fun k (reifier, checker) ->
-          let reified = reifier env (Obj.magic @@ Subst.apply env s k) in
-          if not (checker reified)
-          then raise Fail
-       ) ps;
-       NonViolated
+      ps |> List.iter (fun (k, (reifier, checker)) ->
+        let reified = reifier env (Obj.magic @@ Subst.apply env s k) in
+        if not (checker reified) then raise Fail
+      );
+      NonViolated
     with Fail -> Violated
 
-  let extend map var rr cond =
-    Term.VarMap.add (Obj.magic var) (Obj.magic (rr,cond)) map
+  let extend map term rr cond =
+    let new_item = make_untyped rr cond in
+    (Obj.repr term, new_item) :: map
+
+(*  let extend map var rr cond =
+    Term.VarMap.add (Obj.magic var) (Obj.magic (rr,cond)) map*)
+
+end
+
+type prunes_control =
+  { mutable pc_do_skip : bool
+  ; mutable pc_checks_skipped : int
+  ; mutable pc_max_to_skip : int
+  ; mutable pc_skipped_prunes_total : int
+  }
+
+let prunes_control =
+  { pc_checks_skipped = 10; pc_do_skip=false; pc_max_to_skip = 11
+  ; pc_skipped_prunes_total = 0
+  }
+
+module PrunesControl = struct
+  let enable_skips ~on =
+(*    Printf.printf "enabling skips: %b\n%!" on;*)
+    prunes_control.pc_do_skip <- on
+  let is_enabled () = prunes_control.pc_do_skip
+  let reset_cur_counter () = prunes_control.pc_checks_skipped <- 0
+  let reset () =
+    reset_cur_counter ();
+    prunes_control.pc_skipped_prunes_total <- 0
+
+
+  let set_max_skips n =
+    assert (n>0);
+    prunes_control.pc_max_to_skip <- n;
+    reset ()
+
+  let skipped_prunes () = prunes_control.pc_skipped_prunes_total
+  let incr () =
+    if is_enabled ()
+    then
+      let () = prunes_control.pc_checks_skipped <- 1 + prunes_control.pc_checks_skipped in
+      prunes_control.pc_skipped_prunes_total <- 1 + prunes_control.pc_skipped_prunes_total
+
+
+  let is_exceeded () =
+    (not (is_enabled())) ||
+    (prunes_control.pc_checks_skipped >= prunes_control.pc_max_to_skip)
 
 end
 
@@ -218,20 +267,29 @@ module State =
     let new_scope st = {st with scope = Term.Var.new_scope ()}
 
     let unify x y ({env; subst; ctrs; scope} as st) =
-        match Subst.unify ~scope env subst x y with
-        | None -> None
-        | Some (prefix, subst) ->
-          match Disequality.recheck env subst ctrs prefix with
-          | None      -> None
-          | Some ctrs ->
-            match Prunes.recheck (prunes st) env subst with
-            | Prunes.Violated -> None
-            | NonViolated -> Some {st with subst; ctrs}
+      let (>>=?) x f  = match x with Some a -> f a | None -> None in
+      Subst.unify ~scope env subst x y          >>=? fun (prefix, subst) ->
+      Disequality.recheck env subst ctrs prefix >>=? fun ctrs ->
+      (* FM.recheck env subst fd prefix            >>=? fun fd -> *)
+        let next_state = { st with subst; ctrs } in
+        if PrunesControl.is_exceeded ()
+        then begin
+          let () = PrunesControl.reset_cur_counter () in
+          match Prunes.recheck (prunes next_state) env subst with
+          | Prunes.Violated -> None
+          | NonViolated -> Some next_state
+        end else begin
+          let () = PrunesControl.incr () in
+          Some next_state
+        end
 
     let diseq x y ({env; subst; ctrs; scope} as st) =
       match Disequality.add env subst ctrs x y with
       | None      -> None
-      | Some ctrs -> Some {st with ctrs}
+      | Some ctrs ->
+          match Prunes.recheck (prunes st) env subst with
+          | Prunes.Violated -> None
+          | NonViolated -> Some {st with ctrs}
 
     (* returns always non-empty list *)
     let reify x {env; subst; ctrs} =
@@ -274,6 +332,11 @@ type goal = State.t Stream.t goal'
 let success st = Stream.single st
 let failure _  = Stream.nil
 
+let only_head g st =
+  let stream = g st in
+  try Stream.single @@ Stream.hd stream
+  with Failure _ -> Stream.nil
+
 let (===) x y st =
   unification_incr ();
   let t = Timer.make () in
@@ -298,12 +361,19 @@ let conj f g st =
   conj_counter_incr ();
   Stream.bind (f st) g
 
+let debug_var v reifier call = fun st ->
+  let xs = List.map (fun answ ->
+    reifier (Obj.magic @@ Answer.ctr_term answ) (Answer.env answ)
+    ) (State.reify v st)
+  in
+  call xs st
+
 let structural var rr k st =
   match Term.var var with
   | None -> success st
   | Some v ->
       let new_constraints = Prunes.extend (State.prunes st) v rr k in
-      match Prunes.check_one new_constraints (State.env st) (State.subst st) v with
+      match Prunes.check_last new_constraints (State.env st) (State.subst st) with
       | Prunes.Violated -> failure st
       | NonViolated -> success { st with State.prunes = new_constraints }
 
