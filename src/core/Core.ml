@@ -40,13 +40,17 @@ let conj_counter        () = stat.conj_counter
 let disj_counter        () = stat.disj_counter
 let delay_counter       () = stat.delay_counter
 
-let unification_incr     () = stat.unification_count <- stat.unification_count + 1
-let unification_time_incr t =
-  stat.unification_time <- Mtime.Span.add stat.unification_time (t ())
-
-let conj_counter_incr  () = stat.conj_counter  <- stat.conj_counter + 1
-let disj_counter_incr  () = stat.disj_counter  <- stat.disj_counter + 1
-let delay_counter_incr () = stat.delay_counter <- stat.delay_counter + 1
+let (unification_incr,unification_time_incr,conj_counter_incr,disj_counter_incr,delay_counter_incr) =
+  match Sys.getenv_opt "OCANREN_BENCH_COUNTS" with
+  | None -> let c = (fun _ -> ()) in (c,c,c,c,c)
+  | Some _ ->
+    let unification_incr     () = stat.unification_count <- stat.unification_count + 1 in
+    let unification_time_incr t =
+      stat.unification_time <- Mtime.Span.add stat.unification_time (t ()) in
+    let conj_counter_incr  () = stat.conj_counter  <- stat.conj_counter + 1 in
+    let disj_counter_incr  () = stat.disj_counter  <- stat.disj_counter + 1 in
+    let delay_counter_incr () = stat.delay_counter <- stat.delay_counter + 1 in
+    (unification_incr,unification_time_incr,conj_counter_incr,disj_counter_incr,delay_counter_incr)
 
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
@@ -338,11 +342,15 @@ let only_head g st =
   with Failure _ -> Stream.nil
 
 let (===) x y st =
-  unification_incr ();
-  let t = Timer.make () in
+(*  unification_incr ();*)
+(*  let t = Timer.make () in*)
   match State.unify x y st with
-  | Some st -> unification_time_incr t; success st
-  | None    -> unification_time_incr t; failure st
+  | Some st ->
+(*  unification_time_incr t; *)
+  success st
+  | None    ->
+(*  unification_time_incr t; *)
+  failure st
 
 let unify = (===)
 
@@ -354,11 +362,11 @@ let (=/=) x y st =
 let diseq = (=/=)
 
 let delay g st =
-  delay_counter_incr ();
+(*  delay_counter_incr ();*)
   Stream.from_fun (fun () -> g () st)
 
 let conj f g st =
-  conj_counter_incr ();
+(*  conj_counter_incr ();*)
   Stream.bind (f st) g
 
 let debug_var v reifier call = fun st ->
