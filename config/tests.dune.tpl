@@ -3,17 +3,9 @@
     %{tests}
   )
   (libraries GT OCanren OCanren.tester)
-  (preprocess
-    (action
-      (run camlp5
-        %{read-lines:../config/camlp5-flags.cfg}
-        %{read-lines:../config/gt-flags.cfg}
-        %{read-lines:../config/logger-flags.cfg}
-        %{workspace_root}/camlp5/pa_ocanren.cma
-        %{input-file})
-    )
-  )
-  (preprocessor_deps (file %{workspace_root}/camlp5/pa_ocanren.cma))
+  (preprocess (action
+    (run %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe %{input-file})))
+  (preprocessor_deps (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe))
 )
 
 

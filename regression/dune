@@ -1,1 +1,1 @@
-(include tests.dune)
+(include dune.tests)
