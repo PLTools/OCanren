@@ -37,7 +37,7 @@
   (deps  pa_ocanren.cma)
   (action  (run mkcamlp5
     -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
-    %{deps} pr_o.cmo -o %{targets} ))
+    %{deps} -o %{targets} ))
 )
 
 
