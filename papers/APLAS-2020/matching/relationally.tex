@@ -62,7 +62,7 @@ property:
 \[
 \setarrow{\xrightarrow}
 \begin{array}{rcl}
-  \forall\pi\in\mathcal S & : & [\forall v\in\mathcal{E}(p_1,\dots,p_k),\,\forall i\in\mathbb{N} : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longleftrightarrow {\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi}{}{i}}}] \Longrightarrow \\
+  \forall\pi\in\mathcal S\! &\!: & [\forall v\in\mathcal{E}(p_1,\dots,p_k),\,\forall i\in\mathbb{N} : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}\!\Longleftrightarrow \!{\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi\!}{}{i}}}]\!\Rightarrow\\
                           &   & [\forall v\in\mathcal V,\,\forall i\in\mathbb{N} : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longleftrightarrow  {\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi}{}{i}}}]
 \end{array}
 \]
@@ -81,7 +81,7 @@ of patterns, for every value $v$ there is exactly one answer value $i$, such tha
 
 \[
 \exists i:\, \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longrightarrow  
-\large\big(\forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{j} \Longrightarrow  j=i\large\big)
+\Big(\forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{j} \Longrightarrow  j=i\Big)
 \]
 
 Thus, we can replace universal quantification over the sets of answers by existential one, for which we have an efficient relational counterpart~--- the ``\lstinline|fresh|''
