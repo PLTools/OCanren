@@ -5,9 +5,9 @@ MAIN=matching-aplas
 
 all: $(MAIN).pdf
 
-OCANREN_TEX=$(MAIN).tex
+OCANREN_TEX=main.tex
 
-COMPILER=pdflatex -interaction=nonstopmode
+COMPILER=pdflatex -interaction=nonstopmode -jobname=$(MAIN)
 
 $(MAIN).pdf: $(OCANREN_TEX)
 	$(COMPILER) $<
@@ -17,7 +17,7 @@ $(MAIN).pdf: $(OCANREN_TEX)
 
 celan: clean
 clean:
-	$(RM) -f *.synctex.gz *.bak *.out *.aux *.bbl *.blg *.log $(MAIN).pdf 
+	$(RM) -f *.synctex.gz *.bak *.out *.aux *.bbl *.blg *.log *.fdb_latexmk *.fls $(MAIN).pdf 
 
 
 might: might-weasel might-passive might-dups

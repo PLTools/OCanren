@@ -1,52 +1,52 @@
-\newcommand{\lheadl}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
-\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{#2}}}
-\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
-\newcommand{\lheadll}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}||}{\textbf{#2}}}
-\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{#2}}}
+\newcommand{\mywrap}[1]{\centering{\textbf{#1}}}
+\newcommand{\myhack}[2]{
+  \multicolumn{1}{m{#1}|}{
+    \rotatebox{90}{\parbox[2cm]{1.5cm}{\mywrap {#2}}}
+  }
+%  \multirow{1}{*}{\parbox[c][2cm]{#1}{\rotatebox[origin=c]{90}{\mywrap {#2}}}}
+}
+\newcolumntype{C}{ >{\centering\arraybackslash} m{4cm} }
 
-\begin{table}[H]
-  \caption{The results of synthesis evaluation}\label{fig:eval}
-    
-  %\begin{tabular}{|c|m{3cm}|cc||cccc}
-  \begin{tabular}{|m{3.5cm}||cccc|}
-\hline
-%    \headl{.5cm}{}    &
-    \lheadll{3cm}{Patterns} & 
-%    \head{1.5cm}{Size constraint} & 
-%    \headll{1.7cm}{Answers requested} & 
-    \head{2cm}{Number of samples} & 
-    \head{1.5cm}{1st answer time (ms)} & 
-    \head{1.5cm}{Answers found} & 
-    \headl{1.5cm}{Total search time (ms)}\\
-    \hline
-    \hline
-    %1&
-    \begin{lstlisting}[basicstyle=\scriptsize]
+\begin{table}[h]
+\caption{The results of synthesis evaluation}\label{fig:eval}
+\centering
+\begin{tabular}{|l||c|c|c|c|c|c|c|}\hline
+%  \parbox[b][.5cm]{3cm}{\textbf{Patterns}} & 
+  \mywrap{\phantom{PP1} Patterns} & 
+  \myhack{1.2cm}{Number of samples} &
+  \myhack{1.2cm}{1st answer size } &
+  \myhack{1.2cm}{1st answer time(ms)} &
+  \myhack{.8cm}{Answers found} &
+  \myhack{1.2cm}{Optimal answer size} &
+  \myhack{1.2cm}{Optimal answer time(ms)} &
+  \myhack{1.5cm}{Total search time (ms)} 
+    \\ \hline
+
+    \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em]
 A
 B
 C
-    \end{lstlisting}&3&1&2&2\\
+    \end{lstlisting}&3&2&1&2&1&2 & 2\\
         \hline
-%        2&
-    \begin{lstlisting}[basicstyle=\scriptsize]
+    \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em]
 true
 false
-    \end{lstlisting} &2&$<$1&1&$<$1\\
+    \end{lstlisting} &2&1&$<$1&1&&  & $<$1  \\
         \hline
 %        3&
-            \begin{lstlisting}[basicstyle=\scriptsize]
+            \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em]
 (true, _)
 (_, true)
 (false, false)
-    \end{lstlisting} &4&5&1&6\\
+    \end{lstlisting} &4&2&5&1&&& 11\\
         \hline
 %        4&
-     \begin{lstlisting}[basicstyle=\scriptsize]
+     \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em]
 (_, false, true)
 (false, true, _)
 (_, _, false)
 (_, _, true)
-    \end{lstlisting} &8&$\sim$1000&3&$\sim$2000\\
+    \end{lstlisting} &8&6&$\sim$1000&3&4&$\sim$2100& $\sim$2300\\
         \hline
 %        5&
 %     \begin{lstlisting}[basicstyle=\scriptsize]
@@ -56,37 +56,33 @@ false
 %    \end{lstlisting} &100&10&4&5&1&6\\
 %        \hline
 %        6&
-     \begin{lstlisting}[basicstyle=\scriptsize]
+     \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em]
 (Succ _, Succ _)
 (Zero, _)
 (_, Zero)
-    \end{lstlisting} &4&30&1&30
-    \\
+    \end{lstlisting} &4&2&30&1&&  &$\sim$50  \\
         \hline
-     \begin{lstlisting}[basicstyle=\scriptsize]
+     \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em]
 (Nil, _)
 (_, Nil)
 (Nil2, _)
 (_, Nil2)
-(Cons (_, _),Cons(_, _))
-    \end{lstlisting}
-     &9&24&3&157                    \\ 
+(Cons (_,_),Cons(_,_))
+    \end{lstlisting}  &9&5&45&1&&       &   $\sim$800       \\ 
       \hline
-     \begin{lstlisting}[basicstyle=\scriptsize]
+     \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em]
 (_, _, (Ldi _)::_)
 (_, _, (Push _)::_)
-    \end{lstlisting} &5&11&1&30\\
+    \end{lstlisting} &5&3&11&1&  &  & $\sim$ 30    \\
         \hline      
-        \begin{lstlisting}[basicstyle=\scriptsize]
+        \begin{lstlisting}[basicstyle=\scriptsize,belowskip=-1.5em]
 (_, _, (Ldi _)::_)
 (_, _, (Push _)::_)
 (Int(_), _, (IOp _)::_)
 \end{lstlisting}
-     &20&$\sim$1700&3&$\sim$11000                    \\ \hline
-  \end{tabular}
-
+     &20&7&$\sim$1700&3&5&   $\sim$1800   &   $\sim$11000       \\ \hline
+\end{tabular}
 \end{table}
-
 \FloatBarrier
 
 \section{Evaluation}
@@ -103,16 +99,12 @@ then average monotonic clock time was taken. The results of the evaluation are s
 In the table the double bar separates input data from output. %Inputs are: 
 The patterns used for synthesis form the input of synthesis algorithm.
 %and the requested number of answers. 
-Outputs are: the size of generated complete samples set, the running time before receiving the
-first answer, the total number of programs synthesized, the total search time.
+Outputs are: the size of generated complete samples set, the size of the first answer, the running time before receiving the
+first answer, the total number of programs synthesized, the size of the optimal (last) answer and the total time of the synthesis. The information about a last answer will be omitted, if the synthesizer finds only a single answer. After discovering of the last answer, the synthesizer may spend some time to check that no smaller answer exists.
+%The time between the start and the end of synthesis is shown in the last column. % of Table.~\ref{fig:eval}.
 In all benchmarks the structural constraint is being checked every 100 unifications and all answers were requested.
 
-We also give an example of synthesized program for the 4th benchmark, which was taken from~\cite{maranget2008}. We used this benchmark in the Section~\ref{sec:related}
- %Section~\ref{sec:intro} (
-as the first example (see Fig.~\ref{fig:match-example}).
-%In this benchmark 
-%The fourth benchmark is an example mentioned on %figure~\ref{fig:matching-example1}. In this example
-%all \lstinline|switch| expressions will have two branches, so they are equivalent to \lstinline|if| expressions.
+We also give an example of synthesized program for the 4th benchmark, which was taken from~\cite{maranget2008}. We used this benchmark in the Section~\ref{sec:related} as the first example (see Fig.~\ref{fig:match-example}).
 
 Our algorithm starts the
 synthesis and in about 1 second discovers the first answer, which is equivalent to the solution on Fig.~\ref{fig:matching-example2} and
@@ -129,26 +121,31 @@ switch $\bullet[0]$ with
 \end{lstlisting}
 
 And after about half a second it synthesizes the optimal answer of size 4. Then it searches for an answer which would have less than 4 switch expressions
-for some time, fails to find one and finishes the synthesis. The time between the start and the end of synthesis is shown in the last column of Table.~\ref{fig:eval}.
+for some time, fails to find one and finishes the synthesis. 
+The time between the start and the end of synthesis is shown in the last column of Table.~\ref{fig:eval}.
 
 Our approach currently does not work fast for large benchmarks. On Fig.~\ref{fig:pcf} we cite an example extracted from a bytecode
 machine for PCF~\cite{maranget2008,Plotkin1977LCFCA}. For such a complex examples (in terms of type definition complexity and the number and size of patterns)
 both the size of the search space and the number of samples is too large for our approach to work so far.
 
-%The first conclusion can be drawn from results is that a often checking of the current approximation of the answer by size constraint
-%cab lead to performance degradation because this check is not cheap. But we shouldn't do this check infinitely more seldom. It lead to performance degradation too,
-%because more search branches will be prunes later.
-
-%The 4th and 7th benchmarks have similar input configurations and examples count but time differs linearly. This probably means that interleaving search of
-%OCanren can be more lucky in some cases then in another.
+The last two benchmarks were constructed by reducing number of types (Fig.~\ref{fig:pcf-reduced}) and clauses in PCF example.% (fig.~\ref{fig:pcf}).
 
 \begin{figure}%[H]
 \centering
 \begin{tabular}{c} % tabular only for centering
+\begin{lstlisting}
+type code = Push | Ldi of int | IOp of int | Int of int 
+type stack_item = Val of code | Env of int | Code of int 
+type scrutinee = code * stack_item list * code list
+\end{lstlisting}
+\end{tabular}
+\caption{Reduced types of PCF example }
+\label{fig:pcf-reduced}
+\end{figure}
 
-%type code = Push | Ldi of int | IOp of int | Int of int 
-%type stack_item = Val of code | Env of int | Code of int 
-%type t = code * stack_item list * code list
+\begin{figure}%[H]
+\centering
+\begin{tabular}{c} % tabular only for centering
 \begin{lstlisting}
 let rec run  s c e =
   match s,c,e with
