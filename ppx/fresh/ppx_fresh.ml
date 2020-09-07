@@ -38,7 +38,7 @@ let classify_name ~f e =
   | Pexp_ident i when f i.txt -> true
   | _ -> false
 let need_insert_fname ~name e =
-  classify_name e ~f:(Caml.Pervasives.(=) (Lident name))
+  classify_name e ~f:(Stdlib.(=) (Lident name))
   (* match e.pexp_desc with
   | Pexp_ident i when i.txt = Lident name -> true
   | _ -> false *)
@@ -230,7 +230,7 @@ let mapper = object(self)
         { e with pexp_desc = Pexp_fun(l, opt, pat, self#expression e) }
 
     | Pexp_construct (_, None) -> e
-    | Pexp_construct (id, Some e1) -> { e with pexp_desc = Pexp_construct (id, Some (self#expression e1)) }    
+    | Pexp_construct (id, Some e1) -> { e with pexp_desc = Pexp_construct (id, Some (self#expression e1)) }
 
     (* kind of default mapping below *)
 
