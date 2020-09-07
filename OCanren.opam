@@ -21,7 +21,8 @@ depends: [
   "ocaml"
   "dune" {>= "2.0" & build }
   "dune-configurator" { build }
-  "ocamlfind" {build}
+  "ocamlfind" { build }
+  "mtime" { build }
   "camlp5"
   "logger-p5" { = "0.4.2" }
   "GT" { >= "0.2.0" }
