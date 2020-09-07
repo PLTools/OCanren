@@ -20,6 +20,7 @@
     test020
     test021structural
     test022newsyntax
+    test022wc
   )
   (libraries GT OCanren OCanren.tester)
   (preprocess (action

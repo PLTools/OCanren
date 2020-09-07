@@ -32,6 +32,9 @@ let fresh ~scope e =
   e.next <- 1 + e.next;
   Obj.magic v
 
+let wc ~scope e =
+  Obj.magic (Term.Var.make_wc ~env:e.anchor ~scope)
+
 let check env v = (v.Term.Var.env = env.anchor)
 
 let check_exn env v =

@@ -24,6 +24,8 @@ val create        : anchor:Term.Var.env -> t
 
 val fresh         : scope:Term.Var.scope -> t -> 'a
 
+val wc            : scope:Term.Var.scope -> t -> 'a
+
 val check         : t -> Term.Var.t -> bool
 
 val check_exn     : t -> Term.Var.t -> unit

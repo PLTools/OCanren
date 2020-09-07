@@ -69,6 +69,7 @@ let walk env subst x =
   let rec walkv env subst v =
     walk_incr ();
     Env.check_exn env v;
+    if Term.Var.is_wildcard v then Var v else
     match v.Term.Var.subst with
     | Some term -> walkt env subst (Obj.magic term)
     | None ->
@@ -154,6 +155,8 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
     fold2 x y ~init:acc
       ~fvar:(fun ((_, subst) as acc) x y ->
         match walk env subst x, walk env subst y with
+        | _, Var v when Term.Var.is_wildcard v -> acc
+        | Var v, _ when Term.Var.is_wildcard v -> acc
         | Var x, Var y      ->
           if Var.equal x y then acc else extend x (Term.repr y) acc
         | Var x, Value y    -> extend x y acc
@@ -164,6 +167,8 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
           if x = y then acc else raise Unification_failed
       )
       ~fk:(fun ((_, subst) as acc) l v y ->
+          if Term.Var.is_wildcard v then acc
+          else
           if subsume && (l = Term.R)
           then raise Unification_failed
           else match walk env subst v with

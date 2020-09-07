@@ -45,7 +45,8 @@ module Var =
         index         : int;
         mutable subst : Obj.t option;
         scope         : scope;
-        constraints   : Obj.t list
+        constraints   : Obj.t list;
+        (* is_wildcard   : bool *)
       }
 
     let make ~env ~scope index = {
@@ -53,9 +54,14 @@ module Var =
       anchor      = global_anchor;
       subst       = None;
       constraints = [];
+      (* is_wildcard = false; *)
       index;
       scope;
     }
+
+    let is_wildcard { index } = (index = -42)
+    let make_wc ~env ~scope = (make ~env ~scope (-42))
+      (* with is_wildcard = true  *)
 
     let dummy =
       let env   = 0 in

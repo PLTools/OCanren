@@ -278,6 +278,7 @@ module State =
     let prunes {prunes} = prunes
 
     let fresh {env; scope} = Env.fresh ~scope env
+    let wc {env; scope} = Env.wc ~scope env
 
     let new_scope st = {st with scope = Term.Var.new_scope ()}
 
@@ -481,6 +482,10 @@ let conde = (?|)
 
 let call_fresh f st =
   let x = State.fresh st in
+  f x st
+
+let wc f st =
+  let x = State.wc st in
   f x st
 
 module Fresh =

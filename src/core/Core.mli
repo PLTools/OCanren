@@ -33,6 +33,8 @@ type goal = State.t Stream.t goal'
     parameter *)
 val call_fresh : (('a, 'b) injected -> goal) -> goal
 
+val wc : (('a, 'b) injected -> goal) -> goal
+
 (** [x === y] creates a goal, which performs a unification of [x] and [y] *)
 val (===) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
@@ -362,6 +364,7 @@ module Tabling :
   end
 
 IFDEF STATS THEN
+(** Unification counter *)
 val unification_counter : unit -> int
 val unification_time    : unit -> Mtime.span
 val conj_counter        : unit -> int

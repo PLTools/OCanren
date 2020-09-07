@@ -18,3 +18,4 @@ test019tablingCache
 test020
 test021structural
 test022newsyntax
+test022wc
