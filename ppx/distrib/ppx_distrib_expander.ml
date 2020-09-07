@@ -335,7 +335,7 @@ let revisit_adt ~loc other_attrs tdecl ctors =
 
 let has_to_gen_attr (xs: attributes) =
   let ours,others = List.partition_map xs ~f:(fun ({attr_name={txt};_} as attr) ->
-      if String.equal txt "distrib" then `Fst attr else `Snd attr
+      if String.equal txt "distrib" then First attr else Second attr
       )
   in
   assert (List.length ours <= 1);
