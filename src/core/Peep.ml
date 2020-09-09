@@ -16,6 +16,7 @@
  * (enclosed in the file COPYING).
  *)
 
+IFDEF STATS THEN
 let unification_counter      = Core.unification_counter
 let unification_time         = Core.unification_time
 let walk_counter             = Subst.walk_counter
@@ -27,3 +28,4 @@ let force_counter            = Stream.force_counter
 let from_fun_counter         = Stream.from_fun_counter
 let bind_counter             = Stream.bind_counter
 let mplus_counter            = Stream.mplus_counter
+END

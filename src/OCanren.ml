@@ -20,7 +20,6 @@ include Logic
 include Core
 
 module Stream  = Stream
-module Peep    = Peep
 module Runconf = Runconf
 module Timer   = Timer
 module VarEnv = VarEnv

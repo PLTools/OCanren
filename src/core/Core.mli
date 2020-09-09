@@ -359,16 +359,18 @@ module Tabling :
       (('b -> 'c) -> 'd) -> 'b -> 'c
   end
 
-(** Identity (can be used in [run] to return the stream unchanged) *)
-val id : 'a -> 'a
 
+(** Identity (can be used in [run] to return the stream unchanged) *)
+(* val id : 'a -> 'a *)
+
+IFDEF STATS THEN
 (** Unification counter *)
 val unification_counter : unit -> int
 val unification_time    : unit -> Mtime.span
 val conj_counter        : unit -> int
 val disj_counter        : unit -> int
 val delay_counter       : unit -> int
-
+END
 
 val debug_var : ('a, 'b) injected -> (('a,'b) injected -> Env.t -> 'b) -> ('b list -> goal) -> goal
 
