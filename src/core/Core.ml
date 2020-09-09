@@ -19,21 +19,22 @@
 open Logic
 
 type stat = {
-    mutable unification_count : int;
-    mutable unification_time  : Mtime.span;
-    mutable conj_counter      : int;
-    mutable disj_counter      : int;
-    mutable delay_counter     : int
+  mutable unification_count : int;
+  mutable unification_time  : Mtime.span;
+  mutable conj_counter      : int;
+  mutable disj_counter      : int;
+  mutable delay_counter     : int
 }
 
 let stat = {
-    unification_count = 0;
-    unification_time  = Mtime.Span.zero;
-    conj_counter      = 0;
-    disj_counter      = 0;
-    delay_counter     = 0
+  unification_count = 0;
+  unification_time  = Mtime.Span.zero;
+  conj_counter      = 0;
+  disj_counter      = 0;
+  delay_counter     = 0
 }
 
+IFDEF STATS THEN
 let unification_counter () = stat.unification_count
 let unification_time    () = stat.unification_time
 let conj_counter        () = stat.conj_counter
@@ -51,6 +52,7 @@ let (unification_incr,unification_time_incr,conj_counter_incr,disj_counter_incr,
     let disj_counter_incr  () = stat.disj_counter  <- stat.disj_counter + 1 in
     let delay_counter_incr () = stat.delay_counter <- stat.delay_counter + 1 in
     (unification_incr,unification_time_incr,conj_counter_incr,disj_counter_incr,delay_counter_incr)
+END
 
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
@@ -179,26 +181,22 @@ end = struct
     with Not_found -> NonViolated
        | Fail -> Violated
 
-
   let recheck ps env s =
     try
-      ps |> List.iter (fun (k, (reifier, checker)) ->
-        let reified = reifier env (Obj.magic @@ Subst.apply env s k) in
-        if not (checker reified) then raise Fail
-      );
-      NonViolated
+       ps |> List.iter (fun (k, (reifier, checker)) ->
+          let reified = reifier env (Obj.magic @@ Subst.apply env s k) in
+          if not (checker reified) then raise Fail
+       );
+       NonViolated
     with Fail -> Violated
 
   let extend map term rr cond =
     let new_item = make_untyped rr cond in
     (Obj.repr term, new_item) :: map
 
-(*  let extend map var rr cond =
-    Term.VarMap.add (Obj.magic var) (Obj.magic (rr,cond)) map*)
-
 end
 
-type prunes_control =
+type prines_control =
   { mutable pc_do_skip : bool
   ; mutable pc_checks_skipped : int
   ; mutable pc_max_to_skip : int
@@ -236,10 +234,23 @@ module PrunesControl = struct
 
   let is_exceeded () =
     (not (is_enabled())) ||
-    (prunes_control.pc_checks_skipped >= prunes_control.pc_max_to_skip)
-
+    (let ans = (prunes_control.pc_checks_skipped >= prunes_control.pc_max_to_skip) in
+(*    Printf.printf "is_exceeded = %b, cur_steps=%d, max_steps=%d\n%!"
+      ans
+      prunes_control.pc_checks_skipped
+      prunes_control.pc_max_to_skip;*)
+    ans
+    )
 end
+(*
+let do_skip_prunes = ref false
+let prunes_checks_skipped = ref 0
+let max_prunes_skipped = ref 10
 
+let set_skip_prunes_count n =
+  assert (n>0);
+  max_prunes_skipped := n
+*)
 module State =
   struct
     type t =
@@ -271,21 +282,25 @@ module State =
     let new_scope st = {st with scope = Term.Var.new_scope ()}
 
     let unify x y ({env; subst; ctrs; scope} as st) =
-      let (>>=?) x f  = match x with Some a -> f a | None -> None in
-      Subst.unify ~scope env subst x y          >>=? fun (prefix, subst) ->
-      Disequality.recheck env subst ctrs prefix >>=? fun ctrs ->
-      (* FM.recheck env subst fd prefix            >>=? fun fd -> *)
-        let next_state = { st with subst; ctrs } in
-        if PrunesControl.is_exceeded ()
-        then begin
-          let () = PrunesControl.reset_cur_counter () in
-          match Prunes.recheck (prunes next_state) env subst with
-          | Prunes.Violated -> None
-          | NonViolated -> Some next_state
-        end else begin
-          let () = PrunesControl.incr () in
-          Some next_state
-        end
+        match Subst.unify ~scope env subst x y with
+        | None -> None
+        | Some (prefix, subst) ->
+          match Disequality.recheck env subst ctrs prefix with
+          | None      -> None
+          | Some ctrs ->
+            let next_state = {st with subst; ctrs} in
+            if PrunesControl.is_exceeded ()
+            then begin
+              let () = PrunesControl.reset_cur_counter () in
+              match Prunes.recheck (prunes next_state) env subst with
+              | Prunes.Violated -> None
+              | NonViolated -> Some next_state
+            end else begin
+(*              print_endline "check skipped";*)
+              let () = PrunesControl.incr () in
+              Some next_state
+            end
+
 
     let diseq x y ({env; subst; ctrs; scope} as st) =
       match Disequality.add env subst ctrs x y with
@@ -342,31 +357,36 @@ let only_head g st =
   with Failure _ -> Stream.nil
 
 let (===) x y st =
-(*  unification_incr ();*)
-(*  let t = Timer.make () in*)
+  let _t =
+    IFDEF STATS THEN
+    (let () = unification_incr () in
+    Timer.make ())
+    ELSE () END
+  in
+
   match State.unify x y st with
   | Some st ->
-(*  unification_time_incr t; *)
-  success st
+    let () = IFDEF STATS THEN unification_time_incr t ELSE () END in
+    success st
   | None    ->
-(*  unification_time_incr t; *)
-  failure st
+    let () = IFDEF STATS THEN unification_time_incr t ELSE () END in
+    failure st
 
 let unify = (===)
 
 let (=/=) x y st =
   match State.diseq x y st with
-  | Some st -> success st
+  | Some st ->
+      let () = IFDEF STATS THEN delay_counter_incr () ELSE () END in
+      success st
   | None    -> failure st
 
 let diseq = (=/=)
 
-let delay g st =
-(*  delay_counter_incr ();*)
-  Stream.from_fun (fun () -> g () st)
+let delay g st = Stream.from_fun (fun () -> g () st)
 
 let conj f g st =
-(*  conj_counter_incr ();*)
+  let () = IFDEF STATS THEN conj_counter_incr () ELSE () END in
   Stream.bind (f st) g
 
 let debug_var v reifier call = fun st ->
@@ -376,14 +396,65 @@ let debug_var v reifier call = fun st ->
   in
   call xs st
 
-let structural var rr k st =
-  match Term.var var with
-  | None -> success st
-  | Some v ->
-      let new_constraints = Prunes.extend (State.prunes st) v rr k in
-      match Prunes.check_last new_constraints (State.env st) (State.subst st) with
-      | Prunes.Violated -> failure st
-      | NonViolated -> success { st with State.prunes = new_constraints }
+
+
+let structural term rr k st =
+  let new_constraints = Prunes.extend (State.prunes st) (Obj.magic term) rr k in
+  match Prunes.check_last new_constraints (State.env st) (State.subst st) with
+  | Prunes.Violated -> failure st
+  | NonViolated -> success { st with State.prunes = new_constraints }
+
+include (struct
+  @type cost = CFixed of GT.int | CAtLeast of GT.int with show
+  let show_cost x = GT.show cost x
+
+  let minimize cost reifier var goalish state =
+    let old_cost = ref None in
+    goalish var state |> Stream.filter (fun st0 ->
+      let reified =
+        let env = State.env st0 in
+        let s = State.subst st0 in
+        reifier env (Obj.magic @@ Subst.apply env s var)
+      in
+      let c = cost reified in
+      match !old_cost with
+      | None ->
+          Format.printf "setting intial cost %s\n%!" (show_cost c);
+          old_cost := Some c;
+          true
+      | Some old ->
+          match (old,c) with
+          | CFixed old,CFixed new_ when old < new_ -> false
+          | CFixed old, CFixed new_ when old = new_ -> true
+          | CFixed old, CFixed new_ ->
+              Format.printf "setting cost %s\n%!" (show_cost c);
+              old_cost := Some c;
+              true
+
+          | CAtLeast old, CFixed new_ when old < new_ -> false
+          | CAtLeast old, CFixed new_ ->
+              Format.printf "setting cost %s\n%!" (show_cost c);
+              old_cost := Some c;
+              true
+
+          | CFixed old, CAtLeast new_ when old < new_ -> false
+          | CFixed old, CAtLeast new_ -> true
+
+          | CAtLeast old, CAtLeast new_ when old < new_ -> false
+          | CAtLeast old, CAtLeast new_ ->
+              Format.printf "setting cost %s\n%!" (show_cost c);
+              old_cost := Some c;
+              true
+    )
+end : sig
+  type cost = CFixed of GT.int | CAtLeast of GT.int
+
+  val minimize : ('b -> cost) ->
+    (Env.t -> 'logicvar -> 'b) ->
+    (('a, 'b) injected as 'logicvar) ->
+    ('logicvar -> goal) -> goal
+end)
+
 
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
@@ -391,7 +462,7 @@ let (?&) gs = List.fold_right (&&&) gs success
 let disj_base f g st = Stream.mplus (f st) (Stream.from_fun (fun () -> g st))
 
 let disj f g st =
-  disj_counter_incr ();
+  let () = IFDEF STATS THEN disj_counter_incr () ELSE () END in
   let st = State.new_scope st in
   disj_base f g |> (fun g -> Stream.from_fun (fun () -> g st))
 
@@ -657,5 +728,3 @@ module Tabling =
       g := currier g_tabled;
       !g
   end
-
-let id x = x
