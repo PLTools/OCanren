@@ -16,6 +16,7 @@
  * (enclosed in the file COPYING).
  *)
 
+IFDEF STATS THEN
 type stat = {
     mutable unwrap_suspended_counter : int;
     mutable force_counter            : int;
@@ -46,6 +47,9 @@ let bind_counter_incr () = stat.bind_counter <- stat.bind_counter + 1
 
 let mplus_counter () = stat.mplus_counter
 let mplus_counter_incr () = stat.mplus_counter <- stat.mplus_counter + 1
+
+END
+
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
 
@@ -63,7 +67,7 @@ let nil         = Nil
 let single x    = Cons (x, Nil)
 let cons x s    = Cons (x, s)
 let from_fun zz =
-  from_fun_counter_incr ();
+  let () = IFDEF STATS THEN from_fun_counter_incr () ELSE () END in
   Thunk zz
 
 let suspend ~is_ready f = Waiting [{is_ready; zz=f}]
@@ -73,13 +77,13 @@ let rec of_list = function
 | x::xs -> Cons (x, of_list xs)
 
 let force x =
-  force_counter_incr ();
+  let () = IFDEF STATS THEN force_counter_incr () ELSE () END in
   match x with
   | Thunk zz  -> zz ()
   | xs        -> xs
 
 let rec mplus xs ys =
-  mplus_counter_incr ();
+  let () = IFDEF STATS THEN mplus_counter_incr () ELSE () END in
   match xs with
   | Nil           -> force ys
   | Cons (x, xs)  -> cons x (from_fun @@ fun () -> mplus (force ys) xs)
@@ -97,7 +101,7 @@ let rec mplus xs ys =
     | xs', _ -> mplus xs' ys
 
 and unwrap_suspended ss =
-  unwrap_suspended_counter_incr ();
+  let () = IFDEF STATS THEN unwrap_suspended_counter_incr () ELSE () END in
   let rec find_ready prefix = function
     | ({is_ready; zz} as s)::ss ->
       if is_ready ()
@@ -111,7 +115,7 @@ and unwrap_suspended ss =
     | None , ss  -> Waiting ss
 
 let rec bind s f =
-  bind_counter_incr ();
+  let () = IFDEF STATS THEN bind_counter_incr () ELSE () END in
   match s with
   | Nil           -> Nil
   | Cons (x, s)   -> mplus (f x) (from_fun (fun () -> bind (force s) f))

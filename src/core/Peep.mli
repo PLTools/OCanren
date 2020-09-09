@@ -15,7 +15,7 @@
  * See the GNU Library General Public License version 2 for more details
  * (enclosed in the file COPYING).
  *)
-
+IFDEF STATS THEN
 val unification_counter      : unit -> int
 val unification_time         : unit -> Mtime.span
 val walk_counter             : unit -> int
@@ -27,4 +27,4 @@ val force_counter            : unit -> int
 val from_fun_counter         : unit -> int
 val bind_counter             : unit -> int
 val mplus_counter            : unit -> int
-                                    
+END

@@ -8,4 +8,4 @@
   (:standard -short-paths))
  (preprocess
   (action
-   (run %{workspace_root}/camlp5/pp5+gt+plugins+ocanren+o.byte %{input-file}))))
+   (run %{workspace_root}/camlp5/pp5+gt+plugins+dump.byte %{input-file}))))
