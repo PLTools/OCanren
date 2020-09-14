@@ -103,11 +103,15 @@ scheduled for evaluation (\textsc{ProdStepAns}).
 
 The introduced transition system is completely deterministic: there is exactly one transition from any non-terminal state.
 There was, however, some freedom in choosing the order of evaluation for conjunction and
-disjunction states. For example, instead of evaluating the left substate first, we could choose to evaluate the right one, etc. In each concrete case, we would
-end up with a different (but still deterministic) system that would prescribe different semantics to a concrete goal. This choice reflects the inherent
-non-deterministic nature of search in relational (and, more generally, logical) programming. However, as long as deterministic search procedures
-are sound and complete, we can consider them ``equivalent''.\footnote{There still can be differences in observable behavior of concrete goals under different
-sound and complete search strategies. For example, a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}
+disjunction states. For example, instead of evaluating the left substate first, we could choose to evaluate the right one, etc.
+\begin{comment}
+In each concrete case, we would
+end up with a different (but still deterministic) system that would prescribe different semantics to a concrete goal.
+\end{comment}
+This choice reflects the inherent non-deterministic nature of search in relational (and, more generally, logical) programming.
+Although we could introduce this ambiguity into the semantics (by replacing specific rules for disjunctions and conjunctions evaluation with some conditions on it), we want an operational semantics that would be easy to present and easy to employ to describe existing language extensions (already described for a specific implementation of interleaving search), so we instead base the semantics on one canonical search strategy.
+At the same time, as long as deterministic search procedures are sound and complete, we can consider them ``equivalent''.\footnote{There still can be differences in observable behavior of concrete goals under different sound and complete search strategies.
+For example, a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}
 
 It is easy to prove that transitions preserve well-formedness of states.
 
@@ -130,6 +134,8 @@ For any non-termial states $s_1$ and $s_2$, $\tr{s_1 \oplus s_2} = \tr{s_1} \cup
 \label{lem:prod_answers}
 For any nontermial state $s$ and goal $g$,  \mbox{$\tr{s \otimes g} \supseteq \bigcup_{(\sigma, n) \in \tr{s}} \tr{\inbr{g, \sigma, n}}$}.
 \end{lemma}
+
+These two lemmas constitute the exact conditions on definition of these operators that we will use to prove completeness of operational semantics.
 
 We also can easily describe the criterion of termination for disjunctions.
 

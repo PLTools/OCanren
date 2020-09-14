@@ -119,39 +119,23 @@ If the indices of all free variables in a goal $g$ are limited by some number $n
 \end{theorem}
 
 Similarly to the soundness, this can be proven by nested induction, but the generalization is required. This time it is enough to generalize it from goals
-to states of the shape $\inbr{g, \sigma, n}$. We also need to introduce one more auxiliary semantics~--- \emph{a bounded denotational semantics}:
+to states of the shape $\inbr{g, \sigma, n}$. We also need to introduce one more auxiliary semantics~--- \emph{step-indexed denotational semantics} (denoted by $\sembr{\bullet}^i$). It is an implementation of the well-known approach~\cite{StepIndexing} of indexing typing or semantic logical relations by a number of permitted evaluation steps to allow inductive reasoning on it.
+In our case $\sembr{g}^i$ includes only those representing functions that you can get after no more than $i$ unfoldings of relational calls.
 
-\[
-\sembr{\bullet}^l : \mathcal{G} \to 2^{\mathcal{A}\to\mathcal{D}}
-\]
-
-Instead of always unfolding the definition of relation for invocation goal, it does so only given number of times. So for a given set of relational
-definitions $\{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i\}$ the definition of bounded denotational semantics is exactly the same as for the conventional denotational semantics, except that for the invocation case we have
-
-\[
-\sembr{R_i^{k_i}\,(t_1,\dots,t_{k_i})}^{l+1} = \sembr{g_i[t_1/x_1^i, \dots, t_{k_i}/x_{k_i}^i]}^{l}
-\]
-
-It is convenient to define bounded semantics for level zero as the empty set:
-
-\[
-\sembr{g}^{0} = \emptyset
-\]
-
-The bounded denotational semantics is an approximation of the conventional denotational semantics; it is clear that any answer in conventional denotational semantics will also be in bounded denotational semantics for some level.
+The step-indexed denotational semantics is an approximation of the conventional denotational semantics; it is clear that any answer in conventional denotational semantics will also be in step-indexed denotational semantics for some number of steps.
 
 \begin{lemma}
-$\sembr{g} \subseteq \cup_l \sembr{g}^l$
+$\sembr{g} \subseteq \cup_i \sembr{g}^i$
 \end{lemma}
 
 Now the generalized version of the completeness theorem is as follows.
 
 \begin{lemma}[Generalized completeness]
 \label{lem:gen_completeness}
-For any set of relational definitions, for any level $l$, for any well-formed state $\inbr{g, \sigma, n}$,
+For any set of relational definitions, for any number of steps $i$, for any well-formed state $\inbr{g, \sigma, n}$,
 
 \[
-\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}^l \cap \sembr{\sigma}\} \subseteq \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \sigma, n}}_{op}\}.
+\{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{g}^i \cap \sembr{\sigma}\} \subseteq \{\mathfrak{f}|_{\{\alpha_1,\dots,\alpha_n\}} \mid \mathfrak{f} \in \sembr{\inbr{g, \sigma, n}}_{op}\}.
 \]
 \end{lemma}
 
