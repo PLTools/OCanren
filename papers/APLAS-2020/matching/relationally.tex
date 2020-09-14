@@ -4,7 +4,7 @@
 In this section we describe a relational formulation for the pattern matching synthesis problem. Practically,
 this amounts to constructing a goal with a free variable corresponding to the switch program to synthesize
 for (arbitrary) list of patterns. In order to come up with a tractable goal certain steps have to be performed.
-We first describe the general idea, and then consider these steps is details.
+We first describe the general idea, and then consider these steps in detail.
 
 Our idea of using relational programming for pattern matching synthesis is based on the following observations:
 
@@ -46,11 +46,11 @@ and $\pi$ with a free logical variable $\circled{?}$, which gives us the goal
 \forall v\in \mathcal V,\; \forall 1\le i\le n+1 : match^o\,v\,p_1,\dots,p_n\,i\Longleftrightarrow eval^o\,v\,\circled{?}\,i
 \]
 
-\noindent This goal, however, is problematic from relational point of view due to a number of reasons.
+\noindent This goal, however, is problematic from relational point of view for  a number of reasons.
 
 First, \textsc{miniKanren} provides rather a limited support for universal quantification. Apart from being inefficient from
 a performance standpoint, existing implementations either do not coexist with disequality constraints~\cite{eigen}
-or do not support quantified goals with infinite number of answers~\cite{moiseenko}. As we will see below, both restrictions are
+or do not support quantified goals with an infinite number of answers~\cite{moiseenko}. As we will see below, both restrictions are
 violated in our case. Second, there is no direct support for the equivalence of goals (``$\Leftrightarrow$''). Thus,
 reducing the original synthesis problem to a viable relational goal involves some ``massaging''.
 
@@ -62,7 +62,7 @@ property:
 \[
 \setarrow{\xrightarrow}
 \begin{array}{rcl}
-  \forall\pi\in\mathcal S & : & [\forall v\in\mathcal{E}(p_1,\dots,p_k),\,\forall i\in\mathbb{N} : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longleftrightarrow {\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi}{}{i}}}] \Longrightarrow \\
+  \forall\pi\in\mathcal S\! &\!: & [\forall v\in\mathcal{E}(p_1,\dots,p_k),\,\forall i\in\mathbb{N} : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}\!\Longleftrightarrow \!{\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi\!}{}{i}}}]\!\Rightarrow\\
                           &   & [\forall v\in\mathcal V,\,\forall i\in\mathbb{N} : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longleftrightarrow  {\setsubarrow{_{\mathcal S}}\withenv{v}{\trans{\pi}{}{i}}}]
 \end{array}
 \]
@@ -71,7 +71,7 @@ In other words, if a program implements a correct and complete pattern matching 
 program implements a correct and complete pattern matching for all values. The idea of using a complete set of samples originates from the following observation: each pattern
 describes a (potentially infinite) set of values, and pattern matching splits the set of all values into equivalence classes, each corresponding to a certain matching pattern.
 Moreover, the values of different classes can be distinguished only by looking down to a \emph{finite} depth (as different patterns can be distinguished in this way).
-The generation of complete sample set will be addressed below (see Section~\ref{sec:samples}). Example-based program synthesis is not a completely new technique in relational
+The generation of a complete sample set will be addressed below (see Section~\ref{sec:samples}). Example-based program synthesis is not a completely new technique in relational
 programming~\cite{unified}; in our case, however, we can ensure the correctness of the synthesis result, while in previous reports it had to be established externally.
 
 \setarrow{\xrightarrow}
@@ -81,7 +81,7 @@ of patterns, for every value $v$ there is exactly one answer value $i$, such tha
 
 \[
 \exists i:\, \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i} \Longrightarrow  
-\large\big(\forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{j} \Longrightarrow  j=i\large\big)
+\Big(\forall j : \trans{\inbr{v;\,p_1,\dots,p_k}}{}{j} \Longrightarrow  j=i\Big)
 \]
 
 Thus, we can replace universal quantification over the sets of answers by existential one, for which we have an efficient relational counterpart~--- the ``\lstinline|fresh|''
@@ -132,7 +132,7 @@ Thus, the goal we eventually came up with is
 \eqno{(\star\star)}
 \]
 
-From relational point of view this is a pretty conventional goal which can be solved by virtually any decent \textsc{miniKanren} implementation in
+From a relational point of view this is a pretty conventional goal which can be solved by virtually any decent \textsc{miniKanren} implementation in
 which the relations $eval^o_{\mathcal S}$ and $match^o$ can be encoded.
 
 Finally, we can make the following important observation. Obviously, any pattern matching synthesis problem has at least one trivial solution.
@@ -225,7 +225,7 @@ or equal than $d\,(p)$ cannot affect the fact of matching/non matching. This mea
 But for these programs the set of all values with height no greater than the synthesis depth forms a complete set of samples. Indeed, if the height of a value less or
 equal to the synthesis depth, then this value is a member of complete set of samples and by definition the behavior of the synthesized program on this value is
 correct. Otherwise there exists some value $s$ from the complete set of samples, such that given value can be obtained as an ``extension'' of $s$ at the
-depth greater than the synthesis depth. Since neither declarative semantics nor switch programs can discriminate values at this depth, they behavior for a given value
+depth greater than the synthesis depth. Since neither declarative semantics nor switch programs can discriminate values at this depth, the behavior for a given value
 will coincide with the correct-by-definition behavior for  $s$.
 
 The implementation of complete set generation, again, is done using relational conversion. The enumeration of all terms up to a certain depth

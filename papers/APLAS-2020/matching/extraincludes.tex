@@ -139,8 +139,15 @@ language=ocanren
 \newcommand*\circled[1]{\tikz[baseline=(char.base)]{
     \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
 
+\renewcommand{\le}{\ensuremath{\leqslant}}
+
 \let\emptyset\varnothing
 \let\eps\varepsilon
 
 \newtheorem{Observation}{Observation}
 
+\usepackage{float}
+
+%\usepackage{hyperref}
+%\usepackage[colorlinks]{hyperref}
+\hbadness=99999  % suppress warnings about underfullness

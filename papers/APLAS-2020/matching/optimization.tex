@@ -12,7 +12,7 @@ of techniques, some of which require extending the implementation of the search.
   program being synthesized.
 \item After a complete set of samples is generated, we use it to put auxiliary constraints on matching expressions. For example,
   if we can detect that a matching expression points to a subexpression of scrutinee which can start with a single constructor (like
-  tuples), and prohibit it from being considered during the synthesis.
+  tuples), we can prohibit it from being considered during the synthesis.
 \item We implement \emph{structural constraints} which allow us to restrict the shape of terms during the search, and
   utilize them to implement pruning.
 \end{itemize}
@@ -25,23 +25,25 @@ the program being synthesized and from this type extract the subset of construct
 is performed. The number of these constructors restricts the number of branches which a corresponding $\primi{switch}$ expression can have.
 In our implementation we assume the constructor set ordered, and we consider only ordered branches, which restricts branching even more.
 
+
 Our approach to finding an optimal solution in fact implements branch-and-bound strategy. The birds-eye view of our plan is as follows:
 
 \begin{itemize}
-\item We construct a trivial solution, which gives us the first estimation.
-\item During the search we prune all partial solutions whose size exceeds current estimation. We can do this due to
-  the top-down nature of partial solution construction.
-\item When we come up with a better solution we remember it and update current estimation.
+\item We construct a trivial solution, which gives us the first estimate.
+\item During the search we prune all partial solutions whose size exceeds the current estimate. We can do this due to the top-down nature of partial solution construction.
+\item When we come up with a better solution we remember it and update current estimate.
 \end{itemize}
+% estimate ~ rough, estimation ~ approximate
 
 \noindent This strategy inevitably delivers us the optimal solution since there are only finitely many switch programs, shorter than trivial solution.
 
 In order to implement this strategy we extended \textsc{OCanren} with a new primitive called \emph{structural constraint}, which may
 fail on some terms depending on some criterion specified by an end-user. Structural constraints can be seen as a generalization of
-some known constraints like \lstinline|absent$^o$| or \lstinline|symbol$^o$|~\cite{Untagged} in existing \textsc{miniKanren} implementations, 
+some known constraints~\footnote{The constraint  \lstinline|symbol$^o$| is similar to \lstinline{symbol?} function in Scheme. The constraint \lstinline|absent$^o$| ensures that specific term is not a subterm of another term.}
+ like \lstinline|absent$^o$| or \lstinline|symbol$^o$|
+in existing \textsc{miniKanren} implementations~\cite{Untagged}, 
 so they can be widely used in solving other problems as well. Note, we could implement other constraints we considered (on the
 depth of switch programs, on the type of scrutinee) as structural.
-%\footnote{\textcolor{red}{I don't entirely understand this sentence}}.
 However, our experience has shown that this leads to
 a less efficient implementation. Since these constraints are inherent to the problem, we kept them hardcoded.
 
@@ -88,11 +90,11 @@ The complete set of samples then can be the following 3-element set:
 \end{array}
 \]
 
-\noindent where underlined expressions are chosen arbitrarily. A straightforward algorithm from the section~\ref{sec:samples} would generate the larger set of $3^2$ examples.
+\noindent where underlined expressions are chosen arbitrarily. A straightforward algorithm from the section~\ref{sec:samples} would generate the larger set of $2^3$ examples.
 
 The set $s^\cup$ can be used for sample enumeration in the following manner. During the enumeration we hold current matching expression which will be used to
 access current subtree of the sample. If that expression does not belong to $s^\cup$, we can choose an arbitrary inhabitant; if not we enumerate all
 possible top-level constructors for this subexpression and recurse. The correctness of this algorithm relies on the fact that if an expression does
-not belong to $s^\cup$, then all its extensions also does not belong to $s^\cup$.
+not belong to $s^\cup$, then all its extensions also do not belong to $s^\cup$.
 
 

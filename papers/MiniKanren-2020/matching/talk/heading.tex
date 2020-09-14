@@ -1,0 +1,160 @@
+\usepackage{xcolor}
+\definecolor{YellowGreen} {HTML}{B5C28C}
+\definecolor{ForestGreen} {HTML}{009B55}
+\definecolor{MyBackground}{HTML}{F0EDAA}
+
+
+\usepackage{xltxtra} % load xunicode
+\usepackage{polyglossia}
+\setmainlanguage{english}
+
+\let\cyrillicfonttt\monofamily
+
+%\newfontfamily\dejaVuSansMono{DejaVu Sans Mono}
+% https://github.com/vjpr/monaco-bold/raw/master/MonacoB/MonacoB.otf
+%\newfontfamily\monacoB{MonacoB}
+
+\usepackage{listings}
+\lstdefinelanguage{ocanren}{
+keywords={run, conde, fresh, let, in, match, with, when, class, type,
+object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+true, false},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\ttfamily\textbf,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+mathescape=true,
+fontadjust=true,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
+morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+language=ocanren
+}
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setmainfont[
+ Ligatures=TeX,
+ Extension=.otf,
+ BoldFont=cmunbx,
+ ItalicFont=cmunti,
+ BoldItalicFont=cmunbi,
+]{cmunrm}
+% С засечками (для заголовков)
+\setsansfont[
+ Ligatures=TeX,
+ Extension=.otf,
+ BoldFont=cmunsx,
+ ItalicFont=cmunsi,
+]{cmunss}
+
+
+\usefonttheme{professionalfonts}
+\usepackage{times}
+\usepackage{tikz}
+\usetikzlibrary{cd}
+% \usepackage{tikz-cd}
+\usepackage{amsmath}
+%\DeclareMathOperator{->}{\rightarrow}
+\newcommand\iso{\ensuremath{\cong}}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usetikzlibrary{arrows,shapes}
+
+\usepackage{fontawesome}
+% \newfontfamily{\FA}{Font Awesome 5 Free} % some glyphs missing
+\expandafter\def\csname faicon@facebook\endcsname{{\FA\symbol{"F09A}}}
+\def\faQuestionSign{{\FA\symbol{"F059}}}
+\def\faQuestion{{\FA\symbol{"F128}}}
+\def\faExclamation{{\FA\symbol{"F12A}}}
+\def\faUploadAlt{{\FA\symbol{"F093}}}
+\def\faLemon{{\FA\symbol{"F094}}}
+\def\faPhone{{\FA\symbol{"F095}}}
+\def\faCheckEmpty{{\FA\symbol{"F096}}}
+\def\faBookmarkEmpty{{\FA\symbol{"F097}}}
+
+\newcommand{\faGood}{\textcolor{ForestGreen}{\faThumbsUp}}
+\newcommand{\faBad}{\textcolor{red}{\faThumbsODown}}
+\newcommand{\faWrong}{\textcolor{red}{\faTimes}}
+\newcommand{\faMaybe}{\textcolor{blue}{\faQuestion}}
+\newcommand{\faCheckGreen}{\textcolor{ForestGreen}{\faCheck}}
+
+\usepackage{soul} % for \st that strikes through
+\usepackage[normalem]{ulem} % \sout
+
+
+\usepackage{tabulary}
+
+% sudo aptget install ttf-mscorefonts-installer
+\defaultfontfeatures{Ligatures={TeX}}
+\setmainfont{Times New Roman}
+\setsansfont{CMU Sans Serif}
+
+\setmonofont[Scale=1.0,
+    BoldFont=lmmonolt10-bold.otf,
+    ItalicFont=lmmono10-italic.otf,
+    BoldItalicFont=lmmonoproplt10-boldoblique.otf
+]{lmmono9-regular.otf}
+
+%\usepackage[cache=true]{minted}
+
+\author[Dmitry Kosarev]{\underline{Dmitry Kosarev}  \and Dmitry Boulytchev}
+\institute[]{\textsuperscript{1} JetBrains Research, Programming Languages and Tools Lab
+ \and \inst{2} Saint-Petersburg University}
+
+\addtobeamertemplate{title page}{}{
+  \begin{center}{\tiny Build date: \today}\end{center}
+}
+
+\usepackage{inconsolata}
+\setmonofont[Scale=1.0,
+    BoldFont=lmmonolt10-bold.otf,
+    ItalicFont=lmmono10-italic.otf,
+    BoldItalicFont=lmmonoproplt10-boldoblique.otf
+]{lmmono9-regular.otf}
+
+\newfontfamily{\monott}{Latin Modern Mono}
+
+\usepackage{listings}
+\lstdefinelanguage{ocanren}{
+keywords={run, conde, fresh, let, in, match, with, when, class, type,
+object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure,
+true, false},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily
+,keywordstyle=\fontfamily{monott}\selectfont \textbf
+,identifierstyle=\fontfamily{monott}\selectfont%\ttfamily
+,basewidth={0.5em,0.5em},
+columns=fixed,
+mathescape=true,
+fontadjust=true,
+literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
+morecomment=[s]{(*}{*)}
+}
+
+\setmonofont[Mapping=tex-text]{CMU Typewriter Text}
+\lstdefinelanguage{ocaml}{
+keywords={@type, function, fun, let, in, match, with, when, class, type,
+nonrec, object, method, of, rec, repeat, until, while, not, do, done, as, val, inherit, and,
+new, module, sig, deriving, datatype, struct, if, then, else, open, private, virtual, include, success, failure, switch,
+lazy, assert, true, false, end},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\ttfamily\bfseries, %\underbar,
+%identifierstyle=\fontfamily{cmtt}\selectfont\ttfamily,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+fontadjust=true,
+literate={->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {>=}{{$\ge$}}1 {<=}{{$\le$}} 1,
+morecomment=[s]{(*}{*)}
+}
+
+\usepackage{fontawesome}
+%\newcommand{\faGood}{\textcolor{ForestGreen}{\faThumbsUp}}
+%\newcommand{\faBad}{\textcolor{red}{\faThumbsODown}}
