@@ -139,7 +139,7 @@ We've already given the motivation for
 the semantics of unification: the condition $\overline{\mathfrak{f}}(t_1)=\overline{\mathfrak{f}}(t_2)$ gives us the set of all (otherwise
   unrestricted) representing functions which ``equate'' terms $t_1$ and $t_2$.
   Set union and intersection provide a conventional interpretation
-for disjunction and conjunction of goals. In the case is of a relational invocation we unfold the definition of the corresponding
+for disjunction and conjunction of goals. In the case of a relational invocation we unfold the definition of the corresponding
 relational symbol and substitute its formal parameters with actual ones.
 
 The only non-trivial case is that of ``\lstinline|fresh $x$ . $g$|''. First, we take an arbitrary semantic variable $\alpha$,
@@ -168,8 +168,8 @@ if $\mathfrak{f} \in \sembr{g\,[\alpha/x]}$, then for any representing function 
   \[
   \begin{array}{cclr}
     \sembr{t_1\equiv t_2}&=&\{\mathfrak f : \mathcal{A}\to\mathcal{D}\mid \overline{\mathfrak{f}}\,(t_1)=\overline{\mathfrak{f}}\,(t_2)\}& \ruleno{Unify$_D$}\\
-    \sembr{g_1\wedge g_2}&=&\sembr{g_1}\cap\sembr{g_1}&\ruleno{Conj$_D$}\\
-    \sembr{g_1\vee g_2}&=&\sembr{g_1}\cup\sembr{g_1}&\ruleno{Disj$_D$}\\
+    \sembr{g_1\wedge g_2}&=&\sembr{g_1}\cap\sembr{g_2}&\ruleno{Conj$_D$}\\
+    \sembr{g_1\vee g_2}&=&\sembr{g_1}\cup\sembr{g_2}&\ruleno{Disj$_D$}\\
     \sembr{\mbox{\lstinline|fresh|}\,x\,.\,g}&=&(\sembr{g\,[\alpha/x]})\uparrow\alpha,\;\alpha\not\in FV(g)& \ruleno{Fresh$_D$}\\
     \sembr{R\,(t_1,\dots,t_k)}&=&\sembr{g\,[t_1/x_1,\dots,t_k/x_k]},\;\mbox{where}\;R=\lambda\,x_1\dots x_k\,.\,g & \ruleno{Invoke$_D$}
   \end{array}

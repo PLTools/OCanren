@@ -15,14 +15,14 @@ Among different options we considered, the easiest choice for a variable $\alpha
 \subsection{Proof of Generalized Completeness}
 \label{appendix_gen_completeness_proof}
 
-The proof goes by induction on the level of bounded denotational semantics, then by structural induction on the goal.
+The proof goes by induction on the number of unfoldings in step-indexed denotational semantics, then by structural induction on the goal.
 
 \begin{itemize}
 \item In case of unification $t_1\equiv t_2$ we need to show that any representing function that unifies terms $t_1$ and $t_2$ and is an extension of $\sigma$ also is an extension of $mgu\,(t_1 \sigma, t_2 \sigma) \circ \sigma$. This requires some observations about representing functions, most importantly the fact that for any representing function $f$, unifying two terms, there exists a unifying substitution for these terms, for which $f$ is an extension.
 \item In case of disjunction we apply lemma~\ref{lem:sum_answers} to induction hypotheses.
 \item In case of conjunction we apply lemma~\ref{lem:prod_answers} to induction hypotheses. Note that we use two nested inductions instead of one induction on evidence because of this case: we need to apply an induction hypothesis to different representing functions (which may have different values on non-allocated free variables), and otherwise the induction hypotheses would not be flexible enough.
 \item In the case of fresh variable introduction, we can not simply use induction hypothesis, because it has a goal with an arbitrary fresh variable substituted (see definition of denotational semantics on Fig.~\ref{denotational_semantics_of_goals}), but we need to relate two semantics of the goal with exactly the first non-allocated variable substituted (from transition in operational semantics, see Fig.~\ref{lts}). To overcome this inconsistency, we apply lemma~\ref{lem:den_sem_change_var} about changing substituted fresh variable. When we do this, we lose the equality of values of representing functions on the first non-allocated variable. It is exactly the place where the proof of the strong version of the completeness theorem (without the restriction of domains of representing functions on allocated variables) fails (as explained in the section~\ref{equivalence}, the strong version of the completeness theorem does not hold).
-\item In case of relational invocation we simply use the induction hypothesis about the previous level.
+\item In case of relational invocation we simply use the induction hypothesis with fewer unfoldings.
 \end{itemize}
 
 \section{\textsc{Coq} Specification}
@@ -257,7 +257,7 @@ The head of the definition is as follows:
 
 and the body just goes through the cases shown in Fig.~\ref{denotational_semantics_of_goals}.
 
-We also need to explicitly define the bounded version of denotational semantics described in the section~\ref{equivalence}:
+We also need to explicitly define the step-indexed version of denotational semantics described in the section~\ref{equivalence}:
 
 \begin{lstlisting}[language=Coq,morekeywords={where,at,level}]
   Reserved Notation "[| n | g , f |]" (at level 0).
@@ -275,7 +275,7 @@ Recall that the environment ``\lstinline[language=Coq]|Prog|'' maps every relati
 which is a pair of a function from terms to goals and a proof that it is closed and consistent.
 So ``\lstinline[language=Coq]|(proj1_sig (Prog r) t)|'' here simply takes the body of the corresponding relation.
 
-The lemma relating bounded and unbounded denotational semantics in \textsc{Coq} looks as follows:
+The lemma relating step-indexed and conventional denotational semantics in \textsc{Coq} looks as follows:
 
 \begin{lstlisting}[language=Coq] 
   Lemma in_denotational_sem_some_lev:

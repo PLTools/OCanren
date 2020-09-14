@@ -17,7 +17,7 @@ for example:
 \end{itemize}
 
 Note that this way we can guarantee only the preservation of results as \emph{sets of ground terms}; the other aspects of program behavior,
-such as termination, may be affected by some of these transformations.\footnote{Possible slowdown and loss of termination after reorderings in conjunction is a famous example of this phenomenon in \textsc{miniKanren}, known as conjunction non-comutativity~\cite{WillThesis}.}
+such as termination, may be affected by some of these transformations.\footnote{Possible slowdown and loss of termination after reorderings in conjunction is a famous example of this phenomenon in \textsc{miniKanren}, known as conjunction non-commutativity~\cite{WillThesis}.}
 
 \begin{comment}
 Since in \textsc{Prolog} a rather limited form of goals (implicit conjunction of atoms) is used the conversion to \textsc{miniKanren} is easy:
@@ -95,7 +95,7 @@ will be as follows:
 \end{comment}
 
 One of the applications for these transformations is a conversion from/to \textsc{Prolog}. As both languages use essentially the same fragment of first-order logic,
-their programs are mutually convertible. The conversion from \textsc{Prolog} to \textsc{miniKanren} is simpler as the latter admits a reacher syntax of goals. The inverse
+their programs are mutually convertible. The conversion from \textsc{Prolog} to \textsc{miniKanren} is simpler as the latter admits a richer syntax of goals. The inverse
 conversion involves the transformation into a DNF and splitting the disjunction into a number of separate clauses. This transformation, in particular, makes it possible to
 reuse our approach to describe the semantics of \textsc{Prolog} as well. In the following sections we briefly address this problem.
 
@@ -107,7 +107,7 @@ With this conversion we can not only interpret \textsc{Prolog} specifications in
 \subsection{SLD Semantics}
 \label{sld}
 
-The conventional for \textsc{Prolog} SLD search differs from the interleaving one in just one aspect~--- it does not perform interleaving.
+The conventional \textsc{Prolog} SLD search differs from the interleaving one in just one aspect~--- it does not perform interleaving.
 Thus, changing just two rules in the operational semantics converts interleaving search into the depth-first one:
 
 \[
@@ -125,7 +125,7 @@ can no longer be proven (as it does not hold anymore).
 \label{cut}
 
 Dealing with the ``cut'' construct is known to be a cornerstone feature in the study of operational semantics for \textsc{Prolog}. It turned out that
-in our case the semantics of ``cut'' can be expressed naturally (but a bit verbose). Unlike SLD-resolution, it does not amount to an incremental
+in our case the semantics of ``cut'' can be expressed naturally (but a bit verbosely). Unlike SLD-resolution, it does not amount to an incremental
 change in semantics description. It also would work only for programs directly converted from \textsc{Prolog} specifications.
 
 The key observation in dealing with the ``cut'' in our setting is that a state in our semantics, in fact, encodes the whole current
@@ -133,12 +133,12 @@ search tree (including all backtracking possibilities). This opens the opportuni
 to reflect the effect of ``cut''. The details of the semantic description can be found in the Appendix~\ref{appendix_cut}.
 
 For this semantics, we can repeat the proof of soundness w.r.t. to the denotational semantics. There is, however, a little subtlety with our construction:
-we cannot formally prove, that our semantics indeed encodes the conventional meaning of ``cut'' (since we do not have other semantics of ``cut'' to compare with).
+we cannot formally prove that our semantics indeed encodes the conventional meaning of ``cut'' (since we do not have other semantics of ``cut'' to compare with).
 Nevertheless, we can demonstrate a plausible behavior using the extracted reference interpreter.
 
 \subsection{Reference Interpreters}
 
-Using \textsc{Coq} extraction mechanism, we extracted two reference interpreters from our definitions and theorems: one for conventional
-\textsc{miniKanren} with interleaving search and another one for SLD search with cut. These interpreters can be used to practically investigate the behaviour
+Using the \textsc{Coq} extraction mechanism, we extracted two reference interpreters from our definitions and theorems: one for conventional
+\textsc{miniKanren} with interleaving search and another one for SLD search with cut. These interpreters can be used to practically investigate the behavior
 of specifications in unclear, complex, or corner cases. Our experience has shown that these interpreters demonstrate the expected behavior
 in all cases.
