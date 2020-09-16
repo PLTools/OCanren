@@ -11,7 +11,7 @@ We introduce the notion of substitution
   \sigma : \mathcal{A}\to\mathcal{T_A}
 \]
 
-as a (partial) mapping from semantic variables to terms over the set of semantic variables. We denote $\Sigma$ the
+\noindent as a (partial) mapping from semantic variables to terms over the set of semantic variables. We denote $\Sigma$ the
 set of all substitutions, $\dom{\sigma}$~--- the domain for a substitution $\sigma$,
 $\ran{\sigma}=\bigcup_{\alpha\in\mathcal{D}om\,(\sigma)}\fv{\sigma\,(\alpha)}$~--- its range (the set of all free variables in the image).
 
@@ -23,8 +23,8 @@ S = \mathcal{G}\times\Sigma\times\mathbb{N}\mid S\oplus S \mid S \otimes \mathca
 
 As we will see later, an evaluation of a goal is separated into elementary steps, and these steps are performed interchangeably for different subgoals. 
 Thus, a state has a tree-like structure with intermediate nodes corresponding to partially-evaluated conjunctions (``$\otimes$'') or
-disjunctions (``$\oplus$''). A leaf in the form $\inbr{g, \sigma, n}$ determines a goal in a context, where $g$~--- a goal, $\sigma$~--- a substitution accumulated so far,
-and $n$~--- a natural number, which corresponds to a number of semantic variables used to this point. For a conjunction node, its right child is always a goal since
+disjunctions (``$\oplus$''). A leaf in the form $\inbr{g, \sigma, n}$ determines a goal in a context, where $g$ is a goal, $\sigma$ is a substitution accumulated so far,
+and $n$ is a natural number, which corresponds to a number of semantic variables used to this point. For a conjunction node, its right child is always a goal since
 it cannot be evaluated unless some result is provided by the left conjunct.
 
 The full set of states also include one separate terminal state (denoted by $\diamond$), which symbolizes the end of the evaluation.
@@ -41,7 +41,7 @@ We will operate with the well-formed states only, which are defined as follows.
   \begin{itemize}
   \item $\diamond$ is well-formed;
   \item $\inbr{g, \sigma, n}$ is well-formed iff $\fv{g}\cup\dom{\sigma}\cup\ran{\sigma}\subseteq\{\alpha_1,\dots,\alpha_n\}$;
-  \item $s_1\oplus s_2$ is well-formed iff $s_1$ and $s_2$ well-formed;
+  \item $s_1\oplus s_2$ is well-formed iff $s_1$ and $s_2$ are well-formed;
   \item $s\otimes g$ is well-formed iff $s$ is well-formed and for all leaf triplets $\inbr{\_,\_,n}$ in $s$ it is true that $\fv{g}\subseteq\{\alpha_1,\dots,\alpha_n\}$.
   \end{itemize}
   
@@ -93,7 +93,7 @@ The rule for ``\lstinline|fresh|'' substitutes bound syntactic variable with a n
 The rule for relation invocation finds a corresponding definition, substitutes its formal parameters with the actual ones, and proceeds with the body.
 
 The rest of the rules specify the steps performed during the evaluation of two remaining types of the states~--- conjunction and disjunction. In all cases, the left state
-is evaluated first. If its evaluation stops, the disjunction evaluation proceeds with the right state, propagating the label (\textsc{SumStop} and \textsc{SumStep}), and the conjunction schedule the right goal for evaluation in the context of the returned answer (\textsc{ProdStep}) or stops if there is no answer (\textsc{ProdStop}).
+is evaluated first. If its evaluation stops, the disjunction evaluation proceeds with the right state, propagating the label (\textsc{SumStop} and \textsc{SumStep}), and the conjunction schedules the right goal for evaluation in the context of the returned answer (\textsc{ProdStopAns}) or stops if there is no answer (\textsc{ProdStop}).
 
 The last four rules describe \emph{interleaving}, which occurs when the evaluation of the left state suspends with some residual state (with or without an answer). In the case of disjunction
 the answer (if any) is propagated, and the constituents of the disjunction are swapped (\textsc{SumStep}, \textsc{SumStepAns}). In the case of conjunction, if the evaluation step in
@@ -102,18 +102,22 @@ conjunct (\textsc{ProdStep}); if there is some answer, then the disjunction of t
 scheduled for evaluation (\textsc{ProdStepAns}).
 
 The introduced transition system is completely deterministic: there is exactly one transition from any non-terminal state.
-There was, however, some freedom in choosing the order of evaluation for conjunction and
-disjunction states. For example, instead of evaluating the left substate first, we could choose to evaluate the right one, etc. In each concrete case, we would
-end up with a different (but still deterministic) system that would prescribe different semantics to a concrete goal. This choice reflects the inherent
-non-deterministic nature of search in relational (and, more generally, logical) programming. However, as long as deterministic search procedures
-are sound and complete, we can consider them ``equivalent''.\footnote{There still can be differences in observable behavior of concrete goals under different
-sound and complete search strategies. For example, a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}
+There is, however, some freedom in choosing the order of evaluation for conjunction and
+disjunction states. For example, instead of evaluating the left substate first, we could choose to evaluate the right one, etc.
+\begin{comment}
+In each concrete case, we would
+end up with a different (but still deterministic) system that would prescribe different semantics to a concrete goal.
+\end{comment}
+This choice reflects the inherent non-deterministic nature of search in relational (and, more generally, logical) programming.
+Although we could introduce this ambiguity into the semantics (by replacing specific rules for disjunctions and conjunctions evaluation with some conditions on it), we want an operational semantics that would be easy to present and easy to employ to describe existing language extensions (already described for a specific implementation of interleaving search), so we instead base the semantics on one canonical search strategy.
+At the same time, as long as deterministic search procedures are sound and complete, we can consider them ``equivalent''.\footnote{There still can be differences in observable behavior of concrete goals under different sound and complete search strategies.
+For example, a goal can be refutationally complete~\cite{WillThesis} under one strategy and non-complete under another.}
 
 It is easy to prove that transitions preserve well-formedness of states.
 
 \begin{lemma}{(Well-formedness preservation)}
 \label{lem:well_formedness_preservation}
-For any transintion $s \xrightarrow{l} \hat{s}$, if $s$ is well-formed then $\hat{s}$ is also well-formed.
+For any transition $s \xrightarrow{l} \hat{s}$, if $s$ is well-formed then $\hat{s}$ is also well-formed.
 \end{lemma}
 
 A derivation sequence for a certain state determines a \emph{trace}~--- a finite or infinite sequence of answers. The trace corresponds to the stream of answers
@@ -123,13 +127,15 @@ We can relate sets of answers for the partially evaluated conjunction and disjun
 
 \begin{lemma}
 \label{lem:sum_answers}
-For any non-termial states $s_1$ and $s_2$, $\tr{s_1 \oplus s_2} = \tr{s_1} \cup \tr{s_2}$.
+For any non-terminal states $s_1$ and $s_2$, $\tr{s_1 \oplus s_2} = \tr{s_1} \cup \tr{s_2}$.
 \end{lemma}
 
 \begin{lemma}
 \label{lem:prod_answers}
-For any nontermial state $s$ and goal $g$,  \mbox{$\tr{s \otimes g} \supseteq \bigcup_{(\sigma, n) \in \tr{s}} \tr{\inbr{g, \sigma, n}}$}.
+For any non-terminal state $s$ and goal $g$,  \mbox{$\tr{s \otimes g} \supseteq \bigcup_{(\sigma, n) \in \tr{s}} \tr{\inbr{g, \sigma, n}}$}.
 \end{lemma}
+
+These two lemmas constitute the exact conditions on definition of these operators that we will use to prove the completeness of an operational semantics.
 
 We also can easily describe the criterion of termination for disjunctions.
 
@@ -138,4 +144,4 @@ We also can easily describe the criterion of termination for disjunctions.
 For any goals $g_1$ and $g_2$, sunbstitution $\sigma$, and number $n$, the trace from the state $\inbr{g_1 \vee g_2, \sigma, n}$ is finite iff the traces from both $\inbr{g_1, \sigma, n}$ and $\inbr{g_2, \sigma, n}$ are finite.
 \end{lemma}
 
-These simple statements already allow us to prove two important properties of interleaving search as corollaries: the ``fairness'' of disjuction~--- the fact that trace for disjunction contains all the answers from both streams for disjuncts~--- and the ``commutativity'' of disjunctions~--- the fact that swapping two disjuncts (at the top level) does not change the termination of the goal evaluation. 
+These simple statements already allow us to prove two important properties of interleaving search as corollaries: the ``fairness'' of disjunction~--- the fact that the trace for disjunction contains all the answers from both streams for disjuncts~--- and the ``commutativity'' of disjunctions~--- the fact that swapping two disjuncts (at the top level) does not change the termination of the goal evaluation. 

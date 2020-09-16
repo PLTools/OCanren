@@ -57,7 +57,7 @@ the free variables of the goal. The definition for a set of free variables for b
 %given in Figure~\ref{free};
 as ``\lstinline|fresh|''
 is the sole binding construct the definition is rather trivial. The language we defined is first-order, as goals can not be passed as parameters,
-returned or constructed at runtime.
+returned or constructed at run time.
 
 We now informally describe how relational search works. As we said, a goal represents a search procedure. This procedure takes a \emph{state} as input and returns a
 stream of states; a state (among other information) contains a substitution that maps semantic variables into the terms over semantic variables. Then five types of
@@ -78,9 +78,9 @@ scenarios are possible (depending on the type of the goal):
 We stipulate that the top-level goal is preceded by an implicit ``\lstinline|fresh|'' construct, which binds all its free variables, and that the final substitutions
 for these variables constitute the result of the goal evaluation.
 
-Conjunction and disjunction form a monadic~\cite{Monads} interface with conjunction playing role of ``\lstinline|bind|'' and disjunction~--- of ``\lstinline|mplus|''.
+Conjunction and disjunction form a monadic~\cite{Monads} interface with conjunction playing role of ``\lstinline|bind|'' and disjunction the role of ``\lstinline|mplus|''.
 In this description, we swept a lot of important details under the carpet~--- for example, in actual implementations the components of disjunction are not evaluated in
-isolation, but both disjuncts are being evaluated incrementally with the control passing from one disjunct to another (\emph{interleaving})~\cite{Search};
+isolation, but both disjuncts are evaluated incrementally with the control passing from one disjunct to another (\emph{interleaving})~\cite{Search};
 the evaluation of some goals can be additionally deferred (via so-called ``\emph{inverse-$\eta$-delay}'')~\cite{MicroKanren}; instead of streams
 the implementation can be based on ``ferns''~\cite{BottomAvoiding} to defer divergent computations, etc. In the following sections, we present
 a complete formal description of relational semantics which resolves these uncertainties in a conventional way.
@@ -127,5 +127,5 @@ palindromes. Running it results in an infinite stream of substitutions:
    $\dots$
 \end{lstlisting}
 
-where ``$\alpha$''~--- a \emph{semantic} variable, corresponding to ``\lstinline|x|'', ``$\beta_i$''~--- free semantics variables. Therefore, each substitution represents a set of all palindromes of a certain length.
+where ``$\alpha$'' is a \emph{semantic} variable, corresponding to ``\lstinline|x|'', ``$\beta_i$'' are free semantic variables. Therefore, each substitution represents a set of all palindromes of a certain length.
 

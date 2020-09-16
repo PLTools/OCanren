@@ -5,19 +5,21 @@ features banned. Specifically, we use \textsc{miniKanren} as an exemplary langua
 a logical language with explicit connectives, existentials and unification, and is mutually convertible to the pure logical subset of
 \textsc{Prolog}.\footnote{A detailed \textsc{Prolog}-to-\textsc{miniKanren} comparison can be found here: \url{http://minikanren.org/minikanren-and-prolog.html}}
 Unlike \textsc{Prolog}, which relies on SLD-resolution, most \textsc{miniKanren} implementations use a monadic \emph{interleaving
-search}, which is known to be complete~\cite{2016}.
+search}, which is known to be complete~\cite{SmallEmbedding}.
 \textsc{miniKanren} is designed as a shallow DSL which may help to equip the host language with logical reasoning features. This
-design choice was proven to be applicable in practice, and there are more than 100 implementations for almost 50 languages.
+design choice has been proven proven to be applicable in practice, and there are more than 100 implementations for almost 50 languages.
 
-The introductory book on \textsc{miniKanren}~\cite{TRS} describes the language by means of an evolving set of examples. In the
+Although there already were attempts to define a formal semantics for \textsc{miniKanren}, none of them were capable of reflecting the distinctive property of \textsc{miniKanren}'s search~--- \emph{interleaving}~\cite{Search}.
+Since this distinctive search strategy is essential for the specification of the language and its extensions, the description of almost all development on miniKanren was not based on formal semantics.
+The introductory book on \textsc{miniKanren}~\cite{TRS} describes the language by means of an evolving set of examples. In a
 series of follow-up papers~\cite{MicroKanren,CKanren,CKanren1,AlphaKanren,2016,Guided} various extensions of the language were presented with
 their semantics explained in terms of a \textsc{Scheme} implementation. We argue that this style of semantic definition is
 fragile and not self-sufficient since it relies on concrete implementation languages' semantics and therefore is not stable under the host language replacement.
-In addition, the justification of important properties of relational programs (for example, refutational completeness~\cite{WillThesis}) becomes cumbersome.
+In addition, the justification of important properties of the language and specific relational programs becomes cumbersome.
 
 \begin{comment}
 There were some previous attempts to define a formal semantics for \textsc{miniKanren}. In~\cite{MechanisingMiniKanren} formal definitions
-for denotational and non-deterministic operational semantics were given and the soundness result was proven; the development was mechanized in HOL. 
+for denotational and non-deterministic operational semantics were given and the soundness result has been proven proven; the development was mechanized in HOL. 
 \cite{RelConversion} presented a variant of nondeterministic operational semantics, and~\cite{DivTest} used another variant of finite-set semantics.
 None of the previous approaches were capable of reflecting the distinctive property of \textsc{miniKanren}'s search~--- \emph{interleaving}~\cite{Search},
 thus deviating from the conventional understanding of the language.

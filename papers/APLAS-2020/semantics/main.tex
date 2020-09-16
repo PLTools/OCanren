@@ -136,15 +136,19 @@ language=minikanren
 
 \sloppy
 
-\title{Certified Semantics for Relational Programming}
+\title{Certified Semantics for Relational Programming\thanks{Supported by organization x.}}
 
-\author{Anonymous author}
+\author{Dmitry Rozplokhas\inst{1,3} \and
+Andrey Vyatkin\inst{2} \and
+Dmitry Boulytchev\inst{2,3}}
 %
-\authorrunning{Anonymous author}
+\authorrunning{D. Rozplokhas et al.}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-\institute{Anonymous institute}
+\institute{Higher School of Economics, Russia \and
+Saint Petersburg State University, Russia \and
+JetBrains Research, Russia}
 
 \begin{document}
 
@@ -160,10 +164,10 @@ language=minikanren
 
 %TODO mandatory: add short abstract of the document
 \begin{abstract}
-  We present a formal study of semantics for relational programming language \textsc{miniKanren}. First,
-  we formulate denotational semantics which corresponds to the minimal Herbrand model for definite logic
-  programs. Second, we present operational semantics which models the distinctive feature of \textsc{miniKanren}
-  implementation~--- interleaving,~--- and prove its soundness and completeness w.r.t. the denotational semantics.
+  We present a formal study of semantics for the relational programming language \textsc{miniKanren}. First,
+  we formulate a denotational semantics which corresponds to the minimal Herbrand model for definite logic
+  programs. Second, we present operational semantics which models interleaving, the distinctive feature of \textsc{miniKanren}
+  implementation, and prove its soundness and completeness w.r.t. the denotational semantics.
   Our development is supported by a \textsc{Coq} specification, from which a reference interpreter can be
   extracted. We also derive from our main result a certified semantics (and a reference interpreter) for SLD resolution
   with cut and prove its soundness.
