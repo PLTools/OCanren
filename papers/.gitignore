@@ -6,6 +6,8 @@
 *.synctex.gz
 *.toc
 *.vrb
+*.bbl
+*.blg
 
 *.pdf
 .aspell.*
