@@ -134,13 +134,15 @@ language=minikanren
 \let\emptyset\varnothing
 \let\eps\varepsilon
 
+\DeclareUnicodeCharacter{2212}{-}
+
 \sloppy
 
-\title{Certified Semantics for Relational Programming\thanks{Supported by organization x.}}
+\title{Certified Semantics for Relational Programming\thanks{The reported study was funded by RFBR, project number 18-01-00380.}}
 
-\author{Dmitry Rozplokhas\inst{1,3} \and
-Andrey Vyatkin\inst{2} \and
-Dmitry Boulytchev\inst{2,3}}
+\author{Dmitry Rozplokhas\inst{1,3}\orcidID{0000-0001-7882-4497} \and
+Andrey Vyatkin\inst{2} \and \\
+Dmitry Boulytchev\inst{2,3}\orcidID{0000−0001−8363−7143}}
 %
 \authorrunning{D. Rozplokhas et al.}
 % First names are abbreviated in the running head.
@@ -161,6 +163,7 @@ JetBrains Research, Russia}
 \setlength{\belowdisplayshortskip}{2pt}
 
 \maketitle
+\setcounter{footnote}{0}
 
 %TODO mandatory: add short abstract of the document
 \begin{abstract}
@@ -193,9 +196,6 @@ JetBrains Research, Russia}
 %\renewcommand\bibliographytypesize{\small}
 \bibliographystyle{abbrv} %{splncs04}
 \bibliography{main}
-
-\appendix
-\input{appendix.tex}
 
 \end{document}
 
