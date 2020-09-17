@@ -25,7 +25,7 @@ The use of higher-order abstract syntax (HOAS) for dealing with language constru
 where it was employed to describe the lambda calculus. The inconsistency phenomenon of HOAS representation, mentioned in Section~\ref{specification}, is called
 there ``exotic terms'' there and is handled using a dedicated inductive predicate ``\lstinline|Valid_v|''. The predicate has a non-trivial implementation based
 on subtle observations on the behavior of bindings. Our case, however, is much simpler: there is not much variety in ``exotic terms'' (for example, we do not have
-reductions in terms), and our consistency predicate can be considered as a limited version of ``\lstinline|Valid_v|'' for a bigger language.
+reductions in terms), and our consistency predicate can be considered as a limited version of ``\lstinline|Valid_v|'' for a smaller language.
 
 The study of formal semantics for \textsc{miniKanren} is not a completely novel venture. Previously, a nondeterministic
 small-step semantics was described~\cite{RelConversion}, as well as a big-step semantics for a finite number of answers~\cite{DivTest};

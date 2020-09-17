@@ -135,9 +135,7 @@ module Fmap : functor (T : T1) ->
 
    val reify : (VarEnv.t -> ('a,'b) injected -> 'b) -> VarEnv.t -> ('a T.t, 'b T.t logic as 'r) injected -> 'r
 
-   val prjc  : (VarEnv.t -> ('a,'b) injected -> 'a) ->
-     (int -> 'r list -> ('a T.t as 'r)) ->
-     VarEnv.t -> ('r, 'b T.t logic) injected -> 'r
+   val prjc  : (VarEnv.t -> ('a,'b) injected -> 'a) -> (int -> 'r list -> ('a T.t as 'r)) -> VarEnv.t -> ('r, 'b T.t logic) injected -> 'r
  end
 
 module Fmap2 (T : T2) :
