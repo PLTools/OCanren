@@ -120,7 +120,7 @@ If the indices of all free variables in a goal $g$ are limited by some number $n
 
 Similarly to the soundness, this can be proven by nested induction, but the generalization is required. This time it is enough to generalize it from goals
 to states of the shape $\inbr{g, \sigma, n}$. We also need to introduce one more auxiliary semantics~--- \emph{step-indexed denotational semantics} (denoted by $\sembr{\bullet}^i$). It is an implementation of the well-known approach~\cite{StepIndexing} of indexing typing or semantic logical relations by a number of permitted evaluation steps to allow inductive reasoning on it.
-In our case, $\sembr{g}^i$ includes only those representing functions that you can get after no more than $i$ unfoldings of relational calls.
+In our case, $\sembr{g}^i$ includes only those representing functions that one can get after no more than $i$ unfoldings of relational calls.
 
 The step-indexed denotational semantics is an approximation of the conventional denotational semantics; it is clear that any answer in conventional denotational semantics will also be in step-indexed denotational semantics for some number of steps.
 
@@ -139,4 +139,4 @@ For any set of relational definitions, for any number of unfoldings $i$, for any
 \]
 \end{lemma}
 
-The proof is by the induction on nuber of unfoldings $i$. The induction step is proven by structural induction on goal $g$. We use lemmas~\ref{lem:sum_answers} and~\ref{lem:prod_answers} for evaluation of a disjunction and a conjunction respectively, and lemma~\ref{lem:den_sem_change_var} in the case of fresh variable introduction to move from an arbitrary semantic variable in denotational semantics to the next allocated fresh variable. The details of this proof may be found in Appendix~\ref{appendix_gen_completeness_proof}, the full proof script is in the specification in Coq.
+The proof is by the induction on nuber of unfoldings $i$. The induction step is proven by structural induction on goal $g$. We use lemmas~\ref{lem:sum_answers} and~\ref{lem:prod_answers} for evaluation of a disjunction and a conjunction respectively, and lemma~\ref{lem:den_sem_change_var} in the case of fresh variable introduction to move from an arbitrary semantic variable in denotational semantics to the next allocated fresh variable. The details of this proof may be found in the extended version of the paper.
