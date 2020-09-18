@@ -39,7 +39,7 @@ Our approach to finding an optimal solution in fact implements branch-and-bound 
 
 In order to implement this strategy we extended \textsc{OCanren} with a new primitive called \emph{structural constraint}, which may
 fail on some terms depending on some criterion specified by an end-user. Structural constraints can be seen as a generalization of
-some known constraints~\footnote{The constraint  \lstinline|symbol$^o$| is similar to \lstinline{symbol?} function in Scheme. The constraint \lstinline|absent$^o$| ensures that specific term is not a subterm of another term.}
+some known constraints\footnote{The constraint  \lstinline|symbol$^o$| is similar to \lstinline{symbol?} function in Scheme. The constraint \lstinline|absent$^o$| ensures that specific term is not a subterm of another term.}
  like \lstinline|absent$^o$| or \lstinline|symbol$^o$|
 in existing \textsc{miniKanren} implementations~\cite{Untagged}, 
 so they can be widely used in solving other problems as well. Note, we could implement other constraints we considered (on the

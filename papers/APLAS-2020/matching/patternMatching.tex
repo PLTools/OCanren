@@ -70,11 +70,11 @@ synthesizing implementations, we need a \emph{programmatical} view on the same p
 (the ``switch'' language) of test-and branch constructs:
 
 \[
-\begin{array}{rcl}
-  \mathcal M & = & \bullet \\
-  & \mid  & \mathcal M\,[\mathbb{N}] \\
-  \ir & = & \primi{return}\,\mathbb{N} \\
-  &  \mid & \primi{switch}\;\mathcal{M}\;\primi{with}\; [\mathcal{C}\; \primi{\rightarrow}\; \ir]^*\;\primi{otherwise}\;\ir
+\begin{array}{rccl}
+  \mathcal M & = &       & \bullet \\
+             &   & \mid  & \mathcal M\,[\mathbb{N}] \\
+  \ir        & = &       & \primi{return}\,\mathbb{N} \\
+             &   & \mid  & \primi{switch}\;\mathcal{M}\;\primi{with}\; [\mathcal{C}\; \primi{\rightarrow}\; \ir]^*\;\primi{otherwise}\;\ir
 \end{array}
 \]
  
@@ -82,7 +82,8 @@ Here $\mathcal{M}$ stands for a \emph{matching expression}, which is either a re
 a (multiply) indexed subexpression of a scrutinee. Programs in the switch language can discriminate on the
 structure of matching expressions, testing their top-level constructors and eventually returning natural numbers as results.
 The switch language is similar to the intermediate representations for pattern matching code used in 
-previous works on pattern matching implementation~\cite{maranget2001,maranget2008}.
+previous works on pattern matching implementation~\cite{maranget2001,maranget2008}, and switch programs are analogous to
+\emph{decision trees}.
 
 The semantics of the switch language is given by mean of relations ``$\xrightarrow{}{}_{\!\!\!\mathcal M}$'' and ``$\xrightarrow{}{}_{\!\!\mathcal S}$''
 (see Fig.~\ref{fig:matchexpr} and \ref{fig:test-and-branch}). The first one describes the semantics of matching expression, while

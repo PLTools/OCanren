@@ -11,7 +11,7 @@
 }
 \newcolumntype{C}{ >{\centering\arraybackslash} m{4cm} }
 
-\begin{table}[h]
+\begin{table}[t!]
 \caption{The results of synthesis evaluation}\label{fig:eval}
 \centering
 \begin{tabular}{|l||c|c|c||c||c|c||c|}
@@ -104,7 +104,7 @@
      &20&7&$\sim$1700&3&5&   $\sim$1800   &   $\sim$11000       \\ \hline
 \end{tabular}
 \end{table}
-\FloatBarrier
+%\FloatBarrier
 
 \section{Evaluation}
 \label{sec:eval}
@@ -117,13 +117,16 @@ The evaluation was performed on a desktop computer with Intel Core i7-4790K CPU 
 \textsc{OCanren} was compiled with \mbox{ocaml-4.07.1+fp+flambda}. All benchmarks were executed in the native mode ten times,
 then average monotonic clock time was taken. The results of the evaluation are shown in Table~\ref{fig:eval}.
 
-In the table the double bar separates input data from output. %Inputs are: 
+%In the table the double bar separates input data from output. %Inputs are: 
 The patterns used for synthesis form the input of synthesis algorithm.
 %and the requested number of answers. 
 Outputs are: the size of generated complete samples set, the size of the first answer, the running time before receiving the
-first answer, the total number of programs synthesized, the size of the optimal (last) answer and the total time of the synthesis. The information about a last answer will be omitted, if the synthesizer finds only a single answer. After discovering of the last answer, the synthesizer may spend some time to check that no smaller answer exists.
+first answer, the total number of programs synthesized, the size of the optimal (last) answer and the total time of the synthesis.
+The information about the last answer is be omitted (``N/A'') if the synthesizer has found only a single answer. After discovering
+the last answer
+the synthesizer could spend some time to check that no smaller answer existed.
 %The time between the start and the end of synthesis is shown in the last column. % of Table.~\ref{fig:eval}.
-In all benchmarks the structural constraint is being checked every 100 unifications and all answers were requested.
+In all benchmarks structural constraints were checked every 100 unifications and all answers were requested.
 
 We also give an example of synthesized program for the 4th benchmark, which was taken from~\cite{maranget2008}. We used this benchmark in the Section~\ref{sec:related} as the first example (see Fig.~\ref{fig:match-example}).
 
@@ -149,8 +152,8 @@ Our approach currently does not work fast for large benchmarks. On Fig.~\ref{fig
 machine for PCF~\cite{maranget2008,Plotkin1977LCFCA}. For such a complex examples (in terms of type definition complexity and the number and size of patterns)
 both the size of the search space and the number of samples is too large for our approach to work so far.
 
-The last two benchmarks were constructed by reducing number of types (Fig.~\ref{fig:pcf-reduced}) and clauses in PCF example.% (fig.~\ref{fig:pcf}).
-
+The last two benchmarks were constructed by reducing the number of types (Fig.~\ref{fig:pcf-reduced}) and clauses in PCF example.% (fig.~\ref{fig:pcf}).
+%\FloatBarrier
 \begin{figure}%[H]
 \centering
 \begin{tabular}{c} % tabular only for centering
