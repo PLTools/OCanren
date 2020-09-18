@@ -24,7 +24,7 @@ relation
 \trans{\inbr{v;\,p_1,\dots,p_k}}{}{i},\,1\le i\le k+1
 \]
 
-which gives us the index of the leftmost matched pattern or $k+1$ if no such pattern exists. We use an auxiliary relation $\inbr{;}\subseteq\mathcal{V}\times\mathcal{P}$
+\noindent which gives us the index of the leftmost matched pattern or $k+1$ if no such pattern exists. We use an auxiliary relation $\inbr{;}\subseteq\mathcal{V}\times\mathcal{P}$
 to specify the notion of a value matched by an individual pattern (see Fig.~\ref{fig:match1pat}). The rule \ruleno{Wildcard} says that
 a wildcard pattern ``\_'' matches any value, and \ruleno{Constructor} specifies that a constructor pattern matches exactly those values which
 have the same constructor at the top level and all subvalues matched by corresponding subpatterns. The definition of ``$\xrightarrow{}{\!\!}$'' is
@@ -67,7 +67,7 @@ the current index (which in this case is equal to the number of patterns plus on
 
 The relation ``$\xrightarrow{}{}\!\!$'' gives us a \emph{declarative} semantics of pattern matching. Since we are interested in
 synthesizing implementations, we need a \emph{programmatical} view on the same problem. Thus, we introduce a language $\mathcal S$
-(the ``switch'' language) of test-and branch constructs:
+(the ``switch'' language) of test-and-branch constructs:
 
 \[
 \begin{array}{rccl}
