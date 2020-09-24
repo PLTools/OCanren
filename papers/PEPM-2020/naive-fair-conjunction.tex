@@ -45,7 +45,7 @@ set(T_1, m) \lor set(T_2, m), & \mbox{if } T = T_1 \lor T_2
 Now we are ready to modify the semantics. A new semantics (Fig.~\ref{fair:naive-semantics}) evaluates disjuncts in the old way,
 but it unfolds conjuncts fairly.
 
-\begin{figure}[h!]
+\begin{figure*} %[h!]
 \[\begin{array}{cr}
 
       {\inbr{\sigma;\, i;\, \epsilon} \xrightarrow{\sigma} \emptyset}  
@@ -64,7 +64,7 @@ but it unfolds conjuncts fairly.
 \end{array}\]
 \caption{Naive fair semantics}
 \label{fair:naive-semantics}
-\end{figure}
+\end{figure*}
 
 % Прежде всего отметим, что у семантики есть глобальный параметр N, который определяет количество разверток. Если этот параметр равен 1, то обработка конъюнтов будет весьма похода на обработку дизъюнктов. Как и в случае с дизъюнкцией мы переходим к развертке нового конъюнкта после каждого шага. Если параметр N устремить к бесконечности, то конъюнкция станет направленной. Действительно, мы никогда не обнулим счетчик самого левого конъюнкта и он будет разворачиваться до исчерпания.
 First of all, we note that semantics depends on unfolding bound. If the bound is 1, then the evaluation of conjunctions becomes very similar to that for disjunctions. As in the case of

@@ -8,7 +8,8 @@ conjunction of \mk and demonstrate its advantages and drawbacks using examples.
 \begin{figure}[b]
 \centering
 \begin{tabular}{c}
-\begin{lstlisting}[numbers=left,numberstyle=\small]
+\begin{lstlisting} %[numbers=left] %,numberstyle=\small]
+%\begin{lstlisting}
 let rec append$^o$ x y xy =
   (x === [] /\ y === xy) \/
   fresh (e xs xys) (
@@ -40,7 +41,7 @@ The result of \mk program evaluation is a lazy, possibly infinite stream of answ
 As an example we consider a relational definition of list concatenation (Fig.~\ref{fair:lst-appendo}). The relation \lstinline|append$^o$ x y xy| can be interpreted as the following:
 the concatenation of lists \lstinline|x| and \lstinline|y| equals list \lstinline|xy|.
 
-\begin{figure}[h!]
+\begin{figure*} %[h!]
 \centering
 \begin{tabular}{c}
 \lstinline|fresh (x) (append$^o$ [1] [2] x)| $\Rightarrow$ \lstinline|{x = [1,2]}| \\
@@ -67,7 +68,7 @@ the concatenation of lists \lstinline|x| and \lstinline|y| equals list \lstinlin
 \end{tabular}
 \caption{Examples of relation \lstinline|append$^o$|}
 \label{fair:appendo-examples}
-\end{figure}
+\end{figure*}
 
 We consider a few different queries for the relation \lstinline|append$^o$| (Fig.~\ref{fair:appendo-examples}). First of all, we can concatenate two lists
 (Fig~\ref{fair:appendo-examples}a). Also we can find a list suffix (Fig.~\ref{fair:appendo-examples}b). Moreover, we can synthesize a finite stream of all
@@ -98,7 +99,9 @@ of \lstinline{freeze$^o$}. In the second case the relation \lstinline{freeze$^o$
 \begin{figure}[h!]
 \centering
 \begin{tabular}{c}
-\begin{lstlisting}[firstnumber=7,numbers=left,numberstyle=\small,escapeinside={@}{@}]
+%\begin{lstlisting}[firstnumber=7,numbers=left,numberstyle=\small,escapeinside={@}{@}]
+%\begin{lstlisting}[firstnumber=7,numbers=left,numberstyle=\small,escapeinside={@}{@}]
+\begin{lstlisting}[escapeinside={@}{@}]
 let rec revers$^o$ x y =
   (x === [] /\ y === []) \/
   fresh (e xs ys) (

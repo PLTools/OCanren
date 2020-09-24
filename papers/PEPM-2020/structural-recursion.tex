@@ -10,7 +10,7 @@ In the general case we want to parameterize the semantics with an unfolding pred
 if the call needs to be unfolded further, and \lstinline{false}, if we need to move on to the next conjunct. We do not get rid of the unfolding bound completely since it is still needed to handle
 the case when $pred$ is false for all calls in a leaf.
 
-\begin{figure}[h!]
+\begin{figure*} %[h!]
 \[\begin{array}{cr}
       {\inbr{\sigma;\, i;\, \epsilon} \xrightarrow{\sigma} \emptyset}  
 &     \ruleno{Answer} \\[10mm]
@@ -56,7 +56,7 @@ the case when $pred$ is false for all calls in a leaf.
 \end{array}\]
 \caption{Semantics of fair conjunction by structural recursion}
 \label{fair:structural-recursion-semantics}
-\end{figure}
+\end{figure*}
 
 % Семантика, параметризованная предикатом раскрутки представлена на изображении 10. Так как мы обновляем только поведение конъюнкции, то правила [Answer], [Disj] и [DisjStep]  остаются без изменений. Но за обработку конъюнкций теперь отвечают три обновленных правила. Если предикат истинен хотя бы для одного вызова, то мы применяем правило [ConjUnfoldPred] и раскручиваем самый левый такой вызов и уменьшаем его счетчик. Если предикат ложен на всех вызовах, но есть хотя бы один вызов с ненулевым счетчиком, то мы применяем правило [ConjUnfold] и раскручиваем самый левый такой вызов и уменьшаем его счетчик. Если предикат ложен на всех вызовах и все счетчики равны нулю, то мы применяем правило [ConjZero] и обновляем все счетчики.
 The semantics parameterized by the unfolding predicate is shown in Fig.~\ref{fair:structural-recursion-semantics}. Since we modify only the behavior of conjunction the rules \rulen{Answer},
