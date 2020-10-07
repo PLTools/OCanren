@@ -60,6 +60,8 @@
 \usepackage{amsmath}
 \usepackage{comment}
 \usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{trees}
 
 %\pgfplotsset{width=7cm,compat=1.8}
 
@@ -77,8 +79,8 @@ columns=fixed,
 mathescape=true,
 fontadjust=true,
 literate={fun}{{$\lambda$}}1 {->}{{$\to$}}3 {===}{{$\equiv$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {\\/}{{$\vee$}}2 {/\\}{{$\wedge$}}2 {^}{{$\uparrow$}}1,
-morecomment=[s]{(*}{*)},
-numbers=left
+morecomment=[s]{(*}{*)} %,
+%numbers=left
 }
 
 \lstset{
@@ -202,7 +204,7 @@ language=ocanren
 \maketitle
 
 \input{introduction}
-\input{classic-conjunction}
+\input{minikanren}
 \input{classic-semantics}
 \input{naive-fair-conjunction}
 \input{structural-recursion}
