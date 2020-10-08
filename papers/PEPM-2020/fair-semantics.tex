@@ -1,0 +1,146 @@
+\section{Fair conjunction by well-quasi ordering}
+\label{sec:fair-semantics}
+
+В этой секции мы рассмотрим параметризованную семантику языка \mk, которая с помощью предиката-параметра динамически определяет глубину раскркутки вызова. Также мы рассмотрим достаточное условие на предикат, при котором эта семантка становится справедливой.
+
+Прежде всего нам снова необходимо переопределить множество состояний:
+
+\[
+\begin{array}{rcll}
+H & = & \epsilon \mid (\sigma, c) : H & \mbox{history of unfolded calls}\\
+C & = & \epsilon \mid c_1^H \land \dots \land c_n^H & \mbox{conjunction of calls} \\
+  \textgoth{T} & = & \textgoth{T} \lor \textgoth{T} & \mbox{disjunction state} \\
+               & \mid & \inbr{\sigma;\, i;\, C} & \mbox{leaf state}\\[1mm]
+\end{array}
+\]
+
+\noindent Теперь в состоянии каждый вызов помечен историей развёрток $h$, предшествующих появлению этого вызова. Данная история содержит исчерпывающую информацию, которая требуется для определения необходимости развертки вызова.  
+
+Предикат $pred$, которым мы параметризуем семантику, принимает подстановку, вызов и историю этого вызова. Он возвращает \lstinline|true|, если вызов необходимо разворачивать дальше. И возвращает \lstinline|false|, если необходимо перейти к следующему конъюнкту.
+
+\begin{figure}[h!]
+\[\begin{array}{cr}
+      {\inbr{\sigma;\, i;\, \epsilon} \xrightarrow{\sigma}_p \emptyset}  
+&     \ruleno{Answer} \\[4mm]
+      \dfrac
+      {\begin{array}{c}
+           \bigvee_{j=1}^n h_j \not= \epsilon \\
+           \bigwedge_{j=1}^n pred(\sigma, c_j, h_j) = \mbox{\lstinline{false}}
+      \end{array}}
+      {\begin{array}{l}
+      \inbr{\sigma;\, i;\, c_1^{h_1} \land \ldots \land c_n^{h_n}} \xrightarrow{\circ}_p \\
+      \phantom{XXXX} \inbr{\sigma;\, i;\, c_1^\epsilon \land \ldots \land c_n^\epsilon}
+      \end{array}}
+      &  \ruleno{ConjClear} \\[10mm]
+      
+      \dfrac
+      {
+        \begin{array}{c}
+          \bigwedge_{j=1}^{k-1} pred(\sigma, c_j, h_j) = \mbox{\lstinline{false}} \\
+          pred(\sigma, c_k, h_k) = \mbox{\lstinline{true}} \\
+          (\sigma, i) \vdash c_k \Rightarrow T \\
+          set(T, \, (\sigma, c_k) : h_k) = \bar{T}
+        \end{array}
+      }
+      {
+        \begin{array}{l}
+          \inbr{\sigma;\, i;\, c_1^{h_1} \land \ldots \land c_{k-1}^{h_{k-1}} \land c_k^{h_k} \land C_2} \xrightarrow{\circ}_p \\
+          \phantom{XXXX}push(c_1^{h_1} \land \ldots \land c_{k-1}^{h_{k-1}} \land \Box \land C_2, \bar{T})
+         \end{array}
+        }
+&     \ruleno{ConjUnfold} \\[10mm]
+\dfrac{T_1 \xrightarrow{\alpha}_p \emptyset}
+      {T_1 \lor T_2 \xrightarrow{\alpha}_p T_2}
+&     \ruleno{Disj} \\[6mm]
+\dfrac{T_1 \xrightarrow{\alpha}_p \bar{T_1} \qquad \bar{T_1} \not= \emptyset}
+      {T_1 \lor T_2 \xrightarrow{\alpha}_p T_2 \lor\bar{T_1}}
+&     \ruleno{DisjStep}
+\end{array}\]
+\caption{Semantics of fair conjunction by structural recursion}
+\label{fair:pred-fair-semantics}
+\end{figure}
+
+Семантика, параметризованная предикатом раскрутки представлена на изображении~\ref{fair:pred-fair-semantics}. Так как мы обновляем только поведение конъюнкции, то правила \rulen{Answer}, \rulen{Disj} и \rulen{DisjStep} остаются без изменений. За обработку конъюнкций отвечают правила \rulen{ConjClear} и \rulen{ConjUnfold}. Если предикат истинен хотя бы для одного вызова, то мы применяем правило\rulen{ConjUnfold} и разворачиваем самый левый такой вызов, пополняя историю новых вызовов с помощью функции $set$. Если предикат ложен на всех вызовах, и хотя бы одна история не пуста, то мы применяем правило \rulen{ConjClear}, которое стирает историю всех вызовов, заменяя на $\epsilon$.
+
+Отметим, что не всякий предикат сохраняет soundness. Например, при предикате, который всегда возвращает \lstinline{false} к состоянию $\inbr{\{\};\, 1; \, (f(\alpha_0))^\epsilon}$ ни одно из правил не может быть применено. Для гарантии soundness нам необходмо портебовать, чтобы предикат был истинным при пустой истории $\epsilon$.
+
+\begin{lemma}
+ Если $\forall \sigma, c. \; pred(\sigma, c, \epsilon) =$ \lstinline{true}, тогда семантика soundness.
+\end{lemma}
+
+Семантика, параметризрованная предикатом достаточна гибка в настройке. В зависимости от выбора предиката мы можем получить семантики с очень разными поведениями. Например, при константном предикате
+\[
+pred_{\mbox{\lstinline{true}}}(\sigma, c, h) = \mbox{\lstinline{true}} 
+\]
+\noindent мы получим left-biased семантку, которая всегда вычисляет самый левый вызов. Таким же свойством обладают классические реализации \mk.
+
+Если предикат будет следить за размером истории
+\[
+pred_N(\sigma, c, h) =  length(h) \leq N
+\]
+
+\noindent мы получим наивную справедливую семантику, описанную в главе~\ref{sec:naive}.
+
+Важным для нас классом предикатов являются predicates by well-quasi-ordering. Пусть $(\leq)$ --- well-quasi-ordering над множеством кортежей из подстановок $\sigma$ и вызовов $c$. Тогда
+\[
+pred_\leq(\sigma, c, h) = \left\{
+\begin{array}{rl}
+\mbox{\lstinline{true}}  & \mbox{if } \exists (\sigma_0, c_0) \in h. \, (\sigma, c) \leq (\sigma_0, c_0) \\
+\mbox{\lstinline{false}} & \mbox{otherwise}
+\end{array}
+\right.
+\]
+
+\noindent Такой предикат гарантирует, что всякий вызов в состоянии будет развёрнут за конечное число шагов семантики. Для формулировки этого факта введём обозначение $\boxed{c}$ --- boxed вызов, обрабатываемый семантикой также, как и исходый вызов $c$. Тогда верен следующий факт.
+
+\begin{lemma}
+Let $pred$ is a predicate by well-quasi-ordering, $T$ is a state, $c \in T$ is a call. Then $T[c \leftarrow \boxed{c}] \rightarrow_p^* T'$ and $\boxed{c} \not\in T'$.
+\end{lemma}
+
+Более того, predicate by well-quasi-ordering гарантирует максимальную сходимость в сравнении с ангеличиеской семантикой.
+
+\begin{theorem}
+Let $pred$ is a predicate by well-quasi-ordering, $T$ is a state.
+If $T \rightarrow^* \emptyset$ in angelic semantics then $T \rightarrow^*_p \emptyset$.
+\end{theorem}
+
+Из этой теоремы следует, что семантика справедлива, то есть не зависит от порядка конъюнктов, ведь сходимость ангельской семантики не зависит от порядка конъюнктов.
+
+\begin{corollary}
+Let $c_1, c_2$ are calls, $\sigma$ is substitution and $i \in \mathbb{N}$. If
+$\inbr{\sigma;\, i;\, c_1 \land c_2} \rightarrow^*_p \emptyset$ then $\inbr{\sigma;\, i;\, c_2 \land c_1} \rightarrow^*_p \emptyset$.
+\end{corollary}
+
+\begin{comment}
+
+% В качестве предиката нам необходим критерий, отличающий вызов, который выгодно раскрутить сейчас от вызова, который стоит отложить. Мы предлагаем критерий, который корректно работает на отношениях со структурной рекурсией. У таких отношений есть хотя бы один аргумент, который структурно убывает с каждым шагом рекурсии. Это свойство позволит нам контролировать грубину раскрутки. Предлагаемый критерий состоит в следующем
+As for the predicate, we need a criterion that can tell a call that is profitable to unfold now apart from a call which is worth deferring. We propose a criterion that works correctly
+for structurally recursive relations. Such relations have at least one argument which structurally decreases with each step of the recursion. This property allows us to control the depth
+of unfolding. We propose to use the following predicate:
+
+\[
+pred(\sigma, F^k(t_1, \ldots, t_k)) = \left\{
+\begin{array}{cl}
+      & \mbox{if } F^k \mbox{ is structural recursion relation, } \\
+\top, & i \mbox { is number of structural recursion argument, } \\
+      & t_i \mbox { is not fresh variable in } \sigma \\
+\bot, & \mbox{otherwise.}
+\end{array}
+\right.
+\]
+
+% Пока хотя бы один аргумент, по которому ведется структурная рекурсия не является свободной переменной, мы продолжаем разворачивать этот вызов. Если все такие аргументы свободны, то в текущей подстановке отношение разойдется, поэтому мы переходим к вычислению следующего вызова. Так как аргументы структурной рекурсии убывают, то за конечное число шагов вычисление либо завершится, либо все аргументы структурной рекурсии станут свободными переменными.
+
+As long as at least one argument along which structural recursion is performed is not a free variable, we continue to unfold this call. If all such arguments are free, then the call
+will diverge in the current substitution, so we proceed to evaluate the next call. Since structurally recursive arguments decrease, in a finite number of steps the evaluation will
+either complete, or all arguments of structural recursion will become free variables.
+
+% Например, отношение appendo является структурно рекурсивным по первому и третьему аргументу. Действительно, вложенный вызов appendo в качестве первого аргумента принимает xs, который является подтермом x. Также в качестве третьего аргумента appendo принимает xys, который является подтермом xy. Если хотя бы один из них --- список фиксированной длины, то отношение сойдется. В противном случае, оба имеют вид: $x = t_1 : \ldots t_n : \alpha$ и $xy = \bar{t}_1 : \ldots \bar{t}_m : \alpha$. Следовательно через max(n, m) шагов оба аргумента станут свободными перееменными. 
+For example, the relation \lstinline{append$^o$} (Fig.~\ref{fair:lst-appendo} from section~\ref{sec:minikanren}) is structurally recursive on its first and third arguments. Indeed, the nested call \lstinline{append$^o$}
+takes \lstinline{xs} as its first argument, which is a subterm of \lstinline{x}. Also, \lstinline{append$^o$} takes \lstinline{xys} as the third argument, which is a subterm of
+\lstinline{xy}. If at least one of them is a fixed-length list, then the relation will converge. Otherwise, $\mbox{\lstinline{x}} \equiv t_1 : \ldots t_n : \alpha_1$
+and $\mbox{\lstinline{xy}} \equiv \bar{t}_1 : \ldots \bar{t}_m : \alpha_2$. Therefore, in $max(n, m)$ steps, both arguments become free variables.
+
+% На текущий момент мы работаем над доказательством независимости данной семантики от порядка конъюнктов в случае, когда все отношения являются отношениями со структурной рекурсией.
+We are currently working on proving the independence of this semantics from the order of the conjuncts in the case when all relations are structurally recursive.
+\end{comment}
