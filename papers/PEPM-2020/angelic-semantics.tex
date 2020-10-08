@@ -1,123 +1,140 @@
-\section{The Angelic Semantics}
+\section{Angelic Semantics}
 \label{sec:angelic-semantics}
 
-В данном разделе мы представляем операционную ангельскую семантику языка \mk. Вместо постулирования определенного порядка вычисления коннъюнктов данная семантика недетерминированно рассматривает всевозможные порядки вычисления. Отметим, что на данный момент существуют операционные семантики языка \mk~\cite{fair:conversion,fair:semantics}, однако они все они вычисляют конъюнкты слева направо (left-bias).
+In this section we introduce an \emph{angelic} operational semantics of \mk. Instead of a fixed order of conjunct evaluation this semantics chooses a conjunct nondeterministically
+thus enumerating all possible orders of their evaluation. Thus, if a goal (in particular, a conjunction) diverges in the angelic semantics then no order of evaluation exists which
+would make it to converge.
 
-Семантика, которую мы предлагаем, основана на развертке вызовов отношений. На каждом шаге в текущем состоянии программы выбирается произвольный вызов, который разворачивается. Этот процесс продолжается, пока в текущем состоянии остаются вызовы. Если на каком-то шаге состояние опустело, то вычисление сошлось. В противном случае вычисление расходится.
-
-Прежде всего мы определим множество состояний исполнения реляционной программы:
+The development of this (and the following) section essentially relies on the results reported in~\cite{fair:semantics}. In the paper, two semantics for \mk are presented. The first one is
+denotational set-theoretic close to the least Herbrand model~\cite{Lloyd}; the second is operational semantics of relational search with interleaving in the form of labelled transition
+system~\cite{LTS}, which corresponds to the informal description given in the previous section. Then the correctness and completeness of interleaving search w.r.t. the denotational semantics
+is formally established and mechinized using \textsc{Coq} proof assistant~\cite{Coq}. It is also establishes a corollary that for correct and complete operational semantics some
+transformations of goals are equivalent (w.r.t. the set of answers they provide). These transformations will play an important role is justifying the fairness of the semantics we present
+in the next section. Due to space limitations, however, we do not present here these semantics and only sketch the proofs which use them essentially.
+ 
+As a first step we define a set of \emph{semantic} variables
 
 \[
-\begin{array}{rcll}
-  c & = & R_i^{k_i}(\mathcal{T}_\mathcal{X}^1, \ldots, \mathcal{T}_\mathcal{X}^{k_i}) & \mbox{calls} \\
-  C & = & \epsilon \mid c_1 \land \dots \land c_n  & \mbox{conjunction of calls} \\
-  \textgoth{T} & = & \textgoth{T} \lor \textgoth{T} & \mbox{disjunction state} \\
-               & \mid & \inbr{\sigma;\, i;\, C} & \mbox{leaf state}\\[1mm]
+\mathcal{A}=\{\alpha_0,\alpha_1,\dots\}
+\]
+
+A set of \emph{semantic terms} $\mathcal{T}_{\mathcal A}$ then comes in naturally. We stiputate that all semantic variables are linearly ordered making it possible to take them one-by-one
+in a deterministic manner. We will also use conventional notations of $\mathcal{FV}\,(\bullet)$ for the sets of free variables in terms and goals and $\bullet\,[x\gets t]$ for substitutions
+of \emph{semantics} term $t$ for \emph{syntactic} variable $x$ in terms and goals. As the only binder in goals~--- the ``\lstinline|fresh|'' construct~--- can only bind \emph{syntactic}
+variables no capturing can occur during substitutions. We omit the formal definitions due to their triviality.
+
+Next, we define the following set of \emph{states} $\mathfrak{S}$:
+
+\[
+\begin{array}{rccll}
+  \mathfrak{S} & = &     & \times                         & \mbox{final state}\\
+               &   &\mid & \inbr{\theta,\,i,\,r^*}        & \mbox{leaf state}\\
+               &   &\mid & \mathfrak{S}\oplus\mathfrak{S} & \mbox{disjunction}\\
+  r            & = &     & R^k\,(t_1,\dots,t_k)            & \mbox{relation application}
 \end{array}
 \]
 
+A non-final state is a tree of disjunctions with leaves of the form $\inbr{\theta,\,i,\,r^*}$, where $\theta$ is a substitution from semantic variables into semantic terms,
+$i$~--- the index of the first non-allocated semantic variable, and $r^*$~--- a possibly empty list of relation applications $R^k\,(t_1,\dots,t_k)$, where $R^k$~--- relation name,
+$t_i$~--- semantic terms. Informally, a state represents some point during goal evaluation when the results of (non-failed) unifications are collected in substitutions and the residual
+goal is represented in DNF. If a list of relation applications in the leaf of the state is empty, then the substitution represents an answer. A final state corresponds to the end of evaluation.
 
-Это состояние является деревом дизъюнкций. Внутренние узел ``$\lor$'' соотвествует дизъюнкции двух состояний-потомков. Его листья содержат промежуточные подстановки, индекс семантических переменных $i$, и список вызовов. Подстановка --- это отображение из семантических переменных в семантические термы. Оно содержит информацию о текущих переменных и обновляется при исполнении унификаций. Индекс семантических переменных необходим для исполнения операции \lstinline|fresh|, которая вводит семантическую переменную с новым индексом. Список вызовов содержит вызовы отношений $c_i$, которые необходимо довычислить в этой ветке. Число вызовов может равняться нулю, чему соотвествует список $\epsilon$.
-
-Мы расширим множество состояний пустым состоянием,
+We introduce two auxilliary functions to work with states. The first one, \primi{union}, joins two states into the one:
 
 \[
-\textgoth{T} += \emptyset
-\]
-
-\noindent которое соотвествует завершению вычисления.
-
-Также мы введем две вспомогательных функции для работы с состоянием программы. Первая функция $union$ производит объединение двух состояний:
-\[
-union\,(T_1,\, T_2) =
-\left\{
-\begin{array}{rl}
-T_2, & \mbox{if } T_1 = \emptyset \\
-T_1, & \mbox{if } T_1 \not= \emptyset \mbox{ and } T_2 = \emptyset \\
-T_1 \lor T_2, & \mbox{otherwise}.
+\begin{array}{rcl}
+  \primi{union}\,(\times,\, S) & = & S \\
+  \primi{union}\,(S,\, \times) & = & S \\
+  \primi{union}\,(S_1,\, S_2) & = & S_1\oplus S_2
 \end{array}
-\right.
 \]
 
-Если одно из состояний пустое, функция union вернёт второе. Если оба состояния не пусты, то функция вернёт объединенное состояние.
-
-Следующая вспомогательная функция $push$ необходима для конструирования состояния после развертки:
+The next one, \primi{push}, is used to reconstruct a state after unfolding a single relation application:
 
 \[
-push(C, T) =
-\left\{
-\begin{array}{rl}
-\emptyset, &  \!\!\!\mbox{if } T = \emptyset \\
-\!\!\!push(C, T_1) \lor push(C, T_2), & \!\!\!\mbox{if } T = T_1 \lor T_2 \\
-\inbr{\sigma;\, i;\, C_1 \land \bar{C} \land C_2}, & \!\!\!\mbox{if } T = \inbr{\sigma;\, i;\, \bar{C}} \\  & \!\!\!\mbox{ and } C \!=\! C_1\! \land\! \Box\! \land\! C_2
+\begin{array}{rcl}
+  \primi{push}\,(\_,\,\times) & = & \times\\
+  \primi{push}\,(c,\,S_1\oplus S_2) & = & \primi{push}\,(c,\,S_1)\oplus\primi{push}\,(c,\,S_2)\\
+  \primi{push}\,(\rho\Box\pi,\,\inbr{\theta,\,i,\,\sigma}) & = & \inbr{\theta,\,i,\,\rho\sigma\pi}
 \end{array}
-\right.
 \]
 
-Первый аргумент этой функции --- это список вызовов, который содержит \emph{дырку} ``$\Box$''. На этом месте стоял вызов, который мы развернули. Второй аргумент --- состояние, которое является результатом развертки. Данная функция рекурсивно проходит по состоянию и в каждом листе помещаяет вызовы первого аргумента на место дырки. 
+The first argument of \primi{push} is a list of relation applications which contains a \emph{hole} ``$\Box$''. The hole indicates the place in which
+an unfolded relation application was located. The second argument is a state which represents the result of unfolding. Thus, \primi{push} propagates the
+context of the unfolding through its resulting local state.
 
-Теперь мы определим семантику для операции развертки. Эта семантика (Fig.~\ref{fair:unfolding-semantics}) преобразовывает вызов отношения и подстановку в состояние, которое соответствует телу этого отношения. Так как развертка вызова --- конечный процесс, мы можем описать развертку как семантику большого шага в виде отношения ``$\Rightarrow$''.
+Now we define the semantics for one-step unfolding of relation application. Informally, we take an application of a relation symbol to some semantic term, substitute these
+terms for corresponding arguments in the relation definition body, perform all unifications and transform the rest of the body into DNF. As a result we acquire some state. Note, we
+do not perform unfoldings of relation applications within the body. We describe one-step unfolding in terms of a big-step relation ``$\Rightarrow$'' with the following
+single rule:
 
-\begin{figure}[h!]
+\[
+\begin{array}{cr}
+  \dfrac{R = \lambda \bar{x}. b \qquad \inbr{\theta,\, i,\, \epsilon} \vdash b\,[\bar{x} \leftarrow \bar{t}] \leadsto S}
+      {\inbr{\theta,\,i} \vdash R\,(\bar{t}) \Rightarrow S}
+      &     \ruleno{Unfold}
+\end{array}
+\]
+
+We conventionally denote here $\bar{\bullet}$ vectors of terms or variables. In the conclusion we use a pair of a substitution and a number of first unallocated semantic variable as
+environment; in the premise, however, we need to refer to a yet another, this time small-step, relation ``$\leadsto$'', which uses states as environment. This relation describes the
+local computations within the body of unfolded application.  The definition of this relation is shown in the Fig.~\ref{fair:unfolding-semantics}.
+
+\begin{figure}[t]
 \[\begin{array}{cr}
-
-\dfrac{ R = \lambda \bar{x}. b \qquad \inbr{\sigma;\, i;\, \epsilon} \vdash b[\bar{x} \leftarrow \bar{t}] \leadsto T}
-      {(\sigma, i) \vdash R(\bar{t}) \Rightarrow T}
-&     \ruleno{Unfold} \\[4mm]
-{\emptyset \vdash g \leadsto \emptyset}
-&     \ruleno{Empty} \\[2mm]
-\dfrac{\not\exists \, mgu(t_1, t_2, \sigma)}
-      {\inbr{\sigma;\, i;\, C} \vdash (t_1 \equiv t_2) \leadsto \emptyset}
-&     \ruleno{UnifyFail}  \\[4mm]
-\dfrac{\bar\sigma = mgu(t_1, t_2, \sigma)}
-      {\inbr{\sigma;\, i;\, C} \vdash (t_1 \equiv t_2) \leadsto \inbr{\bar\sigma;\, i;\, C}}
-&     \ruleno{UnifySucc}  \\[4mm]
-      {\inbr{\sigma;\, i;\, C} \vdash F(\bar{t}) \leadsto \inbr{\sigma;\, i;\,C \land R(\bar{t})}}
-&     \ruleno{Call} \\[2mm]
-\dfrac{\inbr{\sigma;\, i+1;\, C} \vdash g[x \leftarrow \alpha_i] \leadsto T}
-      {\inbr{\sigma;\, i;\, C} \vdash \mbox{\lstinline|fresh|} (x)\, g \leadsto T}
-&     \ruleno{Fresh}  \\[4mm]
-\dfrac{\inbr{\sigma;\, i;\, C} \vdash g_1 \leadsto T_1 \qquad \inbr{\sigma;\, i;\, C} \vdash g_2 \leadsto T_1}
-      {\inbr{\sigma;\, i;\, C} \vdash g_1 \lor g_2 \leadsto union(T_1, T_2)}
-&     \ruleno{DisjGoal}  \\[4mm]
-\dfrac{T_1 \vdash g \leadsto T_3 \qquad T_2 \vdash g \leadsto T_4}
-      {T_1 \lor T_2 \vdash g \leadsto union(T_3, T_4)}
-&     \ruleno{DisjState}  \\[4mm]
-\dfrac{\inbr{\sigma;\, i;\, C} \vdash g_1 \leadsto T \qquad T \vdash g_2 \leadsto \bar{T}}
-      {\inbr{\sigma;\, i;\, C} \vdash g_1 \land g_2 \leadsto \bar{T}}
+{\times \vdash g \leadsto \times}
+&     \ruleno{End} \\[3mm]
+\dfrac{\not\exists \, mgu\,(t_1,\, t_2,\, \theta)}
+      {\inbr{\theta,\, i,\, c} \vdash t_1 \equiv t_2 \leadsto \times}
+&     \ruleno{UnifyFail}  \\[6mm]
+\dfrac{\theta^\prime = mgu\,(t_1,\, t_2,\, \theta)}
+      {\inbr{\theta,\, i,\, c} \vdash t_1 \equiv t_2 \leadsto \inbr{\theta^\prime,\, i,\, c}}
+&     \ruleno{UnifySucc}  \\[6mm]
+      {\inbr{\theta,\, i,\, c} \vdash R\,(\bar{t}) \leadsto \inbr{\theta,\, i,\,cR\,(\bar{t})}}
+&     \ruleno{App} \\[3mm]
+\dfrac{\inbr{\theta,\, i+1,\, c} \vdash g\,[x \leftarrow \alpha_i] \leadsto S}
+      {\inbr{\theta,\, i,\, c} \vdash \mbox{\lstinline|fresh|} (x)\, g \leadsto S}
+&     \ruleno{Fresh}  \\[6mm]
+\dfrac{\inbr{\theta,\, i,\, c} \vdash g_1 \leadsto S_1 \qquad \inbr{\theta,\, i,\, c} \vdash g_2 \leadsto S_1}
+      {\inbr{\theta,\, i,\, c} \vdash g_1 \lor g_2 \leadsto \primi{union}\,(S_1,\, S_2)}
+&     \ruleno{DisjGoal}  \\[6mm]
+\dfrac{S_1 \vdash g \leadsto S_3 \qquad S_2 \vdash g \leadsto S_4}
+      {S_1 \oplus S_2 \vdash g \leadsto \primi{union}\,(S_3,\, S_4)}
+&     \ruleno{DisjState}  \\[6mm]
+\dfrac{\inbr{\theta,\, i,\, c} \vdash g_1 \leadsto S \qquad S \vdash g_2 \leadsto S^\prime}
+      {\inbr{\theta,\, i,\, c} \vdash g_1 \land g_2 \leadsto S^\prime}
 &     \ruleno{Conj}
 \end{array}\]
-
-\caption{Big step semantics of unfolding}
+\caption{Small-step semantics of local compuatations}
 \label{fair:unfolding-semantics}
 \end{figure}
 
-Правило [Unfold] является внешним. Поэтому оно единственное содержит символ ``$\Rightarrow$''. Оно запускает процесс развертки вызова $R$ с набором аргументов $\bar{x}$ в контексте подстановки  $\sigma$ и счетчика семантических переменных $i$. Прежде всего, вызов $R$ заменяется на $b$ --- тело отношения. Далее выполняется подстановка термов $\bar{t}$ на место переменных $\bar{x}$ и инициализируется начальное состояние $\inbr{\sigma;\, i;\, \epsilon}$. Далее запускается преобразование тела отношения в состояние с помощью оставшихся правил.
+The rule \rulen{End} propagates a final state through the rest of the computations. The rules \rulen{UnifyFail} and \rulen{UnifySucc} encode unification steps: if there exists the most general
+unifier (MGU) for given terms in given substitution $\theta$, then we update the substitution according to the MGU; otherwise we produce a final state. The rule \rulen{App} preserves a relation
+application, adding it to the list of applications in the current leaf state. The rule \rulen{Fresh} corresponds to a fresh semantic variable allocations. We take the first non-allocated semantic
+variable and substitute it for the fresh-bound syntactic one; we also increment the number of non-allocated variables. The rules \rulen{DisjGoal} and \rulen{DisjState} describe the evaluation
+of disjunctions. The first one evaluates both disjuncts and joins the resulting states by mean of primitive \primi{union}. The second handles the case when current environment state is a disjunction
+itself. As in the first case, we perform independent evaluations and join the results. Finally, the rule \rulen{Conj} describes conjunction evaluation. Here we first evaluate the left subgoal,
+acquiring a state $S$, and then evaluate the right one in the context $S$, obtaining the final result $S^\prime$. Note, as we do not perform any unfoldings, the process always converges with
+some state.
 
-Правило \rulen{Empty} обрабатывает случай пустого состояния. Правила \rulen{UnifyFail} и \rulen{UnifySucc} исполняют унификацию. Если существует ноиболее общий унификатор (MGU), то мы применяем правило rulen{UnifySucc}, которое обновляет подстановку. Если MGU не существует, то мы применияем правило \rulen{UnifyFail}, что приводит к пустому состоянию.
+Having one-step unfolding at our command, we can define the angelic semantics itself (Fig.~\ref{fair:angelic-semantics}). The semantics is defined in terms of a labeled transition
+system over the set of states. The set of labels is defined as
 
-Так как развертка должна развернуть вызов ровно один раз, все вложенные вызовы мы оставляем без изменений. Данное поведение описано в правиле \rulen{Call}. Вложенный вызов не вычисляется, а помещаяется в список вызовов состояния.
-
-Правило \rulen{Fresh} соответствует введению свежей переменной. В данном правиле мы заменяем синтаксическую переменную на семантическую переменную. Также мы увеличиваем счетчик семантических переменных. 
-
-Правила \rulen{DisjGoal} и [DisjState] необходимы для исполнения дизъюнкции. Первое правило вычисляет оба дизъюнкта и объединяет их в новое состояние с помощью вспомогательной функции union. Второе правило обрабатывает дизъюнкцию, содержащуюся в состоянии. Как и в первом правиле мы производим два независимых вычисления, а затем объединяем результаты в новое состоение.
-
-Оставшиеся правило \rulen{Conj} описывает вычисление конъюнкции. В этом случае мы вычисляем первый конъюнкт в состояние $T$, а затем вычисляем второй конъюнкт в контесте состояния $T$. Таким образом, второй конъюнкт будет исполнен в контексте всех листьев состояния $Т$. Отметим, что, если первый конъюнкт вычислятся в пустое состояние, то мы сможем применить только правило\rulen{EmptySet} для 
-
-Наконец, мы определим множество меток, определяющее ответы семантики:
 \[
-L = \circ \mid \sigma.
+\mathcal{L} = \circ \mid \theta.
 \]
-Метка ``$\circ$'' обозначает отсутствие ответа, в противном случае ответом является подстановка.
+
+where ``$\circ$'' designates the absence of an answer, обозначает отсутствие ответа, в противном случае ответом является подстановка.
 
 Теперь у нас есть всё необходимое, чтобы определить недетерминированную семанику реляционного языка (Fig.~\ref{fair:classic-semantics}). Данная семантика малого шага последовательно преобразовывает состояние и периодически производит ответы, которыми являются итоговые подстановки, которые помещаются над символом перехода ``$\xrightarrow{}$''. В противном случае над символом перехода будет помещена метка ``$\circ$''.
 
 \begin{figure}[h!]
 \[\begin{array}{cr}
-     {\inbr{\sigma;\, i;\, \epsilon} \xrightarrow{\sigma} \emptyset}  
+     {\inbr{\theta;\, i;\, \epsilon} \xrightarrow{\theta} \emptyset}  
 &     \ruleno{Answer} \\[2mm]
-\dfrac{(\sigma, i) \vdash c \Rightarrow T}
-      {\inbr{\sigma;\, i;\, C_1 \land c \land C_2} \xrightarrow{\circ} push(C_1 \land \Box \land C_2, T)}
+\dfrac{(\theta, i) \vdash c \Rightarrow T}
+      {\inbr{\theta;\, i;\, C_1 \land c \land C_2} \xrightarrow{\circ} push(C_1 \land \Box \land C_2, T)}
 &     \ruleno{ConjUnfold} \\[4mm]
 \dfrac{T_1 \xrightarrow{\alpha} \emptyset}
       {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
@@ -127,7 +144,7 @@ L = \circ \mid \sigma.
 &     \ruleno{DisjStep}
 \end{array}\]
 \caption{Angelic semantics of \mk}
-\label{fair:classic-semantics}
+\label{fair:angelic-semantics}
 \end{figure}
 
 Если текущее состояние является листом и не содержит вызовов, значит мы получили ответ. В этом случае мы применяем правило \rulen{Answer}.

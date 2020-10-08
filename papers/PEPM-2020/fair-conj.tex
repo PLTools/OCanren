@@ -48,7 +48,10 @@
 \acmPrice{15.00}
 \acmISBN{978-1-4503-XXXX-X/18/06}
 
-\usepackage[russian]{babel}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage[english,russian]{babel}
 \usepackage{listings}
 \usepackage[section]{placeins}
 \usepackage{multirow}
@@ -92,6 +95,7 @@ language=ocanren
 \newcommand{\mk}{\textsc{miniKanren}\xspace}
 \newcommand{\inbr}[1]{\langle #1 \rangle}
 \renewcommand{\emptyset}{\varnothing}
+\newcommand{\primi}[1]{\mbox{\bf #1}}
 
 %%
 %% Submission ID.
@@ -114,6 +118,7 @@ language=ocanren
 
 %%
 %% end of the preamble, start of the body of the document source.
+\sloppy
 \begin{document}
 
 %%
