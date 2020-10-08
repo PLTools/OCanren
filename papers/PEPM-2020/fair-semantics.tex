@@ -1,114 +1,133 @@
 \section{Fair conjunction by well-quasi ordering}
 \label{sec:fair-semantics}
 
-В этой секции мы рассмотрим параметризованную семантику языка \mk, которая с помощью предиката-параметра динамически определяет глубину раскркутки вызова. Также мы рассмотрим достаточное условие на предикат, при котором эта семантка становится справедливой.
+В этой секции мы рассмотрим детерминированную параметризованную семантику языка \mk, которая с помощью предиката-параметра динамически определяет глубину раскркутки вызова. Также мы рассмотрим влияние нескольких предикатов на свойства семантики. Наконец, мы укажем достаточное условие на предикат, при котором эта семантка становится справедливой.
 
-Прежде всего нам снова необходимо переопределить множество состояний:
+Прежде всего нам необходимо переопределить множество состояний:
 
 \[
 \begin{array}{rcll}
-H & = & \epsilon \mid (\sigma, c) : H & \mbox{history of unfolded calls}\\
-C & = & \epsilon \mid c_1^H \land \dots \land c_n^H & \mbox{conjunction of calls} \\
-  \textgoth{T} & = & \textgoth{T} \lor \textgoth{T} & \mbox{disjunction state} \\
-               & \mid & \inbr{\sigma;\, i;\, C} & \mbox{leaf state}\\[1mm]
+\mathcal{H} & = & \epsilon \mid (\theta, r) : \mathcal{H} & \mbox{history of unfolded applications}\\
+\mathfrak{S} & = & \inbr{\theta;\, i;\, (r, \mathcal{H})^*} & \mbox{leaf state with histories}\\
+             & \mid &\mathfrak{S} \oplus \mathfrak{S} & \mbox{disjunction state} \\[1mm]
 \end{array}
 \]
 
-\noindent Теперь в состоянии каждый вызов помечен историей развёрток $h$, предшествующих появлению этого вызова. Данная история содержит исчерпывающую информацию, которая требуется для определения необходимости развертки вызова.  
+\noindent Теперь в состоянии каждому вызову соответствует $h$ --- история развёрток, предшествующих появлению этого вызова. Данная история содержит исчерпывающую информацию, которая требуется для определения необходимости развертки вызова.  
+
+Отметим, что синтаксис, вспомогательная функция {\bf union}, семантика развертки остается без изменений. Функция {\bf push} также сохраняет свое поведение, однако теперь она принимает набор  с дыркой пар вызовов и историй и обновленное состояние. Дополнительно нам понадобится функция {\bf set}, которая принимает состояние без историй $S$ и историю $h$. Эта история присоединяется к каждому вызову в состоянии:
+
+\[
+\begin{array}{rcl}
+    \primi{set}(\times, \_) & = & \times \\
+    \primi{set}(S_1 \oplus S_2, h) & = & \primi{set}(S_1, h) \oplus \primi{set}(S_2, h) \\
+    \primi{set}(\inbr{\theta;\, i;\, r_1\ldots r_n}, h) & = & \inbr{\theta;\, i;\, (r_1, h) \ldots (r_n, h)} 
+\end{array}
+\]
 
 Предикат $pred$, которым мы параметризуем семантику, принимает подстановку, вызов и историю этого вызова. Он возвращает \lstinline|true|, если вызов необходимо разворачивать дальше. И возвращает \lstinline|false|, если необходимо перейти к следующему конъюнкту.
 
 \begin{figure}[h!]
 \[\begin{array}{cr}
-      {\inbr{\sigma;\, i;\, \epsilon} \xrightarrow{\sigma}_p \emptyset}  
+      {\inbr{\theta;\, i;\, \epsilon} \xrightarrow{\theta}_p \times}  
 &     \ruleno{Answer} \\[4mm]
       \dfrac
       {\begin{array}{c}
            \bigvee_{j=1}^n h_j \not= \epsilon \\
-           \bigwedge_{j=1}^n pred(\sigma, c_j, h_j) = \mbox{\lstinline{false}}
+           \bigwedge_{j=1}^n pred(\theta, r_j, h_j) = \mbox{\lstinline{false}}
       \end{array}}
       {\begin{array}{l}
-      \inbr{\sigma;\, i;\, c_1^{h_1} \land \ldots \land c_n^{h_n}} \xrightarrow{\circ}_p \\
-      \phantom{XXXX} \inbr{\sigma;\, i;\, c_1^\epsilon \land \ldots \land c_n^\epsilon}
+      \inbr{\theta;\, i;\, (r_1,h_1) \ldots (r_n,h_n)} \xrightarrow{\circ}_p \\
+      \phantom{XXXX} \inbr{\theta;\, i;\, (r_1,\epsilon) \ldots 
+      (r_n, \epsilon)}
       \end{array}}
       &  \ruleno{ConjClear} \\[10mm]
       
       \dfrac
       {
         \begin{array}{c}
-          \bigwedge_{j=1}^{k-1} pred(\sigma, c_j, h_j) = \mbox{\lstinline{false}} \\
-          pred(\sigma, c_k, h_k) = \mbox{\lstinline{true}} \\
-          (\sigma, i) \vdash c_k \Rightarrow T \\
-          set(T, \, (\sigma, c_k) : h_k) = \bar{T}
+          \bigwedge_{j=1}^{k-1} pred(\theta, r_j, h_j) = \mbox{\lstinline{false}} \\
+          pred(\theta, r_k, h_k) = \mbox{\lstinline{true}} \\
+          (\theta, i) \vdash r_k \Rightarrow S \\
+          \primi{set}(S, \, (\theta, r_k) : h_k) = S'
         \end{array}
       }
       {
         \begin{array}{l}
-          \inbr{\sigma;\, i;\, c_1^{h_1} \land \ldots \land c_{k-1}^{h_{k-1}} \land c_k^{h_k} \land C_2} \xrightarrow{\circ}_p \\
-          \phantom{XXXX}push(c_1^{h_1} \land \ldots \land c_{k-1}^{h_{k-1}} \land \Box \land C_2, \bar{T})
+          \inbr{\theta;\, i;\, (r_1,h_1) \ldots (r_{k-1},h_{k-1}) (r_k, h_k) \pi} \xrightarrow{\circ}_p \\
+          \phantom{XXXX}\primi{push}( (r_1,h_1) \ldots (r_{k-1},h_{k-1})\Box \pi, S')
          \end{array}
         }
 &     \ruleno{ConjUnfold} \\[10mm]
-\dfrac{T_1 \xrightarrow{\alpha}_p \emptyset}
-      {T_1 \lor T_2 \xrightarrow{\alpha}_p T_2}
+\dfrac{S_1 \xrightarrow{\alpha}_p \times}
+      {S_1 \oplus S_2 \xrightarrow{\alpha}_p S_2}
 &     \ruleno{Disj} \\[6mm]
-\dfrac{T_1 \xrightarrow{\alpha}_p \bar{T_1} \qquad \bar{T_1} \not= \emptyset}
-      {T_1 \lor T_2 \xrightarrow{\alpha}_p T_2 \lor\bar{T_1}}
+\dfrac{S_1 \xrightarrow{\alpha}_p S'_1 \qquad S'_1 \not= \times}
+      {S_1 \oplus S_2 \xrightarrow{\alpha}_p S_2 \oplus S'_1}
 &     \ruleno{DisjStep}
 \end{array}\]
-\caption{Semantics of fair conjunction by structural recursion}
+\caption{Semantics of \mk with predicate}
 \label{fair:pred-fair-semantics}
 \end{figure}
 
-Семантика, параметризованная предикатом раскрутки представлена на изображении~\ref{fair:pred-fair-semantics}. Так как мы обновляем только поведение конъюнкции, то правила \rulen{Answer}, \rulen{Disj} и \rulen{DisjStep} остаются без изменений. За обработку конъюнкций отвечают правила \rulen{ConjClear} и \rulen{ConjUnfold}. Если предикат истинен хотя бы для одного вызова, то мы применяем правило\rulen{ConjUnfold} и разворачиваем самый левый такой вызов, пополняя историю новых вызовов с помощью функции $set$. Если предикат ложен на всех вызовах, и хотя бы одна история не пуста, то мы применяем правило \rulen{ConjClear}, которое стирает историю всех вызовов, заменяя на $\epsilon$.
+Семантика, параметризованная предикатом раскрутки представлена на изображении~\ref{fair:pred-fair-semantics}. Так как мы обновляем только поведение конъюнкции, то правила \rulen{Answer}, \rulen{Disj} и \rulen{DisjStep} остаются без изменений. За обработку конъюнкций отвечают правила \rulen{ConjClear} и \rulen{ConjUnfold}. Если предикат истинен хотя бы для одного вызова, то мы применяем правило\rulen{ConjUnfold} и разворачиваем самый левый такой вызов, пополняя историю новых вызовов с помощью функции {\bf set}. Если предикат ложен на всех вызовах, и хотя бы одна история не пуста, то мы применяем правило \rulen{ConjClear}, которое стирает историю всех вызовов, заменяя на $\epsilon$.
 
-Отметим, что не всякий предикат сохраняет soundness. Например, при предикате, который всегда возвращает \lstinline{false} к состоянию $\inbr{\{\};\, 1; \, (f(\alpha_0))^\epsilon}$ ни одно из правил не может быть применено. Для гарантии soundness нам необходмо портебовать, чтобы предикат был истинным при пустой истории $\epsilon$.
+Отметим, что не всякий предикат сохраняет soundness. Например, при предикате, который всегда возвращает \lstinline{false} к состоянию $\inbr{\{\};\, i; \, (r, \epsilon)}$ ни одно из правил не может быть применено. Для гарантии soundness нам необходмо портебовать, чтобы предикат был истинным при пустой истории $\epsilon$.
 
 \begin{lemma}
- Если $\forall \sigma, c. \; pred(\sigma, c, \epsilon) =$ \lstinline{true}, тогда семантика soundness.
+\label{lemma:pred-property}
+ If for any substitution $\theta$ and for any relation application $r$,  $pred(\theta, r, \epsilon) =$ \lstinline{true}, then for any state $S \not= \times$ exists state $S'$, 
+ $$S \xrightarrow{\alpha}_p S'$$.
 \end{lemma}
+
+Все дальнейшие предикаты, которые мы будем рассматривать удовлетворяют условию леммы~\ref{lemma:pred-property} тривиальным образом.
 
 Семантика, параметризрованная предикатом достаточна гибка в настройке. В зависимости от выбора предиката мы можем получить семантики с очень разными поведениями. Например, при константном предикате
 \[
-pred_{\mbox{\lstinline{true}}}(\sigma, c, h) = \mbox{\lstinline{true}} 
+pred_{\mbox{\lstinline{true}}}(\theta, r, h) = \mbox{\lstinline{true}} 
 \]
 \noindent мы получим left-biased семантку, которая всегда вычисляет самый левый вызов. Таким же свойством обладают классические реализации \mk.
 
 Если предикат будет следить за размером истории
 \[
-pred_N(\sigma, c, h) =  length(h) \leq N
+pred_N(\theta, r, h) =  length(h) \leq N
 \]
 
-\noindent мы получим наивную справедливую семантику, описанную в главе~\ref{sec:naive}.
+\noindent мы получим семантику, которая последовательно разворачивает вызовы слева направо на фиксированную глубину $N > 0$. Данная техника схожа с $\bot$-avoiding streams~\cite{fair:WillThesis} --- основаной на ferns~\cite{fair:ferns} структуре данных, разработанной для избегания расхождения. Если в случае с $\bot$-avoiding stream мы получаем полноту вычисления дизъюнктов, то наше ограничение количества шагов в конъюнкте позволяет получить полноту развёртки конъюнктов.
 
 Важным для нас классом предикатов являются predicates by well-quasi-ordering. Пусть $(\leq)$ --- well-quasi-ordering над множеством кортежей из подстановок $\sigma$ и вызовов $c$. Тогда
 \[
-pred_\leq(\sigma, c, h) = \left\{
+pred_\leq(\theta, r, h) = \left\{
 \begin{array}{rl}
-\mbox{\lstinline{true}}  & \mbox{if } \exists (\sigma_0, c_0) \in h. \, (\sigma, c) \leq (\sigma_0, c_0) \\
+\mbox{\lstinline{true}}  & \mbox{if } \exists (\theta_0, r_0) \in h. \, (\theta, r) \leq (\theta_0, r_0) \\
 \mbox{\lstinline{false}} & \mbox{otherwise}
 \end{array}
 \right.
 \]
 
-\noindent Такой предикат гарантирует, что всякий вызов в состоянии будет развёрнут за конечное число шагов семантики. Для формулировки этого факта введём обозначение $\boxed{c}$ --- boxed вызов, обрабатываемый семантикой также, как и исходый вызов $c$. Тогда верен следующий факт.
+\noindent Такой предикат гарантирует, что всякий вызов в состоянии будет развёрнут за конечное число шагов семантики. 
 
 \begin{lemma}
-Let $pred$ is a predicate by well-quasi-ordering, $T$ is a state, $c \in T$ is a call. Then $T[c \leftarrow \boxed{c}] \rightarrow_p^* T'$ and $\boxed{c} \not\in T'$.
+Let $pred$ is a predicate by well-quasi-ordering, $S$ is a state, $r \in S$ is a relation application. Then exists state $S'$,
+$$S[r \leftarrow \boxed{r}] \rightarrow_p^* S' \mbox{and}\;\, \boxed{r} \not\in S'.$$
 \end{lemma}
+
+\noindent Здесь $\boxed{r}$ --- boxed вызов, обрабатываемый семантикой также, как и исходый вызов $r$, $S[r \leftarrow \boxed{r}]$ --- подстановка $\boxed{r}$ вместо вызов $r$
 
 Более того, predicate by well-quasi-ordering гарантирует максимальную сходимость в сравнении с ангеличиеской семантикой.
 
 \begin{theorem}
-Let $pred$ is a predicate by well-quasi-ordering, $T$ is a state.
-If $T \rightarrow^* \emptyset$ in angelic semantics then $T \rightarrow^*_p \emptyset$.
+Let $pred$ is a predicate by well-quasi-ordering, $S$ is a state.
+If $S \rightarrow^* \times$ in angelic semantics then $S \rightarrow^*_p \times$.
 \end{theorem}
 
 Из этой теоремы следует, что семантика справедлива, то есть не зависит от порядка конъюнктов, ведь сходимость ангельской семантики не зависит от порядка конъюнктов.
 
 \begin{corollary}
-Let $c_1, c_2$ are calls, $\sigma$ is substitution and $i \in \mathbb{N}$. If
-$\inbr{\sigma;\, i;\, c_1 \land c_2} \rightarrow^*_p \emptyset$ then $\inbr{\sigma;\, i;\, c_2 \land c_1} \rightarrow^*_p \emptyset$.
+Let $r_1, r_2$ are relation applications, $\theta$ is substitution and $i \in \mathbb{N}$. If
+$$\inbr{\theta;\, i;\, (r_1,\epsilon) (r_2,\epsilon)} \rightarrow^*_p \times$$ 
+then 
+$$\inbr{\theta;\, i;\,(r_2,\epsilon) (r_1,\epsilon)} \rightarrow^*_p \times.$$
 \end{corollary}
 
 \begin{comment}
