@@ -157,10 +157,10 @@ placed right. This switching, called \emph{interleaving}, is an important featur
 two rules for disjunction literally repeat corresponding rules in~\cite{fair:semantics}.
 
 In order to apply angelic semantics to a specification $D_1 D_2\ldots D_k \diamond g$ we need to replace all free variables in $g$ with distinct semantic
-variables and convert in into the initial state $S_g$:
+variables and convert in into the initial state $S^0\,(g)$:
 
 \[
-\inbr{\Lambda,\, n,\, \epsilon} \vdash g\,[x_0 \leftarrow \alpha_0, \ldots, x_{n-1} \leftarrow \alpha_{n-1}] \leadsto S_g
+\inbr{\Lambda,\, n,\, \epsilon} \vdash g\,[x_0 \leftarrow \alpha_0, \ldots, x_{n-1} \leftarrow \alpha_{n-1}] \leadsto S^0\,(g)
 \]
 
 Here we assume $\mathcal{FV}\,(g)=\{x_0,\dots,x_{n-1}\}$, $\Lambda$~--- empty substitution. The definitions of the specification are used later during the unfolding steps.
@@ -207,17 +207,16 @@ The following lemma justifies the use of angelic semantics:
   The soundness, on the other hand, requires the whole soundness proof from~\cite{fair:semantics} to be repeated. 
 \end{proof}
 
-Angelic semantics allows us to formally define what we can call the \emph{fairness} of conjunction evaluation strategy.
+Angelic semantics allows us to formally define what we can call the \emph{fairness} of conjunction evaluation strategy. 
 
 \begin{definition}[Convergence]
-  A goal $g$ \emph{converges} (notation: $g\Downarrow$) if $\inbr{S_g,\,\times}\in\rightarrow^*$; in other words, if there exists a derivation sequence from the initial state for $g$ to a
+  A goal $g$ \emph{converges} (notation: $g\Downarrow$) if $\inbr{S^0\,(g),\,\times}\in\rightarrow^*$; in other words, if there exists a derivation sequence from the initial state for $g$ to a
   final state.
 \end{definition}
 
+\begin{definition}[Fairness]
+  A sound and complete semantics in the form of LTS is \emph{fair} if a goal $g$ converges to a final state whenever $g\Downarrow$. 
+\end{definition}
 
-\begin{comment}
-При этом нами было доказано, что данная семантика эквивалентна денатоционнй семантике \mk~\cite{fair:semantics}, поэтому любой порядок развёрток приводит к одинаковому набору ответов с точностью до порядка этих ответов.
-\textcolor{red}{Понятно, что надо подробнее о доказательстве. Но чтобы хотя бы сформулировать теоремы о полноте и корректности надо описать, что такое represent function, след семантики, денотационный образ состояния и т.д.. Хочу обсудить, насколько подробно нужно.}
+In the next section we present a fair and deterministic semantics for \mk.
 
-В отличие от классических left-biased реализаций \mk данная недетерминированная семантика сходится вне зависимости от порядка конъюнктов. Однако она недетерминирована, что сводит к нулю практическую ценность данной семантики. Поэтому в следующих главах мы обсудим две детерминированные семантики, которые сходятся тогда и только тогда, когда сходится недетерминированная.
-\end{comment}
