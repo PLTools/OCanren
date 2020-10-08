@@ -1,4 +1,4 @@
-\section{Angelic Semantics}
+\section{Angelic Semantics and Fairness}
 \label{sec:angelic-semantics}
 
 In this section we introduce an \emph{angelic} operational semantics of \mk. Instead of a fixed order of conjunct evaluation this semantics chooses a conjunct nondeterministically
@@ -7,7 +7,7 @@ would make it to converge.
 
 The development of this (and the following) section essentially relies on the results reported in~\cite{fair:semantics}. In the paper, two semantics for \mk are presented. The first one is
 denotational set-theoretic close to the least Herbrand model~\cite{Lloyd}; the second is operational semantics of relational search with interleaving in the form of labelled transition
-system~\cite{LTS}, which corresponds to the informal description given in the previous section. Then the correctness and completeness of interleaving search w.r.t. the denotational semantics
+system~\cite{LTS}, which corresponds to the informal description given in the previous section. Then the soundness and completeness of interleaving search w.r.t. the denotational semantics
 is formally established and mechinized using \textsc{Coq} proof assistant~\cite{Coq}. It is also establishes a corollary that for correct and complete operational semantics some
 transformations of goals are equivalent (w.r.t. the set of answers they provide). These transformations will play an important role is justifying the fairness of the semantics we present
 in the next section. Due to space limitations, however, we do not present here these semantics and only sketch the proofs which use them essentially.
@@ -27,10 +27,13 @@ Next, we define the following set of \emph{states} $\mathfrak{S}$:
 
 \[
 \begin{array}{rccll}
-  \mathfrak{S} & = &     & \times                         & \mbox{final state}\\
-               &   &\mid & \inbr{\theta,\,i,\,r^*}        & \mbox{leaf state}\\
-               &   &\mid & \mathfrak{S}\oplus\mathfrak{S} & \mbox{disjunction}\\
-  r            & = &     & R^k\,(t_1,\dots,t_k)            & \mbox{relation application}
+  \mathfrak{S} & = &      & \times         & \mbox{final state}\\
+               &   & \mid & \mathfrak{S}^o & \mbox{non-final state}\\
+
+  \mathfrak{S}^o & = &     & \inbr{\theta,\,i,\,r^*}            & \mbox{leaf state}\\
+                 &   &\mid & \mathfrak{S}^o\oplus\mathfrak{S}^o & \mbox{disjunction}\\
+  
+  r              & = &     & R^k\,(t_1,\dots,t_k)               & \mbox{relation application}
 \end{array}
 \]
 
@@ -125,67 +128,96 @@ system over the set of states. The set of labels is defined as
 \mathcal{L} = \circ \mid \theta.
 \]
 
-where ``$\circ$'' designates the absence of an answer, обозначает отсутствие ответа, в противном случае ответом является подстановка.
-
-Теперь у нас есть всё необходимое, чтобы определить недетерминированную семанику реляционного языка (Fig.~\ref{fair:classic-semantics}). Данная семантика малого шага последовательно преобразовывает состояние и периодически производит ответы, которыми являются итоговые подстановки, которые помещаются над символом перехода ``$\xrightarrow{}$''. В противном случае над символом перехода будет помещена метка ``$\circ$''.
+where ``$\circ$'' designates the absence of an answer, $\theta$~--- an answer in the form of a substitution.
 
 \begin{figure}[h!]
 \[\begin{array}{cr}
-     {\inbr{\theta;\, i;\, \epsilon} \xrightarrow{\theta} \emptyset}  
-&     \ruleno{Answer} \\[2mm]
-\dfrac{(\theta, i) \vdash c \Rightarrow T}
-      {\inbr{\theta;\, i;\, C_1 \land c \land C_2} \xrightarrow{\circ} push(C_1 \land \Box \land C_2, T)}
-&     \ruleno{ConjUnfold} \\[4mm]
-\dfrac{T_1 \xrightarrow{\alpha} \emptyset}
-      {T_1 \lor T_2 \xrightarrow{\alpha} T_2}
-&     \ruleno{Disj} \\[4mm]
-\dfrac{T_1 \xrightarrow{\alpha} \bar{T_1} \qquad \bar{T_1} \not= \emptyset}
-      {T_1 \lor T_2 \xrightarrow{\alpha} T_2 \lor\bar{T_1}}
+     {\inbr{\theta,\, i,\, \epsilon} \xrightarrow{\theta} \times}  
+&     \ruleno{Answer} \\[3mm]
+\dfrac{\inbr{\theta,\, i} \vdash c \Rightarrow S}
+      {\inbr{\theta,\, i,\, \rho c \pi} \xrightarrow{\circ} \primi{push}\,(\rho \Box \pi, S)}
+&     \ruleno{ConjUnfold} \\[6mm]
+\dfrac{S_1 \xrightarrow{\alpha} \times}
+      {S_1 \oplus S_2 \xrightarrow{\alpha} S_2}
+&     \ruleno{Disj} \\[6mm]
+\dfrac{S_1 \xrightarrow{\alpha} S^\prime_1 \qquad S^\prime_1 \not= \times}
+      {S_1 \oplus S_2 \xrightarrow{\alpha} S_2 \oplus S^\prime_1}
 &     \ruleno{DisjStep}
 \end{array}\]
 \caption{Angelic semantics of \mk}
 \label{fair:angelic-semantics}
 \end{figure}
 
-Если текущее состояние является листом и не содержит вызовов, значит мы получили ответ. В этом случае мы применяем правило \rulen{Answer}.
+The rule \rulen{Answer} corresponds to a situation when no relation application remain in the state under consideration; in this case we return current substitution as an answer.
+If current state is a leaf with a non-empty list of relation applications, then we non-deterministacally choose one for a one-step unfolding (rule \rulen{ConjUnfold}). After the
+unfolding we construct a new state by pushing the remaining list of applications into the resulting state. Finally, if the current state is a disjunction, then we make a step in
+the left disjunct $S_1$. If the result is a final state, we (by the rule \rulen{Disj}) set the residual state to $S_2$. Otherwise, by rule \rulen{DisjStep}, we construct a
+new residual state by forming a new disjunction where the right substate of the original one is placed left and the residual state after the evaluation of the left one in
+placed right. This switching, called \emph{interleaving}, is an important feature of relational search, which makes it complete~\cite{fair:interleaving}. These
+two rules for disjunction literally repeat corresponding rules in~\cite{fair:semantics}.
 
-Если текущее состояние является листом, но содержит хотя бы один вызов, мы применяем правило \rulen{ConjUnfold}. Оно недетерминировано выбирает произвольный конъюнкт $c$ и производит его развертку. Затем мы конструируем новое состояние из оставшихся вызовов $C_1$ и $C_2$ и результата развертки $T$ с помощью функции $push$.
-
-
-Наконец, если текущее состояние является дизюнкцией, то мы производим вычисление в левом дизъюнкте $T_1$. В зависимости от результата мы приминяем или правило \rulen{Disj}, или правило \rulen{DisjStep}. Первое правило соответствует пустому состоянию и возвращает второй дизъюнкт $T_2$ в качестве результата. Второе правило соответствует непустому состоянию $\bar{T_1}$ и возвращает новое сотояние ($T_2 \lor \bar{T_1}$). Перестановка дизъюнктов --- необходимое действие, которое называется \emph{interleaving}~\cite{fair:interleaving}. Оно гарантирует полноту поиска.
-
-Для того чтобы сделать начальное состояние $T_0$ из спецификации $(D_1 D_2\ldots D_k \diamond g$), нам необходимо в цели $g$ заменить все свободные синтаксические переменные на семантические, а также преобразовать её в состояние:
-\[
-{\inbr{\{\};\, n;\, \epsilon} \vdash g[x_0 \leftarrow \alpha_0, \ldots, x_{n-1} \leftarrow \alpha_{n-1}]} \leadsto T_0.
-\]
-
-\noindent Определения отношений $D_1, D_2, \ldots, D_k$ используются при развёртке отношений.
-
-Данная семантика каждую спецификацию недетерминировано вычисляет с произвольным порядком разверток конъюнктов. При этом для конкретной спецификации при одном порядке развёрток вычисление может сходится, а при другом расходиться. 
-
-Например, цель из главы~\ref{sec:exposition} (\lstinline|fail$\!^o$ _ /\ div$\!^o$ _|) сойдется при развёртке перого конъюнкта:
+In order to apply angelic semantics to a specification $D_1 D_2\ldots D_k \diamond g$ we need to replace all free variables in $g$ with distinct semantic
+variables and convert in into the initial state $S_g$:
 
 \[
-\dfrac
-{\dfrac
-{\inbr{\{\}; \, 1; \epsilon} \vdash A \equiv B \leadsto \emptyset}
-{(\{\}, 1) \vdash\! \mbox{\lstinline|fail|}\!^o\, \alpha_0  \Rightarrow \emptyset}}
-{\inbr{\{\}; \, 1; \, \mbox{\lstinline|fail|}\!^o\, \alpha_0 \land \mbox{\lstinline|div|}\!^o\, \alpha_0} \xrightarrow{\circ} \emptyset}
+\inbr{\Lambda,\, n,\, \epsilon} \vdash g\,[x_0 \leftarrow \alpha_0, \ldots, x_{n-1} \leftarrow \alpha_{n-1}] \leadsto S_g
 \]
 
-\noindent Действительно развёртка вызова \lstinline|fail$\!^o$| за один шаг приводит нас к пустому состоянию. В то же при развётрке только второго конъюнкта вычисление разойдётся:
+Here we assume $\mathcal{FV}\,(g)=\{x_0,\dots,x_{n-1}\}$, $\Lambda$~--- empty substitution. The definitions of the specification are used later during the unfolding steps.
+
+While angelic semantics preserves the deterministic left-to-right interleaving of conventional \mk search, it treats the conjunctions nondeterministically, thus
+describing all possible their evaluation scenarios. For example, the goal
+
+\begin{lstlisting}
+  fail$\!^o$ _ /\ div$\!^o$ _
+\end{lstlisting}
+
+from the previous section will converge according to the angelic semantics if we intentionally choose to unfold the left conjunct:
 
 \[
 \dfrac
 {\dfrac
-{\inbr{\{\}; \, 1; \epsilon} \vdash \mbox{\lstinline|div|}\!^o\, \alpha_0 \leadsto \inbr{\{\}; \, 1; \mbox{\lstinline|div|}\!^o\, \alpha_0}}
-{(\{\}, 1) \vdash\! \mbox{\lstinline|div|}\!^o\, \alpha_0  \Rightarrow \inbr{\{\}; \, 1; \mbox{\lstinline|div|}\!^o\, \alpha_0}}}
-{\inbr{\{\}; \, 1; \, \mbox{\lstinline|fail|}\!^o\, \alpha_0 \land \mbox{\lstinline|div|}\!^o\, \alpha_0} \xrightarrow{\circ} \inbr{\{\}; \, 1; \, \mbox{\lstinline|fail|}\!^o\, \alpha_0 \land \mbox{\lstinline|div|}\!^o\, \alpha_0}}
+{\inbr{\Lambda, \, 1,\, \epsilon} \vdash A \equiv B \leadsto \times}
+{\inbr{\Lambda,\, 1} \vdash\! \mbox{\lstinline|fail|}\!^o\, \alpha_0  \Rightarrow \times}}
+{\inbr{\Lambda,\, 1, \, \mbox{\lstinline|fail|}\!^o\, \alpha_0 \land \mbox{\lstinline|div|}\!^o\, \alpha_0} \xrightarrow{\circ} \times}
 \]
 
-\noindent Состояние до развёртки вызова \lstinline|div$\!^o$| совпадает с состоянием после развёртки, поэтому, если разворачивать только вызов \lstinline|div$\!^o$|, вычисление расходится.
+Indeed, the unfolding of  \lstinline|fail$\!^o$| will lead us to the final state in one step. At the same time if we choose to unfold only the right conjunct, the
+evaluation will diverge:
 
+\[
+\dfrac
+{\dfrac
+{\inbr{\Lambda, \, 1, \epsilon} \vdash \mbox{\lstinline|div|}\!^o\, \alpha_0 \leadsto \inbr{\Lambda, \, 1, \mbox{\lstinline|div|}\!^o\, \alpha_0}}
+{\inbr{\Lambda,\, 1} \vdash\! \mbox{\lstinline|div|}\!^o\, \alpha_0  \Rightarrow \inbr{\Lambda, \, 1, \mbox{\lstinline|div|}\!^o\, \alpha_0}}}
+{\inbr{\Lambda, \, 1, \, \mbox{\lstinline|fail|}\!^o\, \alpha_0 \land \mbox{\lstinline|div|}\!^o\, \alpha_0} \xrightarrow{\circ} \inbr{\Lambda, \, 1, \, \mbox{\lstinline|fail|}\!^o\, \alpha_0 \land \mbox{\lstinline|div|}\!^o\, \alpha_0}}
+\]
+
+Since the states before and after the unfolding of \lstinline|div$\!^o$| coinside, the derivation will repeat itself forever.
+
+The following lemma justifies the use of angelic semantics:
+
+\begin{lemma}[Soundness and completeness]
+  Angelic semantics is sound and complete.
+\end{lemma}
+\begin{proof}
+  The completeness follows immediately from the completeness of deterministic semantics from~\cite{fair:semantics}. Indeed, any derivation in deterministic semantics can be reproduced in
+  the angelic one.
+
+  The soundness, on the other hand, requires the whole soundness proof from~\cite{fair:semantics} to be repeated. 
+\end{proof}
+
+Angelic semantics allows us to formally define what we can call the \emph{fairness} of conjunction evaluation strategy.
+
+\begin{definition}[Convergence]
+  A goal $g$ \emph{converges} (notation: $g\Downarrow$) if $\inbr{S_g,\,\times}\in\rightarrow^*$; in other words, if there exists a derivation sequence from the initial state for $g$ to a
+  final state.
+\end{definition}
+
+
+\begin{comment}
 При этом нами было доказано, что данная семантика эквивалентна денатоционнй семантике \mk~\cite{fair:semantics}, поэтому любой порядок развёрток приводит к одинаковому набору ответов с точностью до порядка этих ответов.
 \textcolor{red}{Понятно, что надо подробнее о доказательстве. Но чтобы хотя бы сформулировать теоремы о полноте и корректности надо описать, что такое represent function, след семантики, денотационный образ состояния и т.д.. Хочу обсудить, насколько подробно нужно.}
 
 В отличие от классических left-biased реализаций \mk данная недетерминированная семантика сходится вне зависимости от порядка конъюнктов. Однако она недетерминирована, что сводит к нулю практическую ценность данной семантики. Поэтому в следующих главах мы обсудим две детерминированные семантики, которые сходятся тогда и только тогда, когда сходится недетерминированная.
+\end{comment}
