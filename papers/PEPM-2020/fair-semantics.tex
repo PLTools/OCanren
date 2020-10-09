@@ -143,6 +143,13 @@ forms a basis for the following central theorem:
   \label{thm:main}
   Let $\mathcal{P}_\trianglelefteq$ be a well quasi-ordering predicate. Then ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$'' is a fair semantics.
 \end{theorem}
+\begin{proof}
+  The proof is conceptually simple but laborous in details. Let us have a goal $g$. By the definition of fairness we have $g\Downarrow$. If
+  the evaluation of $g$ according to ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$'' converges, we are done. If not, then there has to be infinite
+  branch. In this branch none of relation applications continuously unfolded infinite number of times (due to the property of w.q.o.). Thus, for each
+  application we can select a subsequence of unfoldings, which match a certain sequence of unfoldings of the same application in angelic semantics. But
+  due to the convergence in angelic semantics either any of such sequences converge, or a ``sufficient'' amount of them come to a failure.
+\end{proof}
 
 We now present a well quasi-ordering predicate which will provide us with a practically important version of fair semantics. 
 
