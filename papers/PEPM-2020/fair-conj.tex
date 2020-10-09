@@ -124,7 +124,8 @@ language=ocanren
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{On Fair Conjunction for Structurally-Recursive Relations}
+\title{Efficient Fair Conjunction for\\
+  Structurally-Recursive Relations}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -159,10 +160,10 @@ language=ocanren
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-  We present a new, more symmetric evaluation strategy for conjunctions in \mk. Unlike the original unfair directed conjunction,
-  our approach controls the order of conjunct execution based on the properties of structurally recursive relations. In this paper
-  we describe operational semantics for both ``classical'' and ``fair'' conjunctions. We also compare the performance of classical
-  and fair conjunctions on a number of examples and discuss the results of the evaluation.
+  We present a new, \emph{fair}, conjunction evaluation strategy for relational programming languge \mk. Unlike the original left-biased
+  conjunction, our approach controls the order of conjunct execution based on the intrinsic properties of relation definitions.
+  We present both the formal study of conjunction fairness and practical evaluation, which demonstrates the essential
+  improvement in terms of both performance and convergence.
 \end{abstract}
 
 %%
