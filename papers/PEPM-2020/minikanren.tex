@@ -1,31 +1,3 @@
-\begin{figure}[t]
-\[
-  \begin{array}{rcll}
-     \mathcal{C} & = & \{ C_1^{k_1}, C_2^{k_2}, \ldots \} 
-     & \mbox{constructors with arities} 
-     \\
-     \mathcal{X} & = & \{x_1, x_2, \ldots \} 
-     & \mbox{syntactic variables} 
-     \\
-     \mathcal{T}_\mathcal{X} & = & \mathcal{X} \mid C_i^{k_i}(\mathcal{T}_\mathcal{X}^1, \ldots, \mathcal{T}_\mathcal{X}^{k_i})
-     & \mbox{syntactic terms} 
-     \\
-     \mathcal{R} & = & \{R_1^{k_1}, R_2^{k_2}, \ldots \} 
-     & \mbox{relation names} 
-     \\
-     \mathcal{G} & =    & \mathcal{T}_\mathcal{X} \equiv \mathcal{T}_\mathcal{X} & \mbox{unification} \\
-                 & \mid & \mathcal{G} \lor \mathcal{G} & \mbox{disjunction} \\
-                 & \mid & \mathcal{G} \land \mathcal{G} & \mbox{conjunction} \\
-                 & \mid & \mbox{\lstinline|fresh|} \; (\mathcal{X}) \; \mathcal{G} & \mbox{fresh variable introduction} \\
-                 & \mid & R_i^{k_i}(\mathcal{T}_\mathcal{X}^1, \ldots, \mathcal{T}_\mathcal{X}^{k_i}) & \mbox{relation application} \\
-    \mathcal{D} & = &R_i^{k_i} = \lambda \mathcal{X}_1 \ldots \mathcal{X}_n. \; \mathcal{G} & \mbox{relation defintion}\\
-    \mathcal{S} & = &\mathcal{D}_1\mathcal{D}_2\dots\mathcal{D}_k \diamond \mathcal{G} & \mbox{specification}
-  \end{array}
-\]
-    \caption{The syntax of relational language}
-    \label{syntax}
-\end{figure}
-
 \section{Exposition: \mk and Biased Conjunction}
 \label{sec:exposition}
 
@@ -69,6 +41,35 @@ shape of the goal (we denote current substitution as $\theta$):
 \item For relation application $R^k\,(t_1,\dots,t_k)$ the corresponding definition $R^k=\lambda x_1\dots x_k\,.\,g$ is found and all variables $x_i$ are substituted by terms $t_i$ in
   $g$. Then the resulting goal is evaluated for $\theta$ (we assume no capturing occurs during the substitution).
 \end{itemize}
+
+\begin{figure}[t]
+\[
+  \begin{array}{rcll}
+     \mathcal{C} & = & \{ C_1^{k_1}, C_2^{k_2}, \ldots \} 
+     & \mbox{constructors with arities} 
+     \\
+     \mathcal{X} & = & \{x_1, x_2, \ldots \} 
+     & \mbox{syntactic variables} 
+     \\
+     \mathcal{T}_\mathcal{X} & = & \mathcal{X} \mid C_i^{k_i}(\mathcal{T}_\mathcal{X}^1, \ldots, \mathcal{T}_\mathcal{X}^{k_i})
+     & \mbox{syntactic terms} 
+     \\
+     \mathcal{R} & = & \{R_1^{k_1}, R_2^{k_2}, \ldots \} 
+     & \mbox{relation names} 
+     \\
+     \mathcal{G} & =    & \mathcal{T}_\mathcal{X} \equiv \mathcal{T}_\mathcal{X} & \mbox{unification} \\
+                 & \mid & \mathcal{G} \lor \mathcal{G} & \mbox{disjunction} \\
+                 & \mid & \mathcal{G} \land \mathcal{G} & \mbox{conjunction} \\
+                 & \mid & \mbox{\lstinline|fresh|} \; (\mathcal{X}) \; \mathcal{G} & \mbox{fresh variable introduction} \\
+                 & \mid & R_i^{k_i}(\mathcal{T}_\mathcal{X}^1, \ldots, \mathcal{T}_\mathcal{X}^{k_i}) & \mbox{relation application} \\
+    \mathcal{D} & = &R_i^{k_i} = \lambda \mathcal{X}_1 \ldots \mathcal{X}_n. \; \mathcal{G} & \mbox{relation defintion}\\
+    \mathcal{S} & = &\mathcal{D}_1\mathcal{D}_2\dots\mathcal{D}_k \diamond \mathcal{G} & \mbox{specification}
+  \end{array}
+\]
+    \caption{The syntax of relational language}
+    \label{syntax}
+\end{figure}
+
 
 It is easy to see that this implementation ideas give rise to a monadic framework over the set of streams with evaluation rules for conjunction and disjunction playing roles of bind and
 mplus respectively. In actual implementation a few embellishments can be added to this general framework: for example, some evaluation steps can be deferred using so-called

@@ -1,30 +1,3 @@
-\begin{figure*}[t]
-\[\begin{array}{cr}
-      \dfrac
-      {
-      \bigvee_{j=1}^n h_j \not= \epsilon \qquad
-      \bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)
-      }
-      {\begin{array}{l}
-      \inbr{\theta,\, i,\, (r_1,\,h_1) \ldots (r_n,\,h_n)} \xrightarrow{\circ}_p \inbr{\theta,\, i,\, (r_1,\epsilon) \ldots (r_n,\, \epsilon)}
-      \end{array}}
-      &  \ruleno{ConjClear} \\[10mm]
-      \dfrac
-      {
-       \bigwedge_{j=1}^{k-1} \neg\mathcal{P}\,(\theta,\, r_j,\, h_j) \qquad
-       \mathcal{P}\,(\theta,\, r_k,\, h_k) \qquad
-       \inbr{\theta,\, i} \vdash r_k \Rightarrow R 
-      }
-      {
-        \begin{array}{l}
-          \inbr{\theta,\, i,\, (r_1,\,h_1) \ldots (r_{k-1},\,h_{k-1}) (r_k,\, h_k) \pi} \xrightarrow{\circ}_p \primi{push}\,((r_1,\,h_1) \ldots (r_{k-1},\,h_{k-1})\Box \pi,\, \primi{set}\,(R, \, (\theta, r_k) : h_k))
-         \end{array}
-        }
-&     \ruleno{ConjUnfold$^*$} 
-\end{array}\]
-\caption{Generic semantics}
-\label{fair:pred-fair-semantics}
-\end{figure*}
 
 \section{Fair Conjunction by Well Quasi-Ordering}
 \label{sec:fair-semantics}
@@ -126,6 +99,34 @@ pairs of substitutions and relational applications. Then we define
 \[
 \mathcal{P}_\trianglelefteq\,(\theta,\,r,\,h) = \forall\inbr{\theta_0,\,r_0}\in h\;:\; \inbr{\theta_0,\,r_0}\trianglelefteq \inbr{\theta,\,r}
 \]
+
+\begin{figure*}[t]
+\[\begin{array}{cr}
+      \dfrac
+      {
+      \bigvee_{j=1}^n h_j \not= \epsilon \qquad
+      \bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)
+      }
+      {\begin{array}{l}
+      \inbr{\theta,\, i,\, (r_1,\,h_1) \ldots (r_n,\,h_n)} \xrightarrow{\circ}_p \inbr{\theta,\, i,\, (r_1,\epsilon) \ldots (r_n,\, \epsilon)}
+      \end{array}}
+      &  \ruleno{ConjClear} \\[10mm]
+      \dfrac
+      {
+       \bigwedge_{j=1}^{k-1} \neg\mathcal{P}\,(\theta,\, r_j,\, h_j) \qquad
+       \mathcal{P}\,(\theta,\, r_k,\, h_k) \qquad
+       \inbr{\theta,\, i} \vdash r_k \Rightarrow R 
+      }
+      {
+        \begin{array}{l}
+          \inbr{\theta,\, i,\, (r_1,\,h_1) \ldots (r_{k-1},\,h_{k-1}) (r_k,\, h_k) \pi} \xrightarrow{\circ}_p \primi{push}\,((r_1,\,h_1) \ldots (r_{k-1},\,h_{k-1})\Box \pi,\, \primi{set}\,(R, \, (\theta, r_k) : h_k))
+         \end{array}
+        }
+&     \ruleno{ConjUnfold$^*$} 
+\end{array}\]
+\caption{Generic semantics}
+\label{fair:pred-fair-semantics}
+\end{figure*}
 
 This sort of predicates guarantees, that each relation application in a state will be eventually unfolded after a finite number of steps. This property
 forms a basis for the following central theorem:
