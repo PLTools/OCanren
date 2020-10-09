@@ -79,17 +79,12 @@ R \xrightarrow{\alpha}_p R^\prime
 \]
 \end{lemma}
 \begin{proof}
-  Доказывается структурной индукцией по $R$.
-  Cлучай, когда $R = R_1 \oplus R_2$ полностью покрыт правилами \rulen{Disj} и \rulen{DisjStep}.
-  
-  Cлучай, когда $R = \inbr{\theta;\, i, \epsilon}$ покрыт правилом \rulen{Answer}. 
-  
-  Случай, когда $R = \inbr{\theta;\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$ и $\bigvee_{j=1}^n \mathcal{P}\,(\theta,\, r_j,\, h_j)$ покрыт правилом \rulen{ConjUnfold*}. 
-  
-  Случай, когда когда $R = \inbr{\theta;\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$,  $\bigvee_{j=1}^n h_j \not= \epsilon$ и $\bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)$ покрыт правилом \rulen{ConjClear}.
-  
-  Остается случай, когда $R = \inbr{\theta;\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$, $\bigwedge_{j=1}^n h_j= \epsilon$ и $\bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)$. Из этого следует вчастности, что $\neg\mathcal{P}\,(\theta,\,r_1,\,\epsilon)$, но по предположению теоремы $\forall\;\theta,\;r\; :\;\mathcal{P}\,(\theta,\, r,\, \epsilon)$. Значит этот случай невозможен.
-
+  By structural induction on $R$. The case $R = R_1 \oplus R_2$ is covered is covered by rules \rulen{Disj} и \rulen{DisjStep}; the case $R = \inbr{\theta,\, i, \epsilon}$ is
+  covered by the rule \rulen{Answer}. The case $R = \inbr{\theta,\, i, (r_1,\,h_1) \dots (r_n,\,h_n)}$ and $\bigvee_{j=1}^n \mathcal{P}\,(\theta,\, r_j,\, h_j)$ is covered by the
+  rule \rulen{ConjUnfold*}. The case $R = \inbr{\theta,\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$,  $\bigvee_{j=1}^n h_j \not= \epsilon$ and $\bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)$
+  is covered by the rule \rulen{ConjClear}. The only remaining case is $R = \inbr{\theta,\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$, $\bigwedge_{j=1}^n h_j= \epsilon$ and
+  $\bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)$. From this, in particular, follows that $\neg\mathcal{P}\,(\theta,\,r_1,\,\epsilon)$, but by the condition of the lemma
+  $\forall\;\theta,\;r\; :\;\mathcal{P}\,(\theta,\, r,\, \epsilon)$, which is impossible.
 \end{proof}
 
 All predicates which we consider further will trivially satisfy the conditions in Lemma~\ref{lemma:pred-property}.
