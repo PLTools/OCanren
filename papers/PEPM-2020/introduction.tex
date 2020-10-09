@@ -4,15 +4,14 @@
 \mk~\cite{fair:TheReasonedSchemer,fair:micro} is known for its capability to express solutions for complex problems~\cite{fair:seven,fair:quines,fair:theorem-prover}
 in the form of compact declarative specifications. This minimalistic language has various extensions~\cite{fair:CKanren,fair:WillThesis,fair:alphaKanren,fair:Guided} designed to increase its expressiveness and declarativeness. However, \emph{conjunction} in \mk has somewhat imperative flavor. The evaluation of conjunction is asymmetrical
 and the order of conjuncts affects not only the performance of the program but even the convergence. As a result, the order of conjuncts determines control flow in
-a relational program. We may call this directed behavior of conjunction \textit{unfair}.
+a relational program. We call this directed behavior of conjunction \textit{unfair}.
 
 The contribution of this paper is a more declarative approach to the evaluation of relational programs of \mk. This approach executes the conjuncts alternately, choosing a more optimal execution order.
 The fair conjunction that we propose is comparable in efficiency to the classic unfair one, but the order of the conjuncts weakly affects both efficiency and convergence. Our approach also 
 demonstrates a more convergent behavior: we present some examples where classical conjunction diverges for any order of conjuncts while the fair conjunction converges.
 
-\begin{comment}
-The paper is organized as follows. In Section~\ref{sec:minikanren} we informally describe \mk and discuss the advantages and drawbacks of the classical directed conjunction. Section~\ref{sec:directed-semantics} contains a
-description of \mk syntax as well as operational semantics based on the unfolding operation. In Section~\ref{sec:naive} we present the semantics of a naive fair conjunction,
-and in Section~\ref{sec:structural} we extend these semantics by controlling the conjunction order based on structural recursion. Section~\ref{sec:eval} is devoted to the evaluation
-and performance comparison on different semantics in the form of interpreters. Since the approach based on divergence test~\cite{fair:DivTest} is most similar to our approach, we also provide an elaborated comparison in the section. The final section concludes.
-\end{comment}
+The paper is organized as follows. In Section~\ref{sec:exposition} we introduce \mk and informally describe its semantics. We also discuss the advantages and drawbacks of the its
+conventional left-biased  conjunction. Section~\ref{sec:angelic-semantics} contains a description of a specific version of \mk formal semantics~--- \emph{angelic} semantics~---,
+establishes some of properties and formally introduces the fairness notion. Section~\ref{sec:fair-semantics} presents a practically important class of deterministic semantics
+parameterized with unfolding predicate, and shows that a specific form of this predicate, based on the notion of \emph{well quasi-ordering}, turn the semantic into a fair one.
+In Section~\ref{sec:eval} the results of the practical evaluation are presented. Section~\ref{sec:related} observes related works. The final section concludes.
