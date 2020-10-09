@@ -55,9 +55,9 @@ Our semantics is parameterized by a predicate $\mathcal{P}\,(\theta,\,r,\,h)$ wh
 $\mathcal{P}\,(\theta,\,r,\,h)$ determines if it is desirable to unfold $r$. The semantics itself completely reuses the one-step unfolding relation ``$\Rightarrow$'' and the
 rules \rulen{Answer}, \rulen{Disj}, and \rulen{DisjStep} from the angelic one. One-step unfolding returns a regular, non-enriched state, while the rules deal with enriched
 states (but graphically completely preserve their shape). The single rule \rulen{ConjUnfold}, however, is replaced with two other rules: \rulen{ConjClear} and \rulen{ConjUnfold$^*$}
-(see Fig.~\ref{fair:pred-fair-semantics}, the transition relation is denoted by ``$\rightarrow_p$''). If $\mathcal{P}$ is true for atleast one relation application, we apply the
+(see Fig.~\ref{fair:pred-fair-semantics}, the transition relation is denoted by ``$\rightarrow_p$''). If $\mathcal{P}$ is true for at least one relation application, we apply the
 rule \rulen{ConjUnfold} and unfold the leftmost such application, setting the history of resulting applications using the function \primi{set}. If the predicate is false on all
-relation applications, and there is atleast one non-empty history, then we apply the rule \rulen{ConjClear}, which removes the histories for each applications, replacing
+relation applications, and there is at least one non-empty history, then we apply the rule \rulen{ConjClear}, which removes the histories for each applications, replacing
 them with $\epsilon$. 
 
 The parameterization by the predicate delivers us a whole family of semantics, and not all members of this family are nice. For example,
@@ -89,7 +89,7 @@ If the predicate limits the length of the history
 \mathcal{P}_N\,(\theta,\, r,\, h) = length\,(h) \leq N
 \]
 
-we get a semantics which consequtively unfolds relation applications from left to right up to a certain depth $N>0$. This technique resembles \emph{bottom-avoiding
+we get a semantics which consecutively unfolds relation applications from left to right up to a certain depth $N>0$. This technique resembles \emph{bottom-avoiding
 streams}~\cite{fair:WillThesis}~--- a stream implementation based on utilization of a specific data structure, called ``ferns''~\cite{fair:ferns}, which is designed
 to defer diverging computations.
 

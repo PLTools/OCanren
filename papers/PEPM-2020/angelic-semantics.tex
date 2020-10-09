@@ -6,9 +6,9 @@ thus enumerating all possible orders of their evaluation. Thus, if a goal (in pa
 would make it to converge.
 
 The development of this (and the following) section essentially relies on the results reported in~\cite{fair:semantics}. In the paper, two semantics for \mk are presented. The first one is
-denotational set-theoretic close to the least Herbrand model~\cite{Lloyd}; the second is operational semantics of relational search with interleaving in the form of labelled transition
+denotational set-theoretic close to the least Herbrand model~\cite{Lloyd}; the second is operational semantics of relational search with interleaving in the form of labeled transition
 system~\cite{LTS}, which corresponds to the informal description given in the previous section. Then the soundness and completeness of interleaving search w.r.t. the denotational semantics
-is formally established and mechinized using \textsc{Coq} proof assistant~\cite{Coq}. It is also establishes a corollary that for correct and complete operational semantics some
+is formally established and mechanized using \textsc{Coq} proof assistant~\cite{Coq}. It is also establishes a corollary that for correct and complete operational semantics some
 transformations of goals are equivalent (w.r.t. the set of answers they provide). These transformations will play an important role is justifying the fairness of the semantics we present
 in the next section. Due to space limitations, however, we do not present here these semantics and only sketch the proofs which use them essentially.
  
@@ -18,7 +18,7 @@ As a first step we define a set of \emph{semantic} variables
 \mathcal{A}=\{\alpha_0,\alpha_1,\dots\}
 \]
 
-A set of \emph{semantic terms} $\mathcal{T}_{\mathcal A}$ then comes in naturally. We stiputate that all semantic variables are linearly ordered making it possible to take them one-by-one
+A set of \emph{semantic terms} $\mathcal{T}_{\mathcal A}$ then comes in naturally. We stipulate that all semantic variables are linearly ordered making it possible to take them one-by-one
 in a deterministic manner. We will also use conventional notations of $\mathcal{FV}\,(\bullet)$ for the sets of free variables in terms and goals and $\bullet\,[x\gets t]$ for substitutions
 of \emph{semantics} term $t$ for \emph{syntactic} variable $x$ in terms and goals. As the only binder in goals~--- the ``\lstinline|fresh|'' construct~--- can only bind \emph{syntactic}
 variables no capturing can occur during substitutions. We omit the formal definitions due to their triviality.
@@ -42,7 +42,7 @@ $i$~--- the index of the first non-allocated semantic variable, and $r^*$~--- a 
 $t_i$~--- semantic terms. Informally, a state represents some point during goal evaluation when the results of (non-failed) unifications are collected in substitutions and the residual
 goal is represented in DNF. If a list of relation applications in the leaf of the state is empty, then the substitution represents an answer. A final state corresponds to the end of evaluation.
 
-We introduce two auxilliary functions to work with states. The first one, \primi{union}, joins two states into the one:
+We introduce two auxiliary functions to work with states. The first one, \primi{union}, joins two states into the one:
 
 \[
 \begin{array}{rcl}
@@ -108,7 +108,7 @@ local computations within the body of unfolded application.  The definition of t
       {\inbr{\theta,\, i,\, c} \vdash g_1 \land g_2 \leadsto S^\prime}
 &     \ruleno{Conj}
 \end{array}\]
-\caption{Small-step semantics of local compuatations}
+\caption{Small-step semantics of local computations}
 \label{fair:unfolding-semantics}
 \end{figure}
 
@@ -149,7 +149,7 @@ where ``$\circ$'' designates the absence of an answer, $\theta$~--- an answer in
 \end{figure}
 
 The rule \rulen{Answer} corresponds to a situation when no relation application remain in the state under consideration; in this case we return current substitution as an answer.
-If current state is a leaf with a non-empty list of relation applications, then we non-deterministacally choose one for a one-step unfolding (rule \rulen{ConjUnfold}). After the
+If current state is a leaf with a non-empty list of relation applications, then we non-deterministically choose one for a one-step unfolding (rule \rulen{ConjUnfold}). After the
 unfolding we construct a new state by pushing the remaining list of applications into the resulting state. Finally, if the current state is a disjunction, then we make a step in
 the left disjunct $S_1$. If the result is a final state, we (by the rule \rulen{Disj}) set the residual state to $S_2$. Otherwise, by rule \rulen{DisjStep}, we construct a
 new residual state by forming a new disjunction where the right substate of the original one is placed left and the residual state after the evaluation of the left one in
@@ -193,7 +193,7 @@ evaluation will diverge:
 {\inbr{\Lambda, \, 1, \, \mbox{\lstinline|fail|}\!^o\, \alpha_0 \land \mbox{\lstinline|div|}\!^o\, \alpha_0} \xrightarrow{\circ} \inbr{\Lambda, \, 1, \, \mbox{\lstinline|fail|}\!^o\, \alpha_0 \land \mbox{\lstinline|div|}\!^o\, \alpha_0}}
 \]
 
-Since the states before and after the unfolding of \lstinline|div$\!^o$| coinside, the derivation will repeat itself forever.
+Since the states before and after the unfolding of \lstinline|div$\!^o$| coincide, the derivation will repeat itself forever.
 
 The following lemma justifies the use of angelic semantics:
 

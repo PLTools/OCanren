@@ -97,8 +97,8 @@
 \end{minipage}
 \end{figure*}
 
-In this section we evaluate the fair semantics based on well quasi-ordering predicate suggested in the previous section. We also evalute
-similar semantics based on three differet predicates. All these semantics were implemented in \textsc{Haskell} in forms of interpreters.
+In this section we evaluate the fair semantics suggested in the previous section based on three different predicates.
+All these semantics were implemented in \textsc{Haskell} in forms of interpreters.
 
 The first semantics is based on the predicate \lstinline|true| and so imitates the conventional implementation of \mk. We will call it \emph{left-biased}.
 
@@ -110,7 +110,10 @@ For evaluation we've chosen two simple programs (list reversing and list sorting
 ``Bridge and torch problem''\footnote{\url{https://en.wikipedia.org/wiki/Bridge_and_torch_problem}} solver and ``Water pouring puzzle''\footnote{\url{https://en.wikipedia.org/wiki/Water_pouring_puzzle}} solver).
 % Для каждой программы мы сделали две версии. Оптимистичная версия --- это программа, в которой мы вручную подобрали оптимальный порядок конъюнктов и пессиместичная версия --- программа с неоптимальным порядком конъюнктов. В последующих диаграммах и таблице указаны средние значения 10 запусков тестов. Также для наивной равномерной конъюнкции мы подобрали количество разверток вручную. Для равномерной конъюнкции, основанной на структурной рекурсии, N было фиксировано и равно 100.
 Each program was written in two versions: ``optimistic'' (with the order of important conjuncts set to provide the best performance) and ``pessimistic'' (with the order of important
-conjuncts set to provide the worst performance). Also we evaluated list reversing and list sorting in both directions. In the case of the list reversing, queries \lstinline{(revers$^o$ [1;2;3] q)} and \lstinline{(revers$^o$ q [1;2;3])}\! will give the same answer \lstinline{q = [3;2;1]} but the ``optimistic'' order of conjuncts is different for them. In the case of list sorting, queries \lstinline{(sort$^o$ [1;2;3] q)} and \lstinline{(sort$^o$ q [1;2;3])} will give different answers. The first one gives sorted list \lstinline{q = [1;2;3]}, the second one gives all permutations of list \lstinline{[1;2;3]}\!\!. 
+conjuncts set to provide the worst performance). Also we evaluated list reversing and list sorting in both directions. In the case of the list reversing, queries
+\lstinline{(revers$^o$ [A, B, C] q)} and \lstinline{(revers$^o$ q [A, B, C])}\! will give the same answer \lstinline{q $\mapsto$ [C, B, A]} but the ``optimistic'' order of conjuncts is different
+for them. In the case of list sorting, queries \lstinline{(sort$^o$ [1, 2, 3] q)} and \lstinline{(sort$^o$ q [1, 2, 3])} will give different answers. The first one gives sorted list
+\lstinline{q $\mapsto$ [1, 2, 3]}, the second one gives all permutations of the list \lstinline{[1, 2, 3]}. 
 
 All benchmarks were run ten times, and the average time was taken. For the naive  semantics we cherry-picked the best value of unfolding bound manually. Structural arguments for each relations were detected automatically.
 

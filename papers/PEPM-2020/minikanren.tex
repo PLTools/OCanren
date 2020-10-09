@@ -36,7 +36,7 @@ shape of the goal (we denote current substitution as $\theta$):
   evaluated, and all resulting streams are concatenated. Thus, the evaluation of conjunction is \emph{left-biased}: none of evaluation steps in $g_2$ are performed until \emph{all answers} for
   $g_1\,(\theta)$ are found.
 
-\item For fresh variable introduction \lstinline|fresh ($x$) $\;g$| a new variable, not occuring anywhere in $\theta$, is chosen and substituted for $x$ in $g$. Then the resulting goal is evaluated.
+\item For fresh variable introduction \lstinline|fresh ($x$) $\;g$| a new variable, not occurring anywhere in $\theta$, is chosen and substituted for $x$ in $g$. Then the resulting goal is evaluated.
 
 \item For relation application $R^k\,(t_1,\dots,t_k)$ the corresponding definition $R^k=\lambda x_1\dots x_k\,.\,g$ is found and all variables $x_i$ are substituted by terms $t_i$ in
   $g$. Then the resulting goal is evaluated for $\theta$ (we assume no capturing occurs during the substitution).
@@ -62,7 +62,7 @@ shape of the goal (we denote current substitution as $\theta$):
                  & \mid & \mathcal{G} \land \mathcal{G} & \mbox{conjunction} \\
                  & \mid & \mbox{\lstinline|fresh|} \; (\mathcal{X}) \; \mathcal{G} & \mbox{fresh variable introduction} \\
                  & \mid & R_i^{k_i}(\mathcal{T}_\mathcal{X}^1, \ldots, \mathcal{T}_\mathcal{X}^{k_i}) & \mbox{relation application} \\
-    \mathcal{D} & = &R_i^{k_i} = \lambda \mathcal{X}_1 \ldots \mathcal{X}_n. \; \mathcal{G} & \mbox{relation defintion}\\
+    \mathcal{D} & = &R_i^{k_i} = \lambda \mathcal{X}_1 \ldots \mathcal{X}_n. \; \mathcal{G} & \mbox{relation definition}\\
     \mathcal{S} & = &\mathcal{D}_1\mathcal{D}_2\dots\mathcal{D}_k \diamond \mathcal{G} & \mbox{specification}
   \end{array}
 \]
@@ -89,7 +89,7 @@ introduces a relational list concatenation:
 \end{lstlisting}
 
 Three arguments $x$, $y$ and $xy$ correspond to three lists such that the concatenation of $x$ and $y$ equals $xy$. The relation is defined using case analysis and recursion: if
-$x$ is empty (\lstinline|[]|) then $xy$ should be equal $y$; othersize we split $x$ into a head $e$ and a tail $xs$ and set $y$ to \lstinline|$e$ : $xys$|, where
+$x$ is empty (\lstinline|[]|) then $xy$ should be equal $y$; otherwise we split $x$ into a head $e$ and a tail $xs$ and set $y$ to \lstinline|$e$ : $xys$|, where
 $xys$ is a concatenation of $xs$ and $y$, obtained via a recursive call to the same relation (we use here ``\lstinline|[]|'' and ``\lstinline|:|'' as constructor names).
 
 In the context of this definition the top-level goal
@@ -132,7 +132,7 @@ gives us a whole bunch of answers
 \end{array}
 \]
 
-(not neccessarily in this order). In other words, the same relation definition can be used to perform the search in various ``directions''~--- not only calculate
+(not necessarily in this order). In other words, the same relation definition can be used to perform the search in various ``directions''~--- not only calculate
 outputs for given inputs, but also vice versa, and, generally in any possible way depending on the distribution of free variables.
 
 In all aforementioned examples the evaluation of a goal returned a finite stream. This is, however, not always the case. For example, if we put the recursive call in the definition of
@@ -173,16 +173,16 @@ can illustrate this behavior by the following diagram:
 Here the left and right branches of nodes correspond to the evaluation of the first and the second disjuncts of \lstinline|append$^o$| respectively. We start from
 the first disjunct of the topmost \lstinline|append$^o$| application which immediately gives us the first answer $x\mapsto\mbox{\lstinline|[]|},\,y\mapsto\mbox{\lstinline|[A,B]|}$.
 In the second disjunct we encounter a conjunction and start to evaluate its left conjunct, which is an application of \lstinline|append$^o$| to \emph{free} variables
-$xs$, $y$, and $xys$. Recursing in the body, we again encounter a disjunction. Its left dusjunct gives us the substitution $xs\mapsto\mbox{\lstinline|[]|},y\mapsto xys$ which, upon 
+$xs$, $y$, and $xys$. Recursing in the body, we again encounter a disjunction. Its left disjunct gives us the substitution $xs\mapsto\mbox{\lstinline|[]|},y\mapsto xys$ which, upon 
 returning from the recursive call and evaluating the remaining conjuncts, gives us the second answer $x\mapsto\mbox{\lstinline|[A]|},y\mapsto\mbox{\lstinline|[B]|}$. The right
 disjunct, however, is again a conjunction starting with the recursive application of \lstinline|append$^o$| to (some other) free variables. Clearly, this branch will never stop to
-grow, and, after recovering the third answer, the evaluation will diverge. This example demonstrates a well-known phenomenon of \emph{refutaional incompleteness}~\cite{fair:WillThesis}
+grow, and, after recovering the third answer, the evaluation will diverge. This example demonstrates a well-known phenomenon of \emph{refutational incompleteness}~\cite{fair:WillThesis}
 of this specific implementation of \lstinline|append$^o$|. It can be proven~\cite{fair:semantics} that the initial implementation (with the recursive call placed last in the conjunction)
 is refutationally complete, but only for \emph{linear} applications (i.e. application in which no variable occurs in argument terms more than once).
 
 Pushing relation application to the end in the cluster of conjunctions is a well-known trick in relational programming, which often helps to improve the performance of even
 convergence of goal evaluation. This trick, however, does not help in all cases~--- for example, when there are more then one application in a cluster. Consider, for instance, the
-follwing relation \lstinline{revers$^o$}, which associates an arbitrary list with the list containing the same elements in the reverse order:
+following relation \lstinline{revers$^o$}, which associates an arbitrary list with the list containing the same elements in the reverse order:
 
 \begin{lstlisting}
   revers$^o$ = $\lambda\;x\;y\;$ . ($x$ === $\;$[] /\ $y$ === $\;$[]) \/
@@ -224,7 +224,7 @@ fails, but the symmetrical one
 diverges with no answer (here underscore denotes some irrelevant term). The explanation is trivial~--- during conjunction evaluation we first evaluate its left conjunct
 until the first answer is found. In the first case we immediately come up with an empty stream, and the evaluation of the whole conjunction fails. In the second case,
 however, we never get an answer; at the same time we always have some remaining steps to be performed in the evaluation of the left conjunct, which means that the
-whole search diverges. This behaviour of conjunction not only leads to a divergence in some important cases~--- it also heavily impacts the performance by polluting
+whole search diverges. This behavior of conjunction not only leads to a divergence in some important cases~--- it also heavily impacts the performance by polluting
 the search tree with never ending branches, which at the same time do not produce any results. In some cases this can be avoided by adjusting the order of conjuncts in
 relation definition to fit a certain evaluation direction, but, as shown in~\cite{fair:semantics}, the solution of some problems require the same definition to be run in
 various direction at the same time. Thus, in general case, under biased conjunction evaluation strategy no optimal static order of conjuncts exists.
