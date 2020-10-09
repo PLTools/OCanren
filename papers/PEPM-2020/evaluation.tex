@@ -1,47 +1,6 @@
 \section{Evaluation}
 \label{sec:eval}
 
-В данном разделе мы рассмотрим семантику с предикатом, основанном на структурной рекурсии. Также мы представим результаты апробации семантики с тремя разными предикатам на наборе примеров. Для апробации семантика была реализована на языке \textsc{Haskell} в виде интерпретатора. 
-
-
-% Имперически подобранный критерий
-В качестве предиката нам необходим критерий, отличающий вызов, который выгодно раскрутить сейчас от вызова, который стоит отложить. Мы предлагаем predicate by well-quasi-ordering, который эффективен для структурно-рекурсивных отношений. У таких отношений есть хотя бы один аргумент, который структурно убывает с каждым шагом рекурсии. Перестаёт убывать такой аргумент, только когда свободные переменные, которые он содержит, начинают уточняться. И когда все структурные агументы перестанут убывать, мы будем останавливать развёртку вызова.
-
-Сначала определим отношение на кортежах термов.
-
-\begin{definition}
-Пусть $t_1^1, \ldots, t_n^1, \, t_1^2, \ldots, t_n^2 \in \mathcal{T}_{\mathcal A}$. Если для любого $i$ верно, что $height(t_i^1) \leq height(t_i^2)$, и существует $j$, для которого $height(t_i^1) < height(t_i^2)$, тогда 
-\[
-  (t_1^1, \ldots, t_n^1) \leq_h (t_1^2, \ldots t_n^2).
-\]
-\end{definition}
-
-Отношение ``$\leq_h$'' сравнивает термы по их высоте. Оно требует, чтобы хотя бы один терм левого кордежа был строго короче, чем соответствующий терм из правого кортежа. Остальные левые термы должны быть не длиннее соотвествующих термов в правом кортеже.
-
-\begin{lemma}
-\label{lemma:wqo1}
-Отношение ``$\leq_h$'' является well-quasi-ordering.
-\end{lemma}
-Доказывается индукцией по сумме высот всех термов.
-
-Теперь определим отношение на парах из подстановки и реляционного применения.
-
-\begin{definition}
-Пусть $\theta_1, \theta_2$ --- подстановки,  $r_1, r_2$ --- реляционные применения. Если $r_1 = R(t^1_1,\,\ldots,\,t^1_n)$, $r_2 = R(t^2_1,\,\ldots,\,t^2_n)$, $j_1, \ldots, j_k$ --- номера структурно-рекурсивных аргументов реляционного отношения $R$ и $(\theta_1 t^1_{j_1}, \ldots, \theta_1 t^1_{j_k}) \leq_h (\theta_2 t^2_{j_1}, \ldots, \theta_2 t^2_{j_k})$, тогда
-\[
-  (\theta_1, r_1) \leq_{sr} (\theta_2, r_2).
-\]
-\end{definition}
-
-Отношение ``$\leq_{sr}$'' сравнивает только структурно-рекурсивные аргументы двух вызовов одного отношения по высоте с помощью определенного вышe ``$\leq_h$''.
-
-\begin{lemma}
-Отношение ``$\leq_{sr}$'' является well-quasi-ordering.
-\end{lemma}
-Следует из леммы~\ref{lemma:wqo1}.
-
-А значит семантика с $pred_{\leq_{sr}}$ является справедливой по теореме~\ref{todo}.
-
 \begin{figure*}
 \centering
 \begin{minipage}{.5\textwidth}
@@ -138,13 +97,14 @@
 \end{minipage}
 \end{figure*}
 
-Now we will discuss evaluation. Целью эвалюации является выявления влияния порядка конъюнктов на эффективность трех различных семантик.
+In this section we evaluate the fair semantics based on well quasi-ordering predicate suggested in the previous section. We also evalute
+similar semantics based on three differet predicates. All these semantics were implemented in \textsc{Haskell} in forms of interpreters.
 
-Первая семантика с предикатом $pred_{\mbox{\lstinline{true}}}$ близка к классическим реализациям \mk. В дальнейшем будем называть её {\bf left-biased}.
+The first semantics is based on the predicate \lstinline|true| and so imitates the conventional implementation of \mk. We will call it \emph{left-biased}.
 
-Вторая семантика с предикатом $pred_N$ соответсвует равномерному вычислению всех конъюнктов. Эту семантику будем назвать {\bf naive}.
+The second one uses the predicate $\mathcal{P}_N$, described in the previous section. It corresponds to a uniform evaluation of conjuncts. We will call this semantics \emph{naive}.
 
-Третья семантика с предикатом $pred_{\leq_{sr}}$ вычисляет структурно-рекурсивные конъюнкты, пока убывают структурно-рекурсивные аргументы. Её будем называть {\bf structural}.
+Finally, the third semantics utilized the predicate $\mathcal{P}_{\leq_{sr}}$ which makes use of structurally-recursive arguments. We will call it \emph{structural}.
 
 For evaluation we've chosen two simple programs (list reversing and list sorting) and three more complicated (the ``Hanoi Towers''\footnote{\url{https://en.wikipedia.org/wiki/Tower_of_Hanoi}} solver, the
 ``Bridge and torch problem''\footnote{\url{https://en.wikipedia.org/wiki/Bridge_and_torch_problem}} solver and ``Water pouring puzzle''\footnote{\url{https://en.wikipedia.org/wiki/Water_pouring_puzzle}} solver).

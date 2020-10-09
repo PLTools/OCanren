@@ -131,5 +131,77 @@ This sort of predicates guarantees, that each relation application in a state wi
 forms a basis for the following central theorem:
 
 \begin{theorem}
+  \label{thm:main}
   Let $\mathcal{P}_\trianglelefteq$ be a well quasi-ordering predicate. Then ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$'' is a fair semantics.
 \end{theorem}
+
+We now present a well quasi-ordering predicate which will provide us with a practically important version of fair semantics. 
+
+% Имперически подобранный критерий
+%В качестве предиката нам необходим критерий, отличающий вызов, который выгодно раскрутить сейчас от вызова, который стоит отложить. Мы предлагаем predicate by well-quasi-ordering,
+%который эффективен для структурно-рекурсивных отношений. У таких отношений есть хотя бы один аргумент, который структурно убывает с каждым шагом рекурсии. Перестаёт убывать такой
+%аргумент, только когда свободные переменные, которые он содержит, начинают уточняться. И когда все структурные агументы перестанут убывать, мы будем останавливать развёртку вызова.
+
+First, we define the following relation ``$\leq_h$'' on the tuples of semantics terms.
+
+\begin{definition}
+  Let $\inbr{t_1^1, \dots, t_n^1}$ and $\inbr{t_1^2, \dots, t_n^2}$ be tuples of semantic terms. 
+
+  Then
+
+  \[
+  \begin{array}{c}
+  \inbr{t_1^1, \ldots, t_n^1} \leq_h \inbr{t_1^2, \ldots t_n^2} \Leftrightarrow\\
+  \phantom{XXXXXXX}\forall i\;:\;height\,(t_i^1) \leq height\,(t_i^2)
+  \end{array}
+  \]
+\end{definition}
+
+%Отношение ``$\leq_h$'' сравнивает термы по их высоте. Оно требует, чтобы хотя бы один терм левого кордежа был строго короче, чем соответствующий терм из правого кортежа.
+%Остальные левые термы должны быть не длиннее соотвествующих термов в правом кортеже.
+
+\begin{lemma}
+\label{lemma:wqo1}
+The relation ``$\leq_h$'' is a well quasi-ordering.
+\end{lemma}
+\begin{proof}
+  Induction on the sum of terms' heights.
+\end{proof}
+
+Now we can define a relation ``$\leq_{sr}$'' on pairs substitution-relation application. First, for each relation we
+determine the set of its structurally-recursive arguments (an argument is structurally-recursive for a relation $R$ if in
+each recursive call its value structurally decreases). 
+
+\begin{definition}
+  Let $\theta_1$, $\theta_2$ be substitutions, \mbox{$r_1=R\,(t^1_1,\dots,t^1_n)$}, \mbox{$r_2=R\,t^2_1,\dots,t^2_n)$}~--- some relation applications, $j_1, \dots, j_k$~---
+  numbers of structurally-recursive arguments of the relation $R$. If
+
+  \[
+  (t^1_{j_1,}\theta_1,  \dots,  t^1_{j_k}\theta_1) \leq_h (t^2_{j_1}\theta_2, \dots, t^2_{j_k}\theta_2)
+  \]
+
+  then
+  
+  \[
+  (\theta_1,\, r_1) \leq_{sr} (\theta_2,\, r_2).
+  \]
+\end{definition}
+
+\begin{lemma}
+\label{lemma:sr-wqo}
+The relation ``$\leq_{sr}$'' is a well quasi-ordering.
+\end{lemma}
+\begin{proof}
+  Immediately follows from Lemma~\ref{lemma:wqo1}.
+\end{proof}
+
+It is easy to see that structural recursivity was not actually used in this proof; in fact, the relation ``$\leq_{sr}$'' remains well quasi-ordering even if we choose all arguments (or
+arbitrary one). The reason for this definition is that structural recursivity has demonstrated the best performance in evaluation; in other words it constitutes a good
+heuristics for choosing the well quasi-ordering.
+
+\begin{corollary}
+  The semantics ``$\rightarrow_{\mathcal{P}_{\leq_{sr}}}$'' is fair.
+\end{corollary}
+\begin{proof}
+  Immediately follows from Lemma~\ref{lemma:sr-wqo} and Theorem~\ref{thm:main}.
+\end{proof}
