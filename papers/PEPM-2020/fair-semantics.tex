@@ -78,6 +78,19 @@ then for any non-final state $R$ there is exists a state $R^\prime$, such that
 R \xrightarrow{\alpha}_p R^\prime
 \]
 \end{lemma}
+\begin{proof}
+  Доказывается структурной индукцией по $R$.
+  Cлучай, когда $R = R_1 \oplus R_2$ полностью покрыт правилами \rulen{Disj} и \rulen{DisjStep}.
+  
+  Cлучай, когда $R = \inbr{\theta;\, i, \epsilon}$ покрыт правилом \rulen{Answer}. 
+  
+  Случай, когда $R = \inbr{\theta;\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$ и $\bigvee_{j=1}^n \mathcal{P}\,(\theta,\, r_j,\, h_j)$ покрыт правилом \rulen{ConjUnfold*}. 
+  
+  Случай, когда когда $R = \inbr{\theta;\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$,  $\bigvee_{j=1}^n h_j \not= \epsilon$ и $\bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)$ покрыт правилом \rulen{ConjClear}.
+  
+  Остается случай, когда $R = \inbr{\theta;\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$, $\bigwedge_{j=1}^n h_j= \epsilon$ и $\bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)$. Из этого следует вчастности, что $\neg\mathcal{P}\,(\theta,\,r_1,\,\epsilon)$, но по предположению теоремы $\forall\;\theta,\;r\; :\;\mathcal{P}\,(\theta,\, r,\, \epsilon)$. Значит этот случай невозможен.
+
+\end{proof}
 
 All predicates which we consider further will trivially satisfy the conditions in Lemma~\ref{lemma:pred-property}.
 
@@ -97,7 +110,7 @@ In the context of our work an important class of predicates is \emph{well quasi-
 pairs of substitutions and relational applications. Then we define
 
 \[
-\mathcal{P}_\trianglelefteq\,(\theta,\,r,\,h) = \forall\inbr{\theta_0,\,r_0}\in h\;:\; \inbr{\theta_0,\,r_0}\trianglelefteq \inbr{\theta,\,r}
+\mathcal{P}_\trianglelefteq\,(\theta,\,r,\,h) = \not\exists\inbr{\theta_0,\,r_0}\in h\;:\; \inbr{\theta_0,\,r_0}\trianglelefteq \inbr{\theta,\,r}
 \]
 
 \begin{figure*}[t]
