@@ -1,0 +1,245 @@
+%%
+%% This is file `sample-sigplan.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `sigplan')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-sigplan.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%% The first command in your LaTeX source must be the \documentclass command.
+\documentclass{article}[12pt]
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage[english]{babel}
+\usepackage{listings}
+\usepackage[section]{placeins}
+\usepackage{multirow}
+\usepackage{pgfplots}
+\usepackage{yfonts}
+\usepackage{subcaption}
+\usepackage{xspace}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{comment}
+\usepackage{url}
+%\usepackage{tikz}
+%\usetikzlibrary{trees}
+\usepackage{amsthm}
+
+\sloppy
+
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
+\newcommand{\rulen}[1]{[\textsc{#1}]}
+\newcommand{\mk}{\textsc{miniKanren}\xspace}
+\newcommand{\inbr}[1]{\langle #1 \rangle}
+\renewcommand{\emptyset}{\varnothing}
+\newcommand{\primi}[1]{\mbox{\bf #1}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+
+\begin{document}
+
+\section{``Commutativity'' of Unification}
+
+Let $p_{1,2},\,q_{1,2}$~--- some terms. Then
+
+\[
+MGU\,(p_1,\,p_2)\cdot MGU\,(q_1,\,q_2)=MGU\,(q_1,\,q_2)\cdot MGU\,(p_1,\,p_2)
+\]
+
+Indeed, both $MGU\,(p_1,\,p_2)\cdot MGU\,(q_1,\,q_2)$ and $MGU\,(q_1,\,q_2)\cdot MGU\,(p_1,\,p_2)$ are most general unifiers
+for pairs $(p_1,\,p_2)$ and $(q_1,\,q_2)$ simultaneously. If there were different, then terms $C\,(p_1,\,q_1)$ and
+$C\,(p_2,\,q_2)$, where $C$~--- some binary constructor, would have \emph{different} most general unifiers, which is impossible.
+
+Let
+
+\[
+\theta\xrightarrow{u_1;\,u_2;\dots u_k}{\theta^\prime}
+\]
+
+be sequence of unifications which transforms a substitution $\theta$ into substitution $\theta^\prime$. Then
+
+\[
+\theta\xrightarrow{u_{\pi(1)};\,u_{\pi(2)};\dots u_{\pi(k)}}{\theta^\prime}
+\]
+
+for any permutation $\pi$.
+
+\section{Properties of One-step Unfolding}
+
+Let $r$ be an application (atomic formula), $\theta$~--- a substitution; one-step unfolding transforms a pair $\inbr{\theta,\,r}$ into
+a set $\{\inbr{\theta_i,\,\rho_i}\}$, where $\rho_i$~--- a list (conjunction) of applications, $\theta_i$~--- some substitution. Then
+for each $i$ there is a sequence of unifications $u^i_1\dots u^i_{k_i}$ such that
+
+\[
+\theta\xrightarrow{u^i_1\dots u^i_{k_i}}{\theta_i}
+\]
+
+Proof by derivation of one-step unfolding. Thus, we may introduce a denotation
+
+\[
+\theta_i=\theta\cdot[p\to\pi_i]
+\]
+
+\section{Weakenings in Angelic Semantics}
+
+Let $\theta$ be a substitution, $\omega$~--- a list of applications, and let $\inbr{\theta,\,\omega}$ converges. Then for arbitrary substitution $\sigma$ and
+arbitrary list of applications $\psi$
+
+\[
+\inbr{\theta\cdot\sigma,\,\omega\psi}
+\]
+
+converges.
+
+\section{Properties of Unfolding in Angelic Semantics}
+
+\begin{lemma}
+  Let $\{\omega_i\}$ be a state (a set of lists (conjunctions) of applications). Then $\{\omega_i\}$ converges iff each $\omega_i$ converges.
+\end{lemma}
+
+\begin{lemma}
+Let $\phi a \phi^\prime$ be a list of applications with one distinguished element $a$, $\theta$~--- a substitution. Let
+
+\[
+\{\inbr{\theta\cdot[a\to\alpha_i],\,\alpha_i}\}
+\]
+
+be the result of one-step unfolding for $\inbr{\theta,\,a}$. Then
+
+\[
+\inbr{\theta,\,\phi a \phi^\prime}
+\]
+
+converges iff all
+
+\[
+\{\inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}\}
+\]
+
+converge.
+\end{lemma}
+
+%\begin{proof}
+Proof sketch.
+
+\paragraph{$\Leftarrow$} Let all $\{\inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}\}$ converge. Then unfolding of $a$ delivers a converging derivation for $\inbr{\theta,\,\phi a \phi^\prime}$.
+\paragraph{$\Rightarrow$} Let $\inbr{\theta,\,\phi a \phi^\prime}$ converges. Take the first step of its converging derivation. Two cases are possible.
+\begin{enumerate}
+\item The first step is unfolding of $a$. Then we have precisely
+
+  \[
+  \{\inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}\}
+  \]
+  
+  as the next state, which means, that all of them converge.
+\item The first step is an unfolding of some other application $b$. Then we can rewrite $\phi a \phi^\prime$ as $\phi a \psi b \omega$, and denote
+
+  \[
+  \{\theta\cdot[b\to\beta_j],\,\phi a \psi \beta_j \omega\}
+  \]
+
+  the result of one-step unfolding of $\inbr{\theta,\,b}$. Since
+
+  \[
+  \{\theta\cdot[b\to\beta_j],\,\phi a \psi \beta_j \omega\}
+  \]
+
+  is a state in a converging derivation, each
+
+  \[
+  \inbr{\theta\cdot[b\to\beta_j],\,\phi a \psi \beta_j \omega}
+  \]
+
+  converges. Take an arbitrary one. Two cases are possible.
+
+  \begin{itemize}
+  \item There is no unfolding of $a$ in the converging derivation. Then
+    
+    \[
+    \inbr{\theta\cdot[b\to\beta_j],\,\phi\psi\beta_j\omega}\eqno{(*)}
+    \]
+    
+    converges as well with the same results. Take the pair
+
+    \[
+    \inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\psi b\omega}
+    \]
+
+    and perform a one-step unfolding of $b$; this will give us a state
+
+    \[
+    \inbr{\theta\cdot[a\to\alpha_i]\cdot[b\to\beta_j],\,\phi\alpha_i\psi\beta_j\omega}
+    \]
+
+    which converges by weakening taking into account $(*)$.
+    
+  \item There is a sequence of derivation 
+    
+    \[
+    \inbr{\theta\cdot[b\to\beta_j],\,\phi a \psi\beta_j\omega}\to \inbr{\theta\cdot[b\to\beta_j]\cdot\sigma,\,\pi a \rho}\eqno{(**)}
+    \]
+
+    where $\sigma$ is some sequence of unifications and the next step is unfolding of $a$. Then its result is
+
+    \[
+    \{\inbr{\theta\cdot[b\to\beta_j]\cdot\sigma\cdot[a\to\alpha_i],\,\pi \alpha_i \rho}\}
+    \]
+
+    Take the pair
+
+    \[
+    \inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\psi b\omega}
+    \]
+
+    and perform a one-step unfolding of $b$; this will give us a state
+
+    \[
+    \inbr{\theta\cdot[a\to\alpha_i]\cdot[b\to\beta_j],\,\phi\alpha_i\psi\beta_j\omega}
+    \]
+
+    Repeating the unfoldings of $(**)$ we can (at most) arrive at state
+
+    \[
+     \inbr{\theta\cdot[a\to\alpha_i]\cdot[b\to\beta_j]\cdot\sigma,\,\pi \alpha_i \rho}
+     \]
+
+     which converges since
+
+     \[
+     \theta\cdot[a\to\alpha_i]\cdot[b\to\beta_j]\cdot\sigma=\theta\cdot[b\to\beta_j]\cdot\sigma\cdot[a\to\alpha_i]
+     \]
+    
+  \end{itemize}
+%\end{proof}
+
+\end{enumerate}
+
+\begin{corollary}
+  Let $\inbr{\theta,\,\omega}$~--- some pair of a substitution and a list of applications. Let $\inbr{\theta^\prime,\,\omega^\prime}$~---
+  some other pair, obtained from $\inbr{\theta,\,\omega}$ in a finite number of unfoldings. Then if $\inbr{\theta,\,\omega}$ converges, then
+  $\inbr{\theta^\prime,\,\omega^\prime}$~--- converges.
+\end{corollary}
+
+\end{document}
+
