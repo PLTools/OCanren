@@ -33,7 +33,7 @@ let mapper = object
 
       let text = string_of_expression e in
       { expr with pexp_desc =
-                    Pexp_tuple [Ast_helper.Exp.constant (Pconst_string (text,None)); e] }
+                    Pexp_tuple [Ast_helper.Exp.constant (Pconst_string (text, e.pexp_loc, None)); e] }
     | e -> super#expression e
 end
 
