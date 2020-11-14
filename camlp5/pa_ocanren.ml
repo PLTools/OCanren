@@ -51,7 +51,7 @@ let rec ctor e =
   let loc = MLast.loc_of_expr e in
   match e with
   | <:expr< $uid:u$ >>   -> Some (<:expr< $lid:decapitalize u$ >>)
-  | <:expr< $m$ . $e$ >> -> (match ctor e with Some e -> Some (<:expr< $m$ . $e$ >>) | _ -> None)
+  | <:expr< $m$ . ($e$) >> -> (match ctor e with Some e -> Some (<:expr< $m$ . ($e$) >>) | _ -> None)
   | _                    -> None
 
 let list_of_list es =
@@ -181,8 +181,8 @@ EXTEND
       | i = UIDENT; "."; j = SELF ->
           let rec loop m =
             function
-            | <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
-            | e                    -> <:expr< $m$ . $e$ >>
+            | <:expr< $x$ . ($y$) >> -> loop <:expr< $m$ . ($x$) >> y
+            | e                    -> <:expr< $m$ . ($e$) >>
           in
           loop <:expr< $uid:i$ >> j
     ]];
@@ -252,7 +252,7 @@ EXTEND
       | "||"; "("; es=LIST1 ocanren_expr SEP ";"; ")" -> <:expr< OCanren.conde $list_of_list es$ >>
       | "&&"; "("; es=LIST1 ocanren_expr SEP ";"; ")" ->
          let op = <:expr< $lid:"?&"$ >> in
-         let id = <:expr< OCanren . $op$ >> in
+         let id = <:expr< OCanren . ($op$) >> in
          <:expr< $id$ $list_of_list es$ >>
     ]
   ];
