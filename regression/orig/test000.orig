@@ -1,34 +1,30 @@
-fun q -> (===) q ((!!) 5), 1 answer {
+fun q -> q === !!5, 1 answer {
 q=5;
 }
-fun q -> (===) q (some ((!!) 5)), 1 answer {
+fun q -> q === some !!5, 1 answer {
 q=Some (5);
 }
-fun q -> (===) q (none ()), 1 answer {
+fun q -> q === none (), 1 answer {
 q=None;
 }
-fun q -> (===) (some q) (some ((!!) 5)), 1 answer {
+fun q -> some q === some !!5, 1 answer {
 q=5;
 }
-fun q -> call_fresh (fun w -> (===) q (some w)), 1 answer {
+fun q -> call_fresh (fun w -> q === some w), 1 answer {
 q=Some (_.11);
 }
-fun q -> (===) q (Result.ok ((!!) 5)), 1 answer {
+fun q -> q === Result.ok !!5, 1 answer {
 q=Ok (5);
 }
 fun q ->
-  call_fresh
-    (fun r ->
-       (&&&) ((===) q (Result.ok r)) (conde [(===) r ((!!) 5); success])), all answers {
+  call_fresh (fun r -> (q === Result.ok r) &&& conde [r === !!5; success]), all answers {
 q=Ok (5);
 q=Ok (_.11);
 }
 fun q ->
   Fresh.two
     (fun r s ->
-       conde
-         [(&&&) ((===) q (Result.ok s)) ((=/=) s ((!!) 4));
-          (===) q (Result.error r)]), all answers {
+       conde [(q === Result.ok s) &&& (s =/= !!4); q === Result.error r]), all answers {
 q=Ok (_.12 [=/= 4]);
 q=Error (_.11);
 }
