@@ -92,10 +92,10 @@ let prepare_distribs ~loc fully_abstract_tname tdecl fmap_decl =
     | Ptype_variant c -> c
     | _ -> failwith "not implemented"
   in
-  let gen_module_str = Located.mk ~loc @@ Naming.functor_name fully_abstract_tname in
+  let gen_module_str = Naming.functor_name fully_abstract_tname in
 
-  let distrib_lid = Located.mk ~loc Longident.(Ldot (Lident gen_module_str.txt, "distrib")) in
-  [ Str.module_ ~loc @@ Mb.mk ~loc (Located.mk ~loc "T")
+  let distrib_lid = Located.mk ~loc Longident.(Ldot (Lident gen_module_str, "distrib")) in
+  [ Str.module_ ~loc @@ Mb.mk ~loc (Located.mk ~loc (Some "T"))
     (Mod.structure ~loc
           [ fmap_decl
           ; Str.type_ ~loc Nonrecursive
@@ -107,7 +107,7 @@ let prepare_distribs ~loc fully_abstract_tname tdecl fmap_decl =
                   ~manifest:(Typ.constr ~loc (Located.mk ~loc @@ lident tdecl.ptype_name.txt) @@
                               List.map ~f:fst tdecl.ptype_params)
                   (Located.mk ~loc "t") ]])
-  ; Str.module_ ~loc @@ Mb.mk ~loc gen_module_str
+  ; Str.module_ ~loc @@ Mb.mk ~loc (Located.mk ~loc @@ Some gen_module_str)
       (Mod.apply ~loc
         (Mod.ident ~loc (Located.mk ~loc @@ Lident (match tdecl.ptype_params with [] -> "Fmap" | xs -> sprintf "Fmap%d" (List.length xs)) ))
         (Mod.ident ~loc (Located.mk ~loc @@ Lident "T")) )
