@@ -201,7 +201,7 @@ let mapper = object(self)
               List.fold_right xs
                 ~f:(fun ident acc ->
                     [%expr
-                      Fresh.one (fun [%p Pat.var ~loc (Selected_ast.Ast.Location.mkloc ident loc) ] -> [%e acc])
+                      Fresh.one (fun [%p Pat.var ~loc (Ast_builder.Default.Located.mk ident ~loc) ] -> [%e acc])
                     ]
                   )
                 ~init:[%expr delay (fun () -> [%e new_body ])]
