@@ -8,39 +8,23 @@
 \usetheme{CambridgeUS}
 \usefonttheme{professionalfonts}
 
-
-%\usepackage{pgfpages}
-
-
-\usepackage{bibentry}
-\usepackage{cite}
-%\usepackage{natbib}
-\def\newblock{\hskip .11em plus .33em minus .07em}
-% get rid of footer
-%\setbeamertemplate{footline}{}
-
 \input{heading.tex}
 
 \usepackage{subcaption}
-\usepackage{etoolbox}
-
-
-\usepackage{exercise}
 \usepackage{tikz}
 \usepackage{tikz-qtree}
 \usetikzlibrary{trees}
 \usepackage[edges]{forest}
 \forestset{.style={
-%  for tree={l=1em, l sep=1em, s sep=1em}
   forked edges,
     for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
         rounded corners  }
   }}
 
-\newcommand{\lstquot}[1]{``\lstinline{#1}''}
-\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
-\newcommand\false{$f\!alse$}
-\newcommand\myif{i\!f}
+%\newcommand{\lstquot}[1]{``\lstinline{#1}''}
+%\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+%\newcommand\false{$f\!alse$}
+%\newcommand\myif{i\!f}
 
 
 \def\transarrow{\xrightarrow}
@@ -52,63 +36,63 @@
 \def\subarrow{}
 \newcommand{\setsubarrow}[1]{\def\subarrow{#1}}
 
-\newcommand{\trule}[2]{\dfrac{#1}{#2}}
-\newcommand{\crule}[3]{\dfrac{#1}{#2},\;{#3}}
-\newcommand{\withenv}[2]{{#1}\vdash{#2}}
+%\newcommand{\trule}[2]{\dfrac{#1}{#2}}
+%\newcommand{\crule}[3]{\dfrac{#1}{#2},\;{#3}}
+%\newcommand{\withenv}[2]{{#1}\vdash{#2}}
 \newcommand{\trans}[3]{{#1}\transarrow{\padding{\textstyle #2}\padding}\subarrow{#3}}
-\newcommand{\ctrans}[4]{{#1}\transarrow{\padding#2\padding}\subarrow{#3},\;{#4}}
-\newcommand{\llang}[1]{\mbox{\lstinline[mathescape]|#1|}}
-\newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
+%\newcommand{\ctrans}[4]{{#1}\transarrow{\padding#2\padding}\subarrow{#3},\;{#4}}
+%\newcommand{\llang}[1]{\mbox{\lstinline[mathescape]|#1|}}
+%\newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
 \newcommand{\inbr}[1]{\left<{#1}\right>}
-\newcommand{\highlight}[1]{\color{red}{#1}}
+%\newcommand{\highlight}[1]{\color{red}{#1}}
 %\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
 \newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
 \newcommand{\rulename}[1]{\textsc{#1}}
 \newcommand{\inmath}[1]{\mbox{$#1$}}
-\newcommand{\lfp}[1]{fix_{#1}}
-\newcommand{\gfp}[1]{Fix_{#1}}
+%\newcommand{\lfp}[1]{fix_{#1}}
+%\newcommand{\gfp}[1]{Fix_{#1}}
 \newcommand{\vsep}{\vspace{-2mm}}
 \newcommand{\supp}[1]{\scriptsize{#1}}
-\renewcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
 \newcommand{\cd}[1]{\texttt{#1}}
-\newcommand{\free}[1]{\boxed{#1}}
-\newcommand{\binds}{\;\mapsto\;}
+%\newcommand{\free}[1]{\boxed{#1}}
+%\newcommand{\binds}{\;\mapsto\;}
 \newcommand{\dbi}[1]{\mbox{\bf{#1}}}
 \newcommand{\sv}[1]{\mbox{\textbf{#1}}}
-\newcommand{\bnd}[2]{{#1}\mkern-9mu\binds\mkern-9mu{#2}}
-\newcommand{\meta}[1]{{\mathcal{#1}}}
-\newcommand{\dom}[1]{\mathtt{dom}\;{#1}}
+%\newcommand{\bnd}[2]{{#1}\mkern-9mu\binds\mkern-9mu{#2}}
+%\newcommand{\meta}[1]{{\mathcal{#1}}}
+%\newcommand{\dom}[1]{\mathtt{dom}\;{#1}}
 %\newcommand{\primi}[2]{\mathbf{#1}\;{#2}}
-\renewcommand{\dom}[1]{\mathcal{D}om\,({#1})}
-\newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
-\newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
-\newcommand{\tr}[1]{\mathcal{T}r_{#1}}
-\newcommand{\diseq}{\not\equiv}
-\newcommand{\reprfunset}{\mathcal{R}}
-\newcommand{\reprfun}{\mathfrak{f}}
-\newcommand{\cstore}{\Omega}
-\newcommand{\cstoreinit}{\cstore_\epsilon^{init}}
-\newcommand{\csadd}[3]{add(#1, #2 \diseq #3)}  %{#1 + [#2 \diseq #3]}
-\newcommand{\csupdate}[2]{update(#1, #2)}  %{#1 \cdot #2}
-\newcommand{\primi}[1]{\mathbf{#1}}
+%\renewcommand{\dom}[1]{\mathcal{D}om\,({#1})}
+%\newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
+%\newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
+%\newcommand{\tr}[1]{\mathcal{T}r_{#1}}
+%\newcommand{\diseq}{\not\equiv}
+%\newcommand{\reprfunset}{\mathcal{R}}
+%\newcommand{\reprfun}{\mathfrak{f}}
+%\newcommand{\cstore}{\Omega}
+%\newcommand{\cstoreinit}{\cstore_\epsilon^{init}}
+%\newcommand{\csadd}[3]{add(#1, #2 \diseq #3)}  %{#1 + [#2 \diseq #3]}
+%\newcommand{\csupdate}[2]{update(#1, #2)}  %{#1 \cdot #2}
+\newcommand{\primi}[1]{\ensuremath{\mathbf{#1}}}
 \newcommand{\sem}[1]{\llbracket #1 \rrbracket}
 \newcommand{\ir}{\ensuremath{\mathcal{S}}}
 \usepackage{tikz}
 \newcommand*\circled[1]{\tikz[baseline=(char.base)]{
     \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
 
-\let\emptyset\varnothing
-\let\eps\varepsilon
+%\let\emptyset\varnothing
+%\let\eps\varepsilon
 
 % for fancy table
-\newcommand{\lheadl}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}|}{{#2}}}
-\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{\small #2}}}
-\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{\small #2}}}
-\newcommand{\lheadll}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}||}{\textbf{\small #2}}}
-\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{\small #2}}}
-\usepackage{longtable}
-\newcommand{\nodata}{}
-\newcommand{\tablenotemark}[1]{#1}
+%\newcommand{\lheadl}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}|}{{#2}}}
+%\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{\small #2}}}
+%\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{\small #2}}}
+%\newcommand{\lheadll}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}||}{\textbf{\small #2}}}
+%\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{\small #2}}}
+%\usepackage{longtable}
+%\newcommand{\nodata}{}
+%\newcommand{\tablenotemark}[1]{#1}
 
 \newcommand{\contributions}{
 \begin{enumerate}
@@ -118,14 +102,6 @@
 \end{enumerate}
 }
 
-%\newcommand{\treeboolsexample}[1] {
-%\begin{lstlisting}[basicstyle=\small,belowskip=1em,aboveskip=0em]
-%(_, false, true) -> 1
-%(false, true, _) -> 2
-%(_, _, false) -> 3
-%(_, _, true) -> 4
-%\end{lstlisting}
-%}
 \lstdefinelanguage{ocamllambda}{
 keywords={catch, switch, default, case, with, failwith, exit, true, false, ::},
 sensitive=true,
@@ -146,8 +122,8 @@ morecomment=[s]{(*}{*)}
 
 \date{APLAS, 2020}
 
-\newcommand{\verbatimfont}[1]{\def\verbatim@font{#1}}
-\usepackage{verbatimbox}
+%\newcommand{\verbatimfont}[1]{\def\verbatim@font{#1}}
+%\usepackage{verbatimbox}
 
 \begin{document}
 {
@@ -407,18 +383,13 @@ Language \ir{} of intermediate representation
 \vspace{0.5cm}
 Things that are omitted for simplicity: guards, pattern variables
 
-%TODO: program size here?
 \end{frame}
 
 \begin{frame}{Synthesis Algorithm}
-%High-level description:
 \[
-%depth^o\,v\,n \;\; \wedge \;\;
 \forall v \quad \forall  (1\leqslant\!i\leqslant \!k\!+\!1) \quad
-%\mbox{\lstinline|fresh ($i$)|}\; \{
 (match^o\,v\,\,p_1,\dots,p_k\,\,i) \;\; \Leftrightarrow \;
 eval^o_{\mathcal S}\,v\,\circled{?}\,i
-%\}
 \]
 
 \begin{itemize}
@@ -451,7 +422,6 @@ Let's generate all inhabitants of the scrutinee's type until certain depth and u
 \vspace{1cm}
 
 \begin{itemize}
-%\item[\faGood] Is correct (proved in Coq)
 \item[\faBad] The number of examples is  worst case exponential
 \end{itemize}
 \end{frame}
@@ -579,14 +549,13 @@ The set of examples bound by depth 1 is a singleton set\\
 \vspace{1em}
 
 This program behave well on the set of examples \\
-$$
+\[
  \begin{array}{ll}
     \primi{switch} \dots \primi{with}   & \\
     |\ \text{Nil} \rightarrow 1  & \\  
     |\ \primi{otherwise} \rightarrow  1 & 
  \end{array}
-$$
-%\item 
+\]
 but is wrong 
 \end{minipage}
 \end{frame}
@@ -604,7 +573,6 @@ Algorithm briefly:
 \vspace{1cm}
 
 \begin{itemize}
-%\item[\faGood] Is correct (proved in Coq)
 \item[\faBad] The number of examples is  worst case exponential
 \end{itemize}
 \end{subfigure}
@@ -623,7 +591,7 @@ match (s : bool * bool * bool) with
 \end{lstlisting}
 }
 
-\begin{frame}[fragile]{Improvement: Reducing Examples Set}
+\begin{frame}{Improvement: Reducing Examples Set}
 An example:
 \improvementA
 \vspace{1em}
@@ -642,12 +610,45 @@ where $\mathcal{B}$ is any value of type \lstinline=bool=
 if we \textbf{forbid the investigation of  some subtrees} of examples
 \end{frame}
 
+\begin{frame}[fragile]{Improvement: skipping the equivalent programs}
+Realtional interpreter of language \ir{} could enumerate equivalaent programs 
+\begin{center}
+  \begin{minipage}[t]{0.2\linewidth}
+  \begin{center}
+  \begin{lstlisting}[language=ocamllambda,gobble=2]
+  switch Scru with 
+  true -> ...
+  false -> ...
+  \end{lstlisting}
+  \end{center}
+  \end{minipage}\hspace{.5cm}
+  \begin{minipage}[t]{0.2\linewidth}
+  \huge
+  \begin{center}
+  \[
+  \Leftrightarrow
+  \]
+  \end{center}
+  \end{minipage}\hspace{.5cm}
+  \begin{minipage}[t]{0.2\linewidth}
+  \begin{lstlisting}[language=ocamllambda,gobble=2]
+  switch Scru with 
+  false -> ...
+  true -> ...
+  \end{lstlisting}
+  \end{minipage}
+\end{center}
+Which is solved by 
+\begin{itemize}
+\item Establishing order of \primi{switch}'s branches using type information (the names of constructors)
+\item It ``broke'' interpreter a little bit, but synthesis has become faster 
+\end{itemize}
+
+\end{frame}
 
 
 \begin{frame}{Branch and Bound Optimization}
 The synthesis answer is stored in variable $\circled{?}$ and 
-%Synthesis answer is stored in variable $\circled{?}$ and 
-%Our answer is always in single variable -- $\circled{?}$ and 
 during the search we \emph{only} extend it with new $\primi{switch}$es \\
 
 \begin{alertblock}{\textbf{Idea}}
@@ -661,7 +662,6 @@ Requires a modified miniKanren's \lstinline=run= primitive: for every answer fou
 \end{itemize}
 
 Pruning search branches is implemented using a new primitive called  \emph{structural constraint}
-
 \end{frame}
 
 \begin{frame}{Structural constraint}
@@ -673,7 +673,6 @@ A new primitive called \emph{structural constraint}:
 \item Otherwise continues search without changing the state ($success^o$)
 \end{itemize}
 \vspace{1em}
-%Peculiarities:
 Subtleties:
 \begin{itemize}
 \item Used to count the size of current estimate
@@ -685,10 +684,10 @@ Subtleties:
 
 
 
-\begin{frame}[fragile]{Minimization Criterion for Synthesized Program}
+\begin{frame}{Minimization Criterion for Synthesized Program}
 \begin{figure}
 \begin{subfigure}[b]{0.3\linewidth}
-$$
+\[
 \begin{array}{l}
 \primi{switch}\;\mathcal{M}\;\primi{with}\; \\
 \mathcal{C}_1\; \primi{\rightarrow}\; \ir_1\\
@@ -696,18 +695,18 @@ $$
 \mathcal{C}_n\; \primi{\rightarrow}\; \ir_n\\
 \primi{otherwise}\;\ir\\
 \end{array}\\
-$$
-$$
+\]
+\[
 \Updownarrow
-$$
-$$
+\]
+\[
 \begin{array}{l}
 \primi{if}\; \mathcal{M} = \mathcal{C}_1\;\primi{then}\; \ir_1\\
 \dots \\
 \primi{else if}\; \mathcal{M} = \mathcal{C}_n\; \primi{then}\;  \ir_n\\
 \primi{else}\;\ir\\
 \end{array}\\
-$$
+\]
 \vspace{1cm}
 
 \end{subfigure}
@@ -731,7 +730,6 @@ But there can be other criteria:
 \end{itemize}
 \end{subfigure}
 \end{figure}
-
 \end{frame}
 
 
@@ -742,9 +740,6 @@ But there can be other criteria:
 
 \noCanren{}~\cite{RelConversion} generates relational code for \OCanren{}~\cite{OCanren,OCanrenWeb} from \textsc{ML}-like language
 \vspace{1em}
-
-%Основная часть (два реляционных интерпретатора + порождение примеров) сделаны с помощью \noCanren{}.
-%\vspace{1em}
 
 Project repo~\cite{Repo}
 \end{frame}
@@ -862,7 +857,7 @@ match a,s,c with
 \end{lstlisting}
 }
 
-\begin{frame}[fragile]{Performance problem (1/2)}
+\begin{frame}{Performance problem (1/2)}
 \begin{figure}
 \begin{subfigure}[t]{0.5\linewidth}\vspace{0em}
 \begin{minipage}{0.5\linewidth}
@@ -871,7 +866,7 @@ match a,s,c with
 \end{subfigure}
 \hspace{1cm}
 \begin{subfigure}[t]{0.35\linewidth}\vspace{0em}
-Интерпретатор PCF (mini-ML) из статьи Г.Плоткина, 1977
+PCF (mini-ML) interpreter from G.Plotkin's paper, 1977
 \vspace{4em}
 
 Doesn't currently work because the types are too large (11102 examples  generated).
@@ -956,8 +951,8 @@ Areas for possible improvements:
 \begin{center}
 {\Huge Thanks!}
 \end{center}
-\end{frame}
 
+\end{frame}
 
 
 \begin{frame}%[t, allowframebreaks]
