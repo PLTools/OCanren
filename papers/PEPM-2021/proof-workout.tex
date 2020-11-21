@@ -5,17 +5,17 @@
 %% The original source files were:
 %%
 %% samples.dtx  (with options: `sigplan')
-%% 
+%%
 %% IMPORTANT NOTICE:
-%% 
+%%
 %% For the copyright see the source file.
-%% 
+%%
 %% Any modified versions of this file must be renamed
 %% with new filenames distinct from sample-sigplan.tex.
 %% 
 %% For distribution of the original source see the terms
 %% for copying and modification in the file samples.dtx.
-%% 
+%%
 %% This generated file may be distributed as long as the
 %% original source files, as listed above, are part of the
 %% same distribution. (The sources need not necessarily be
@@ -103,14 +103,14 @@ Proof by derivation of one-step unfolding. Thus, we may introduce a denotation
 
 \section{Weakenings in Angelic Semantics}
 
-Let $\theta$ be a substitution, $\omega$~--- a list of applications, and let $\inbr{\theta,\,\omega}$ converges. Then for arbitrary substitution $\sigma$ and
+Let $\theta$ be a substitution, $\omega$~--- a list of applications, and let $\inbr{\theta,\,\omega}$ converges to $\{\}$. Then for arbitrary substitution $\sigma$ and
 arbitrary list of applications $\psi$
 
 \[
 \inbr{\theta\cdot\sigma,\,\omega\psi}
 \]
 
-converges.
+converges to $\{\}$.
 
 \section{Properties of Unfolding in Angelic Semantics}
 
@@ -144,93 +144,49 @@ converge.
 Proof sketch.
 
 \paragraph{$\Leftarrow$} Let all $\{\inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}\}$ converge. Then unfolding of $a$ delivers a converging derivation for $\inbr{\theta,\,\phi a \phi^\prime}$.
-\paragraph{$\Rightarrow$} Let $\inbr{\theta,\,\phi a \phi^\prime}$ converges. Take the first step of its converging derivation. Two cases are possible.
+\paragraph{$\Rightarrow$} Let $\inbr{\theta,\,\phi a \phi^\prime}$ converges. Two cases are possible.
 \begin{enumerate}
-\item The first step is unfolding of $a$. Then we have precisely
+\item There is no unfolding of $a$ in the converging derivation. Then
+\[
+  \inbr{\theta,\,\phi a \phi^\prime}
+\]
+converges to $\{\}$ (each state contains $a$). Moreover
+\[
+  \inbr{\theta,\,\phi \phi^\prime}\eqno{(*)}
+\]
+converges to $\{\}$ (we can repeat the converging derivation of $\inbr{\theta,\,\phi a \phi^\prime}$).
 
-  \[
-  \{\inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}\}
-  \]
-  
-  as the next state, which means, that all of them converge.
-\item The first step is an unfolding of some other application $b$. Then we can rewrite $\phi a \phi^\prime$ as $\phi a \psi b \omega$, and denote
+By weakening all
+\[
+  \inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}
+\]
+ converges to $\{\}$ taking into account $(*)$.
 
-  \[
-  \{\theta\cdot[b\to\beta_j],\,\phi a \psi \beta_j \omega\}
-  \]
+\item There is a sequence of derivation
+\[
+    \inbr{\theta,\,\phi a \phi^\prime}\to \inbr{\theta\cdot\sigma,\,\pi a \rho}\eqno{(**)}
+\]
 
-  the result of one-step unfolding of $\inbr{\theta,\,b}$. Since
+where $\sigma$ is some sequence of unifications and the next step is unfolding of $a$. Then its result is
+\[
+\{\inbr{\theta\cdot\sigma\cdot[a\to\alpha_i],\,\pi \alpha_i \rho}\}
+\]
 
-  \[
-  \{\theta\cdot[b\to\beta_j],\,\phi a \psi \beta_j \omega\}
-  \]
+Take the pair
+\[
+\inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i \phi^\prime}
+\]
 
-  is a state in a converging derivation, each
+and repeat the unfoldings of $(**)$ we can (at most) arrive at state
+\[
+\inbr{\theta\cdot[a\to\alpha_i]\cdot\sigma,\,\pi \alpha_i \rho}
+\]
 
-  \[
-  \inbr{\theta\cdot[b\to\beta_j],\,\phi a \psi \beta_j \omega}
-  \]
+which converges since
+\[
+\theta\cdot[a\to\alpha_i]\cdot\sigma=\theta\cdot\sigma\cdot[a\to\alpha_i]
+\]
 
-  converges. Take an arbitrary one. Two cases are possible.
-
-  \begin{itemize}
-  \item There is no unfolding of $a$ in the converging derivation. Then
-    
-    \[
-    \inbr{\theta\cdot[b\to\beta_j],\,\phi\psi\beta_j\omega}\eqno{(*)}
-    \]
-    
-    converges as well with the same results. Take the pair
-
-    \[
-    \inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\psi b\omega}
-    \]
-
-    and perform a one-step unfolding of $b$; this will give us a state
-
-    \[
-    \inbr{\theta\cdot[a\to\alpha_i]\cdot[b\to\beta_j],\,\phi\alpha_i\psi\beta_j\omega}
-    \]
-
-    which converges by weakening taking into account $(*)$.
-    
-  \item There is a sequence of derivation 
-    
-    \[
-    \inbr{\theta\cdot[b\to\beta_j],\,\phi a \psi\beta_j\omega}\to \inbr{\theta\cdot[b\to\beta_j]\cdot\sigma,\,\pi a \rho}\eqno{(**)}
-    \]
-
-    where $\sigma$ is some sequence of unifications and the next step is unfolding of $a$. Then its result is
-
-    \[
-    \{\inbr{\theta\cdot[b\to\beta_j]\cdot\sigma\cdot[a\to\alpha_i],\,\pi \alpha_i \rho}\}
-    \]
-
-    Take the pair
-
-    \[
-    \inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\psi b\omega}
-    \]
-
-    and perform a one-step unfolding of $b$; this will give us a state
-
-    \[
-    \inbr{\theta\cdot[a\to\alpha_i]\cdot[b\to\beta_j],\,\phi\alpha_i\psi\beta_j\omega}
-    \]
-
-    Repeating the unfoldings of $(**)$ we can (at most) arrive at state
-
-    \[
-     \inbr{\theta\cdot[a\to\alpha_i]\cdot[b\to\beta_j]\cdot\sigma,\,\pi \alpha_i \rho}
-     \]
-
-     which converges since
-
-     \[
-     \theta\cdot[a\to\alpha_i]\cdot[b\to\beta_j]\cdot\sigma=\theta\cdot[b\to\beta_j]\cdot\sigma\cdot[a\to\alpha_i]
-     \]
-    
-  \end{itemize}
 %\end{proof}
 
 \end{enumerate}
@@ -242,4 +198,3 @@ Proof sketch.
 \end{corollary}
 
 \end{document}
-

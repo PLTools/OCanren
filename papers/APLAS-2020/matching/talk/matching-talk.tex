@@ -1,0 +1,966 @@
+\def\pgfsysdriver{pgfsys-dvipdfm.def} % required for tress inside
+\documentclass[aspectratio=169
+  , xcolor={svgnames}
+  , hyperref={ colorlinks,citecolor=Blue
+             , linkcolor=DarkRed,urlcolor=DarkBlue}
+  , russian
+  ]{beamer}
+\usetheme{CambridgeUS}
+\usefonttheme{professionalfonts}
+
+\input{heading.tex}
+
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usetikzlibrary{trees}
+\usepackage[edges]{forest}
+\forestset{.style={
+  forked edges,
+    for tree={    grow'=0,    draw,    align=c,    font=\sffamily,
+        rounded corners  }
+  }}
+
+%\newcommand{\lstquot}[1]{``\lstinline{#1}''}
+%\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+%\newcommand\false{$f\!alse$}
+%\newcommand\myif{i\!f}
+
+
+\def\transarrow{\xrightarrow}
+\newcommand{\setarrow}[1]{\def\transarrow{#1}}
+
+\def\padding{\phantom{X}}
+\newcommand{\setpadding}[1]{\def\padding{#1}}
+
+\def\subarrow{}
+\newcommand{\setsubarrow}[1]{\def\subarrow{#1}}
+
+%\newcommand{\trule}[2]{\dfrac{#1}{#2}}
+%\newcommand{\crule}[3]{\dfrac{#1}{#2},\;{#3}}
+%\newcommand{\withenv}[2]{{#1}\vdash{#2}}
+\newcommand{\trans}[3]{{#1}\transarrow{\padding{\textstyle #2}\padding}\subarrow{#3}}
+%\newcommand{\ctrans}[4]{{#1}\transarrow{\padding#2\padding}\subarrow{#3},\;{#4}}
+%\newcommand{\llang}[1]{\mbox{\lstinline[mathescape]|#1|}}
+%\newcommand{\pair}[2]{\inbr{{#1}\mid{#2}}}
+\newcommand{\inbr}[1]{\left<{#1}\right>}
+%\newcommand{\highlight}[1]{\color{red}{#1}}
+%\newcommand{\ruleno}[1]{\eqno[\scriptsize\textsc{#1}]}
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
+\newcommand{\rulename}[1]{\textsc{#1}}
+\newcommand{\inmath}[1]{\mbox{$#1$}}
+%\newcommand{\lfp}[1]{fix_{#1}}
+%\newcommand{\gfp}[1]{Fix_{#1}}
+\newcommand{\vsep}{\vspace{-2mm}}
+\newcommand{\supp}[1]{\scriptsize{#1}}
+\newcommand{\sembr}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\cd}[1]{\texttt{#1}}
+%\newcommand{\free}[1]{\boxed{#1}}
+%\newcommand{\binds}{\;\mapsto\;}
+\newcommand{\dbi}[1]{\mbox{\bf{#1}}}
+\newcommand{\sv}[1]{\mbox{\textbf{#1}}}
+%\newcommand{\bnd}[2]{{#1}\mkern-9mu\binds\mkern-9mu{#2}}
+%\newcommand{\meta}[1]{{\mathcal{#1}}}
+%\newcommand{\dom}[1]{\mathtt{dom}\;{#1}}
+%\newcommand{\primi}[2]{\mathbf{#1}\;{#2}}
+%\renewcommand{\dom}[1]{\mathcal{D}om\,({#1})}
+%\newcommand{\ran}[1]{\mathcal{VR}an\,({#1})}
+%\newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
+%\newcommand{\tr}[1]{\mathcal{T}r_{#1}}
+%\newcommand{\diseq}{\not\equiv}
+%\newcommand{\reprfunset}{\mathcal{R}}
+%\newcommand{\reprfun}{\mathfrak{f}}
+%\newcommand{\cstore}{\Omega}
+%\newcommand{\cstoreinit}{\cstore_\epsilon^{init}}
+%\newcommand{\csadd}[3]{add(#1, #2 \diseq #3)}  %{#1 + [#2 \diseq #3]}
+%\newcommand{\csupdate}[2]{update(#1, #2)}  %{#1 \cdot #2}
+\newcommand{\primi}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\sem}[1]{\llbracket #1 \rrbracket}
+\newcommand{\ir}{\ensuremath{\mathcal{S}}}
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+    \node[shape=circle,draw,inner sep=1pt] (char) {#1};}}
+
+%\let\emptyset\varnothing
+%\let\eps\varepsilon
+
+% for fancy table
+%\newcommand{\lheadl}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}|}{{#2}}}
+%\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}}{\textbf{\small #2}}}
+%\newcommand{\headll}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}||}{\textbf{\small #2}}}
+%\newcommand{\lheadll}[2]{\multicolumn{1}{|>{\centering\arraybackslash}m{#1}||}{\textbf{\small #2}}}
+%\newcommand{\headl}[2]{\multicolumn{1}{>{\centering\arraybackslash}m{#1}|}{\textbf{\small #2}}}
+%\usepackage{longtable}
+%\newcommand{\nodata}{}
+%\newcommand{\tablenotemark}[1]{#1}
+
+\newcommand{\contributions}{
+\begin{enumerate}
+\item[I] Synthesis via combination of two relational interpreters
+\item[II] Replacing $\forall$ quantifier by a finite set of examples
+\item[III] Branch and bound optimization of synthesis using \emph{structural constraints}
+\end{enumerate}
+}
+
+\lstdefinelanguage{ocamllambda}{
+keywords={catch, switch, default, case, with, failwith, exit, true, false, ::},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\ttfamily\textbf,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+mathescape=true,
+fontadjust=true,
+literate={->}{{$\to$}}3 {===}{{$\equiv$}}1  {Scru}{{$\bullet$}}2,
+morecomment=[s]{(*}{*)}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Relational Synthesis for Pattern Matching}
+
+\date{APLAS, 2020}
+
+%\newcommand{\verbatimfont}[1]{\def\verbatim@font{#1}}
+%\usepackage{verbatimbox}
+
+\begin{document}
+{
+\begin{frame}[fragile]
+  \begin{tabular}{p{5.5cm} p{5.5cm}}
+   \begin{center}
+%      \includegraphics[height=1.5cm]{pictures/jetbrainsResearch.pdf}
+    \end{center}
+    &
+    \begin{center}
+   %   \includegraphics[height=1.5cm]{pictures/SPbGU_Logo.png}
+    \end{center}
+  \end{tabular}
+  \titlepage
+\end{frame}
+}
+
+%\maketitle
+
+% For every picture that defines or uses external nodes, you'll have to
+% apply the 'remember picture' style. To avoid some typing, we'll apply
+% the style to all pictures.
+\tikzstyle{every picture}+=[remember picture] 
+
+% By default all math in TikZ nodes are set in inline mode. Change this to
+% displaystyle so that we don't get small fractions.
+\everymath{\displaystyle}
+%\begin{comment}
+% Uncomment these lines for an automatically generated outline.
+\begin{frame}{Pattern Matching}
+Efficient compilation of pattern matching is essential for functional programming
+\vspace{1cm}
+
+%\includegraphics{pictures/SPbGU_Logo.png}
+
+Two main approaches to compile:
+\begin{itemize}
+\item decision diagrams
+\begin{itemize}
+\item guaranteed amount of checks performed (speed)
+\end{itemize}
+\item backtracking automaton
+\begin{itemize}
+\item guaranteed code size
+\end{itemize}\pause
+\item \textbf{synthesis} (our approach)
+\end{itemize}
+
+\end{frame}
+
+\defverbatim[colored]{\matchA}{
+\begin{lstlisting}
+match x,y,z with
+| _,F,T -> 1
+| F,T,_ -> 2
+| _,_,F -> 3
+| _,_,T -> 4
+\end{lstlisting}
+}
+
+\defverbatim[colored]{\matchB}{
+\begin{lstlisting}
+if x then
+  if y then
+    if z then 4 else 3
+  else
+    if z then 1 else 3
+else
+  if y then 2
+  else
+    if z then 1 else 3
+\end{lstlisting}
+}
+
+\defverbatim[colored]{\matchC}{
+\begin{lstlisting}
+if y then
+  if x then
+    if z then 4 else 3
+  else 2
+else
+  if z then 1 else 3
+\end{lstlisting}
+}
+
+\defverbatim[colored]{\forestB}{
+\begin{forest} 
+[\texttt{x}%, tikz={\draw[{Latex}-, thick] (.north) --++ (0,1);}
+    [\texttt{y}
+          [\texttt{z}
+                [4] 
+                [3] 
+            ]   
+         [\texttt{z}
+               [1] 
+               [3] 
+           ]    
+    ]   
+    [\texttt{y}
+        [2] 
+        [\texttt{z}
+            [1] 
+            [3] 
+        ]   
+    ]   
+] 
+\end{forest}
+}
+
+\defverbatim[colored]{\forestC}{
+\begin{forest} 
+[\texttt{y}%, tikz={\draw[{Latex}-, thick] (.north) --++ (0,1);}
+    [\texttt{x}
+          [\texttt{z}
+                [4] 
+                [3] 
+            ]   
+         [2]    
+    ]
+    [\texttt{z}
+               [1] 
+               [3] 
+           ]
+]
+\end{forest}
+}
+
+
+
+\begin{frame}[fragile]{An Example of Pattern Matching}
+\framesubtitle{And It's Two Compiled Representations}
+%\begin{figure}[t]
+%\begin{subfigure}[c]{0.25\linewidth}
+%\begin{minipage}[t]{0.25\linewidth}
+%\matchA
+%\end{minipage}
+%\caption{Pattern matching}
+%\end{subfigure}
+%\hspace{0.5cm}
+%\begin{subfigure}[c]{0.32\linewidth}
+%\begin{lstlisting}
+%if x then
+%  if y then
+%    if z then 4 else 3
+%  else
+%    if z then 1 else 3
+%else
+%  if y then 2
+%  else
+%    if z then 1 else 3
+%\end{lstlisting}
+%\caption{Correct but semi-optimal compilation}
+%\end{subfigure}
+%\hspace{0.5cm}
+%\begin{subfigure}[c]{0.3\linewidth}
+%\centering
+%\begin{lstlisting}
+%if y then
+%  if x then
+%    if z then 4 else 3
+%  else 2
+%else
+%  if z then 1 else 3
+%\end{lstlisting}
+%\caption{Optimal compilation}
+%\end{subfigure}
+%\caption{Pattern matching compilation can be non-trivial (example from~\cite{maranget2008}).}\label{fig:match-example}
+%\end{figure}
+\begin{figure}
+\begin{subfigure}[c][6cm][b]{0.25\linewidth}
+\begin{minipage}{8cm}
+\matchA
+\end{minipage}
+\caption{Pattern matching\\ \phantom{ }}
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[c][6cm][b]{0.32\linewidth}
+\only<1>{\begin{minipage}{8cm}
+\matchB
+\end{minipage}
+\caption{Correct but semi-optimal compilation}}
+\only<2>{\begin{minipage}{8cm}
+\matchC
+\end{minipage}
+\caption{Optimal compilation\\ \phantom{ }}}
+
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[c][6cm][b]{0.3\linewidth}
+\only<1>{\begin{minipage}{8cm}
+\vspace{2em}
+\forestB
+\end{minipage}}
+\only<2>{\begin{minipage}{8cm}
+\vspace{2em}
+\forestC
+\end{minipage}}
+\caption{Decision tree\\ \phantom{ }}
+\end{subfigure}
+\caption{Pattern matching compilation can be non-trivial (example from~\cite{maranget2008}).}\label{fig:match-example}
+\end{figure}
+\note{This is an example from Luc Maranget's paper.
+ 
+Pattern matchin is on the left. We can start testing from $x$, and then $y$ and $z$, it will give us a program with 6 $if$ constructions. But we can start testing from $y$ and if it is $false$ we can not test $x$. It will give us a program with four tests.}
+\end{frame}
+
+\begin{frame}{Contributions}
+\Large
+\contributions
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Pattern Matching Syntax}
+\begin{figure}[ht]
+\begin{subfigure}[t]{0.4\linewidth}
+\uncover<2->{
+\[
+match^o: \mathcal{V}\times \mathcal{P}^* \times  \mathbb{N}
+\]}
+\begin{center}
+Pattern matching language
+\end{center}
+\[
+ \begin{array}{rcll}
+    \mathcal{C} & = & \{ C_1^{k_1}, \dots, C_n^{k_n} \}\\
+    \mathcal{V} & = & \mathcal{C}\,\mathcal{V}^*\\  
+    \mathcal{P} & = & \_ \mid \mathcal{C}\,\mathcal{P}^*
+ \end{array}
+\]
+\[
+ \begin{array}{c}
+\trans{\inbr{v;\,p_1,\dots,p_k}}{}{i}\\
+1\leqslant i\leqslant k+1
+ \end{array}
+\]
+\end{subfigure}
+\hspace{0.5cm}
+\begin{subfigure}[t]{0.5\linewidth}
+\uncover<2->{
+\[
+eval^o_{\mathcal S}: \mathcal{V}\times \mathcal{S} \times  \mathbb{N}
+\]}
+\begin{center}
+Language \ir{} of intermediate representation
+\end{center}
+\[
+\begin{array}{rcl}
+  \mathcal M & = & \bullet \\
+  & \mid  & \mathcal M\,[\mathbb{N}] \\
+  \ir & = & \primi{return}\,\mathbb{N} \\
+  & \mid  & \primi{switch}\;\mathcal{M}\;\primi{with}\; [\mathcal{C}\; \primi{\rightarrow}\; \ir]^*\;\primi{otherwise}\;\ir
+\end{array}
+\]
+\end{subfigure}
+\end{figure}
+\vspace{0.5cm}
+Things that are omitted for simplicity: guards, pattern variables
+
+\end{frame}
+
+\begin{frame}{Synthesis Algorithm}
+\[
+\forall v \quad \forall  (1\leqslant\!i\leqslant \!k\!+\!1) \quad
+(match^o\,v\,\,p_1,\dots,p_k\,\,i) \;\; \Leftrightarrow \;
+eval^o_{\mathcal S}\,v\,\circled{?}\,i
+\]
+
+\begin{itemize}
+\item $match^o\,v\,\,p_1,\dots,p_k\,\,i$ -- a declarative interpreter of pattern matching, for every  possible scrutinee $v$ returns a single branch $i$ 
+\item $\circled{?}$ is a program to be synthesized
+\item $eval^o_{\mathcal S}\,v\,\circled{?}\,i$ -- a declarative interpreter of $\mathcal S$, ensures that synthesized program $\circled{?}$ on example $v$ returns a correct branch index $i$
+\end{itemize}
+\vspace{1cm}
+\begin{itemize}
+\item[\faGood] It's easy to implement $match^o$ and  $eval^o$ (even for extension of pattern matching)
+\item[\faBad]  No universal quantifier in miniKanren with disequality constraints
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Eliminating $\forall$ by Generating a Finite Set of Examples}
+For every concrete pattern matching we know:
+\begin{itemize}
+\item the type of scrutinee
+\item all its patterns 
+\begin{itemize}
+\item maximal depth of these patterns
+\end{itemize}
+\end{itemize}
+
+\begin{alertblock}{\textbf{Idea}}
+Let's generate all inhabitants of the scrutinee's type until certain depth and use them as examples
+\end{alertblock}
+\vspace{1cm}
+
+\begin{itemize}
+\item[\faBad] The number of examples is  worst case exponential
+\end{itemize}
+\end{frame}
+
+\defverbatim[colored]{\exampleAFullSet}{
+\begin{lstlisting}{ocaml}
+match (s : unit list) with 
+| _ :: _ :: _ -> 1
+| _           -> 2
+\end{lstlisting}
+}
+
+
+\begin{frame}{Example 1: Three Examples is a Complete Set}
+\centering
+\begin{minipage}{.381\textwidth}
+\begin{minipage}{.381\textwidth}
+\exampleAFullSet
+\end{minipage}
+\end{minipage}
+
+\begin{figure}
+\begin{subfigure}[t]{0.3\linewidth}
+\begin{subfigure}[b][4cm][t]{0.2\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node {Cons}
+    child { node {\phantom{1}\_\phantom{1}} }
+    child { node {Cons}
+      child { node  {\phantom{1}\_\phantom{1}} }
+      child { node {\phantom{1}\_\phantom{1}} } 
+    };
+\end{tikzpicture}
+\end{subfigure}
+\hspace{2cm}
+\begin{subfigure}[b][4cm][t]{0.1\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node {\phantom{1}\_\phantom{1}};
+\end{tikzpicture}
+\end{subfigure}
+\caption{Patterns}
+\end{subfigure}
+\hspace{1.5cm}
+\begin{subfigure}[t]{0.5\linewidth}
+\begin{subfigure}[b][4cm][t]{0.2\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=green!20}]]
+  \node {Cons}
+    child { node {()} }
+    child { node {Cons}
+      child { node {()} }
+      child { node { Nil } } 
+    };
+\end{tikzpicture}
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[b][4cm][t]{0.15\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=green!20}]]
+  \node {Cons}
+    child { node {()} }
+    child { node { Nil} } ;
+\end{tikzpicture}
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[b][4cm][t]{0.15\linewidth}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    , top color=white, bottom color=green!20}]]
+  \node {Nil};
+\end{tikzpicture}
+\end{subfigure}
+\caption{Three examples}
+\end{subfigure}
+\end{figure}
+\end{frame}
+
+\defverbatim[colored]{\exampleNotAFullSet}{
+\begin{lstlisting}{ocaml}
+match (s : unit list) with 
+| []  -> 1
+| _   -> 2
+\end{lstlisting}
+}
+
+\begin{frame}{Example 2: Not a Complete Set of Examples}
+\begin{minipage}{0.4\linewidth}
+\begin{minipage}{0.4\linewidth}
+\exampleNotAFullSet
+\end{minipage}
+\end{minipage}
+\begin{minipage}{0.55\linewidth}
+Two patterns:\\
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node { Nil };
+\end{tikzpicture}
+\begin{tikzpicture}[sibling distance=3em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    ,top color=white, bottom color=blue!20}]]
+  \node {\phantom{1}\_\phantom{1}};
+\end{tikzpicture}
+\vspace{1em}
+
+The set of examples bound by depth 1 is a singleton set\\
+\begin{tikzpicture}[sibling distance=2em,
+  every node/.style = {shape=rectangle, rounded corners, minimum height=.5cm,
+    draw, align=center, font=\ttfamily
+    , top color=white, bottom color=green!20}]]
+  \node {Nil};
+\end{tikzpicture}
+\vspace{1em}
+
+This program behave well on the set of examples \\
+\[
+ \begin{array}{ll}
+    \primi{switch} \dots \primi{with}   & \\
+    |\ \text{Nil} \rightarrow 1  & \\  
+    |\ \primi{otherwise} \rightarrow  1 & 
+ \end{array}
+\]
+but is wrong 
+\end{minipage}
+\end{frame}
+
+
+\begin{frame}{Current Algorithm for Examples Generation}
+\begin{figure}
+\begin{subfigure}[b]{0.75\linewidth}
+Algorithm briefly:
+\begin{itemize}
+\item Evaluate the depth of patterns $h$
+\item Synthesize all inhabitants, but
+\item on depth $h+1$ use a single predefined per type inhabitant 
+\end{itemize}
+\vspace{1cm}
+
+\begin{itemize}
+\item[\faBad] The number of examples is  worst case exponential
+\end{itemize}
+\end{subfigure}
+\hspace{.5cm}
+\begin{subfigure}[b]{0.45\linewidth}
+\end{subfigure}
+\end{figure}
+
+\end{frame}
+
+\defverbatim[colored]{\improvementA}{
+\begin{lstlisting}{ocaml}
+match (s : bool * bool * bool) with 
+| (_,_,F) -> 1
+| (_,_,T) -> 2
+\end{lstlisting}
+}
+
+\begin{frame}{Improvement: Reducing Examples Set}
+An example:
+\improvementA
+\vspace{1em}
+We can statically determine that 
+
+\begin{itemize}
+\item There are $2^3$ inhabitants of type \lstinline=bool * bool * bool=
+\item No need to  check that scrutinee is a triple
+\item No need to look at the 1st and  the 2nd subtrees of a triple (only the 3rd matters)
+\end{itemize}
+\vspace{.5cm}
+
+
+So, we can run the synthesis only on two examples $\{(\mathcal{B},\mathcal{B},\text{T}),(\mathcal{B},\mathcal{B},\text{F})\}$
+where $\mathcal{B}$ is any value of type \lstinline=bool=
+if we \textbf{forbid the investigation of  some subtrees} of examples
+\end{frame}
+
+\begin{frame}[fragile]{Improvement: skipping the equivalent programs}
+Realtional interpreter of language \ir{} could enumerate equivalaent programs 
+\begin{center}
+  \begin{minipage}[t]{0.2\linewidth}
+  \begin{center}
+  \begin{lstlisting}[language=ocamllambda,gobble=2]
+  switch Scru with 
+  true -> ...
+  false -> ...
+  \end{lstlisting}
+  \end{center}
+  \end{minipage}\hspace{.5cm}
+  \begin{minipage}[t]{0.2\linewidth}
+  \huge
+  \begin{center}
+  \[
+  \Leftrightarrow
+  \]
+  \end{center}
+  \end{minipage}\hspace{.5cm}
+  \begin{minipage}[t]{0.2\linewidth}
+  \begin{lstlisting}[language=ocamllambda,gobble=2]
+  switch Scru with 
+  false -> ...
+  true -> ...
+  \end{lstlisting}
+  \end{minipage}
+\end{center}
+Which is solved by 
+\begin{itemize}
+\item Establishing order of \primi{switch}'s branches using type information (the names of constructors)
+\item It ``broke'' interpreter a little bit, but synthesis has become faster 
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Branch and Bound Optimization}
+The synthesis answer is stored in variable $\circled{?}$ and 
+during the search we \emph{only} extend it with new $\primi{switch}$es \\
+
+\begin{alertblock}{\textbf{Idea}}
+If current estimate is longer than the shortest answer already found -- cut this branch
+\end{alertblock}
+
+Requires a modified miniKanren's \lstinline=run= primitive: for every answer found we 
+\begin{itemize}
+\item evaluate it's size
+\item update already found minimum
+\end{itemize}
+
+Pruning search branches is implemented using a new primitive called  \emph{structural constraint}
+\end{frame}
+
+\begin{frame}{Structural constraint}
+A new primitive called \emph{structural constraint}:
+\begin{itemize}
+\item Takes a logic value and performs reification in a current state
+\item Takes a predicate which inspects the reified value 
+\item If there are too many branches, stops the search ($failure^o$)
+\item Otherwise continues search without changing the state ($success^o$)
+\end{itemize}
+\vspace{1em}
+Subtleties:
+\begin{itemize}
+\item Used to count the size of current estimate
+\item May take or may not take into account disequality constraints
+\item Can be used to implement $absent^o$ or similar constraints
+\item Deals with reified values $\Rightarrow$ can be slow
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Minimization Criterion for Synthesized Program}
+\begin{figure}
+\begin{subfigure}[b]{0.3\linewidth}
+\[
+\begin{array}{l}
+\primi{switch}\;\mathcal{M}\;\primi{with}\; \\
+\mathcal{C}_1\; \primi{\rightarrow}\; \ir_1\\
+\dots \\
+\mathcal{C}_n\; \primi{\rightarrow}\; \ir_n\\
+\primi{otherwise}\;\ir\\
+\end{array}\\
+\]
+\[
+\Updownarrow
+\]
+\[
+\begin{array}{l}
+\primi{if}\; \mathcal{M} = \mathcal{C}_1\;\primi{then}\; \ir_1\\
+\dots \\
+\primi{else if}\; \mathcal{M} = \mathcal{C}_n\; \primi{then}\;  \ir_n\\
+\primi{else}\;\ir\\
+\end{array}\\
+\]
+\vspace{1cm}
+
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[b]{0.6\linewidth}
+A single switch with $n$ branches roughly can be encoded as $n$ \texttt{if}s\\
+
+Let's say that the size of
+\begin{itemize}
+\item  $\primi{switch}$ is the number of branches
+\item $\primi{return}$ is 0
+\item the whole program in $\ir$ is the sum of sizes of its $\primi{switch}$es 
+\end{itemize}
+Our minimization criterion: reduce the size of synthesized program\\
+
+But there can be other criteria:
+\begin{itemize}
+\item The  depth 
+\item The branching factor
+\item etc.
+\end{itemize}
+\end{subfigure}
+\end{figure}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Implementation}
+\OCanren{} --- typed embedding of \miniKanren{} to \OCaml{}.
+\vspace{2em}
+
+\noCanren{}~\cite{RelConversion} generates relational code for \OCanren{}~\cite{OCanren,OCanrenWeb} from \textsc{ML}-like language
+\vspace{1em}
+
+Project repo~\cite{Repo}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\defverbatim[colored]{\synthInputA}{
+\begin{lstlisting}
+match $\bullet$ with
+(_, false, true) -> 1
+(false, true, _) -> 2
+(_, _, false) -> 3
+(_, _, true) -> 4
+\end{lstlisting}
+}
+\defverbatim[colored]{\synthResultA}{
+\begin{lstlisting}[language=ocamllambda]
+switch $\bullet$[0] with  
+| true -> 
+    (switch $\bullet$[1] with  
+    | true -> 
+        (switch $\bullet$[2] with true -> 4 | _ -> 3)
+    | _ -> 
+        (switch $\bullet$[2] with true -> 1 | _ -> 3))  
+| _ -> 
+    (switch $\bullet$[1] with  
+    | true -> 2   
+    | _ -> 
+         (switch $\bullet$[2] with true -> 1 | _ -> 3))
+\end{lstlisting}
+}
+
+\defverbatim[colored]{\synthResultB}{
+\begin{lstlisting}[language=ocamllambda]
+switch Scru[0] with  
+| true -> 
+    (switch Scru[2] with  
+    | true -> 
+       (switch Scru[1] with true -> 4 | _ -> 1)
+    | _ -> 3 )  
+| _ -> 
+    (switch Scru[1] with  
+    | true -> 2   
+    | _ -> (switch Scru[2] with  true -> 1 | _ -> 3))
+\end{lstlisting}
+}
+
+\defverbatim[colored]{\synthResultC}{
+\begin{lstlisting}[language=ocamllambda]
+switch $\bullet$[1] with  
+| true -> 
+    (switch $\bullet$[0] with  
+    | true -> 
+        (switch $\bullet$[2] with true -> 4 | _ -> 3)
+    | _ -> 2) 
+| _ -> 
+    (switch $\bullet$[2] with true -> 1 | _ -> 3)
+\end{lstlisting}
+}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}{Evaluation: matching three boolean values}
+\begin{minipage}[c][5cm][t]{0.32\linewidth}
+\begin{minipage}{0.35\linewidth}
+\synthInputA
+\end{minipage}
+\end{minipage}
+\begin{minipage}{0.63\linewidth}
+\begin{onlyenv}<1>
+Answer of size 6 (in 1.6 seconds)
+
+\begin{minipage}{0.63\linewidth}
+\synthResultA
+\end{minipage}
+\end{onlyenv}
+\begin{onlyenv}<2>
+Answer of size 5 (in +0.4 seconds)
+
+\begin{minipage}{0.63\linewidth}
+\synthResultB
+\end{minipage}
+\end{onlyenv}
+\begin{onlyenv}<3>
+Answer of size 4 (in +0.7 seconds)
+
+\begin{minipage}{0.63\linewidth}
+\synthResultC
+\end{minipage}
+\end{onlyenv}
+\end{minipage}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\defverbatim[colored]{\plotkinBig}{
+\begin{lstlisting}[basicstyle=\small,language=ocaml]
+match a,s,c with
+| (_,_,Ldi i::_) -> 1
+| (_,_,Push::_)  -> 2
+| (Int _,Val (Int _)::_,IOp _::_) -> 3
+| (Int _,_,Test (_,_)::c) -> 4
+| (Int _,_,Test (_,_)::c) -> 5
+| (_,_,Extend::_) -> 6
+| (_,_,Search _::_) -> 7
+| (_,_,Pushenv::_) -> 8
+| (_,Env e::s,Popenv::_) -> 9
+| (_,_,Mkclos cc::_) -> 10
+| (_,_,Mkclosrec _::_) -> 11
+| (Clo (_,_), Val _::_, Apply::_) -> 12
+| (_,(Code _::Env _::_),[]) -> 13
+| (_,[],[]) -> 14
+\end{lstlisting}
+}
+
+\begin{frame}{Performance problem (1/2)}
+\begin{figure}
+\begin{subfigure}[t]{0.5\linewidth}\vspace{0em}
+\begin{minipage}{0.5\linewidth}
+\plotkinBig
+\end{minipage}
+\end{subfigure}
+\hspace{1cm}
+\begin{subfigure}[t]{0.35\linewidth}\vspace{0em}
+PCF (mini-ML) interpreter from G.Plotkin's paper, 1977
+\vspace{4em}
+
+Doesn't currently work because the types are too large (11102 examples  generated).
+\end{subfigure}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Performance problem (2/2)}
+\begin{figure}
+\begin{subfigure}[b][6cm][b]{0.45\linewidth}
+\begin{lstlisting}[basicstyle=\small]
+type code = 
+| Push 
+| Ldi of int 
+| IOp of int 
+| Int of int 
+type prog = code list 
+type item = 
+| Val of code 
+| Env of int 
+| Code of int
+type stack = item list 
+
+match (code, stack,prog) with
+| (_, _, (Ldi _)::_) -> 1
+| (_, _, (Push _)::_) -> 2
+\end{lstlisting}
+\begin{onlyenv}<1>
+\vspace{4mm}
+\end{onlyenv}
+\begin{onlyenv}<2>
+\begin{lstlisting}[basicstyle=\small,aboveskip=-0.5em]
+| (Int _, _, (IOp _)::_) -> 3
+\end{lstlisting}
+\end{onlyenv}
+\end{subfigure}
+\hspace{.5cm}
+\begin{subfigure}[b]{0.45\linewidth}
+\begin{overlayarea}{7cm}{6cm}
+Example is reduces by 
+\begin{itemize}
+\item types 
+\item clauses
+\end{itemize}
+For two clauses we require 5 examples \\\vspace{1em}
+
+\begin{onlyenv}<2->
+For three clauses and the same types we require 20 examples
+\begin{itemize}
+\item in 1,5s it gives the  1st answer of size 7
+\item in the next half a second it gives the 2nd and the 3rd (last) answers of sizes 6 and 5
+\item in the end it in 10s proves that no shorter answers exist
+\end{itemize}
+%\begin{lstlisting}[basicstyle=\small,aboveskip=-0.5em]
+%| (Int _, _, (IOp _)::_) -> 3
+%\end{lstlisting}
+\end{onlyenv}
+\end{overlayarea}
+\vspace{1cm}
+\end{subfigure}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Conclusions and Future Work}
+Contributions: \contributions
+\vspace{1em}
+
+An approach shows correct results on small problems...
+ but performs not fast enough\\
+\vspace{1em}
+ 
+Areas for possible improvements:
+\begin{itemize}
+\item Reification for structural constraints can be made faster (lazy computations)
+\item Use finite-domain constraints instead of disequality constraints 
+\item Memoization is not used (because of presence of disequality constraints)
+\item More clever way to generate less examples
+\item Another variation of \ir{} language
+\end{itemize}
+\vspace{1em}\pause
+\begin{center}
+{\Huge Thanks!}
+\end{center}
+
+\end{frame}
+
+
+\begin{frame}%[t, allowframebreaks]
+\frametitle{References}
+\bibliographystyle{amsalpha}
+\bibliography{references}
+\vspace{1cm}
+\end{frame}
+
+
+\end{document}
