@@ -7,7 +7,7 @@ which allows one to balance the evaluation time of different branches. This make
 Also, the conjunction can be made fairer if we are capable of detecting the divergence in its conjuncts. The approach~\cite{fair:DivTest} detects the divergence at run time and
 performs switching of conjuncts. In this case, the data that was received during the evaluation of the diverging conjunct is erased. The approach turned out to be efficient in practice.
 However, the conservative rearrangement of the conjuncts does not use the information obtained when evaluating the conjunct before the rearrangement. There are also examples for
-this approach where the order of the conjuncts affects the convergence.
+this approach where the order of the conjuncts still affects the convergence.
 
 In a broader context of logic programming similar problems were considered multiple number of times as well. It worth mentioning that many results addressing the control
 issues in \textsc{Prolog} deal with inherent incompleteness of its depth-first search. For example, in~\cite{Schrijvers2012TorES} a custom disjunction primitive is

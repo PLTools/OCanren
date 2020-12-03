@@ -6,11 +6,11 @@ thus enumerating all possible orders of their evaluation. Thus, if a goal (in pa
 would make it to converge.
 
 The development of this (and the following) section essentially relies on the results reported in~\cite{fair:semantics}. In the paper, two semantics for \mk are presented. The first one is
-denotational set-theoretic close to the least Herbrand model~\cite{Lloyd}; the second is operational semantics of relational search with interleaving in the form of labeled transition
+a denotational, set-theoretic semantics close to the least Herbrand model~\cite{Lloyd}; the second is operational semantics of relational search with interleaving in the form of a labeled transition
 system~\cite{LTS}, which corresponds to the informal description given in the previous section. Then the soundness and completeness of interleaving search w.r.t. the denotational semantics
-is formally established and mechanized using \textsc{Coq} proof assistant~\cite{Coq}. It is also establishes a corollary that for correct and complete operational semantics some
-transformations of goals are equivalent (w.r.t. the set of answers they provide). These transformations will play an important role is justifying the fairness of the semantics we present
-in the next section. Due to space limitations, however, we do not present here these semantics and only sketch the proofs which use them essentially.
+is formally established and mechanized using \textsc{Coq} proof assistant~\cite{Coq}. It is also establishes a corollary that for a sound and complete operational semantics some
+transformations of goals preserve their equivalence (w.r.t. the set of answers they provide). These transformations will play an important role is justifying the fairness of the semantics we present
+in the next section. Due to space limitations, however, we do not present here these semantics and only sketch the proofs which use them.
  
 As a first step we define a set of \emph{semantic} variables
 
@@ -20,8 +20,8 @@ As a first step we define a set of \emph{semantic} variables
 
 A set of \emph{semantic terms} $\mathcal{T}_{\mathcal A}$ then comes in naturally. We stipulate that all semantic variables are linearly ordered making it possible to take them one-by-one
 in a deterministic manner. We will also use conventional notations of $\mathcal{FV}\,(\bullet)$ for the sets of free variables in terms and goals and $\bullet\,[x\gets t]$ for substitutions
-of \emph{semantics} term $t$ for \emph{syntactic} variable $x$ in terms and goals. As the only binder in goals~--- the ``\lstinline|fresh|'' construct~--- can only bind \emph{syntactic}
-variables no capturing can occur during substitutions. We omit the formal definitions due to their triviality.
+of \emph{semantic} term $t$ for \emph{syntactic} variable $x$ in terms and goals. As the only binder in goals~--- the ``\lstinline|fresh|'' construct~--- can only bind \emph{syntactic}
+variables no capturing can occur during substitutions. We omit the straightforward and standard definitions of free variables and substitutions.
 
 Next, we define the following set of \emph{states} $\mathfrak{S}$:
 
@@ -38,8 +38,8 @@ Next, we define the following set of \emph{states} $\mathfrak{S}$:
 \]
 
 A non-final state is a tree of disjunctions with leaves of the form $\inbr{\theta,\,i,\,r^*}$, where $\theta$ is a substitution from semantic variables into semantic terms,
-$i$~--- the index of the first non-allocated semantic variable, and $r^*$~--- a possibly empty list of relation applications $R^k\,(t_1,\dots,t_k)$, where $R^k$~--- relation name,
-$t_i$~--- semantic terms. Informally, a state represents some point during goal evaluation when the results of (non-failed) unifications are collected in substitutions and the residual
+$i$ is the index of the first non-allocated semantic variable, and $r^*$ is a possibly empty list of relation applications $R^k\,(t_1,\dots,t_k)$, where $R^k$ is relation name,
+$t_i$ are semantic terms. Informally, a state represents some point during goal evaluation when the results of (non-failed) unifications are collected in substitutions and the residual
 goal is represented in DNF. If a list of relation applications in the leaf of the state is empty, then the substitution represents an answer. A final state corresponds to the end of evaluation.
 
 We introduce two auxiliary functions to work with states. The first one, \primi{union}, joins two states into the one:
@@ -80,7 +80,7 @@ single rule:
 \]
 
 We conventionally denote here $\bar{\bullet}$ vectors of terms or variables. In the conclusion we use a pair of a substitution and a number of first unallocated semantic variable as
-environment; in the premise, however, we need to refer to a yet another, this time small-step, relation ``$\leadsto$'', which uses states as environment. This relation describes the
+environment; in the premise, however, we need to refer to a yet another, this time small-step, relation ``$\leadsto$'', which uses states as environments. This relation describes the
 local computations within the body of unfolded application.  The definition of this relation is shown in the Fig.~\ref{fair:unfolding-semantics}.
 
 \begin{figure}[t]
@@ -128,7 +128,7 @@ system over the set of states. The set of labels is defined as
 \mathcal{L} = \circ \mid \theta.
 \]
 
-where ``$\circ$'' designates the absence of an answer, $\theta$~--- an answer in the form of a substitution.
+where ``$\circ$'' denotes the absence of an answer, $\theta$~--- an answer in the form of a substitution.
 
 \begin{figure}[h!]
 \[\begin{array}{cr}
@@ -200,22 +200,39 @@ The following lemma justifies the use of angelic semantics:
 \begin{lemma}[Soundness and completeness]
   Angelic semantics is sound and complete.
 \end{lemma}
-\begin{proof}
+\begin{proofsketch}
   The completeness follows immediately from the completeness of deterministic semantics from~\cite{fair:semantics}. Indeed, any derivation in deterministic semantics can be reproduced in
   the angelic one.
 
   The soundness, on the other hand, requires the whole soundness proof from~\cite{fair:semantics} to be repeated. 
-\end{proof}
+\end{proofsketch}
 
-Angelic semantics allows us to formally define what we can call the \emph{fairness} of conjunction evaluation strategy. 
+Angelic semantics allows us to formally define what we can call the \emph{fairness} of conjunction evaluation strategy. First, we define the notion of \emph{convergence}:
 
 \begin{definition}[Convergence]
-  A goal $g$ \emph{converges} (notation: $g\Downarrow$) if $\inbr{S^0\,(g),\,\times}\in\rightarrow^*$; in other words, if there exists a derivation sequence from the initial state for $g$ to a
+  A goal $g$ \emph{converges} (notation: $g\Downarrow$) if $\inbr{S^0\,(g),\,\times}\in\,\rightarrow^*$; in other words, if there exists a derivation sequence from the initial state for $g$ to a
   final state.
 \end{definition}
 
+\begin{comment}
+Let us have some other \emph{deterministic} semanatics in the form of a labeled transition system; more specifically, let us have
+
+\begin{itemize}
+\item a set of states $\widetilde{\mathfrak{S}}$;
+\item a set of labels $\widetilde{L}$;
+\item a ternany transition relation $\mbox{``}\dashrightarrow\mbox{''}\subseteq\widetilde{\mathfrak{S}}\times\widetilde{L}\times\widetilde{\mathfrak{S}}$ such that for all $s, s^\prime, s^{\prime\prime}\in\widetilde{\mathfrak{S}}$ and $l^\prime, l^{\prime\prime}\in\widetilde{L}$
+
+  \[
+  s\overset{l^\prime}{\dashrightarrow}s^\prime\wedge s\overset{l^{\prime\prime}}{\dashrightarrow}s^{\prime\prime}\Longrightarrow s^\prime=s^{\prime\prime}\wedge l^\prime=l^{\prime\prime}
+  \]
+  
+\item a final state $\widetilde{\times}\in\widetilde{\mathfrak{S}}$ such that $\inbr{\widetilde{\times},\,\_,\,\_}\not\in\mbox{``}\dashrightarrow\mbox{''}$;
+\item an initial state $\widetilde{S}^0(g)$ for each top-level goal $g$.
+\end{itemize}
+\end{comment}
+
 \begin{definition}[Fairness]
-  A sound and complete semantics in the form of LTS is \emph{fair} if a goal $g$ converges to a final state whenever $g\Downarrow$. 
+  A sound and complete semantics in the form of LTS is \emph{fair} if a goal $g$ converges to a final state whenever $g\Downarrow$.
 \end{definition}
 
 In the next section we present a fair and deterministic semantics for \mk.

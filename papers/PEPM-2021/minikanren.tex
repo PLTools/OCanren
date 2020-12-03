@@ -11,7 +11,7 @@ over the constructors with arities $\mathcal{C}$ and \emph{syntactic} variables 
 explicit since later we will also use another its parameterization by the set of \emph{semantic} variables. We also define the set $\mathcal{R}$ of relation names with arities.
 
 Next, we introduce the central construct of \mk~--- a goal $\mathcal{G}$. A goal is either a unification of terms, disjunction or conjunction of goals, introduction of fresh variable,
-or an application of a relation to terms. Relation definition $\mathcal{D}$ corresponds to a first-order abstraction of a goal over the set of arguments. Finally, a specification $\mathcal{S}$
+or an application of a relation to terms. Relation definition $\mathcal{D}$ corresponds to an abstraction of a goal over the set of arguments. Finally, a specification $\mathcal{S}$
 puts a top-level goal in the context of a list of relation definitions.
 
 In a nutshell, here we deal with a simple first-order language in which goals play a role of function bodies and ``\lstinline|fresh|''~--- additional binders. Thus,
@@ -22,8 +22,8 @@ free variables and all relation applications respect the arity of corresponding 
 is its top-level goal, and the evaluation of this goal delivers all bindings (\emph{answers}) for these variables which satisfy the constraints imposed by the specification.
 
 More concretely, a goal defines a search procedure which for a given \emph{state} returns a finite or infinite stream of states. For now we can assume that states are represented by
-substitutions from variables to terms although in actual implementations they can hold some extra information as well. This procedure is defined inductively by case analysis on the
-shape of the goal (we denote current substitution as $\theta$):
+substitutions from variables to terms although in actual implementations they can hold some extra information needed, for example, for allocating fresh variables.
+This procedure is defined inductively by case analysis on the shape of the goal (we denote current substitution as $\theta$):
 
 \begin{itemize}
 \item For unification $t_1 \equiv t_2$ an attempt to unify the terms $t_1\theta$ and $t_2\theta$ is made. On success the most general unifier is integrated into $\theta$ and the resulting substitution
@@ -33,8 +33,8 @@ shape of the goal (we denote current substitution as $\theta$):
   discipline~--- \emph{interleaving}~\cite{fair:interleaving}~--- provides the \emph{completeness} of \mk search: each answer will be found in a finite number of steps.
 
 \item For conjunction $g_1 \wedge g_2$, first, the left conjunct $g_1\,(\theta)$ is fully evaluated. Then, for each element $\theta^\prime$ (if any) of the resulting stream $g_2\,(\theta^\prime)$ is
-  evaluated, and all resulting streams are concatenated. Thus, the evaluation of conjunction is \emph{left-biased}: none of evaluation steps in $g_2$ are performed until \emph{all answers} for
-  $g_1\,(\theta)$ are found.
+  evaluated, and all resulting streams are concatenated. Thus, the evaluation of conjunction is \emph{left-biased}: none of evaluation steps in $g_2$ are performed until the next answer for
+  $g_1\,(\theta)$ is found.
 
 \item For fresh variable introduction \lstinline|fresh ($x$) $\;g$| a new variable, not occurring anywhere in $\theta$, is chosen and substituted for $x$ in $g$. Then the resulting goal is evaluated.
 
@@ -71,8 +71,8 @@ shape of the goal (we denote current substitution as $\theta$):
 \end{figure}
 
 
-It is easy to see that this implementation ideas give rise to a monadic framework over the set of streams with evaluation rules for conjunction and disjunction playing roles of bind and
-mplus respectively. In actual implementation a few embellishments can be added to this general framework: for example, some evaluation steps can be deferred using so-called
+It is easy to see that this implementation ideas give rise to a monadic framework over the set of streams with evaluation rules for conjunction and disjunction playing roles of ``bind'' and
+``mplus'' respectively. In an actual implementation a few embellishments can be added to this general framework: for example, some evaluation steps can be deferred using so-called
 \emph{inverse-$\eta$-delay}~\cite{MicroKanren}; in conjunction instead of left conjunct the right one can be chosen for evaluation first; various interleaving disciplines can
 be applied to make the distribution of steps within a cluster of disjunctions more fair~\cite{fair:towardsAM}, etc. However, in all cases the basic implementation principles remain
 the same.
@@ -81,7 +81,7 @@ We now consider a few examples of relational definitions and specifications. The
 introduces a relational list concatenation:
 
 \begin{lstlisting}
-  append$^o$ = $\lambda\; x\; y\; xy$ . ($x$ === [] /\ $y$ === $\;xy$) \/
+  append$^o$ = $\lambda\; x\; y\; xy$ . ($x$ ===$\,$ [] /\ $y$ === $\;xy$) \/
                       fresh ($e\; xs\; xys$) 
                         $x\;$ === $\;e$ : $xs$ /\ 
                         $xy\;$ === $\;e$ : $xys$ /\ 
@@ -171,16 +171,16 @@ can illustrate this behavior by the following diagram:
 \end{tikzpicture}
 
 Here the left and right branches of nodes correspond to the evaluation of the first and the second disjuncts of \lstinline|append$^o$| respectively. We start from
-the first disjunct of the topmost \lstinline|append$^o$| application which immediately gives us the first answer $x\mapsto\mbox{\lstinline|[]|},\,y\mapsto\mbox{\lstinline|[A,B]|}$.
+the first disjunct of the topmost \lstinline|append$^o$| application which immediately gives us the first answer $x\mapsto\mbox{\lstinline|[]|},\,y\mapsto\mbox{\lstinline|[A, B]|}$.
 In the second disjunct we encounter a conjunction and start to evaluate its left conjunct, which is an application of \lstinline|append$^o$| to \emph{free} variables
 $xs$, $y$, and $xys$. Recursing in the body, we again encounter a disjunction. Its left disjunct gives us the substitution $xs\mapsto\mbox{\lstinline|[]|},y\mapsto xys$ which, upon 
 returning from the recursive call and evaluating the remaining conjuncts, gives us the second answer $x\mapsto\mbox{\lstinline|[A]|},y\mapsto\mbox{\lstinline|[B]|}$. The right
 disjunct, however, is again a conjunction starting with the recursive application of \lstinline|append$^o$| to (some other) free variables. Clearly, this branch will never stop to
 grow, and, after recovering the third answer, the evaluation will diverge. This example demonstrates a well-known phenomenon of \emph{refutational incompleteness}~\cite{fair:WillThesis}
 of this specific implementation of \lstinline|append$^o$|. It can be proven~\cite{fair:semantics} that the initial implementation (with the recursive call placed last in the conjunction)
-is refutationally complete, but only for \emph{linear} applications (i.e. application in which no variable occurs in argument terms more than once).
+is refutationally complete, but only for \emph{linear} applications (i.e. applications in which no variable occurs in the argument terms more than once).
 
-Pushing relation application to the end in the cluster of conjunctions is a well-known trick in relational programming, which often helps to improve the performance of even
+Pushing relation application to the end in the cluster of conjunctions is a well-known trick in relational programming, which often helps to improve the performance or even
 convergence of goal evaluation. This trick, however, does not help in all cases~--- for example, when there are more then one application in a cluster. Consider, for instance, the
 following relation \lstinline{revers$^o$}, which associates an arbitrary list with the list containing the same elements in the reverse order:
 
@@ -192,7 +192,7 @@ following relation \lstinline{revers$^o$}, which associates an arbitrary list wi
                        append$^o$ $ys$ [$e$] $y$
 \end{lstlisting}
 
-In this relation there are two applications in the same conjunction: \lstinline{revers$^o$} and \lstinline{append$^o$}; thus, it impossible to put last the both of them. With this particular
+In this relation there are two applications in the same conjunction: \lstinline{revers$^o$} and \lstinline{append$^o$}; thus, it impossible to put both of them last. With this particular
 order of applications the goal \lstinline|revers$^o$ [A, B, C] $x$| converges, but with the reverse order the same goal is diverges after the answer is found. Moreover, the reverse order negatively
 affects the performance of answer evaluation. At the same time the goal \lstinline|revers$^o$ $x$ [A, B, C]| demonstrates the symmetric behavior: it diverges for the given order of conjuncts,
 and converges for the reverse one.
@@ -200,7 +200,7 @@ and converges for the reverse one.
 An important design goal for \mk was to provide a purely declarative way to define executable relational specifications which would work equally well regardless the ``direction'' of the search.
 In particular, as we expect conjunction and disjunction to be commutative and associative, the order of conjuncts/disjuncts must not have a notable impact on the behavior of
 a specification. As these examples demonstrate, this goal is not completely achieved yet. More interestingly, all these cases are the manifestations of the same flaw in conventional
-relational search strategy~--- the \emph{left-bias} in conjunction evaluation. We demonstrate this by the following artificial example. First, we define two relations \lstinline|div$^o$| and
+relational search strategy~--- the \emph{left-bias} in conjunction evaluation. We demonstrate this by the following artificial example. First, we define two relations \lstinline{div$^o$} and
 \lstinline|fail$^o$| as follows:
 
 \begin{lstlisting}
@@ -226,8 +226,8 @@ until the first answer is found. In the first case we immediately come up with a
 however, we never get an answer; at the same time we always have some remaining steps to be performed in the evaluation of the left conjunct, which means that the
 whole search diverges. This behavior of conjunction not only leads to a divergence in some important cases~--- it also heavily impacts the performance by polluting
 the search tree with never ending branches, which at the same time do not produce any results. In some cases this can be avoided by adjusting the order of conjuncts in
-relation definition to fit a certain evaluation direction, but, as shown in~\cite{fair:semantics}, the solution of some problems require the same definition to be run in
-various direction at the same time. Thus, in general case, under biased conjunction evaluation strategy no optimal static order of conjuncts exists.
+the relation definition to fit a certain evaluation direction, but, as shown in~\cite{fair:DivTest}, the solution of some problems require the same definition to be run in
+various direction at the same time. Thus, in the general case, under biased conjunction evaluation strategy no optimal static order of conjuncts exists.
 
 
 %We propose a completely different evaluation strategy for conjunction which dynamically postpones the evaluation of some branches using runtime analysis of

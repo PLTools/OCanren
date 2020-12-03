@@ -1,4 +1,3 @@
-
 \section{Fair Conjunction by Well Quasi-Ordering}
 \label{sec:fair-semantics}
 
@@ -31,8 +30,8 @@ First, we introduce the set of \emph{enriched} states $\mathfrak{R}$:
   \mathcal{H}    & = &      & \inbr{\theta,\,r}^* & \mbox{history of unfoldings}\\
   \mathfrak{R}   & = &      & \times & \mbox{final state}\\
                  &   & \mid & \mathfrak{R}^o & \mbox{non-final state}\\
-  \mathfrak{R}^0 & = &      & \inbr{\theta,\, i,\, \inbr{r,\, \mathcal{H}}^*} & \mbox{leaf state with histories}\\
-                 &   & \mid & \mathfrak{R}^0 \oplus \mathfrak{R}^0 & \mbox{disjunction state}
+  \mathfrak{R}^o & = &      & \inbr{\theta,\, i,\, \inbr{r,\, \mathcal{H}}^*} & \mbox{leaf state with histories}\\
+                 &   & \mid & \mathfrak{R}^o \oplus \mathfrak{R}^o & \mbox{disjunction state}
 \end{array}
 \]
 
@@ -79,10 +78,19 @@ R \xrightarrow{\alpha}_p R^\prime
 \]
 \end{lemma}
 \begin{proof}
-  By structural induction on $R$. The case $R = R_1 \oplus R_2$ is covered is covered by rules \rulen{Disj} и \rulen{DisjStep}; the case $R = \inbr{\theta,\, i, \epsilon}$ is
-  covered by the rule \rulen{Answer}. The case $R = \inbr{\theta,\, i, (r_1,\,h_1) \dots (r_n,\,h_n)}$ and $\bigvee_{j=1}^n \mathcal{P}\,(\theta,\, r_j,\, h_j)$ is covered by the
-  rule \rulen{ConjUnfold*}. The case $R = \inbr{\theta,\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$,  $\bigvee_{j=1}^n h_j \not= \epsilon$ and $\bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)$
-  is covered by the rule \rulen{ConjClear}. The only remaining case is $R = \inbr{\theta,\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$, $\bigwedge_{j=1}^n h_j= \epsilon$ and
+  By structural induction on $R$.
+
+  The case \mbox{$R = R_1 \oplus R_2$} is covered by rules \rulen{Disj} и \rulen{DisjStep}.
+
+  The case $R = \inbr{\theta,\, i, \epsilon}$ is  covered by the rule \rulen{Answer}.
+
+  The case \mbox{$R = \inbr{\theta,\, i, (r_1,\,h_1) \dots (r_n,\,h_n)}$} and $\bigvee_{j=1}^n \mathcal{P}\,(\theta,\, r_j,\, h_j)$ is covered by the
+  rule \rulen{ConjUnfold*}.
+
+  The case $R = \inbr{\theta,\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$,  $\bigvee_{j=1}^n h_j \not= \epsilon$ and $\bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)$
+  is covered by the rule \rulen{ConjClear}.
+
+  The only remaining case is $R = \inbr{\theta,\, i, (r_1,\,h_1) \ldots (r_n,\,h_n)}$, $\bigwedge_{j=1}^n h_j= \epsilon$ and
   $\bigwedge_{j=1}^n \neg\mathcal{P}\,(\theta,\,r_j,\,h_j)$. From this, in particular, follows that $\neg\mathcal{P}\,(\theta,\,r_1,\,\epsilon)$, but by the condition of the lemma
   $\forall\;\theta,\;r\; :\;\mathcal{P}\,(\theta,\, r,\, \epsilon)$, which is impossible.
 \end{proof}
@@ -90,7 +98,6 @@ R \xrightarrow{\alpha}_p R^\prime
 All predicates which we consider further will trivially satisfy the conditions in Lemma~\ref{lemma:pred-property}.
 
 By choosing the predicate we can come up with various existing semantics. For example, by setting it always true we get the regular left-biased one.
-
 If the predicate limits the length of the history
 
 \[
@@ -143,13 +150,22 @@ forms a basis for the following central theorem:
   \label{thm:main}
   Let $\mathcal{P}_\trianglelefteq$ be a well quasi-ordering predicate. Then ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$'' is a fair semantics.
 \end{theorem}
-\begin{proof}
-  The proof is conceptually simple but laborous in details. Let us have a goal $g$. By the definition of fairness we have $g\Downarrow$. If
-  the evaluation of $g$ according to ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$'' converges, we are done. If not, then there has to be infinite
-  branch. In this branch none of relation applications continuously unfolded infinite number of times (due to the property of w.q.o.). Thus, for each
-  application we can select a subsequence of unfoldings, which match a certain sequence of unfoldings of the same application in angelic semantics. But
-  due to the convergence in angelic semantics either any of such sequences converge, or a ``sufficient'' amount of them come to a failure.
-\end{proof}
+
+The proof of the theorem is given in the Appendix~\ref{sec:app}.
+
+%\begin{proof}  
+%  The proof is conceptually simple but laborous in details. Let us have a goal $g$. By the definition of fairness we have $g\Downarrow$. If
+%  the evaluation of $g$ according to ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$'' converges, we are done. If not, then there has to be infinite
+%  branch. In this branch no relation application can be unfolded an infinite number of times (due to the property of w.q.o.). Thus, for each
+%  application we can select a subsequence of unfoldings, which match a certain sequence of unfoldings of the same application in angelic semantics. But
+%  due to the convergence in angelic semantics either any of such sequences converge, or a ``sufficient'' amount of them come to a failure.
+%\end{proof}
+
+As we said earlier, inventing a fair semantics is not challenging if the performance issues are not taken into account. From this standpoint the whole
+construction of fair semantics by well quasi-ordering delivers nothing unless a concrete well quasi-ordering is presented which allows to achieve an
+efficient implementation. This well quasi-ordering, first, has not to be computationally involving and, second, it has to provide a good divergence
+prediction. For example, \emph{homeomorphic embedding}~\cite{homemb}, often used as a ``whistle'' in supercompilation, in our case performs poorly in
+both these aspects.
 
 We now present a well quasi-ordering predicate which will provide us with a practically important version of fair semantics. 
 
@@ -184,12 +200,13 @@ The relation ``$\leq_h$'' is a well quasi-ordering.
   Induction on the sum of terms' heights.
 \end{proof}
 
-Now we can define a relation ``$\leq_{sr}$'' on pairs substitution-relation application. First, for each relation we
-determine the set of its structurally-recursive arguments (an argument is structurally-recursive for a relation $R$ if in
-each recursive call its value structurally decreases). 
+Now we can define a relation ``$\leq_{sr}$''  on substitution-relation application pairs. Preliminarily, for each relation we
+identify the set of its structurally-recursive arguments. An argument is structurally-recursive for a relation $R$ if in
+each recursive call its value structurally decreases; this is a simple syntactic property which can be checked statically
+prior to evaluation.
 
 \begin{definition}
-  Let $\theta_1$, $\theta_2$ be substitutions, \mbox{$r_1=R\,(t^1_1,\dots,t^1_n)$}, \mbox{$r_2=R\,t^2_1,\dots,t^2_n)$}~--- some relation applications, $j_1, \dots, j_k$~---
+  Let $\theta_1$, $\theta_2$ be substitutions, \mbox{$r_1=R\,(t^1_1,\dots,t^1_n)$}, \mbox{$r_2=R\,(t^2_1,\dots,t^2_n)$}~--- some relation applications, $j_1, \dots, j_k$~---
   numbers of structurally-recursive arguments of the relation $R$. If
 
   \[

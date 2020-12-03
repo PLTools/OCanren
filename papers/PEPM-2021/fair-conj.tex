@@ -59,7 +59,7 @@
 \usepackage{yfonts}
 \usepackage{subcaption}
 \usepackage{xspace}
-% \usepackage{amssymb}
+\usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{comment}
 \usepackage{url}
@@ -96,6 +96,20 @@ language=ocanren
 \newcommand{\inbr}[1]{\langle #1 \rangle}
 \renewcommand{\emptyset}{\varnothing}
 \newcommand{\primi}[1]{\mbox{\bf #1}}
+
+\newenvironment{proofsketch}{%
+  \renewcommand{\proofname}{Proof sketch}\proof}{\endproof}
+
+\makeatletter
+\newcommand{\xdashrightarrow}[2][]{\ext@arrow 0359\rightarrowfill@@{#1}{#2}}
+\def\rightarrowfill@@{\arrowfill@@\relax\relbar\rightarrow}
+\def\arrowfill@@#1#2#3#4{%
+  $\m@th\thickmuskip0mu\medmuskip\thickmuskip\thinmuskip\thickmuskip
+   \relax#4#1
+   \xleaders\hbox{$#4#2$}\hfill
+   #3$%
+}
+\makeatother
 
 %%
 %% Submission ID.
@@ -209,6 +223,39 @@ language=ocanren
 %% information and builds the first part of the formatted document.
 \maketitle
 
+\begin{comment}
+  
+  Reviewer 1:
+  
+  1. Please motivate why you reimplemented miniKanren in Haskell instead of integrating your solution into an existing implementation of miniKanren?
+  Is the switch so cross-cutting that it would require significant rewriting of existing miniKanren implementations? Are you sure that your naive
+  Haskell implementation corresponds to what miniKanren implementations actually implement?
+  
+  2. The case studies that the evaluation section is based on seem somewhat small and toyish. Please say something about how representative they are.
+  
+  3. It would strengthen the paper if you made the Haskell implementations available for other researchers to inspect and experiment with.
+
+  4. S3: You describe => as a "big-step" arrow, but it looks small-step to me?
+
+  Fig. 2: Please clarify whether this small-step semantics is from [20] or somewhere else?
+
+  5. S2: "but, as shown in [20], the solution" -> point to where in [20] we should be looking?
+
+  Reviewer 2:
+
+  The proposed WQO in def. 4.4. seemingly comes out of the blue -- why was this particular WQO chosen? Were other WQOs investigated and rejected?
+
+  Reviewer 3:
+
+  One aspect that isn't covered in the experimental evaluation is the additional memory usage of the new “structural semantics”. Presumably storing the histories uses additional memory? I guess that all the implementations in Figure 9 are storing histories? What are the timings for a traditional minKanren implementation?
+
+  I would have liked to have seen more summary information in the table in Figure 9 to show to ratio in timings between the three different semantics.
+
+Does the “naive semantics” correspond to a form of iterative deepening?
+
+In Section 5, it says "Structural arguments for each relation were detected automatically" How was this done?
+\end{comment}
+
 \input{introduction}
 \input{minikanren}
 \input{angelic-semantics}
@@ -219,6 +266,12 @@ language=ocanren
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{fair-conj}
+
+\begin{acks}
+  sss
+\end{acks}
+
+\input{appendix}
 
 \end{document}
 \endinput
