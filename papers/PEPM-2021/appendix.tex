@@ -1,0 +1,286 @@
+\appendix
+
+\section{The Proof of Theorem~\ref{thm:main}}
+\label{sec:app}
+
+First, we make a number of observations which will simplify following reasoning.
+
+We need to relate two semantics~--- the angelic one presented in Section~\ref{sec:angelic-semantics} and
+the fair semantics by well quasi-ordering presented in Section~\ref{sec:fair-semantics}~--- and prove that
+arbitrary goal simultaneously converges or diverges in them. Both semantics are represented
+as labeled transition systems with the same alphabet of labels and tree-shaped states in which interior
+nodes correspond to disjunctions and leaves contain ordered conjunctions of relation applications (plus a
+substitution, a number of first fresh semantic variable, etc.) Moreover, both semantics share the same
+set of rules dealing with disjunction; both semantics are sound and complete w.r.t. the denotational
+semantics of \mk. The completeness means that in a state no leaf can be excluded from consideration~---
+each leaf of a state sooner of later (meaning: in a finite number of steps) will be considered and some
+its relation application will be unfolded. This allows us to abstract from concrete shapes of states and
+instead consider them as sets of leaves. The following lemma justifies this transition.
+
+\begin{lemma}[Convergence of leaves]
+  \label{lem:converge_of_leaves}
+  Let $s$ be a state with leaves $\{\omega_i\}$. Then $s$ converges (in angelic or fair semantics)
+  iff each $\omega_i$ converges.
+\end{lemma}
+\begin{proof}
+  The lemma follows from a more general fact: let
+
+  \[
+  s\to s_1\to s_2 \to \dots
+  \]
+
+  be a (finite or infinite) derivation sequence in either semantics of interest (we may consider
+  only angelic semantics since the semantics by well quasi-ordering constitutes its special case).
+  Then:
+
+  \begin{itemize}
+    \item each state $s_i$ can be represented as
+      
+      \[
+      s_i\,[w_1,\,\dots,\,w_k]
+      \]
+      
+      where $\{w_j\}$ is a collection of disjoint subtrees of $s_i$, containing all its leaves;
+      
+    \item each step can be represented either as
+      
+      \[
+      s_i\,[\dots w_j\dots]\to s_i\,[\dots w^\prime_j\dots]
+      \]
+
+      where there is a derivation step
+
+      \[
+      w_j\to w^\prime_j
+      \]
+
+      or as
+
+      \[
+      s_i\,[\dots w_j\dots]\to s^\prime_i\,[\dots w_{j-1},\,w_{j+1},\,\dots]
+      \]
+
+      where $s^\prime_i$ is a reordering of all $\{w_l\mid l\ne j\}$;
+     
+    \item for each $w_j$ there is a derivation sequence
+
+      \[
+      \omega_k\to\dots\to w_j
+      \]
+
+      for some $k$.
+  \end{itemize}
+
+  Indeed, in the base case all leaves of $s$ are precisly $\{\omega_i\}$, which satisfy all requirements. Inductively, let
+  us aleady have an intermediate state
+
+  \[
+  s_i\,[w_1,\,\dots,\,w_k]
+  \]
+
+  with all $\{w_j\}$ satisfying the claim. The application of rules for disjunction will traverse the state from the root to
+  a certain leaf (if the state does not contain disjunctions then the whole case degenerates to $s_i=w_1$ and the claim
+  holds trivially) and, hence, will arrive at a certain $w_j$. Then the next state can be represented as
+
+  \[
+  s^\prime_i\,[\dots w^\prime_j\dots]
+  \]
+  
+
+  if $w_j\to w^\prime_j$ and $w^\prime\ne\times$ or as
+  
+  \[
+  s_i\,[\dots w_{j-1},\,w_{j+1},\,\dots]
+  \]
+
+  if $w_j\to\times$ and $s^\prime_i[\dots,\,w_{j-1},\,w_{j+1},\,\dots]$ is a reordering of remaining $\{w_l\mid l\ne j\}$.
+  
+  In other words, any derivation for a state can be decomposed into the derivations for its leaves and vice-versa.  
+\end{proof}
+
+The next observation concerns the ``commutativity'' of sequential unifications. Let $p_{1,2},\,q_{1,2}$ be some terms. Then
+
+\[
+\begin{array}{c}
+  mgu\,(p_1,\,p_2)\cdot mgu\,(q_1,\,q_2)=\\
+  \phantom{XXXXXXX}mgu\,(q_1,\,q_2)\cdot mgu\,(p_1,\,p_2)
+\end{array}
+\]
+
+Indeed, both
+
+\[
+mgu\,(p_1,\,p_2)\cdot mgu\,(q_1,\,q_2)
+\]
+
+and
+
+\[
+mgu\,(q_1,\,q_2)\cdot mgu\,(p_1,\,p_2)
+\]
+
+are most general unifiers for pairs $(p_1,\,p_2)$ and $(q_1,\,q_2)$ simultaneously. If there were different, then terms $C\,(p_1,\,q_1)$ and
+$C\,(p_2,\,q_2)$, where $C$ is some binary constructor, would have \emph{different} most general unifiers, which is impossible\footnote{Strictly
+  speaking, the validity of these claims depends on the representation of substitution; for example, in concrete representation
+  the substitutions $[x\mapsto y]$ and $[y\mapsto x]$ may not be equal, but equivalent.}. Taking this into account we arrive at the
+following property. Let
+
+\[
+\theta\xrightarrow{u_1;\,u_2;\dots u_k}{\theta^\prime}
+\]
+
+be a sequence of unifications which transforms a substitution $\theta$ into a substitution $\theta^\prime$. Then
+
+\[
+\theta\xrightarrow{u_{\pi(1)};\,u_{\pi(2)};\dots u_{\pi(k)}}{\theta^\prime}
+\]
+
+for any permutation $\pi$.
+
+
+Another subtlety concerns the order of fresh semantic variables allocation. Let us have a leaf state $\inbr{\theta,\,i,\,ab}$, where
+$\theta$ is a substitution, $a$ and $b$ are relation invocations and $i$ is the next free semantic variable. In angelic semantics we
+may perform the unfoldings of $a$ and $b$ in different orders. Since the bodies for both $a$ and $b$ may contain \lstinline|fresh| constructs,
+these constructs will be evaluated in different orders delivering different concrete semantic variables and different substitutions. However
+these substitutions will be $\alpha$-equivalent; this observation reflects the intuitively trivial fact that the order of semantic variable
+allocation is not essential as long as no variable is allocated more than once in the evalutaion within the same branch. Thus, we discard
+the \lstinline|fresh| construct from considerations and will treat all substitutions up to $\alpha$-equivalence. This, in particular,
+will allow us to omit the next fresh variable component from states.
+
+\begin{lemma}[Effect of One-step Unfolding]
+\label{lem:one-step-unfolding}
+
+Let $r$ be an application and $\theta$~--- a substitution. One-step unfolding transforms a state $\inbr{\theta,\,r}$ into
+a set of states $\{\inbr{\theta_i,\,\rho_i}\}$, where $\rho_i$ is a conjunction of applications, $\theta_i$~--- some substitution. Then
+for each $i$ there is a sequence of unifications $u^i_1\dots u^i_{k_i}$ such that
+
+\[
+\theta\xrightarrow{u^i_1\dots u^i_{k_i}}{\theta_i}
+\]
+\end{lemma}
+\begin{proof}
+By induction on the derivation for one-step unfolding.
+\end{proof}
+
+Thus, we may introduce a denotation $[r\to\rho_i]$ for the result of the sequence of unifications performed during a one-step unfolding of $r$ which
+delivers a leaf state $\rho_i$. 
+
+\begin{lemma}[Weakening in Angelic Semantics]
+  \label{lem:weakening}
+
+  Let $\theta$ be a substitution, $\omega$ be a list of applications, and let $\inbr{\theta,\,\omega}$ converge to $\{\}$ (an empty state) in angelic semantics.
+  Then for arbitrary substitution $\sigma$ and arbitrary list of applications $\psi$
+
+  \[
+  \inbr{\theta\cdot\sigma,\,\omega\psi}
+  \]
+
+  converges to $\{\}$.
+\end{lemma}
+\begin{proof}
+  By induction on the derivation; this lemma shows rather a trivial fact that putting additional constraints (by considering a more specific substitution and adding
+  more conjuncts) can not make a converging program diverge.
+\end{proof}
+
+\begin{lemma}[Convergence Preservation]
+  \label{lem:convergence_preservation}
+
+  Let $\phi a \phi^\prime$ be a list of applications with one distinguished element ``$a$'', $\theta$ be a substitution. Let
+
+  \[
+  \{\inbr{\theta\cdot[a\to\alpha_i],\,\alpha_i}\}
+  \]
+  
+  be the result of one-step unfolding for $\inbr{\theta,\,a}$. Then
+
+  \[
+  \inbr{\theta,\,\phi a \phi^\prime}
+  \]
+
+  converges iff all
+
+  \[
+  \{\inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}\}
+  \]
+
+  converge.
+\end{lemma}
+\begin{proof}
+
+  \mbox{}
+  
+  \begin{itemize}
+  \item[$\Leftarrow$] Let all $\{\inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}\}$ converge. Then unfolding of $a$ delivers a converging derivation for $\inbr{\theta,\,\phi a \phi^\prime}$.
+  \item[$\Rightarrow$] Let $\inbr{\theta,\,\phi a \phi^\prime}$ converges. Two cases are possible.
+    \begin{enumerate}
+    \item There is no unfolding of $a$ in the converging derivation. Then
+      
+      \[
+      \inbr{\theta,\,\phi a \phi^\prime}
+      \]
+      
+      converges to $\{\}$ (each state contains $a$). Moreover
+      
+      \[
+      \inbr{\theta,\,\phi \phi^\prime}\eqno{(*)}
+      \]
+      
+      converges to $\{\}$ (we can repeat the converging derivation of $\inbr{\theta,\,\phi a \phi^\prime}$).      
+      By weakening all
+      
+      \[
+      \inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}
+      \]
+      
+      converge to $\{\}$ taking into account $(*)$.
+      
+    \item There is a sequence of derivation
+      
+      \[
+      \inbr{\theta,\,\phi a \phi^\prime}\to \inbr{\theta\cdot\sigma,\,\pi a \rho}\eqno{(**)}
+      \]
+      
+      where $\sigma$ is some sequence of unifications and the next step is unfolding of $a$. Then its result is
+      
+      \[
+      \{\inbr{\theta\cdot\sigma\cdot[a\to\alpha_i],\,\pi \alpha_i \rho}\}
+      \]
+      
+      Taking the state
+      
+      \[
+      \inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i \phi^\prime}
+      \]
+      
+      and repeating the unfoldings of $(**)$ we can (at most) arrive at the state
+      
+      \[
+      \inbr{\theta\cdot[a\to\alpha_i]\cdot\sigma,\,\pi \alpha_i \rho}
+      \]
+      
+      which converges since
+      
+      \[
+      \theta\cdot[a\to\alpha_i]\cdot\sigma=\theta\cdot\sigma\cdot[a\to\alpha_i]
+      \]
+    \end{enumerate}
+  \end{itemize}
+\end{proof}
+
+\begin{corollary}
+  \label{corollary:corollary}
+  Let $\inbr{\theta,\,\omega}$~--- some state. Let $\{\inbr{\theta^\prime,\,\omega^\prime}\}$ be a set of states, obtained from $\inbr{\theta,\,\omega}$
+  in a finite number of unfoldings. Then $\inbr{\theta,\,\omega}$ converges iff all $\{\inbr{\theta^\prime,\,\omega^\prime}\}$~--- converge.
+\end{corollary}
+
+\begin{proof}[The Proof of Theorem~\ref{thm:main}]
+  Let $g$ converges in angelic semantics. Take the first unfolded application, say, $r$, in the converging derivation. Two cases are possible:
+
+  \begin{enumerate}
+    \item The fair semantics performs exactly the same unfolding; nothing more to consider.
+    \item The fair semantics chooses some other application to unfold. Due to the property of well quasi-ordering there will be only a finite
+      number of unfoldings until $r$ will be unfolded as well. Repeating these finite number unfoldings in angelic semantics before unfolding $r$
+      by Corollary~\ref{corollary:corollary} results in a converging set of pairs.
+  \end{enumerate}
+  
+\end{proof}
