@@ -164,13 +164,61 @@ converges to ``$\times$'' if it converges to a finite tree with all leaves being
 For a state $s$ we denote $h\,(s)$ the height of some finite derivation tree in angelic semanics; althought this value is defined ambiguously, this
 definition turnes out to be sufficient.
 
-\begin{lemma}[Liveness of the Semantics by Well Quasi-Ordering]
-  \label{lem:liveness}
-  Let $\inbr{\theta,\,\phi r \psi}$ be a state and let it be an infinite branch in the derivation tree constructed according to the semantics by well
-  quasi-ordering. Then there exists a state on this branch which unfolds $r$.
+\begin{lemma}[One conjunct liveness of the Semantics by Well Quasi-Ordering]
+  \label{lem:one-step-liveness}
+Let $\mathcal{P}_\trianglelefteq$ is a well quasi-ordering predicate, $\theta$ is a substitution, $\phi$ and $\psi$ are list of conjuncts with histories, $r$ and $r^\prime$ are relation applications, $h$ and $h^\prime$ are histories of calls and $\inbr{\theta,\, \phi (r, h) (r^\prime, h^\prime) \psi}$ is a state. Also conjuct $r$ will be unflofded in the first step. Then conjunct $r^\prime$ will be unfolded in an infinite branch in the derivation tree constructed according to the semantics ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$''.
 \end{lemma}
 \begin{proof}
-  No proof yet.
+Let's prove by contradiction. \\
+Let exists a unfailed branch in which $r^\prime$ will never be unfolded. So we have an infinite sequence of states of the form
+\[
+\begin{array}{c}
+\inbr{\theta,\, \phi (r, h) (r^\prime, h^\prime) \psi} \rightarrow \inbr{\theta_1,\, \phi \pi_1 (r^\prime, h^\prime) \psi} \rightarrow \ldots \rightarrow \\
+\rightarrow \inbr{\theta_d,\, \phi \pi_d (r^\prime, h^\prime) \psi} \rightarrow \ldots
+\end{array}
+\]
+
+Consider $\max_{d \in \mathcal{N}}(\max_{(r,h) \in \pi_d}length(h))$. Two cases are possible: the maximum either does not exist, or it does exist.
+
+\begin{itemize}
+    \item The maximum doesn't exist. \\
+    In this case, we have conjunct histories of unlimited length. It follows that the well quasi-ordering predicate $\mathcal{P}_\trianglelefteq$ is true for unlimited history. This is contrary to the definition of well-quasi ordering $\trianglelefteq$.
+    \item The maximum exists and equals $K$,
+    In this case the maximum possible number of unfoldings can be estimated from above. Indeed, the conjunct $r$ can be unfolded no more than a depth of $ T = K - length(h)$ (otherwise, the length of the history of descendants will become more than $K$). Also, each unfolding adds no more than $S$ new conjuncts, where $S$ is maximum number of conjuncts in all branches of all relations (the maximum exists, since there are a finite number of relations and branches). The conjunct $r$ requires one unfolding, its children require $S$ unfoldings, their children require $S^2$ unfoldings, and so on. Thus, total number of unfoldings is
+    \[
+    R = \sum _{k=0}^{T}S^k = \frac{S^{T + 1} - 1}{S - 1}.
+    \]
+    As a result, on the one hand, we have an infinite sequence of unfoldings, and on the other hand, we have an upper estimate $R$ for the number of unfoldings. We have got a contradiction.
+\end{itemize}
+
+\end{proof}
+
+\begin{lemma}[Liveness of the Semantics by Well Quasi-Ordering]
+  \label{lem:liveness}
+Let $\mathcal{P}_\trianglelefteq$ is a well quasi-ordering predicate, $\inbr{\theta,\, \phi r \psi}$ is a leaf state. Then the conjunct $r$ will be unfolded in an infinite branch in the derivation tree constructed according to the semantics ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$''.
+\end{lemma}
+\begin{proof}
+Determine index $k$ of conjunct $r$ in state $\inbr{\theta,\, \phi r \psi}$.
+Also determine conjunct $r^\prime$ which will be unfolded first. Let $m$ is index of this conjunct. We define the distance between the conjuncts in the current state as
+\[
+dist(m, k) =
+\left\{
+\begin{array}{ll}
+ k - m     & \mbox{if } k \geq m \\
+ k - m + n & \mbox{if } k < m \\
+\end{array}
+\right.
+\]
+$dist$ determines the number of conjuncts to unfold before conjunct $r$. If $r^\prime$ is to the right of $r$, we need to unfold the conjunct $r^\prime$ and all the more right conjuncts. Then we go to the leftmost conjunct and unfold all the conjuncts to the left of $r$. Total count of unfolded conjuncts is $k - m + n$ where $n$ is total number of conjuncts in the state $\inbr{\theta;\, \phi r \psi}$.
+
+We will prove the lemma by induction on $dist(m, k)$.
+\begin{itemize}
+    \item Base case: $dist(m, k) = 0$. \\
+    In this case $m = k$ and $r = r^\prime$. This means that the conjunct $r$ will be unfolded at current step.
+    \item Induction step: $dist(m, k) = s + 1$. We also assume that the lemma is true for $dist(m, k) = s$.\\
+    We will complete the unfolding in the conjunct $r^\prime$ in an infinite branch in the derivation tree constructed according to the semantics ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$'' by the lemma~\ref{one-conj-lemma}. As a result we have the state $\inbr{\theta^\prime,\, \phi \pi \psi}$. Then we move on to the next conjunct and the distance $s + 1$ will decrease by one. Thus, the state $\inbr{\theta^\prime,\, \phi \pi \psi}$ satisfies the induction hypothesis.
+
+\end{itemize}
 \end{proof}
 
 \begin{lemma}[Effect of One-step Unfolding]
