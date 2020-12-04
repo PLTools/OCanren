@@ -169,23 +169,20 @@ definition turnes out to be sufficient.
   Let
 
   \[
-  \inbr{\theta,\, \phi (r,\, h) (r^\prime,\, h^\prime) \psi}
+  \inbr{\theta,\, \phi (r,\, h) \psi}
   \]
 
-  be a state in the semantics by well quasi-ordering, where $h, h^\prime$ are histories, $r$, $r^\prime$ are relation applications, and
+  be a state in the semantics by well quasi-ordering, where $h$ is a history, $r$, is a relation application, and
   $r$ is unfolded in the first step in the derivation according to  ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$''. Then each infinite branch
-  of the derivation tree (if any) will contain an unfolding of $r^\prime$.
+  of the derivation tree (if any) will contain an unfolding of one of the relation applications from $\phi$ or $\psi$.
 \end{lemma}
 \begin{proof}
 By contradiction.
 
-Take an infinite branch and assume that $r^\prime$ is never unfolded. Then we have an infinite sequence of states
+Take an infinite branch and assume that none of the relation applications from $\phi$ and $\psi$ will expand. Then we have an infinite sequence of states
 
 \[
-\begin{array}{c}
-\inbr{\theta,\, \phi (r,\, h) (r^\prime,\, h^\prime) \psi} \rightarrow \inbr{\theta_1,\, \phi \pi_1 (r^\prime,\, h^\prime) \psi} \rightarrow \ldots \rightarrow \\
-\rightarrow \inbr{\theta_d,\, \phi \pi_d (r^\prime,\, h^\prime) \psi} \rightarrow \ldots
-\end{array}
+\inbr{\theta,\, \phi (r,\, h) \psi} \rightarrow \inbr{\theta_1,\, \phi \pi_1 \psi} \rightarrow \ldots \rightarrow \inbr{\theta_d,\, \phi \pi_d \psi} \rightarrow \ldots
 \]
 
 Consider $\max_{d \in \mathcal{N}}(\max_{(r,h) \in \pi_d}length(h))$. Two cases are possible: the maximum either does not exist, or it does exist.
@@ -196,39 +193,68 @@ Consider $\max_{d \in \mathcal{N}}(\max_{(r,h) \in \pi_d}length(h))$. Two cases 
     \item The maximum exists and equals $K$,
     In this case the maximum possible number of unfoldings can be estimated from above. Indeed, the conjunct $r$ can be unfolded no more than a depth of $ T = K - length(h)$ (otherwise, the length of the history of descendants will become more than $K$). Also, each unfolding adds no more than $S$ new conjuncts, where $S$ is maximum number of conjuncts in all branches of all relations (the maximum exists, since there are a finite number of relations and branches). The conjunct $r$ requires one unfolding, its children require $S$ unfoldings, their children require $S^2$ unfoldings, and so on. Thus, total number of unfoldings is
     \[
-    R = \sum _{k=0}^{T}S^k = \frac{S^{T + 1} - 1}{S - 1}.
+    R = \sum_{k=0}^{T}S^k = \frac{S^{T + 1} - 1}{S - 1}.
     \]
     As a result, on the one hand, we have an infinite sequence of unfoldings, and on the other hand, we have an upper estimate $R$ for the number of unfoldings. We have got a contradiction.
 \end{itemize}
 
 \end{proof}
 
+\begin{lemma}
+  \label{lem:histories-devastation}
+  Let $\inbr{\theta,\, \phi}$ be a state in the semantics by well quasi-ordering. Then each infinite branch of the derivation tree (if any) will contain state $\inbr{\theta^\prime,\, \psi}$ with empty histories for each conjunct in $\psi$.
+\end{lemma}
+
+\begin{proof}
+Determine $t = n - k$ where $n$ is total number of conjuncts in the state and $k$ is index of conjunct $r$ which will be unfolded first. If we don't have conjunct which would be unfolded first then $t = 0$.
+
+We will prove the lemma by induction on $t$.
+\begin{itemize}
+    \item Base case: $t = 0$. \\
+    In this case the next step will be \rulen{ConjClear}. After this step we will get state with empty histories for each conjunct.
+    \item Induction step: $t = m$. We also assume that the lemma is true for $t < m$.
+     We will complete the unfolding in the conjunct $r$ in each infinite branch
+  of the derivation tree by the lemma~\ref{lem:one-step-liveness}.
+
+  If the next conjunct which will be unfolded is to the right of $r$ then $t$ decreases. And this state satisfies the induction hypothesis.
+
+  If the next conjunct which will be unfolded is to the left of $r$ then previous step was \rulen{ConjClear}. And previous state satisfies the induction hypothesis with $t = 0$.
+\end{itemize}
+\end{proof}
+
+\begin{lemma}
+  \label{lem:empty-stories-liveness}
+  Let $\inbr{\theta,\, \phi r \psi}$ be a state in the semantics by well quasi-ordering where $r$ is a relation application with empty history. Then the conjunct $r$ will be unfolded in any infinite branch in the derivation tree.
+\end{lemma}
+
+\begin{proof}
+Determine $t = m - k$ where $m$ is index of conjunct $r^\prime$ which will be unfolded first and $k$ is index of conjunct $r$.
+
+We will prove the lemma by induction on $t$.
+\begin{itemize}
+    \item Base case: $t = 0$. \\
+     In this case $m = k$ and $r = r^\prime$. Moreover history of $r$ is empty. This means that the conjunct $r$ will be unfolded at current step.
+    \item Induction step: $t = m$. We also assume that the lemma is true for $t < m$.
+
+     We will complete the unfolding in the conjunct $r^\prime$ in each infinite branch of the derivation tree by the lemma~\ref{lem:one-step-liveness}.
+     The next conjunct which will be unfolded is to right of $r$ (because we have conjunct with empty history). And the next conjunct either is $r$ or is the left to $r$ (because $r$ has empty history). Thus, $m$ increases and $t$ decreases for new state. As a result this state satisfies the induction hypothesis in both cases.
+\end{itemize}
+\end{proof}
+
+
 \begin{lemma}[Liveness of the Semantics by Well Quasi-Ordering]
   \label{lem:liveness}
-Let $\mathcal{P}_\trianglelefteq$ is a well quasi-ordering predicate, $\inbr{\theta,\, \phi r \psi}$ is a leaf state. Then the conjunct $r$ will be unfolded in an infinite branch in the derivation tree constructed according to the semantics ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$''.
+Let $\inbr{\theta,\, \phi r \psi}$ be a state in the semantics by well quasi-ordering. Then the conjunct $r$ will be unfolded in each infinite branch in the derivation tree.
 \end{lemma}
 \begin{proof}
-Determine index $k$ of conjunct $r$ in state $\inbr{\theta,\, \phi r \psi}$.
-Also determine conjunct $r^\prime$ which will be unfolded first. Let $m$ is index of this conjunct. We define the distance between the conjuncts in the current state as
-\[
-dist(m, k) =
-\left\{
-\begin{array}{ll}
- k - m     & \mbox{if } k \geq m \\
- k - m + n & \mbox{if } k < m \\
-\end{array}
-\right.
-\]
-$dist$ determines the number of conjuncts to unfold before conjunct $r$. If $r^\prime$ is to the right of $r$, we need to unfold the conjunct $r^\prime$ and all the more right conjuncts. Then we go to the leftmost conjunct and unfold all the conjuncts to the left of $r$. Total count of unfolded conjuncts is $k - m + n$ where $n$ is total number of conjuncts in the state $\inbr{\theta;\, \phi r \psi}$.
+If $r$ has empty history we just apply lemma~\ref{lem:empty-stories-liveness}.
 
-We will prove the lemma by induction on $dist(m, k)$.
+If $r$ has nonempty history we can apply lemma~\ref{lem:histories-devastation}. As a result, we get new state $\inbr{\theta^\prime,\, \pi}$ where all of conjuncts has empty history in each infinite branch of the derivation.
 \begin{itemize}
-    \item Base case: $dist(m, k) = 0$. \\
-    In this case $m = k$ and $r = r^\prime$. This means that the conjunct $r$ will be unfolded at current step.
-    \item Induction step: $dist(m, k) = s + 1$. We also assume that the lemma is true for $dist(m, k) = s$.\\
-    We will complete the unfolding in the conjunct $r^\prime$ in an infinite branch in the derivation tree constructed according to the semantics ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$'' by the lemma~\ref{one-conj-lemma}. As a result we have the state $\inbr{\theta^\prime,\, \phi \pi \psi}$. Then we move on to the next conjunct and the distance $s + 1$ will decrease by one. Thus, the state $\inbr{\theta^\prime,\, \phi \pi \psi}$ satisfies the induction hypothesis.
-
+    \item If $r$ already has been unfolded then this infinite branch of the derivation satisfy the requirements of the lemma.
+    \item If $r$ hasn't been unfolded yet then $\pi = \pi_1 r \pi_2$ and $r$ has empty history. Due to this, we can apply the lemma~\ref{lem:empty-stories-liveness} and $r$ will be unfolded in each infinite branch of the derivation tree for the state $\inbr{\theta^\prime,\, \pi}$. And all these branches are continuation of branches for the state $\inbr{\theta,\, \phi r \psi}$.
 \end{itemize}
+Thus, $r$ was unfolded in each infinite branch in the derivation tree.
 \end{proof}
 
 \begin{lemma}[Effect of One-step Unfolding]
