@@ -17,8 +17,8 @@ each leaf of a state sooner of later (meaning: in a finite number of steps) will
 its relation application will be unfolded. This allows us to abstract from concrete shapes of states and
 instead consider them as sets of leaves. The following lemma justifies this transition.
 
-\begin{lemma}[Convergence of leaves]
-  \label{lem:converge_of_leaves}
+\begin{lemma}[Convergence of Leaves]
+  \label{lem:convergence-of-leaves}
   Let $s$ be a state with leaves $\{\omega_i\}$. Then $s$ converges (in angelic or fair semantics)
   iff each $\omega_i$ converges.
 \end{lemma}
@@ -137,8 +137,7 @@ be a sequence of unifications which transforms a substitution $\theta$ into a su
 
 for any permutation $\pi$.
 
-
-Another subtlety concerns the order of fresh semantic variables allocation. Let us have a leaf state $\inbr{\theta,\,i,\,ab}$, where
+Another subtlety concerns the order of fresh semantic variables allocation. Let us have a state $\inbr{\theta,\,i,\,ab}$, where
 $\theta$ is a substitution, $a$ and $b$ are relation invocations and $i$ is the next free semantic variable. In angelic semantics we
 may perform the unfoldings of $a$ and $b$ in different orders. Since the bodies for both $a$ and $b$ may contain \lstinline|fresh| constructs,
 these constructs will be evaluated in different orders delivering different concrete semantic variables and different substitutions. However
@@ -147,12 +146,42 @@ allocation is not essential as long as no variable is allocated more than once i
 the \lstinline|fresh| construct from considerations and will treat all substitutions up to $\alpha$-equivalence. This, in particular,
 will allow us to omit the next fresh variable component from states.
 
+In the light of all previously made observations we may reconsider the way the evaluations are performed in both
+angelic semantics and fair semantics by well quasi-ordering. Namely, the semantics build a tree of states in the form
+$\inbr{\theta,\,\rho}$, where $\theta$ is a substitution and $\rho$ is a conjunction (a list) of relation application.
+Each time a one-step unfolding is performed for a state a number of descendants for the corresponding node is
+added to the tree; we will denote this step as
+
+\[
+\inbr{\theta,\,\rho}\to\{\inbr{\theta_i,\,\rho_i}\}
+\]
+
+A finite derivation tree corresponds to a converging evaluation; othervise, by the K\H{o}nig's lemma, it will contain an infinite path. 
+According to the semantics of one-step unfolding, any finite branch of a derivation tree can either end in a \emph{contradiction} state ``$\times$''
+or in \emph{answer} state $\inbr{\theta,\,\epsilon}$, where $\epsilon$ designates an empty conjunction, ``true''.
+
+For a state $s$ we denote $h\,(s)$ the height of some finite derivation tree in angelic semanics; althought this value is defined ambiguously, this
+definition turnes out to be sufficient.
+
+\begin{lemma}[Liveness of the Semantics by Well Quasi-Ordering]
+  \label{lem:liveness}
+  Let $\inbr{\theta,\,\phi r \psi}$ be a state and let it be an infinite branch in the derivation tree constructed according to the semantics by well
+  quasi-ordering. Then there exists a state on this branch which unfolds $r$.
+\end{lemma}
+\begin{proof}
+  No proof yet.
+\end{proof}
+
 \begin{lemma}[Effect of One-step Unfolding]
 \label{lem:one-step-unfolding}
 
-Let $r$ be an application and $\theta$~--- a substitution. One-step unfolding transforms a state $\inbr{\theta,\,r}$ into
-a set of states $\{\inbr{\theta_i,\,\rho_i}\}$, where $\rho_i$ is a conjunction of applications, $\theta_i$~--- some substitution. Then
-for each $i$ there is a sequence of unifications $u^i_1\dots u^i_{k_i}$ such that
+Let $\inbr{\theta,\,r}$ be a state; let
+
+\[
+\inbr{\theta,\,r}\to\{\inbr{\theta_i,\,\rho_i}\}
+\]
+
+Then for each $i$ there is a sequence of unifications $u^i_1\dots u^i_{k_i}$ such that
 
 \[
 \theta\xrightarrow{u^i_1\dots u^i_{k_i}}{\theta_i}
@@ -162,36 +191,63 @@ for each $i$ there is a sequence of unifications $u^i_1\dots u^i_{k_i}$ such tha
 By induction on the derivation for one-step unfolding.
 \end{proof}
 
-Thus, we may introduce a denotation $[r\to\rho_i]$ for the result of the sequence of unifications performed during a one-step unfolding of $r$ which
-delivers a leaf state $\rho_i$. 
+Thus, we may introduce a denotation $[r\to\rho_i]$ for the effect of the sequence of unifications performed during a one-step unfolding of $r$ which
+delivers a state $\rho_i$. 
 
-\begin{lemma}[Weakening in Angelic Semantics]
+\begin{lemma}[Weakening]
   \label{lem:weakening}
 
-  Let $\theta$ be a substitution, $\omega$ be a list of applications, and let $\inbr{\theta,\,\omega}$ converge to $\{\}$ (an empty state) in angelic semantics.
-  Then for arbitrary substitution $\sigma$ and arbitrary list of applications $\psi$
+  Let $\inbr{\theta,\,\omega}$ converge in angelic semantics (or the semantics by well quasi-ordering). Then for arbitrary substitution $\sigma$ 
+
+  \[
+  \inbr{\theta\cdot\sigma,\,\omega}
+  \]
+
+  converges and
+
+  \[
+  h\,(\inbr{\theta\cdot\sigma,\,\omega})\le h\,(\inbr{\theta,\,\omega})
+  \]
+  
+\end{lemma}
+\begin{proof}
+  By induction on the derivation.
+\end{proof}
+
+\begin{lemma}[Weakening in Contradiction]
+  \label{lem:weakening-contradiciton}
+
+  Let $\inbr{\theta,\,\omega}$ converge to $\times$ in angelic semantics (or the semantics by well quasi-ordering). Then for arbitrary substitution $\sigma$ and
+  arbitrary list of applications $\psi$
 
   \[
   \inbr{\theta\cdot\sigma,\,\omega\psi}
   \]
 
-  converges to $\{\}$.
-\end{lemma}
-\begin{proof}
-  By induction on the derivation; this lemma shows rather a trivial fact that putting additional constraints (by considering a more specific substitution and adding
-  more conjuncts) can not make a converging program diverge.
-\end{proof}
-
-\begin{lemma}[Convergence Preservation]
-  \label{lem:convergence_preservation}
-
-  Let $\phi a \phi^\prime$ be a list of applications with one distinguished element ``$a$'', $\theta$ be a substitution. Let
+  converges to $\times$ and
 
   \[
-  \{\inbr{\theta\cdot[a\to\alpha_i],\,\alpha_i}\}
+  h\,(\inbr{\theta\cdot\sigma,\,\omega\psi})\le h\,(\inbr{\theta,\,\omega})
   \]
   
-  be the result of one-step unfolding for $\inbr{\theta,\,a}$. Then
+\end{lemma}
+\begin{proof}
+  By induction on the derivation.
+\end{proof}
+
+These two lemmas show rather a trivial fact that putting additional constraints (by considering a more specific substitution and adding
+more conjuncts) can not make a converging program diverge.
+
+\begin{lemma}[Convergence Preservation]
+  \label{lem:convergence-preservation}
+
+  Let $\inbr{\theta,\,\phi a \phi^\prime}$ be a state; let
+
+  \[
+  \inbr{\theta,\,a}\to\{\inbr{\theta\cdot[a\to\alpha_i],\,\alpha_i}\}
+  \]
+  
+  Then
 
   \[
   \inbr{\theta,\,\phi a \phi^\prime}
@@ -219,25 +275,25 @@ delivers a leaf state $\rho_i$.
       \inbr{\theta,\,\phi a \phi^\prime}
       \]
       
-      converges to $\{\}$ (each state contains $a$). Moreover
+      converges to $\times$ (each state contains $a$). Moreover
       
       \[
       \inbr{\theta,\,\phi \phi^\prime}\eqno{(*)}
       \]
       
-      converges to $\{\}$ (we can repeat the converging derivation of $\inbr{\theta,\,\phi a \phi^\prime}$).      
-      By weakening all
+      converges to $\times$ (we can repeat the converging derivation of $\inbr{\theta,\,\phi a \phi^\prime}$).      
+      By weakening in contradiction all
       
       \[
       \inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\phi^\prime}
       \]
       
-      converge to $\{\}$ taking into account $(*)$.
+      converge to $\times$ taking into account $(*)$.
       
     \item There is a sequence of derivation
       
       \[
-      \inbr{\theta,\,\phi a \phi^\prime}\to \inbr{\theta\cdot\sigma,\,\pi a \rho}\eqno{(**)}
+      \inbr{\theta,\,\phi a \phi^\prime}\to\dots\to \inbr{\theta\cdot\sigma,\,\pi a \rho}\eqno{(**)}
       \]
       
       where $\sigma$ is some sequence of unifications and the next step is unfolding of $a$. Then its result is
@@ -267,20 +323,194 @@ delivers a leaf state $\rho_i$.
   \end{itemize}
 \end{proof}
 
+%\begin{corollary}
+%  \label{corollary:corollary}
+%  Let $\inbr{\theta,\,\omega}$~--- some state. Let $\{\inbr{\theta^\prime,\,\omega^\prime}\}$ be a set of states, obtained from $\inbr{\theta,\,\omega}$
+%  in a finite number of unfoldings. Then $\inbr{\theta,\,\omega}$ converges iff all $\{\inbr{\theta^\prime,\,\omega^\prime}\}$~--- converge.
+%\end{corollary}
+
+\begin{lemma}[Derivation Height Monotonicity]
+  \label{lem:height-mono}
+  Let $\inbr{\theta,\,\phi a \omega b \psi}$ be a state converging in angelic semantics. Let
+  
+  \[
+  \inbr{\theta,\,b}\to\{\inbr{\theta\cdot[b\to\beta_i],\,\beta_i}\}
+  \]
+
+  Then for each $i$ $\inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega \beta_i \psi}$ converges as well,
+  and
+
+  \[
+  h\,(\inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega \beta_i \psi})\le h\,(\inbr{\theta,\,\phi a \omega b \psi})
+  \]  
+\end{lemma}
+\begin{proof}
+  The convergence follows immediately from Lemma~\ref{lem:convergence-preservation}.
+  
+  For the height, consider the following state
+
+  \[
+   \inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega b \psi}
+  \]
+
+  By weakening,
+
+  \[
+  h\,(\inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega b \psi})\le h\,( \inbr{\theta,\,\phi a \omega b \psi})
+  \]
+
+  In a converging derivation for $\inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega b \psi}$ there can be branches which do not unfold $b$; these
+  branches will not be affected if we change $b$ to $\beta_i$. Let $\inbr{\theta\cdot[\dots],\,\pi b \delta}$ be some state in the derivation
+  tree in which an unfolding of $b$ is performed, where $[\dots]$ is an effect of unifications accumulated along the path from the root state.
+  Then one of its descendants corresponds to the state
+
+  \[
+  \inbr{\theta\cdot[\dots]\cdot[b\to\beta_i],\,\pi\beta_i\delta}
+  \]
+  
+  If we change $b$ to $\beta_i$ in the root state we won't be able to perform the unfolding of $b$ anymore; however, the state in which this
+  unfolding was performed will turn into $\inbr{\theta\cdot[b\to\beta_i]\cdot[\dots],\,\pi\beta_i\delta}$. Thus, replacing $b$ with $\beta_i$
+  can only lead to shrinking the derivation tree.
+\end{proof}
+
 \begin{corollary}
-  \label{corollary:corollary}
-  Let $\inbr{\theta,\,\omega}$~--- some state. Let $\{\inbr{\theta^\prime,\,\omega^\prime}\}$ be a set of states, obtained from $\inbr{\theta,\,\omega}$
-  in a finite number of unfoldings. Then $\inbr{\theta,\,\omega}$ converges iff all $\{\inbr{\theta^\prime,\,\omega^\prime}\}$~--- converge.
+  \label{cor:corollary}
+  Let $\inbr{\theta,\,\phi a \psi}$ be a converging state in the angelic semantics. Let
+
+  \[
+  \inbr{\theta,\,\phi\psi}\to\dots\to\inbr{\theta^\prime,\,\phi^\prime\psi^\prime}
+  \]
+
+  be a path in the derivation tree (w.r.t. angelic semantics). Then
+
+  \[
+  \inbr{\theta^\prime,\,\phi^\prime a \psi^\prime}
+  \]
+
+  converges in the angelic semantics and
+
+  \[
+  h\,(\inbr{\theta^\prime,\,\phi^\prime a \psi^\prime})\le h\,(\inbr{\theta,\,\phi a \psi})
+  \]  
 \end{corollary}
 
+The corollary establishes an intuitively trivial fact that a computation can not take longer if some its possible sub-computations were
+performed in advance.
+
 \begin{proof}[The Proof of Theorem~\ref{thm:main}]
-  Let $g$ converges in angelic semantics. Take the first unfolded application, say, $r$, in the converging derivation. Two cases are possible:
+  By Lemma~\ref{lem:convergence-of-leaves} it is enough to prove the theorem for arbitrary state $s=\inbr{\theta,\,\rho}$. Since $s$
+  converges in the angelic semantics (by the condition of the theorem) we can take its finite derivation tree. The proof proceeds by induction
+  on its height.
+
+  Base case: $h\,(s)=1$. This means that a single unfolding was made in angelic semantics to construct a finite tree. Only two cases
+  are possible.
+
+  \begin{itemize}
+  \item $\rho=r$ (a single application) and $\inbr{\theta,\,r}\to\{\inbr{\theta^\prime,\,\epsilon}\}$ (its unfolding in the context of $\theta$
+    eliminates all relation applications in the body of $r$ and immediately comes to an answer $\theta^\prime$). In fair semantics only one step
+    is possible~--- the unfolding of $r$~--- which delivers the same result.
+    
+  \item $\rho=\phi r \psi$ and the unfolding of $r$ in the context of $\theta$ delivers a contradiction:
+
+    \[
+    \inbr{\theta,\,r}\to\times
+    \]
+
+    In this case the angelic semantics ``guessed'' an application to unfold which immediately comes to a contradiction and thus eliminates the
+    need for further computations.
+
+    Take the derivation tree for $s$ in the fair semantics. If it finite, the proof completed. Otherwise there will be an infinite branch. By
+    Lemma~\ref{lem:liveness}, one state on this branch unfolds $r$. This state has a form $\inbr{\theta\cdot[\dots],\,\pi r \delta}$ where
+    $[\dots]$~--- an effect of some unifications performed along the path from $s$. By Lemma~\ref{lem:weakening-contradiciton}
+    
+    \[
+    \inbr{\theta\cdot[\dots],\,r}\to\times
+    \]
+
+    which concludes the proof.
+    
+  \end{itemize}
+
+  Induction step: let $h\,(s)=k+1$. Take a converging derivation in angelic semantics; as the first step it performs an unfolding of
+  some application, say, ``$a$'':
+
+  \[
+  \inbr{\theta,\,\phi a \psi} \to \{\inbr{\theta\cdot[r\to\rho_i],\,\phi\alpha_i\psi}\}
+  \]
+
+  Two cases are possible.
 
   \begin{enumerate}
-    \item The fair semantics performs exactly the same unfolding; nothing more to consider.
-    \item The fair semantics chooses some other application to unfold. Due to the property of well quasi-ordering there will be only a finite
-      number of unfoldings until $r$ will be unfolded as well. Repeating these finite number unfoldings in angelic semantics before unfolding $r$
-      by Corollary~\ref{corollary:corollary} results in a converging set of pairs.
-  \end{enumerate}
+    
+  \item Exactly the same unfolding is performed accorging to the semantics by well quasi-ordering. Then we arrive at
+    exactly the same descendant states, for each of which there is exists a derivation tree in the angelic semantics
+    with the height of no more than $k$. Application of inductive hypothesis completes the proof.
+    
+  \item An unfolding of some other application, say, $b$ is performed in the semantics by well quasi-ordering. If we
+    rewrite the initial conjunction as $\rho=\phi a \omega b \psi$ then in angelic semantics we have
+
+    \[
+    \inbr{\theta,\,\phi a \omega b\psi}\to\{\inbr{\theta\cdot[a\to\alpha_i],\,\phi \alpha_i \omega b\psi}\}
+    \]
+
+    as the first step of derivation while in the semantics by well quasi-ordering
+
+    \[
+    \inbr{\theta,\,\phi a \omega b\psi}\to\{\inbr{\theta\cdot[b\to\beta_j],\,\phi a \omega \beta_j\psi}\}
+    \]
+
+    If the derivation in the semantics by well quasi-ordering converges, the proof completed. Otherwise, the derivation
+    tree will have an infinite branch, and by Lemma~\ref{lem:liveness} there will be a state in which
+    application $a$ is unfolded. This state will have the form
+
+    \[
+    \inbr{\theta\cdot[\dots],\,\pi a \delta}
+    \]
+
+    where 
+
+    \[
+    \inbr{\theta,\,\phi a \omega b\psi}\to\dots\to\inbr{\theta\cdot[\dots],\,\pi a \delta}
+    \]
+
+    in the semantics by well quasi-ordering. We can repeat all the same unfolding steps in the
+    angelic semantics for each of the the states
+
+    \[
+    \inbr{\theta\cdot[a\to\alpha_i],\,\phi \alpha_i \omega b\psi}
+    \]
+
+    since none of them touches $a$ which gives us the derivations
+
+    \[
+    \begin{array}{c}
+      \inbr{\theta\cdot[a\to\alpha_i],\,\phi \alpha_i \omega b \psi}\to\dots\to \\
+      \phantom{XXXXXXXXXX}\inbr{\theta\cdot[a\to\alpha_i]\cdot[\dots],\,\pi\alpha_i\delta}
+    \end{array}\eqno{(***)}
+    \]
+
+    On the other hand, we know that the semantics by well quasi-ordering performs the step
+
+    \[
+    \inbr{\theta\cdot[\dots],\,\pi a \delta}\to\inbr{\theta\cdot[\dots]\cdot[a\to\alpha_i],\,\pi \alpha_i \delta}
+    \]
+
+    There is a little subtlety in this reasoning: indeed, we perform the steps prescribed by the semantics
+    by well quasi-ordering in a \emph{different} substitution ($\theta\cdot[a\to\alpha_i]$ vs. $\theta$). This
+    can potentially lead to discovering some contradictions and discarding some of the branches. However, the same
+    branches will be discarded when the semantics by well quasi-ordering will perform the unfolding of ``$a$''
+    due to the commuativity of unifications.
+
+    Applying Corollary~\ref{cor:corollary} to $(***)$, we get
+
+    \[
+    \begin{array}{c}
+      h\,(\inbr{\theta\cdot[a\to\alpha_i]\cdot[\dots],\,\pi\alpha_i\delta})\le \\
+      \phantom{XXXXXXX}h\,(\inbr{\theta\cdot[a\to\alpha_i],\,\phi \alpha_i \omega b \psi}) \le k
+    \end{array}
+    \]
+
+    which allows us to apply the inductive hypothesis.
+  \end{enumerate}  
   
 \end{proof}
