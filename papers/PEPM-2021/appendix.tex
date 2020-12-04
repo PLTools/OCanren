@@ -10,7 +10,7 @@ the semantics by well quasi-ordering presented in Section~\ref{sec:fair-semantic
 arbitrary goal simultaneously converges or diverges in them. Both semantics are represented
 as labeled transition systems with the same alphabet of labels and tree-shaped states in which interior
 nodes correspond to disjunctions and leaves contain ordered conjunctions of relation applications (plus a
-substitution, a number of first fresh semantic variable, etc.) Moreover, both semantics share the same
+substitution, the first fresh semantic variable, etc.) Moreover, both semantics share the same
 set of rules dealing with disjunction; both semantics are sound and complete w.r.t. the denotational
 semantics of \mk. The completeness means that in a state no leaf can be excluded from consideration~---
 each leaf of a state sooner of later (meaning: in a finite number of steps) will be considered and some
@@ -156,9 +156,10 @@ added to the tree; we will denote this step as
 \inbr{\theta,\,\rho}\to\{\inbr{\theta_i,\,\rho_i}\}
 \]
 
-A finite derivation tree corresponds to a converging evaluation; othervise, by the K\H{o}nig's lemma, it will contain an infinite path. 
+A finite derivation tree corresponds to a converging evaluation; otherwise, by the K\H{o}nig's lemma, it will contain an infinite path. 
 According to the semantics of one-step unfolding, any finite branch of a derivation tree can either end in a \emph{contradiction} state ``$\times$''
-or in \emph{answer} state $\inbr{\theta,\,\epsilon}$, where $\epsilon$ designates an empty conjunction, ``true''.
+or in \emph{answer} state $\inbr{\theta,\,\epsilon}$, where $\epsilon$ designates an empty conjunction, ``true''. We say that a derivation
+converges to ``$\times$'' if it converges to a finite tree with all leaves being ``$\times$''.
 
 For a state $s$ we denote $h\,(s)$ the height of some finite derivation tree in angelic semanics; althought this value is defined ambiguously, this
 definition turnes out to be sufficient.
@@ -188,7 +189,7 @@ Then for each $i$ there is a sequence of unifications $u^i_1\dots u^i_{k_i}$ suc
 \]
 \end{lemma}
 \begin{proof}
-By induction on the derivation for one-step unfolding.
+By the induction on derivation for one-step unfolding.
 \end{proof}
 
 Thus, we may introduce a denotation $[r\to\rho_i]$ for the effect of the sequence of unifications performed during a one-step unfolding of $r$ which
@@ -197,7 +198,7 @@ delivers a state $\rho_i$.
 \begin{lemma}[Weakening]
   \label{lem:weakening}
 
-  Let $\inbr{\theta,\,\omega}$ converge in angelic semantics (or the semantics by well quasi-ordering). Then for arbitrary substitution $\sigma$ 
+  Let $\inbr{\theta,\,\omega}$ converges in angelic semantics (or the semantics by well quasi-ordering). Then for arbitrary substitution $\sigma$ 
 
   \[
   \inbr{\theta\cdot\sigma,\,\omega}
@@ -211,13 +212,13 @@ delivers a state $\rho_i$.
   
 \end{lemma}
 \begin{proof}
-  By induction on the derivation.
+  By the induction on derivation.
 \end{proof}
 
 \begin{lemma}[Weakening in Contradiction]
   \label{lem:weakening-contradiciton}
 
-  Let $\inbr{\theta,\,\omega}$ converge to $\times$ in angelic semantics (or the semantics by well quasi-ordering). Then for arbitrary substitution $\sigma$ and
+  Let $\inbr{\theta,\,\omega}$ converges to $\times$ in angelic semantics (or the semantics by well quasi-ordering). Then for arbitrary substitution $\sigma$ and
   arbitrary list of applications $\psi$
 
   \[
@@ -232,7 +233,7 @@ delivers a state $\rho_i$.
   
 \end{lemma}
 \begin{proof}
-  By induction on the derivation.
+  By the induction on derivation.
 \end{proof}
 
 These two lemmas show rather a trivial fact that putting additional constraints (by considering a more specific substitution and adding
@@ -369,8 +370,13 @@ more conjuncts) can not make a converging program diverge.
   \]
   
   If we change $b$ to $\beta_i$ in the root state we won't be able to perform the unfolding of $b$ anymore; however, the state in which this
-  unfolding was performed will turn into $\inbr{\theta\cdot[b\to\beta_i]\cdot[\dots],\,\pi\beta_i\delta}$. Thus, replacing $b$ with $\beta_i$
-  can only lead to shrinking the derivation tree.
+  unfolding was performed will turn into
+
+  \[
+  \inbr{\theta\cdot[b\to\beta_i]\cdot[\dots],\,\pi\beta_i\delta}
+  \]
+
+  Thus, replacing $b$ with $\beta_i$ can only lead to shrinking the derivation tree.
 \end{proof}
 
 \begin{corollary}
@@ -381,7 +387,7 @@ more conjuncts) can not make a converging program diverge.
   \inbr{\theta,\,\phi\psi}\to\dots\to\inbr{\theta^\prime,\,\phi^\prime\psi^\prime}
   \]
 
-  be a path in the derivation tree (w.r.t. angelic semantics). Then
+  be a path in the derivation tree. Then
 
   \[
   \inbr{\theta^\prime,\,\phi^\prime a \psi^\prime}
@@ -394,15 +400,15 @@ more conjuncts) can not make a converging program diverge.
   \]  
 \end{corollary}
 
-The corollary establishes an intuitively trivial fact that a computation can not take longer if some its possible sub-computations were
-performed in advance.
+The corollary establishes an intuitively trivial fact that a computation can not take longer if some of its sub-computations were
+already performed beforehead.
 
 \begin{proof}[The Proof of Theorem~\ref{thm:main}]
   By Lemma~\ref{lem:convergence-of-leaves} it is enough to prove the theorem for arbitrary state $s=\inbr{\theta,\,\rho}$. Since $s$
   converges in the angelic semantics (by the condition of the theorem) we can take its finite derivation tree. The proof proceeds by induction
   on its height.
 
-  Base case: $h\,(s)=1$. This means that a single unfolding was made in angelic semantics to construct a finite tree. Only two cases
+  Base case: $h\,(s)=1$. This means that a single unfolding was made in the angelic semantics to construct a finite tree. Only two cases
   are possible.
 
   \begin{itemize}
@@ -427,7 +433,7 @@ performed in advance.
     \inbr{\theta\cdot[\dots],\,r}\to\times
     \]
 
-    which concludes the proof.
+    which contradicts the divergence and concludes the proof.
     
   \end{itemize}
 
@@ -435,14 +441,14 @@ performed in advance.
   some application, say, ``$a$'':
 
   \[
-  \inbr{\theta,\,\phi a \psi} \to \{\inbr{\theta\cdot[r\to\rho_i],\,\phi\alpha_i\psi}\}
+  \inbr{\theta,\,\phi a \psi} \to \{\inbr{\theta\cdot[a\to\alpha_i],\,\phi\alpha_i\psi}\}
   \]
 
   Two cases are possible.
 
   \begin{enumerate}
     
-  \item Exactly the same unfolding is performed accorging to the semantics by well quasi-ordering. Then we arrive at
+  \item Exactly the same unfolding is performed according to the semantics by well quasi-ordering. Then we arrive at
     exactly the same descendant states, for each of which there is exists a derivation tree in the angelic semantics
     with the height of no more than $k$. Application of inductive hypothesis completes the proof.
     
@@ -456,7 +462,7 @@ performed in advance.
     as the first step of derivation while in the semantics by well quasi-ordering
 
     \[
-    \inbr{\theta,\,\phi a \omega b\psi}\to\{\inbr{\theta\cdot[b\to\beta_j],\,\phi a \omega \beta_j\psi}\}
+    \inbr{\theta,\,\phi a \omega b\psi}\to_{\mathcal{P}_\trianglelefteq}\{\inbr{\theta\cdot[b\to\beta_j],\,\phi a \omega \beta_j\psi}\}
     \]
 
     If the derivation in the semantics by well quasi-ordering converges, the proof completed. Otherwise, the derivation
@@ -470,17 +476,17 @@ performed in advance.
     where 
 
     \[
-    \inbr{\theta,\,\phi a \omega b\psi}\to\dots\to\inbr{\theta\cdot[\dots],\,\pi a \delta}
+    \inbr{\theta,\,\phi a \omega b\psi}\to_{\mathcal{P}_\trianglelefteq}\dots\to_{\mathcal{P}_\trianglelefteq}\inbr{\theta\cdot[\dots],\,\pi a \delta}
     \]
 
-    in the semantics by well quasi-ordering. We can repeat all the same unfolding steps in the
+    in the semantics by well quasi-ordering. We can repeat exactly the same unfolding steps in the
     angelic semantics for each of the the states
 
     \[
     \inbr{\theta\cdot[a\to\alpha_i],\,\phi \alpha_i \omega b\psi}
     \]
 
-    since none of them touches $a$ which gives us the derivations
+    since none of them touches $a$, which gives us the derivations
 
     \[
     \begin{array}{c}
@@ -492,7 +498,10 @@ performed in advance.
     On the other hand, we know that the semantics by well quasi-ordering performs the step
 
     \[
-    \inbr{\theta\cdot[\dots],\,\pi a \delta}\to\inbr{\theta\cdot[\dots]\cdot[a\to\alpha_i],\,\pi \alpha_i \delta}
+    \begin{array}{c}
+      \inbr{\theta\cdot[\dots],\,\pi a \delta}\to_{\mathcal{P}_\trianglelefteq}\\
+      \phantom{XXXXXX}\inbr{\theta\cdot[\dots]\cdot[a\to\alpha_i],\,\pi \alpha_i \delta}
+    \end{array}
     \]
 
     There is a little subtlety in this reasoning: indeed, we perform the steps prescribed by the semantics
