@@ -71,8 +71,8 @@ instead consider them as sets of leaves. The following lemma justifies this tran
       for some $k$.
   \end{itemize}
 
-  Indeed, in the base case all leaves of $s$ are precisly $\{\omega_i\}$, which satisfy all requirements. Inductively, let
-  us aleady have an intermediate state
+  Indeed, in the base case all leaves of $s$ are precisely $\{\omega_i\}$, which satisfy all requirements. Inductively, let
+  us already have an intermediate state
 
   \[
   s_i\,[w_1,\,\dots,\,w_k]
@@ -142,7 +142,7 @@ $\theta$ is a substitution, $a$ and $b$ are relation invocations and $i$ is the 
 may perform the unfoldings of $a$ and $b$ in different orders. Since the bodies for both $a$ and $b$ may contain \lstinline|fresh| constructs,
 these constructs will be evaluated in different orders delivering different concrete semantic variables and different substitutions. However
 these substitutions will be $\alpha$-equivalent; this observation reflects the intuitively trivial fact that the order of semantic variable
-allocation is not essential as long as no variable is allocated more than once in the evalutaion within the same branch. Thus, we discard
+allocation is not essential as long as no variable is allocated more than once in the evaluation within the same branch. Thus, we discard
 the \lstinline|fresh| construct from considerations and will treat all substitutions up to $\alpha$-equivalence. This, in particular,
 will allow us to omit the next fresh variable component from states.
 
@@ -161,8 +161,8 @@ According to the semantics of one-step unfolding, any finite branch of a derivat
 or in \emph{answer} state $\inbr{\theta,\,\epsilon}$, where $\epsilon$ designates an empty conjunction, ``true''. We say that a derivation
 converges to ``$\times$'' if it converges to a finite tree with all leaves being ``$\times$''.
 
-For a state $s$ we denote $h\,(s)$ the height of some finite derivation tree in angelic semanics; althought this value is defined ambiguously, this
-definition turnes out to be sufficient.
+For a state $s$ we denote $h\,(s)$ the height of some finite derivation tree in angelic semantics; although this value is defined ambiguously, this
+definition turns out to be sufficient.
 
 \begin{lemma}
   \label{lem:one-step-liveness}
@@ -189,7 +189,7 @@ Then we have an infinite branch of states
      \end{array}
      \]      
 
-Thus, we have an infinite sequence of unfoldinfgs
+Thus, we have an infinite sequence of unfoldings
 
 \[
 \begin{array}{c}
@@ -198,7 +198,7 @@ Thus, we have an infinite sequence of unfoldinfgs
 \end{array}
 \]
 
-From this sequence we can build a tree of application unfoldings in which the histories plays roles of
+From this sequence we can build a tree of application unfoldings in which the histories play roles of
 the paths from the root application $r$. The branching factor of this tree is finite (since there are only a finite number of
 relation definitions and each definition has a finite branching factor). Thus, by the K\H{o}nig lemma, the tree contains
 an infinite branch. But this branch corresponds to an infinite history, which contradicts the properties of well
@@ -603,7 +603,7 @@ already performed beforehead.
     by well quasi-ordering in a \emph{different} substitution ($\theta\cdot[a\to\alpha_i]$ vs. $\theta$). This
     can potentially lead to discovering some contradictions and discarding some of the branches. However, the same
     branches will be discarded when the semantics by well quasi-ordering will perform the unfolding of ``$a$''
-    due to the commuativity of unifications.
+    due to the commutativity of unifications.
 
     Applying Corollary~\ref{cor:corollary} to $(***)$, we get
 
