@@ -427,17 +427,17 @@ more conjuncts) can not make a converging program diverge.
 
 \begin{lemma}[Derivation Height Monotonicity]
   \label{lem:height-mono}
-  Let $\inbr{\theta,\,\phi a \omega b \psi}$ be a state converging in angelic semantics. Let
+  Let $\inbr{\theta,\,\phi b \psi}$ be a state converging in angelic semantics. Let
   
   \[
   \inbr{\theta,\,b}\to\{\inbr{\theta\cdot[b\to\beta_i],\,\beta_i}\}
   \]
 
-  Then for each $i$ $\inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega \beta_i \psi}$ converges as well,
+  Then for each $i$ $\inbr{\theta\cdot[b\to\beta_i],\,\phi \beta_i \psi}$ converges as well,
   and
 
   \[
-  h\,(\inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega \beta_i \psi})\le h\,(\inbr{\theta,\,\phi a \omega b \psi})
+  h\,(\inbr{\theta\cdot[b\to\beta_i],\,\phi \beta_i \psi})\le h\,(\inbr{\theta,\,\phi b \psi})
   \]  
 \end{lemma}
 \begin{proof}
@@ -446,32 +446,32 @@ more conjuncts) can not make a converging program diverge.
   For the height, consider the following state
 
   \[
-   \inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega b \psi}
+   \inbr{\theta\cdot[b\to\beta_i],\,\phi b \psi}
   \]
 
   By weakening,
 
   \[
-  h\,(\inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega b \psi})\le h\,( \inbr{\theta,\,\phi a \omega b \psi})
+  h\,(\inbr{\theta\cdot[b\to\beta_i],\,\phi a \psi})\le h\,( \inbr{\theta,\,\phi b \psi})
   \]
 
-  In a converging derivation for $\inbr{\theta\cdot[b\to\beta_i],\,\phi a \omega b \psi}$ there can be branches which do not unfold $b$; these
+  In a converging derivation for $\inbr{\theta\cdot[b\to\beta_i],\,\phi b \psi}$ there can be branches which do not unfold $b$; these
   branches will not be affected if we change $b$ to $\beta_i$. Let $\inbr{\theta\cdot[\dots],\,\pi b \delta}$ be some state in the derivation
-  tree in which an unfolding of $b$ is performed, where $[\dots]$ is an effect of unifications accumulated along the path from the root state.
+  tree in which an unfolding of $b$ is performed, where $[\dots]$ is an effect of unifications accumulated along the path from the state $\inbr{\theta,\,\phi b \psi}$.
   Then one of its descendants corresponds to the state
 
   \[
   \inbr{\theta\cdot[\dots]\cdot[b\to\beta_i],\,\pi\beta_i\delta}
   \]
   
-  If we change $b$ to $\beta_i$ in the root state we won't be able to perform the unfolding of $b$ anymore; however, the state in which this
+  If we change $b$ to $\beta_i$ in the state $\inbr{\theta,\,\phi b \psi}$ we won't be able to perform the unfolding of $b$ anymore; however, the state in which this
   unfolding was performed will turn into
 
   \[
   \inbr{\theta\cdot[b\to\beta_i]\cdot[\dots],\,\pi\beta_i\delta}
   \]
 
-  Thus, replacing $b$ with $\beta_i$ can only lead to shrinking the derivation tree.
+  Thus, replacing $b$ with $\beta_i$ in the state $\inbr{\theta\cdot[b\to\beta_i],\,\phi b \psi}$ can only lead to shrinking the derivation tree.
 \end{proof}
 
 \begin{corollary}
