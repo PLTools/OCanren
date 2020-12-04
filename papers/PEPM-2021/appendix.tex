@@ -182,27 +182,27 @@ By contradiction.
 Take an infinite branch and assume that none of the relation applications from $\phi$ and $\psi$ unfolded.
 Then we have an infinite branch of states
 
-     \[   
-     \inbr{\theta,\, \phi (r,\, h) \psi} \rightarrow \inbr{\theta_1,\, \phi \pi_1 \psi} \rightarrow \ldots \rightarrow \inbr{\theta_d,\, \phi \pi_d \psi} \rightarrow \ldots
+     \[
+     \begin{array}{c}
+     \inbr{\theta,\, \phi (r,\, h) \psi} \rightarrow_{\mathcal{P}_\trianglelefteq} \inbr{\theta_1,\, \phi \pi_1 \psi} \rightarrow_{\mathcal{P}_\trianglelefteq} \dots \\
+     \phantom{XXXXXXXXXXXXX}\dots\rightarrow_{\mathcal{P}_\trianglelefteq} \inbr{\theta_d,\, \phi \pi_d \psi} \rightarrow_{\mathcal{P}_\trianglelefteq} \dots
+     \end{array}
      \]      
-        
-By the property of well quasi-ordering there is a number
 
-   \[
-   K = \max_{\substack{d\in\mathbb{N}\\(r,h) \in \pi_d}}\,length\,(h)
-   \]
+Thus, we have an infinite sequence of unfoldinfgs
 
-since no history can be of infinite length. Thus, the maximal possible number of unfoldings can be estimated. Indeed,
-the conjunct $r$ can be unfolded no more than $T = K - length\,(h)$ times (otherwise, the length of the history
-of descendants will exceed $K$). Also, each unfolding adds no more than $S$ new conjuncts, where $S$ is maximum
-number of conjuncts in all branches of all relation definition (the maximum exists, since there are a finite number of relations with
-finite number of branches each). Thus, the total number of unfoldings $R$ can be estimated
+\[
+\begin{array}{c}
+\inbr{\theta,\,(r,\,h)}\to_{\mathcal{P}_\trianglelefteq}\inbr{\theta_1,\,\pi_1}\to_{\mathcal{P}_\trianglelefteq}\dots\\
+\phantom{XXXXXXXXXXXXX}\dots\to_{\mathcal{P}_\trianglelefteq}\inbr{\theta_1,\,\pi_d}\to_{\mathcal{P}_\trianglelefteq}\dots
+\end{array}
+\]
 
-    \[
-    R \le \sum_{k=0}^{T}S^k = \frac{S^{T + 1} - 1}{S - 1}
-    \]  
-        
-    which contradicts the infinity of the branch.
+From this sequence we can build a tree of application unfoldings in which the histories plays roles of
+the paths from the root application $r$. The branching factor of this tree is finite (since there are only a finite number of
+relation definitions and each definition has a finite branching factor). Thus, by the K\H{o}nig lemma, the tree contains
+an infinite branch. But this branch corresponds to an infinite history, which contradicts the properties of well
+quasi-ordering. 
 \end{proof}
 
 \begin{lemma}
@@ -249,7 +249,6 @@ Induction on $t$.
     the induction hypothesis in both cases.
 \end{itemize}
 \end{proof}
-
 
 \begin{lemma}[Liveness of the Semantics by Well Quasi-Ordering]
   \label{lem:liveness}
