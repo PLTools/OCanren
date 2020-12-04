@@ -164,17 +164,27 @@ converges to ``$\times$'' if it converges to a finite tree with all leaves being
 For a state $s$ we denote $h\,(s)$ the height of some finite derivation tree in angelic semanics; althought this value is defined ambiguously, this
 definition turnes out to be sufficient.
 
-\begin{lemma}[One conjunct liveness of the Semantics by Well Quasi-Ordering]
+\begin{lemma}
   \label{lem:one-step-liveness}
-Let $\mathcal{P}_\trianglelefteq$ is a well quasi-ordering predicate, $\theta$ is a substitution, $\phi$ and $\psi$ are list of conjuncts with histories, $r$ and $r^\prime$ are relation applications, $h$ and $h^\prime$ are histories of calls and $\inbr{\theta,\, \phi (r, h) (r^\prime, h^\prime) \psi}$ is a state. Also conjuct $r$ will be unflofded in the first step. Then conjunct $r^\prime$ will be unfolded in an infinite branch in the derivation tree constructed according to the semantics ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$''.
+  Let
+
+  \[
+  \inbr{\theta,\, \phi (r,\, h) (r^\prime,\, h^\prime) \psi}
+  \]
+
+  be a state in the semantics by well quasi-ordering, where $h, h^\prime$ are histories, $r$, $r^\prime$ are relation applications, and
+  $r$ is unfolded in the first step in the derivation according to  ``$\rightarrow_{\mathcal{P}_\trianglelefteq}$''. Then each infinite branch
+  of the derivation tree (if any) will contain an unfolding of $r^\prime$.
 \end{lemma}
 \begin{proof}
-Let's prove by contradiction. \\
-Let exists a unfailed branch in which $r^\prime$ will never be unfolded. So we have an infinite sequence of states of the form
+By contradiction.
+
+Take an infinite branch and assume that $r^\prime$ is never unfolded. Then we have an infinite sequence of states
+
 \[
 \begin{array}{c}
-\inbr{\theta,\, \phi (r, h) (r^\prime, h^\prime) \psi} \rightarrow \inbr{\theta_1,\, \phi \pi_1 (r^\prime, h^\prime) \psi} \rightarrow \ldots \rightarrow \\
-\rightarrow \inbr{\theta_d,\, \phi \pi_d (r^\prime, h^\prime) \psi} \rightarrow \ldots
+\inbr{\theta,\, \phi (r,\, h) (r^\prime,\, h^\prime) \psi} \rightarrow \inbr{\theta_1,\, \phi \pi_1 (r^\prime,\, h^\prime) \psi} \rightarrow \ldots \rightarrow \\
+\rightarrow \inbr{\theta_d,\, \phi \pi_d (r^\prime,\, h^\prime) \psi} \rightarrow \ldots
 \end{array}
 \]
 
