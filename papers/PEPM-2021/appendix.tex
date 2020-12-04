@@ -45,7 +45,7 @@ instead consider them as sets of leaves. The following lemma justifies this tran
     \item each step can be represented either as
       
       \[
-      s_i\,[\dots w_j\dots]\to s_i\,[\dots w^\prime_j\dots]
+      s_i\,[\dots w_j\dots]\to s^\prime_i\,[\dots w^\prime_j\dots]
       \]
 
       where there is a derivation step
@@ -194,7 +194,7 @@ Thus, we have an infinite sequence of unfoldings
 \[
 \begin{array}{c}
 \inbr{\theta,\,(r,\,h)}\to_{\mathcal{P}_\trianglelefteq}\inbr{\theta_1,\,\pi_1}\to_{\mathcal{P}_\trianglelefteq}\dots\\
-\phantom{XXXXXXXXXXXXX}\dots\to_{\mathcal{P}_\trianglelefteq}\inbr{\theta_1,\,\pi_d}\to_{\mathcal{P}_\trianglelefteq}\dots
+\phantom{XXXXXXXXXXXXX}\dots\to_{\mathcal{P}_\trianglelefteq}\inbr{\theta_d,\,\pi_d}\to_{\mathcal{P}_\trianglelefteq}\dots
 \end{array}
 \]
 
@@ -244,7 +244,7 @@ Induction on $t$.
     be unfolded at current step.
     \item Induction step: $t = m$. We also assume that the lemma holds for $t < m$.
     We will complete the unfolding in the conjunct $r^\prime$ in each infinite branch of the derivation tree by Lemma~\ref{lem:one-step-liveness}.
-    The next conjunct which will be unfolded is to right of $r$ (because we have a conjunct with empty history). And the next conjunct is either $r$ or
+    The next conjunct which will be unfolded is on the right of $r$ (because we have a conjunct with empty history). And the next conjunct is either $r$ or
     on the left of $r$ (because $r$ has empty history). Thus, $m$ increases and $t$ decreases for the new state. As a result this state satisfies
     the induction hypothesis in both cases.
 \end{itemize}

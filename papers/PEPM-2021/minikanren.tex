@@ -62,7 +62,7 @@ This procedure is defined inductively by case analysis on the shape of the goal 
                  & \mid & \mathcal{G} \land \mathcal{G} & \mbox{conjunction} \\
                  & \mid & \mbox{\lstinline|fresh|} \; (\mathcal{X}) \; \mathcal{G} & \mbox{fresh variable introduction} \\
                  & \mid & R_i^{k_i}(\mathcal{T}_\mathcal{X}^1, \ldots, \mathcal{T}_\mathcal{X}^{k_i}) & \mbox{relation application} \\
-    \mathcal{D} & = &R_i^{k_i} = \lambda \mathcal{X}_1 \ldots \mathcal{X}_n. \; \mathcal{G} & \mbox{relation definition}\\
+    \mathcal{D} & = &R_i^{k_i} = \lambda \mathcal{X}_1 \ldots \mathcal{X}_{k_i}. \; \mathcal{G} & \mbox{relation definition}\\
     \mathcal{S} & = &\mathcal{D}_1\mathcal{D}_2\dots\mathcal{D}_k \diamond \mathcal{G} & \mbox{specification}
   \end{array}
 \]

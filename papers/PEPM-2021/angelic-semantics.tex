@@ -98,7 +98,7 @@ local computations within the body of unfolded application.  The definition of t
 \dfrac{\inbr{\theta,\, i+1,\, c} \vdash g\,[x \leftarrow \alpha_i] \leadsto S}
       {\inbr{\theta,\, i,\, c} \vdash \mbox{\lstinline|fresh|} (x)\, g \leadsto S}
 &     \ruleno{Fresh}  \\[6mm]
-\dfrac{\inbr{\theta,\, i,\, c} \vdash g_1 \leadsto S_1 \qquad \inbr{\theta,\, i,\, c} \vdash g_2 \leadsto S_1}
+\dfrac{\inbr{\theta,\, i,\, c} \vdash g_1 \leadsto S_1 \qquad \inbr{\theta,\, i,\, c} \vdash g_2 \leadsto S_2}
       {\inbr{\theta,\, i,\, c} \vdash g_1 \lor g_2 \leadsto \primi{union}\,(S_1,\, S_2)}
 &     \ruleno{DisjGoal}  \\[6mm]
 \dfrac{S_1 \vdash g \leadsto S_3 \qquad S_2 \vdash g \leadsto S_4}
