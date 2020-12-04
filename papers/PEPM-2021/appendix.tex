@@ -6,7 +6,7 @@
 First, we make a number of observations which will simplify following reasoning.
 
 We need to relate two semantics~--- the angelic one presented in Section~\ref{sec:angelic-semantics} and
-the fair semantics by well quasi-ordering presented in Section~\ref{sec:fair-semantics}~--- and prove that
+the semantics by well quasi-ordering presented in Section~\ref{sec:fair-semantics}~--- and prove that
 arbitrary goal simultaneously converges or diverges in them. Both semantics are represented
 as labeled transition systems with the same alphabet of labels and tree-shaped states in which interior
 nodes correspond to disjunctions and leaves contain ordered conjunctions of relation applications (plus a
@@ -19,8 +19,8 @@ instead consider them as sets of leaves. The following lemma justifies this tran
 
 \begin{lemma}[Convergence of Leaves]
   \label{lem:convergence-of-leaves}
-  Let $s$ be a state with leaves $\{\omega_i\}$. Then $s$ converges (in angelic or fair semantics)
-  iff each $\omega_i$ converges.
+  Let $s$ be a state with leaves $\{\omega_i\}$. Then $s$ converges (in angelic semantics or the semantics by
+  well quasi-ordering) iff each $\omega_i$ converges.
 \end{lemma}
 \begin{proof}
   The lemma follows from a more general fact: let
@@ -147,7 +147,7 @@ the \lstinline|fresh| construct from considerations and will treat all substitut
 will allow us to omit the next fresh variable component from states.
 
 In the light of all previously made observations we may reconsider the way the evaluations are performed in both
-angelic semantics and fair semantics by well quasi-ordering. Namely, the semantics build a tree of states in the form
+angelic semantics and semantics by well quasi-ordering. Namely, the semantics build a tree of states in the form
 $\inbr{\theta,\,\rho}$, where $\theta$ is a substitution and $\rho$ is a conjunction (a list) of relation application.
 Each time a one-step unfolding is performed for a state a number of descendants for the corresponding node is
 added to the tree; we will denote this step as
@@ -407,8 +407,8 @@ performed in advance.
 
   \begin{itemize}
   \item $\rho=r$ (a single application) and $\inbr{\theta,\,r}\to\{\inbr{\theta^\prime,\,\epsilon}\}$ (its unfolding in the context of $\theta$
-    eliminates all relation applications in the body of $r$ and immediately comes to an answer $\theta^\prime$). In fair semantics only one step
-    is possible~--- the unfolding of $r$~--- which delivers the same result.
+    eliminates all relation applications in the body of $r$ and immediately comes to an answer $\theta^\prime$). In the semantics by well quasi-ordering
+    only one step is possible~--- the unfolding of $r$~--- which delivers the same result.
     
   \item $\rho=\phi r \psi$ and the unfolding of $r$ in the context of $\theta$ delivers a contradiction:
 
@@ -419,7 +419,7 @@ performed in advance.
     In this case the angelic semantics ``guessed'' an application to unfold which immediately comes to a contradiction and thus eliminates the
     need for further computations.
 
-    Take the derivation tree for $s$ in the fair semantics. If it finite, the proof completed. Otherwise there will be an infinite branch. By
+    Take the derivation tree for $s$ in the semantics by well quasi-ordering. If it finite, the proof completed. Otherwise there will be an infinite branch. By
     Lemma~\ref{lem:liveness}, one state on this branch unfolds $r$. This state has a form $\inbr{\theta\cdot[\dots],\,\pi r \delta}$ where
     $[\dots]$~--- an effect of some unifications performed along the path from $s$. By Lemma~\ref{lem:weakening-contradiciton}
     
@@ -510,7 +510,8 @@ performed in advance.
     \end{array}
     \]
 
-    which allows us to apply the inductive hypothesis.
+    which allows us to apply the inductive hypothesis and establish the contradiction to the divergence in the
+    semantics by well quasi-ordering.
   \end{enumerate}  
   
 \end{proof}
