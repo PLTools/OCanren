@@ -4,7 +4,7 @@
 In this section we give a formal syntax for the language we will use in the rest of the paper. We also describe the intentions and common design
 choices lying behind existing implementations and demonstrate on a number of examples the ``biased conjunction problem'' which we are going to attack.
 As the material of this section serves mainly as a motivation we will not present a formal semantics for the language, which can be found in~\cite{fair:semantics},
-and leave out the description of the some subtleties.
+and leave out the description of some subtleties.
 
 The syntax of the language is shown in Fig.~\ref{syntax}. We conventionally define the set of terms $\mathcal{T}_\mathcal{X}$
 over the constructors with arities $\mathcal{C}$ and \emph{syntactic} variables $\mathcal{X}$. Note, we keep the parameterization of $\mathcal{T}_\mathcal{X}$ by $\mathcal{X}$
@@ -192,12 +192,12 @@ following relation \lstinline{revers$^o$}, which associates an arbitrary list wi
                        append$^o$ $ys$ [$e$] $y$
 \end{lstlisting}
 
-In this relation there are two applications in the same conjunction: \lstinline{revers$^o$} and \lstinline{append$^o$}; thus, it impossible to put both of them last. With this particular
-order of applications the goal \lstinline|revers$^o$ [A, B, C] $x$| converges, but with the reverse order the same goal is diverges after the answer is found. Moreover, the reverse order negatively
+In this relation there are two applications in the same conjunction: \lstinline{revers$^o$} and \lstinline{append$^o$}; thus, it is impossible to put both of them last. With this particular
+order of applications the goal \lstinline|revers$^o$ [A, B, C] $x$| converges, but with the reverse order the same goal diverges after the answer is found. Moreover, the reverse order negatively
 affects the performance of answer evaluation. At the same time the goal \lstinline|revers$^o$ $x$ [A, B, C]| demonstrates the symmetric behavior: it diverges for the given order of conjuncts,
 and converges for the reverse one.
 
-An important design goal for \mk was to provide a purely declarative way to define executable relational specifications which would work equally well regardless the ``direction'' of the search.
+An important design goal for \mk was to provide a purely declarative way to define executable relational specifications which would work equally well regardless of the ``direction'' of the search.
 In particular, as we expect conjunction and disjunction to be commutative and associative, the order of conjuncts/disjuncts must not have a notable impact on the behavior of
 a specification. As these examples demonstrate, this goal is not completely achieved yet. More interestingly, all these cases are the manifestations of the same flaw in conventional
 relational search strategy~--- the \emph{left-bias} in conjunction evaluation. We demonstrate this by the following artificial example. First, we define two relations \lstinline{div$^o$} and

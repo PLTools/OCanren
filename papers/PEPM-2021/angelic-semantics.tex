@@ -8,8 +8,8 @@ would make it to converge.
 The development of this (and the following) section essentially relies on the results reported in~\cite{fair:semantics}. In the paper, two semantics for \mk are presented. The first one is
 a denotational, set-theoretic semantics close to the least Herbrand model~\cite{Lloyd}; the second is operational semantics of relational search with interleaving in the form of a labeled transition
 system~\cite{LTS}, which corresponds to the informal description given in the previous section. Then the soundness and completeness of interleaving search w.r.t. the denotational semantics
-is formally established and mechanized using \textsc{Coq} proof assistant~\cite{Coq}. It is also establishes a corollary that for a sound and complete operational semantics some
-transformations of goals preserve their equivalence (w.r.t. the set of answers they provide). These transformations will play an important role is justifying the fairness of the semantics we present
+is formally established and mechanized using \textsc{Coq} proof assistant~\cite{Coq}. It also establishes a corollary that for a sound and complete operational semantics some
+transformations of goals preserve their equivalence (w.r.t. the set of answers they provide). These transformations will play an important role in justifying the fairness of the semantics we present
 in the next section. Due to space limitations, however, we do not present here these semantics and only sketch the proofs which use them.
  
 As a first step we define a set of \emph{semantic} variables
