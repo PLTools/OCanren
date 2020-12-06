@@ -121,7 +121,7 @@ mgu\,(q_1,\,q_2)\cdot mgu\,(p_1,\,p_2)
 
 are most general unifiers for pairs $(p_1,\,p_2)$ and $(q_1,\,q_2)$ simultaneously. If there were different, then terms $C\,(p_1,\,q_1)$ and
 $C\,(p_2,\,q_2)$, where $C$ is some binary constructor, would have \emph{different} most general unifiers, which is impossible\footnote{Strictly
-  speaking, the validity of these claims depends on the representation of substitution; for example, in concrete representation
+  speaking, the validity of these claims depends on the representation of substitution; for example, in a concrete representation
   the substitutions $[x\mapsto y]$ and $[y\mapsto x]$ may not be equal, but equivalent.}. Taking this into account we arrive at the
 following property. Let
 
@@ -148,7 +148,8 @@ will allow us to omit the next fresh variable component from states.
 
 In the light of all previously made observations we may reconsider the way the evaluations are performed in both
 angelic semantics and semantics by well quasi-ordering. Namely, the semantics build a tree of states in the form
-$\inbr{\theta,\,\rho}$, where $\theta$ is a substitution and $\rho$ is a conjunction (a list) of relation application.
+$\inbr{\theta,\,\rho}$, where $\theta$ is a substitution and $\rho$ is a conjunction (a list) of relation application (equipped with
+histories in the case of semantics by well quasi-ordering).
 Each time a one-step unfolding is performed for a state a number of descendants for the corresponding node is
 added to the tree; we will denote this step as
 
@@ -156,7 +157,7 @@ added to the tree; we will denote this step as
 \inbr{\theta,\,\rho}\to\{\inbr{\theta_i,\,\rho_i}\}
 \]
 
-A finite derivation tree corresponds to a converging evaluation; otherwise, by the K\H{o}nig's lemma, it will contain an infinite path. 
+A finite derivation tree corresponds to a converging evaluation; otherwise, by the K\H{o}nig's lemma, it will contain an infinite branch. 
 According to the semantics of one-step unfolding, any finite branch of a derivation tree can either end in a \emph{contradiction} state ``$\times$''
 or in \emph{answer} state $\inbr{\theta,\,\epsilon}$, where $\epsilon$ designates an empty conjunction, ``true''. We say that a derivation
 converges to ``$\times$'' if it converges to a finite tree with all leaves being ``$\times$''.
