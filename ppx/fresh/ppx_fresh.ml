@@ -293,7 +293,7 @@ let mapper = object(self)
         { e with pexp_desc = Pexp_override es }
 
     | Pexp_letmodule (name, me, body) ->
-        { e with pexp_desc = Pexp_letmodule (name, me, self#expression body) }
+        { e with pexp_desc = Pexp_letmodule (name, self#module_expr me, self#expression body) }
     | Pexp_letexception (ec, e1) ->
         let e1 = self#expression e1 in
         { e with pexp_desc = Pexp_letexception (ec, e1) }
