@@ -1,3 +1,16 @@
+(*
+  Do not use it yet!
+
+  converts code like
+    val x : int * int * int [@@noinjected]
+  into
+    val x :
+      (asdf, qwerty) injected ->
+        (asdf, qwerty) injected -> (asdf, qwerty) injected -> goal
+
+  The main issue is to select right mangling of types
+*)
+
 open Base
 open Ppxlib
 open Ppxlib.Ast_builder.Default
