@@ -1,13 +1,25 @@
 (executables
-  (names tree sorting WGC)
-  (libraries GT OCanren)
-  (preprocess (action
-    (run %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.byte  %{input-file})
-  ))
-  (preprocessor_deps (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.byte))
-)
+ (names tree sorting WGC)
+ (modules tree sorting WGC)
+ (libraries GT OCanren)
+ (preprocess
+  (action
+   (run %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.byte
+     %{input-file})))
+ (preprocessor_deps
+  (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.byte)))
+
+(executable
+ (name len)
+ (modules len)
+ (libraries GT OCanren benchmark)
+ (preprocess
+  (action
+   (run %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.byte
+     %{input-file})))
+ (preprocessor_deps
+  (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.byte)))
 
 (alias
-  (name samples)
-  (deps tree.exe sorting.exe WGC.exe lorry.exe)
-)
+ (name samples)
+ (deps tree.exe sorting.exe WGC.exe lorry.exe len.exe))
