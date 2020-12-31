@@ -12,9 +12,9 @@ authors: [
   "JetBrains Research https://research.jetbrains.org"
 ]
 
-homepage: "https://github.com/jetbrains-research/ocanren"
+homepage: "https://github.com/JetBrains-Research/OCanren"
 
-bug-reports: "https://github.com/jetbrains-research/ocanren/issues"
+bug-reports: "https://github.com/JetBrains-Research/OCanren/issues"
 
 depends: [
   "ocaml"
@@ -30,9 +30,8 @@ build: [
 ]
 
 
-dev-repo: "git+https://github.com/jetbrains-research/ocanren.git"
+dev-repo: "git+https://github.com/JetBrains-Research/OCanren.git"
 
 url {
-  src: "git+https://github.com/jetbrains-research/ocanren"
+  src: "git+https://github.com/JetBrains-Research/OCanren"
 }
-
