@@ -24,14 +24,14 @@ module L = List
 open OCanren
 open OCanren.Std
 
-(* Relational minimum/maximum (for nats only) *) 
+(* Relational minimum/maximum (for nats only) *)
 let minmaxo a b min max =
   let open Nat in
   ocanren {
     min == a & max == b & a <= b |
-    min == b & max == a & a >  b    
+    min == b & max == a & a >  b
   }
-   
+
 (* [l] is a (non-empty) list, [s] is its smallest element,
    [l'] --- all other elements
 *)
@@ -42,9 +42,9 @@ let rec smallesto l s l' =
       l' == max :: t' &
       l  == h :: t &
       minmaxo h s' s max &
-      smallesto t s' t'  
+      smallesto t s' t'
   }
-  
+
 (* Relational sort *)
 let rec sorto x y =
   ocanren {
@@ -55,16 +55,16 @@ let rec sorto x y =
    *)
    fresh s, xs, xs' in
      y == s :: xs' &
-     sorto xs xs'  & 
+     sorto xs xs'  &
      smallesto x s xs
   }
 
 (* Some shortcuts to make regular lists from relational ones *)
 let int_list = List.to_list Nat.to_int
-           
+
 (* Making regular sorting from relational one *)
 let sort l = int_list @@ Stream.hd @@ run q (sorto @@ nat_list l) project
-        
+
 (* A straightforward implementation of factorial *)
 let rec fact = function 0 -> 1 | n -> n * fact (n-1)
 
@@ -72,8 +72,8 @@ let rec fact = function 0 -> 1 | n -> n * fact (n-1)
 let perm l =
   L.map int_list @@
     Stream.take ~n:(fact @@ L.length l) @@
-      run q (fun q -> sorto q @@ nat_list (L.sort Pervasives.compare l)) project
-  
+      run q (fun q -> sorto q @@ nat_list (L.sort Stdlib.compare l)) project
+
 (* More hardcore version: no standard sorting required *)
 let perm' l =
   L.map int_list @@
@@ -83,7 +83,7 @@ let perm' l =
 (* Some auxilliary type shortcuts *)
 @type il  = GT.int GT.list         with show
 @type ill = GT.int GT.list GT.list with show
-  
+
 (* Entry point *)
 let _ =
   (* Sorting: *)

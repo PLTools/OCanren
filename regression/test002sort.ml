@@ -89,7 +89,7 @@ let rec fact = function 0 -> 1 | n -> n * fact (n-1)
 let perm l =
   L.map (List.to_list Nat.to_int) @@
   Stream.take ~n:(fact @@ L.length l) @@
-    run q (fun q -> sorto q @@ nat_list (L.sort Pervasives.compare l))
+    run q (fun q -> sorto q @@ nat_list (L.sort Stdlib.compare l))
           (fun rr -> rr#prj)
 
 (* More hardcore version: no standard sorting required *)
