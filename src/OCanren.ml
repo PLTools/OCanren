@@ -22,7 +22,6 @@ include Core
 module Stream  = Stream
 module Runconf = Runconf
 module Timer   = Timer
-module VarEnv = VarEnv
 module Env = Env
 
 module Std =
