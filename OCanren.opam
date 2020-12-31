@@ -1,9 +1,11 @@
-version: "0.0.3"
 opam-version: "2.0"
+version: "0.1.0"
 
 name: "OCanren"
-
+synopsis: "Relational programming library in miniKanren manner"
 maintainer: "Dmitrii Kosarev kakadu.hafanana@gmail.com"
+homepage: "https://github.com/JetBrains-Research/OCanren"
+bug-reports: "https://github.com/JetBrains-Research/OCanren/issues"
 
 authors: [
   "Dmitrii Boulytchev https://github.com/dboulytchev"
@@ -13,18 +15,14 @@ authors: [
   "JetBrains Research https://research.jetbrains.org"
 ]
 
-homepage: "https://github.com/jetbrains-research/ocanren"
-
-bug-reports: "https://github.com/jetbrains-research/ocanren/issues"
-
 depends: [
   "ocaml"
   "dune" {>= "2.0" & build }
   "dune-configurator" { build }
   "ocamlfind" { build }
   "mtime" { build }
-  "camlp5"
-  "logger-p5" { = "0.4.2" }
+  "camlp5" { >= "8" }
+  "logger-p5" { >= "0.4.5" }
   "GT" { >= "0.2.0" }
   "mtime"
 ]
@@ -35,11 +33,8 @@ build: [
   [make "test"] {with-test}
 ]
 
-synopsis: "Relational programming library in miniKanren manner"
-
-dev-repo: "git+https://github.com/jetbrains-research/ocanren.git"
+dev-repo: "git+https://github.com/JetBrains-Research/OCanren.git"
 
 url {
-  src: "git+https://github.com/jetbrains-research/ocanren"
+  src: "git+https://github.com/JetBrains-Research/OCanren"
 }
-
