@@ -1,9 +1,8 @@
-version: "0.0.3"
+version: "0.1.0"
 opam-version: "2.0"
-
 name: "OCanren-ppx"
-
-maintainer: "Dmitrii Kosarev kakadu.hafanana@gmail.com"
+synopsis: "Relational programming library in miniKanren manner. PPX extension"
+maintainer: "Dmitrii Kosarev Kakadu@pm.me"
 
 authors: [
   "Dmitrii Boulytchev https://github.com/dboulytchev"
@@ -21,15 +20,15 @@ depends: [
   "ocaml"
   "dune" {>= "2.0" & build }
   "dune-configurator" { build }
-  "ocamlfind" {build}
+  "ppxlib"
+  "base"
 ]
 
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] { dev }
   ["dune" "build" "-p" name "-j" jobs]
 ]
 
-synopsis: "Relational programming library in miniKanren manner"
 
 dev-repo: "git+https://github.com/jetbrains-research/ocanren.git"
 
