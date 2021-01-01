@@ -18,8 +18,8 @@ bug-reports: "https://github.com/JetBrains-Research/OCanren/issues"
 
 depends: [
   "ocaml"
-  "dune" {>= "2.0" & build }
-  "dune-configurator" { build }
+  "dune"              { >= "2.5"  }
+  "dune-configurator"
   "ppxlib"
   "base"
 ]
@@ -35,3 +35,4 @@ dev-repo: "git+https://github.com/JetBrains-Research/OCanren.git"
 url {
   src: "git+https://github.com/JetBrains-Research/OCanren"
 }
+

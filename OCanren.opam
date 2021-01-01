@@ -16,14 +16,13 @@ authors: [
 ]
 
 depends: [
-  "ocaml"
-  "dune" {>= "2.0" & build }
-  "dune-configurator" { build }
+  "ocaml"     { >= "4.10" }
+  "dune-configurator" 
+  "dune"      { >= "2.5" }
   "ocamlfind" { build }
-  "mtime" { build }
-  "camlp5" { >= "8" }
+  "camlp5"    { >= "8" }
   "logger-p5" { >= "0.4.5" }
-  "GT" { >= "0.2.0" }
+  "GT"        { >= "0.4.0" }
   "mtime"
 ]
 
@@ -38,3 +37,4 @@ dev-repo: "git+https://github.com/JetBrains-Research/OCanren.git"
 url {
   src: "git+https://github.com/JetBrains-Research/OCanren"
 }
+
