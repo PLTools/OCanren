@@ -1,4 +1,4 @@
-version = "0.0.3"
+version = "0.1.1"
 description = "Typed embedding of relational programmng language miniKanren to OCaml"
 requires = "GT mtime.clock.os"
 archive(byte) = "OCanren.cma"
@@ -8,7 +8,6 @@ plugin(native) = "OCanren.cmxs"
 
 package "syntax" (
   directory = "syntax"
-  version = "0.0.3"
   description = "Camlp5 syntax extensions"
   requires = "camlp5"
   archive(syntax,preprocessor) = "pa_ocanren.cma"
@@ -21,7 +20,6 @@ package "syntax" (
 
 package "tester" (
   directory = "tester"
-  version = "0.0.3"
   description = ""
   requires = "OCanren"
   archive(byte) = "tester.cma"
@@ -58,5 +56,3 @@ package "ppx" (
     ppx(-ppx_driver,-custom_ppx) = "./pp_fresh.native --as-ppx"
   )
 )
-
-

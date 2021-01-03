@@ -42,13 +42,15 @@ val unify : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 (** [x =/= y] creates a goal, which introduces a disequality constraint for [x] and [y] *)
 val (=/=) : ('a, 'b logic) injected -> ('a, 'b logic) injected -> goal
 
-(* Call [structural var reifier checker] adds a structural constraint for future use.
- * Every time substitution is updated it reifies [var] using [reifier] and checks that
- * the result satisfies desired predicate [checker].
- *
- * The predicate [checker] returns false when constraint is violated.
- * Call [structural] saves constraint and return substitution nonmodified.
- * *)
+(** Call [structural var reifier checker] adds a structural constraint for future use.
+ Every time substitution is updated it reifies [var] using [reifier] and checks that
+  the result satisfies desired predicate [checker].
+
+ The predicate [checker] returns false when constraint is violated.
+ Call [structural] saves constraint and return substitution nonmodified.
+
+ See also: {!debug_var}.
+*)
 val structural :
   ('a,'b) injected ->
   (Env.t -> ('a,'b) injected -> 'b) ->
@@ -120,15 +122,15 @@ module Fresh :
 (** {2 Top-level running primitives} *)
 
 (** [run n g h] runs a goal [g] with [n] logical parameters and passes reified results to the handler [h].
-    The number of parameters is encoded using variadic machinery {a la} Olivier Danvy and represented by
+    The number of parameters is encoded using variadic machinery {i à la} Olivier Danvy and represented by
     a number of predefined numerals and successor function (see below). The reification replaces each variable,
     passed to [g], with the stream of values, associated with that variable as the goal succeeds.
 
     Examples:
 
-    - [run one        (fun q   -> q === !!5)               (fun qs    -> ]{i here [q]s       --- a stream of all values, associated with the variable [q]}[)]
-    - [run two        (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i here [qs], [rs] --- streams of all values, associated with the variable [q] and [r], respectively}[)]
-    - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ]{i the same as the above}[)]
+    - [run one        (fun q   -> q === !!5)               (fun qs    -> ...)]. Here [qs] --- a stream of all values, associated with the variable [q].
+    - [run two        (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ...)]. Here [qs], [rs] --- streams of all values, associated with the variable [q] and [r], respectively.
+    - [run (succ one) (fun q r -> q === !!5 ||| r === !!6) (fun qs rs -> ...)]. The same as the above.
 *)
 val run : (unit ->
             ('a -> State.t -> 'b) * ('c -> Env.t -> 'd) *
@@ -359,12 +361,7 @@ module Tabling :
       (('b -> 'c) -> 'd) -> 'b -> 'c
   end
 
-
-(** Identity (can be used in [run] to return the stream unchanged) *)
-(* val id : 'a -> 'a *)
-
 IFDEF STATS THEN
-(** Unification counter *)
 val unification_counter : unit -> int
 val unification_time    : unit -> Mtime.span
 val conj_counter        : unit -> int
@@ -372,8 +369,17 @@ val disj_counter        : unit -> int
 val delay_counter       : unit -> int
 END
 
+(** The call [debug_var var reifier callback] performs reification of variable [var] in a current state using [reifier] and passes list of answer to [callback] (multiple answers can arise in presence of disequality constraints). The [callback] can investigate reified value and construct required goal to continue search.
+
+See also: {!structural}.
+*)
 val debug_var : ('a, 'b) injected -> (('a,'b) injected -> Env.t -> 'b) -> ('b list -> goal) -> goal
 
+(** The goal [only_head f] returns no answers when [f] returns:
+  - empty stream when [f] returns empty stream;
+  - hangs when [f] hangs during search for first answer;
+  - stream with head answer if [f] returns stream that has at least 1 answer.
+*)
 val only_head : goal -> goal
 
 module PrunesControl : sig

@@ -2,11 +2,10 @@
 
 (name OCanren)
 
-
 (package
- (version 0.0.3)
+ (version 0.1.1)
  (name OCanren))
 
 (package
- (version 0.0.3)
+ (version 0.1.1)
  (name OCanren-ppx))

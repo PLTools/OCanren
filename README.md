@@ -19,7 +19,7 @@
 
 # Introduction
 
-`OCanren` is a strongly-typed embedding of relational programming language [miniKanren](http://minikanren.org) 
+`OCanren` is a strongly-typed embedding of relational programming language [miniKanren](http://minikanren.org)
 into [OCaml](http://ocaml.org). Nowadays, the implementation of `OCanren` strongly reminds [faster-miniKanren](https://github.com/michaelballantyne/faster-miniKanren).
 Previous implementation was based on [microKanren](http://webyrd.net/scheme-2013/papers/HemannMuKanren2013.pdf)
 with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis2011.pdf).
@@ -40,22 +40,22 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
   <td>
 
   ```prolog
-  app([], X, X).       
+  app([], X, X).
   app([Y|Z], X, [Y,T]) :-
-     app (Z, X, T).          
+     app (Z, X, T).
   ```
-  
+
   </td>
   <td>
 
   ```scheme
-  (define appendo              
-   (lambda (l s ls)          
-     (conde                    
-      [(== '() l) (== s ls)]   
-       [(fresh (a d res)      
-         (== `(,a . ,d) l)     
-         (== `(,a . ,res) ls) 
+  (define appendo
+   (lambda (l s ls)
+     (conde
+      [(== '() l) (== s ls)]
+       [(fresh (a d res)
+         (== `(,a . ,d) l)
+         (== `(,a . ,res) ls)
          (appendo d s res))])))
   ```
 
@@ -64,7 +64,7 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
 
   ```ocaml
   let rec appendo x y z =
-  ocanren {             
+  ocanren {
     x == [] & y == z |
     fresh h, t, ty in
       x == h :: t  &
@@ -475,13 +475,23 @@ To remove all `*.log` and `*.diff` files use `make clean-test`.
 ## Building and running samples
 
 To build samples type `dune build samples` (or `make samples`).
-To build the single sample type `dune build samples/prog.exe` 
+To build the single sample type `dune build samples/prog.exe`
 where `prog` is the name of the sample.
-Samples can be run via `dune exec samples/prog.exe` 
+Samples can be run via `dune exec samples/prog.exe`
 (e.g. `dune exec samples/tree.exe`).
 
 Also, the output of the sample can be compared to the expected one (and promoted) by the script `./test.sh`
 (e.g. `./test.sh tree` will run the sample `tree.exe` and compare its output against `samples/orig/tree.orig`).
+
+## Building documentation
+
+Starting from version 8 Camlp5 requries extra library `pa_ppx.doc` to build documentation. To get it you need
+
+* install this library: `opam install pa_ppx`
+* add `-package pa_ppx.dock` in two places in the file `/camlp5/dune`. Without it all the documentation in files, preprocessed by camlp5 will be omitted.
+* run `dune build @doc`
+* open `_build/default/_doc/_html/index.html`
+
 
 # More info
 
