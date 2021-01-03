@@ -4,7 +4,7 @@
  (libraries camlp5)
  (preprocess
   (action
-   (run %{workspace_root}/camlp5/pp5+dump.byte %{input-file}))))
+   (run %{workspace_root}/camlp5/pp5+dump+dock.byte %{input-file}))))
 
 (rule
  (targets pp5+gt+plugins+ocanren+dump.exe)
@@ -18,9 +18,18 @@
  (targets pp5+gt+plugins+dump.byte)
  (deps)
  (action
+  ; add `-package pa_ppx.dock` below to build documentation
   (run mkcamlp5 -package
     camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
     %{deps} pa_extend.cmo q_MLast.cmo -o %{targets})))
+
+(rule
+ (targets pp5+gt+plugins+o.exe)
+ (deps)
+ (action
+  (run mkcamlp5.opt -package
+    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all,pa_ppx.dock
+    %{deps} pa_extend.cmx q_MLast.cmx -o %{targets})))
 
 (rule
  (targets pp5+gt+plugins+ocanren+o.byte)
@@ -48,4 +57,10 @@
 (rule
  (targets pp5+dump.byte)
  (action
+  (run mkcamlp5 -package camlp5 pa_o.cmo pr_dump.cmo -o %{targets})))
+
+(rule
+ (targets pp5+dump+dock.byte)
+ (action
+  ; add `-package pa_ppx.dock` below to build documentation
   (run mkcamlp5 -package camlp5 pa_o.cmo pr_dump.cmo -o %{targets})))

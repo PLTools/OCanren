@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2020
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -16,7 +16,7 @@
  * (enclosed in the file COPYING).
  *)
 
-(** {3 Relational Lists} *)
+(** {1 Relational Lists} *)
 
 open Logic
 open Core
@@ -25,6 +25,9 @@ open Core
 @type ('a, 'l) list =
 | Nil
 | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
+
+
+(** {2 GT-related API} *)
 
 (** Type synonym to prevent toplevel [logic] from being hidden *)
 @type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
@@ -38,13 +41,27 @@ open Core
 (** Logic lists (with the tails as logic lists) *)
 @type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr, fmt
 
+(** {2 Relational API} *)
+
 (** A synonym for injected list *)
 type ('a,'b) groundi = ('a ground, 'b logic) injected
 
-(** Constructors *)
+(** {3 Constructors} *)
+
 val nil : unit -> ('a, 'b) groundi
 
 val cons : ('a, 'b) injected -> ('a, 'b) groundi -> ('a, 'b) groundi
+
+(** Infix synonym for [cons] *)
+val (%) : ('a, 'b) injected -> ('a,'b) groundi -> ('a,'b) groundi
+
+(** [x %< y] is a synonym for [cons x (cons y (nil ()))] *)
+val (%<) : ('a, 'b) injected -> ('a, 'b) injected -> ('a, 'b) groundi
+
+(** [!< x] is a synonym for [cons x (nil ())] *)
+val (!<) : ('a, 'b) injected -> ('a, 'b) groundi
+
+(** {3 Built-in relations} *)
 
 (** [of_list l] converts regular OCaml list [l] into isomorphic OCanren [ground] list *)
 val of_list : ('a -> 'b) -> 'a GT.list -> 'b ground
@@ -111,12 +128,3 @@ val cdro  : ('a, 'b) groundi -> ('a, 'b) groundi -> goal
 
 (** Alias for [cdro] *)
 val tlo   : ('a, 'b) groundi -> ('a, 'b) groundi -> goal
-
-(** Infix synonym for [Cons] *)
-val (%) : ('a, 'b) injected -> ('a,'b) groundi -> ('a,'b) groundi
-
-(** [x %< y] is a synonym for [Cons (x, !(Cons (y, !Nil)))] *)
-val (%<) : ('a, 'b) injected -> ('a, 'b) injected -> ('a, 'b) groundi
-
-(** [!< x] is a synonym for [Cons (x, !Nil)] *)
-val (!<) : ('a, 'b) injected -> ('a, 'b) groundi

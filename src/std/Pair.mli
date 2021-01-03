@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2020
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -16,22 +16,26 @@
  * (enclosed in the file COPYING).
  *)
 
-(** {3 Relational pairs} *)
+(** {1 Relational pairs} *)
 
 open Logic
 open Core
 
+(** {2 GT-related API} *)
+
 (** Type synonym to prevent toplevel [logic] from being hidden *)
 @type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
-(** Synonym for regular option type *)
+
 @type ('a, 'b) t = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr, fmt
 
-(** Ground option (the regular one) *)
+
 @type ('a, 'b) ground = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Logic option *)
 @type ('a, 'b) logic = ('a * 'b) logic' with show, gmap, html, eq, compare, foldl, foldr, fmt
+
+(** {2 Relational API} *)
 
 (** Logic injection (for reification) *)
 val inj : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) ground -> ('c, 'd) logic
@@ -50,5 +54,3 @@ val prjc :
   (Env.t -> ('c, 'd) injected -> 'c) ->
   (int -> ('a,'c) ground GT.list -> ('a, 'c) ground) ->
   Env.t -> ( ('a,'c) ground, ('b, 'd) logic) injected -> ('a, 'c) ground
-
-

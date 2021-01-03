@@ -1,7 +1,7 @@
 (*
  * pa_ocanren: a camlp5 extension to implement syntax-level
  * miniKanren constructs.
- * Copyright (C) 2015
+ * Copyright (C) 2015-2020
  * Dmitri Boulytchev, St.Petersburg State University
  *
  * This software is free software; you can redistribute it and/or
@@ -16,12 +16,10 @@
  * (enclosed in the file COPYING).
  *)
 
-(** {1 Pa_ocanren --- a camlp5 syntax extension for miniKanren syntax constructs} *)
 
-(**
-  {2 General description}
+(** {1 Camlp5 syntax extension for miniKanren syntax constructs}
 
-  There are two syntat extensions provided: [fresh] and [defer].
+  There are two syntax extensions provided: [fresh] and [defer].
 
   [fresh] is a direct analog to the corresponding construct in original miniKanren. It has the form
   [fresh (x y ...) g], where [x y ...] is a list of free variables, created by [fresh], [g] --- some goal.
@@ -33,6 +31,7 @@
 
 #load "pa_extend.cmo";;
 #load "q_MLast.cmo";;
+
 
 open Pcaml
 open Printf
