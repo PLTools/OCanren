@@ -27,8 +27,9 @@
  (targets pp5+gt+plugins+o.exe)
  (deps)
  (action
+  ; add `-package pa_ppx.dock` below to build documentation
   (run mkcamlp5.opt -package
-    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all,pa_ppx.dock
+    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all
     %{deps} pa_extend.cmx q_MLast.cmx -o %{targets})))
 
 (rule
