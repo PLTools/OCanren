@@ -19,3 +19,4 @@ test020
 test021structural
 test022newsyntax
 test022wc
+test030fd

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # simple script for running test and diffing its result with the expected;
 # please, run the script from the toplevel directory of the project
@@ -10,19 +10,21 @@ TESTDIR="regression"
 TESTLIST="${TESTDIR}/tests.txt"
 
 # directories to search for tests
-SEARCH_DIRS="${TESTDIR} samples"
+SEARCH_DIRS="${TESTDIR}"
 
 PROMOTE=0
 ARG=""
 
 USAGE_MSG="usage: $0 [--promote] (<test name> | all)"
 
-if test $# = 0; then
+if test $# = 0
+then
     echo "${USAGE_MSG}"
     exit 1
 fi
 
-if [[ $1 == "--promote" ]]; then
+if test "$1" = "--promote"
+then
   if test $# = 1; then
     echo "${USAGE_MSG}"
     exit 1
@@ -33,7 +35,8 @@ else
   ARG=$1
 fi
 
-if [[ ${ARG} == "all" ]]; then
+if test "${ARG}" = "all"
+then
   # read test names from the file
   TESTS=`cat ${TESTLIST}`
 else
@@ -49,19 +52,23 @@ else
     fi
   done
 
-  if [[ ${FOUND} -eq "0" ]]; then
+  if test "${FOUND}" = "0"; then
     echo "cannot find ${ARG}"
     echo "searched in ${SEARCH_DIRS}"
     exit
   fi
 
   TESTS=${ARG}
-
 fi
 
-
+DUNE_DISPLAY_MODE=quiet #short
 # compile all tests ahead of time
-dune build `printf "${TESTDIR}/%s.exe " ${TESTS}`
+dune build --display=${DUNE_DISPLAY_MODE} `printf "${TESTDIR}/%s.exe " ${TESTS}`
+
+if test $? != 0; then
+  echo "Compilation of test programs failed"
+  exit 1
+fi
 
 for TEST in ${TESTS}; do
 
@@ -71,8 +78,8 @@ for TEST in ${TESTS}; do
   TESTORIG="${TESTDIR}/orig/${TEST}.orig"
 
   # if the `--promote` option set, perform the promotion
-  if [[ ${PROMOTE} -eq "1" ]]; then
-    if [[ ! -f ${TESTLOG} ]]; then
+  if test "${PROMOTE}" = "1"; then
+    if ! test -f "${TESTLOG}"; then
       echo "cannot find ${TESTLOG}"
     else
       cp ${TESTLOG} ${TESTORIG}
