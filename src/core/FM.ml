@@ -165,6 +165,7 @@ let recheck_helper1 op (store: t) a b =
   *)
 
   let on_var_and_term v term store =
+    (* printf "on_var_and_term %s %d\n" __FILE__ __LINE__; *)
     try
       let ans =
         fold_cps ~init:[] store ~f:(fun acc (set,is) tl k ->
@@ -184,6 +185,7 @@ let recheck_helper1 op (store: t) a b =
   in
 
   let on_two_vars v1 v2 store =
+    (* printf "on_two_vars %s %d\n" __FILE__ __LINE__; *)
     let ext_set set = VarSet.(add v1 (add v2 set)) in
     let ans =
       fold_cps ~init:(Zero,[]) store ~f:(fun acc ((set,is) as a) tl k ->
@@ -215,6 +217,8 @@ let recheck_helper1 op (store: t) a b =
       | None -> None
   in
 
+  (* let () = printf "a  = %s\n" (Term.show !!!a) in
+  let () = printf "b  = %s\n" (Term.show !!!b) in *)
   match Term.(var a, var b) with
   | None,None when !!!a = !!!b -> Some store
   | None,None                  -> None
@@ -232,14 +236,19 @@ let recheck_helper op (store: t) (_prefix : Subst.Binding.t list) =
         | None -> on_var_and_term bin.Binding.var !!!(bin.Binding.term) acc
       in*)
       let open Subst in
-      match recheck_helper1 op !!!(bin.Binding.var) !!!(bin.Binding.term) acc with
+      match recheck_helper1 op acc !!!(bin.Binding.var) !!!(bin.Binding.term) with
       | None -> raise Bad
       | Some ans -> k ans
     ))
   with Bad -> None
 
 let recheck _env _subst (store: t) (_prefix : Subst.Binding.t list) =
-  recheck_helper (fun a b -> FMEQ (a,b)) store _prefix
+  (* printf "%s %d length of _prefix=%d\n" __FILE__ __LINE__ (Stdlib.List.length _prefix); *)
+  match recheck_helper (fun a b -> FMEQ (a,b)) store _prefix with
+  | None ->
+     (* printf "recheck failed\n";  *)
+     None
+  | x -> x
 
 let check store : t option =
   try
@@ -282,6 +291,3 @@ let domain (v: inti) ints store =
         k ((set,is)::acc)
     ) |> (fun x -> Some x)
   with Bad -> None
-
-
-

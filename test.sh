@@ -46,7 +46,7 @@ else
   for DIR in ${SEARCH_DIRS}; do
     TESTDIR=${DIR}
     TESTSRC="${TESTDIR}/${ARG}.ml"
-    if [[ -f ${TESTSRC} ]]; then
+    if test -f ${TESTSRC}; then
       FOUND=1
       break
     fi
