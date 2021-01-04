@@ -27,12 +27,6 @@
   [defer] performs "inverse-eta-delay". It has the form [defer (g)] and expanded into [fun st -> Lazy.from_fun (fun () -> g st)].
 *)
 
-(**/**)
-
-#load "pa_extend.cmo";;
-#load "q_MLast.cmo";;
-
-
 open Pcaml
 open Printf
 

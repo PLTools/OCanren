@@ -12,7 +12,7 @@
  (action
   (run mkcamlp5.opt -package
     camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
-    %{deps} pa_extend.cmx q_MLast.cmx -o %{targets})))
+    %{deps} -o %{targets})))
 
 (rule
  (targets pp5+gt+plugins+dump.byte)
@@ -21,7 +21,7 @@
   ; add `-package pa_ppx.dock` below to build documentation
   (run mkcamlp5 -package
     camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
-    %{deps} pa_extend.cmo q_MLast.cmo -o %{targets})))
+    %{deps} -o %{targets})))
 
 (rule
  (targets pp5+gt+plugins+o.exe)
@@ -29,16 +29,16 @@
  (action
   ; add `-package pa_ppx.dock` below to build documentation
   (run mkcamlp5.opt -package
-    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all
-    %{deps} pa_extend.cmx q_MLast.cmx -o %{targets})))
+    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all %{deps}
+    -o %{targets})))
 
 (rule
  (targets pp5+gt+plugins+ocanren+o.byte)
- (deps)
+ (deps pa_ocanren.cma)
  (action
   (run mkcamlp5 -package
-    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all
-    pa_extend.cmo q_MLast.cmo %{deps} -o %{targets})))
+    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all %{deps}
+    -o %{targets})))
 
 (rule
  (targets pp5+gt+plugins+ocanren+logger+dump.exe)
@@ -48,12 +48,12 @@
     camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax %{deps} pr_dump.cmx
     -o %{targets} -)))
 
-(rule
- (targets pp5+gt+plugins+ocanren+logger+o.byte)
- (deps pa_ocanren.cma)
- (action
-  (run mkcamlp5 -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
-    %{deps} -o %{targets})))
+; (rule
+;  (targets pp5+gt+plugins+ocanren+logger+o.byte)
+;  (deps pa_ocanren.cma)
+;  (action
+;   (run mkcamlp5 -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
+;     %{deps} -o %{targets})))
 
 (rule
  (targets pp5+dump.byte)
@@ -64,4 +64,6 @@
  (targets pp5+dump+dock.byte)
  (action
   ; add `-package pa_ppx.dock` below to build documentation
-  (run mkcamlp5 -package camlp5 pa_o.cmo pr_dump.cmo -o %{targets})))
+  (run mkcamlp5 -package
+    camlp5,camlp5.pa_o,camlp5.pr_dump,pa_ppx.dock,camlp5.extend,camlp5.quotations
+    -o %{targets})))
