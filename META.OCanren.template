@@ -1,6 +1,6 @@
 version = "0.1.1"
 description = "Typed embedding of relational programmng language miniKanren to OCaml"
-requires = "GT mtime.clock.os"
+requires = "GT mtime.clock.os aez"
 archive(byte) = "OCanren.cma"
 archive(native) = "OCanren.cmxa"
 plugin(byte) = "OCanren.cma"
