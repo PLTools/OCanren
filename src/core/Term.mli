@@ -85,6 +85,10 @@ val repr : 'a -> t
 (* [var x] if [x] is logic variable returns it, otherwise returns [None] *)
 val var : 'a -> Var.t option
 
+(** [is_var x] checks that [x] being a logic variable. This function
+  is an optimized version of [var x]. *)
+val is_var : 'a -> bool
+
 (* [map ~fvar ~fval x] map over OCaml's value extended with logic variables;
  *   handles primitive types with the help of [fval] and logic variables with the help of [fvar]
  *)

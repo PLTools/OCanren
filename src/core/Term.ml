@@ -113,7 +113,7 @@ let var_tag, var_size =
   let dummy = Obj.repr Var.dummy in
   Obj.tag dummy, Obj.size dummy
 
-let is_var tx sx x =
+let has_var_structure tx sx x =
   if (tx = var_tag) && (sx = var_size) then
      let anchor = (Obj.obj x : Var.t).Var.anchor in
      (Obj.is_block @@ Obj.repr anchor) && (Var.valid_anchor anchor)
@@ -139,14 +139,19 @@ let var x =
   let tx = Obj.tag x in
   if is_box tx then
     let sx = Obj.size x in
-    if is_var tx sx x then Some (Obj.magic x) else None
+    if has_var_structure tx sx x then Some (Obj.magic x) else None
   else None
+
+let is_var x =
+  let x = Obj.repr x in
+  let tx = Obj.tag x in
+  (is_box tx) && (has_var_structure tx (Obj.size x) x)
 
 let rec map ~fvar ~fval x =
   let tx = Obj.tag x in
   if (is_box tx) then
     let sx = Obj.size x in
-    if is_var tx sx x then
+    if has_var_structure tx sx x then
       fvar @@ Obj.magic x
     else
       let y = Obj.dup x in
@@ -163,7 +168,7 @@ let rec iter ~fvar ~fval x =
   let tx = Obj.tag x in
   if (is_box tx) then
     let sx = Obj.size x in
-    if is_var tx sx x then
+    if has_var_structure tx sx x then
       fvar @@ Obj.magic x
     else
       for i = 0 to sx - 1 do
@@ -178,7 +183,7 @@ let rec show x =
   let tx = Obj.tag x in
   if (is_box tx) then
     let sx = Obj.size x in
-    if is_var tx sx x then
+    if has_var_structure tx sx x then
       let v = Obj.magic x in
       match v.Var.constraints with
       | [] -> Printf.sprintf "_.%d" v.Var.index
@@ -205,7 +210,7 @@ let rec fold ~fvar ~fval ~init x =
   let tx = Obj.tag x in
   if (is_box tx) then
     let sx = Obj.size x in
-    if is_var tx sx x then
+    if has_var_structure tx sx x then
       fvar init @@ Obj.magic x
     else
       let rec inner i acc =
@@ -229,7 +234,7 @@ let rec fold2 ~fvar ~fval ~fk ~init x y =
   match is_box tx, is_box ty with
   | true, true -> begin
     let sx, sy = Obj.size x, Obj.size y in
-    match is_var tx sx x, is_var ty sy y with
+    match has_var_structure tx sx x, has_var_structure ty sy y with
     | true, true    -> fvar init (Obj.magic x) (Obj.magic y)
     | true, false   -> fk init L (Obj.magic x) y
     | false, true   -> fk init R (Obj.magic y) x
@@ -248,11 +253,11 @@ let rec fold2 ~fvar ~fval ~fk ~init x y =
   | true, false ->
     is_valid_tag_exn ty;
     let sx = Obj.size x in
-    if is_var tx sx x then fk init L (Obj.magic x) y else raise (Different_shape (tx, ty))
+    if has_var_structure tx sx x then fk init L (Obj.magic x) y else raise (Different_shape (tx, ty))
   | false, true ->
     is_valid_tag_exn tx;
     let sy = Obj.size y in
-    if is_var ty sy y then fk init R (Obj.magic y) x else raise (Different_shape (tx, ty))
+    if has_var_structure ty sy y then fk init R (Obj.magic y) x else raise (Different_shape (tx, ty))
   | false, false ->
     is_valid_tag_exn tx;
     is_valid_tag_exn ty;

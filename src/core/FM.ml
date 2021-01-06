@@ -8,6 +8,14 @@ let rec fold_cps ~f ~init xs =
   | [] -> init
   | x::xs -> f init x xs (fun acc -> fold_cps ~f ~init:acc xs)
 
+
+let list_fold_lefti ~init ~f =
+  let rec helper acc i = function
+  | [] -> acc
+  | x::xs -> helper (f acc i x) (i+1) xs
+  in
+  helper init 0
+
 module T = Aez.Smt.Term
 module F = Aez.Smt.Formula
 module Solver = Aez.Smt.Make (struct end)
@@ -50,50 +58,16 @@ let wrap_term = function
 
 module Store : sig
   type t
-  type pack
 
   val empty: unit -> t
   val is_var_interesting: t -> Term.Var.t -> bool
 
-  val add_binop : (term -> term -> phormula) ->
-           inti -> inti -> pack -> pack
-
   val check: t -> t option
-
-  (* val check_item_list: phormula list -> bool *)
-  val on_two_vars: (term -> term -> phormula) ->
-           VarTbl.key ->
-           VarTbl.key -> t -> t option
 
   val recheck_helper1: (term -> term -> phormula) -> t -> 'a -> 'b -> t option
 
   val add_domain: Term.Var.t -> int list -> t -> t option
 end = struct
-  type pack = VarSet.t * phormula list
-  type nonrec t = pack list
-
-  type lookup_rez =
-    | One of pack
-    | Zero
-
-
-  let empty () = []
-
-  let is_var_interesting _ _ = true
-  exception Bad
-
-  let add_binop op (a: inti) (b:inti) (set,is) : pack =
-    let set, ta, tb =
-      let f set x = match Term.var x with
-        | None   -> (set, Const (Obj.magic x))
-        | Some v -> (VarSet.add v set, Var v.Term.Var.index)
-      in
-      let set,ta = f set !!!a in
-      let set,tb = f set !!!b in
-      (set, ta, tb)
-    in
-    let is = (op ta tb) :: is in
-    (set, is)
 
   let wrap_binop op a b = F.make_lit op [ wrap_term a; wrap_term b ]
   let make op xs =
@@ -101,7 +75,7 @@ end = struct
     | F.Or, [x] -> x
     | _ -> F.make op xs
 
-  let check_item_exn id = function
+  let assume_item_exn id = function
     | FMLT (a,b) ->
         Solver.assume ~id @@ wrap_binop F.Lt a b
     | FMLE (a,b) ->
@@ -116,34 +90,92 @@ end = struct
           wrap_binop F.Eq (Var v) (Const n)
         ))
 
-  let check_pack: pack -> bool = fun (_,is) ->
-    (* Construct request to solver there and check that it is satisfiable.
-    *)
-    try
+  module Pack = struct
+    type t = { vars: VarSet.t; mutable state: Solver.state; phs: phormula list }
+
+    let size : t -> int = fun {phs} -> Stdlib.List.length phs
+    let state {state} = state
+
+    let make vars state phs = { vars; state; phs }
+    let empty () =
       Solver.clear ();
-      Stdlib.List.iteri check_item_exn is;
+      make VarSet.empty (Solver.save_state ()) []
 
-      if is <> [] then Solver.check ();
+    let pp fmt pack =
+      Format.pp_print_list (GT.fmt phormula) Format.std_formatter pack.phs
+
+    (* TODO: add phantom argument checked/nonchecked *)
+    let singleton : _ -> Term.Var.t -> 'a -> t = fun op var t ->
+      let vars, ta, tb =
+        let f set x = match Term.var x with
+          | None   -> (set, Const (Obj.magic x))
+          | Some v -> (VarSet.add v set, Var v.Term.Var.index)
+        in
+        let set = VarSet.empty in
+        let set,ta = f set !!!var in
+        let set,tb = f set !!!t in
+        (set, ta, tb)
+      in
+      Solver.clear ();
+      let state = Solver.save_state () in
+      make vars state [op ta tb]
+
+    let domain v ints =
+      let set =
+        match Term.var v with
+        | Some v -> VarSet.singleton v
+        | None -> VarSet.empty
+      in
+      { empty () with vars = set; phs = [ FMDom (v.Term.Var.index, ints) ] }
+
+    let refresh ({phs} as pack) =
+      Solver.clear ();
+      Stdlib.List.iteri assume_item_exn phs;
+      pack.state <- Solver.save_state ()
+
+
+  end
+
+  type t = Pack.t list
+
+  type lookup_rez =
+    | One of Pack.t
+    | Zero
+
+
+  let empty () = []
+
+  let is_var_interesting _ _ = true
+  exception Bad
+
+
+
+  let check_pack : Pack.t -> bool = function { state } as p ->
+    try
+      printf "check_pack %s %d the pack of size %d\n" __FILE__ __LINE__ (Pack.size p);
+      Format.printf "%a\n%!" Pack.pp p ;
+      Pack.refresh p;
+      Solver.clear ();
+      Solver.restore_state state;
+      Solver.check ();
       true
-    with
-      | Aez.Smt.Unsat _core -> false
-      | Aez.Smt.Error e ->
-          let open Aez in
-          match e with
-          | Smt.UnknownSymb s ->
-              failwith (Printf.sprintf "unknown symb %s on %s %d\n%!" (Hstring.view s) __FILE__ __LINE__)
-          | DuplicateSymb s ->
-              failwith (Printf.sprintf "DuplicateSymb %s\n%!" (Aez.Hstring.view s))
-          | DuplicateTypeName s -> failwith (Printf.sprintf "DuplicateTypeName %s\n%!" (Hstring.view s))
-          | UnknownType s -> failwith (Printf.sprintf "unknown type '%s'. \n%!" (Hstring.view s))
+  with Aez.Smt.Unsat _core -> false
 
 
-  (* let check_item i = check_item_list [i] *)
+  let rec merge_packs p1 p2  =
+    if Pack.(size p1 > size p2) then merge_packs p2 p1
+    else
+      let () = Solver.restore_state (Pack.state p2) in
+      let p2_size = Pack.size p2 in
+      let ph3 =
+        list_fold_lefti p1.Pack.phs ~init:p2.Pack.phs ~f:(fun acc i ph ->
+          assume_item_exn (i+p2_size) ph;
+          (ph::acc)
+        )
+      in
+      let set3 = VarSet.union p2.Pack.vars p1.Pack.vars in
+      Pack.make set3 (Solver.save_state ()) ph3
 
-  (* let check store =
-    if check_item_list @@ snd store
-    then Some store
-    else None *)
 
   let check store : t option =
     try
@@ -154,33 +186,40 @@ end = struct
     with Bad -> None
 
   let on_two_vars op v1 v2 store =
-    let ext_set set = VarSet.(add v1 (add v2 set)) in
+    (* let ext_set set = VarSet.(add v1 (add v2 set)) in *)
     let ans =
-      fold_cps ~init:(Zero,[]) store ~f:(fun acc ((set,is) as a) tl k ->
-        if VarSet.mem v1 set || VarSet.mem v2 set
+      fold_cps ~init:(Zero,[]) store ~f:(fun acc pack tl k ->
+        if VarSet.mem v1 pack.Pack.vars || VarSet.mem v2 pack.Pack.vars
         then begin
             match acc with
-            | Zero,tl -> k (One a, tl)
-            | One (s2,is2),tl2 ->
-                let s3 = VarSet.(add v1 (add v2 (union s2 set))) in
-                let is3 = Stdlib.List.append is is2 in
-                (One (s3,is3), Stdlib.List.append tl2 tl)
+            | Zero,tl -> k (One pack, tl)
+            | (One pack2),tl2 ->
+                let pack3 = merge_packs pack pack2 in
+                (One pack3, Stdlib.List.append tl2 tl)
         end else
           let v,xs = acc in
-          k (v,a::xs)
+          k (v,pack::xs)
       )
     in
-    let (set,is,tl) =
+    let (p, other_packs) =
       match ans with
-      | Zero, tl -> (VarSet.empty, [], tl)
-      | One (s,is),tl -> (s,is,tl)
+      | Zero, tl -> (Pack.empty (), tl)
+      | One pack,tl -> (pack,tl)
     in
 
     (* we need to prepend to tail new pack of constraints *)
-    let set = ext_set set in
-    let h = add_binop op !!!v1 !!!v2 (set,is) in
-    match check_pack h with
-      | true -> Some (h::tl)
+    let p_new = Pack.singleton op v1 v2 in
+      (* let state =
+        Solver.clear ();
+        Solver.save_state ()
+      in
+      let (set,h) = add_binop op !!!v1 !!!v2 (VarSet.empty, []) in
+      Pack.make set state h
+    in *)
+
+    let pack = merge_packs p_new p in
+    match check_pack pack with
+      | true -> Some (pack::other_packs)
       | false -> None
 
 
@@ -193,20 +232,17 @@ end = struct
     let on_var_and_term v term store =
       (* printf "on_var_and_term %s %d\n" __FILE__ __LINE__; *)
       try
-        let ans =
-          fold_cps ~init:[] store ~f:(fun acc ((set,is) as pack) tl k ->
-            if VarSet.mem v set
-            then
-              let st = add_binop op !!!v !!!term (set, is) in
-              match check_pack st with
-              | false -> raise Bad
-              | true  -> acc @ pack :: tl
-            else
-              k ( (set,is) :: acc)
-          )
-        in
-        (* If something bad happends on the way -- exception *)
-        Some ans
+        fold_cps ~init:[] store ~f:(fun acc pack tl k ->
+          if VarSet.mem v pack.Pack.vars
+          then
+            let new_pack = Pack.singleton op v term in
+            let p = merge_packs new_pack pack in
+            match check_pack p with
+            | false -> raise Bad
+            | true  -> acc @ pack :: tl
+          else
+            k ( pack :: acc)
+        ) |> Stdlib.Option.some
       with Bad -> None
     in
 
@@ -222,24 +258,24 @@ end = struct
 
 
   let add_domain v ints store =
-    let d = FMDom (v.Term.Var.index, ints) in
-    if is_var_interesting v.Term.Var.index store
-    then
+    (* if is_var_interesting v.Term.Var.index store
+    then *)
       try
-        fold_cps ~init:[] store ~f:(fun acc (set,phs) tl k ->
-          if VarSet.mem v set
+        fold_cps ~init:[] store ~f:(fun acc pack tl k ->
+          if VarSet.mem v pack.Pack.vars
           then begin
-            let phs = d::phs in
-            if check_pack (set,phs)
-            then (set, phs) :: (acc @ tl)
-            else raise Bad
+            let new_pack = Pack.domain v ints in
+            let p = merge_packs new_pack pack in
+            match check_pack p with
+            | false -> raise Bad
+            | true  -> acc @ pack :: tl
           end else
-            k ((set, phs) :: acc)
-        ) |> (fun x -> Some x)
+            k (pack :: acc)
+        ) |> Stdlib.Option.some
       with Bad -> None
-    else
+    (* else
       Some (VarSet.(add v empty, [d]) :: store)
-
+ *)
 
 end
 
