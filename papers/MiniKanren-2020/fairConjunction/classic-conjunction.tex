@@ -25,7 +25,7 @@ of \lstinline{freeze$^o$}. In the second case the relation \lstinline{freeze$^o$
 \begin{figure}[h!]
 \centering
 \begin{tabular}{cp{3cm}c}
-\begin{lstlisting}[numbers=left,numberstyle=\small]
+\begin{lstlisting}%[numbers=left,numberstyle=\small]
 let rec append$^o$ x y xy =
   (x === [] /\ y === xy) \/
   fresh (e xs xys) (
@@ -34,7 +34,7 @@ let rec append$^o$ x y xy =
     append$^o$ xs y xys)
 \end{lstlisting}
 & &
-\begin{lstlisting}[firstnumber=7,numbers=left,numberstyle=\small,escapeinside={@}{@}]
+\begin{lstlisting}%[firstnumber=7,numbers=left,numberstyle=\small,escapeinside={@}{@}]
 let rec revers$^o$ x y =
   (x === [] /\ y === []) \/
   fresh (e xs ys) (

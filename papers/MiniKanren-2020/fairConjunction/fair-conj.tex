@@ -1,11 +1,11 @@
-\documentclass[acmlarge]{acmart}
+\documentclass[final,acmlarge,draft=false,review=false,nonacm=false]{acmart}
 \usepackage[
     type={CC},           % your choice
     modifier={by-sa},    % your choice
     version={4.0},       % your choice
 ]{doclicense}  
 
-\settopmatter{printacmref=false}
+\settopmatter{printacmref=false,printfolios=false}
 \fancyfoot{}
 
 \makeatletter
@@ -18,9 +18,9 @@
 \copyrightyear{2020}
 \setcopyright{rightsretained}
 
+\acmConference[miniKanren 2020]{The Second miniKanren and Relational Programming Workshop}{August 27 2020}{Online}
 \acmMonth{8}
 \acmArticle{3}
-
 
 \usepackage{listings}
 \usepackage[section]{placeins}
