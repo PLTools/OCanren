@@ -4,7 +4,7 @@
  (libraries camlp5)
  (preprocess
   (action
-   (run %{workspace_root}/camlp5/pp5+dump+dock.byte %{input-file}))))
+   (run %{workspace_root}/camlp5/pp5+dump.byte %{input-file}))))
 
 (rule
  (targets pp5+gt+plugins+ocanren+dump.exe)
@@ -58,12 +58,12 @@
 (rule
  (targets pp5+dump.byte)
  (action
-  (run mkcamlp5 -package camlp5 pa_o.cmo pr_dump.cmo -o %{targets})))
+  (run mkcamlp5 -package
+    camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations -o %{targets})))
 
 (rule
  (targets pp5+dump+dock.byte)
  (action
-  ; add `-package pa_ppx.dock` below to build documentation
   (run mkcamlp5 -package
     camlp5,camlp5.pa_o,camlp5.pr_dump,pa_ppx.dock,camlp5.extend,camlp5.quotations
     -o %{targets})))
