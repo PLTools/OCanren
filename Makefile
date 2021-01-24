@@ -6,7 +6,7 @@
 
 .DEFAULT_GOAL: all
 
-all: package samples
+all: package
 
 package: lib ppx syntax
 
@@ -19,7 +19,7 @@ ppx:
 syntax:
 	dune build camlp5/pa_ocanren.cma
 
-test:
+test: samples 
 	./test.sh all
 
 promote:
