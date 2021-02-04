@@ -270,7 +270,7 @@ let revisit_adt ~loc other_attrs tdecl ctors =
       let fully_abstract_typ =
         (* a type name for which we will generate `fmap` *)
         let extra_params = FoldInfo.map mapa
-          ~f:(fun fi -> (Ast_helper.Typ.var fi.FoldInfo.param_name, Asttypes.Invariant))
+          ~f:(fun fi -> (Ast_helper.Typ.var fi.FoldInfo.param_name, (Asttypes.NoVariance, Asttypes.NoInjectivity)))
         in
         let open Location in
         {full_t with ptype_params = full_t.ptype_params @ extra_params;

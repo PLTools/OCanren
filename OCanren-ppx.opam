@@ -20,7 +20,7 @@ depends: [
   "ocaml"
   "dune"              { >= "2.5"  }
   "dune-configurator"
-  "ppxlib"
+  "ppxlib"            { >= "0.22.0" }
   "base"
 ]
 
