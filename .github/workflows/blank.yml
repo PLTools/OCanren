@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    paths-ignore:
+      - 'README.md'
+    branches:
+      - 'dune'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          #- macos-latest
+          - ubuntu-20.04
+          #- windows-latest
+        ocaml-version:
+          #- 4.11.0
+          - 4.10.1
+          #- 4.09.1
+          #- 4.08.1
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use OCaml ${{ matrix.ocaml-version }}
+        uses: avsm/setup-ocaml@v1
+        with:
+          ocaml-version: ${{ matrix.ocaml-version }}
+
+      - run: opam pin add OCanren.dev . --no-action
+      - run: opam depext OCanren.dev --yes --with-test
+      - run: opam install . --deps-only --with-test
+      - run: opam exec -- make #dune build
+      - run: opam exec -- make test # dune runtest
