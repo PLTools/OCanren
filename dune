@@ -1,9 +1,12 @@
 (env
  (dev
-  (flags (:standard -rectypes -warn-error -A -w -K-9-27))
- )
+  (flags
+   (:standard -rectypes -warn-error -A -w -K-9-27)))
  (release
-  (flags (:standard -rectypes -warn-error -A -w -K-9-27))
-  (ocamlopt_flags -O3)
- )
-)
+  (flags
+   (:standard -rectypes -warn-error -A -w -K-9-27))
+  (ocamlopt_flags -O3)))
+
+(alias
+ (name default)
+ (deps camlp5 src))
