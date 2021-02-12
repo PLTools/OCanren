@@ -1,4 +1,10 @@
-[![Build Status](https://travis-ci.org/Jetbrains-Research/ocanren.svg?branch=master)](https://travis-ci.org/Jetbrains-Research/ocanren)
+| Branch dune                     |
+| ------------------------------- |
+| [![OCanren][1]][2] |
+
+[1]:  https://github.com/JetBrains-Research/OCanren/workflows/Build/badge.svg?branch=dune
+[2]:  https://github.com/JetBrains-Research/OCanren/actions
+
 
 # Table of Contents
 
