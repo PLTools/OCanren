@@ -1,7 +1,6 @@
 opam-version: "2.0"
 version: "0.1.0"
 
-name: "OCanren"
 synopsis: "Relational programming library in miniKanren manner"
 maintainer: "Dmitrii Kosarev kakadu.hafanana@gmail.com"
 homepage: "https://github.com/JetBrains-Research/OCanren"
@@ -17,19 +16,20 @@ authors: [
 
 depends: [
   "ocaml"     { >= "4.10" }
-  "dune-configurator" 
   "dune"      { >= "2.5" }
-  "ocamlfind" { build }
+  "dune-configurator"
+  "ocamlfind"
   "camlp5"    { >= "8" }
   "logger-p5" { >= "0.4.5" }
   "GT"        { >= "0.4.0" }
+  "benchmark" { with-test }
   "mtime"
 ]
 
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] { dev }
   ["dune" "build" "-p" name "-j" jobs]
-  [make "test"] {with-test}
+  [make "test"] { with-test }
 ]
 
 dev-repo: "git+https://github.com/JetBrains-Research/OCanren.git"
@@ -37,4 +37,3 @@ dev-repo: "git+https://github.com/JetBrains-Research/OCanren.git"
 url {
   src: "git+https://github.com/JetBrains-Research/OCanren"
 }
-
