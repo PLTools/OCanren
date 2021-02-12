@@ -4,8 +4,9 @@
  (libraries GT OCanren)
  (preprocess
   (action
-   (run %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
-     %{input-file})))
+   (run
+    %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
+    %{input-file})))
  (preprocessor_deps
   (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe)))
 
@@ -15,8 +16,9 @@
  (libraries GT OCanren benchmark)
  (preprocess
   (action
-   (run %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
-     %{input-file})))
+   (run
+    %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
+    %{input-file})))
  (preprocessor_deps
   (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe)))
 
