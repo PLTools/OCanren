@@ -7,8 +7,8 @@ os:
   - linux
 env:
   matrix:
-  - OCAML_VERSION=4.07
-    PACKAGE=ocanren
+  - OCAML_VERSION=4.10
+    PACKAGE=OCanren
     TESTS=true
 
 
