@@ -2,9 +2,13 @@ name: Build
 
 on:
   pull_request:
+    branches:
+      - 'master'
   push:
     paths-ignore:
-      - 'README.md'
+      - 'papers/**'
+      # do not run CI if we are writing a paper
+      # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-ignoring-paths
     branches:
       - 'master'
   schedule:
@@ -19,12 +23,9 @@ jobs:
         os:
           #- macos-latest
           - ubuntu-20.04
-          #- windows-latest
         ocaml-version:
           #- 4.11.0
           - 4.10.1
-          #- 4.09.1
-          #- 4.08.1
 
     runs-on: ${{ matrix.os }}
 
