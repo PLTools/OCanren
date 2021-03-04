@@ -1,7 +1,17 @@
 opam-version: "2.0"
 
 version: "0.2.0"
-description: "Relational programming library in miniKanren manner (PPX extension)"
+description: "Implementation of miniKanren relational (logic) EDSL: PPX extensions"
+synopsis: """\
+PPX rewriter for writing relational programs more confenient.
+
+  fresh (x...) goal
+
+expands into
+
+  Fresh.numeral (fun x ... -> goal)
+
+"""
 maintainer: "Dmitrii Kosarev Kakadu@pm.me"
 
 authors: [
