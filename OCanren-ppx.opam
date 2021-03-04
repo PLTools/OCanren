@@ -1,7 +1,7 @@
-version: "0.1.0"
 opam-version: "2.0"
-name: "OCanren-ppx"
-synopsis: "Relational programming library in miniKanren manner. PPX extension"
+
+version: "0.2.0"
+description: "Relational programming library in miniKanren manner. PPX extension"
 maintainer: "Dmitrii Kosarev Kakadu@pm.me"
 
 authors: [
@@ -35,4 +35,3 @@ dev-repo: "git+https://github.com/JetBrains-Research/OCanren.git"
 url {
   src: "git+https://github.com/JetBrains-Research/OCanren"
 }
-

@@ -6,8 +6,8 @@ on:
     paths-ignore:
       - 'README.md'
     branches:
-      - 'dune'
-  schedule:    
+      - 'master'
+  schedule:
     - cron: "0 13 * * 1"
     # https://jasonet.co/posts/scheduled-actions/
 

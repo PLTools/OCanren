@@ -1,27 +1,29 @@
 (executable
-  (public_name pp_fresh)
-  (package OCanren-ppx)
-  (libraries ppx_fresh)
-  (modules pp_fresh)
-)
+ (public_name pp_fresh)
+ (package OCanren-ppx)
+ (libraries ppx_fresh)
+ (modules pp_fresh))
 
 (executable
-  (public_name pp_repr)
-  (package OCanren-ppx)
-  (libraries ppx_repr)
-  (modules pp_repr)
-)
+ (public_name pp_repr)
+ (package OCanren-ppx)
+ (libraries ppx_repr)
+ (modules pp_repr))
 
 (executable
-  (public_name pp_distrib)
-  (package OCanren-ppx)
-  (libraries ppx_distrib)
-  (modules pp_distrib)
-)
+ (public_name pp_distrib)
+ (package OCanren-ppx)
+ (libraries ppx_distrib)
+ (modules pp_distrib))
 
 (executable
-  (public_name pp_noinjected)
-  (package OCanren-ppx)
-  (libraries ppx_noinjected)
-  (modules pp_noinjected)
-)
+ (public_name pp_noinjected)
+ (package OCanren-ppx)
+ (libraries ppx_noinjected)
+ (modules pp_noinjected))
+
+(executable
+ (public_name pp_ocanren_all)
+ (package OCanren-ppx)
+ (libraries ppx_repr ppx_fresh)
+ (modules pp_ocanren_all))

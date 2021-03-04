@@ -1,0 +1,6 @@
+## 0.2.0 (2021-03-04)
+
+### Changed
+
+- Upgrade for OCaml 4.10
+- Upgrade for ppxlib 0.22

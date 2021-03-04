@@ -1,8 +1,8 @@
 opam-version: "2.0"
-version: "0.1.0"
+version: "0.2.0"
 
-synopsis: "Relational programming library in miniKanren manner"
-maintainer: "Dmitrii Kosarev kakadu.hafanana@gmail.com"
+description: "Relational programming library in miniKanren manner"
+maintainer: "Dmitrii Kosarev kakadu@pm.me"
 homepage: "https://github.com/JetBrains-Research/OCanren"
 bug-reports: "https://github.com/JetBrains-Research/OCanren/issues"
 
