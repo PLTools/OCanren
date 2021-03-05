@@ -8,4 +8,7 @@
   (:standard -short-paths))
  (preprocess
   (action
+   ; To enable STATS measuring (or pass other custom switches to camlp5-based rewriters)
+   ; edit the line below, for example
+   ;(run %{workspace_root}/camlp5/pp5+gt+plugins+dump.byte -D STATS %{input-file}))))
    (run %{workspace_root}/camlp5/pp5+gt+plugins+dump.byte %{input-file}))))

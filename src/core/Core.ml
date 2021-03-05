@@ -366,10 +366,10 @@ let (===) x y st =
 
   match State.unify x y st with
   | Some st ->
-    let () = IFDEF STATS THEN unification_time_incr t ELSE () END in
+    let () = IFDEF STATS THEN unification_time_incr _t ELSE () END in
     success st
   | None    ->
-    let () = IFDEF STATS THEN unification_time_incr t ELSE () END in
+    let () = IFDEF STATS THEN unification_time_incr _t ELSE () END in
     failure st
 
 let unify = (===)

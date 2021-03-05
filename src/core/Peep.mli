@@ -15,6 +15,11 @@
  * See the GNU Library General Public License version 2 for more details
  * (enclosed in the file COPYING).
  *)
+
+(*
+  To enable statistics' counters add STATS macro switch for pa_macro camlp5
+  rewriter in file '../../src/dune'.
+*)
 IFDEF STATS THEN
 val unification_counter      : unit -> int
 val unification_time         : unit -> Mtime.span
