@@ -436,8 +436,18 @@ but they are not fully documented.
 # Building from sources
 
 This section contains instructions on how to build OCanren from sources and how to build and run tests.
+This part of README is very often lagging behind actual situation. Look into CI logs for absolutely 
+up-to-date and correct instructions.
 
 ## Building the library
+
+OCanren uses standard for OCaml package manager called Opam. 
+
+* Use `opam pin add . --yes --no-action` to pin OCanren 
+* To install depexts (dependecies from your system package manager)
+
+   opam install opam-depext --yes 
+   opam depext OCanren --yes --with-test
 
 OCanren uses [dune](https://dune.readthedocs.io/en/stable/) build system.
 In order to build the library only, type `dune build src`
