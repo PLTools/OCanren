@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2021
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -23,18 +23,6 @@
 | Var   of GT.int * 'a logic GT.list
 | Value of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
 
-(** GT-compatible typeinfo for logics
-val logic :
-  (unit,
-   < show    : ('a -> string) -> 'a logic -> string;
-     html    : ('a -> HTML.viewer) -> 'a logic -> HTML.viewer;
-     eq      : ('a -> 'a -> bool) -> 'a logic -> 'a logic -> bool;
-     compare : ('a -> 'a -> GT.comparison) -> 'a logic -> 'a logic -> GT.comparison;
-     foldl   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
-     foldr   : ('syn -> 'a -> 'syn) -> 'syn -> 'a logic -> 'syn;
-     gmap    : ('a -> 'sa) -> 'a logic -> 'sa logic
-   >, unit) GT.t
- *)
 (** [to_logic x] makes a logic value from a regular one *)
 val to_logic : 'a -> 'a logic
 

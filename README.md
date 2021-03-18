@@ -21,6 +21,7 @@
   - [Building the syntax extensions](#building-the-syntax-extensions)
   - [Building and running tests](#building-and-running-tests)
   - [Building and running samples](#building-and-running-samples)
+  - [Documentation](#building-documentation)
 - [More info](#more-info)
 
 # Introduction
@@ -436,17 +437,17 @@ but they are not fully documented.
 # Building from sources
 
 This section contains instructions on how to build OCanren from sources and how to build and run tests.
-This part of README is very often lagging behind actual situation. Look into CI logs for absolutely 
+This part of README is very often lagging behind actual situation. Look into CI logs for absolutely
 up-to-date and correct instructions.
 
 ## Building the library
 
-OCanren uses standard for OCaml package manager called Opam. 
+OCanren uses standard for OCaml package manager called Opam.
 
-* Use `opam pin add . --yes --no-action` to pin OCanren 
+* Use `opam pin add . --yes --no-action` to pin OCanren
 * To install depexts (dependecies from your system package manager)
 
-   opam install opam-depext --yes 
+   opam install opam-depext --yes
    opam depext OCanren --yes --with-test
 
 OCanren uses [dune](https://dune.readthedocs.io/en/stable/) build system.
@@ -501,12 +502,14 @@ Also, the output of the sample can be compared to the expected one (and promoted
 
 ## Building documentation
 
-Starting from version 8 Camlp5 requries extra library `pa_ppx.doc` to build documentation. To get it you need
+The latest API documentation can be found [here](https://jetbrains-research.github.io/OCanren/OCanren/index.html).
 
-* install this library: `opam install pa_ppx`
-* add `-package pa_ppx.dock` in two places in the file `/camlp5/dune`. Without it all the documentation in files, preprocessed by camlp5 will be omitted.
-* run `dune build @doc`
-* open `_build/default/_doc/_html/index.html`
+Camlp5 8.x requries extra library `pa_ppx.doc` to build documentation. To get it you need:
+
+* Install additional library: `opam install pa_ppx`
+* Set the environment variable `OCANREN_DOCS` which will be detected and it will alter compilation build documentation too.
+* Run `dune build @doc`
+* Open `_build/default/_doc/_html/index.html`
 
 
 # More info
