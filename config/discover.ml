@@ -113,6 +113,23 @@ let discover_logger_flags cfg =
   in
   Cfg.Flags.write_lines "logger-flags.cfg" cmos
 
+let discover_stats () =
+  let filename = "instrumentalization.cfg" in
+  Sys.command (Printf.sprintf "rm -fr '%s'" filename) |> ignore;
+  try
+    let _ = Unix.getenv "OCANREN_STATS" in
+    Cfg.Flags.write_lines filename ["-D"; "STATS"]
+  with Not_found ->
+    Cfg.Flags.write_lines filename []
+
+let discover_docs () =
+  let filename = "package-doc.cfg" in
+  try
+    let _ = Unix.getenv "OCANREN_DOCS" in
+    Cfg.Flags.write_lines filename ["-package"; "pa_ppx.dock"]
+  with Not_found ->
+    Cfg.Flags.write_lines filename []
+
 (*** generating dune files ***)
 
 (* generates build rules for `test*.exe` *)
@@ -134,6 +151,9 @@ let tests_dir     = ref None
 let camlp5_flags  = ref false
 let gt_flags      = ref false
 let logger_flags  = ref false
+let stats_flags  = ref false
+let doc_flags  = ref false
+
 let all_flags     = ref false
 let all           = ref false
 
@@ -145,7 +165,9 @@ let args =
     ; ("-tests-dune"  , Arg.Set tests_dune      , " generate dune build file for tests"       )
     ; ("-camlp5-flags", Arg.Set camlp5_flags    , " discover camlp5 flags (camlp5-flags.cfg)" )
     ; ("-gt-flags"    , Arg.Set gt_flags        , " discover GT flags (gt-flags.cfg)"         )
-    ; ("-gt-flags"    , Arg.Set logger_flags    , " discover logger flags (logger-flags.cfg)" )
+    ; ("-logger-flags", Arg.Set logger_flags    , " discover logger flags (logger-flags.cfg)" )
+    ; ("-doc-flags",    Arg.Set doc_flags       , " discover documentations flags " )
+    ; ("-stats-flags",  Arg.Set stats_flags     , " discover avilability of instrumentalization" )
     ; ("-all-flags"   , Arg.Set all_flags       , " discover all flags"                       )
     ; ("-all"         , Arg.Set all             , " discover all"                             )
     ]
@@ -153,8 +175,7 @@ let args =
 (*** main ***)
 
 let () =
-
-  Cfg.main ~name:"ocanren" ~args (fun cfg ->
+  Cfg.main ~name:"OCanren" ~args (fun cfg ->
     let testnames =
       if !tests || !tests_dune || !all then
         match !tests_dir with
@@ -162,6 +183,9 @@ let () =
         | None     -> failwith "-tests-dir argument is not set"
       else []
     in
+
+    if !stats_flags || !all_flags then discover_stats ();
+    if !doc_flags   || !all_flags then discover_docs ();
 
     if !tests || !all then
       discover_tests cfg testnames ;

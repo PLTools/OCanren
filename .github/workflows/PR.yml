@@ -1,16 +1,10 @@
-name: Build master
+name: Build PR
 
 on:
-  push:
-    paths-ignore:
-      - 'papers/**'
-      # do not run CI if we are writing a paper
-      # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-ignoring-paths
+  pull_request:
     branches:
       - 'master'
-  schedule:
-    - cron: "0 13 * * 1"
-    # https://jasonet.co/posts/scheduled-actions/
+
 
 jobs:
   build:
@@ -54,18 +48,6 @@ jobs:
       - run: opam pin add OCanren.dev . --no-action
       - run: opam depext OCanren.dev --yes --with-test
 
-      - name: Install dependencies for documentation
-        run: opam install odoc pa_ppx --yes
-
       - run: opam install . --deps-only --with-test
       - run: opam exec -- make #dune build
       - run: opam exec -- make test # dune runtest
-
-      - name: Build documentation
-        run: opam exec -- dune build @doc
-
-      - name: Deploy documentation
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_build/default/_doc/_html
