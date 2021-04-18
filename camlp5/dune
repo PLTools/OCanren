@@ -4,7 +4,7 @@
  (libraries camlp5)
  (preprocess
   (action
-   (run %{workspace_root}/camlp5/pp5+dump.byte %{input-file}))))
+   (run %{project_root}/camlp5/pp5+dump.byte %{input-file}))))
 
 (rule
  (targets pp5+gt+plugins+ocanren+dump.exe)
