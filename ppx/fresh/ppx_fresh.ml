@@ -152,12 +152,12 @@ let my_list ~loc es =
   List.fold_right ~init:[%expr []] es ~f:(fun x acc -> [%expr [%e x] :: [%e acc]])
 
 let parse_to_list alist =
-  let rec helper acc = function
+  let rec helper acc ele = match ele.pexp_desc with
   | Pexp_construct ({txt=Lident "[]"}, None ) -> acc
   | Pexp_construct ({txt=Lident "::"}, Some {pexp_desc=Pexp_tuple [y1;y2]; _})
       ->
-      helper (y1::acc) y2.pexp_desc
-  | _ -> []
+      helper (y1::acc) y2
+  | x -> [ele]
   in
   List.rev @@ helper [] alist
 
@@ -169,17 +169,15 @@ let mapper = object(self)
     match e.pexp_desc with
     | Pexp_apply (_,[]) -> e
     | Pexp_apply (e1,(_,alist)::args) when is_conj_list e1 ->
-        let clauses : expression list = parse_to_list alist.pexp_desc in
+        let clauses : expression list = parse_to_list alist in
         let ans = list_fold_right0 clauses
           ~initer:(fun x -> x)
           ~f:(fun x acc -> [%expr [%e x] &&& [%e acc]])
         in
         super#expression ans
-    | Pexp_apply (e1,(_,alist)::otherargs) when is_conde e1 ->
-        let clauses : expression list = parse_to_list alist.pexp_desc in
-        [%expr
-          conde [%e my_list ~loc @@ List.map ~f:self#expression clauses ]
-        ]
+    | Pexp_apply (e1,(_,alist)::otherargs) when is_conde e1 -> begin
+        [%expr conde [%e self#expression alist ]]
+    end
     | Pexp_apply (e1,[args]) when is_fresh e1 ->
         (* bad syntax -- no body*)
         e
