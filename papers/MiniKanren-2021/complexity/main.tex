@@ -195,13 +195,14 @@
     \item current substitutions
 \end{itemize}
 
-\section{Scheduling Metric}
+\section{Scheduling Complexity}
 
-It turns out that the operational semantics described in the previous section reflects the number of operations for scheduling quite precisely, so it can be used to estimate the scheduling time. In this section we define a specific metric in this semantics for this purpose, justify that it measures the scheduling time adequately and provide formulae to calculate this metric inductively for a given goal.
+We may observe that the operational semantics described in the previous section reflects the number of elementary scheduling steps in a one-to-one manner.
+In this section we define a specific value which estimates the scheduling time and provide some formulae to calculate this value for a given goal.
 
-As the first of approximation, the number of states in the trace for a given state can be taken. We denote it as follows (this metric is defined when the trace is finite).
+Our first idea is to take the number of states $d\,(s)$ in the \emph{finite} trace for a given state $s$:
 
-\[ d(s) \; \eqdef \; | \trs{s} |  \]
+\[ d\,(s) \; \eqdef \; | \trs{s} |  \]
 
 To see how well it works as an approximation we need to establish the connection between states in the semantics and partially evaluated expressions that appear during the program execution. Each semantic state $s$ can be mapped naturally into a lazy expression $\expranalog{s}$ (in a generic functional language) that evaluates to the same sequence of answers, this mapping is shown in Fig.~\ref{fig:expression_analogue}. Moreover, since the rules for $\oplus$ are $\otimes$ in the semantics reflect precisely the implementation of \texttt{mplus} and \texttt{bind} in standard interleaving search, if we force the evaluation of an expression $\expranalog{s}$ for some state $s$ once, we will get the lazy expression for the next state in the trace (\lazystream{\expranalog{s'}} if $s \rightarrow s'$, or \consstream{$a$}{\expranalog{$s'$}} if $s \xrightarrow{a} s'$). According to this connection, the number of transitions in the trace from some state $s$ (which is $d(s) - 1$) is the length of the stream to which the expression $\expranalog{s}$ is evaluated (counting both \texttt{Cons} and \texttt{Lazy} constructors).
 
