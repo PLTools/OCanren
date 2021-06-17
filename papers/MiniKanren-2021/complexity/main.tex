@@ -55,11 +55,11 @@
 
 %%
 %% These commands are for a JOURNAL article.
-\acmJournal{}
-\acmVolume{}
-\acmNumber{}
-\acmArticle{}
-\acmMonth{}
+%\acmJournal{}
+%\acmVolume{}
+%\acmNumber{}
+%\acmArticle{}
+%\acmMonth{}
 
 %%
 %% Submission ID.
@@ -250,11 +250,12 @@ For any state $s$, $d(s) \le t(s) \le d^2(s)$.
    t(\taskst{\invokegoal{r}{t_1}{t_k}}{e}) = t(\taskst{b}{e}) + 1 & \\
 \end{array}
 \]
-\todonote{Explain $e'$ and $b$. Or just put the following instead of this figure.
+
+\todonote{Explain $e'$ and $b$. Or just put the following instead of this figure}.
 
 \begin{lemma}
 If $\taskst{g}{e} \rightarrow s'$ or $\taskst{g}{e} \xrightarrow{a} s'$ then $d(\taskst{g}{e}) = d(s') + 1$ and $t(\taskst{g}{e}) = t(s') + 1$.
-\end{lemma}}
+\end{lemma}
 
   \caption{Metric calculation for goal execution}
   \label{fig:metric_calc_goals}
@@ -337,7 +338,7 @@ And in the case when all $A_i$ contain only one answer
 
 Syntactic unification of terms is a core operation in logic programming. The performance of the  conventional unification algorithm is hard to analyse in general case due to its non-trivial recursion scheme. The time can be exponential of initial terms size in the worst case. However, for the most practical cases met in logic programming the time of any unification during program execution is linear or even constant of the size of the input. So the inner workings of unification are often neglected when estimating performance of programs.
 
-\mK has a distinctive way of implementing unification fit in accordance with its ideology. Firstly, since \mK aims at purely functional implementation of an embedded logical language it uses a triangular form of substitutions~\cite{UnificationTheory} which allows simple extension in a non-mutable fashion. Such substitution are lazy in a sense that they keep a particularly substituted value for each variable, so to obtain a fully substituted value it may be necessary to apply a substitution a number of times. In particular, we need the full cycle of applying substitution in the end of search to get the result for a querried variable, this process is called \emph{reification}. \mK uses the conventional Robinson's algorithm for unification~\cite{UnificationTheory}, adjusted for triangular substitutions~\cite{TRS}. Secondly, since \mK commits to adhere to logical consistency, by default it always performs occurs checks during the unification. Occurs check is a test of existance of cicles in the added binding and it is necessary for the correctness of the result of unification. But it is very costly in terms of performance and rarely violated, so some logical languages (such as Prolog) omit it, while \mk does not.
+\mK has a distinctive way of implementing unification fit in accordance with its ideology. Firstly, since \mK aims at purely functional implementation of an embedded logical language it uses a triangular form of substitutions~\cite{UnificationTheory} which allows simple extension in a non-mutable fashion. Such substitution are lazy in a sense that they keep a particularly substituted value for each variable, so to obtain a fully substituted value it may be necessary to apply a substitution a number of times. In particular, we need the full cycle of applying substitution in the end of search to get the result for a querried variable, this process is called \emph{reification}. \mK uses the conventional Robinson's algorithm for unification~\cite{UnificationTheory}, adjusted for triangular substitutions~\cite{TRS}. Secondly, since \mK commits to adhere to logical consistency, by default it always performs occurs checks during the unification. Occurs check is a test of existance of cicles in the added binding and it is necessary for the correctness of the result of unification. But it is very costly in terms of performance and rarely violated, so some logical languages (such as Prolog) omit it, while \mK does not.
 
 In this section we show how in \mK the time of unification can be taken into account easily and compared to the scheduling time in many practical cases. Specifically, we identify two tests on relational programs, which can be checked dynamically, under which every unification in the program performs a constant number of basic operations, excluding occurs checks. At the same time the occurs checks, which can be estimated separately, add a significant overhead to the time of execution and often increase time complexity of the program. A number of programs satisfying the given tests and showing the impact of occurs check are listed in the \sectionword~\ref{sec:evaluation}.
 
@@ -362,7 +363,7 @@ For a unification of two terms $t_1$ and $t_2$ with a current substitution $\sig
 
 In particular, if the size of one of those two terms does not depend on the input (which is usually the case) the unification performs a constant number of basic operation. This is our second practical criterion: linearity and constant size of one the terms in every unification.
 
-In the presence of the occurs checks checks, however, we need to also go through the every term we add in the substitution. This changes $\min$ in the estimation above to $\max$, which makes the huge difference. Roughly speaking, in average the number of basic operations for every unification with occurs checks is approximately an average size of all terms unified in program (which is usually linear of the input). Therefore occurs checks add a huge time overhead for program execution in \mK, both for asymptotics (see \sectionword\~\ref{sec:evaluation}) and for actual time~\cite{WillThesis}. This fact calls for an investigation into ways of going around occurs checks in \mK. Although simply omitting them is not an option for \mK, there are other known approaches (mostly explored for Prolog), for example static tests insuring that occurs checks for a given program will never be violated~\cite{OccursCheckStaticTest}. As far as we know, for now there are no such solutions adopted for \mK.
+In the presence of the occurs checks checks, however, we need to also go through the every term we add in the substitution. This changes $\min$ in the estimation above to $\max$, which makes the huge difference. Roughly speaking, in average the number of basic operations for every unification with occurs checks is approximately an average size of all terms unified in program (which is usually linear of the input). Therefore occurs checks add a huge time overhead for program execution in \mK, both for asymptotics (see \sectionword~\ref{sec:evaluation}) and for actual time~\cite{WillThesis}. This fact calls for an investigation into ways of going around occurs checks in \mK. Although simply omitting them is not an option for \mK, there are other known approaches (mostly explored for Prolog), for example static tests insuring that occurs checks for a given program will never be violated~\cite{OccursCheckStaticTest}. As far as we know, for now there are no such solutions adopted for \mK.
 
 For now, as we estimate the time of every individual unification it might be not clear how it relates to the metrics for the scheduling time. But since we consider cases in which unification is relatively fast (constant number of basic operations), the number of unifications during an execution plays more important role and it can be simply limited by the number of semantics steps $d(s_{init}(n))$ (because every unification is a separate step in the semantics). Similarly, although the time of basic operations depends on size of substitution in different points of execution, logical variables for these bindings come either from the input (where there are usually a constant number of them) or from a fresh variable allocations during the evalutation (each of which is a a separate step in the semantics). So the number of allocated logic variables (and therefore the maximum possible number of bindings) is limited by $FV(input(n)) + d(s_{init}(n))$. So, for example, for a usual case, when our practical tests are satisfied and the input contains a constant number of logic variables, for a standard implementation and without occurs checks the total time of unifications $T_u$ will be $\O(d(s_{init}(n)) \log d(s_{init}(n)))$.
 
@@ -394,7 +395,7 @@ The time of reification $T_r$ can be estimated in the same way, since reificatio
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{sample-base}
+\bibliography{main}
 
 %%
 %% If your work has an appendix, this is the place to put it.
