@@ -1,0 +1,406 @@
+%%
+%% This is file `sample-acmlarge.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `acmlarge')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-acmlarge.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%% The first command in your LaTeX source must be the \documentclass command.
+\documentclass[acmsmall, anonymous, review]{acmart}
+%% NOTE that a single column version is required for 
+%% submission and peer review. This can be done by changing
+%% the \doucmentclass[...]{acmart} in this template to 
+%% \documentclass[manuscript,screen,review]{acmart}
+%% 
+%% To ensure 100% compatibility, please check the white list of
+%% approved LaTeX packages to be used with the Master Article Template at
+%% https://www.acm.org/publications/taps/whitelist-of-latex-packages 
+%% before creating your document. The white list page provides 
+%% information on how to submit additional LaTeX packages for 
+%% review and adoption.
+%% Fonts used in the template cannot be substituted; margin 
+%% adjustments are not allowed.
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    \normalfont B\kern-0.5em{\scshape i\kern-0.25em b}\kern-0.8em\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmcopyright}
+\copyrightyear{}
+\acmYear{}
+\acmDOI{}
+
+
+%%
+%% These commands are for a JOURNAL article.
+\acmJournal{}
+\acmVolume{}
+\acmNumber{}
+\acmArticle{}
+\acmMonth{}
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+
+\usepackage{todonotes}
+\usepackage{xspace}
+
+
+\newcommand{\todonote}[1]{\todo[inline, color=blue!20]{\textbf{TODO:} #1}}
+\newcommand{\sectionword}{section}
+\newcommand{\eqdef}{\overset{\mathrm{def}}{=}}
+
+\newcommand{\substupd}[3]{#1[#2 \mapsto #3]}
+
+\newcommand{\taskst}[2]{\langle #1 ,\, #2 \rangle}
+\newcommand{\mkenv}[2]{(#1 ,\, #2)}
+\newcommand{\unigoal}[2]{#1 \equiv #2}
+\newcommand{\conjgoal}[2]{#1 \land #2}
+\newcommand{\disjgoal}[2]{#1 \lor #2}
+\newcommand{\freshgoal}[2]{\texttt{fresh} \, #1.\; #2}
+\newcommand{\invokegoal}[3]{#1(#2, \, \dots, \, #3)}
+
+\newcommand{\lazystream}[1]{\texttt{Lazy [{#1}]}}
+\newcommand{\consstream}[2]{\texttt{Cons #1 [{#2}]}}
+
+\newcommand{\tra}[1]{\mathcal{T}r^{ans}(#1)}
+\newcommand{\trs}[1]{\mathcal{T}r^{st}(#1)}
+
+\newcommand{\expranalog}[1]{E(#1)}
+
+\newcommand{\mK}{miniKanren\xspace}
+
+\newcommand{\lookuptime}[1]{\texttt{lookup}(#1)}
+\newcommand{\addtime}[1]{\texttt{add}(#1)}
+\renewcommand{\O}{\mathcal{O}}
+
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title{Time Complexity Analysis for \mK}
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research.
+\author{Dmitry Rozplokhas}
+\email{rozplokhas@gmail.com}
+\author{Dmitry Boulytchev}
+\email{dboulytchev@math.spbu.ru}
+\affiliation{%
+  \institution{Saint Petersburg State University and JetBrains Research}
+  \country{Russia}
+}
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+%\renewcommand{\shortauthors}{Trovato and Tobin, et al.}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+  Abstract
+\end{abstract}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below.
+%%
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10011007.10011006.10011008.10011009.10011015</concept_id>
+<concept_desc>Software and its engineering~Constraint and logic languages</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10011007.10010940.10011003.10011002</concept_id>
+<concept_desc>Software and its engineering~Software performance</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Software and its engineering~Constraint and logic languages}
+\ccsdesc[500]{Software and its engineering~Software performance}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\keywords{miniKanren, time complexity, interleaving search, triangular substitution, symbolic execution}
+
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+
+\section{Introduction}
+
+\section{Background}
+
+\begin{itemize}
+    \item traces
+    \item lazy streams
+    \item current substitutions
+\end{itemize}
+
+\section{Scheduling Metric}
+
+It turns out that the operational semantics described in the previous section reflects the number of operations for scheduling quite precisely, so it can be used to estimate the scheduling time. In this section we define a specific metric in this semantics for this purpose, justify that it measures the scheduling time adequately and provide formulae to calculate this metric inductively for a given goal.
+
+As the first of approximation, the number of states in the trace for a given state can be taken. We denote it as follows (this metric is defined when the trace is finite).
+
+\[ d(s) \; \eqdef \; | \trs{s} |  \]
+
+To see how well it works as an approximation we need to establish the connection between states in the semantics and partially evaluated expressions that appear during the program execution. Each semantic state $s$ can be mapped naturally into a lazy expression $\expranalog{s}$ (in a generic functional language) that evaluates to the same sequence of answers, this mapping is shown in Fig.~\ref{fig:expression_analogue}. Moreover, since the rules for $\oplus$ are $\otimes$ in the semantics reflect precisely the implementation of \texttt{mplus} and \texttt{bind} in standard interleaving search, if we force the evaluation of an expression $\expranalog{s}$ for some state $s$ once, we will get the lazy expression for the next state in the trace (\lazystream{\expranalog{s'}} if $s \rightarrow s'$, or \consstream{$a$}{\expranalog{$s'$}} if $s \xrightarrow{a} s'$). According to this connection, the number of transitions in the trace from some state $s$ (which is $d(s) - 1$) is the length of the stream to which the expression $\expranalog{s}$ is evaluated (counting both \texttt{Cons} and \texttt{Lazy} constructors).
+
+\begin{figure}[t]
+\[
+\begin{array}{lcl}
+  \expranalog{\taskst{g}{e}} &=& \lazystream{$g$($e$)} \\
+  \expranalog{s_1 \oplus s_2} &=& \lazystream{mplus($\expranalog{s_1}$, $\expranalog{s_2}$)} \\
+  \expranalog{s \otimes g} &=& \lazystream{bind($\expranalog{s}$, $\expranalog{g}$)} \\ \\
+\end{array}
+\]
+  \caption{Expression analogues for semantic states}
+  \label{fig:expression_analogue}
+\end{figure}
+
+Now the question is, how much time each such unfolding of the lazy stream takes? It is easy to see from the semantics that both \texttt{mplus} and \texttt{bind} do a step recursively in the left argument and some constant constant number of basic operations on top of it, never going for the right argument. So, the time this descent through calls of \texttt{mplus} and \texttt{bind} takes is the depth of the leftmost branch of a current state up to a multiplicative constant. Then there is execution of some goal. It is either a unification, evaluation of which is explicitly excluded from the scheduling time, or one of four other types of goal, all of which generate some lazy stream in a constant time. Thus, the asymptotics of the scheduling time is given by the following \emph{scheduling metric} (in other words, if we have state $s$ parameterized by some parameter $n$, then $T_s(s(n))$ belongs to $\Theta(t(s(n)))$).
+
+\[ \begin{array}{ll}
+ & t(s) \eqdef \sum\limits_{s_i \in \trs{s}} lh(s_i) \\
+ \textit{where} & \\
+ & lh(\taskst{g}{e}) \eqdef 1 \\
+ & lh(s_1 \oplus s_2) \eqdef lh(s_1) + 1 \\
+ & lh(s \otimes g) \eqdef lh(s) + 1 \\
+\end{array} \]
+
+The number of semantic steps is closely connected with this new metric (as can be seen in the calculation method below) and bounds it. Since the height of a state might increase at most by $1$ at each step, the following is trivially true.
+
+\begin{lemma}
+For any state $s$, $d(s) \le t(s) \le d^2(s)$.
+\end{lemma}
+
+\begin{figure}[t]
+\[
+\begin{array}{lll}
+   d(\taskst{\unigoal{t_1}{t_2}}{e}) = 1 & t(\taskst{\unigoal{t_1}{t_2}}{e}) = 1 & \\
+   
+   d(\taskst{\disjgoal{g_1}{g_2}}{e}) = d(\taskst{g_1}{e} \oplus \taskst{g_2}{e}) + 1 & t(\taskst{\disjgoal{g_1}{g_2}}{e}) = t(\taskst{g_1}{e} \oplus \taskst{g_2}{e}) + 1 & \\
+   
+   d(\taskst{\conjgoal{g_1}{g_2}}{e}) = d(\taskst{g_1}{e} \otimes g_2) + 1 &
+   t(\taskst{\conjgoal{g_1}{g_2}}{e}) = t(\taskst{g_1}{e} \otimes g_2) + 1 & \\
+   
+   d(\taskst{\freshgoal{x}{g}}{e}) = d(\taskst{g}{e'}) + 1 &
+   t(\taskst{\freshgoal{x}{g}}{e}) = t(\taskst{g}{e'}) + 1 & \\
+   
+   d(\taskst{\invokegoal{r}{t_1}{t_k}}{e}) = d(\taskst{b}{e}) + 1 &
+   t(\taskst{\invokegoal{r}{t_1}{t_k}}{e}) = t(\taskst{b}{e}) + 1 & \\
+\end{array}
+\]
+\todonote{Explain $e'$ and $b$. Or just put the following instead of this figure.
+
+\begin{lemma}
+If $\taskst{g}{e} \rightarrow s'$ or $\taskst{g}{e} \xrightarrow{a} s'$ then $d(\taskst{g}{e}) = d(s') + 1$ and $t(\taskst{g}{e}) = t(s') + 1$.
+\end{lemma}}
+
+  \caption{Metric calculation for goal execution}
+  \label{fig:metric_calc_goals}
+\end{figure}
+
+With this formal definition we can calculate both metrics for a given state inductively, without building the whole trace. For a goal execution the metrics are given simply by incrementing the value of the result of the execution, see Fig.~\ref{fig:metric_calc_goals}. For sums and goals we can calculate the metrics by the following formulae.
+
+\begin{lemma}
+For any two states $s_1$ and $s_2$,
+
+\[ \begin{array}{l}
+d(s_1 \oplus s_2) = d(s_1) + d(s_2), \\
+d(s_1 \oplus s_2) = d(s_1) + d(s_2) + \min(2 d(s_1) - 1,\, 2 d(s_2)). \\
+\end{array} \]
+\end{lemma}
+
+\begin{lemma}
+For any state $s$ and any goal $g$,
+
+\[ \begin{array}{l}
+d(s \otimes g) = d(s) + \sum\limits_{a_i \in \tra{s}} d(\taskst{g}{a_i}), \\
+t(s \otimes g) = t(s) + d(s) + \sum\limits_{a_i \in \tra{s}} (t(\taskst{g}{a_i}) + \min(2 d(\taskst{g}{a_i}),\,2 (d(s) - d_{a_i}(s) + \sum\limits_{j > i} d(\taskst{g}{a_j}))) - 1), \\
+\end{array} \]
+
+where $d_{a_i}(s)$ is number of steps in the trace for state $s$ until the answer $a_i$ is produced.
+\end{lemma}
+
+The last exact equation is too cumbersome to use, so generally we will use some approximation of it. One option is to go with the fist argument of $\min$. It is a good approximation in a case when there are several answers passed to the second goal and there is none of them, scheduling time for which surpasses the scheduling time for all others combined.
+
+\begin{corollary}
+For any state $s$ and any goal $g$,
+\[ t(s \otimes g) \le t(s) + d(s) +  \sum\limits_{a_i \in \tra{s}} (t(\taskst{g}{a_i}) + 2 d(\taskst{g}{a_i}). \]
+\end{corollary}
+
+In the case when there is only one answer, however, we should rather go with the second argument of $\min$.
+
+\begin{corollary}
+For any state $s$ and any goal $g$, if $\tra{s} = \{a_1\}$, then
+\[ t(s \otimes g) \le t(s) + 3 d(s) + t(\taskst{g}{a_1}). \]
+\end{corollary}
+
+Finally, since we will calculate both metrics for some fixed program and we want an approximation up to a constant (which may depend on the structure of this program) we can derive a neat formulae for sequences of disjuncts and conjuncts that we will encounter.
+
+\begin{lemma}
+
+For $g = g_1 \lor \dots \lor g_k$ and any index $l$ from $1$ to $k$,
+
+\[ \begin{array}{l}
+d(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} d(\taskst{g_i}{e}), \\
+t(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} t(\taskst{g_i}{e}) + k \sum\limits_{\begin{array}{c}1 \le i \le k \\ i \ne l\end{array}} d(\taskst{g_i}{e}).
+\end{array} \]
+
+\end{lemma}
+
+\begin{lemma}
+
+If $g = g_1 \land \dots \land g_k$ and if we denote by $A_i$ the set of all answers that are passed to $g_i$ at some stage if we start with some initial environment $e$:
+
+\[ \begin{array}{l}
+A_1 = \{ e \} \\
+A_{i + 1} = \bigcup\limits_{a \in A_i} \tra{\taskst{g_i}{a}} \\
+\end{array} \]
+
+then
+
+\[ \begin{array}{l}
+d(\taskst{g}{e}) = \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} d(\taskst{g_i}{a}), \\
+t(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} t(\taskst{g_i}{a}) + C(k) \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} d(\taskst{g_i}{a}), \\
+\end{array} \]
+
+Where $C(k)$ is a constant depending only on $k$.
+
+And in the case when all $A_i$ contain only one answer
+
+\[ t(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} t(\taskst{g_i}{a}) + C(k) \sum\limits_{1 \le i \le k - 1} \;\; \sum\limits_{a \in A_i} d(\taskst{g_i}{a}). \]
+
+\end{lemma}
+
+\section{Unification and Reification Complexity}
+
+Syntactic unification of terms is a core operation in logic programming. The performance of the  conventional unification algorithm is hard to analyse in general case due to its non-trivial recursion scheme. The time can be exponential of initial terms size in the worst case. However, for the most practical cases met in logic programming the time of any unification during program execution is linear or even constant of the size of the input. So the inner workings of unification are often neglected when estimating performance of programs.
+
+\mK has a distinctive way of implementing unification fit in accordance with its ideology. Firstly, since \mK aims at purely functional implementation of an embedded logical language it uses a triangular form of substitutions~\cite{UnificationTheory} which allows simple extension in a non-mutable fashion. Such substitution are lazy in a sense that they keep a particularly substituted value for each variable, so to obtain a fully substituted value it may be necessary to apply a substitution a number of times. In particular, we need the full cycle of applying substitution in the end of search to get the result for a querried variable, this process is called \emph{reification}. \mK uses the conventional Robinson's algorithm for unification~\cite{UnificationTheory}, adjusted for triangular substitutions~\cite{TRS}. Secondly, since \mK commits to adhere to logical consistency, by default it always performs occurs checks during the unification. Occurs check is a test of existance of cicles in the added binding and it is necessary for the correctness of the result of unification. But it is very costly in terms of performance and rarely violated, so some logical languages (such as Prolog) omit it, while \mk does not.
+
+In this section we show how in \mK the time of unification can be taken into account easily and compared to the scheduling time in many practical cases. Specifically, we identify two tests on relational programs, which can be checked dynamically, under which every unification in the program performs a constant number of basic operations, excluding occurs checks. At the same time the occurs checks, which can be estimated separately, add a significant overhead to the time of execution and often increase time complexity of the program. A number of programs satisfying the given tests and showing the impact of occurs check are listed in the \sectionword~\ref{sec:evaluation}.
+
+The actual time of unification depends on a concrete choice of a data structure to represent triangular substitutions (which are maps from integers to terms). So we will estimate complexity parameterized by basic operations performed on substitutions during the program execution: we denote by $\lookuptime{\sigma}$ and $\addtime{\sigma}$ the worst time complexity of lookup and add operations (depending on a substitution $\sigma$ in some point of execution). The obvious candidate data structure is standard library maps for a given language (and many implementations like fasterKanren and OCanren use them) and they have logarithmic complexity for both operations, so we expect this multipliers to be negligible. However, some implementation like microKanren may use associative list for simplicity of presentation (which have linear-time lookup and constant-time addition) or more comple data structures like random-access lists (which have log-time lookup and average constant-time addition) so we keep this parametriezation for the general case. The review of performance of different date structures for triangular substitutions is given by~\citet{SubstDataStructs}.
+
+The basic building block of the unification with triangular substitution is a walk operation. This operation checks whether a given variable is mapped by a given substitution to a term with a constructor on the top level. To do it we need to look up the binding in the substitution and the map and then continue to do so while we get a variable as a binding (since triangular substitution may contain only partially substituted bindings), then we get either a term with a constructor on the top level or a variable unbound by substitution in the end. This operation may diverge if there is a cycle on variables, but this never happens in miniKanren, the substitutions are always consistent in this sense~\cite{NominalUnificationWithTriangularSubstitutions}. Nevertheless walk can require up to linear time (depending on the size of substitution) of lookups. However the variable-to-variable bindings occur rarely in practise and usually walk finds the required binding in one step. We can take the absence of variable-to-variable bindings as our first practical test: for \emph{flat} substitutions (substitutions without such bindings) walk always takes only one lookup. But we make it less restrictive and allow a constant number of variable-to-variable bindings for cases when the input of the program contain some logical variables that a bound by other intermidiate logical variables during the program execution.
+
+\begin{definition}
+The substitution is called \emph{constantly flat} if the number variable-to-variable bindings in it does not depend on the parameter in the input.
+\end{definition}
+
+
+\begin{lemma}
+If during the evalution of a relation in \mK all current substitutions are constantly flat, then the time of any walk during that evaluation on substitution $\sigma$ is $\O(\lookuptime{\sigma})$.
+\end{lemma}
+
+The unification of two terms goes by the standard recursive descent. Each time it meets a variable walk is performed, and if it ends up on a variable unbound by substitution the occurs check is performed and the substitution is extended if it is passed. The substitution grows during the process, so the unified terms grow too and the descent can go beyond the size of initial terms. But we argue that this happens not that often. For example, for a linear case (when any variable occurs in terms at most once) the extensions of the substitution during the unification do not affect the unification in other branches, so the descent will stop at the minimal depth of two terms. 
+
+\begin{lemma}
+For a unification of two terms $t_1$ and $t_2$ with a current substitution $\sigma$, which is constantly flat, if any variable occurs at most once in at most one of the terms $\{ t_1 \sigma, t_2 \sigma \}$, then the time this unification takes, excluding occurs checks, is $\O(\min(|t_1 \sigma|, |t_2 \sigma|) \cdot (\lookuptime{\sigma} + \addtime{\sigma}))$.
+\end{lemma}
+
+In particular, if the size of one of those two terms does not depend on the input (which is usually the case) the unification performs a constant number of basic operation. This is our second practical criterion: linearity and constant size of one the terms in every unification.
+
+In the presence of the occurs checks checks, however, we need to also go through the every term we add in the substitution. This changes $\min$ in the estimation above to $\max$, which makes the huge difference. Roughly speaking, in average the number of basic operations for every unification with occurs checks is approximately an average size of all terms unified in program (which is usually linear of the input). Therefore occurs checks add a huge time overhead for program execution in \mK, both for asymptotics (see \sectionword\~\ref{sec:evaluation}) and for actual time~\cite{WillThesis}. This fact calls for an investigation into ways of going around occurs checks in \mK. Although simply omitting them is not an option for \mK, there are other known approaches (mostly explored for Prolog), for example static tests insuring that occurs checks for a given program will never be violated~\cite{OccursCheckStaticTest}. As far as we know, for now there are no such solutions adopted for \mK.
+
+For now, as we estimate the time of every individual unification it might be not clear how it relates to the metrics for the scheduling time. But since we consider cases in which unification is relatively fast (constant number of basic operations), the number of unifications during an execution plays more important role and it can be simply limited by the number of semantics steps $d(s_{init}(n))$ (because every unification is a separate step in the semantics). Similarly, although the time of basic operations depends on size of substitution in different points of execution, logical variables for these bindings come either from the input (where there are usually a constant number of them) or from a fresh variable allocations during the evalutation (each of which is a a separate step in the semantics). So the number of allocated logic variables (and therefore the maximum possible number of bindings) is limited by $FV(input(n)) + d(s_{init}(n))$. So, for example, for a usual case, when our practical tests are satisfied and the input contains a constant number of logic variables, for a standard implementation and without occurs checks the total time of unifications $T_u$ will be $\O(d(s_{init}(n)) \log d(s_{init}(n)))$.
+
+The time of reification $T_r$ can be estimated in the same way, since reification simply goes through the resulting term similarly to occur check. So in the case when the resulting substitution is constantly flat, the number of basic operations for the reification will be limited by the size of the output (multiplied by a constant). This time is usually subdued by the time of unification and scheduling, but not always (see examples in \sectionword~\ref{sec:evaluation}).
+
+
+
+
+\section{Analysis via symbolic execution schemes}
+
+\section{Evaluation}
+\label{sec:evaluation}
+
+% \section{Related Works}
+
+\section{Conclusion}
+
+
+%%
+%% The acknowledgments section is defined using the "acks" environment
+%% (and NOT an unnumbered section). This ensures the proper
+%% identification of the section in the article metadata, and the
+%% consistent spelling of the heading.
+\begin{acks}
+
+\end{acks}
+
+%%
+%% The next two lines define the bibliography style to be used, and
+%% the bibliography file.
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sample-base}
+
+%%
+%% If your work has an appendix, this is the place to put it.
+\appendix
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-acmlarge.tex'.
