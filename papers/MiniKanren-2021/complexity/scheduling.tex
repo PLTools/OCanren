@@ -1,0 +1,141 @@
+\section{Scheduling Complexity}
+\label{sec:scheduling}
+
+We may observe that the operational semantics described in the previous section can be used to calculate the number of elementary scheduling steps.
+In this section we define a specific value which estimates the scheduling time and give some formulae to calculate this value for a given \emph{semantic
+state}. However, our ultimate goal is to provide a way to deduce the complexity factor for a \emph{syntactic goal}. This problem will be addressed in
+Section~\ref{which}, which will make use of recurrent formulae presented here.
+
+We also restrict our considerations only by the case when the evaluation of a goal in question delivers a final number of answers. Indeed,
+if the number of answers is infinite, no reasonable complexity estimation can be specified. A much more interesting question would be
+the complexity estimation for coming up with some \emph{specific} answer; however for now this problem seems to be too hard to
+tackle.
+
+Our first idea is to take the number of states $d\,(s)$ in the \emph{finite} trace for a given state $s$:
+
+\[ d\,(s) \; \eqdef \; | \trs{s} |  \]
+
+However, it turns out, that this value alone in not enough to provide an accurate scheduling complexity estimation. The reason is that some
+elementary steps in the semantics are not elementary in existing implementations. Namely, a careful analysis of the semantics discovers that
+it involves a navigation to the leftmost leaf of the state, which in implementation corresponds to a number of
+steps, proportional to the length of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$, and
+assess its adequacy in Section~\ref{adequacy}:
+
+\[
+t\,(s) \eqdef \sum\limits_{s_i \in \trs{s}} lh\,(s_i) 
+\]
+
+where
+
+\[
+\begin{array}{rcl}
+ lh\,(\taskst{g}{e})  &\eqdef& 1 \\
+ lh\,(s_1 \oplus s_2) &\eqdef& lh\,(s_1) + 1 \\
+ lh\,(s \otimes g)    &\eqdef& lh\,(s) + 1 \\
+\end{array}
+\]
+
+\begin{lemma}
+  For any state $s$
+
+  \[
+  d\,(s) \le t(s) \le d^2\,(s)
+  \]
+  
+\end{lemma}
+
+\begin{lemma}
+  If
+
+  \[\taskst{g}{e} \rightarrow s^\prime\]
+
+  or
+
+  \[\taskst{g}{e} \xrightarrow{a} s^\prime\]
+
+  then
+
+  \[d\,(\taskst{g}{e}) = d\,(s^\prime) + 1\]
+
+  and
+
+  \[t\,(\taskst{g}{e}) = t\,(s^\prime) + 1\]
+\end{lemma}
+
+\begin{lemma}
+For any two states $s_1$ and $s_2$
+
+\[
+\begin{array}{rcl}
+  d\,(s_1 \oplus s_2) &=& d\,(s_1) + d\,(s_2) \\
+  d\,(s_1 \oplus s_2) &=& d\,(s_1) + d\,(s_2) + \min\,\{2\times d\,(s_1) - 1,\, 2\times d\,(s_2)\} 
+\end{array}
+\]
+
+\end{lemma}
+
+\begin{lemma}
+For any state $s$ and any goal $g$
+
+\[
+\renewcommand{\arraystretch}{2}
+\begin{array}{rclc}
+  d\,(s \otimes g) &=& d\,(s)                                                      & + \\
+                   & & \displaystyle\sum\limits_{a_i \in \tra{s}} d\,(\taskst{g}{a_i}) & \\
+t\,(s \otimes g) &=& t\,(s) + d\,(s) + \displaystyle\sum\limits_{a_i \in \tra{s}} (t\,(\taskst{g}{a_i}) + \min\,\{2\times d\,(\taskst{g}{a_i}),\,2\times (d\,(s) - d_{a_i}\,(s) + \displaystyle\sum\limits_{j > i} d\,(\taskst{g}{a_j}))\} - 1) &
+\end{array}
+\]
+
+where $d_{a_i}(s)$ is number of steps in the trace for state $s$ until the answer $a_i$ is produced.
+\end{lemma}
+
+The last exact equation is too cumbersome to use, so generally we will use some approximation of it. One option is to go with the fist argument of $\min$. It is a good approximation in a case when there are several answers passed to the second goal and there is none of them, scheduling time for which surpasses the scheduling time for all others combined.
+
+\begin{corollary}
+For any state $s$ and any goal $g$,
+\[ t(s \otimes g) \le t(s) + d(s) +  \sum\limits_{a_i \in \tra{s}} (t(\taskst{g}{a_i}) + 2 d(\taskst{g}{a_i}). \]
+\end{corollary}
+
+In the case when there is only one answer, however, we should rather go with the second argument of $\min$.
+
+\begin{corollary}
+For any state $s$ and any goal $g$, if $\tra{s} = \{a_1\}$, then
+\[ t(s \otimes g) \le t(s) + 3 d(s) + t(\taskst{g}{a_1}). \]
+\end{corollary}
+
+Finally, since we will calculate both metrics for some fixed program and we want an approximation up to a constant (which may depend on the structure of this program) we can derive a neat formulae for sequences of disjuncts and conjuncts that we will encounter.
+
+\begin{lemma}
+
+For $g = g_1 \lor \dots \lor g_k$ and any index $l$ from $1$ to $k$,
+
+\[ \begin{array}{l}
+d(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} d(\taskst{g_i}{e}), \\
+t(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} t(\taskst{g_i}{e}) + k \sum\limits_{\begin{array}{c}1 \le i \le k \\ i \ne l\end{array}} d(\taskst{g_i}{e}).
+\end{array} \]
+
+\end{lemma}
+
+\begin{lemma}
+
+If $g = g_1 \land \dots \land g_k$ and if we denote by $A_i$ the set of all answers that are passed to $g_i$ at some stage if we start with some initial environment $e$:
+
+\[ \begin{array}{l}
+A_1 = \{ e \} \\
+A_{i + 1} = \bigcup\limits_{a \in A_i} \tra{\taskst{g_i}{a}} \\
+\end{array} \]
+
+then
+
+\[ \begin{array}{l}
+d(\taskst{g}{e}) = \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} d(\taskst{g_i}{a}), \\
+t(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} t(\taskst{g_i}{a}) + C(k) \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} d(\taskst{g_i}{a}), \\
+\end{array} \]
+
+Where $C(k)$ is a constant depending only on $k$.
+
+And in the case when all $A_i$ contain only one answer
+
+\[ t(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} t(\taskst{g_i}{a}) + C(k) \sum\limits_{1 \le i \le k - 1} \;\; \sum\limits_{a \in A_i} d(\taskst{g_i}{a}). \]
+
+\end{lemma}

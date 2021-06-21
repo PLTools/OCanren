@@ -95,8 +95,8 @@
 \newcommand{\unigoal}[2]{#1 \equiv #2}
 \newcommand{\conjgoal}[2]{#1 \land #2}
 \newcommand{\disjgoal}[2]{#1 \lor #2}
-\newcommand{\freshgoal}[2]{\texttt{fresh} \, #1.\; #2}
-\newcommand{\invokegoal}[3]{#1(#2, \, \dots, \, #3)}
+\newcommand{\freshgoal}[2]{\texttt{\underline {fresh}} \, #1\;.\; #2}
+\newcommand{\invokegoal}[3]{#1\,(#2, \, \dots, \, #3)}
 
 \newcommand{\lazystream}[1]{\texttt{Lazy [{#1}]}}
 \newcommand{\consstream}[2]{\texttt{Cons #1 [{#2}]}}
@@ -120,7 +120,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Time Complexity Analysis for \mK}
+\title{A Complexity Study for Interleaving Search}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -195,145 +195,7 @@
     \item current substitutions
 \end{itemize}
 
-\section{Scheduling Complexity}
-
-We may observe that the operational semantics described in the previous section reflects the number of elementary scheduling steps in a one-to-one manner.
-In this section we define a specific value which estimates the scheduling time and provide some formulae to calculate this value for a given goal.
-
-Our first idea is to take the number of states $d\,(s)$ in the \emph{finite} trace for a given state $s$:
-
-\[ d\,(s) \; \eqdef \; | \trs{s} |  \]
-
-To see how well it works as an approximation we need to establish the connection between states in the semantics and partially evaluated expressions that appear during the program execution. Each semantic state $s$ can be mapped naturally into a lazy expression $\expranalog{s}$ (in a generic functional language) that evaluates to the same sequence of answers, this mapping is shown in Fig.~\ref{fig:expression_analogue}. Moreover, since the rules for $\oplus$ are $\otimes$ in the semantics reflect precisely the implementation of \texttt{mplus} and \texttt{bind} in standard interleaving search, if we force the evaluation of an expression $\expranalog{s}$ for some state $s$ once, we will get the lazy expression for the next state in the trace (\lazystream{\expranalog{s'}} if $s \rightarrow s'$, or \consstream{$a$}{\expranalog{$s'$}} if $s \xrightarrow{a} s'$). According to this connection, the number of transitions in the trace from some state $s$ (which is $d(s) - 1$) is the length of the stream to which the expression $\expranalog{s}$ is evaluated (counting both \texttt{Cons} and \texttt{Lazy} constructors).
-
-\begin{figure}[t]
-\[
-\begin{array}{lcl}
-  \expranalog{\taskst{g}{e}} &=& \lazystream{$g$($e$)} \\
-  \expranalog{s_1 \oplus s_2} &=& \lazystream{mplus($\expranalog{s_1}$, $\expranalog{s_2}$)} \\
-  \expranalog{s \otimes g} &=& \lazystream{bind($\expranalog{s}$, $\expranalog{g}$)} \\ \\
-\end{array}
-\]
-  \caption{Expression analogues for semantic states}
-  \label{fig:expression_analogue}
-\end{figure}
-
-Now the question is, how much time each such unfolding of the lazy stream takes? It is easy to see from the semantics that both \texttt{mplus} and \texttt{bind} do a step recursively in the left argument and some constant constant number of basic operations on top of it, never going for the right argument. So, the time this descent through calls of \texttt{mplus} and \texttt{bind} takes is the depth of the leftmost branch of a current state up to a multiplicative constant. Then there is execution of some goal. It is either a unification, evaluation of which is explicitly excluded from the scheduling time, or one of four other types of goal, all of which generate some lazy stream in a constant time. Thus, the asymptotics of the scheduling time is given by the following \emph{scheduling metric} (in other words, if we have state $s$ parameterized by some parameter $n$, then $T_s(s(n))$ belongs to $\Theta(t(s(n)))$).
-
-\[ \begin{array}{ll}
- & t(s) \eqdef \sum\limits_{s_i \in \trs{s}} lh(s_i) \\
- \textit{where} & \\
- & lh(\taskst{g}{e}) \eqdef 1 \\
- & lh(s_1 \oplus s_2) \eqdef lh(s_1) + 1 \\
- & lh(s \otimes g) \eqdef lh(s) + 1 \\
-\end{array} \]
-
-The number of semantic steps is closely connected with this new metric (as can be seen in the calculation method below) and bounds it. Since the height of a state might increase at most by $1$ at each step, the following is trivially true.
-
-\begin{lemma}
-For any state $s$, $d(s) \le t(s) \le d^2(s)$.
-\end{lemma}
-
-\begin{figure}[t]
-\[
-\begin{array}{lll}
-   d(\taskst{\unigoal{t_1}{t_2}}{e}) = 1 & t(\taskst{\unigoal{t_1}{t_2}}{e}) = 1 & \\
-   
-   d(\taskst{\disjgoal{g_1}{g_2}}{e}) = d(\taskst{g_1}{e} \oplus \taskst{g_2}{e}) + 1 & t(\taskst{\disjgoal{g_1}{g_2}}{e}) = t(\taskst{g_1}{e} \oplus \taskst{g_2}{e}) + 1 & \\
-   
-   d(\taskst{\conjgoal{g_1}{g_2}}{e}) = d(\taskst{g_1}{e} \otimes g_2) + 1 &
-   t(\taskst{\conjgoal{g_1}{g_2}}{e}) = t(\taskst{g_1}{e} \otimes g_2) + 1 & \\
-   
-   d(\taskst{\freshgoal{x}{g}}{e}) = d(\taskst{g}{e'}) + 1 &
-   t(\taskst{\freshgoal{x}{g}}{e}) = t(\taskst{g}{e'}) + 1 & \\
-   
-   d(\taskst{\invokegoal{r}{t_1}{t_k}}{e}) = d(\taskst{b}{e}) + 1 &
-   t(\taskst{\invokegoal{r}{t_1}{t_k}}{e}) = t(\taskst{b}{e}) + 1 & \\
-\end{array}
-\]
-
-\todonote{Explain $e'$ and $b$. Or just put the following instead of this figure}.
-
-\begin{lemma}
-If $\taskst{g}{e} \rightarrow s'$ or $\taskst{g}{e} \xrightarrow{a} s'$ then $d(\taskst{g}{e}) = d(s') + 1$ and $t(\taskst{g}{e}) = t(s') + 1$.
-\end{lemma}
-
-  \caption{Metric calculation for goal execution}
-  \label{fig:metric_calc_goals}
-\end{figure}
-
-With this formal definition we can calculate both metrics for a given state inductively, without building the whole trace. For a goal execution the metrics are given simply by incrementing the value of the result of the execution, see Fig.~\ref{fig:metric_calc_goals}. For sums and goals we can calculate the metrics by the following formulae.
-
-\begin{lemma}
-For any two states $s_1$ and $s_2$,
-
-\[ \begin{array}{l}
-d(s_1 \oplus s_2) = d(s_1) + d(s_2), \\
-d(s_1 \oplus s_2) = d(s_1) + d(s_2) + \min(2 d(s_1) - 1,\, 2 d(s_2)). \\
-\end{array} \]
-\end{lemma}
-
-\begin{lemma}
-For any state $s$ and any goal $g$,
-
-\[ \begin{array}{l}
-d(s \otimes g) = d(s) + \sum\limits_{a_i \in \tra{s}} d(\taskst{g}{a_i}), \\
-t(s \otimes g) = t(s) + d(s) + \sum\limits_{a_i \in \tra{s}} (t(\taskst{g}{a_i}) + \min(2 d(\taskst{g}{a_i}),\,2 (d(s) - d_{a_i}(s) + \sum\limits_{j > i} d(\taskst{g}{a_j}))) - 1), \\
-\end{array} \]
-
-where $d_{a_i}(s)$ is number of steps in the trace for state $s$ until the answer $a_i$ is produced.
-\end{lemma}
-
-The last exact equation is too cumbersome to use, so generally we will use some approximation of it. One option is to go with the fist argument of $\min$. It is a good approximation in a case when there are several answers passed to the second goal and there is none of them, scheduling time for which surpasses the scheduling time for all others combined.
-
-\begin{corollary}
-For any state $s$ and any goal $g$,
-\[ t(s \otimes g) \le t(s) + d(s) +  \sum\limits_{a_i \in \tra{s}} (t(\taskst{g}{a_i}) + 2 d(\taskst{g}{a_i}). \]
-\end{corollary}
-
-In the case when there is only one answer, however, we should rather go with the second argument of $\min$.
-
-\begin{corollary}
-For any state $s$ and any goal $g$, if $\tra{s} = \{a_1\}$, then
-\[ t(s \otimes g) \le t(s) + 3 d(s) + t(\taskst{g}{a_1}). \]
-\end{corollary}
-
-Finally, since we will calculate both metrics for some fixed program and we want an approximation up to a constant (which may depend on the structure of this program) we can derive a neat formulae for sequences of disjuncts and conjuncts that we will encounter.
-
-\begin{lemma}
-
-For $g = g_1 \lor \dots \lor g_k$ and any index $l$ from $1$ to $k$,
-
-\[ \begin{array}{l}
-d(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} d(\taskst{g_i}{e}), \\
-t(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} t(\taskst{g_i}{e}) + k \sum\limits_{\begin{array}{c}1 \le i \le k \\ i \ne l\end{array}} d(\taskst{g_i}{e}).
-\end{array} \]
-
-\end{lemma}
-
-\begin{lemma}
-
-If $g = g_1 \land \dots \land g_k$ and if we denote by $A_i$ the set of all answers that are passed to $g_i$ at some stage if we start with some initial environment $e$:
-
-\[ \begin{array}{l}
-A_1 = \{ e \} \\
-A_{i + 1} = \bigcup\limits_{a \in A_i} \tra{\taskst{g_i}{a}} \\
-\end{array} \]
-
-then
-
-\[ \begin{array}{l}
-d(\taskst{g}{e}) = \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} d(\taskst{g_i}{a}), \\
-t(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} t(\taskst{g_i}{a}) + C(k) \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} d(\taskst{g_i}{a}), \\
-\end{array} \]
-
-Where $C(k)$ is a constant depending only on $k$.
-
-And in the case when all $A_i$ contain only one answer
-
-\[ t(\taskst{g}{e}) \le \sum\limits_{1 \le i \le k} \;\; \sum\limits_{a \in A_i} t(\taskst{g_i}{a}) + C(k) \sum\limits_{1 \le i \le k - 1} \;\; \sum\limits_{a \in A_i} d(\taskst{g_i}{a}). \]
-
-\end{lemma}
+\input{scheduling}
 
 \section{Unification and Reification Complexity}
 
