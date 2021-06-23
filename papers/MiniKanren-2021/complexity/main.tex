@@ -82,11 +82,16 @@
 
 \usepackage{todonotes}
 \usepackage{xspace}
+\usepackage{listings}
+\usepackage[all]{xy}
 
 
 \newcommand{\todonote}[1]{\todo[inline, color=blue!20]{\textbf{TODO:} #1}}
 \newcommand{\sectionword}{section}
+\newcommand{\figureword}{Fig.}
 \newcommand{\eqdef}{\overset{\mathrm{def}}{=}}
+\newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
+\newcommand{\bigslant}[2]{{\raisebox{.2em}{$#1$}\left/\raisebox{-.2em}{$#2$}\right.}}
 
 \newcommand{\substupd}[3]{#1[#2 \mapsto #3]}
 
@@ -111,6 +116,41 @@
 \newcommand{\lookuptime}[1]{\texttt{lookup}(#1)}
 \newcommand{\addtime}[1]{\texttt{add}(#1)}
 \renewcommand{\O}{\mathcal{O}}
+
+
+%% Listings
+
+\lstdefinelanguage{minikanren}{
+keywords={fresh},
+sensitive=true,
+commentstyle=\small\itshape\ttfamily,
+keywordstyle=\textbf,
+identifierstyle=\ttfamily,
+basewidth={0.5em,0.5em},
+columns=fixed,
+fontadjust=true,
+literate={fun}{{$\lambda\;\;$}}1 {->}{{$\to$}}3 {===}{{$\,\equiv\,$}}1 {=/=}{{$\not\equiv$}}1 {|>}{{$\triangleright$}}3 {/\\}{{$\wedge$}}2 {\\/}{{$\vee$}}2,
+morecomment=[s]{(*}{*)}
+}
+
+\lstset{
+mathescape=true,
+language=minikanren
+}
+
+\usepackage{letltxmacro}
+\newcommand*{\SavedLstInline}{}
+\LetLtxMacro\SavedLstInline\lstinline
+\DeclareRobustCommand*{\lstinline}{%
+  \ifmmode
+    \let\SavedBGroup\bgroup
+    \def\bgroup{%
+      \let\bgroup\SavedBGroup
+      \hbox\bgroup
+    }%
+  \fi
+  \SavedLstInline
+}
 
 
 %%
@@ -187,13 +227,7 @@
 
 \section{Introduction}
 
-\section{Background}
-
-\begin{itemize}
-    \item traces
-    \item lazy streams
-    \item current substitutions
-\end{itemize}
+\input{background}
 
 \input{scheduling}
 
@@ -232,10 +266,7 @@ For now, as we estimate the time of every individual unification it might be not
 
 The time of reification $T_r$ can be estimated in the same way, since reification simply goes through the resulting term similarly to occur check. So in the case when the resulting substitution is constantly flat, the number of basic operations for the reification will be limited by the size of the output (multiplied by a constant). This time is usually subdued by the time of unification and scheduling, but not always (see examples in \sectionword~\ref{sec:evaluation}).
 
-
-
-
-\section{Analysis via symbolic execution schemes}
+\input{symbolic_schemes}
 
 \section{Evaluation}
 \label{sec:evaluation}
