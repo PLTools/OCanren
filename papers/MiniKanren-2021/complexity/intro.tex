@@ -1,0 +1,45 @@
+\section{Introduction}
+
+Despite its simple implementation, the search in \mK has a lot of different aspects affecting the performance which are hard to think about intuitively altogether. It is easy to overlook some of them and then behavior of the search in certain cases can be really surprising.
+
+\begin{figure}[t]
+\begin{lstlisting}
+   length$^o$ = fun a n ->
+     ((a === Nil) /\ (n === O)) \/
+     (fresh (h t n')
+        (a === Cons(h, t)) /\
+        (n === S(n')) /\
+        (length$^o$ l' n'))
+     )
+\end{lstlisting}
+
+\begin{lstlisting}
+   length$_d^o$ = fun a n ->
+     ((a === Nil) /\ (n === O)) \/
+     (fresh (h t n')
+        (a === Cons(h, t)) /\
+        (length$_d^o$ l' n') /\
+        (n === S(n')))
+     )
+\end{lstlisting}
+
+\caption{Example of two implementations of the length calculating relation}
+\label{fig:length_implementations}
+\end{figure}
+
+\begin{figure}[t]
+    \includegraphics[width=10cm,height=8cm]{lengths_without_oc.png}
+    \includegraphics[width=10cm,height=8cm]{lengths_with_oc.png}
+  \caption{Comparative time of the search for the relations \lstinline|length$^o$| (purple) and \lstinline|length$_d^o$|} (green).
+  Top: occurs checks are performed.
+  Bottom: occurs checks are not performed.
+  \label{fig:length_plots}
+\end{figure}
+
+Consider the two implementations of a standard recursive relation calculating the length of a list from \figureword~\ref{fig:length_implementations}. They differ only in orders in conjunctions. Although the \lstinline|length$_d^o$| relation can be seen as a more direct definition of a function as a relation (all steps of usual length evaluation written up in order), it is well-known that the \lstinline|length$^o$| with the recursive call in the end is much faster when running this relation backward (in fact, the search will diverge if we run \lstinline|length$_d^o$| bacward, while for \lstinline|length$^o$| it terminates). What is less known and what we find more unexpected is the fact that if we run both relation forward (specifying the list and asking for the length) \lstinline|length$^o$| is still much faster than \lstinline|length$_d^o$|, although they perform the same number of unifications (actually during the evaluation of \lstinline|length$^o$| unified terms are bigger). You can see comparative time of the search in \figureword~\ref{fig:length_plots}. The difference is even more staggering if we do not perform occurs checks in unifications (for simple queries like this occurs checks are never violated), in the same \figureword~\ref{fig:length_plots} you can see that the time even grows differently in this case: it is linear for \lstinline|length$^o$| and quadratic for \lstinline|length$_d^o$|.
+
+After investigating the execution for this example in detail we found that the difference is caused not by unifications but by the process of \emph{scheduling} goals during the search. During the execution of a program in \mK a lazy structure is build that decomposes the goals into unifications, performs these unifications in a special order and passes the results appropriately. In our example this structure becomes linear in size just because of the order in conjunctions (when the recursive call is not the last) and increases the time of scheduling significantly. This kind of effects is hard to predict and measure without a formal model for performance in \mK.
+
+This paper presents such a model. We state that the total time of the search in \mK breaks into three separate parts: the time of scheduling that breaks the evaluation into a sequence of unifications, the time required to perform these unifications, and the time of reifications that transform the result in the correct form in the end. The time of unifications can be further divided into the time of occurs checks during the unification and the time of the rest of the unification algorithm (this division will help to see how big is the part of the total time that occurs check, which often can be ommited, take). So the total time of the search can be presented as a sum of four components: \[ T = T_s + T_{uni} + T_{occ} + T_r \]
+
+We show how these components can be estimated and compared with each other in terms of asymptotics. The scheduling time complexity can be measured precisely since we link it to a specific value we call \emph{scheduling factor}, which is defined in terms of existing formal semantics of \mK (we recall existing formal descriptions of \mK in \sectionword~\ref{sec:background}) and can be calculated by a number of formulae  (\sectionword~\ref{sec:scheduling}). The other time components are hard to estimate precisely in general, as they are connected with unification process, but we identify two practical tests that determine a wide range of cases for which these time components can be estimated easily (\sectionword~\ref{sec:unification}). These separate methods for estimation of different components of time of the search can be put together in one algorithm calculating the time complexity of a given query to a recursive relation (if this query passes the descibed practical criterions) using principles of symbolic execution (\sectionword~\ref{sec:symbolic}). We then show the applicability of our method by using it for time analysis for a number of standard \mK relations (\sectionword~\ref{sec:evaluation}).
