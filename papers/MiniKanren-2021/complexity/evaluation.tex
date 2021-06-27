@@ -98,7 +98,7 @@ the intended one.
 \end{figure}
 
 To check how well our estimates correspond to the reality we implemented a simple embedding of \mK into \textsc{OCaml} and measured the time of the search for the example queries,
-building graphs for the time vs. parameters in the estimated complexity (distinct plot for each parameter).~\footnote{The implementation and the results of the measuring can be found at \color{red}{\url{TODO}}} The referenced embedding follows the standard \textsc{microKanren} implementation but with standard library maps for substitutions and with possibility to switch occurs check on and off.
+building graphs for the time vs. parameters in the estimated complexity (distinct plot for each parameter).~\footnote{The implementation and the results of the measuring can be found at \url{https://github.com/mK-complexity/mK-complexity}} The referenced embedding follows the standard \textsc{microKanren} implementation but with standard library maps for substitutions and with possibility to switch occurs check on and off.
 For time measuring we used standard \textsc{OCaml} library \textsc{benchmark}. The precision we were able to achieve is rather limited, so the plots are not always smooth and can have
 deviations (especially for small sizes of the input), but the overall trend is usually clear. Because of the problems with precision, for now we are able to adequately measure only the total
 time of the search, with or without occurs check, so we are basically verifying only the \figureword~\ref{fig:examples_total_times}. 

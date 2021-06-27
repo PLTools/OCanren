@@ -1,1641 +1,652 @@
-
-% Journals
-
-% First the Full Name is given, then the abbreviation used in the AMS Math
-% Reviews, with an indication if it could not be found there.
-% Note the 2nd overwrites the 1st, so swap them if you want the full name.
-
- %{AMS}
- @String{AMSTrans = "American Mathematical Society Translations" }
- @String{AMSTrans = "Amer. Math. Soc. Transl." }
- @String{BullAMS = "Bulletin of the American Mathematical Society" }
- @String{BullAMS = "Bull. Amer. Math. Soc." }
- @String{ProcAMS = "Proceedings of the American Mathematical Society" }
- @String{ProcAMS = "Proc. Amer. Math. Soc." }
- @String{TransAMS = "Transactions of the American Mathematical Society" }
- @String{TransAMS = "Trans. Amer. Math. Soc." }
-
- %ACM
- @String{CACM = "Communications of the {ACM}" }
- @String{CACM = "Commun. {ACM}" }
- @String{CompServ = "Comput. Surveys" }
- @String{JACM = "J. ACM" }
- @String{ACMMathSoft = "{ACM} Transactions on Mathematical Software" }
- @String{ACMMathSoft = "{ACM} Trans. Math. Software" }
- @String{SIGNUM = "{ACM} {SIGNUM} Newsletter" }
- @String{SIGNUM = "{ACM} {SIGNUM} Newslett." }
-
- @String{AmerSocio = "American Journal of Sociology" }
- @String{AmerStatAssoc = "Journal of the American Statistical Association" }
- @String{AmerStatAssoc = "J. Amer. Statist. Assoc." }
- @String{ApplMathComp = "Applied Mathematics and Computation" }
- @String{ApplMathComp = "Appl. Math. Comput." }
- @String{AmerMathMonthly = "American Mathematical Monthly" }
- @String{AmerMathMonthly = "Amer. Math. Monthly" }
- @String{BIT = "{BIT}" }
- @String{BritStatPsych = "British Journal of Mathematical and Statistical
-          Psychology" }
- @String{BritStatPsych = "Brit. J. Math. Statist. Psych." }
- @String{CanMathBull = "Canadian Mathematical Bulletin" }
- @String{CanMathBull = "Canad. Math. Bull." }
- @String{CompApplMath = "Journal of Computational and Applied Mathematics" }
- @String{CompApplMath = "J. Comput. Appl. Math." }
- @String{CompPhys = "Journal of Computational Physics" }
- @String{CompPhys = "J. Comput. Phys." }
- @String{CompStruct = "Computers and Structures" }
- @String{CompStruct = "Comput. \& Structures" }
- @String{CompJour = "The Computer Journal" }
- @String{CompJour = "Comput. J." }
- @String{CompSysSci = "Journal of Computer and System Sciences" }
- @String{CompSysSci = "J. Comput. System Sci." }
- @String{Computing = "Computing" }
- @String{ContempMath = "Contemporary Mathematics" }
- @String{ContempMath = "Contemp. Math." }
- @String{Crelle = "Crelle's Journal" }
- @String{GiornaleMath = "Giornale di Mathematiche" }
- @String{GiornaleMath = "Giorn. Mat." } % didn't find in AMS MR., ibid.
-
- %IEEE
- @String{Computer = "{IEEE} Computer" }
- @String{IEEETransComp = "{IEEE} Transactions on Computers" }
- @String{IEEETransComp = "{IEEE} Trans. Comput." }
- @String{IEEETransAC = "{IEEE} Transactions on Automatic Control" }
- @String{IEEETransAC = "{IEEE} Trans. Automat. Control" }
- @String{IEEESpec = "{IEEE} Spectrum" } % didn't find in AMS MR
- @String{ProcIEEE = "Proceedings of the {IEEE}" }
- @String{ProcIEEE = "Proc. {IEEE}" } % didn't find in AMS MR
- @String{IEEETransAeroElec = "{IEEE} Transactions on Aerospace and Electronic
-     Systems" }
- @String{IEEETransAeroElec = "{IEEE} Trans. Aerospace Electron. Systems" }
-
- @String{IMANumerAna = "{IMA} Journal of Numerical Analysis" }
- @String{IMANumerAna = "{IMA} J. Numer. Anal." }
- @String{InfProcLet = "Information Processing Letters" }
- @String{InfProcLet = "Inform. Process. Lett." }
- @String{InstMathApp = "Journal of the Institute of Mathematics and
-     its Applications" }
- @String{InstMathApp = "J. Inst. Math. Appl." }
- @String{IntControl = "International Journal of Control" }
- @String{IntControl = "Internat. J. Control" }
- @String{IntNumerEng = "International Journal for Numerical Methods in
-     Engineering" }
- @String{IntNumerEng = "Internat. J. Numer. Methods Engrg." }
- @String{IntSuper = "International Journal of Supercomputing Applications" }
- @String{IntSuper = "Internat. J. Supercomputing Applic." } % didn't find
-%% in AMS MR
- @String{Kibernetika = "Kibernetika" }
- @String{JResNatBurStand = "Journal of Research of the National Bureau
-     of Standards" }
- @String{JResNatBurStand = "J. Res. Nat. Bur. Standards" }
- @String{LinAlgApp = "Linear Algebra and its Applications" }
- @String{LinAlgApp = "Linear Algebra Appl." }
- @String{MathAnaAppl = "Journal of Mathematical Analysis and Applications" }
- @String{MathAnaAppl = "J. Math. Anal. Appl." }
- @String{MathAnnalen = "Mathematische Annalen" }
- @String{MathAnnalen = "Math. Ann." }
- @String{MathPhys = "Journal of Mathematical Physics" }
- @String{MathPhys = "J. Math. Phys." }
- @String{MathComp = "Mathematics of Computation" }
- @String{MathComp = "Math. Comp." }
- @String{MathScand = "Mathematica Scandinavica" }
- @String{MathScand = "Math. Scand." }
- @String{TablesAidsComp = "Mathematical Tables and Other Aids to Computation" }
- @String{TablesAidsComp = "Math. Tables Aids Comput." }
- @String{NumerMath = "Numerische Mathematik" }
- @String{NumerMath = "Numer. Math." }
- @String{PacificMath = "Pacific Journal of Mathematics" }
- @String{PacificMath = "Pacific J. Math." }
- @String{ParDistComp = "Journal of Parallel and Distributed Computing" }
- @String{ParDistComp = "J. Parallel and Distrib. Comput." } % didn't find
-%% in AMS MR
- @String{ParComputing = "Parallel Computing" }
- @String{ParComputing = "Parallel Comput." }
- @String{PhilMag = "Philosophical Magazine" }
- @String{PhilMag = "Philos. Mag." }
- @String{ProcNAS = "Proceedings of the National Academy of Sciences
-                    of the USA" }
- @String{ProcNAS = "Proc. Nat. Acad. Sci. U. S. A." }
- @String{Psychometrika = "Psychometrika" }
- @String{QuartMath = "Quarterly Journal of Mathematics, Oxford, Series (2)" }
- @String{QuartMath = "Quart. J. Math. Oxford Ser. (2)" }
- @String{QuartApplMath = "Quarterly of Applied Mathematics" }
- @String{QuartApplMath = "Quart. Appl. Math." }
- @String{RevueInstStat = "Review of the International Statisical Institute" }
- @String{RevueInstStat = "Rev. Inst. Internat. Statist." }
-
- %SIAM
- @String{JSIAM = "Journal of the Society for Industrial and Applied
-     Mathematics" }
- @String{JSIAM = "J. Soc. Indust. Appl. Math." }
- @String{JSIAMB = "Journal of the Society for Industrial and Applied
-     Mathematics, Series B, Numerical Analysis" }
- @String{JSIAMB = "J. Soc. Indust. Appl. Math. Ser. B Numer. Anal." }
- @String{SIAMAlgMeth = "{SIAM} Journal on Algebraic and Discrete Methods" }
- @String{SIAMAlgMeth = "{SIAM} J. Algebraic Discrete Methods" }
- @String{SIAMAppMath = "{SIAM} Journal on Applied Mathematics" }
- @String{SIAMAppMath = "{SIAM} J. Appl. Math." }
- @String{SIAMComp = "{SIAM} Journal on Computing" }
- @String{SIAMComp = "{SIAM} J. Comput." }
- @String{SIAMMatrix = "{SIAM} Journal on Matrix Analysis and Applications" }
- @String{SIAMMatrix = "{SIAM} J. Matrix Anal. Appl." }
- @String{SIAMNumAnal = "{SIAM} Journal on Numerical Analysis" }
- @String{SIAMNumAnal = "{SIAM} J. Numer. Anal." }
- @String{SIAMReview = "{SIAM} Review" }
- @String{SIAMReview = "{SIAM} Rev." }
- @String{SIAMSciStat = "{SIAM} Journal on Scientific and Statistical
-     Computing" }
- @String{SIAMSciStat = "{SIAM} J. Sci. Statist. Comput." }
-
- @String{SoftPracExp = "Software Practice and Experience" }
- @String{SoftPracExp = "Software Prac. Experience" } % didn't find in AMS MR
- @String{StatScience = "Statistical Science" }
- @String{StatScience = "Statist. Sci." }
- @String{Techno = "Technometrics" }
- @String{USSRCompMathPhys = "{USSR} Computational Mathematics and Mathematical
-     Physics" }
- @String{USSRCompMathPhys = "{U. S. S. R.} Comput. Math. and Math. Phys." }
- @String{VLSICompSys = "Journal of {VLSI} and Computer Systems" }
- @String{VLSICompSys = "J. {VLSI} Comput. Syst." }
- @String{ZAngewMathMech = "Zeitschrift fur Angewandte Mathematik und
-     Mechanik" }
- @String{ZAngewMathMech = "Z. Angew. Math. Mech." }
- @String{ZAngewMathPhys = "Zeitschrift fur Angewandte Mathematik und Physik" }
- @String{ZAngewMathPhys = "Z. Angew. Math. Phys." }
-
-% Publishers % ================================================= |
-
- @String{Academic = "Academic Press" }
- @String{ACMPress = "{ACM} Press" }
- @String{AdamHilger = "Adam Hilger" }
- @String{AddisonWesley = "Addison-Wesley" }
- @String{AllynBacon = "Allyn and Bacon" }
- @String{AMS = "American Mathematical Society" }
- @String{Birkhauser = "Birkha{\"u}ser" }
- @String{CambridgePress = "Cambridge University Press" }
- @String{Chelsea = "Chelsea" }
- @String{ClaredonPress = "Claredon Press" }
- @String{DoverPub = "Dover Publications" }
- @String{Eyolles = "Eyolles" }
- @String{HoltRinehartWinston = "Holt, Rinehart and Winston" }
- @String{Interscience = "Interscience" }
- @String{JohnsHopkinsPress = "The Johns Hopkins University Press" }
- @String{JohnWileySons = "John Wiley and Sons" }
- @String{Macmillan = "Macmillan" }
- @String{MathWorks = "The Math Works Inc." }
- @String{McGrawHill = "McGraw-Hill" }
- @String{NatBurStd = "National Bureau of Standards" }
- @String{NorthHolland = "North-Holland" }
- @String{OxfordPress = "Oxford University Press" }  %address Oxford or London?
- @String{PergamonPress = "Pergamon Press" }
- @String{PlenumPress = "Plenum Press" }
- @String{PrenticeHall = "Prentice-Hall" }
- @String{SIAMPub = "{SIAM} Publications" }
- @String{Springer = "Springer-Verlag" }
- @String{TexasPress = "University of Texas Press" }
- @String{VanNostrand = "Van Nostrand" }
- @String{WHFreeman = "W. H. Freeman and Co." }
-
-%Entries
-
-@Article{Abril07,
-  author        = "Patricia S. Abril and Robert Plant",
-  title         = "The patent holder's dilemma: Buy, sell, or troll?",
-  journal       = "Communications of the ACM",
-  volume        = "50",
-  number        = "1",
-  month         = jan,
-  year          = "2007",
-  pages         = "36--44",
-  doi           = "10.1145/1188913.1188915",
-  url           = "http://doi.acm.org/10.1145/1219092.1219093",
-  note          = "",
-}
-
-@Article{Cohen07,
-  author        = "Sarah Cohen and Werner Nutt and Yehoshua Sagic",
-  title         = "Deciding equivalances among conjunctive aggregate queries",
-  journal       = JACM,
-  articleno     = 5,
-  numpages      = 50,
-  volume        = 54,
-  number        = 2,
-  month         = apr,
-  year          = 2007,
-  doi           = "10.1145/1219092.1219093",
-  url           = "http://doi.acm.org/10.1145/1219092.1219093",
-  acmid         = 1219093,
-}
-
-
-@periodical{JCohen96,
-  key =          "Cohen",
-  editor =       "Jacques Cohen",
-  title =        "Special issue: Digital Libraries",
-  journal =      CACM,
-  volume =       "39",
-  number =       "11",
-  month =        nov,
-  year =         "1996",
-}
-
-
-@Book{Kosiur01,
-  author =       "David Kosiur",
-  title =        "Understanding Policy-Based Networking",
-  publisher =    "Wiley",
-  year =         "2001",
-  address =      "New York, NY",
-  edition =      "2nd.",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  series =       "",
-  month =        "",
-  note =         "",
-}
-
-
-@Book{Harel79,
-  author =       "David Harel",
-  year =         "1979",
-  title =        "First-Order Dynamic Logic",
-  series =       "Lecture Notes in Computer Science",
-  volume =       "68",
-  address =      "New York, NY",
-  publisher =    "Springer-Verlag",
-  doi =          "10.1007/3-540-09237-4",
-  url =          "http://dx.doi.org/10.1007/3-540-09237-4",
-  editor =       "",
-  number =       "",
-  month =        "",
-  note =         "",
-}
-
-
-@Inbook{Editor00,
-  author =       "",
-  editor =       "Ian Editor",
-  title =        "The title of book one",
-  subtitle =     "The book subtitle",
-  series =       "The name of the series one",
-  year =         "2007",
-  volume =       "9",
-  address =      "Chicago",
-  edition =      "1st.",
-  publisher =    "University of Chicago Press",
-  doi =          "10.1007/3-540-09237-4",
-  url =          "http://dx.doi.org/10.1007/3-540-09456-9",
-  chapter =      "",
-  pages =        "",
-  number =       "",
-  type =         "",
-  month =        "",
-  note =         "",
-}
-
-%
-@InBook{Editor00a,
-  author =       "",
-  editor =       "Ian Editor",
-  title =        "The title of book two",
-  subtitle =     "The book subtitle",
-  series =       "The name of the series two",
-  year =         "2008",
-  address =      "Chicago",
-  edition =      "2nd.",
-  publisher =    "University of Chicago Press",
-  doi =          "10.1007/3-540-09237-4",
-  url =          "http://dx.doi.org/10.1007/3-540-09456-9",
-  volume =       "",
-  chapter =      "100",
-  pages =        "",
-  number =       "",
-  type =         "",
-  month =        "",
-  note =         "",
-}
-
-
-% incollection (has an editor, title, and possibly a booktitle)
-@Incollection{Spector90,
-  author =       "Asad Z. Spector",
-  title =        "Achieving application requirements",
-  booktitle =    "Distributed Systems",
-  publisher =    "ACM Press",
-  address =      "New York, NY",
-  year =         "1990",
-  edition =      "2nd.",
-  chapter =      "",
-  editor =       "Sape Mullender",
-  pages =        "19--33",
-  doi =          "10.1145/90417.90738",
-  url =          "http://doi.acm.org/10.1145/90417.90738",
-  volume =       "",
-  number =       "",
-  series =       "",
-  type =         "",
-  month =        "",
-  note =         "",
-}
-
-
-% incollection (has an editor, title, and possibly a booktitle)
-@Incollection{Douglass98,
-  author =       "Bruce P. Douglass and David Harel and Mark B. Trakhtenbrot",
-  title =        "Statecarts in use: structured analysis and object-orientation",
-  series =       "Lecture Notes in Computer Science",
-  booktitle =    "Lectures on Embedded Systems",
-  publisher =    "Springer-Verlag",
-  address =      "London",
-  volume =       "1494",
-  year =         "1998",
-  chapter =      "",
-  editor =       "Grzegorz Rozenberg and Frits W. Vaandrager",
-  pages =        "368--394",
-  doi =          "10.1007/3-540-65193-4_29",
-  url =          "http://dx.doi.org/10.1007/3-540-65193-4_29",
-  edition =      "",
-  number =       "",
-  type =         "",
-  month =        "",
-  note =         "",
-}
-
-
-@Book{Knuth97,
-  author =       "Donald E. Knuth",
-  title =        "The Art of Computer Programming, Vol. 1: Fundamental Algorithms (3rd. ed.)",
-  publisher =    "Addison Wesley Longman Publishing Co., Inc.",
-  year =         "1997",
-  address =      "",
-  edition =      "",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  series =       "",
-  month =        "",
-  note =         "",
-}
-
-
-@Book{Knuth98,
-  author =       "Donald E. Knuth",
-  year =         "1998",
-  title =        "The Art of Computer Programming",
-  series =       "Fundamental Algorithms",
-  volume =       "1",
-  edition =      "3rd",
-  address =      "",
-  publisher =    "Addison Wesley Longman Publishing Co., Inc.",
-  doi =          "",
-  url =          "",
-  editor =       "",
-  number =       "",
-  month =        "",
-  note =         "(book)",
-}
-
-%Inbook{Knuth97,
-%  author =       "Donald E. Knuth",
-%  title =        "The Art of Computer Programming",
-%  booktitle =    "the booktitle",
-%  edition =      "3",
-%  volume =       "1",
-%  year =         "1997",
-%  publisher =    "Addison Wesley Longman Publishing Co., Inc.",
-%  editor =       "",
-%  number =       "",
-%  series =       "Fundamental Algorithms",
-%  type =         "",
-%  chapter =      "",
-%  pages =        "",
-%  address =      "",
-%  month =        "",
-%  note =         "(inbook)",
-%}
-
-%INBOOK{DK:73-inbook-full,
-%   author = "Donald E. Knuth",
-%   title = "Fundamental Algorithms (inbook w series)",
-%   volume = 1,
-%   series = "The Art of Computer Programming",
-%   publisher = "Addison-Wesley",
-%   address = "Reading, Massachusetts",
-%   edition = "Second",
-%   month = "10~" # jan,
-%   year = "1973",
-%   type = "Section",
-%   chapter = "1.2",
-%   pages = "10--119",
-%   note = "Full INBOOK entry (w series)",
-%}
-
-%INcollection{DK:74-incoll,
-%   author = "Donald E. Knuth",
-%   title = "Fundamental Algorithms (incoll)",
-%   volume = 1,
-%   booktitle = "The Art of Computer Programming",
-%   publisher = "Addison-Wesley",
-%   address = "Reading, Massachusetts",
-%   month = "10~" # jan,
-%   year = "1974",
-%   pages = "10--119",
-%   editor = "Bernard Rous",
-%   note = "This is a full incoll entry with an editor",
-%}
-
-%INcollection{DK:75-incollws,
-%   author = "Donald E. Knuth",
-%   title = "Fundamental Algorithms (incoll w series)",
-%   volume = 1,
-%   booktitle = "The Art of Computer Programming",
-%   series = "The Art of Computer Programming",
-%   publisher = "Addison-Wesley",
-%   address = "Reading, Massachusetts",
-%   month = "10~" # jan,
-%   year = "1975",
-%   pages = "10--119",
-%   editor = "Bernard Rous",
-%   note = "This is a full incoll entry with an editor and series",
-%}
-
-
-@incollection{GM05,
-Author= "Dan Geiger and Christopher Meek",
-Title= "Structured Variational Inference Procedures and their Realizations (as incol)",
-Year= 2005,
-Booktitle="Proceedings of Tenth International Workshop on Artificial Intelligence and Statistics, {\rm The Barbados}",
-Publisher="The Society for Artificial Intelligence and Statistics",
-Month= jan,
-Editors= "Z. Ghahramani and R. Cowell"
-}
-
-@Inproceedings{Smith10,
-  author =       "Stan W. Smith",
-  title =        "An experiment in bibliographic mark-up: Parsing metadata for XML export",
-  booktitle =    "Proceedings of the 3rd. annual workshop on Librarians and Computers",
-  series =       "LAC '10",
-  editor =       "Reginald N. Smythe and Alexander Noble",
-  volume =       "3",
-  year =         "2010",
-  publisher =    "Paparazzi Press",
-  address =      "Milan Italy",
-  pages =        "422--431",
-  doi =          "99.9999/woot07-S422",
-  url =          "http://dx.doi.org/99.0000/woot07-S422",
-  number =       "",
-  month =        "",
-  organization = "",
-  note =         "",
-}
-
-@Inproceedings{VanGundy07,
-  author =       "Matthew Van Gundy and Davide Balzarotti and Giovanni Vigna",
-  year =         2007,
-  title =        "Catch me, if you can: Evading network signatures with web-based polymorphic worms",
-  booktitle =    "Proceedings of the first USENIX workshop on Offensive Technologies",
-  series =       "WOOT '07",
-  publisher =    "USENIX Association",
-  address =      "Berkley, CA",
-  articleno =    {Paper 7},
-  numpages =     9,
-}
-
-@Inproceedings{VanGundy08,
-  author =       "Matthew Van Gundy and Davide Balzarotti and Giovanni Vigna",
-  year =         2008,
-  title =        "Catch me, if you can: Evading network signatures with web-based polymorphic worms",
-  booktitle =    "Proceedings of the first USENIX workshop on Offensive Technologies",
-  series =       "WOOT '08",
-  publisher =    "USENIX Association",
-  address =      "Berkley, CA",
-  articleno =    7,
-  numpages =     2,
-  pages =        "99-100",
-}
-
-@Inproceedings{VanGundy09,
-  author =       "Matthew Van Gundy and Davide Balzarotti and Giovanni Vigna",
-  year =         2009,
-  title =        "Catch me, if you can: Evading network signatures with web-based polymorphic worms",
-  booktitle =    "Proceedings of the first USENIX workshop on Offensive Technologies",
-  series =       "WOOT '09",
-  publisher =    "USENIX Association",
-  address =      "Berkley, CA",
-  pages =        "90--100",
-}
-
-@Inproceedings{Andler79,
-  author =       "Sten Andler",
-  title =        "Predicate Path expressions",
-  booktitle =    "Proceedings of the 6th. ACM SIGACT-SIGPLAN symposium on Principles of Programming Languages",
-  series =       "POPL '79",
-  year =         "1979",
-  publisher =    "ACM Press",
-  address =      "New York, NY",
-  pages =        "226--236",
-  doi =          "10.1145/567752.567774",
-  url =          "http://doi.acm.org/10.1145/567752.567774",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  month =        "",
-  organization = "",
-  note =         "",
-}
-
-@Techreport{Harel78,
-  author =       "David Harel",
-  year =         "1978",
-  title =        "LOGICS of Programs: AXIOMATICS and DESCRIPTIVE POWER",
-  institution =  "Massachusetts Institute of Technology",
-  type =         "MIT Research Lab Technical Report",
-  number =       "TR-200",
-  address =      "Cambridge, MA",
-  month =        "",
-  note =         "",
-}
-
-@MASTERSTHESIS{anisi03,
-author = {David A. Anisi},
-title = {Optimal Motion Control of a Ground Vehicle},
-school = {Royal Institute of Technology (KTH), Stockholm, Sweden},
-intitution = {FOI-R-0961-SE, Swedish Defence Research Agency (FOI)},
-year = {2003},
-}
-
-
-@Phdthesis{Clarkson85,
-  author =       "Kenneth L. Clarkson",
-  year =         "1985",
-  title =        "Algorithms for Closest-Point Problems (Computational Geometry)",
-  school =       "Stanford University",
-  address =      "Palo Alto, CA",
-  note =         "UMI Order Number: AAT 8506171",
-  type =         "",
-  month =        "",
-}
-
-
-@online{Thornburg01,
-  author =       "Harry Thornburg",
-  year =         "2001",
-  title =        "Introduction to Bayesian Statistics",
-  url =          "http://ccrma.stanford.edu/~jos/bayes/bayes.html",
-  month =        mar,
-  lastaccessed = "March 2, 2005",
-}
-
-
-@online{Ablamowicz07,
-  author =       "Rafal Ablamowicz and Bertfried Fauser",
-  year =         "2007",
-  title =        "CLIFFORD: a Maple 11 Package for Clifford Algebra Computations, version 11",
-  url =          "http://math.tntech.edu/rafal/cliff11/index.html",
-  lastaccessed = "February 28, 2008",
-}
-
-
-@misc{Poker06,
-  author =       "Poker-Edge.Com",
-  year =         "2006",
-  month =        mar,
-  title =        "Stats and Analysis",
-  lastaccessed = "June 7, 2006",
-  url =          "http://www.poker-edge.com/stats.php",
-}
-
-@misc{Obama08,
-  author        = "Barack Obama",
-  year          = "2008",
-  title         = "A more perfect union",
-  howpublished  = "Video",
-  day           = "5",
-  url           = "http://video.google.com/videoplay?docid=6528042696351994555",
-  month         = mar,
-  lastaccessed  = "March 21, 2008",
-  note          =  "",
-}
-
-@misc{JoeScientist001,
-  author =       "Joseph Scientist",
-  year =         "2009",
-  title =        "The fountain of youth",
-  note =         "Patent No. 12345, Filed July 1st., 2008, Issued Aug. 9th., 2009",
-  url =          "",
-  howpublished = "",
-  month =        aug,
-  lastaccessed = "",
-}
-
-
-@Inproceedings{Novak03,
-  author =       "Dave Novak",
-  title =        "Solder man",
-  booktitle =    "ACM SIGGRAPH 2003 Video Review on Animation theater Program: Part I - Vol. 145 (July 27--27, 2003)",
-  year =         "2003",
-  publisher =    "ACM Press",
-  address =      "New York, NY",
-  pages =        "4",
-  month =        "March 21, 2008",
-  doi =          "99.9999/woot07-S422",
-  url =          "http://video.google.com/videoplay?docid=6528042696351994555",
-  note =         "",
-  howpublished = "Video",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  series =       "",
-  organization = "",
-}
-
-
-@article{Lee05,
-  author =       "Newton Lee",
-  year =         "2005",
-  title =        "Interview with Bill Kinder: January 13, 2005",
-  journal =      "Comput. Entertain.",
-  eid =          "4",
-  volume =       "3",
-  number =       "1",
-  month =        "Jan.-March",
-  doi =          "10.1145/1057270.1057278",
-  url =          "http://doi.acm.org/10.1145/1057270.1057278",
-  howpublished = "Video",
-  note =         "",
-}
-
-@article{rous08,
-  author =       "Bernard Rous",
-  year =         "2008",
-  title =        "The Enabling of Digital Libraries",
-  journal =      "Digital Libraries",
-  volume =       "12",
-  number =       "3",
-  month =        jul,
-  articleno =    "Article~5",
-  doi =          "",
-  url =          "",
-  howpublished = "",
-  note =         "To appear",
-}
-
-@article{384253,
- author = {Werneck,, Renato and Setubal,, Jo\~{a}o and da Conceic\~{a}o,, Arlindo},
- title = {(old) Finding minimum congestion spanning trees},
- journal = {J. Exp. Algorithmics},
- volume = {5},
- year = {2000},
- issn = {1084-6654},
- pages = {11},
- doi = {http://doi.acm.org/10.1145/351827.384253},
- publisher = {ACM},
- address = {New York, NY, USA},
- }
-
-
-@article{Werneck:2000:FMC:351827.384253,
- author = {Werneck, Renato and Setubal, Jo\~{a}o and da Conceic\~{a}o, Arlindo},
- title = {(new) Finding minimum congestion spanning trees},
- journal = {J. Exp. Algorithmics},
- volume = 5,
- month = dec,
- year = 2000,
- issn = {1084-6654},
- articleno = 11,
- url = {http://portal.acm.org/citation.cfm?id=351827.384253},
- doi = {10.1145/351827.384253},
- acmid = 384253,
- publisher = {ACM},
- address = {New York, NY, USA},
-}
-
-@article{1555162,
- author = {Conti, Mauro and Di Pietro, Roberto and Mancini, Luigi V. and Mei, Alessandro},
- title = {(old) Distributed data source verification in wireless sensor networks},
- journal = {Inf. Fusion},
- volume = {10},
- number = {4},
- year = {2009},
- issn = {1566-2535},
- pages = {342--353},
- doi = {http://dx.doi.org/10.1016/j.inffus.2009.01.002},
- publisher = {Elsevier Science Publishers B. V.},
- address = {Amsterdam, The Netherlands, The Netherlands},
- }
-
-@article{Conti:2009:DDS:1555009.1555162,
- author = {Conti, Mauro and Di Pietro, Roberto and Mancini, Luigi V. and Mei, Alessandro},
- title = {(new) Distributed data source verification in wireless sensor networks},
- journal = {Inf. Fusion},
- volume = {10},
- number = {4},
- month = oct,
- year = {2009},
- issn = {1566-2535},
- pages = {342--353},
- numpages = {12},
- url = {http://portal.acm.org/citation.cfm?id=1555009.1555162},
- doi = {10.1016/j.inffus.2009.01.002},
- acmid = {1555162},
- publisher = {Elsevier Science Publishers B. V.},
- address = {Amsterdam, The Netherlands, The Netherlands},
- keywords = {Clone detection, Distributed protocol, Securing data fusion, Wireless sensor networks},
-}
-
-@inproceedings{Li:2008:PUC:1358628.1358946,
- author = {Li, Cheng-Lun and Buyuktur, Ayse G. and Hutchful, David K. and Sant, Natasha B. and Nainwal, Satyendra K.},
- title = {Portalis: using competitive online interactions to support aid initiatives for the homeless},
- booktitle = {CHI '08 extended abstracts on Human factors in computing systems},
- year = {2008},
- isbn = {978-1-60558-012-X},
- location = {Florence, Italy},
- pages = {3873--3878},
- numpages = {6},
- url = {http://portal.acm.org/citation.cfm?id=1358628.1358946},
- doi = {10.1145/1358628.1358946},
- acmid = {1358946},
- publisher = {ACM},
- address = {New York, NY, USA},
- keywords = {cscw, distributed knowledge acquisition, incentive design, online games, recommender systems, reputation systems, user studies, virtual community},
-}
-
-@book{Hollis:1999:VBD:519964,
- author = {Hollis, Billy S.},
- title = {Visual Basic 6: Design, Specification, and Objects with Other},
- year = {1999},
- isbn = {0130850845},
- edition = {1st},
- publisher = {Prentice Hall PTR},
- address = {Upper Saddle River, NJ, USA},
- }
-
-
-@book{Goossens:1999:LWC:553897,
- author = {Goossens, Michel and Rahtz, S. P. and Moore, Ross and Sutor, Robert S.},
- title = {The  Latex Web Companion: Integrating TEX, HTML, and XML},
- year = {1999},
- isbn = {0201433117},
- edition = {1st},
- publisher = {Addison-Wesley Longman Publishing Co., Inc.},
- address = {Boston, MA, USA},
- }
-
-% need to test genres for errant isbn output
-
-% techreport
-@techreport{897367,
- author = {Buss, Jonathan F. and Rosenberg, Arnold L. and Knott, Judson D.},
- title = {Vertex Types in Book-Embeddings},
- year = {1987},
- source = {http://www.ncstrl.org:8900/ncstrl/servlet/search?formname=detail\&id=oai%3Ancstrlh%3Aumass_cs%3Ancstrl.umassa_cs%2F%2FUM-CS-1987-018},
- publisher = {University of Massachusetts},
- address = {Amherst, MA, USA},
- }
-
-@techreport{Buss:1987:VTB:897367,
- author = {Buss, Jonathan F. and Rosenberg, Arnold L. and Knott, Judson D.},
- title = {Vertex Types in Book-Embeddings},
- year = {1987},
- source = {http://www.ncstrl.org:8900/ncstrl/servlet/search?formname=detail\&id=oai%3Ancstrlh%3Aumass_cs%3Ancstrl.umassa_cs%2F%2FUM-CS-1987-018},
- publisher = {University of Massachusetts},
- address = {Amherst, MA, USA},
- }
-
-% whole proceedings
-
-@proceedings{Czerwinski:2008:1358628,
- author = {},
- note = {General Chair-Czerwinski, Mary and General Chair-Lund, Arnie and Program Chair-Tan, Desney},
- title = {CHI '08: CHI '08 extended abstracts on Human factors in computing systems},
- year = {2008},
- isbn = {978-1-60558-012-X},
- location = {Florence, Italy},
- order_no = {608085},
- publisher = {ACM},
- address = {New York, NY, USA},
- }
-
-% phdthesis
-
-@phdthesis{Clarkson:1985:ACP:911891,
- author = {Clarkson, Kenneth Lee},
- advisor = {Yao, Andrew C.},
- title = {Algorithms for Closest-Point Problems (Computational Geometry)},
- year = {1985},
- note = {AAT 8506171},
- school = {Stanford University},
- address = {Stanford, CA, USA},
- }
-% school is being picked up -- but not publisher (which is OK)
-% Also -- the title is NOT being output in italics !!! Arrrrgh! - I fixed it. :-)
-
-
-%%% compare with 'old'
-%%% atsign-Phdthesis{Clarkson85,
-%%%  author =       "Kenneth L. Clarkson",
-%%%  year =         "1985",
-%%%  title =        "Algorithms for Closest-Point Problems (Computational Geometry)",
-%%%  school =       "Stanford University",
-%%%  address =      "Palo Alto, CA",
-%%%  note =         "UMI Order Number: AAT 8506171",
-%%%  type =         "",
-%%%  month =        "",
-%%%}
-
-% A bibliography
-@Article{1984:1040142,
- key = {{$\!\!$}},
- journal = {SIGCOMM Comput. Commun. Rev.},
- year = {1984},
- issn = {0146-4833},
- volume = {13-14},
- number = {5-1},
- issue_date = {January/April 1984},
- publisher = {ACM},
- address = {New York, NY, USA},
- }
-
-
-% grinder
-@inproceedings{2004:ITE:1009386.1010128,
- key = {IEEE},
- title = {IEEE TCSC Executive Committee},
- booktitle = {Proceedings of the IEEE International Conference on Web Services},
- series = {ICWS '04},
- year = {2004},
- isbn = {0-7695-2167-3},
- pages = {21--22},
- url = {http://dx.doi.org/10.1109/ICWS.2004.64},
- doi = {http://dx.doi.org/10.1109/ICWS.2004.64},
- acmid = {1010128},
- publisher = {IEEE Computer Society},
- address = {Washington, DC, USA},
-}
-
-% div book
-@book{Mullender:1993:DS:302430,
- editor = {Mullender, Sape},
- title = {Distributed systems (2nd Ed.)},
- year = {1993},
- isbn = {0-201-62427-3},
- publisher = {ACM Press/Addison-Wesley Publishing Co.},
- address = {New York, NY, USA},
- }
-
-% master thesis (as techreport and thesis)
-
-@techreport{Petrie:1986:NAD:899644,
- author = {Petrie, Charles J.},
- title = {New Algorithms for Dependency-Directed Backtracking (Master's thesis)},
- year = {1986},
- source = {http://www.ncstrl.org:8900/ncstrl/servlet/search?formname=detail\&id=oai%3Ancstrlh%3Autexas_cs%3AUTEXAS_CS%2F%2FAI86-33},
- publisher = {University of Texas at Austin},
- address = {Austin, TX, USA},
- }
-
-@MASTERSTHESIS{Petrie:1986:NAD:12345,
- author = {Petrie, Charles J.},
- title = {New Algorithms for Dependency-Directed Backtracking (Master's thesis)},
- year = {1986},
- source = {http://www.ncstrl.org:8900/ncstrl/servlet/search?formname=detail\&id=oai%3Ancstrlh%3Autexas_cs%3AUTEXAS_CS%2F%2FAI86-33},
- school = {University of Texas at Austin},
- address = {Austin, TX, USA},
- }
-
-
-
-
-@BOOK{book-minimal,
-   author = "Donald E. Knuth",
-   title = "Seminumerical Algorithms",
-   publisher = "Addison-Wesley",
-   year = "1981",
-}
-
-% incollection (has an editor, title, and possibly a booktitle)
-@INcollection{KA:2001,
- author = {Kong, Wei-Chang},
- Title = {The implementation of electronic commerce in SMEs in Singapore (as Incoll)},
- booktitle = {E-commerce and cultural values},
- year = {2001},
- isbn = {1-59140-056-2},
- pages = {51--74},
- numpages = {24},
- url = {http://portal.acm.org/citation.cfm?id=887006.887010},
- acmid = {887010},
- publisher = {IGI Publishing},
- address = {Hershey, PA, USA},
-}
-
-
-% with bibfield 'type' before chapter (note no editor)
-@INBOOK{KAGM:2001,
- author = {Kong, Wei-Chang},
- type = {Name of Chapter:},
- chapter = {The implementation of electronic commerce in SMEs in Singapore (Inbook-w-chap-w-type)},
- title = {E-commerce and cultural values},
- year = {2001},
- isbn = {1-59140-056-2},
- pages = {51--74},
- numpages = {24},
- url = {http://portal.acm.org/citation.cfm?id=887006.887010},
- acmid = {887010},
- publisher = {IGI Publishing},
- address = {Hershey, PA, USA},
-}
-
-%%% Notes! This is because the atsign-INBOOK citation type specifies EITHER
-%%% editor or author, but not both. In my experiments with the harvard/dcu
-%%% bibtex style (and presumably this applies to other styles too), bibtex
-%%% ignores the editor information if author information exists in an
-%%% atsign-INBOOK entry. atsign-INCOLLECTION is far more commonly used in my references,
-%%% and in the absence of an editor I believe most bibtex styles will just
-%%% ommit the editor from the reference - the chapter information will not
-%%% end up in the in-text citation as you suggest it should be but at least
-%%% there is a place to put the editor if necessary.
-
-
-
-% was 'Inbook' -- changed to incollection - (editor is different to author) - need to tell Asad to codify as such.
-@incollection{Kong:2002:IEC:887006.887010,
-  author =      {Kong, Wei-Chang},
-  editor =      {Theerasak Thanasankit},
-  title =       {Chapter 9},
-  booktitle =   {E-commerce and cultural values (Incoll-w-text (chap 9) 'title')},
-  year =        {2002},
-  address =     {Hershey, PA, USA},
-  publisher =   {IGI Publishing},
-  url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
-  pages =       {51--74},
-  numpages =    {24},
-  acmid =       {887010},
-  isbn =        {1-59140-056-2},
-  number =      "",
-  type =        "",
-  month =       "",
-  note =        "",
-}
-
-% incol when the chapter is 'text' - due to presence of editor (different to author)
-@incollection{Kong:2003:IEC:887006.887011,
- author = {Kong, Wei-Chang},
- title = {The implementation of electronic commerce in SMEs in Singapore (Incoll)},
- booktitle = {E-commerce and cultural values},
- editor = {Thanasankit, Theerasak},
- year = {2003},
- isbn = {1-59140-056-2},
- pages = {51--74},
- numpages = {24},
- url = {http://portal.acm.org/citation.cfm?id=887006.887010},
- acmid = {887010},
- publisher = {IGI Publishing},
- address = {Hershey, PA, USA},
-}
-
-% ------ test
-%incollection{Kong:2003:IEC:887006.887010,
-% author = {Kong, Wei-Chang},
-% chapter = {The implementation of electronic commerce in SMEs in Singapore (Incoll-text-in-chap)},
-% booktitle = {booktitle E-commerce and cultural values},
-% title =   {The title},
-% editor = {Thanasankit, Theerasak},
-% year = {2003},
-% isbn = {1-59140-056-2},
-% pages = {51--74},
-% numpages = {24},
-% url = {http://portal.acm.org/citation.cfm?id=887006.887010},
-% acmid = {887010},
-% publisher = {IGI Publishing},
-% address = {Hershey, PA, USA},
-%}
-
-
-% ---------
-
-
-
-
-
-% Need inbook with num in chapter
-
-% and inbook with number in chapter
-@InBook{Kong:2004:IEC:123456.887010,
-  author =      {Kong, Wei-Chang},
-  editor =      {Theerasak Thanasankit},
-  title =       {E-commerce and cultural values - (InBook-num-in-chap)},
-  chapter =     {9},
-  year =        {2004},
-  address =     {Hershey, PA, USA},
-  publisher =   {IGI Publishing},
-  url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
-  pages =       {51--74},
-  numpages =    {24},
-  acmid =       {887010},
-  isbn =        {1-59140-056-2},
-  number =      "",
-  type =        "",
-  month =       "",
-  note =        "",
-}
-
-
-% and inbook with text in chapter
-@Inbook{Kong:2005:IEC:887006.887010,
-  author =      {Kong, Wei-Chang},
-  editor =      {Theerasak Thanasankit},
-  title =       {E-commerce and cultural values (Inbook-text-in-chap)},
-  chapter =     {The implementation of electronic commerce in SMEs in Singapore},
-  year =        {2005},
-  address =     {Hershey, PA, USA},
-  publisher =   {IGI Publishing},
-  url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
-  type =        {Chapter:},
-  pages =       {51--74},
-  numpages =    {24},
-  acmid =       {887010},
-  isbn =        {1-59140-056-2},
-  number =      "",
-  month =       "",
-  note =        "",
-}
-
-
-% and inbook with a num and type field
-@Inbook{Kong:2006:IEC:887006.887010,
-  author =      {Kong, Wei-Chang},
-  editor =      {Theerasak Thanasankit},
-  title =       {E-commerce and cultural values (Inbook-num chap)},
-  chapter =     {22},
-  year =        {2006},
-  address =     {Hershey, PA, USA},
-  publisher =   {IGI Publishing},
-  url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
-  type =        {Chapter (in type field)},
-  pages =       {51--74},
-  numpages =    {24},
-  acmid =       {887010},
-  isbn =        {1-59140-056-2},
-  number =      "",
-  month =       "",
-  note =        "",
-}
-
-
-% and incol coz we have a BLANK chapter - due to presence of editor
-%atIncollection{Kong:2006:IEC:887006.887011,
-%  author =     {Kong, Wei-Chang},
-%  editor =     {Theerasak Thanasankit},
-%  title =      "The title"
-%  booktitle =  {E-commerce and cultural values (Incol-coz-blank-chap)},
-%  year =       {2006},
-%  address =    {Hershey, PA, USA},
-%  publisher =  {IGI Publishing},
-%  url =        {http://portal.acm.org/citation.cfm?id=887006.887010},
-%  type =       {Type!},
-%  chapter =    {},
-%  pages =      {51--74},
-%  numpages =   {24},
-%  acmid =      {887010},
-%  isbn =       {1-59140-056-2},
-%  number =     "",
-%  month =      "",
-%  note =       "",
-%}
-
-@article{SaeediMEJ10,
-            author = {Mehdi Saeedi and Morteza Saheb Zamani and Mehdi Sedighi},
-            title = {A library-based synthesis methodology for reversible logic},
-            journal = {Microelectron. J.},
-            volume = {41},
-            number = {4},
-            month = apr,
-            year = {2010},
-            pages = {185--194},
-}
-
-@ARTICLE{SaeediJETC10,
-            author = {Mehdi Saeedi and Morteza Saheb Zamani and Mehdi Sedighi and Zahra Sasanian},
-            title = {Synthesis of Reversible Circuit Using Cycle-Based Approach},
-            journal = {J. Emerg. Technol. Comput. Syst.},
-            volume = {6},
-            number = {4},
-            month = dec,
-            year = {2010}
-            }
-
-% Asad's new version
-@article{Kirschmer:2010:AEI:1958016.1958018,
- author = {Kirschmer, Markus and Voight, John},
- title = {Algorithmic Enumeration of Ideal Classes for Quaternion Orders},
- journal = {SIAM J. Comput.},
- issue_date = {January 2010},
- volume = {39},
- number = {5},
- month = jan,
- year = {2010},
- issn = {0097-5397},
- pages = {1714--1747},
- numpages = {34},
- url = {http://dx.doi.org/10.1137/080734467},
- doi = {https://doi.org/10.1137/080734467},
- acmid = {1958018},
- publisher = {Society for Industrial and Applied Mathematics},
- address = {Philadelphia, PA, USA},
- keywords = {ideal classes, maximal orders, number theory, quaternion algebras},
-}
-
-
-% incol due to presence of booktitle
-@incollection{Hoare:1972:CIN:1243380.1243382,
- author = {Hoare, C. A. R.},
- title = {Chapter II: Notes on data structuring},
- booktitle = {Structured programming (incoll)},
- editor = {Dahl, O. J. and Dijkstra, E. W. and Hoare, C. A. R.},
- year = {1972},
- isbn = {0-12-200550-3},
- pages = {83--174},
- numpages = {92},
- url = {http://portal.acm.org/citation.cfm?id=1243380.1243382},
- acmid = {1243382},
- publisher = {Academic Press Ltd.},
- address = {London, UK, UK},
-}
-
-% incol due to presence of booktitle
-@incollection{Lee:1978:TQA:800025.1198348,
- author = {Lee, Jan},
- title = {Transcript of question and answer session},
- booktitle = {History of programming languages I (incoll)},
- editor = {Wexelblat, Richard L.},
- year = {1981},
- isbn = {0-12-745040-8},
- pages = {68--71},
- numpages = {4},
- url = {http://doi.acm.org/10.1145/800025.1198348},
- doi = {http://doi.acm.org/10.1145/800025.1198348},
- acmid = {1198348},
- publisher = {ACM},
- address = {New York, NY, USA},
-}
-
-% incol due to booktitle
-@incollection{Dijkstra:1979:GSC:1241515.1241518,
- author = {Dijkstra, E.},
- title = {Go to statement considered harmful},
- booktitle = {Classics in software engineering (incoll)},
- year = {1979},
- isbn = {0-917072-14-6},
- pages = {27--33},
- numpages = {7},
- url = {http://portal.acm.org/citation.cfm?id=1241515.1241518},
- acmid = {1241518},
- publisher = {Yourdon Press},
- address = {Upper Saddle River, NJ, USA},
-}
-
-% incol due to booktitle
-@incollection{Wenzel:1992:TVA:146022.146089,
- author = {Wenzel, Elizabeth M.},
- title = {Three-dimensional virtual acoustic displays},
- booktitle = {Multimedia interface design (incoll)},
- year = {1992},
- isbn = {0-201-54981-6},
- pages = {257--288},
- numpages = {32},
- url = {http://portal.acm.org/citation.cfm?id=146022.146089},
- doi = {10.1145/146022.146089},
- acmid = {146089},
- publisher = {ACM},
- address = {New York, NY, USA},
-}
-
-% incol due to booktitle
-@incollection{Mumford:1987:MES:54905.54911,
- author = {Mumford, E.},
- title = {Managerial expert systems and organizational change: some critical research issues},
- booktitle = {Critical issues in information systems research (incoll)},
- year = {1987},
- isbn = {0-471-91281-6},
- pages = {135--155},
- numpages = {21},
- url = {http://portal.acm.org/citation.cfm?id=54905.54911},
- acmid = {54911},
- publisher = {John Wiley \& Sons, Inc.},
- address = {New York, NY, USA},
-}
-
-@book{McCracken:1990:SSC:575315,
- author = {McCracken, Daniel D. and Golden, Donald G.},
- title = {Simplified Structured COBOL with Microsoft/MicroFocus COBOL},
- year = {1990},
- isbn = {0471514071},
- publisher = {John Wiley \& Sons, Inc.},
- address = {New York, NY, USA},
-}
-
-% Let's include Boris / BBeeton entries  (multi-volume works)
-
-@book {MR781537,
-    AUTHOR = {H{\"o}rmander, Lars},
-     TITLE = {The analysis of linear partial differential operators. {III}},
-    SERIES = {Grundlehren der Mathematischen Wissenschaften [Fundamental
-              Principles of Mathematical Sciences]},
-    VOLUME = {275},
-      NOTE = {Pseudodifferential operators},
-PUBLISHER = {Springer-Verlag},
-   ADDRESS = {Berlin, Germany},
-      YEAR = {1985},
-     PAGES = {viii+525},
-      ISBN = {3-540-13828-5},
-   MRCLASS = {35-02 (35Sxx 47G05 58G15)},
-  MRNUMBER = {781536 (87d:35002a)},
-MRREVIEWER = {Min You Qi},
-}
-
-@book {MR781536,
-    AUTHOR = {H{\"o}rmander, Lars},
-     TITLE = {The analysis of linear partial differential operators. {IV}},
-    SERIES = {Grundlehren der Mathematischen Wissenschaften [Fundamental
-              Principles of Mathematical Sciences]},
-    VOLUME = {275},
-      NOTE = {Fourier integral operators},
-PUBLISHER = {Springer-Verlag},
-   ADDRESS = {Berlin, Germany},
-      YEAR = {1985},
-     PAGES = {vii+352},
-      ISBN = {3-540-13829-3},
-   MRCLASS = {35-02 (35Sxx 47G05 58G15)},
-  MRNUMBER = {781537 (87d:35002b)},
-MRREVIEWER = {Min You Qi},
-}
-
-%%%%%%%%%%%%%%%%%%%%%% Start of Aptara sample bib entries
-
-% acmsmall-sam.bib
-@InProceedings{Adya-01,
-  author        = {A. Adya and P. Bahl and J. Padhye and A.Wolman and L. Zhou},
-  title         = {A multi-radio unification protocol for {IEEE} 802.11 wireless networks},
-  booktitle     = {Proceedings of the IEEE 1st International Conference on Broadnets Networks (BroadNets'04)},
-  publisher     = "IEEE",
-  address       = "Los Alamitos, CA",
-  year          = {2004},
-  pages         = "210--217"
-}
-
-@article{Akyildiz-01,
-  author        = {I. F. Akyildiz and W. Su and Y. Sankarasubramaniam and E. Cayirci},
-  title         = {Wireless Sensor Networks: A Survey},
-  journal       = {Comm. ACM},
-  volume        = 38,
-  number        = "4",
-  year          = {2002},
-  pages         = "393--422"
-}
-
-@article{Akyildiz-02,
-  author        = {I. F. Akyildiz and T. Melodia and K. R. Chowdhury},
-  title         = {A Survey on Wireless Multimedia Sensor Networks},
-  journal       = {Computer Netw.},
-  volume        = 51,
-  number        = "4",
-  year          = {2007},
-  pages         = "921--960"
-}
-
-@InProceedings{Bahl-02,
-  author        = {P. Bahl and R. Chancre and J. Dungeon},
-  title         = {{SSCH}: Slotted Seeded Channel Hopping for Capacity Improvement in {IEEE} 802.11 Ad-Hoc Wireless Networks},
-  booktitle     = {Proceeding of the 10th International Conference on Mobile Computing and Networking (MobiCom'04)},
-  publisher     = "ACM",
-  address       = "New York, NY",
-  year          = {2004},
-  pages         = "112--117"
-}
-
-@misc{CROSSBOW,
-  key       = {CROSSBOW},
-  title     = {{XBOW} Sensor Motes Specifications},
-  note      = {http://www.xbow.com},
-  year      = 2008
-}
-
-@article{Culler-01,
-  author        = {D. Culler and D. Estrin and M. Srivastava},
-  title         = {Overview of Sensor Networks},
-  journal       = {IEEE Comput.},
-  volume        = 37,
-  number        = "8 (Special Issue on Sensor Networks)",
-  publisher     = "IEEE",
-  address       = "Los Alamitos, CA",
-  year          = {2004},
-  pages         = "41--49"
-}
-
-@misc{Harvard-01,
-    key         = {Harvard CodeBlue},
-    title       = {{CodeBlue}: Sensor Networks for Medical Care},
-    note        = {http://www.eecs.harvard.edu/mdw/ proj/codeblue/},
-    year        = 2008
-}
-
-@InProceedings{Natarajan-01,
-    author      = {A. Natarajan and M. Motani and B. de Silva and K. Yap and K. C. Chua},
-    title       = {Investigating Network Architectures for Body Sensor Networks},
-    booktitle   = {Network Architectures},
-    editor      = {G. Whitcomb and P. Neece},
-    publisher   = "Keleuven Press",
-    address     = "Dayton, OH",
-    year        = {2007},
-    pages       = "322--328",
-    eprint      = "960935712",
-    primaryclass = "cs",
-}
-
-@techreport{Tzamaloukas-01,
-  author        = {A. Tzamaloukas and J. J. Garcia-Luna-Aceves},
-  title         = {Channel-Hopping Multiple Access},
-  number =        {I-CA2301},
-  institution =   {Department of Computer Science, University of California},
-  address =       {Berkeley, CA},
-  year          = {2000}
-}
-
-@BOOK{Zhou-06,
-  author        = {G. Zhou and J. Lu and C.-Y. Wan and M. D. Yarvis and J. A. Stankovic},
-  title         = {Body Sensor Networks},
-  publisher     = "MIT Press",
-  address       = "Cambridge, MA",
-  year          = {2008}
-}
-
-@mastersthesis{ko94,
-author = "Jacob Kornerup",
-title = "Mapping Powerlists onto Hypercubes",
-school = "The University of Texas at Austin",
-note = "(In preparation)",
-year = "1994"}
-%month = "dec",}
-
-@PhdThesis{gerndt:89,
-  author =       "Michael Gerndt",
-  title =        "Automatic Parallelization for Distributed-Memory
-                  Multiprocessing Systems",
-  school =       "University of Bonn",
-  year =         1989,
-  address =      "Bonn, Germany",
-  month =        dec
-}
-
-@article{6:1:1,
-author = "J. E. {Archer, Jr.} and R. Conway and F. B. Schneider",
-title = "User recovery and reversal in interactive systems",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "6",
-number = "1",
-month = jan,
-year = 1984,
-pages = "1--19"}
-
-@article{7:1:137,
-author = "D. D. Dunlop and V. R. Basili",
-title = "Generalizing specifications for uniformly implemented loops",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "7",
-number = "1",
-month = jan,
-year = 1985,
-pages = "137--158"}
-
-@article{7:2:183,
-author = "J. Heering and P. Klint",
-title = "Towards monolingual programming environments",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "7",
-number = "2",
-month = apr,
-year = 1985,
-pages = "183--213"}
-
-@book{knuth:texbook,
-author = "Donald E. Knuth",
-title = "The {\TeX{}book}",
-publisher = "Addison-Wesley",
-address = "Reading, MA.",
-year = 1984}
-
-@article{6:3:380,
-author = "E. Korach and D.  Rotem and N. Santoro",
-title = "Distributed algorithms for finding centers and medians in networks",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "6",
-number = "3",
-month = jul,
-year = 1984,
-pages = "380--401"}
-
-@book{Lamport:LaTeX,
-author = "Leslie Lamport",
-title = "\it {\LaTeX}: A Document Preparation System",
-publisher = "Addison-Wesley",
-address = "Reading, MA.",
-year = 1986}
-
-@article{7:3:359,
-author = "F. Nielson",
-title = "Program transformations in a denotational setting",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "7",
-number = "3",
-month = jul,
-year = 1985,
-pages = "359--379"}
-
-%testing
-@BOOK{test,
-   author = "Donald E. Knuth",
-   title = "Seminumerical Algorithms",
-   volume = 2,
-   series = "The Art of Computer Programming",
-   publisher = "Addison-Wesley",
-   address = "Reading, MA",
-   edition = "2nd",
-   month = "10~" # jan,
-   year = "1981",
-}
-
-@inproceedings{reid:scribe,
-author = "Brian K. Reid",
-title = "A high-level approach to computer document formatting",
-booktitle = "Proceedings of the 7th Annual Symposium on Principles of
-  Programming Languages",
-month = jan,
-year = 1980,
-publisher = "ACM",
-address = "New York",
-pages = "24--31"}
-
-@article{Zhou:2010:MMS:1721695.1721705,
- author = {Zhou, Gang and Wu, Yafeng and Yan, Ting and He, Tian and Huang, Chengdu and Stankovic, John A. and Abdelzaher, Tarek F.},
- title = {A multifrequency MAC specially designed for wireless sensor network applications},
- journal = {ACM Trans. Embed. Comput. Syst.},
- issue_date = {March 2010},
- volume = 9,
- number = 4,
- month = {April},
- year = 2010,
- issn = {1539-9087},
- pages = {39:1--39:41},
- articleno = 39,
- numpages = 41,
- url = {http://doi.acm.org/10.1145/1721695.1721705},
- doi = {10.1145/1721695.1721705},
- acmid = 1721705,
- publisher = {ACM},
- address = {New York, NY, USA},
- keywords = {Wireless sensor networks, media access control, multi-channel, radio interference, time synchronization},
-}
-
-
-@online{TUGInstmem,
-  key =          {TUG},
-  year  =        2017,
-  title =        "Institutional members of the {\TeX} Users Group",
-  url =          "http://wwtug.org/instmem.html",
-  lastaccessed = "May 27, 2017",
-}
-
-@online{CTANacmart,
-  author =    {Boris Veytsman},
-  title =  {acmart---{C}lass for typesetting publications of {ACM}},
-  url =    {http://www.ctan.org/pkg/acmart},
-  lastaccessed = {May 27, 2017}
-  }
-
-@ARTICLE{bowman:reasoning,
-    author = {Bowman, Mic and Debray, Saumya K. and Peterson, Larry L.},
-    title = {Reasoning About Naming Systems},
-    journal = {ACM Trans. Program. Lang. Syst.},
-    volume = {15},
-    number = {5},
-    pages = {795-825},
-    month = {November},
-    year = {1993},
-    doi = {10.1145/161468.161471},
-}
-
-@ARTICLE{braams:babel,
-    author = {Braams, Johannes},
-    title = {Babel, a Multilingual Style-Option System for Use with LaTeX's Standard Document Styles},
-    journal = {TUGboat},
-    volume = {12},
-    number = {2},
-    pages = {291-301},
-    month = {June},
-    year = {1991},
-}
-
-@INPROCEEDINGS{clark:pct,
-  AUTHOR = "Malcolm Clark",
-  TITLE = "Post Congress Tristesse",
-  BOOKTITLE = "TeX90 Conference Proceedings",
-  PAGES = "84-89",
-  ORGANIZATION = "TeX Users Group",
-  MONTH = "March",
-  YEAR = {1991}
-}
-
-@ARTICLE{herlihy:methodology,
-    author = {Herlihy, Maurice},
-    title = {A Methodology for Implementing Highly Concurrent Data Objects},
-    journal = {ACM Trans. Program. Lang. Syst.},
-    volume = {15},
-    number = {5},
-    pages = {745-770},
-    month = {November},
-    year = {1993},
-    doi = {10.1145/161468.161469},
-}
-
-@BOOK{salas:calculus,
-  AUTHOR = "S.L. Salas and Einar Hille",
-  TITLE = "Calculus: One and Several Variable",
-  PUBLISHER = "John Wiley and Sons",
-  ADDRESS = "New York",
-  YEAR = "1978"
-}
-
-@MANUAL{Fear05,
-  title =        {Publication quality tables in {\LaTeX}},
-  author =       {Simon Fear},
-  month =        {April},
-  year =         2005,
-  note =         {\url{http://www.ctan.org/pkg/booktabs}}
-}
-
-@Manual{Amsthm15,
-  title =        {Using the amsthm Package},
-  organization = {American Mathematical Society},
-  month =        {April},
-  year =         2015,
-  note =         {\url{http://www.ctan.org/pkg/amsthm}}
-}
-
-@ArtifactSoftware{R,
-    title = {R: A Language and Environment for Statistical Computing},
-    author = {{R Core Team}},
-    organization = {R Foundation for Statistical Computing},
-    address = {Vienna, Austria},
-    year = {2019},
-    url = {https://www.R-project.org/},
-}
-
-@ArtifactDataset{UMassCitations,
- author    =  {Sam Anzaroot and Andrew McCallum},
- title     =  {{UMass} Citation Field Extraction Dataset},
- year      = 2013,
- url       =
-    {http://www.iesl.cs.umass.edu/data/data-umasscitationfield},
- lastaccessed = {May 27, 2019}
-}
-
-@Eprint{Bornmann2019,
-       author = {Bornmann, Lutz and Wray, K. Brad and Haunschild,
-                  Robin},
-        title = {Citation concept analysis {(CCA)}---A new form of
-                  citation analysis revealing the usefulness of
-                  concepts for other researchers illustrated by two
-                  exemplary case studies including classic books by
-                  {Thomas S.~Kuhn} and {Karl R.~Popper}},
-     keywords = {Computer Science - Digital Libraries},
-         year = 2019,
-        month = "May",
-          eid = {arXiv:1905.12410},
-archivePrefix = {arXiv},
-       eprint = {1905.12410},
- primaryClass = {cs.DL},
-}
-
-@Eprint{AnzarootPBM14,
-  author    = {Sam Anzaroot and
-               Alexandre Passos and
-               David Belanger and
-               Andrew McCallum},
-  title     = {Learning Soft Linear Constraints with Application to
-                  Citation Field Extraction},
+@book{CPDT,
+  author    = {Adam Chlipala},
+  title     = {Certified Programming with Dependent Types - {A} Pragmatic Introduction
+               to the {Coq} Proof Assistant},
+  publisher = {{MIT} Press},
+  year      = {2013},
+  url       = {http://mitpress.mit.edu/books/certified-programming-dependent-types},
+  isbn      = {978-0-262-02665-9},
+  timestamp = {Mon, 11 May 2015 16:37:23 +0200},
+  biburl    = {https://dblp.org/rec/bib/books/daglib/0035083},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{CertifiedSemantics,
+  author    = {Dmitry Rozplokhas and
+               Andrey Vyatkin and
+               Dmitry Boulytchev},
+  editor    = {Bruno C. d. S. Oliveira},
+  title     = {Certified Semantics for Relational Programming},
+  booktitle = {Programming Languages and Systems - 18th Asian Symposium, {APLAS}
+               2020, Fukuoka, Japan, November 30 - December 2, 2020, Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {12470},
+  pages     = {167--185},
+  publisher = {Springer},
+  year      = {2020},
+  url       = {https://doi.org/10.1007/978-3-030-64437-6\_9},
+  doi       = {10.1007/978-3-030-64437-6\_9},
+  timestamp = {Tue, 01 Dec 2020 09:11:49 +0100},
+  biburl    = {https://dblp.org/rec/conf/aplas/RozplokhasVB20.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{InterleavingSearch,
+  author    = {Oleg Kiselyov and
+               Chung{-}chieh Shan and
+               Daniel P. Friedman and
+               Amr Sabry},
+  editor    = {Olivier Danvy and
+               Benjamin C. Pierce},
+  title     = {Backtracking, interleaving, and terminating monad transformers: (functional
+               pearl)},
+  booktitle = {Proceedings of the 10th {ACM} {SIGPLAN} International Conference on
+               Functional Programming, {ICFP} 2005, Tallinn, Estonia, September 26-28,
+               2005},
+  pages     = {192--203},
+  publisher = {{ACM}},
+  year      = {2005},
+  url       = {https://doi.org/10.1145/1086365.1086390},
+  doi       = {10.1145/1086365.1086390},
+  timestamp = {Fri, 25 Jun 2021 14:48:54 +0200},
+  biburl    = {https://dblp.org/rec/conf/icfp/KiselyovSFS05.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@book{Coq,
+  author    = {Yves Bertot and
+               Pierre Cast{\'{e}}ran},
+  title     = {Interactive Theorem Proving and Program Development - {Coq'Art}: The
+               Calculus of Inductive Constructions},
+  series    = {Texts in Theoretical Computer Science. An {EATCS} Series},
+  publisher = {Springer},
+  year      = {2004},
+  url       = {https://doi.org/10.1007/978-3-662-07964-5},
+  doi       = {10.1007/978-3-662-07964-5},
+  isbn      = {978-3-642-05880-6},
+  timestamp = {Tue, 16 May 2017 14:24:38 +0200},
+  biburl    = {https://dblp.org/rec/bib/series/txtcs/BertotC04},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{TarskiKnaster,
+author = {Tarski, Alfred},
+year = {1955},
+month = {06},
+pages = {},
+title = {A Lattice-Theoretical Fixpoint Theorem and Its Applications},
+volume = {5},
+journal = {Pacific Journal of Mathematics},
+doi = {10.2140/pjm.1955.5.285}
+}
+
+@book{LHM,
+  author    = {John W. Lloyd},
+  title     = {Foundations of Logic Programming, 1st Edition},
+  publisher = {Springer},
+  year      = {1984},
+  isbn      = {3-540-13299-6},
+  timestamp = {Thu, 03 Jan 2002 11:51:48 +0100},
+  biburl    = {https://dblp.org/rec/bib/books/sp/Lloyd84},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{HOAS,
+  author    = {Frank Pfenning and
+               Conal Elliott},
+  title     = {Higher-Order Abstract Syntax},
+  booktitle = {Proceedings of the {ACM} SIGPLAN'88 Conference on Programming Language
+               Design and Implementation (PLDI), Atlanta, Georgia, USA, June 22-24,
+               1988},
+  pages     = {199--208},
+  year      = {1988},
+  url       = {https://doi.org/10.1145/53990.54010},
+  doi       = {10.1145/53990.54010},
+  timestamp = {Wed, 14 Nov 2018 10:54:59 +0100},
+  biburl    = {https://dblp.org/rec/bib/conf/pldi/PfenningE88},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{Monads,
+  author    = {Philip Wadler},
+  title     = {Monads for Functional Programming},
+  booktitle = {Advanced Functional Programming, First International Spring School
+               on Advanced Functional Programming Techniques, B{\aa}stad, Sweden,
+               May 24-30, 1995, Tutorial Text},
+  pages     = {24--52},
+  year      = {1995},
+  url       = {https://doi.org/10.1007/3-540-59451-5\_2},
+  doi       = {10.1007/3-540-59451-5\_2},
+  timestamp = {Tue, 14 May 2019 10:00:44 +0200},
+  biburl    = {https://dblp.org/rec/bib/conf/afp/Wadler95},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{BottomAvoiding,
+  author = {Byrd, William E. and Friedman, Daniel P. and Kumar, Ramana and Near, Joseph P.},
+  title = {A Shallow {Scheme} Embedding of Bottom-Avoiding Streams},
+  booktitle = {To appear in a special issue of Higher-Order and Symbolic Computation, in honor of Mitchell Wand's 60th birthday},
+  year={}
+}
+
+@inproceedings{DivTest,
+  author    = {Dmitri Rozplokhas and
+               Dmitri Boulytchev},
+  title     = {Improving Refutational Completeness of Relational Search via Divergence
+               Test},
+  booktitle = {Proceedings of the 20th International Symposium on Principles and
+               Practice of Declarative Programming, {PPDP} 2018, Frankfurt am Main,
+               Germany, September 03-05, 2018},
+  pages     = {18:1--18:13},
+  year      = {2018},
+  url       = {https://doi.org/10.1145/3236950.3236958},
+  doi       = {10.1145/3236950.3236958},
+  timestamp = {Wed, 21 Nov 2018 12:44:13 +0100},
+  biburl    = {https://dblp.org/rec/bib/conf/ppdp/RozplokhasB18},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@book{TRS,
+  author    = {Daniel P. Friedman and
+               William E. Byrd and
+               Oleg Kiselyov},
+  title     = {The reasoned schemer},
+  publisher = {{MIT} Press},
+  year      = {2005},
+  isbn      = {978-0-262-56214-0},
+  timestamp = {Wed, 06 Apr 2011 15:25:01 +0200},
+  biburl    = {https://dblp.org/rec/bib/books/daglib/0015651},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{MicroKanren,
+  title={{$\mu$Kanren}: A Minimal Functional Core for Relational Programming},
+  author={Jason Hemann and Daniel P. Friedman},
+  booktitle = {Proceedings of the 2013 Annual Workshop on Scheme and Functional Programming},
+  year={2013}
+}
+
+@inproceedings{CKanren,
+  author = {Alvis, Claire E. and Willcock, Jeremiah J. and Carter, Kyle M. and Byrd, William E. and Friedman, Daniel P.},
+  title = {{cKanren}: {miniKanren} with Constraints},
+  booktitle = {Proceedings of the 2011 Annual Workshop on Scheme and Functional Programming},
+  year = 2011,
+  month = oct,
+  pdf = {http://scheme2011.ucombinator.org/papers/Alvis2011.pdf} 
+}
+
+@inproceedings{Untagged,
+  author    = {William E. Byrd and
+               Eric Holk and
+               Daniel P. Friedman},
+  title     = {{miniKanren}, live and untagged: quine generation via relational interpreters
+               (programming pearl)},
+  booktitle = {Proceedings of the 2012 Annual Workshop on Scheme and Functional Programming,
+               Scheme 2012, Copenhagen, Denmark, September 9-15, 2012},
+  pages     = {8--29},
+  year      = {2012},
+  url       = {https://doi.org/10.1145/2661103.2661105},
+  doi       = {10.1145/2661103.2661105},
+  timestamp = {Tue, 06 Nov 2018 16:59:25 +0100},
+  biburl    = {https://dblp.org/rec/bib/conf/icfp/ByrdHF12},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@incollection{Unification,
+  author = {Baader, Franz and Snyder, Wayne},
+  chapter = {Unification Theory},
+  editor = {Robinson, Alan and Voronkov, Andrei},
+  title = {Handbook of Automated Reasoning},
+  year = {2001},
+  isbn = {0-444-50812-0},
+  publisher = {Elsevier Science Publishers B. V.},
+  address = {Amsterdam, The Netherlands, The Netherlands},
+}
+
+@PhdThesis{WillThesis,
+  author = {William E. Byrd},
+  title = {Relational Programming in {miniKanren}: Techniques, Applications, and Implementations},
+  school = {Indiana University},
+  year = 2009,
+  month = {September} 
+}
+
+@article{OCanren,
+  author    = {Dmitry Kosarev and
+               Dmitry Boulytchev},
+  title     = {Typed Embedding of a Relational Language in {OCaml}},
+  booktitle = {Proceedings {ML} Family Workshop / OCaml Users and Developers workshops,
+               {ML/OCAML} 2016, Nara, Japan, September 22-23, 2016},
+  pages     = {1--22},
+  year      = {2016},
+  url       = {https://doi.org/10.4204/EPTCS.285.1},
+  doi       = {10.4204/EPTCS.285.1},
+  timestamp = {Fri, 04 Jan 2019 12:22:11 +0100},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/abs-1805-11006},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{unified,
+  author    = {William E. Byrd and
+               Michael Ballantyne and
+               Gregory Rosenblatt and
+               Matthew Might},
+  title     = {A unified approach to solving seven programming problems (functional
+               pearl)},
+  journal   = {{PACMPL}},
+  volume    = {1},
+  number    = {{ICFP}},
+  pages     = {8:1--8:26},
+  year      = {2017},
+  url       = {https://doi.org/10.1145/3110252},
+  doi       = {10.1145/3110252},
+  timestamp = {Tue, 06 Nov 2018 12:51:05 +0100},
+  biburl    = {https://dblp.org/rec/bib/journals/pacmpl/ByrdBRM17},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{AlphaKanren,
+  author = {William E. Byrd and Daniel P. Friedman},
+  pages = "79--90",
+  booktitle = {Proceedings of the 2007 Annual Workshop on Scheme and Functional Programming},
+  title = "{$\alpha$kanren}: A Fresh Name in Nominal Logic Programming",
+  year = {2007} 
+}
+
+@inproceedings{SmallEmbedding,
+  author    = {Jason Hemann and
+               Daniel P. Friedman and
+               William E. Byrd and
+               Matthew Might},
+  title     = {A small embedding of logic programming with a simple complete search},
+  booktitle = {Proceedings of the 12th Symposium on Dynamic Languages, {DLS} 2016,
+               Amsterdam, The Netherlands, November 1, 2016},
+  pages     = {96--107},
+  year      = {2016},
+  url       = {https://doi.org/10.1145/2989225.2989230},
+  doi       = {10.1145/2989225.2989230},
+  timestamp = {Tue, 06 Nov 2018 16:57:15 +0100},
+  biburl    = {https://dblp.org/rec/bib/conf/dls/HemannFBM16},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{Search,
+  author    = {Oleg Kiselyov and
+               Chung{-}chieh Shan and
+               Daniel P. Friedman and
+               Amr Sabry},
+  title     = {Backtracking, interleaving, and terminating monad transformers: (functional
+               pearl)},
+  booktitle = {Proceedings of the 10th {ACM} {SIGPLAN} International Conference on
+               Functional Programming, {ICFP} 2005, Tallinn, Estonia, September 26-28,
+               2005},
+  pages     = {192--203},
+  year      = {2005},
+  url       = {https://doi.org/10.1145/1086365.1086390},
+  doi       = {10.1145/1086365.1086390},
+  timestamp = {Wed, 14 Nov 2018 10:52:41 +0100},
+  biburl    = {https://dblp.org/rec/bib/conf/icfp/KiselyovSFS05},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{KiselyovArithmetic,
+  author    = {Oleg Kiselyov and
+               William E. Byrd and
+               Daniel P. Friedman and
+               Chung{-}chieh Shan},
+  title     = {Pure, Declarative, and Constructive Arithmetic Relations (Declarative
+               Pearl)},
+  booktitle = {Functional and Logic Programming, 9th International Symposium, {FLOPS}
+               2008, Ise, Japan, April 14-16, 2008. Proceedings},
+  pages     = {64--80},
+  year      = {2008},
+  url       = {https://doi.org/10.1007/978-3-540-78969-7\_7},
+  doi       = {10.1007/978-3-540-78969-7\_7},
+  timestamp = {Tue, 14 May 2019 10:00:53 +0200},
+  biburl    = {https://dblp.org/rec/bib/conf/flops/KiselyovBFS08},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{CKanren1,
+  author    = {Jason Hemann and
+               Daniel P. Friedman},
+  title     = {A Framework for Extending {microKanren} with Constraints},
+  booktitle = {Proceedings 29th and 30th Workshops on (Constraint) Logic Programming
+               and 24th International Workshop on Functional and (Constraint) Logic
+               Programming, {WLP} 2015 / {WLP} 2016 / {WFLP} 2016, Dresden and Leipzig,
+               Germany, 22nd September 2015 and 12-14th September 2016},
+  pages     = {135--149},
+  year      = {2017},
+  url       = {https://doi.org/10.4204/EPTCS.234.10},
+  doi       = {10.4204/EPTCS.234.10},
+  timestamp = {Wed, 09 Oct 2019 16:19:29 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/HemannF17},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{Guided,
+  author = {Cameron Swords and Daniel P. Friedman},
+  pages = {},
+  booktitle = {Proceedings of the 2013 Annual Workshop on Scheme and Functional Programming},
+  title = "{rKanren}: Guided Search in {miniKanren}",
+  year = {2013} 
+}
+
+@inproceedings{RelConversion,
+  author    = {Petr Lozov and
+               Andrei Vyatkin and
+               Dmitry Boulytchev},
+  title     = {Typed Relational Conversion},
+  booktitle = {Trends in Functional Programming - 18th International Symposium, {TFP}
+               2017, Canterbury, UK, June 19-21, 2017, Revised Selected Papers},
+  pages     = {39--58},
+  year      = {2017},
+  url       = {https://doi.org/10.1007/978-3-319-89719-6\_3},
+  doi       = {10.1007/978-3-319-89719-6\_3},
+  timestamp = {Tue, 14 May 2019 10:00:44 +0200},
+  biburl    = {https://dblp.org/rec/bib/conf/sfp/LozovVB17},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{CertifiedRevProg,
+  author    = {Luca Paolini and
+               Mauro Piccolo and
+               Luca Roversi},
+  title     = {A Certified Study of a Reversible Programming Language},
+  booktitle = {21st International Conference on Types for Proofs and Programs, {TYPES}
+               2015, May 18-21, 2015, Tallinn, Estonia},
+  pages     = {7:1--7:21},
+  year      = {2015},
+  url       = {https://doi.org/10.4230/LIPIcs.TYPES.2015.7},
+  doi       = {10.4230/LIPIcs.TYPES.2015.7},
+  timestamp = {Wed, 25 Sep 2019 18:22:36 +0200},
+  biburl    = {https://dblp.org/rec/bib/conf/types/PaoliniPR15},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@InProceedings{CeritfiedDenotationalCut,
+  author    = {Jael Kriener and
+               Andy King},
+  title     = {Semantics for {Prolog} with Cut - Revisited},
+  booktitle = {Functional and Logic Programming - 12th International Symposium, {FLOPS}
+               2014, Kanazawa, Japan, June 4-6, 2014. Proceedings},
+  pages     = {270--284},
   year      = {2014},
-  archivePrefix = {arXiv},
-  eprint    = {1403.1349},
+  url       = {https://doi.org/10.1007/978-3-319-07151-0\_17},
+  doi       = {10.1007/978-3-319-07151-0\_17},
+  timestamp = {Tue, 14 May 2019 10:00:53 +0200},
+  biburl    = {https://dblp.org/rec/bib/conf/flops/KrienerK14},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@inproceedings{Hagerup1993,
-title        = {Maintaining Discrete Probability Distributions Optimally},
-author       = {Hagerup, Torben and Mehlhorn, Kurt and Munro, J. Ian},
-booktitle    = {Proceedings of the 20th International Colloquium on Automata, Languages and Programming},
-series       = {Lecture Notes in Computer Science},
-volume       = {700},
-pages        = {253--264},
-year         = {1993},
-publisher    = {Springer-Verlag},
-address      = {Berlin},
+@inproceedings{CertifiedPrologEquivalences,
+  author    = {Jael Kriener and
+               Andy King and
+               Sandrine Blazy},
+  title     = {Proofs you can believe in: proving equivalences between {Prolog} semantics
+               in {Coq}},
+  booktitle = {15th International Symposium on Principles and Practice of Declarative
+               Programming, {PPDP} '13, Madrid, Spain, September 16-18, 2013},
+  pages     = {37--48},
+  year      = {2013},
+  url       = {https://doi.org/10.1145/2505879.2505886},
+  doi       = {10.1145/2505879.2505886},
+  timestamp = {Wed, 25 Sep 2019 18:23:37 +0200},
+  biburl    = {https://dblp.org/rec/bib/conf/ppdp/KrienerKB13},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@MISC{MechanisingMiniKanren,
+  author = "Ramana Kumar",
+  title = "Mechanising Aspects of {miniKanren} in {HOL}",
+  howpublished = "Bachelor Thesis, The Australian National University",
+  year = "2010"
+}
+
+@inproceedings{JonesMycroftSemantics,
+  author    = {Neil D. Jones and
+               Alan Mycroft},
+  title     = {Stepwise Development of Operational and Denotational Semantics for
+               {Prolog}},
+  booktitle = {Proceedings of the 1984 International Symposium on Logic Programming,
+               Atlantic City, New Jersey, USA, February 6-9, 1984},
+  pages     = {281--288},
+  year      = {1984},
+  timestamp = {Wed, 04 Dec 2013 14:42:59 +0100},
+  biburl    = {https://dblp.org/rec/bib/conf/slp/JonesM84},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{DebrayMishraSemantics,
+  author    = {Saumya K. Debray and
+               Prateek Mishra},
+  title     = {Denotational and operational semantics for {PROLOG}},
+  booktitle = {Formal Description of Programming Concepts - {III:} Proceedings of
+               the {IFIP} {TC} 2/WG 2.2 Working Conference on Formal Description
+               of Programming Concepts - III, Ebberup, Denmark, 25-28 August 1986},
+  pages     = {245--274},
+  year      = {1987},
+  timestamp = {Thu, 10 Jan 2019 14:38:20 +0100},
+  biburl    = {https://dblp.org/rec/bib/conf/ifip2/DebrayM87},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{MGUinLCF,
+  author    = {Lawrence C. Paulson},
+  title     = {Verifying the Unification Algorithm in {LCF}},
+  journal   = {Sci. Comput. Program.},
+  volume    = {5},
+  number    = {2},
+  pages     = {143--169},
+  year      = {1985},
+  url       = {https://doi.org/10.1016/0167-6423(85)90009-7},
+  doi       = {10.1016/0167-6423(85)90009-7},
+  timestamp = {Wed, 14 Nov 2018 10:21:27 +0100},
+  biburl    = {https://dblp.org/rec/bib/journals/scp/Paulson85},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{MGUinMLTT,
+    author = {Ana Bove},
+    title = {Programming in Martin-Löf Type Theory: Unification -- A non-trivial Example},
+    booktitle = {DEPARTMENT OF COMPUTER SCIENCE, CHALMERS UNIVERSITY OF TECHNOLOGY},
+    year = {1999},
+    pages = {22--42},
+    publisher = {}
+}
+
+@inproceedings{IdempMGUinCoq,
+  author    = {Sunil Kothari and
+               James Caldwell},
+  title     = {A Machine Checked Model of Idempotent {MGU} Axioms For Lists of Equational
+               Constraints},
+  booktitle = {Proceedings 24th International Workshop on Unification, {UNIF} 2010,
+               Edinburgh, United Kingdom, 14th July 2010},
+  pages     = {24--38},
+  year      = {2010},
+  url       = {https://doi.org/10.4204/EPTCS.42.3},
+  doi       = {10.4204/EPTCS.42.3},
+  timestamp = {Wed, 12 Sep 2018 01:05:14 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/abs-1012-4892},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{TextbookMGUinCoq,
+  author    = {Rodrigo Geraldo Ribeiro and
+               Carlos Camar{\~{a}}o},
+  title     = {A Mechanized Textbook Proof of a Type Unification Algorithm},
+  booktitle = {Formal Methods: Foundations and Applications - 18th Brazilian Symposium,
+               {SBMF} 2015, Belo Horizonte, Brazil, September 21-22, 2015, Proceedings},
+  pages     = {127--141},
+  year      = {2015},
+  url       = {https://doi.org/10.1007/978-3-319-29473-5\_8},
+  doi       = {10.1007/978-3-319-29473-5\_8},
+  timestamp = {Tue, 14 May 2019 10:00:37 +0200},
+  biburl    = {https://dblp.org/rec/bib/conf/sbmf/RibeiroC15},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{StructuralMGU,
+  author    = {Conor McBride},
+  title     = {First-order unification by structural recursion},
+  journal   = {J. Funct. Program.},
+  volume    = {13},
+  number    = {6},
+  pages     = {1061--1075},
+  year      = {2003},
+  url       = {https://doi.org/10.1017/S0956796803004957},
+  doi       = {10.1017/S0956796803004957},
+  timestamp = {Wed, 14 Nov 2018 10:38:38 +0100},
+  biburl    = {https://dblp.org/rec/bib/journals/jfp/McBride03},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{HOASinCoq,
+  author    = {Jo{\"{e}}lle Despeyroux and
+               Amy P. Felty and
+               Andr{\'{e}} Hirschowitz},
+  title     = {Higher-Order Abstract Syntax in {Coq}},
+  booktitle = {Typed Lambda Calculi and Applications, Second International Conference
+               on Typed Lambda Calculi and Applications, {TLCA} '95, Edinburgh, UK,
+               April 10-12, 1995, Proceedings},
+  pages     = {124--138},
+  year      = {1995},
+  url       = {https://doi.org/10.1007/BFb0014049},
+  doi       = {10.1007/BFb0014049},
+  timestamp = {Tue, 14 May 2019 10:00:41 +0200},
+  biburl    = {https://dblp.org/rec/bib/conf/tlca/DespeyrouxFH95},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{PrologSemContinuations,
+  author    = {Arie de Bruin and
+               Erik P. de Vink},
+  title     = {Continuation Semantics for {PROLOG} with Cut},
+  booktitle = {TAPSOFT'89: Proceedings of the International Joint Conference on Theory
+               and Practice of Software Development, Barcelona, Spain, March 13-17,
+               1989, Volume 1: Advanced Seminar on Foundations of Innovative Software
+               Development {I} and Colloquium on Trees in Algebra and Programming
+               (CAAP'89)},
+  pages     = {178--192},
+  year      = {1989},
+  url       = {https://doi.org/10.1007/3-540-50939-9\_132},
+  doi       = {10.1007/3-540-50939-9\_132},
+  timestamp = {Tue, 14 May 2019 10:00:50 +0200},
+  biburl    = {https://dblp.org/rec/bib/conf/tapsoft/BruinV89},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{LTS,
+  author    = {Robert M. Keller},
+  title     = {Formal Verification of Parallel Programs},
+  journal   = {Commun. {ACM}},
+  volume    = {19},
+  number    = {7},
+  pages     = {371--384},
+  year      = {1976},
+  url       = {https://doi.org/10.1145/360248.360251},
+  doi       = {10.1145/360248.360251},
+  timestamp = {Tue, 06 Nov 2018 12:51:40 +0100},
+  biburl    = {https://dblp.org/rec/journals/cacm/Keller76.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@incollection{UnificationTheory,
+  author    = {Franz Baader and
+               Wayne Snyder},
+  editor    = {John Alan Robinson and
+               Andrei Voronkov},
+  title     = {Unification Theory},
+  booktitle = {Handbook of Automated Reasoning (in 2 volumes)},
+  pages     = {445--532},
+  publisher = {Elsevier and {MIT} Press},
+  year      = {2001},
+  url       = {https://doi.org/10.1016/b978-044450813-3/50010-2},
+  doi       = {10.1016/b978-044450813-3/50010-2},
+  timestamp = {Fri, 09 Apr 2021 18:22:42 +0200},
+  biburl    = {https://dblp.org/rec/books/el/RV01/BaaderS01.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{SymbolicExecutionForAnalysis,
+  author    = {J{\"{u}}rgen Giesl and
+               Thomas Str{\"{o}}der and
+               Peter Schneider{-}Kamp and
+               Fabian Emmes and
+               Carsten Fuhs},
+  editor    = {Danny De Schreye and
+               Gerda Janssens and
+               Andy King},
+  title     = {Symbolic evaluation graphs and term rewriting: a general methodology
+               for analyzing logic programs},
+  booktitle = {Principles and Practice of Declarative Programming, PPDP'12, Leuven,
+               Belgium - September 19 - 21, 2012},
+  pages     = {1--12},
+  publisher = {{ACM}},
+  year      = {2012},
+  url       = {https://doi.org/10.1145/2370776.2370778},
+  doi       = {10.1145/2370776.2370778},
+  timestamp = {Wed, 25 Sep 2019 18:23:37 +0200},
+  biburl    = {https://dblp.org/rec/conf/ppdp/GieslSSEF12.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{OccursCheckStaticTest,
+  author    = {Joachim Beer},
+  title     = {The Occur-Check Problem Revisited},
+  journal   = {J. Log. Program.},
+  volume    = {5},
+  number    = {3},
+  pages     = {243--261},
+  year      = {1988},
+  url       = {https://doi.org/10.1016/0743-1066(88)90012-X},
+  doi       = {10.1016/0743-1066(88)90012-X},
+  timestamp = {Wed, 17 Feb 2021 08:54:31 +0100},
+  biburl    = {https://dblp.org/rec/journals/jlp/Beer88.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{SubstDataStructs,
+author = {Bender, David and Kuper, Lindsey and Byrd, William and Friedman, Daniel},
+year = {2015},
+month = {03},
+pages = {},
+title = {Efficient representations for triangular substitutions: A comparison in miniKanren}
+}
+
+@inproceedings{NominalUnificationWithTriangularSubstitutions,
+  author    = {Ramana Kumar and
+               Michael Norrish},
+  editor    = {Matt Kaufmann and
+               Lawrence C. Paulson},
+  title     = {(Nominal) Unification by Recursive Descent with Triangular Substitutions},
+  booktitle = {Interactive Theorem Proving, First International Conference, {ITP}
+               2010, Edinburgh, UK, July 11-14, 2010. Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {6172},
+  pages     = {51--66},
+  publisher = {Springer},
+  year      = {2010},
+  url       = {https://doi.org/10.1007/978-3-642-14052-5\_6},
+  doi       = {10.1007/978-3-642-14052-5\_6},
+  timestamp = {Tue, 14 May 2019 10:00:37 +0200},
+  biburl    = {https://dblp.org/rec/conf/itp/KumarN10.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{StepIndexing,
+  author    = {Andrew W. Appel and
+               David A. McAllester},
+  title     = {An indexed model of recursive types for foundational proof-carrying
+               code},
+  journal   = {{ACM} Trans. Program. Lang. Syst.},
+  volume    = {23},
+  number    = {5},
+  pages     = {657--683},
+  year      = {2001},
+  url       = {https://doi.org/10.1145/504709.504712},
+  doi       = {10.1145/504709.504712},
+  timestamp = {Mon, 15 Jun 2020 16:54:21 +0200},
+  biburl    = {https://dblp.org/rec/journals/toplas/AppelM01.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
