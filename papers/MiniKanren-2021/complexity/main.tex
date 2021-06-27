@@ -230,12 +230,20 @@ language=minikanren
 \input{intro}
 \input{background}
 \input{scheduling}
-% \input{uni-rei}
+ \input{uni-rei}
 \input{symbolic_schemes}
 \input{evaluation}
 
 \section{Conclusion}
 
+We presented a first attempt to build a theory which would allow one to calculate an adequate worst-case time
+complexity estimations for relational programs in \mK. While our research is not completed the results still
+allow to explain some observable phenomena in some relational programs behavior.
+
+As the directions for future research we can mention relaxing the requirements which we put on
+terms and substitutions in order to provide an accurate unification time estimations. It would be also
+interesting to come up with an automated (or semi-automated) procedure to deduce the complexity
+estimations in a symbolic forms by making use of symbolic execution model presened in Section~\ref{sec:symbolic}.
 
 %%
 %% The acknowledgments section is defined using the "acks" environment
