@@ -1,0 +1,89 @@
+\section{Unification and Reification Complexity}
+\label{sec:uni-rei}
+
+Syntactic unification of terms is a core operation for logic programming in whole and relational programming in particular.
+However, the performance characteristics of conventional unification algorithms is rather hard to assess.
+The known worst-case estimations say very little about the behaviour of unification in \emph{practically important cases}, and, in
+general, the very notion of ``practical importance'' is hard to formalize (which constitutes a generic problem for applied complexity as well).
+
+The practical observations witness, that while the worst-case complexity for the conventional unification algorithm is exponential, in the majority of
+cases met in practical logic programming the time for each unification problem instance throughout the program execution is linear or even constant on the size of the input.
+
+%So the inner workings of unification are often neglected when estimating performance of programs.
+
+\mK has a distinctive way of implementing unification fitting in accordance with its ideology. First, since \mK aims at purely functional implementation of an embedded logical
+language it uses a triangular form of substitution~\cite{UnificationTheory} which allows a simple extension in a non-mutable fashion. Such substitutions are lazy in the sense that
+they hold a partially substituted value for each variable, so to obtain a fully substituted value it may be necessary to apply a substitution repeatedly. In particular, a full
+cycle of substitution application is needed in the end of search to get the result for a queried variable. This process is called \emph{reification}. \mK uses the conventional Robinson's
+algorithm for unification~\cite{UnificationTheory}, adjusted for triangular substitutions~\cite{TRS}. Second, since \mK commits to adhere to logical consistency, by default it always
+performs \emph{occurs checks} during the unification. Occurs check ensures that a binding being added into the substitution does not introduce any circularity, which is crucial for
+establishing the soundness of unification results. However, being rarely violated, occurs check introduces an significant performance penalty, so some logical languages (such as \textsc{Prolog})
+omit it.
+
+In this section we show how the complexity of unification can be assessed for many practical cases. Specifically, we present two dynamic tests
+for relational programs, under which every unification (omitting occurs check) in the program performs a constant number of basic operations. At the same
+time the occurs check, which complexity can be estimated separately, adds a significant overhead to the execution time and often even increases the asymptotic complexity.
+A number of programs satisfying given tests and showing the impact of occurs check are listed in \sectionword~\ref{sec:evaluation}.
+
+The actual time of unification depends on a concrete choice for a data structure to represent triangular substitutions (which are, abstractly, maps from integers to terms).
+Therefore we parameterize our estimations by two values~--- $\lookuptime{\sigma}$ and $\addtime{\sigma}$,~--- which represent, respectively, the
+worst-case asymptotic complexity for lookup and add operations w.r.t. to a substitution $\sigma$. The obvious candidate data structure is standard library maps
+for a host language (and many implementations like \textsc{fasterMiniKanren} and \textsc{OCanren} follow this recipe), which have logarithmic complexity for both operations,
+so we expect this multipliers to be negligible. However, some implementations like \textsc{microKanren} use associative lists for simplicity of presentation (which have linear-time
+lookup and constant-time addition complexities) or more complex data structures like random-access lists (which have a log-time lookup and average constant-time addition complexities)
+so we keep this parameterization for the general case. The review of performance of different date structures for triangular substitutions is given in~\cite{SubstDataStructs}.
+
+The basic building block for the unification with triangular substitution is a \emph{walk} operation. This operation checks whether a given variable is mapped by a given substitution to a
+term with a constructor at the top level. ``Walk'' continually looks up the substitution until a binding to a non-variable (in particular, no binding at all) is found. This
+process can diverge only when there is a circular binding in the substitution, which, in turn, is exculded by the occurs check, so the substitutions are always consistent
+in this sense~\cite{NominalUnificationWithTriangularSubstitutions}. Nevertheless ``walk'' can require a linear number (on the size of a substitution) of lookups.
+However the variable-to-variable bindings occur rarely in practice and usually ``walk'' finds the required binding in one step. We can take the absence of variable-to-variable bindings
+as our first practical test: for \emph{flat} substitutions (substitutions without such bindings) ``walk'' always makes only one lookup. We can relax this requirement by allowing a
+constant number, independent on the inputs parameters of the topmost goal, of variable-to-variable bindings.
+
+\begin{definition}
+A substitution $\sigma$ is called \emph{constant-factor flat} if the number variable-to-variable bindings in $\sigma$ does not depend on the input parameters of the topmost goal.
+\end{definition}
+
+\begin{lemma}
+If during the evalution of a goal all substitutions are constant-factor flat, then the time of any walk during that evaluation on substitution $\sigma$ is $\lookuptime{\sigma}$.
+\end{lemma}
+
+The unification of two terms goes by the standard recursive descent. Each time a variable is encountered in a term being unified a ``walk'' step is performed, and if it ends up with
+an unbound varible the occurs check is performed and, if succeeded, the substitution is extended. As the substitution grows during the process  the unified terms grow,
+too, and the descent can go beyond the size of initial terms. But we argue that this happens not that often. For example, for a linear case (when any variable occurs in unified terms at
+most once) the extensions of the substitution during the unification do not affect the unification in other branches, so the recursion will stop at the minimal height of the terms. 
+
+\begin{lemma}
+  Given two terms $t_1$ and $t_2$ and a current constant-factor flat substitution $\sigma$, if any variable occurs at most once in at most one of the terms $\{t_1 \sigma, t_2 \sigma\}$,
+  then the time this unification takes, excluding occurs checks, is $\O\,(\min\,\{|t_1 \sigma|, |t_2 \sigma|\}) \cdot (\lookuptime{\sigma} + \addtime{\sigma})$.
+\end{lemma}
+
+In particular, if the size of one of those two terms does not depend on the input (which is usually the case) the unification performs a constant number of basic operation.
+This is our second practical criterion: linearity and constant size of one the terms in every unification.
+
+In the presence of occurs checks, however, we need to also go through every term we add in the substitution. This changes $\min$ in the estimation above to $\max$, making a huge
+difference. Roughly speaking, in average the number of basic operations for every unification with occurs checks is approximately an average size of all terms unified in program
+(which is usually linear of the input). Therefore occurs checks add a huge time overhead for program execution in \mK, both for asymptotics (see \sectionword~\ref{sec:evaluation})
+and for observable time~\cite{WillThesis}. This fact calls for an investigation into ways of going around occurs checks in \mK. Although simply omitting them is not an option for \mK,
+there are other known approaches (mostly explored for \textsc{Prolog}), for example static tests ensuring that occurs checks for a given program will never be violated~\cite{OccursCheckStaticTest}.
+As far as we know, for now there are no such solutions adopted for \mK.
+
+For now, as we estimate the time of every individual unification it might be not clear how it relates to the estimation for the scheduling time. But since we consider cases in which unification
+is relatively fast (constant number of basic operations), the number of unifications during an execution plays more important role and it can be simply limited by the number of semantic
+steps $d\,(s_{init}\,(n))$ (because every unification is a separate step in the semantics). Similarly, although the time of basic operations depends on size of substitution in different points
+of execution, logical variables for these bindings come either from the input (where there is usually a constant number of them) or from a fresh variable allocations during the evalutation
+(each of which is a a separate step in the semantics). So the number of allocated logic variables (and therefore the maximum possible number of bindings) is limited by
+
+\[
+FV\,(input\,(n)) + d\,(s_{init}\,(n))
+\]
+
+So, for example, for a usual case, when our practical tests are satisfied and the input contains a constant number of logic variables, for a standard implementation and without occurs checks
+the total time of unifications $T_u$ is $\O\,(d\,(s_{init}\,(n)) \log d\,(s_{init}\,(n)))$
+
+The time of reification $T_r$ can be estimated in the same way, since reification simply goes through the resulting term similarly to occur check. So in the case when the resulting
+substitution is constant-factor flat, the number of basic operations for the reification is limited by the size of the output (multiplied by a constant). This time is usually subdued by
+the time of unification and scheduling, but not always (see examples in \sectionword~\ref{sec:evaluation}).
+
+
