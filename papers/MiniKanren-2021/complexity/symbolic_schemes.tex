@@ -53,7 +53,7 @@ operations performed during unifications in the execution of the call, exluding 
 To achieve this, we build a symbolic execution scheme, mirroring the body of the examined relation, identify recursive calls and reconstructing recursive inequalities for all the aforementioned factors
 by using the estimations described in the previous sections. We put a number of restrictions for the examined relational call for our approach (however, as can be seen from the
 \sectionword~\ref{sec:evaluation}, the huge variety of real examples satisfy it): relations should be in a disjunctive normal form, in the result all the logical variables in the query should be
-bound to ground terms, and two practicality tests described in \sectionword~\ref{sec:unification} should be satisfied (which we can check using the symbolic execution, too).
+bound to ground terms, and two practicality tests described in \sectionword~\ref{sec:uni-rei} should be satisfied (which we can check using the symbolic execution, too).
 
 We need to know also two extra pieces of information to perform the analysis for a given call. First, to  know how to proceed after recursive calls we need to know the answers that the calls produce.
 We describe them by sets of substitutions binding all the logical variables in the query to a fresh symbolic variables, which we then specify in the metatheory (for example, $ANS^{pref}\,(k) = \{[\underline{a} \gets \overline{p}] \mid \textit{$p$ is a prefix of the list \texttt{\lstinline|[$0$, .., $n - 1$]|}} \} $). Second, we need to know all information for non-recursive relational calls
@@ -67,7 +67,7 @@ the answers are $ANS^{incr}(l) = \{[\underline{pti} \gets \overline{l'}] \; \mid
  d^{incr}\,(l) &\in& \O\,(length\,(l)) \\
  t_s^{incr}\,(l) &\in& \O\,(length\,(l)) \\
  t_{uni}^{incr}\,(l) &\in& \O\,(length\,(l)) \\
- t_{occ}^{incr}\,(l) &\in& \O\,(size\,(l)) \\
+ t_{occ}^{incr}\,(l) &\in& \O\,(length\,(l) \,\cdot\, size\,(l)) \\
  t_{r}^{incr}\,(l) &\in& \O\,(size\,(l)) \\
  \textit{where} && \\
  size\,(l) &=& \sum_{x \in l} |x| 
@@ -202,11 +202,11 @@ The simplified version is the following.
 
 \[ \begin{array}{rcl}
 t_{occ}^{pref}\,(0) &\le& C \\
-t_{occ}^{pref}\,(k' + 1) &\le& C + k' + t_{occ}^{pref}\,(k') + \sum_{i \in [0..k' - 1]} (C \cdot i^2 + C \cdot i^2 + 1) \\
-\phantom{t_{occ}^{pref}\,(k' + 1)} &\le& t_{occ}^{pref}\,(k') + C \cdot k'^3 
+t_{occ}^{pref}\,(k' + 1) &\le& C + k' + t_{occ}^{pref}\,(k') + \sum_{i \in [0..k' - 1]} (C \cdot i^3 + C \cdot i^2 + 1) \\
+\phantom{t_{occ}^{pref}\,(k' + 1)} &\le& t_{occ}^{pref}\,(k') + C \cdot k'^4
 \end{array} \]
 
-And the result is $t_{occ}^{pref}\,(k) \in \O\,(k^4)$.
+And the result is $t_{occ}^{pref}\,(k) \in \O\,(k^5)$.
 
 \item Finally, to estimate $t_{r}^{pref}\,(k)$ we just sum the sizes of all answers from $ANS^{pref}\,(k)$.
 
@@ -219,5 +219,5 @@ So $t_{r}^{pref}\,(k) \in \O\,(k^3)$.
 This way we get the complexity for all the components of the search. Now we can combine them to get the estimation complete. To get the time related to the unification we should
 multiply $t_{uni}^{pref}$, $t_{occ}^{pref}$, $t_r^{pref}$ by a factor $(\lookuptime{|\sigma|} + \addtime{|\sigma|}))$ which we can estimate
 by $(\lookuptime{d^{pref}(k)} + \addtime{d^{pref}(k)}))$. So, for example, for an implementation with standard-library maps for substitutions the complete time of the
-search for the call \lstinline{prefix$^o$ $\overline{k}$ $\underline{a}$} is be $\O\,(k^4 + k^3 \log k + k^4 \log k + k^3 \log k) = \O\,(k^4 \log k)$ with occurs checks and
+search for the call \lstinline{prefix$^o$ $\overline{k}$ $\underline{a}$} is $\O\,(k^4 + k^3 \log k + k^5 \log k + k^3 \log k) = \O\,(k^5 \log k)$ with occurs checks and
 $\O\,(k^4 + k^3 \log k + k^3 \log k) = \O\,(k^4)$ without.

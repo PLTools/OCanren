@@ -4,7 +4,7 @@
 We may notice that operational semantics described in the previous section can be used to calculate the number of elementary scheduling steps.
 In this section we define a specific value which estimates the scheduling time and give some equations to calculate this value for a given \emph{semantic
 state}. However, our ultimate goal is to provide a way to deduce the complexity factor for a \emph{syntactic goal}. This problem will be addressed in
-Section~\ref{which}, which will make use of recurrent equations presented here.
+Section~\ref{sec:symbolic}, which will make use of recurrent equations presented here.
 
 We also restrict our considerations only by the case when the evaluation of a goal in question delivers a final number of answers. Indeed,
 if the number of answers is infinite, no reasonable complexity estimation can be given. A much more interesting question would be
@@ -18,8 +18,7 @@ Our first idea is to take the number of states $d\,(s)$ in the \emph{finite} tra
 However, it turns out, that this value alone in not enough to provide an accurate scheduling complexity estimation. The reason is that some
 elementary steps in the semantics are not elementary in existing implementations. Namely, a careful analysis of the semantics discovers that
 it involves a navigation to the leftmost leaf of the state, which in implementation corresponds to a number of
-steps, proportional to the length of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$, and
-assess its adequacy in Section~\ref{adequacy}:
+steps, proportional to the length of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$:
 
 \[
 t\,(s) \eqdef \sum\limits_{s_i \in \trs{s}} lh\,(s_i) 
@@ -125,6 +124,7 @@ Finally, we provide two approximations for goals in the form of sequences of dis
 certain constant $c_k$, depending only on $k$, comes in.
 
 \begin{lemma}
+\label{lem:disjunction_metrics_calc}
 
 Let $g = g_1 \lor \dots \lor g_k$ and $1 \le l \le k$; then
 
@@ -139,6 +139,7 @@ Let $g = g_1 \lor \dots \lor g_k$ and $1 \le l \le k$; then
 \end{lemma}
 
 \begin{lemma}
+\label{lem:conjunction_metrics_calc}
 
 Let $g = g_1 \land \dots \land g_k$ and let $A_i$ be a set of all answers that are passed to $g_i$ at some stage starting from some initial environment $e_0$
 
