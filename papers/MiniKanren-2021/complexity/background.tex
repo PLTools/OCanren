@@ -1,9 +1,9 @@
 \section{Background: syntax and operational semantics}
 
-In this section we provide some known formal descriptions of \mK language that will be used as a basis for our development.
-Specifically, we restate the syntax of the basic version of the language and the operational semantics for program evaluation in it.
-The descriptions here are taken from \citet{CertifiedSemantics} (with a few non-essential adjustments for presentation purposes) to make
-the present paper self-contained, more details and explanations can be found there.
+In this section we recollect some known formal descriptions for \mK language that will be used as a basis for our development.
+Specifically, we restate the syntax of the basic version of the language and the operational semantics for program evaluation.
+The descriptions here are taken from~\cite{CertifiedSemantics} (with a few non-essential adjustments for presentation purposes) to make
+the paper self-contained, more details and explanations can be found there.
 
 \begin{figure}[t]
 \centering
@@ -45,7 +45,7 @@ A top-level goal represents a search procedure which returns a stream of substit
 The language we consider is first-order, as goals can not be passed as parameters, returned or constructed at runtime.
 
 During the evaluation of \mK program an environment, consisting of a substitution for logic variables and a counter of allocated logic
-variables, is threaded through computation and update in every unification and fresh variable introduction.
+variables, is threaded through computation and updated in every unification and fresh variable introduction.
 The substitution in the environment at a given point and a given branch of evaluation contains all the information about relations between
 the logical variables at this point, we will later refer to the substitution in the environment as at a given point as a ``current substitution''
 in informal explanations.
@@ -111,7 +111,7 @@ The transition rules are shown in Fig.~\ref{fig:operanional_semantics_rules}.
 The introduced transition system is completely deterministic.
 Therefore a derivation sequence for a state $s$ determines a certain \emph{trace}~--- a sequence of states and labeled transitions between
 them.
-It may be finate (ending with the terminal state $\Diamond$) or infinite.
+It may be either finite (ending with the terminal state $\Diamond$) or infinite.
 We will denote by $\trs{s}$ the sequence of states in the trace for initial state $s$ and by $\tra{s}$ the sequence of labels on
 transitions in the trace for initial state $s$.
 The sequence $\tra{s}$ corresponds to the stream of answers in the reference \mK implementations.

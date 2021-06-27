@@ -3,26 +3,26 @@
 Despite its simple implementation, the search in \mK has a lot of different aspects affecting the performance which are hard to think about intuitively altogether. It is easy to overlook some of them and then behavior of the search in certain cases can be really surprising.
 
 \begin{figure}[t]
-\begin{lstlisting}
+\begin{tabular}{p{5cm}p{5cm}}
+\begin{lstlisting}[basicstyle=\small]
    length$^o$ = fun a n ->
      ((a === Nil) /\ (n === O)) \/
      (fresh (h t n')
-        (a === Cons(h, t)) /\
-        (n === S(n')) /\
+        (a === Cons (h, t)) /\
+        (n === S (n')) /\
         (length$^o$ l' n'))
      )
-\end{lstlisting}
-
-\begin{lstlisting}
+\end{lstlisting} &
+\begin{lstlisting}[basicstyle=\small]
    length$_d^o$ = fun a n ->
      ((a === Nil) /\ (n === O)) \/
      (fresh (h t n')
-        (a === Cons(h, t)) /\
+        (a === Cons (h, t)) /\
         (length$_d^o$ l' n') /\
-        (n === S(n')))
+        (n === S (n')))
      )
 \end{lstlisting}
-
+\end{tabular}
 \caption{Example of two implementations of the length calculating relation}
 \label{fig:length_implementations}
 \end{figure}
