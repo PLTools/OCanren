@@ -88,6 +88,7 @@
 
 \newcommand{\todonote}[1]{\todo[inline, color=blue!20]{\textbf{TODO:} #1}}
 \newcommand{\sectionword}{section}
+\newcommand{\appendixword}{appendix}
 \newcommand{\figureword}{Fig.}
 \newcommand{\eqdef}{\overset{\mathrm{def}}{=}}
 \newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
@@ -225,17 +226,13 @@ language=minikanren
 %% information and builds the first part of the formatted document.
 \maketitle
 
-\section{Introduction}
 
+\input{intro}
 \input{background}
 \input{scheduling}
-\input{uni-rei}
+% \input{uni-rei}
 \input{symbolic_schemes}
-
-\section{Evaluation}
-\label{sec:evaluation}
-
-% \section{Related Works}
+\input{evaluation}
 
 \section{Conclusion}
 
