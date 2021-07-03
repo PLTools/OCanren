@@ -3,7 +3,7 @@
 
 In this section we recollect some known formal descriptions for \mK language that will be used as a basis for our development.
 Specifically, we restate the syntax of the basic version of the language and the operational semantics for program evaluation.
-The descriptions here are taken from~\cite{CertifiedSemantics} (with a few non-essential adjustments for presentation purposes) to make
+The descriptions here are taken from~\citet{CertifiedSemantics} (with a few non-essential adjustments for presentation purposes) to make
 the paper self-contained, more details and explanations can be found there.
 
 \begin{figure}[t]
@@ -14,7 +14,7 @@ the paper self-contained, more details and explanations can be found there.
   \mathcal{T}_X & = & X \cup \{C_i^{k_i} (t_1, \dots, t_{k_i}) \mid t_j\in\mathcal{T}_X\} & \mbox{terms over the set of variables $X$} \\
   \mathcal{D} & = & \mathcal{T}_\emptyset & \mbox{ground terms}\\
   \mathcal{X} & = & \{ x, y, z, \dots \} & \mbox{syntactic variables} \\
-  \mathcal{A} & = & \{ \alpha, \beta, \gamma, \dots \} & \mbox{semantic variables} \\
+  \mathcal{A} & = & \{ x^?, y^?, z^? \dots \} & \mbox{logic variables} \\
   \mathcal{R} & = & \{ R_i^{k_i}\} &\mbox{relational symbols with arities} \\[2mm]
   \mathcal{G} & = & \mathcal{T_X}\equiv\mathcal{T_X}   &  \mbox{equality} \\
               &   & \mathcal{G}\wedge\mathcal{G}     & \mbox{conjunction} \\
@@ -29,7 +29,7 @@ the paper self-contained, more details and explanations can be found there.
 \end{figure}
 
 The syntax of the basic version of \mK is shown in Fig.~\ref{fig:syntax}. 
-All data is presented using terms $\mathcal{T}_X$ build from a fixed set of constructors $\mathcal{C}$ with known arities and variables
+All data is presented using terms $\mathcal{T}_X$ built from a fixed set of constructors $\mathcal{C}$ with known arities and variables
 from a given set $X$.
 We parameterize the terms with an alphabet of variables since in the semantic description we will need \emph{two} kinds of variables:
 \emph{syntactic} variables $\mathcal{X}$, used for bindings in the definition, and \emph{logic} variables $\mathcal{A}$, which are
@@ -48,7 +48,7 @@ The language we consider is first-order, as goals can not be passed as parameter
 During the evaluation of \mK program an environment, consisting of a substitution for logic variables and a counter of allocated logic
 variables, is threaded through computation and updated in every unification and fresh variable introduction.
 The substitution in the environment at a given point and a given branch of evaluation contains all the information about relations between
-the logical variables at this point, we will later refer to the substitution in the environment as at a given point as a ``current substitution''
+the logical variables at this point, we will later refer to the substitution in the environment at a given point as a ``current substitution''
 in informal explanations.
 The different branches are combined via \emph{interleaving search} procedure~\cite{InterleavingSearch}.
 The answers for the given query are extracted from the final environments (they are the values of the queried variables in the substitution
@@ -75,7 +75,7 @@ This semantics corresponds to the canonical implementation of interleaving searc
 \label{fig:operanional_semantics_states_labels}
 \end{figure}
 
-The form of states and labels in the transition system is defined on \figureword~\ref{fig:operanional_semantics_states_labels}.
+The form of states and labels in the transition system is defined in \figureword~\ref{fig:operanional_semantics_states_labels}.
 Non-terminal states $S$ have a tree-like structure with intermediate nodes corresponding to partially-evaluated conjunctions
 (``$\otimes$'') or disjunctions (``$\oplus$'').
 A leaf in the form $\taskst{g}{e}$ determines a task to evaluate a goal $g$ in an environment $e$. For a conjunction node, its right child
