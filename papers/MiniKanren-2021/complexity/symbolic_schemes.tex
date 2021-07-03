@@ -3,8 +3,9 @@
 
 In the previous sections we presented some methods to estimate time complexity for scheduling and unification/reification (for latter two only for some practical cases) in \mK, but they work
 only for relational search in general, not for specific relational program. In this section we show how the latter task can be formulated and how those methods can be combined to solve
-it using a notion of \emph{symbolic execution}. Specifically, we add symbolic variables to \mK and use symbolic execution schemes to build recursive inequalities for different complexity
-measures. These inequalities then can be be solved to provide the symbolic representation for asymptotic estimations.
+it using a notion of \emph{symbolic execution}.
+Specifically, we add symbolic variables to \mK and use symbolic execution schemes to build recursive inequalities for all components of our performance model.
+These inequalities then can be be solved to provide the symbolic representation for asymptotic estimations.
 
 The application of symbolic execution for time complexity analysis is well-known and was explored for logic programming in particular~\cite{SymbolicExecutionForAnalysis}.
 Usually, symbolic execution graphs are used to capture all the details of program execution which are significant for performance and then the standard techniques for time (or other)
@@ -18,10 +19,10 @@ This also means that we suppose that we know what answers any relational call in
    prefix$^o$ = fun n p ->
      (p === Nil) \/
      (fresh (n' pt pti)
-        (n === S n') /\
+        (n === S(n')) /\
         (prefix$^o$ n' pt) /\
         (incr-list$^o$ pt pti) /\
-        (p === Cons(O, pti))
+        (p === Cons(S(O), pti))
      )
 \end{lstlisting}
 
@@ -30,57 +31,56 @@ This also means that we suppose that we know what answers any relational call in
 \end{figure}
 
 To present the whole process in a clearer way we will go through it with a specific artificial example, in which almost all important details occur. The example is a relational program
-for generating all prefixes of a list \lstinline|[$0$, .., $n - 1$]| (with numbers represented by terms as Peano numbers with constructors \lstinline|O| and \lstinline|S|). Consider the
-following creative recursive solution: we either take an empty prefix or take any prefix for the same task for $n - 1$ (if $n > 0$), increment all the elements and add $0$ at the beginning.
+for generating all prefixes of a list \lstinline|[$1$, .., $n$]| (with numbers represented by terms as Peano numbers with constructors \lstinline|O| and \lstinline|S|). Consider the
+following creative recursive solution: we either take an empty prefix or take any prefix for the same task for $n - 1$ (if $n > 0$), increment all the elements and add $1$ at the beginning.
 The relation \lstinline|prefix$^o$| on \figureword~\ref{fig:prefixo_definition}, relating a number $n$ to some prefix $p$, follows this description directly. It uses a relation \lstinline|incr-list$^o$|
 that increments all numbers in a given list, which implementation we do not include due to its straightforwardness. This relation provides required results: if we instantiate $n$ with some
 Peano number and put a free logical variable for $p$ then $p$ will be bound to every prefix exactly once. It is an inefficient solution in many ways, but it is nice for presentation.
 
 Now we want to estimate the time the search will take depending on a number we put as an input. To make our reasoning more precise we introduce the notion of \emph{symbolic variables}, which we will
-denote with an overline ($\overline{a}, \overline{b}, \dots$) as opposed to the usual logic variables, which we will denote with an underline ($\underline{a}, \underline{b}, \dots$). The symbolic
+denote with an overline ($\overline{a}, \overline{b}, \dots$) as opposed to the usual logic variables, which we will denote using a question mark ($a^{?}, b^{?}, \dots$). The symbolic
 variables can be considered on two levels. At the level of symbolic execution each symbolic variable in \mK stands for some ground term (a term without logic variables inside), but we do not know which
 term exactly. At the metalevel, where we reason about the complexity of a program, a symbolic variable $\overline{x}$ stands for a representation of some object $x$ from metatheory (it can be a number, a
 string or a graph, for example) as a ground term, and we analyze how the program behaves depending on this object or some of its parameters. We will distinguish between these two levels throughout the
-whole process of complexity analysis. For our example we consider the parametric query \lstinline{prefix$^o$ $\overline{k}$ $\underline{a}$} with the first parameter instantiated by some number $k$
-represented as a ground Peano term, and ask how much time the search and its different stages will take depending on the value of $k$.
+whole process of complexity analysis. For our example we consider the parametric query \lstinline{prefix$^o$ $\overline{k}$ $a^{?}$} with the first parameter instantiated by some number $k$
+represented as a ground Peano term and second parameter left as a free logic variable, and ask how much time the search and its different stages will take depending on the value of $k$.
 
 Our approach estimates a time complexity for some specific relational call with symbolic variables as arguments, not for a relation in general. We name every call we encounter to use these names in our
-notations throughout the analysis (for example $pref = $ \lstinline{prefix$^o$ $\overline{k}$ $\underline{a}$}). During the analysis we separatedly estimate the complexity by a number of factors for
-the query which together constitute the time of the search: the number of semantic steps $d^{pref}\,(k)$ and the scheduling factor $t_s^{pref}\,(k)$, which correspond to the functions $d\,(\cdot)$ and
-$t\,(\cdot)$ defined in \sectionword~\ref{sec:scheduling} (they are the values of these functions on a state corresponding to the examined call), $t_{uni}^{pref}\,(k)$, which is the number of basic
+notations throughout the analysis (for example $pref = $ \lstinline{prefix$^o$ $\overline{k}$ $a^?$}). During the analysis we separately compute a number of factors for
+the query that correspond to components of the overall time of the search in our model: the number of semantic steps $d^{pref}\,(k)$ and the scheduling factor $t_s^{pref}\,(k)$, which correspond to the number of semantic steps and the scheduling factor defined in \sectionword~\ref{sec:scheduling}, $t_{uni}^{pref}\,(k)$, which is the number of basic
 operations performed during unifications in the execution of the call, exluding basic operations in occurs checks, $t_{occ}^{pref}(k)$, which is the number of basic operations performed during occurs checks, and $t_r^{pref}(k)$, which is the number of basic operations performed during the reification.
 
 To achieve this, we build a symbolic execution scheme, mirroring the body of the examined relation, identify recursive calls and reconstructing recursive inequalities for all the aforementioned factors
-by using the estimations described in the previous sections. We put a number of restrictions for the examined relational call for our approach (however, as can be seen from the
-\sectionword~\ref{sec:evaluation}, the huge variety of real examples satisfy it): relations should be in a disjunctive normal form, in the result all the logical variables in the query should be
-bound to ground terms, and two practicality tests described in \sectionword~\ref{sec:uni-rei} should be satisfied (which we can check using the symbolic execution, too).
+by using the estimations described in the previous sections. 
+We put a number of restrictions for the examined relational call for our approach (however, as can be seen from the
+\sectionword~\ref{sec:evaluation}, the huge variety of real examples satisfy it): the two criteria from section \sectionword~\ref{sec:uni-rei} should be satisfied (which we can check using the symbolic execution, too) to use estimates from that section, we also work only with relations in disjunctive normal form.
 
 We need to know also two extra pieces of information to perform the analysis for a given call. First, to  know how to proceed after recursive calls we need to know the answers that the calls produce.
-We describe them by sets of substitutions binding all the logical variables in the query to a fresh symbolic variables, which we then specify in the metatheory (for example, $ANS^{pref}\,(k) = \{[\underline{a} \gets \overline{p}] \mid \textit{$p$ is a prefix of the list \texttt{\lstinline|[$0$, .., $n - 1$]|}} \} $). Second, we need to know all information for non-recursive relational calls
-in the scheme (the values of all the complexity factors, produced answers, whether the practicality tests are satisfied, etc.), so we need to go and analyze these calls using the same approach
+We describe them by sets of substitutions binding all the logical variables in the query to terms, possibly containing fresh logic variables and symbolic variables, the later we then specify in the metatheory (for example, $ANS^{pref}\,(k) = \{[a^? \gets \overline{p}] \mid \textit{$p$ is a prefix of the list \texttt{\lstinline|[$1$, .., $k$]|}} \} $). Second, we need to know all information for non-recursive relational calls
+in the scheme (the values of all the complexity factors, produced answers, whether the requirements are satisfied), so we need to go and analyze these calls using the same approach
 before we can examine the given call or reuse the information if we have already analyzed relevant call before. For this reason, we require the absence of mutual recursion in the examined calls
-(it should be eliminated using standard techniques) and analyze them in the order of topological sorting. For $pref$ call we will need this information for the internal call $incr = $ \lstinline{incr-list$^o$ $\overline{l}$ $\underline{pti}$}. Here we just give it without details of analysis (the analysis is much simpler than that for the $pref$ call): the practicality tests are satisfied,
-the answers are $ANS^{incr}(l) = \{[\underline{pti} \gets \overline{l'}] \; \mid \; length(l) = length(l') \land \forall i, \; l[i] = l'[i] \}$, and the complexity factors are is as follows.
+(it should be eliminated using standard techniques) and analyze them in the order of topological sorting. For $pref$ call we will need this information for the internal call $incr = $ \lstinline{incr-list$^o$ $\overline{l}$ $r^?$}. Here we just give it without details of analysis (the analysis is much simpler than that for the $pref$ call): the requirements are satisfied,
+the answers are $ANS^{incr}(l) = \{[r^? \gets \overline{l'}] \; \mid \; length(l) = length(l') \land \forall i, \; l'[i] = l[i] + 1 \}$, and the complexity factors are is as follows.
 
 \[
 \begin{array}{rcl}
- d^{incr}\,(l) &\in& \O\,(length\,(l)) \\
- t_s^{incr}\,(l) &\in& \O\,(length\,(l)) \\
- t_{uni}^{incr}\,(l) &\in& \O\,(length\,(l)) \\
- t_{occ}^{incr}\,(l) &\in& \O\,(length\,(l) \,\cdot\, size\,(l)) \\
+ d^{incr}\,(l) &\in& \O\,(len\,(l)) \\
+ t_s^{incr}\,(l) &\in& \O\,(len\,(l)) \\
+ t_{uni}^{incr}\,(l) &\in& \O\,(len\,(l)) \\
+ t_{occ}^{incr}\,(l) &\in& \O\,(len\,(l) \,\cdot\, size\,(l)) \\
  t_{r}^{incr}\,(l) &\in& \O\,(size\,(l)) \\
  \textit{where} && \\
- size\,(l) &=& \sum_{x \in l} |x| 
+ size\,(l) &=& \sum_{x \in l} |\overline{x}| 
 \end{array} \]
 
 \begin{figure}[t]
 \begin{center}
 \xymatrix{
-     & \texttt{prefix$^o$ $\overline{k}$ $\underline{p}$} \ar[dl] \ar[dr] & \\
-     \underline{p} \equiv \texttt{Nil} \ar[d]^{\{ [\underline{p} \gets \texttt{Nil}] \}} & & \overline{k} \equiv \texttt{S $\underline{n'}$} \ar[d]^{\{ [\underline{n'} \gets \overline{k'}] \; \mid \; \overline{k} \;=\; \texttt{S $\overline{k'}$} \}} \\
-     & & \texttt{prefix$^o$ $\overline{k'}$ $\underline{pt}$} \ar@2[d]^{ \{[\underline{pt} \gets \overline{l}] \; \mid \; \textit{$l$ is a prefix of the list $[0..k' - 1]$} \} } \ar@{-->}[uul] \\
-     & & \texttt{incr-list$^o$ $\overline{l}$ $\underline{pti}$} \ar[d]^{ \{[\underline{pti} \gets \overline{l'}] \; \mid \; length(l) = length(l') \land \forall i, \; l[i] = l'[i] \} } \\
-     & & \underline{p} \equiv \texttt{Cons (O, $\overline{l'}$)} \ar[d]^{ \{[\underline{p} \gets \texttt{Cons (O, $\overline{l'}$)}] \} } \\
+     & \texttt{prefix$^o$ $\overline{k}$ $p^?$} \ar[dl] \ar[dr] & \\
+     p^? \equiv \texttt{Nil} \ar[d]^{\{ [p^? \gets \texttt{Nil}] \}} & & \overline{k} \equiv \texttt{S $n^?$} \ar[d]^{\{ [n^? \gets \overline{k'}] \; \mid \; \overline{k} \;=\; \texttt{S $\overline{k'}$} \}} \\
+     & & \texttt{prefix$^o$ $\overline{k'}$ $pt^?$} \ar@2[d]^{ \{[pt^? \gets \overline{l}] \; \mid \; \textit{$l$ is a prefix of the list $[1..k']$} \} } \ar@{-->}[uul] \\
+     & & \texttt{incr-list$^o$ $\overline{l}$ $pti^?$} \ar[d]^{ \{[pti^? \gets \overline{l'}] \; \mid \; length(l) = length(l') \land \forall i, \; l'[i] = l[i] + 1 \} } \\
+     & & p^? \equiv \texttt{Cons (S(O), $\overline{l'}$)} \ar[d]^{ \{[p^? \gets \texttt{Cons (S(O), $\overline{l'}$)}] \} } \\
      & & \\
 }
 \end{center}
@@ -102,21 +102,21 @@ both logic variables and symbolic variables. The definition of unification with 
 Bindings for logical variables in the result are extensions of the substitution in the environment after this unification, and bindings for symbolic variables are conditions
 on the objects in metatheory represented by these symbolic variables, under which we continue to execute the current branch (for example, the unification for $\overline{x} \equiv f\,(t_1, \dots, t_k)$ will succeed only for object $x$ such that its representation $\overline{x}$ is $f\,(\overline{x_1}, \dots, \overline{x_k})$, where $\overline{x_i}$ are representations which are terms
 unifiable with $t_i$). So we add bindings for symbolic variables to the generator of the set in the form of equalities. We apply bindings for both logic and symbolic variables in
-all nodes after we get them to have show the fully substituted values of terms. We also mark the recursive internal relational calls (the versions of initial relational call with
+all nodes after we get them to show the fully substituted values of terms. We also mark the recursive internal relational calls (the versions of initial relational call with
 symbolic variables substituted by arbitrary expressions and the rest alpha-equivalent to the initial call) by the dashed arrow to the root.
 
 \begin{figure}[t]
   \small
 \[
 \begin{array}{lll}
-  U(\underline{w}, \underline{w}) &= \epsilon & \\
-  U(\underline{w}, t) &= \bot & \textit{if $\underline{w} \in FV(t)$} \\
-  U(\underline{w}, t) &= [\underline{w} \gets t] & \textit{if $t \ne \underline{w} \land \underline{w} \not\in FV(t)$} \\
-  U(\overline{x}, \underline{w}) &= [\underline{w} \gets \overline{x}] &  \\
+  U(w^?, w^?) &= \epsilon & \\
+  U(w^?, t) &= \bot & \textit{if $w^? \in FV(t)$} \\
+  U(w^?, t) &= [w^? \gets t] & \textit{if $t \ne w^? \land w^? \not\in FV(t)$} \\
+  U(\overline{x}, w^?) &= [w^? \gets \overline{x}] &  \\
   U(\overline{x}, \overline{y}) &= [\overline{x} \gets \overline{y}] &  \\
   U(\overline{x}, f(t_1, \dots, t_k)) &= [\overline{x} \gets f(\overline{x_1}, \dots, \overline{x_k})] \circ U(\overline{x_1}, t_1) \circ \dots \circ U(\overline{x_k}, t_k)  & \textit{where $\overline{x_i}$ are fresh}  \\
-  U(f(t_1, \dots, t_k), \underline{w}) &= \bot & \textit{if $\underline{w} \in FV(f(t_1, \dots, t_k))$} \\
-  U(f(t_1, \dots, t_k), \underline{w}) &= [\underline{w} \gets f(t_1, \dots, t_k)] & \textit{if $\underline{w} \not\in FV(f(t_1, \dots, t_k))$} \\
+  U(f(t_1, \dots, t_k), w^?) &= \bot & \textit{if $w^? \in FV(f(t_1, \dots, t_k))$} \\
+  U(f(t_1, \dots, t_k), w^?) &= [w^? \gets f(t_1, \dots, t_k)] & \textit{if $w^? \not\in FV(f(t_1, \dots, t_k))$} \\
   U(f(t_1, \dots, t_k), \overline{x}) &= [\overline{x} \gets f(\overline{x_1}, \dots, \overline{x_k})] \circ U(t_1, \overline{x_1}) \circ \dots \circ U(t_k, \overline{x_k})  & \textit{where $\overline{x_i}$ are fresh}  \\
   U(f(t_1, \dots, t_k), f(t'_1, \dots, t'_k)) &= U(t_1, t'_1) \circ \dots \circ U(t_k, t'_k)  & \\
   U(f(t_1, \dots, t_k), g(t'_1, \dots, t'_{k'})) &= \bot  & \textit{if $f \ne g$} \\
@@ -127,7 +127,7 @@ symbolic variables substituted by arbitrary expressions and the rest alpha-equiv
   \label{fig:symbolic_unification}
 \end{figure}
 
-This scheme presents all the information we need to check the practicality tests and calculate the complexity of all the metrics using results from the previous sections.
+This scheme presents all the information we need to check the criterions and calculate the complexity of all the factors using results from the previous sections.
 
 \begin{enumerate}
 \item To check that all substitutions are flat during the evaluation we need to know that all non-recursive internal calls satisfy this condition and to check that no variable-to-variable bindings are added during the evaluation of the body of the relation. To check this we can simply check that rhs of all bindings on arrows after unifications are not logical variables (then the value in the binding
@@ -135,36 +135,35 @@ necessarily has a constructor on the top level).
 
 If there is no recursive calls in the scheme, we can allow variable-to-variable bindings after substitutions, since there will be at most a constant number of them and substitutions will always be constant-factor flat.
 
-The second practicality test (linearity and constant size of one of the terms for every unification) we can easily check directly: for every unification on the scheme each logical variable should occur at most once and one of the terms should have no symbolic variables. We also need the test to be satisfied for all the internal calls.
+The second criterion (linearity and constant size of one of the terms for every unification) we can easily check directly: for every unification on the scheme each logical variable should occur at most once and one of the terms should have no symbolic variables. We also need the test to be satisfied for all the internal calls.
 
-\item To estimate $d^{pref}\,(k)$ we use lemmas \ref{lem:disjunction_metrics_calc} and \ref{lem:conjunction_metrics_calc}. Specifically, we just add the value of the factors for every internal call
+\item To estimate $d^{pref}\,(k)$ we use lemmas \ref{lem:conjunction_metrics_calc} and \ref{lem:disjunction_metrics_calc}. Specifically, we just add the corresponding value for every internal call
   (for non-recursive internal calls we have the estimation up to a multiplicative constant calculated before, for recursive internal calls it's just the value of the same function with a
   different argument) summed for all the answers on which the call is executed, and also add a constant to handle the rest (unifications and fresh variable introductions).
 
-\[ d^{pref}\,(k) \le \sum_{\overline{k} \;=\; \texttt{S $\overline{k'}$}} (d^{pref}\,(k') + \sum_{\textit{$l$ is a prefix of the list $[0..k' - 1]$}} d^{incr}\,(l)) + C \]
+\[ d^{pref}\,(k) \le C + \sum_{\overline{k} \;=\; \texttt{S $\overline{k'}$}} (d^{pref}\,(k') + \sum_{\textit{$l$ is a prefix of the list $[1..k']$}} d^{incr}\,(l)) \]
 
-Using the complexity $d^{incr}\,(l) \in \O\,(length\,(l))$ and considering two cases when $k$ is zero and non-zero we can rewrite and simplify the inequality above into the following two:
+Using the complexity $d^{incr}\,(l) \in \O\,(len\,(l))$ and considering two cases when $k$ is zero and non-zero we can rewrite and simplify the inequality above into the following two:
 
 \[
 \begin{array}{lcl}
 d^{pref}\,(0) &\le& C \\
-d^{pref}\,(k' + 1) &\le& d^{pref}\,(k') + \sum_{i \in [0..k' - 1]} C \cdot i + C \\
+d^{pref}\,(k' + 1) &\le& C + d^{pref}\,(k') + \sum_{i \in [0..k']} C \cdot i \\
             &\le& d^{pref}\,(k') + C \cdot k'^2 
 \end{array} \]
 
 which we can easily solve and get $d^{pref}\,(k) \in \O\,(k^3)$.
 
-\item For $t_s^{pref}\,(k)$ we do basically the same using the same lemmas. There difference is that for every internal call $q$ along with $t_S^q(\dots)$ we have to add $d^q\,(\dots)$
-  multiplied by a constant (for recursive calls we use the complexity calculated at the previous step). There is a possible exception however (identified in the lemmas \ref{lem:disjunction_metrics_calc} and \ref{lem:conjunction_metrics_calc}): for one column that has only single arrows we can omit additional $d^q\,(dots)$ for the call in the end of the column (if the column ends with a call).
-  By lemma~\ref{lem:disjunction_metrics_calc} we can pick any one column, it might make difference only when this value $d^q\,(dots)$ dominates all the other additional values (so it only
+\item For $t_s^{pref}\,(k)$ we do basically the same using the same lemmas \ref{lem:conjunction_metrics_calc} and \ref{lem:disjunction_metrics_calc}. There difference is that for every internal call $q$ along with $t_S^q(\dots)$ we have to add $d^q\,(\dots)$
+  multiplied by a constant (for recursive calls we use the complexity calculated at the previous step). There is a possible exception however (identified in the lemmas): for one column that has only single arrows we can omit additional $d^q\,(\dots)$ for the last call in the column (if the column ends with a call).
+  By lemma~\ref{lem:disjunction_metrics_calc} we can pick any one column, it might make difference only when this value $d^q\,(\dots)$ dominates all the other additional values (so it only
   matters when the last call is a recursive call, for example). In our example there is no columns ending with a call, so there is no such exception in inequality:
 
   \[
 \begin{array}{rclc}
-  t_s^{pref}\,(k) & \le & \sum_{\overline{k} \;=\; \texttt{S $\overline{k'}$}} (t_s^{pref}\,(k') & + \\
+  t_s^{pref}\,(k) & \le C + \sum_{\overline{k} \;=\; \texttt{S $\overline{k'}$}} (& t_s^{pref}\,(k') & + \\
                 &     & C \times d^{pref}(k') & + \\
-                &     & \sum_{\textit{$l$ is a prefix of the list $[0..k' - 1]$}} (t_s^{incr}\,(l) + C \cdot d^{incr}\,(l))) & +\\
-                &     & C &
+                &     & \sum_{\textit{$l$ is a prefix of the list $[1..k']$}} (t_s^{incr}\,(l) + C \cdot d^{incr}\,(l))) & \\
 \end{array}
 \]
 
@@ -172,23 +171,23 @@ Again, after the simplification we get the following two inequalities
 
 \[ \begin{array}{rcl}
 t_s^{pref}\,(0) &\le& C \\
-t_s^{pref}\,(k' + 1) &\le& t_s^{pref}\,(k') + C \cdot k'^3 + \sum_{i \in [0..k' - 1]} (C \cdot i + C \cdot i) + C \\
+t_s^{pref}\,(k' + 1) &\le& C + t_s^{pref}\,(k') + C \cdot k'^3 + \sum_{i \in [0..k']} (C \cdot i + C \cdot i) \\
                   &\le& t_s^{pref}\,(k') + C \cdot k'^3 
 \end{array} \]
 
 And after solving them we get $t_s^{pref}\,(k) \in \O\,(k^4)$.
 
-\item To estimate $t_{uni}^{pref}\,(k)$ we just do the same summation, counting the number of unification in the scheme and in the internal calls:
+\item To estimate $t_{uni}^{pref}\,(k)$ we just do the same summation, counting the number of unifications in the scheme and in the internal calls:
 
   \[
-    t_{uni}^{pref}\,(k) \le 1 + 1 + \sum_{\overline{k} \;=\; \texttt{S $\overline{k'}$}} (t_{uni}^{pref}\,(k') + \sum_{\textit{$l$ is a prefix of the list $[0..k' - 1]$}} (t_{uni}^{incr}\,(l) + \sum_{l': \; length(l) = length(l') \land \forall i, \; l[i] = l'[i]} 1))
+    t_{uni}^{pref}\,(k) \le 1 + 1 + \sum_{\overline{k} \;=\; \texttt{S $\overline{k'}$}} (t_{uni}^{pref}\,(k') + \sum_{\textit{$l$ is a prefix of the list $[1..k']$}} (t_{uni}^{incr}\,(l) + \sum_{l': \; length(l) = length(l') \land \forall i, \; l'[i] = l[i] + 1} 1))
     \]
 
 The simplified version is the following:
 
 \[ \begin{array}{rcl}
 t_{uni}^{pref}\,(0) &\le& C \\
-t_{uni}^{pref}\,(k' + 1) &\le& C + t_{uni}^{pref}\,(k') + \sum_{i \in [0..k' - 1]} (C \cdot i + 1) \\
+t_{uni}^{pref}\,(k' + 1) &\le& C + t_{uni}^{pref}\,(k') + \sum_{i \in [0..k']} (C \cdot i + 1) \\
 &\le& t_{uni}^{pref}\,(k') + C \cdot k'^2
 \end{array} \]
 
@@ -196,13 +195,13 @@ And the result is $t_{uni}^{pref}\,(k) \in \O\,(k^3)$.
 
 \item To estimate $t_{occ}^{pref}\,(k)$ we just do the same summation, counting the sizes of rhs in bindings on arrows after every unification on the scheme and the same in the internal calls:
 
-\[ \begin{array}{c} t_{occ}^{pref}\,(k) \le C + \sum_{\overline{k} \;=\; \texttt{S $\overline{k'}$}} (k' + t_{occ}^{pref}\,(k') + \sum_{\textit{$l$ is a prefix of the list $[0..k' - 1]$}} (t_{occ}^{incr}\,(l) + \\ \sum_{l': \; length(l) = length(l') \land \forall i, \; l[i] = l'[i]} size(\texttt{Cons (O, $\overline{l'}$)}))) \end{array} \]
+\[ \begin{array}{c} t_{occ}^{pref}\,(k) \le C + \sum_{\overline{k} \;=\; \texttt{S $\overline{k'}$}} (k' + t_{occ}^{pref}\,(k') + \sum_{\textit{$l$ is a prefix of the list $[1..k']$}} (t_{occ}^{incr}\,(l) + \\ \sum_{l': \; length(l) = length(l') \land \forall i, \; l'[i] = l[i] + 1} size(\texttt{Cons (S(O), $\overline{l'}$)}))) \end{array}  \]
 
 The simplified version is the following.
 
 \[ \begin{array}{rcl}
 t_{occ}^{pref}\,(0) &\le& C \\
-t_{occ}^{pref}\,(k' + 1) &\le& C + k' + t_{occ}^{pref}\,(k') + \sum_{i \in [0..k' - 1]} (C \cdot i^3 + C \cdot i^2 + 1) \\
+t_{occ}^{pref}\,(k' + 1) &\le& C + k' + t_{occ}^{pref}\,(k') + \sum_{i \in [0..k']} (C \cdot i^3 + C \cdot i^2 + C) \\
 \phantom{t_{occ}^{pref}\,(k' + 1)} &\le& t_{occ}^{pref}\,(k') + C \cdot k'^4
 \end{array} \]
 
@@ -210,14 +209,14 @@ And the result is $t_{occ}^{pref}\,(k) \in \O\,(k^5)$.
 
 \item Finally, to estimate $t_{r}^{pref}\,(k)$ we just sum the sizes of all answers from $ANS^{pref}\,(k)$.
 
-$t_{r}^{pref}\,(k) = \sum_{\textit{$l$ is a prefix of the list $[0..k - 1]$}} size(l) \le \sum_{i \in [0..k - 1]} C \cdot i^2 \le C \cdot k^3$
+$t_{r}^{pref}\,(k) = \sum_{\textit{$l$ is a prefix of the list $[1..k]$}} size(l) \le \sum_{i \in [0..k]} C \cdot i^2 \le C \cdot k^3$
 
 So $t_{r}^{pref}\,(k) \in \O\,(k^3)$.
 
 \end{enumerate}
 
-This way we get the complexity for all the components of the search. Now we can combine them to get the estimation complete. To get the time related to the unification we should
-multiply $t_{uni}^{pref}$, $t_{occ}^{pref}$, $t_r^{pref}$ by a factor $(\lookuptime{|\sigma|} + \addtime{|\sigma|}))$ which we can estimate
+This way we get the complexity for all the components of the search. Now we can combine them to get the complete estimation. To get the time related to the unification we should
+multiply $t_{uni}^{pref}$, $t_{occ}^{pref}$, $t_r^{pref}$ by a multiplier $(\lookuptime{|\sigma|} + \addtime{|\sigma|}))$ which we can estimate
 by $(\lookuptime{d^{pref}(k)} + \addtime{d^{pref}(k)}))$. So, for example, for an implementation with standard-library maps for substitutions the complete time of the
-search for the call \lstinline{prefix$^o$ $\overline{k}$ $\underline{a}$} is $\O\,(k^4 + k^3 \log k + k^5 \log k + k^3 \log k) = \O\,(k^5 \log k)$ with occurs checks and
+search for the call \lstinline{prefix$^o$ $\overline{k}$ $a^?$} is $\O\,(k^4 + k^3 \log k + k^5 \log k + k^3 \log k) = \O\,(k^5 \log k)$ with occurs checks and
 $\O\,(k^4 + k^3 \log k + k^3 \log k) = \O\,(k^4)$ without.
