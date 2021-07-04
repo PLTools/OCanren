@@ -1,7 +1,7 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-We have applied the described approach of time complexity analysis to a number of standard \mK relations. Specifically, we have analyzed relational operations on basic data types: on Peano
+We have applied the described approach of time complexity analysis to a number of standard \mK relations. Specifically, we have analyzed relational operations for basic data types: for Peano
 numbers (addition, multiplication, comparison) and lists (length, map, append, reverse). These are well-known relations with simple declarative recursive definitions, often used as examples
 of relational programming, yet we could not find any formal analysis of their time complexity. All the examples we studied satisfy the requirements of our method and the extracted recursive
 inequalities are easily solvable, which supports the claim that our method, although not universal, is adequately applicable in practice.
@@ -84,9 +84,9 @@ First, the overhead of occurs checks is immense in terms of time complexity. In 
 This contrast is shown more clearly in \figureword~\ref{fig:examples_total_times} where the total time of the search for the standard implementation with and without occurs check is given. 
 
 Second, we can see that sometimes a rather counter-intuitively running execution ``backwards'' (specifying the supposed result in a relation instead of supposed arguments) is faster
-than intended ``forward'' execution. For example, the division via multiplication relation is faster than multiplication itself, list reversing is faster if we specify the result and
+than intended ``forward'' execution. For example, the division via multiplication relation is faster than multiplication itself, the list reversing is faster if we specify the result and
 ask for a suitable argument. If we look closer into these examples we can see that the reason for this is the fact that the optimal order of conjuncts for backward execution has
-the recursive call in the end while optimal order of conjuncts for forward execution does not. When the recursive call in not the last it forces us to add the number of semantic steps
+the recursive call at the end while optimal order of conjuncts for forward execution does not. When the recursive call in not the last it forces us to add the number of semantic steps
 for this call when calculating the scheduling factor, which often increases the complexity. This supports a well-known rule of thumb in \mK which recommends to place recursive calls
 in the end of conjunctions whenever possible. We now can see that it is crucial because of scheduling discipline and can make even an unexpected way of evaluation faster than
 the intended one.
