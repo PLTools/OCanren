@@ -53,7 +53,7 @@ scheduling significantly. This kind of effects is hard to predict and measure wi
 
 This paper presents such a model. We state that the total time of the search in \mK breaks into three separate parts: the time of scheduling ($T_s$) that breaks the evaluation into a sequence of
 unifications, the time required to perform these unifications, and the time of reifications ($T_r$) that reconstruct the result in an expected form in the end. The time of unifications can be further
-divided into the time of occurs checks ($T_{occ}$) during the unification and the time ($T_{uni}$) of the rest of the unification algorithm (this division will help us to see how lange
+divided into the time of occurs checks ($T_{occ}$) during the unification and the time ($T_{uni}$) of the rest of the unification algorithm (this division will help us to see how large
 is the part of the total time that occurs check, which often can be ommited, takes). So the total time of the search can be calculated as the sum of four components:
 
 \[ T = T_s + T_{uni} + T_{occ} + T_r \]
