@@ -37,14 +37,14 @@ inequalities are easily solvable, which supports the claim that our method, alth
   \label{fig:examples_all_complexities}
 \end{figure}
 
-For every relation we analyzed several queries (specifing different arguments with symbolic variables) corresponding to different reasonable usages (for example, we examined usages
-of addition relation for addition, subtraction and decomposition of a number into a sum of two numbers). For every query we took the known optimal order of conjuncts in the relation
+For every relation, we analyzed several queries (specifying different arguments with symbolic variables) corresponding to different reasonable usages (for example, we examined usages
+of addition relation for addition, subtraction, and decomposition of a number into a sum of two numbers). For every query, we took the known optimal order of conjuncts in the relation
 (as the time of the search hugely depends on this order~\cite{WillThesis}), which may be different for different queries. We could perform the analysis with other orders the same way,
-but the results is not that useful and in those cases the search often diverges. The results~--- the complexities for all the factors characterizing different aspects of the search~---
+but the results are not that useful and in those cases, the search often diverges. The results~--- the complexities for all the factors characterizing different aspects of the search~---
 are shown in \figureword~\ref{fig:examples_all_complexities}. Note, sometimes the time depends not on the size of the terms, substituted for symbolic variables, but on some
-characteristics of the values these terms represent (in these cases, length of the list). In all cases the time is polynomial on the size of the input.
+characteristics of the values, these terms represent (in these cases, length of the list). In all cases, the time is polynomial on the size of the input.
 
-From these results we can infer some conclusions about the factors influencing the time of evaluation in \mK.
+From these results, we can infer some conclusions about the factors influencing the time of evaluation in \mK.
 
 \begin{figure}[t]
     \[
@@ -75,20 +75,20 @@ From these results we can infer some conclusions about the factors influencing t
             
       \end{tabular}
     \]
-    \caption{Complexities of total time of the search for the example queries with and without occurs check. The standard implementation of substitution is considered (using standard library maps),
-      so $\log |\sigma|$ is taken as a time of basic operations on substitution. For other implementations of substitutions this factor should be changed to the appropriate one. }
+    \caption{Complexities of the total time of the search for the example queries with and without occurs check. The standard implementation of substitution is considered (using standard library maps),
+      so $\log |\sigma|$ is taken as a time of basic operations on substitution. For other implementations of substitutions, this factor should be changed to the appropriate one. }
   \label{fig:examples_total_times}
 \end{figure}
 
-First, the overhead of occurs checks is immense in terms of time complexity. In all cases this component dominates all others, usually incrementing the degree of the polynomial.
+First, the overhead of occurs checks is immense in terms of time complexity. In all cases, this component dominates all others, usually incrementing the degree of the polynomial.
 This contrast is shown more clearly in \figureword~\ref{fig:examples_total_times} where the total time of the search for the standard implementation with and without occurs check is given. 
 
 Second, we can see that sometimes a rather counter-intuitively running execution ``backwards'' (specifying the supposed result in a relation instead of supposed arguments) is faster
-than intended ``forward'' execution. For example, the division via multiplication relation is faster than multiplication itself, the list reversing is faster if we specify the result and
+than the intended ``forward'' execution. For example, the division via multiplication relation is faster than multiplication itself, the list reversing is faster if we specify the result and
 ask for a suitable argument. If we look closer into these examples we can see that the reason for this is the fact that the optimal order of conjuncts for backward execution has
-the recursive call at the end while optimal order of conjuncts for forward execution does not. When the recursive call in not the last it forces us to add the number of semantic steps
+the recursive call at the end while the optimal order of conjuncts for forward execution does not. When the recursive call is not the last it forces us to add the number of semantic steps
 for this call when calculating the scheduling factor, which often increases the complexity. This supports a well-known rule of thumb in \mK which recommends to place recursive calls
-in the end of conjunctions whenever possible. We now can see that it is crucial because of scheduling discipline and can make even an unexpected way of evaluation faster than
+at the end of conjunctions whenever possible. We now can see that it is crucial because of scheduling discipline and can make even an unexpected way of evaluation faster than
 the intended one.
 
 \begin{figure}[t]
@@ -98,9 +98,9 @@ the intended one.
 \end{figure}
 
 To check how well our estimates correspond to the reality we implemented a simple embedding of \mK into \textsc{OCaml} and measured the time of the search for the example queries,
-building graphs for the time vs. parameters in the estimated complexity (distinct plot for each parameter).~\footnote{The implementation and the results of the measuring can be found at \url{https://www.dropbox.com/sh/ciceovnogkeeibz/AAAoclpTSDeY3OMagOBJHNiSa}} The referenced embedding follows the standard \textsc{microKanren} implementation but with standard library maps for substitutions and with possibility to switch occurs check on and off.
+building graphs for the time vs. parameters in the estimated complexity (distinct plot for each parameter).~\footnote{The implementation and the results of the measuring can be found at \url{https://www.dropbox.com/sh/ciceovnogkeeibz/AAAoclpTSDeY3OMagOBJHNiSa}} The referenced embedding follows the standard \textsc{microKanren} implementation but with standard library maps for substitutions and with the possibility to switch occurs check on and off.
 For time measuring we used standard \textsc{OCaml} library \textsc{benchmark}. The precision we were able to achieve is rather limited, so the plots are not always smooth and can have
-deviations (especially for small sizes of the input), but the overall trend is usually clear. Because of the problems with precision, for now we are able to adequately measure only the total
+deviations (especially for small sizes of the input), but the overall trend is usually clear. Because of the problems with precision, for now, we are able to adequately measure only the total
 time of the search, with or without occurs check, so we are basically verifying only the \figureword~\ref{fig:examples_total_times}. 
 The example of the resulting graph is shown in \figureword~\ref{fig:plot_example} (the time of addition of two numbers depending on the first argument). The character of a time dependency function
 is not always visible from the graph (when the degree of the polynomial is greater than one), but after studying each graph individually (for example, by placing the plot between two polynomials of the same degree) we are reasonably convinced that all the complexity estimates from the \figureword~\ref{fig:examples_total_times} are confirmed.

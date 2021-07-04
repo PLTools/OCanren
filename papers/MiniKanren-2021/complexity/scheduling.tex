@@ -2,7 +2,7 @@
 \label{sec:scheduling}
 
 We may notice that operational semantics described in the previous section can be used to calculate the number of elementary scheduling steps.
-In this section we define a specific value which estimates the scheduling time and give some equations to calculate this value for a given \emph{semantic
+In this section, we define a specific value that estimates the scheduling time and give some equations to calculate this value for a given \emph{semantic
 state}. However, our ultimate goal is to provide a way to deduce the complexity factor recursively for a given query. This problem will be addressed in
 Section~\ref{sec:symbolic}, which will make use of recurrent equations presented here.
 
@@ -15,9 +15,9 @@ Our first idea is to take the number of states $d\,(s)$ in the \emph{finite} tra
 
 \[ d\,(s) \; \eqdef \; | \trs{s} |  \]
 
-However, it turns out, that this value alone in not enough to provide an accurate scheduling complexity estimation. The reason is that some
+However, it turns out, that this value alone is not enough to provide an accurate scheduling complexity estimation. The reason is that some
 elementary steps in the semantics are not elementary in existing implementations. Namely, a careful analysis of the semantics discovers that
-it involves a navigation to the leftmost leaf of the state, which in implementations corresponds to a number of
+it involves navigation to the leftmost leaf of the state, which in implementations corresponds to a number of
 steps, proportional to the length of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$, which we call the
 \emph{scheduling factor}:
 
@@ -48,7 +48,7 @@ The following lemma provides a fundamental relation between these two estimation
 \end{lemma}
 
 Our next goal is to come up with the equations which relate the scheduling complexity of states with the scheduling complexity of their
-(immediate) substates. We take schuduling factor $t\,(s)$ as a value that determines the scheduling complexity $T_s$, but we will also need to calculate $d\,(s)$ as it will be used in the equations for $t\,(s)$. 
+(immediate) substates. We take scheduling factor $t\,(s)$ as a value that determines the scheduling complexity $T_s$, but we will also need to calculate $d\,(s)$ as it will be used in the equations for $t\,(s)$. 
 
 The following lemma, obvious from the definitions, will be enough to deal with a basic (leaf state) case:
 
@@ -70,9 +70,9 @@ The following lemma, obvious from the definitions, will be enough to deal with a
   \[t\,(\taskst{g}{e}) = t\,(s^\prime) + 1\]
 \end{lemma}
 
-In $\oplus$-states the substates are evaluated separately, one step at a time for each substate, so the total number of semantic steps is just a sum. However, for the scheduling factor there is an
+In $\oplus$-states the substates are evaluated separately, one step at a time for each substate, so the total number of semantic steps is just a sum. However, for the scheduling factor, there is an
 extra summand since the heights of the states in the trace become bigger (by one additional $\oplus$-node on the top). This additional node exists in the trace until one of the substates is
-evaluated completely, so the scheduling factor is increased by the number of steps before such event. So we have the following lemma.
+evaluated completely, so the scheduling factor is increased by the number of steps before such an event. So we have the following lemma.
 
 \begin{lemma}
 \label{lem:sum_estimation}
@@ -89,9 +89,9 @@ For any two states $s_1$ and $s_2$
 \end{lemma}
 
 For $\otimes$-states the reasoning is the same, but the result is more complicated. In $\otimes$-state the left substate is evaluated until an answer is found, which is then taken as
-\emph{an environment} for evaluation of the right subgoal. Thus, in the equations for $\otimes$-states answers
-has to be taken into account. Since the tasks of evaluating the right subgoal in different environments are added to the evaluation of the left substate by creation of an $\oplus$-state
-we can use the equtions from the previous lemma. However, to do it we need to calculate the number of steps in the evaluation of the left substate from the point a given answer is produced
+\emph{an environment} for evaluation of the right subgoal. Thus, in the equations for $\otimes$-states the answers
+have to be taken into account. Since the tasks of evaluating the right subgoal in different environments are added to the evaluation of the left substate by creation of an $\oplus$-state
+we can use the equations from the previous lemma. However, to do it we need to calculate the number of steps in the evaluation of the left substate from the point a given answer is produced
 to the end. There is also an extra summand to the scheduling factor because of the $\otimes$-node that increases the height in the trace, analogous to the one caused by $\oplus$-nodes.
 We can notice that $\otimes$-node is always placed immediately over the left substate so this addition is exactly the number of steps for the left substate. Therefore the resulting
 equations for $\otimes$-states are as follows.
@@ -114,8 +114,8 @@ d\,(s \otimes g) = d\,(s) + \displaystyle\sum\limits_{a_i \in \tra{s}} d\,(\task
 where $d_{a_i}\,(s)$ is the number of steps in the trace for state $s$ until the answer $a_i$ is produced.
 \end{lemma}
 
-The last equation is too cumbersome to use directly, so we will use some its approximation instead. One option is to go with the fist argument of ``$\min$''. It should be a good approximation
-in the case when there are several answers passed to the second goal and for none of them the number of steps surpass the \emph{overall} number of steps for all other answers (which is approximately the sum in the second argument of ``$\min$'').
+The last equation is too cumbersome to use directly, so we will use some of its approximation instead. One option is to go with the first argument of ``$\min$''. It should be a good approximation
+in the case when there are several answers passed to the second goal and for none of them the number of steps surpasses the \emph{overall} number of steps for all other answers (which is approximately the sum in the second argument of ``$\min$'').
 
 \begin{corollary}
 \label{lem:prod_estimation_multiple_answers}
@@ -134,9 +134,9 @@ In the case when there is only one answer, however, we should rather go with the
 
 Finally, since we estimate only up to a multiplicative constant (in particular, it does not matter by what constants we multiply values of $d\,(\cdot)$ when calculating
 the scheduling factor) we can derive from these results two compact scheduling time approximations for goals in the form of sequences of disjuncts/conjuncts.
-These two approximations work regardless the associativity/grouping of subformulas; thus a certain constant $c_k$, depending only on $k$, comes in.
+These two approximations work regardless of the associativity/grouping of subformulas; thus a certain constant $c_k$, depending only on $k$, comes in.
 
-For conjunctions we have the following one.
+For conjunctions, we have the following one.
 
 \begin{lemma}
 \label{lem:conjunction_metrics_calc}
@@ -168,10 +168,10 @@ t\,(\taskst{g}{e}) \le \displaystyle\sum\limits_{1 \le i \le k} \;\; \displaysty
 \end{lemma}
 
 When applying the estimation from corollary~\ref{lem:prod_estimation_multiple_answers} we have an extra summand in the form of the number of steps (multiplied by some constant) for all conjuncts.
-The only exception is the case when every conjunct produces no more then one answer, then we can use the corollary~\ref{lem:prod_estimation_single_answer} everywhere instead and drop out the
-additional number of steps for the last conjunct. Besides that, a constant number of steps is required to turn each conjunciton into a $\otimes$-state, but we may integrate this extra constant into $c_k$.
+The only exception is the case when every conjunct produces no more than one answer, then we can use the corollary~\ref{lem:prod_estimation_single_answer} everywhere instead and drop out the
+additional number of steps for the last conjunct. Besides that, a constant number of steps is required to turn each conjunction into a $\otimes$-state, but we may integrate this extra constant into $c_k$.
 
-For disjunctions the lemma is the following one.
+For disjunctions, the lemma is the following one.
 
 \begin{lemma}
 \label{lem:disjunction_metrics_calc}
@@ -189,7 +189,6 @@ Let $g = g_1 \lor \dots \lor g_k$ and $1 \le l \le k$; then
 \end{lemma}
 
 Roughly speaking, if we have a disjunct $g_m$ with a number of steps larger than all the steps for other disjuncts combined, then when applying lemma~\ref{lem:sum_estimation} we again will have an
-extra summand in the form of the number of steps for all disjuncts except for the $g_m$ (it will allways be the largest argument of ``$\min$''). But if we can drop out the \emph{largest}
-number of steps among disjuncts, we can also drop out any other instead, that's where arbitrary $l$ comes from. The case when there is no such $g_m$ has to be considered separately; it is simpler
+extra summand in the form of the number of steps for all disjuncts except for the $g_m$ (it will always be the largest argument of ``$\min$''). But if we can drop out the \emph{largest}
+the number of steps among disjuncts, we can also drop out any other instead, that's where arbitrary $l$ comes from. The case when there is no such $g_m$ has to be considered separately; it is simpler
 since then all the numbers of steps are the same up to a multiplicative constant.
-

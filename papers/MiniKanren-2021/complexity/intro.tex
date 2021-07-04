@@ -40,21 +40,21 @@ affecting the performance which are hard to think about intuitively altogether. 
 As a motivative example, consider two implementations of a standard recursive relation calculating the length of a list (see \figureword~\ref{fig:length_implementations}). They differ only in the
 orders of conjuncts. Although the \lstinline|length$_d^o$| relation can be seen as a more direct definition of a function as a relation (all steps of usual length evaluation written up in order),
 it is well-known that the \lstinline|length$^o$| with the recursive call in the end is much faster when running this relation backward (in fact, the search diverges if we
-run \lstinline|length$_d^o$| backward, while for \lstinline|length$^o$| it terminates). What is less known and what we find more unexpected is the fact that if we run both relation
+run \lstinline|length$_d^o$| backward, while for \lstinline|length$^o$| it terminates). What is less known and what we find more unexpected is the fact that if we run both relations
 forward (specifying the list and asking for the length) \lstinline|length$^o$| is still much faster than \lstinline|length$_d^o$|, although they perform the same number of unifications
 (actually during the evaluation of \lstinline|length$^o$| unified terms are even bigger). You can see the comparative time of the search in \figureword~\ref{fig:length_plots}. The difference is even
 more staggering if we switch off occurs checks in unifications (for simple queries like this occurs checks never violated). In the same \figureword~\ref{fig:length_plots} you can see that
 the \emph{asymptotic complexity} becomes different in this case: it is linear for \lstinline|length$^o$| and quadratic for \lstinline|length$_d^o$|.
 
 After investigating the execution for this example in detail we found that the difference is caused not by unifications but by the process of \emph{scheduling} of goals during the search.
-During the execution of a program in \mK a lazy structure is build that decomposes the goals into unifications, performs these unifications in a certain order and passes the results
-appropriately. In our example this structure becomes linear in size just because of the order in conjunctions (when the recursive call is not the last) and increases the time of
-scheduling significantly. This kind of effects is hard to predict and measure without a formal model for performance in \mK.
+During the execution of a program in \mK a lazy structure is build that decomposes the goals into unifications, performs these unifications in a certain order, and passes the results
+appropriately. In our example, this structure becomes linear in size just because of the order in conjunctions (when the recursive call is not the last) and increases the time of
+scheduling significantly. This kind of effect is hard to predict and measure without a formal model for performance in \mK.
 
 This paper presents such a model. We state that the total time of the search in \mK breaks into three separate parts: the time of scheduling ($T_s$) that breaks the evaluation into a sequence of
 unifications, the time required to perform these unifications, and the time of reifications ($T_r$) that reconstruct the result in an expected form in the end. The time of unifications can be further
 divided into the time of occurs checks ($T_{occ}$) during the unification and the time ($T_{uni}$) of the rest of the unification algorithm (this division will help us to see how large
-is the part of the total time that occurs check, which often can be ommited, takes). So the total time of the search can be calculated as the sum of four components:
+is the part of the total time that occurs check, which often can be omitted, takes). So the total time of the search can be calculated as the sum of four components:
 
 \[ T = T_s + T_{uni} + T_{occ} + T_r \]
 
