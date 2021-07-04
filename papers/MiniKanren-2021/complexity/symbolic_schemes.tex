@@ -1,11 +1,11 @@
 \section{Complexity Analysis via Symbolic Execution Schemes}
 \label{sec:symbolic}
 
-In the previous sections we presented some methods to estimate time complexity for scheduling and unification/reification (for latter two only for some practical cases) in \mK, but they work
+In the previous sections we presented some methods to estimate the time complexity for scheduling and unification/reification (for latter two only for some practical cases) in \mK, but they work
 only for relational search in general, not for specific relational program. In this section we show how the latter task can be formulated and how those methods can be combined to solve
 it using a notion of \emph{symbolic execution}.
-Specifically, we add symbolic variables to \mK and use symbolic execution schemes to build recursive inequalities for all components of our performance model.
-These inequalities then can be be solved to provide the symbolic representation for asymptotic estimations.
+Specifically, we add symbolic variables to \mK and use \emph{symbolic execution schemes} to build recursive inequalities for all components of our performance model.
+These inequalities then can be be solved to provide a symbolic representation for asymptotic estimations.
 
 The application of symbolic execution for time complexity analysis is well-known and was explored for logic programming in particular~\cite{SymbolicExecutionForAnalysis}.
 Usually, symbolic execution graphs are used to capture all the details of program execution which are significant for performance and then the standard techniques for time (or other)
@@ -30,10 +30,10 @@ This also means that we suppose that we know what answers any relational call in
 \label{fig:prefixo_definition}
 \end{figure}
 
-To present the whole process in a clearer way we will go through it with a specific artificial example, in which almost all important details occur. The example is a relational program
-for generating all prefixes of a list \lstinline|[$1$, .., $n$]| (with numbers represented by terms as Peano numbers with constructors \lstinline|O| and \lstinline|S|). Consider the
+To present the whole process in a clearer way we will go through it with a specific artificial example, in which almost all important details take place. The example is a relational program
+for generating all prefixes of a list \lstinline|$[1,\dots,n]$| (with numbers represented in Peano encoding with constructors \lstinline|O| and \lstinline|S|). Consider the
 following creative recursive solution: we either take an empty prefix or take any prefix for the same task for $n - 1$ (if $n > 0$), increment all the elements and add $1$ at the beginning.
-The relation \lstinline|prefix$^o$| on \figureword~\ref{fig:prefixo_definition}, relating a number $n$ to some prefix $p$, follows this description directly. It uses a relation \lstinline|incr-list$^o$|
+The relation \lstinline|prefix$^o$| in \figureword~\ref{fig:prefixo_definition}, relating a number $n$ to some prefix $p$, follows this description directly. It uses a relation \lstinline|incr-list$^o$|
 that increments all numbers in a given list, which implementation we do not include due to its straightforwardness. This relation provides required results: if we instantiate $n$ with some
 Peano number and put a free logical variable for $p$ then $p$ will be bound to every prefix exactly once. It is an inefficient solution in many ways, but it is nice for presentation.
 
@@ -45,7 +45,7 @@ string or a graph, for example) as a ground term, and we analyze how the program
 whole process of complexity analysis. For our example we consider the parametric query \lstinline{prefix$^o$ $\overline{k}$ $a^{?}$} with the first parameter instantiated by some number $k$
 represented as a ground Peano term and second parameter left as a free logic variable, and ask how much time the search and its different stages will take depending on the value of $k$.
 
-Our approach estimates a time complexity for some specific relational call with symbolic variables as arguments, not for a relation in general. We name every call we encounter to use these names in our
+Our approach estimates the time complexity for some specific relational call with symbolic variables as arguments, not for a relation in general. We name every call we encounter to use these names in our
 notations throughout the analysis (for example $pref = $ \lstinline{prefix$^o$ $\overline{k}$ $a^?$}). During the analysis we separately compute a number of factors for
 the query that correspond to components of the overall time of the search in our model: the number of semantic steps $d^{pref}\,(k)$ and the scheduling factor $t_s^{pref}\,(k)$, which correspond to the number of semantic steps and the scheduling factor defined in \sectionword~\ref{sec:scheduling}, $t_{uni}^{pref}\,(k)$, which is the number of basic
 operations performed during unifications in the execution of the call, exluding basic operations in occurs checks, $t_{occ}^{pref}(k)$, which is the number of basic operations performed during occurs checks, and $t_r^{pref}(k)$, which is the number of basic operations performed during the reification.
@@ -53,14 +53,14 @@ operations performed during unifications in the execution of the call, exluding 
 To achieve this, we build a symbolic execution scheme, mirroring the body of the examined relation, identify recursive calls and reconstructing recursive inequalities for all the aforementioned factors
 by using the estimations described in the previous sections. 
 We put a number of restrictions for the examined relational call for our approach (however, as can be seen from the
-\sectionword~\ref{sec:evaluation}, the huge variety of real examples satisfy it): the two criteria from section \sectionword~\ref{sec:uni-rei} should be satisfied (which we can check using the symbolic execution, too) to use estimates from that section, we also work only with relations in disjunctive normal form.
+\sectionword~\ref{sec:evaluation}, the huge variety of real examples satisfy them): the two criteria from \sectionword~\ref{sec:uni-rei} should be satisfied (which we can check using the symbolic execution, too) to use estimates from that section, we also work only with relations in disjunctive normal form.
 
 We need to know also two extra pieces of information to perform the analysis for a given call. First, to  know how to proceed after recursive calls we need to know the answers that the calls produce.
 We describe them by sets of substitutions binding all the logical variables in the query to terms, possibly containing fresh logic variables and symbolic variables, the later we then specify in the metatheory (for example, $ANS^{pref}\,(k) = \{[a^? \gets \overline{p}] \mid \textit{$p$ is a prefix of the list \texttt{\lstinline|[$1$, .., $k$]|}} \} $). Second, we need to know all information for non-recursive relational calls
 in the scheme (the values of all the complexity factors, produced answers, whether the requirements are satisfied), so we need to go and analyze these calls using the same approach
 before we can examine the given call or reuse the information if we have already analyzed relevant call before. For this reason, we require the absence of mutual recursion in the examined calls
-(it should be eliminated using standard techniques) and analyze them in the order of topological sorting. For $pref$ call we will need this information for the internal call $incr = $ \lstinline{incr-list$^o$ $\overline{l}$ $r^?$}. Here we just give it without details of analysis (the analysis is much simpler than that for the $pref$ call): the requirements are satisfied,
-the answers are $ANS^{incr}(l) = \{[r^? \gets \overline{l'}] \; \mid \; length(l) = length(l') \land \forall i, \; l'[i] = l[i] + 1 \}$, and the complexity factors are is as follows.
+(it should be eliminated using standard techniques) and analyze them in the order of topological sorting. For $pref$ call we will need this information for the internal call $incr = $ \lstinline{incr-list$^o$ $\overline{l}$ $r^?$}. Here we just give it without details of the analysis (the analysis is much simpler than that for the $pref$ call): the requirements are satisfied,
+the answers are $ANS^{incr}(l) = \{[r^? \gets \overline{l'}] \; \mid \; length(l) = length(l') \land \forall i, \; l'[i] = l[i] + 1 \}$, and the complexity factors are as follows:
 
 \[
 \begin{array}{rcl}
@@ -90,20 +90,20 @@ the answers are $ANS^{incr}(l) = \{[r^? \gets \overline{l'}] \; \mid \; length(l
 \end{figure}
 
 
-The symbolic execution scheme for \lstinline|prefix$^o$| relation is shown on \figureword~\ref{fig:prefixo_scheme}. It shows the actual value of terms under the current
+The symbolic execution scheme for \lstinline|prefix$^o$| relation is shown in \figureword~\ref{fig:prefixo_scheme}. It shows the actual value of terms under the current
 substitution in all unifications and calls at the point when they are performed and the answers that are threaded through the search. It has initial call at the top.
-For simplicity we work only with the relations in disjunctive normal form, each disjuct is represented as a separate column on the scheme. The nodes of the coloumn are
+For simplicity we work only with the relations in disjunctive normal form, each disjuct is represented as a separate column on the scheme. The nodes of the column are
 the unifications and relational calls in the given conjunct, they are written down sequentially in the same order as in the relation and connected by arrows. Arrows are
 labeled with the description of a set of answers, produced by the previous node. It is represented as a set of lists of bindings for logical variables by which the
-substitution is extended, the generator of the set (the condition after the `$\mid$' symbol) is described in therms of metatheory. For the analysis we need to distinguish
+substitution is extended, the generator of the set (the condition after the `$\mid$' symbol) is described in terms of metatheory. For the analysis we need to distinguish
 cases when multiple answers are produced so we denote by a single arrow $\downarrow$ the sets that we know to have no more than one answer, and put a double arrow $\Downarrow$
 in other cases. The answers produced by internal relational calls are given as a prerequisite for the analysis. The unifications may produce new substitutions for
 both logic variables and symbolic variables. The definition of unification with both logic and symbolic variables is shown on \figureword~\ref{fig:symbolic_unification}.
 Bindings for logical variables in the result are extensions of the substitution in the environment after this unification, and bindings for symbolic variables are conditions
-on the objects in metatheory represented by these symbolic variables, under which we continue to execute the current branch (for example, the unification for $\overline{x} \equiv f\,(t_1, \dots, t_k)$ will succeed only for object $x$ such that its representation $\overline{x}$ is $f\,(\overline{x_1}, \dots, \overline{x_k})$, where $\overline{x_i}$ are representations which are terms
+for the objects in metatheory represented by these symbolic variables, under which we continue to execute the current branch (for example, the unification for $\overline{x} \equiv f\,(t_1, \dots, t_k)$ will succeed only for object $x$ such that its representation is $\overline{x}$ is $f\,(\overline{x_1}, \dots, \overline{x_k})$, where $\overline{x_i}$ are the representations which are the terms
 unifiable with $t_i$). So we add bindings for symbolic variables to the generator of the set in the form of equalities. We apply bindings for both logic and symbolic variables in
 all nodes after we get them to show the fully substituted values of terms. We also mark the recursive internal relational calls (the versions of initial relational call with
-symbolic variables substituted by arbitrary expressions and the rest alpha-equivalent to the initial call) by the dashed arrow to the root.
+symbolic variables substituted by arbitrary expressions and the rest alpha-equivalent to the initial call) by the dashed arrows to the root.
 
 \begin{figure}[t]
   \small
@@ -127,7 +127,7 @@ symbolic variables substituted by arbitrary expressions and the rest alpha-equiv
   \label{fig:symbolic_unification}
 \end{figure}
 
-This scheme presents all the information we need to check the criterions and calculate the complexity of all the factors using results from the previous sections.
+This scheme presents all the information we need to check the criteria and calculate the complexity of all the factors using the results from the previous sections.
 
 \begin{enumerate}
 \item To check that all substitutions are flat during the evaluation we need to know that all non-recursive internal calls satisfy this condition and to check that no variable-to-variable bindings are added during the evaluation of the body of the relation. To check this we can simply check that rhs of all bindings on arrows after unifications are not logical variables (then the value in the binding
@@ -139,7 +139,7 @@ The second criterion (linearity and constant size of one of the terms for every 
 
 \item To estimate $d^{pref}\,(k)$ we use lemmas \ref{lem:conjunction_metrics_calc} and \ref{lem:disjunction_metrics_calc}. Specifically, we just add the corresponding value for every internal call
   (for non-recursive internal calls we have the estimation up to a multiplicative constant calculated before, for recursive internal calls it's just the value of the same function with a
-  different argument) summed for all the answers on which the call is executed, and also add a constant to handle the rest (unifications and fresh variable introductions).
+  different argument) summed up for all the answers for which the call is executed, and also add a constant to handle the rest (unifications and fresh variable introductions).
 
 \[ d^{pref}\,(k) \le C + \sum_{\overline{k} \;=\; \texttt{S $\overline{k'}$}} (d^{pref}\,(k') + \sum_{\textit{$l$ is a prefix of the list $[1..k']$}} d^{incr}\,(l)) \]
 
@@ -154,9 +154,9 @@ d^{pref}\,(k' + 1) &\le& C + d^{pref}\,(k') + \sum_{i \in [0..k']} C \cdot i \\
 
 which we can easily solve and get $d^{pref}\,(k) \in \O\,(k^3)$.
 
-\item For $t_s^{pref}\,(k)$ we do basically the same using the same lemmas \ref{lem:conjunction_metrics_calc} and \ref{lem:disjunction_metrics_calc}. There difference is that for every internal call $q$ along with $t_S^q(\dots)$ we have to add $d^q\,(\dots)$
+\item For $t_s^{pref}\,(k)$ we do basically the same using the same lemmas \ref{lem:conjunction_metrics_calc} and \ref{lem:disjunction_metrics_calc}. There difference is that for every internal call $q$ along with $t_S^q\,(\dots)$ we have to add $d^q\,(\dots)$
   multiplied by a constant (for recursive calls we use the complexity calculated at the previous step). There is a possible exception however (identified in the lemmas): for one column that has only single arrows we can omit additional $d^q\,(\dots)$ for the last call in the column (if the column ends with a call).
-  By lemma~\ref{lem:disjunction_metrics_calc} we can pick any one column, it might make difference only when this value $d^q\,(\dots)$ dominates all the other additional values (so it only
+  By lemma~\ref{lem:disjunction_metrics_calc} we can pick any column, it might make difference only when this value $d^q\,(\dots)$ dominates all the other additional values (so it only
   matters when the last call is a recursive call, for example). In our example there is no columns ending with a call, so there is no such exception in inequality:
 
   \[
