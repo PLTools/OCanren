@@ -11,14 +11,14 @@ inequalities are easily solvable, which supports the claim that our method, alth
            \hline
            Query & $t_s$ & $t_{uni}$ & $t_{occ}$ & $t_r$  \\
            \hline
-           \lstinline|le$^o$ $\overline{n}$ $\overline{m}$| & $\min(n, m)$ & $\min(n, m)$ & $\min(n, m) \cdot \max(n, m)$ & $0$  \\
+           \lstinline|le$^o$ $\overline{n}$ $\overline{m}$| & $\min(n, m)$ & $\min(n, m)$ & $nm$ & $0$  \\
            \lstinline|le$^o$ $x^?$ $\overline{m}$| & $m$ & $m$ & $m^2$ & $m^2$  \\
            \lstinline|le$^o$ $\overline{n}$ $y^?$| & $n$ & $n$ & $n^2$ & $n$  \\
            \lstinline|plus$^o$ $\overline{n}$ $\overline{m}$ $r^?$| & $n$ & $n$ & $n^2 + m$ & $n + m$  \\
-           \lstinline|plus$^o$ $\overline{n}$ $y^?$ $\overline{k}$| & $\min(n, k)$ & $\min(n, k)$ & $\min(n, k) \cdot \max(n, k)$ & $\max(n - m, 0)$  \\
+           \lstinline|plus$^o$ $\overline{n}$ $y^?$ $\overline{k}$| & $\min(n, k)$ & $\min(n, k)$ & $nk$ & $\max(n - m, 0)$  \\
            \lstinline|plus$^o$ $x^?$ $y^?$ $\overline{k}$| & $k$ & $k$ & $k^2$ & $k^2$  \\
            \lstinline|mult$^o$ $\overline{n}$ $\overline{m}$ $r^?$| & $n^2 m$ & $n m$ & $n m^2 + n^2 m$ & $n m$  \\
-           \lstinline|mult$^o$ $x^?$ $\overline{m + 1}$ $\overline{k}$| & $k$ & $k$ & $k^2$ & $\frac{k}{m}$  \\
+           \lstinline|mult$^o$ $x^?$ $\overline{m + 1}$ $\overline{k}$| & $k$ & $k$ & $k^2 + mk$ & $\frac{k}{m}$  \\
            \lstinline|mult$^o$ (S $ x^?$) (S $y^?$) $\overline{k}$| & $k^2$ & $k^2$ & $k^3$ & $k^2$  \\
            \lstinline|length$_d^o$ $\overline{l}$ $r^?$| & $len^2(l)$ & $len(l)$ & $len(l) \cdot size(l)$ & $len(l)$  \\
            \lstinline|length$^o$ $\overline{l}$ $r^?$| & $len(l)$ & $len(l)$ & $len(l) \cdot size(l)$ & $len(l)$  \\
@@ -53,14 +53,14 @@ From these results we can infer some conclusions about the factors influencing t
            Query & without occurs checks & with occurs checks \\
            \hline
            \lstinline|le$^o$ $\overline{n}$ $\overline{m}$| & 
-           $min(n, m) \cdot \log min (n, m)$ & $min(n, m) \cdot max(n, m) \cdot \log min (n, m)$ \\
+           $min(n, m) \cdot \log min (n, m)$ & $nm \cdot \log min (n, m)$ \\
            \lstinline|le$^o$ $x^?$ $\overline{m}$| & $m^2 \log m$ & $m^2 \log m$  \\
            \lstinline|le$^o$ $\overline{n}$ $y^?$| & $n \log n$ & $n^2 \log n$  \\
            \lstinline|plus$^o$ $\overline{n}$ $\overline{m}$ $r^?$| & $(n + m) \log n$ & $(n^2 + m) \log n$ \\
-           \lstinline|plus$^o$ $\overline{n}$ $y^?$ $\overline{k}$| & $\min(n, k) \cdot \log \min(n, k)$ & $\min(n, k) \cdot \max(n, k) \cdot \log \min(n, k)$ \\
+           \lstinline|plus$^o$ $\overline{n}$ $y^?$ $\overline{k}$| & $\min(n, k) \cdot \log \min(n, k)$ & $nk \cdot \log \min(n, k)$ \\
            \lstinline|plus$^o$ $x^?$ $y^?$ $\overline{k}$| & $k^2 \log k$ & $k^2 \log k$  \\
            \lstinline|mult$^o$ $\overline{n}$ $\overline{m}$ $r^?$| & $n^2 m \log n m$ & $(n m^2 + n^2 m) \log n m$  \\
-           \lstinline|mult$^o$ $x^?$ $\overline{m + 1}$ $\overline{k}$| & $k \log k$ & $k^2 \log k$ \\
+           \lstinline|mult$^o$ $x^?$ $\overline{m + 1}$ $\overline{k}$| & $k \log k$ & $(k^2 + mk) \log k$ \\
            \lstinline|mult$^o$ (S $ x^?$) (S $y^?$) $\overline{k}$| & $k^2 \log k$ & $k^3 \log k$ \\
            \lstinline|length$_d^o$ $\overline{l}$ $r^?$| & $len^2(l) \cdot \log len(l)$ & $len(l) \cdot size(l) \cdot \log len(l)$ \\
            \lstinline|length$^o$ $\overline{l}$ $r^?$| & $len(l) \cdot \log len(l)$ & $len(l) \cdot size(l) \cdot \log len(l)$ \\
