@@ -17,7 +17,7 @@ they hold a partially substituted value for each variable, so to obtain a fully 
 cycle of substitution application is needed in the end of search to get the result for a queried variable. This process is called \emph{reification}. \mK uses the conventional Robinson's
 algorithm for unification~\cite{RobinsonsAlgorithm}, adjusted for triangular substitutions~\cite{TRS}. Second, since \mK commits to adhere to logical consistency, by default it always
 performs \emph{occurs checks} during the unification. Occurs check ensures that a binding being added into the substitution does not introduce any circularity, which is crucial for
-establishing the soundness of unification results. However, being rarely violated, occurs check introduces an significant performance penalty, so some logical languages (such as \textsc{Prolog})
+establishing the soundness of unification results. However, being rarely violated, occurs check introduces a significant performance penalty, so some logical languages (such as \textsc{Prolog})
 omit it.
 
 In this section we show how the complexity of unification can be assessed for many practical cases. Specifically, we present two dynamic criteria
@@ -28,7 +28,7 @@ A number of programs satisfying given tests and showing the impact of occurs che
 The actual time of unification depends on a concrete choice for a data structure to represent triangular substitutions (which are, abstractly, maps from integers to terms).
 Therefore we parameterize our estimations by two values~--- $\lookuptime{\sigma}$ and $\addtime{\sigma}$,~--- which represent, respectively, the
 worst-case asymptotic complexity for lookup and add operations w.r.t. to a substitution $\sigma$. The obvious candidate data structure is standard library maps
-for a host language (and many implementations like \textsc{miniKanren-with-symbolic-constraints} and \textsc{OCanren} follow this recipe), which have logarithmic complexity for both operations,
+for a host language (and many implementations like \textsc{miniKanren}-with-symbolic-constraints and \textsc{OCanren} follow this recipe), which have logarithmic complexity for both operations,
 so we expect this multipliers to be negligible. However, some implementations like \textsc{microKanren} use associative lists for simplicity of presentation (which have linear-time
 lookup and constant-time addition complexities) or more complex data structures like random-access lists (which have a log-time lookup and average constant-time addition complexities)
 so we keep this parameterization for the general case. The review of performance of different date structures for triangular substitutions is given in~\cite{SubstDataStructs}.
@@ -71,16 +71,16 @@ As far as we know, for now there are no such solutions adopted for \mK.
 
 For now, as we estimate the time of every individual unification it might be not clear how it relates to the estimations for the scheduling time. But since we consider cases in which unification
 is relatively fast (constant number of basic operations), the number of unifications during an execution plays more important role and it can be simply limited by the number of semantic
-steps $d\,(s_{init}\,(input\_params))$ (because every unification is a separate step in the semantics). Similarly, although the time of basic operations depends on size of substitution in different points
-of execution, logical variables for these bindings come either from the input (where there is usually a constant number of them) or from a fresh variable allocations during the evalutation
+steps $d\,(s_{init}\,(input))$ (because every unification is a separate step in the semantics). Similarly, although the time of basic operations depends on the size of substitution in different points
+of execution, logical variables for these bindings come either from the input (where there is usually a constant number of them) or from fresh variable allocations during the evalutation
 (each of which is a a separate step in the semantics). So the number of allocated logic variables (and therefore the maximum possible number of bindings) is limited by
 
 \[
-FV\,(input(input\_params)) + d\,(s_{init}\,(input\_params))
+FV\,(input) + d\,(s_{init}\,(input))
 \]
 
-So, for example, for a usual case, when our two cryteria are satisfied and the input contains a constant number of logic variables, for a standard implementation and without occurs checks
-the total time of unifications $T_{uni}$ is $\O\,(d\,(s_{init}\,(input\_params)) \log d\,(s_{init}\,(input\_params)))$
+So, for example, for a usual case, when our two criteria are satisfied and the input contains a constant number of logic variables, for a standard implementation and without occurs checks
+the total time of unifications $T_{uni}$ is $\O\,(d\,(s_{init}\,(input))\cdot \log d\,(s_{init}\,(input)))$
 
 The time of reification $T_r$ can be estimated in the same way, since reification simply goes through the resulting term similarly to occur check. So in the case when the resulting
 substitution is constant-factor flat, the number of basic operations for the reification is limited by the size of the output (multiplied by a constant). This time is usually subdued by
