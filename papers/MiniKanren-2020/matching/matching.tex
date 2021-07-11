@@ -1,4 +1,4 @@
-\documentclass[acmlarge]{acmart}
+\documentclass[final,acmlarge,draft=false,review=false,nonacm=false]{acmart}
 \usepackage[
     type={CC},           % your choice
     modifier={by-sa},    % your choice
@@ -7,9 +7,6 @@
 
 
 \usepackage{alltt}
-%\usepackage{pslatex}
-%\usepackage{epigraph}
-%\usepackage{verbatim}
 \usepackage{latexsym}
 \usepackage{array}
 %\usepackage{comment}
@@ -36,22 +33,25 @@
 %     top=18pt, bottom=14pt, inner=21pt, outer=21pt,
 %     paperwidth=5.5in, paperheight=8.5in,
 %     }
-     
-\settopmatter{printacmref=false}
+
+\settopmatter{printacmref=false,printfolios=false}
 \fancyfoot{}
- 
+
 \makeatletter
 \def\@formatdoi#1{}
 \def\@permissionCodeOne{miniKanren.org/workshop}
-\def\@copyrightpermission{\doclicenseThis} 
-\def\@copyrightowner{Copyright held by the author(s).}
+\def\@copyrightpermission{\doclicenseThis} % your choice of text
+\def\@copyrightowner{Copyright held by the author(s).} % your choice
 \makeatother
 
-\copyrightyear{2019}
+\copyrightyear{2020}
 \setcopyright{rightsretained}
 
+
+\acmConference[miniKanren 2020]{The Second miniKanren and Relational Programming Workshop}{August 27 2020}{Online}
+
 \acmMonth{8}
-\acmArticle{3} % your article number, same as in HotCRP
+\acmArticle{8} % your number in the order of presentations (between 1 and 11)
 
 
 
@@ -118,7 +118,7 @@ language=ocanren
 \newcommand{\setarrow}[1]{\def\transarrow{#1}}
 
 \def\padding{\phantom{X}}
-\newcommand{\setpadding}[1]{\def\padding{#1}} 
+\newcommand{\setpadding}[1]{\def\padding{#1}}
 
 \def\subarrow{}
 \newcommand{\setsubarrow}[1]{\def\subarrow{#1}}
@@ -171,33 +171,39 @@ language=ocanren
 \let\emptyset\varnothing
 \let\eps\varepsilon
 
-\sloppy 
+\sloppy
 
 \newtheorem{Observation}{Observation}
 
 \begin{document}
 
-\title[Relational Synthesis of Pattern Matching]{Relational Synthesis for Pattern Matching}    
+\title[Relational Synthesis of Pattern Matching]{Relational Synthesis for Pattern Matching}
 
 \titlenote{This work was partially supported by the grant 18-01-00380 from The Russian Foundation for Basic Research} %% \titlenote is optional;
 
 
 \author{Dmitry Kosarev}
+\affiliation{
+  \institution{Saint Petersburg State University}
+  \country{Russia}
+}
+\affiliation{
+  \institution{JetBrains Research}
+  \country{Russia}
+}
 \email{Dmitrii.Kosarev@pm.me}
 
 \author{Dmitry Boulytchev}
-\email{dboulytchev@math.spbu.ru}    
-
 \affiliation{
-  \institution{Saint Petersburg State University}
-  \country{Russia}                   
+	\institution{Saint Petersburg State University}
+	\country{Russia}
 }
 
 \affiliation{
-  \institution{JetBrains Research}   
-  \country{Russia}                   
+	\institution{JetBrains Research}
+	\country{Russia}
 }
-
+\email{dboulytchev@math.spbu.ru}
 
 %% Abstract
 %% Note: \begin{abstract}...\end{abstract} environment must come
@@ -258,7 +264,7 @@ language=ocanren
 \input{conclusion}
 
 %\section{Appendix}
-%\input{lst} 
+%\input{lst}
 
 \begin{comment}
 %% Acknowledgments
@@ -270,7 +276,7 @@ language=ocanren
   %% extraction tools.
   This material is based upon work supported by the
   \grantsponsor{GS100000001}{Russian Foundation for Basic Research}{https://www.rfbr.ru/rffi/eng} under Grant
-  No.~\grantnum{GS100000001}{18-01-00380} and by the grant from JetBrains Research. 
+  No.~\grantnum{GS100000001}{18-01-00380} and by the grant from JetBrains Research.
   %Any opinions, findings, and
   %conclusions or recommendations expressed in this material are those
   %of the author and do not necessarily reflect the views of the
