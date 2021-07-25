@@ -16,6 +16,7 @@
   - [Syntax Extensions](#syntax-extensions)
   - [Run](#run)
   - [Sample](#sample)
+- [Installation](#installation-via-opam)
 - [Building from sources](#building-from-sources)
   - [Building the library](#building-the-library)
   - [Building the syntax extensions](#building-the-syntax-extensions)
