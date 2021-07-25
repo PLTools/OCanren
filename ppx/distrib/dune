@@ -4,6 +4,6 @@
   (kind ppx_rewriter)
   (libraries base ppxlib)
   (modules ppx_distrib ppx_distrib_expander)
+  (flags (:standard -linkall))
   (preprocess (pps ppxlib.metaquot))
 )
-
