@@ -40,7 +40,8 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
 <tr>
   <td>Prolog</td>
   <td>miniKanren</td>
-  <td>OCanren</td>
+  <td>OCanren (syntax 1)</td>
+  <td>OCanren (syntax 2)</td>
 </tr>
 
 <tr valign="top">
@@ -68,7 +69,21 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
 
   </td>
   <td>
-
+    
+  ```ocaml
+  let rec appendo x y z =
+    conde 
+      [ (x === Std.nil ()) &&& (y === z)
+      ; fresh (h  t  ty)
+          (x === h & t)
+          (z === h & ty)
+          (appendo t y ty)
+      ]
+  ```
+    
+  </td>
+  <td>
+    
   ```ocaml
   let rec appendo x y z =
   ocanren {
@@ -79,10 +94,9 @@ with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis201
       appendo t y ty
   }
   ```
-
+    
   </td>
 </tr>
-
 </table>
 
 ## OCanren vs. miniKanren
@@ -433,6 +447,16 @@ repr
 
 There also syntax extensions for simplifyng developing data type for OCanren
 but they are not fully documented.
+
+# Installation via Opam
+
+For newcomers is recommend to install using [OCaml PAckage Manager](https://opam.ocaml.org/doc/Install.html) (opam). You can install [OCanren from opam](https://opam.ocaml.org/packages/OCanren/) via 
+
+    opam install OCanren 
+   
+or pin the latest development version 
+
+    opam pin add OCanren --dev-repo
 
 # Building from sources
 
