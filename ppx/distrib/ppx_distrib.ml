@@ -34,7 +34,7 @@ let () =
         "distrib"
         Extension.Context.Structure_item
         pattern
-        (fun ~loc ~path params1 kind1 private1 _ kind2 private2 manifest2 ->
+        (fun ~loc ~path params1 kind1 private1 rec_2 kind2 private2 manifest2 ->
           let open Ppxlib.Ast_builder.Default in
           let base_tdecl =
             type_declaration
@@ -50,7 +50,7 @@ let () =
             Ppx_distrib_expander.process_main
               ~loc
               base_tdecl
-              ( Nonrecursive
+              ( rec_2
               , type_declaration
                   ~loc
                   ~params:[]

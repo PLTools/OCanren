@@ -127,30 +127,7 @@ let prepare_distribs ~loc fully_abstract_tname tdecl fmap_decl =
     | _ -> failwith "not implemented"
   in
   let gen_module_str = Naming.functor_name fully_abstract_tname in
-  let distrib_lid = Located.mk ~loc Longident.(Ldot (Lident gen_module_str, "distrib")) in
   [ Str.module_ ~loc
-    @@ Mb.mk
-         ~loc
-         (Located.mk ~loc (Some "T"))
-         (Mod.structure
-            ~loc
-            [ fmap_decl
-            ; Str.type_
-                ~loc
-                Nonrecursive
-                [ Type.mk
-                    ~loc
-                    ~params:tdecl.ptype_params
-                    ~kind:Ptype_abstract
-                    ~priv:Public
-                    ~cstrs:[]
-                    ~manifest:
-                      (Typ.constr ~loc (Located.mk ~loc @@ lident tdecl.ptype_name.txt)
-                      @@ List.map ~f:fst tdecl.ptype_params)
-                    (Located.mk ~loc "t")
-                ]
-            ])
-  ; Str.module_ ~loc
     @@ Mb.mk
          ~loc
          (Located.mk ~loc @@ Some gen_module_str)
@@ -163,7 +140,24 @@ let prepare_distribs ~loc fully_abstract_tname tdecl fmap_decl =
                     (match tdecl.ptype_params with
                     | [] -> "Fmap"
                     | xs -> sprintf "Fmap%d" (List.length xs))))
-            (Mod.ident ~loc (Located.mk ~loc @@ Lident "T")))
+            (Mod.structure
+               ~loc
+               [ fmap_decl
+               ; Str.type_
+                   ~loc
+                   Nonrecursive
+                   [ Type.mk
+                       ~loc
+                       ~params:tdecl.ptype_params
+                       ~kind:Ptype_abstract
+                       ~priv:Public
+                       ~cstrs:[]
+                       ~manifest:
+                         (Typ.constr ~loc (Located.mk ~loc @@ lident tdecl.ptype_name.txt)
+                         @@ List.map ~f:fst tdecl.ptype_params)
+                       (Located.mk ~loc "t")
+                   ]
+               ]))
   ]
   @ List.map constructors ~f:(fun { pcd_name; pcd_args } ->
         let names =
@@ -191,6 +185,9 @@ let prepare_distribs ~loc fully_abstract_tname tdecl fmap_decl =
                  xs)
         in
         let body =
+          let distrib_lid =
+            Located.mk ~loc Longident.(Ldot (Lident gen_module_str, "distrib"))
+          in
           [%expr inj [%e Exp.apply ~loc (Exp.ident ~loc distrib_lid) [ nolabel, body ]]]
         in
         Str.value
@@ -243,6 +240,7 @@ let mangle_core_type typ =
     match typ with
     | [%type: _] -> assert false
     | [%type: GT.string] | [%type: string] -> [%type: GT.string OCanren.logic]
+    | [%type: ground] -> [%type: logic]
     | _ ->
       (match typ.ptyp_desc with
       | Ptyp_var s -> typ
@@ -273,7 +271,15 @@ let mangle_reifier typ =
   helper typ
 ;;
 
-let revisit_adt ~loc ?(gen_gtyp = true) ?(gen_ltyp = true) other_attrs tdecl ctors =
+let revisit_adt
+    ~loc
+    ?(gen_gtyp = true)
+    ?(gen_ltyp = true)
+    ?(gen_reifier = true)
+    other_attrs
+    tdecl
+    ctors
+  =
   let der_typ_name = tdecl.ptype_name.Asttypes.txt in
   (* Let's forget about mutal recursion for now *)
   (* For every constructor argument we need to put ground types to parameters *)
@@ -373,7 +379,8 @@ let revisit_adt ~loc ?(gen_gtyp = true) ?(gen_ltyp = true) other_attrs tdecl cto
       List.concat
         [ (if gen_gtyp then [ ground_typ ] else [])
         ; (if gen_ltyp then [ ltyp ] else [])
-        ; prepare_distribs der_typ_name ~loc full_t fmap_for_typ @ [ the_reifier ]
+        ; prepare_distribs der_typ_name ~loc full_t fmap_for_typ
+        ; (if gen_reifier then [ the_reifier ] else [])
         ])
     else (
       let functorized_type = Naming.fabst_name full_t.ptype_name.txt in
@@ -462,12 +469,13 @@ let revisit_adt ~loc ?(gen_gtyp = true) ?(gen_ltyp = true) other_attrs tdecl cto
                         (List.map ~f:(fun t -> Nolabel, t) (reifiers @ [ [%expr eta] ]))]]
           ]
       in
-      let () = print_endline "fully abstract type IS required" in
+      (* let () = print_endline "fully abstract type IS required" in *)
       List.concat
         [ [ fully_abstract_tdecl ]
         ; (if gen_gtyp then [ ground_typ ] else [])
         ; (if gen_ltyp then [ logic_typ ] else [])
-        ; distribs @ [ the_reifier ]
+        ; distribs
+        ; (if gen_reifier then [ the_reifier ] else [])
         ])
   in
   ans
@@ -514,6 +522,18 @@ let str_type_decl ~loc (flg, tdls) =
   wrap_tydecls loc tdls
 ;;
 
+let decorate_with_gt tdecl =
+  let loc = tdecl.ptype_loc in
+  { tdecl with
+    ptype_attributes =
+      [ attribute
+          ~loc
+          ~name:(Located.mk ~loc "deriving")
+          ~payload:(PStr [%str gt ~options:{ gmap; show; fmt; foldl }])
+      ]
+  }
+;;
+
 let is_super_suitable tdecl =
   (* TODO: check that type name is ground *)
   match tdecl.ptype_kind with
@@ -528,8 +548,7 @@ let is_super_suitable tdecl =
 ;;
 
 let process_main ~loc base_tdecl (rec_, tdecl) =
-  let base_tname, args = Option.value_exn (is_super_suitable tdecl) in
-  let base_gend =
+  let base_generated =
     match base_tdecl.ptype_kind with
     | Ptype_variant cds ->
       revisit_adt
@@ -541,7 +560,6 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         cds
     | _ -> failwith ""
   in
-  (* let () = notify "%s %d" __FILE__ __LINE__ in *)
   let ltyp =
     let oca_logic_ident ~loc = Located.mk ~loc (Ldot (Lident "OCanren", "logic")) in
     let mangle_typ t =
@@ -550,9 +568,10 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ]
       | Ptyp_constr ({ txt = Ldot (path, "ground") }, []) ->
         ptyp_constr ~loc (Located.mk ~loc (Ldot (path, "logic"))) []
+      | Ptyp_constr ({ txt = Lident "ground" }, []) ->
+        ptyp_constr ~loc (Located.mk ~loc (Lident "logic")) []
       | _ -> t
     in
-    let () = notify "%s %d" __FILE__ __LINE__ in
     let ptype_manifest =
       match tdecl.ptype_manifest with
       | None -> failwith ""
@@ -561,7 +580,6 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         Option.some (ptyp_constr ~loc (oca_logic_ident ~loc) [ ttt ])
       | t -> t
     in
-    let () = notify "%s %d" __FILE__ __LINE__ in
     let ptype_attributes =
       List.filter tdecl.ptype_attributes ~f:(fun attr ->
           match attr.attr_name.txt with
@@ -570,9 +588,12 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     in
     { tdecl with ptype_name = Located.mk ~loc "logic"; ptype_manifest; ptype_attributes }
   in
-  let () = notify "%s %d" __FILE__ __LINE__ in
   List.concat
-    [ base_gend; [ pstr_type ~loc rec_ [ tdecl ] ]; [ pstr_type ~loc rec_ [ ltyp ] ] ]
+    [ [ pstr_type ~loc Nonrecursive [ decorate_with_gt base_tdecl ] ]
+    ; base_generated
+    ; [ pstr_type ~loc rec_ [ decorate_with_gt tdecl ] ]
+    ; [ pstr_type ~loc rec_ [ decorate_with_gt ltyp ] ]
+    ]
 ;;
 
 let process_super_suitable ~loc revhist (rec_, tdecl) =
@@ -580,20 +601,14 @@ let process_super_suitable ~loc revhist (rec_, tdecl) =
   let base_tdecl =
     try
       List.find_map_exn revhist ~f:(fun si ->
-          Pprintast.structure_item Format.std_formatter si;
+          Pprintast.structure_item Caml.Format.std_formatter si;
           match si.pstr_desc with
           | Pstr_type (_, [ tdecl ]) ->
             notify
               "Looking for basic type called '%s': testing %s"
               base_tname
               tdecl.ptype_name.txt;
-            if String.equal tdecl.ptype_name.txt base_tname
-            then (
-              let () = notify "yeah" in
-              Some tdecl)
-            else (
-              let () = notify "nope" in
-              None)
+            if String.equal tdecl.ptype_name.txt base_tname then Some tdecl else None
           | _ -> None)
     with
     | Not_found_s _ -> failwithf "basic type called '%s' not found" base_tname ()
