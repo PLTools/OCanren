@@ -1,3 +1,10 @@
+## 0.3.0 (dev)
+
+### Changed
+
+- Make `ppx_distrib` usable
+
+
 ## 0.2.0 (2021-03-04)
 
 ### Changed

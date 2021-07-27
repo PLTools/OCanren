@@ -1,6 +1,6 @@
 (*
  * OCanren PPX
- * Copyright (C) 2016-2020
+ * Copyright (C) 2016-2021
  *   Dmitrii Kosarev aka Kakadu, Petr Lozov
  * St.Petersburg State University, JetBrains Research
  *)
@@ -24,7 +24,7 @@ let ( @@ ) = Caml.( @@ )
 
 module Naming = struct
   let fabst_name = sprintf "g%s"
-  let functor_name = sprintf "For_%s"
+  let functor_name = sprintf "Distribs_%s"
 end
 
 module TypeNameMap = Map.M (String)
@@ -555,6 +555,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         ~loc:base_tdecl.ptype_loc
         ~gen_gtyp:false
         ~gen_ltyp:false
+        ~gen_reifier:false
         []
         base_tdecl
         cds
@@ -588,11 +589,39 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     in
     { tdecl with ptype_name = Located.mk ~loc "logic"; ptype_manifest; ptype_attributes }
   in
+  let make_reifier is_rec tdecl =
+    let rec helper typ =
+      match typ.ptyp_desc with
+      | Ptyp_constr ({ txt = Lident "ground" }, []) -> [%expr reify]
+      | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) -> [%expr OCanren.reify]
+      | Ptyp_constr ({ txt = Ldot (m, "ground") }, args) ->
+        pexp_ident ~loc (Located.mk ~loc (Ldot (m, "reify")))
+      | _ -> [%expr reify]
+    in
+    let body =
+      match tdecl.ptype_manifest with
+      | None -> failwith "should not happen"
+      | Some m ->
+        (match m.ptyp_desc with
+        | Ptyp_constr ({ txt = Lident id }, args) ->
+          let foo =
+            pexp_ident ~loc
+            @@ Located.mk ~loc Longident.(Ldot (Lident (Naming.functor_name id), "reify"))
+          in
+          pexp_apply ~loc foo (List.map ~f:(fun s -> Nolabel, helper s) args)
+        | _ -> failwith "should not happen")
+    in
+    pstr_value
+      ~loc
+      is_rec
+      [ value_binding ~loc ~pat:[%pat? reify] ~expr:[%expr fun eta -> [%e body] eta] ]
+  in
   List.concat
     [ [ pstr_type ~loc Nonrecursive [ decorate_with_gt base_tdecl ] ]
     ; base_generated
     ; [ pstr_type ~loc rec_ [ decorate_with_gt tdecl ] ]
     ; [ pstr_type ~loc rec_ [ decorate_with_gt ltyp ] ]
+    ; [ make_reifier rec_ tdecl ]
     ]
 ;;
 

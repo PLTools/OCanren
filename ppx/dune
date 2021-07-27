@@ -25,5 +25,5 @@
 (executable
  (public_name pp_ocanren_all)
  (package OCanren-ppx)
- (libraries ppx_repr ppx_fresh)
+ (libraries ppx_repr ppx_fresh ppx_distrib)
  (modules pp_ocanren_all))

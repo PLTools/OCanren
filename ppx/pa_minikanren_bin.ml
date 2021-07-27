@@ -1,6 +1,6 @@
 (*
  * OCanren PPX
- * Copyright (C) 2016-2019
+ * Copyright (C) 2016-2021
  *   Dmitrii Kosarev aka Kakadu
  * St.Petersburg State University, JetBrains Research
  *)
@@ -8,3 +8,4 @@
 let () =
   Smart_logger.register ();
   Ppxlib.Driver.standalone ()
+;;

@@ -1,11 +1,12 @@
 (*
  * OCanren PPX
- * Copyright (C) 2016-2020
+ * Copyright (C) 2016-2021
  *   Dmitrii Kosarev aka Kakadu
  * St.Petersburg State University, JetBrains Research
  *)
 
 let () =
-  (* Format.pp_set_margin Format.std_formatter 120;
-  Format.pp_set_max_indent Format.std_formatter 2000; *)
+  (* TODO: Invent something for margins
+  https://github.com/ocaml-ppx/ppxlib/issues/273*)
   Ppxlib.Driver.standalone ()
+;;

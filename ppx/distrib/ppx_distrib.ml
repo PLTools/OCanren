@@ -1,3 +1,10 @@
+(*
+ * OCanren PPX
+ * Copyright (C) 2016-2021
+ *   Dmitrii Kosarev aka Kakadu
+ * St.Petersburg State University, JetBrains Research
+ *)
+
 open Base
 open Ppxlib
 
@@ -31,7 +38,7 @@ let () =
         ^:: nil)
     in
     [ Extension.declare
-        "distrib"
+        name
         Extension.Context.Structure_item
         pattern
         (fun ~loc ~path params1 kind1 private1 rec_2 kind2 private2 manifest2 ->
