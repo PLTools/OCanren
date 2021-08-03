@@ -526,13 +526,18 @@ let decorate_with_gt tdecl =
   let loc = tdecl.ptype_loc in
   { tdecl with
     ptype_attributes =
-      [ attribute
+       (attribute
           ~loc
           ~name:(Located.mk ~loc "deriving")
-          ~payload:(PStr [%str gt ~options:{ gmap; show; fmt; foldl }])
-      ]
+          ~payload:(PStr [%str gt ~options:{ gmap; show; fmt; foldl }])) :: tdecl.ptype_attributes
+
   }
 ;;
+let decorate_with_attributes tdecl ptype_attributes =
+  { tdecl with ptype_attributes }
+;;
+
+
 
 let is_super_suitable tdecl =
   (* TODO: check that type name is ground *)
@@ -617,10 +622,10 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       [ value_binding ~loc ~pat:[%pat? reify] ~expr:[%expr fun eta -> [%e body] eta] ]
   in
   List.concat
-    [ [ pstr_type ~loc Nonrecursive [ decorate_with_gt base_tdecl ] ]
+    [ [ pstr_type ~loc Nonrecursive [ base_tdecl ] ]
     ; base_generated
-    ; [ pstr_type ~loc rec_ [ decorate_with_gt tdecl ] ]
-    ; [ pstr_type ~loc rec_ [ decorate_with_gt ltyp ] ]
+    ; [ pstr_type ~loc rec_ [ decorate_with_attributes tdecl base_tdecl.ptype_attributes ] ]
+    ; [ pstr_type ~loc rec_ [ decorate_with_attributes ltyp base_tdecl.ptype_attributes  ] ]
     ; [ make_reifier rec_ tdecl ]
     ]
 ;;

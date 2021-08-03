@@ -17,13 +17,13 @@ let () =
       pstr
         (pstr_type
            nonrecursive
-           (type_declaration
+           ((type_declaration_attributes __ @@  type_declaration
               ~name:(string "t")
               ~params:__
               ~cstrs:nil
               ~kind:__
               ~private_:__
-              ~manifest:none
+              ~manifest:none)
            ^:: nil)
         ^:: pstr_type
               __
@@ -41,17 +41,20 @@ let () =
         name
         Extension.Context.Structure_item
         pattern
-        (fun ~loc ~path params1 kind1 private1 rec_2 kind2 private2 manifest2 ->
+        (fun ~loc ~path attributes1 params1 kind1 private1 rec_2 kind2 private2 manifest2 ->
           let open Ppxlib.Ast_builder.Default in
           let base_tdecl =
-            type_declaration
-              ~loc
-              ~name:(Located.mk ~loc "t")
-              ~params:params1
-              ~cstrs:[]
-              ~private_:private1
-              ~kind:kind1
-              ~manifest:None
+            let td =
+              type_declaration
+                ~loc
+                ~name:(Located.mk ~loc "t")
+                ~params:params1
+                ~cstrs:[]
+                ~private_:private1
+                ~kind:kind1
+                ~manifest:None
+            in
+            { td with ptype_attributes = attributes1 }
           in
           let items =
             Ppx_distrib_expander.process_main
