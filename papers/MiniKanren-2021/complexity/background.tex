@@ -48,7 +48,7 @@ The language we consider is first-order, as goals can not be passed as parameter
 During the evaluation of \mK program an environment, consisting of substitution for logic variables and a counter of allocated logic
 variables, is threaded through computation and updated in every unification and fresh variable introduction.
 The substitution in the environment at a given point and a given branch of evaluation contains all the information about relations between
-the logical variables at this point, we will later refer to the substitution in the environment at a given point as a ``current substitution''
+the logical variables at this point. We will later refer to the substitution in the environment at a given point as a ``current substitution''
 in informal explanations.
 The different branches are combined via \emph{interleaving search} procedure~\cite{InterleavingSearch}.
 The answers for the given query are extracted from the final environments (they are the values of the queried variables in the substitution

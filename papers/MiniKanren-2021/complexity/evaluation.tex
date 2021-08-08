@@ -41,8 +41,8 @@ For every relation, we analyzed several queries (specifying different arguments 
 of addition relation for addition, subtraction, and decomposition of a number into a sum of two numbers). For every query, we took the known optimal order of conjuncts in the relation
 (as the time of the search hugely depends on this order~\cite{WillThesis}), which may be different for different queries. We could perform the analysis with other orders the same way,
 but the results are not that useful and in those cases, the search often diverges. The results~--- the complexities for all the factors characterizing different aspects of the search~---
-are shown in \figureword~\ref{fig:examples_all_complexities}. Note, sometimes the time depends not on the size of the terms, substituted for symbolic variables, but on some
-characteristics of the values, these terms represent (in these cases, length of the list). In all cases, the time is polynomial on the size of the input.
+are shown in \figureword~\ref{fig:examples_all_complexities}. Note that sometimes the time depends not on the size of the terms substituted for symbolic variables, but on some
+characteristics of the values these terms represent (in these cases, length of the list). In all cases, the time is polynomial on the size of the input.
 
 From these results, we can infer some conclusions about the factors influencing the time of evaluation in \mK.
 
