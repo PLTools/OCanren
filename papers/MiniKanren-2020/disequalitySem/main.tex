@@ -1,4 +1,28 @@
-\documentclass[acmlarge]{acmart}
+\documentclass[final,acmlarge,draft=false,review=false,nonacm=false]{acmart} 
+\usepackage[
+    type={CC},              % your choice
+    modifier={by-sa},   % your choice
+    version={4.0},         % your choice
+]{doclicense}               % your choice, see \doclicenseThis below
+
+\settopmatter{printacmref=false,printfolios=false}
+\fancyfoot{}
+
+\makeatletter
+\def\@formatdoi#1{}
+\def\@permissionCodeOne{miniKanren.org/workshop}
+\def\@copyrightpermission{\doclicenseThis} % your choice of text
+\def\@copyrightowner{Copyright held by the author(s).} % your choice
+\makeatother
+
+\copyrightyear{2020}
+\setcopyright{rightsretained}
+
+\acmConference[miniKanren 2020]{The Second miniKanren and Relational Programming Workshop}{August 27 2020}{Online}
+
+\acmMonth{8}
+\acmArticle{6} % your number in the order of presentations (between 1 and 11)
+
 
 %% Bibliography style
 \bibliographystyle{ACM-Reference-Format}
@@ -163,17 +187,13 @@ language=minikanren
 
 \author{Dmitry Rozplokhas}
 \affiliation{%
-  \institution{Higher School of Economics}}
-\affiliation{%
-  \institution{JetBrains Research}
+  \institution{Higher School of Economics}, \institution{JetBrains Research}
   \country{Russia}}
-\email{darozplokhas@edu.hse.ru}
+\email{rozplokhas@gmail.com}
 
 \author{Dmitry Boulytchev}
 \affiliation{%
-  \institution{Saint Petersburg State University}}
-\affiliation{%
-  \institution{JetBrains Research}
+  \institution{Saint Petersburg State University}, \institution{JetBrains Research}
   \country{Russia}}
 \email{dboulytchev@math.spbu.ru}
 

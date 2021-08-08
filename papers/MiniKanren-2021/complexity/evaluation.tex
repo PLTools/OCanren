@@ -2,7 +2,7 @@
 \label{sec:evaluation}
 
 We have applied the described approach of time complexity analysis to a number of standard \mK relations. Specifically, we have analyzed relational operations for basic data types: for Peano
-numbers (addition, multiplication, comparison) and lists (length, map, append, reverse). These are well-known relations with simple declarative recursive definitions, often used as examples
+numbers (addition, multiplication, comparison) and lists (length, map, append, reverse), the definitions can be found in \appendixword~\ref{sec:examples_definitions}. These are well-known relations with simple declarative recursive definitions, often used as examples
 of relational programming, yet we could not find any formal analysis of their time complexity. All the examples we studied satisfy the requirements of our method and the extracted recursive
 inequalities are easily solvable, which supports the claim that our method, although not universal, is adequately applicable in practice.
 
@@ -88,8 +88,7 @@ than the intended ``forward'' execution. For example, the division via multiplic
 ask for a suitable argument. If we look closer into these examples we can see that the reason for this is the fact that the optimal order of conjuncts for backward execution has
 the recursive call at the end while the optimal order of conjuncts for forward execution does not. When the recursive call is not the last it forces us to add the number of semantic steps
 for this call when calculating the scheduling factor, which often increases the complexity. This supports a well-known rule of thumb in \mK which recommends to place recursive calls
-at the end of conjunctions whenever possible. We now can see that it is crucial because of scheduling discipline and can make even an unexpected way of evaluation faster than
-the intended one.
+at the end of conjunctions whenever possible. We can now see that one reason for it is smaller time penalty of scheduling discipline.\footnote{There are other reasons. For example, executing all constraints before possibly diverging relational calls is one of the methods of ensuring termination of relational programs~\cite{WillThesis}. }
 
 \begin{figure}[t]
     \includegraphics[width=10cm,height=8cm]{plot_example}

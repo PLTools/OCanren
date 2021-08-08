@@ -39,7 +39,7 @@ process can diverge only when there is a circular binding in the substitution, w
 in this sense~\cite{NominalUnificationWithTriangularSubstitutions}. Nevertheless ``walk'' can require a linear number (on the size of substitution) of lookups.
 However, the variable-to-variable bindings occur rarely in practice and usually ``walk'' finds the required binding in one step. We can take the absence of variable-to-variable bindings
 as our first criterion: for \emph{flat} substitutions (substitutions without such bindings) ``walk'' always makes only one lookup. We can relax this requirement by allowing a
-constant number, independent of the inputs parameters of the topmost goal, of variable-to-variable bindings.
+constant number, independent of the input parameters of the topmost goal, of variable-to-variable bindings.
 
 \begin{definition}
 A substitution $\sigma$ is called \emph{constant-factor flat} if the number variable-to-variable bindings in $\sigma$ does not depend on the input parameters of the topmost goal.
@@ -83,5 +83,4 @@ So, for example, for a usual case, when our two criteria are satisfied and the i
 the total time of unifications $T_{uni}$ is $\O\,(d\,(s_{init}\,(input))\cdot \log d\,(s_{init}\,(input)))$
 
 The time of reification $T_r$ can be estimated in the same way, since reification simply goes through the resulting term similarly to occur check. So in the case when the resulting
-substitution is constant-factor flat, the number of basic operations for the reification is limited by the size of the output (multiplied by a constant). This time is usually subdued by
-the time of unification and scheduling, but not always (see examples in \sectionword~\ref{sec:evaluation}).
+substitution is constant-factor flat, the number of basic operations for the reification is limited by the size of the output (multiplied by a constant). This time is usually dominated by the time of unification and scheduling, but not always (see examples in \sectionword~\ref{sec:evaluation}).
