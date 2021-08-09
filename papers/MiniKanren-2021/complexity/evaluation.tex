@@ -2,7 +2,7 @@
 \label{sec:evaluation}
 
 We have applied the described approach of time complexity analysis to a number of standard \mK relations. Specifically, we have analyzed relational operations for basic data types: for Peano
-numbers (addition, multiplication, comparison) and lists (length, map, append, reverse). These are well-known relations with simple declarative recursive definitions, often used as examples
+numbers (addition, multiplication, comparison) and lists (length, map, append, reverse), the definitions can be found in \appendixword~\ref{sec:examples_definitions}. These are well-known relations with simple declarative recursive definitions, often used as examples
 of relational programming, yet we could not find any formal analysis of their time complexity. All the examples we studied satisfy the requirements of our method and the extracted recursive
 inequalities are easily solvable, which supports the claim that our method, although not universal, is adequately applicable in practice.
 
@@ -41,8 +41,8 @@ For every relation, we analyzed several queries (specifying different arguments 
 of addition relation for addition, subtraction, and decomposition of a number into a sum of two numbers). For every query, we took the known optimal order of conjuncts in the relation
 (as the time of the search hugely depends on this order~\cite{WillThesis}), which may be different for different queries. We could perform the analysis with other orders the same way,
 but the results are not that useful and in those cases, the search often diverges. The results~--- the complexities for all the factors characterizing different aspects of the search~---
-are shown in \figureword~\ref{fig:examples_all_complexities}. Note, sometimes the time depends not on the size of the terms, substituted for symbolic variables, but on some
-characteristics of the values, these terms represent (in these cases, length of the list). In all cases, the time is polynomial on the size of the input.
+are shown in \figureword~\ref{fig:examples_all_complexities}. Note that sometimes the time depends not on the size of the terms substituted for symbolic variables, but on some
+characteristics of the values these terms represent (in these cases, length of the list). In all cases, the time is polynomial on the size of the input.
 
 From these results, we can infer some conclusions about the factors influencing the time of evaluation in \mK.
 
@@ -88,8 +88,7 @@ than the intended ``forward'' execution. For example, the division via multiplic
 ask for a suitable argument. If we look closer into these examples we can see that the reason for this is the fact that the optimal order of conjuncts for backward execution has
 the recursive call at the end while the optimal order of conjuncts for forward execution does not. When the recursive call is not the last it forces us to add the number of semantic steps
 for this call when calculating the scheduling factor, which often increases the complexity. This supports a well-known rule of thumb in \mK which recommends to place recursive calls
-at the end of conjunctions whenever possible. We now can see that it is crucial because of scheduling discipline and can make even an unexpected way of evaluation faster than
-the intended one.
+at the end of conjunctions whenever possible. We can now see that one reason for it is smaller time penalty of scheduling discipline.\footnote{There are other reasons. For example, executing all constraints before possibly diverging relational calls is one of the methods of ensuring termination of relational programs~\cite{WillThesis}. }
 
 \begin{figure}[t]
     \includegraphics[width=10cm,height=8cm]{plot_example}

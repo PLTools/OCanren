@@ -55,7 +55,7 @@ The following lemma, obvious from the definitions, will be enough to deal with a
 \begin{lemma}
   If
 
-  \[\taskst{g}{e} \rightarrow s^\prime\]
+  \[\taskst{g}{e} \xrightarrow{\circ} s^\prime\]
 
   or
 
@@ -70,9 +70,21 @@ The following lemma, obvious from the definitions, will be enough to deal with a
   \[t\,(\taskst{g}{e}) = t\,(s^\prime) + 1\]
 \end{lemma}
 
-In $\oplus$-states the substates are evaluated separately, one step at a time for each substate, so the total number of semantic steps is just a sum. However, for the scheduling factor, there is an
-extra summand since the heights of the states in the trace become bigger (by one additional $\oplus$-node on the top). This additional node exists in the trace until one of the substates is
-evaluated completely, so the scheduling factor is increased by the number of steps before such an event. So we have the following lemma.
+%In $\oplus$-states the substates are evaluated separately, one step at a time for each substate,
+%so the total number of semantic steps is just a sum.
+%However, for the scheduling factor, there is an extra summand since the heights of the states in
+%the trace become bigger (by one additional $\oplus$-node on the top).
+%This additional node exists in the trace until one of the substates is evaluated completely, so the
+%scheduling factor is increased by the number of steps before such an event.
+%So we have the following lemma.
+
+In state of the form $s_1 \oplus s_2$ the substates are evaluated separately, one step at a time for
+each substate, so the total number of semantic steps is just a sum.
+However, for the scheduling factor, there is an extra summand $\costdisj{s_1}{s_2}$ since the
+heights of the states in the trace are increased by one additional $\oplus$-node on the top.
+This additional node exists in the trace until one of the substates is evaluated completely,
+so the scheduling factor is increased by the number of steps before such event.
+So we have the following lemma.
 
 \begin{lemma}
 \label{lem:sum_estimation}
@@ -82,48 +94,71 @@ For any two states $s_1$ and $s_2$
 \begin{array}{rcl}
   d\,(s_1 \oplus s_2) &=& d\,(s_1) + d\,(s_2) \\
 
-  t\,(s_1 \oplus s_2) &=& t\,(s_1) + t\,(s_2) + \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\}
+%  t\,(s_1 \oplus s_2) &=& t\,(s_1) + t\,(s_2) + \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\}
+    t\,(s_1 \oplus s_2) &=& t\,(s_1) + t\,(s_2) + \costdisj{s_1}{s_2}
 \end{array}
 \]
 
+where
+
+\[ \costdisj{s_1}{s_2} = \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\} \] 
+
 \end{lemma}
 
-For $\otimes$-states the reasoning is the same, but the result is more complicated. In $\otimes$-state the left substate is evaluated until an answer is found, which is then taken as
-\emph{an environment} for evaluation of the right subgoal. Thus, in the equations for $\otimes$-states the answers
-have to be taken into account. Since the tasks of evaluating the right subgoal in different environments are added to the evaluation of the left substate by creation of an $\oplus$-state
-we can use the equations from the previous lemma. However, to do it we need to calculate the number of steps in the evaluation of the left substate from the point a given answer is produced
-to the end. There is also an extra summand to the scheduling factor because of the $\otimes$-node that increases the height in the trace, analogous to the one caused by $\oplus$-nodes.
-We can notice that $\otimes$-node is always placed immediately over the left substate so this addition is exactly the number of steps for the left substate. Therefore the resulting
-equations for $\otimes$-states are as follows.
+For states of the form $s \otimes g$ the reasoning is the same, but the result is more complicated.
+In $\otimes$-state the left substate is evaluated until an answer is found, which is then taken as
+\emph{an environment} for evaluation of the right subgoal.
+Thus, in the equations for $\otimes$-states we sum evaluation time of the second goal for all
+the answers generated for the first substate.
+The tasks of evaluating the right subgoal in different environments are added to the
+evaluation of the left substate by creation of an $\oplus$-state, so for scheduling factor there is
+an additional summand $\costdisj{\taskst{g}{a_i}}{s'_i}$ for each answer with $s'_i$ being the state
+after dicovering the given answer.
+There is also an extra summand $\costconj{s}{g}$ to the scheduling factor because of the
+$\otimes$-node that increases the height in the trace, analogous to the one caused by
+$\oplus$-nodes.
+We can notice that $\otimes$-node is always placed immediately over the left substate so this
+addition is exactly the number of steps for the left substate.
+Therefore the resulting equations for $\otimes$-states are as follows.
 
 \begin{lemma}
 For any state $s$ and any goal $g$
 
 \[
-d\,(s \otimes g) = d\,(s) + \displaystyle\sum\limits_{a_i \in \tra{s}} d\,(\taskst{g}{a_i})
-\]
+\begin{array}{rcl}
+d\,(s \otimes g)  &=&  d\,(s) + \displaystyle\sum\limits_{a_i \in \tra{s}} d\,(\taskst{g}{a_i}) \\
 
-\[
-\begin{array}{rclc}
-  t\,(s \otimes g) &=& t\,(s) & + \\
-                   & & d\,(s) & + \\
-  & & \displaystyle\sum\limits_{a_i \in \tra{s}} (t\,(\taskst{g}{a_i}) + \min\,\{2\cdot d\,(\taskst{g}{a_i}) - 1,\,2\cdot (d\,(s) - d_{a_i}\,(s) + \displaystyle\sum\limits_{j > i} d\,(\taskst{g}{a_j}))\})
+ t\,(s \otimes g)  &=&  t\,(s) + (\displaystyle\sum\limits_{a_i \in \tra{s}} (t\,(\taskst{g}{a_i}) + \costdisj{\taskst{g}{a_i}}{(s'_i \otimes g)})) + \costconj{s}{g}
 \end{array}
 \]
 
-where $d_{a_i}\,(s)$ is the number of steps in the trace for state $s$ until the answer $a_i$ is produced.
+where 
+
+\begin{align*}
+& \costdisj{s_1}{s_2} = \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\} \\
+& \costconj{s}{g} = d\,(s) \\
+& s'_i \text{is the next state in the trace for s after the transition labeled with the answer $a_i$} \\
+\end{align*}
 \end{lemma}
 
-The last equation is too cumbersome to use directly, so we will use some of its approximation instead. One option is to go with the first argument of ``$\min$''. It should be a good approximation
-in the case when there are several answers passed to the second goal and for none of them the number of steps surpasses the \emph{overall} number of steps for all other answers (which is approximately the sum in the second argument of ``$\min$'').
+After unfolding the auxiliary definitions the last equation is too cumbersome to use directly,
+so we will use some approximation of it instead.
+One option is to go with the first argument of ``$\min$'' in $\costdisj{\taskst{g}{a_i}}{s'_i}$.
+It should be a good approximation in the case when there are several answers passed to the second
+goal and for none of them the number of steps surpasses the \emph{overall} number of steps for all
+other answers (the second argument of ``$\min$'' will include the sum for the rest of the answers).
 
 \begin{corollary}
 \label{lem:prod_estimation_multiple_answers}
 For any state $s$ and any goal $g$
-\[ t\,(s \otimes g) \le t\,(s) + d\,(s) +  \displaystyle\sum\limits_{a_i \in \tra{s}} (t\,(\taskst{g}{a_i}) + 2\cdot d\,(\taskst{g}{a_i}) \]
+\[ t\,(s \otimes g) \le t\,(s) + d\,(s) + \displaystyle\sum\limits_{a_i \in \tra{s}} (t\,(\taskst{g}{a_i}) + 2\cdot d\,(\taskst{g}{a_i}) \]
 \end{corollary}
 
-In the case when there is only one answer, however, we should rather go with the second argument of ``$\min$''.
+In the case when there is only one answer, however, we should rather go with the second argument of ``$\min$''. 
+
+In this case the number of steps $d(s'_1 \otimes g)$ is equal to the number of steps $d(s'_1)$
+since no more aswers are produced, and we can approximate it by the length $d(s)$ of the whole
+trace for $s$. 
 
 \begin{corollary}
 \label{lem:prod_estimation_single_answer}

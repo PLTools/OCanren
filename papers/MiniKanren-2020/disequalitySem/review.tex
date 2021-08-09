@@ -45,6 +45,7 @@ returned or constructed at runtime.
 As an example consider the specification for the standard \lstinline|append$^o$| relation and a query which splits a list containing
 three constants \lstinline|A|, \lstinline|B| and \lstinline|C| into two parts in every possible way:
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}
   append$^o$ = fun x y xy .
     ((x === Nil) /\ (xy === y)) \/
@@ -55,6 +56,7 @@ three constants \lstinline|A|, \lstinline|B| and \lstinline|C| into two parts in
     );
   append$^o$ x y (Cons (A, Cons (B, Cons (C, Nil))))
 \end{lstlisting}
+\end{minipage}
 
 \subsection{Denotational sematics}
 

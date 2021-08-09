@@ -22,7 +22,7 @@
 %% in the same archive or directory.)
 %%
 %% The first command in your LaTeX source must be the \documentclass command.
-\documentclass[acmsmall, anonymous, review]{acmart}
+\documentclass[acmsmall]{acmart}
 %% NOTE that a single column version is required for 
 %% submission and peer review. This can be done by changing
 %% the \doucmentclass[...]{acmart} in this template to 
@@ -114,6 +114,8 @@
 
 \newcommand{\mK}{\textsc{miniKanren}\xspace}
 
+\newcommand{\costdisj}[2]{cost_{\oplus}(#1 \oplus #2)}
+\newcommand{\costconj}[2]{cost_{\otimes}(#1 \otimes #2)}
 \newcommand{\lookuptime}[1]{\texttt{lookup}\,(#1)}
 \newcommand{\addtime}[1]{\texttt{add}\,(#1)}
 \renewcommand{\O}{\mathcal{O}}
@@ -233,20 +235,10 @@ language=minikanren
 \input{intro}
 \input{background}
 \input{scheduling}
- \input{uni-rei}
+\input{uni-rei}
 \input{symbolic_schemes}
 \input{evaluation}
-
-\section{Conclusion}
-
-We presented a first attempt to build a theory which would allow one to calculate an adequate worst-case time
-complexity estimations for relational programs in \mK. While our research is not completed the results still
-allow to explain some observable phenomena in some relational programs behavior.
-
-As the directions for future research we can mention relaxing the requirements which we put on
-terms and substitutions in order to provide an accurate unification time estimations. It would be also
-interesting to come up with an automated (or semi-automated) procedure to deduce the complexity
-estimations in a symbolic forms by making use of symbolic execution model presened in Section~\ref{sec:symbolic}.
+\input{conclusion}
 
 %%
 %% The acknowledgments section is defined using the "acks" environment
@@ -266,6 +258,8 @@ estimations in a symbolic forms by making use of symbolic execution model presen
 %%
 %% If your work has an appendix, this is the place to put it.
 \appendix
+
+\input{examples_definitions}
 
 \end{document}
 \endinput
