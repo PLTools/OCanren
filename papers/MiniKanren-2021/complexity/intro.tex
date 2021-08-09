@@ -42,7 +42,7 @@ As a motivative example, consider two implementations of a standard recursive re
 orders of conjuncts. Although the \lstinline|length$_d^o$| relation can be seen as a more direct definition of a function as a relation (all steps of usual length evaluation written up in order),
 it is well-known that the \lstinline|length$^o$| with the recursive call in the end is much faster when running this relation backward (in fact, the search diverges if we
 run \lstinline|length$_d^o$| backward, while for \lstinline|length$^o$| it terminates). What is less known and what we find more unexpected is the fact that if we run both relations
-forward (specifying the list and asking for the length) \lstinline|length$^o$| is still much faster than \lstinline|length$_d^o$|, although they perform the same number of unifications. You can see the comparative time of the search in \figureword~\ref{fig:length_plots}. The difference is even
+forward (specifying a list and asking for its length) \lstinline|length$^o$| is still much faster than \lstinline|length$_d^o$|, although they perform the same number of unifications. One can see the comparative time of the search in \figureword~\ref{fig:length_plots}. The difference is even
 more staggering if we switch off occurs checks in unifications. It's OK because for simple queries like this occurs checks never violated. In the same \figureword~\ref{fig:length_plots} you can see that
 the \emph{asymptotic complexity} becomes different in this case: it is linear for \lstinline|length$^o$| and quadratic for \lstinline|length$_d^o$|.
 
@@ -51,7 +51,7 @@ During the execution of a program in \mK a lazy structure is build that decompos
 appropriately. For the \lstinline|length$_d^o$| relation this structure becomes linear in size just because of the order in conjunctions and increases the time of
 scheduling significantly. This kind of effect is hard to predict and measure without a formal model for performance in \mK.
 
-This paper presents such a model. We study evaluation in a specific (canonical) implementation of \mK with goals evaluated to lazy streams in program-written order, but we rely only on the basic principles of implementation of \mK, so the model should be easily addoptable for a large class of regular implementations. We state that the total time of the search in \mK breaks into three separate parts: the time of scheduling ($T_s$) that breaks the evaluation into a sequence of
+This paper presents such a model. We study evaluation in a specific (canonical) implementation of \mK with goals evaluated to lazy streams in program-written order, but we rely only on the basic principles of implementation of \mK, so the model should be easily adoptable for a large class of regular implementations. We state that the total time of the search in \mK breaks into three separate parts: the time of scheduling ($T_s$) that breaks the evaluation into a sequence of
 unifications, the time required to perform these unifications, and the time of reifications ($T_r$) that reconstruct the result in an expected form in the end. The time of unifications can be further
 divided into the time of occurs checks ($T_{occ}$) during the unification and the time ($T_{uni}$) of the rest of the unification algorithm (this division will help us to see how large
 is the part of the total time that occurs check, which often can be omitted, takes). So the total time of the search can be calculated as the sum of four components:

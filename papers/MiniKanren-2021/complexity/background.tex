@@ -32,7 +32,7 @@ The syntax of the basic version of \mK is shown in Fig.~\ref{fig:syntax}.
 All data is presented using terms $\mathcal{T}_X$ built from a fixed set of constructors $\mathcal{C}$ with known arities and variables
 from a given set $X$.
 We parameterize the terms with an alphabet of variables since in the semantic description we will need \emph{two} kinds of variables:
-\emph{syntactic} variables $\mathcal{X}$, used for bindings in the definition, and \emph{logic} variables $\mathcal{A}$, which are
+\emph{syntactic} variables $\mathcal{X}$, used for bindings in the definitions, and \emph{logic} variables $\mathcal{A}$, which are
 introduced and unified during the evaluation.
 
 In this version of \mK there are five types of goals: unification of two terms, conjunction and disjunction of goals (the
@@ -46,7 +46,7 @@ A top-level goal represents a search procedure that returns a stream of substitu
 The language we consider is first-order, as goals can not be passed as parameters, returned, or constructed at runtime.
 
 During the evaluation of \mK program an environment, consisting of substitution for logic variables and a counter of allocated logic
-variables, is threaded through computation and updated in every unification and fresh variable introduction.
+variables, is threaded through the computation and updated in every unification and fresh variable introduction.
 The substitution in the environment at a given point and a given branch of evaluation contains all the information about relations between
 the logical variables at this point. We will later refer to the substitution in the environment at a given point as a ``current substitution''
 in informal explanations.
@@ -113,6 +113,5 @@ The introduced transition system is completely deterministic.
 Therefore a derivation sequence for a state $s$ determines a certain \emph{trace}~--- a sequence of states and labeled transitions between
 them.
 It may be either finite (ending with the terminal state $\Diamond$) or infinite.
-We will denote by $\trs{s}$ the sequence of states in the trace for initial state $s$ and by $\tra{s}$ the sequence of answers on
-transitions in the trace for initial state $s$.
-The sequence $\tra{s}$ corresponds to the stream of answers in the reference \mK implementations.
+We will denote by $\trs{s}$ the sequence of states in the trace for initial state $s$ and by $\tra{s}$ the sequence of answers
+in the trace for initial state $s$. The sequence $\tra{s}$ corresponds to the stream of answers in the reference \mK implementations.

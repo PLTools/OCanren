@@ -105,10 +105,10 @@ where
 
 \end{lemma}
 
-For states of the form $s \otimes g$ the reasoning is the same, but the result is more complicated.
+For the states of the form $s \otimes g$ the reasoning is the same, but the result is more complicated.
 In $\otimes$-state the left substate is evaluated until an answer is found, which is then taken as
-\emph{an environment} for evaluation of the right subgoal.
-Thus, in the equations for $\otimes$-states we sum evaluation time of the second goal for all
+\emph{an environment} for the evaluation of the right subgoal.
+Thus, in the equations for $\otimes$-states we sum the evaluation time of the second goal for all
 the answers generated for the first substate.
 The tasks of evaluating the right subgoal in different environments are added to the
 evaluation of the left substate by creation of an $\oplus$-state, so for scheduling factor there is
@@ -141,8 +141,8 @@ where
 \end{align*}
 \end{lemma}
 
-After unfolding the auxiliary definitions the last equation is too cumbersome to use directly,
-so we will use some approximation of it instead.
+After unfolding the auxiliary definitions the last equation becomes too cumbersome to use directly,
+so we will use some its approximations instead.
 One option is to go with the first argument of ``$\min$'' in $\costdisj{\taskst{g}{a_i}}{s'_i}$.
 It should be a good approximation in the case when there are several answers passed to the second
 goal and for none of them the number of steps surpasses the \emph{overall} number of steps for all
@@ -156,8 +156,8 @@ For any state $s$ and any goal $g$
 
 In the case when there is only one answer, however, we should rather go with the second argument of ``$\min$''. 
 
-In this case the number of steps $d(s'_1 \otimes g)$ is equal to the number of steps $d(s'_1)$
-since no more aswers are produced, and we can approximate it by the length $d(s)$ of the whole
+In this case the number of steps $d\,(s'_1 \otimes g)$ is equal to the number of steps $d\,(s'_1)$
+since no more aswers are produced, and we can approximate it by the length $d\,(s)$ of the whole
 trace for $s$. 
 
 \begin{corollary}
@@ -167,7 +167,7 @@ trace for $s$.
 \[ t\,(s \otimes g) \le t\,(s) + 3\cdot d\,(s) + t\,(\taskst{g}{a}) \]
 \end{corollary}
 
-Finally, since we estimate only up to a multiplicative constant (in particular, it does not matter by what constants we multiply values of $d\,(\cdot)$ when calculating
+Finally, since we estimate only up to a multiplicative constant (in particular, it does not matter by what constants we multiply the values of $d\,(\cdot)$ when calculating
 the scheduling factor) we can derive from these results two compact scheduling time approximations for goals in the form of sequences of disjuncts/conjuncts.
 These two approximations work regardless of the associativity/grouping of subformulas; thus a certain constant $c_k$, depending only on $k$, comes in.
 
