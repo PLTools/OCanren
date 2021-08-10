@@ -1,11 +1,14 @@
-.PHONY: all debs
+.PHONY: all debs watch
+BUILD_DIR=_build
 
 all:
-	sphinx-build . _build
+	sphinx-build . $(BUILD_DIR)
 
 debs:
-	sudo apt install python3-sphinx-rtd-theme
+	sudo apt install python3-sphinx-rtd-theme python3-sphinx-autobuild
+
+watch:
+	sphinx-autobuild . $(BUILD_DIR)
 
 clean:
-	$(RM) -r _build
-
+	$(RM) -r $(BUILD_DIR)
