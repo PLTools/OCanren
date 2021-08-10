@@ -8,8 +8,8 @@ on:
       # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-ignoring-paths
     branches:
       - 'master'
-  schedule:
-    - cron: "0 13 * * 1"
+  #schedule:
+  #  - cron: "0 13 * * 1"
     # https://jasonet.co/posts/scheduled-actions/
 
 jobs:
