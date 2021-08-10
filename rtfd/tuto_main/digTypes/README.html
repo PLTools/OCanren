@@ -1,0 +1,660 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Digesting the Types &mdash; OCanren  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="A Simple Data Base" href="../ascii_ctrl_db/README.html" />
+    <link rel="prev" title="Say “Hello World!” in OCanren" href="../helloWorld/README.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> OCanren
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tuto_main.html">Tutorial Outline</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../helloWorld/README.html">Say “Hello World!” in OCanren</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Digesting the Types</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#abstract-types">Abstract Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ground-types">Ground Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logic-types">Logic Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#more-abstraction-over-logic-types">More abstraction over logic types</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#injected-types">Injected Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#injecting-non-recursive-types">Injecting non-recursive types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#injecting-non-regular-recursive-types">Injecting non-regular recursive types</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#compiling-the-program">Compiling the Program</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#the-use-of-mylogic-logic-and-mylogic-injected-instead-of-resp-ocanren-logic-and-ocanren-injected">The use of <code class="docutils literal notranslate"><span class="pre">MyLogic.logic</span></code> and <code class="docutils literal notranslate"><span class="pre">MyLogic.injected</span></code> instead of (resp.) <code class="docutils literal notranslate"><span class="pre">OCanren.logic</span></code> and <code class="docutils literal notranslate"><span class="pre">OCanren.injected</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#conclusion">Conclusion</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#allusion-to-ocanren-standard-libraries">Allusion to OCanren standard libraries</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ascii_ctrl_db/README.html">A Simple Data Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../peano/README.html">A Library for Peano Arithmetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aircraft_fleet/README.html">The Range of a Fleet of Aircraft</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../oldreadme.html">OCanren from README.md</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OCanren</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../tuto_main.html">Tutorial Outline</a> &raquo;</li>
+        
+      <li>Digesting the Types</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/JetBrains-Research/OCanren/blob/master/doc/tuto_main/digTypes/README.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="digesting-the-types">
+<h1>Digesting the Types<a class="headerlink" href="#digesting-the-types" title="Permalink to this headline">¶</a></h1>
+<p>OCanren is designed for typed relational programming. Two points here:
+it is typed, and it is relational. We shall now study how to work with
+the types. This clears the way so that we can then focus on the
+relational part.</p>
+<p>We have seen that the OCanren internal representation of a string has a
+type of the form <code class="docutils literal notranslate"><span class="pre">('a,</span> <span class="pre">'a</span> <span class="pre">logic)</span> <span class="pre">injected</span></code> and we have named it an
+<em>injected type</em>, referring to the injection of data from user level
+representation into the internal representation. This type expression
+involves several subtleties that are, when combined together, not
+apparent. In this lesson we break down such type expressions into their
+very components, so that the reader can appreciate the construction of
+these internal types and can build his own.</p>
+<div class="section" id="abstract-types">
+<h2>Abstract Types<a class="headerlink" href="#abstract-types" title="Permalink to this headline">¶</a></h2>
+<p>First we need a notion of <em>abstract type</em>. OCaml also has a notion of
+abstract type which refers to a type constructor whose equation and
+representation are hidden from the user and is considered incompatible
+with any other type. However, the abstract type that we are talking
+about here is a different concept, and it comes from the fact that some
+recurive types can be defined in the following way.</p>
+<p>** D.Boulytchev calls these kind of types: fully abstract types. IDK
+is it a well establish term or his invention **</p>
+<p>Say we want to define a polymorphic list type:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">The</span> <span class="n">abstract</span> <span class="nb">list</span> <span class="nb">type</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">MyList</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">b</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Nil</span> <span class="o">|</span> <span class="n">Cons</span> <span class="n">of</span> <span class="s1">&#39;a * &#39;</span><span class="n">b</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>The type constructor <code class="docutils literal notranslate"><span class="pre">MyList.t</span></code> is called an <em>abstract list type</em> for
+it not only abstracts over the list member type by means of the type
+parameter <code class="docutils literal notranslate"><span class="pre">'a</span></code>, but also (and more importantly) abstracts over the
+list tail type or in other words over the list type itself by means of
+the type parameter <code class="docutils literal notranslate"><span class="pre">'b</span></code>. We can use the abstract list type to define
+other useful types of lists, as we shall see next.</p>
+</div>
+<div class="section" id="ground-types">
+<h2>Ground Types<a class="headerlink" href="#ground-types" title="Permalink to this headline">¶</a></h2>
+<p>The usual definition of the recursive list type can be decomposed into
+the three finer steps: 1. Abstracting over the self type. 1.
+Instantiating the abstract type by self type. 1. Equating the instance
+with the self type to close the loop.</p>
+<p>As in:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Defining</span> <span class="n">the</span> <span class="n">ground</span> <span class="nb">list</span> <span class="nb">type</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">abstract</span> <span class="nb">type</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">MyList</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">b</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Nil</span> <span class="o">|</span> <span class="n">Cons</span> <span class="n">of</span> <span class="s1">&#39;a * &#39;</span><span class="n">b</span>   <span class="p">(</span><span class="o">*</span> <span class="mi">1</span> <span class="o">*</span><span class="p">)</span>
+  <span class="nb">type</span> <span class="s1">&#39;a ground = (&#39;</span><span class="n">a</span><span class="p">,</span> <span class="s1">&#39;a ground) t        (* 2 *)</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>Equation <code class="docutils literal notranslate"><span class="pre">(*</span> <span class="pre">1</span> <span class="pre">*)</span></code> is for step 1. Equation <code class="docutils literal notranslate"><span class="pre">(*</span> <span class="pre">2</span> <span class="pre">*)</span></code> is for steps 2
+and 3: if you instantiate <code class="docutils literal notranslate"><span class="pre">'b</span></code> with <code class="docutils literal notranslate"><span class="pre">'a</span> <span class="pre">ground</span></code> in <code class="docutils literal notranslate"><span class="pre">(*</span> <span class="pre">1</span> <span class="pre">*)</span></code>, you
+would get (literally):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">a</span> <span class="n">ground</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Nil</span> <span class="o">|</span> <span class="n">Cons</span> <span class="n">of</span> <span class="s1">&#39;a * &#39;</span><span class="n">a</span> <span class="n">ground</span>  <span class="p">(</span><span class="o">*</span> <span class="mi">1</span><span class="n">b</span> <span class="o">*</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then by <code class="docutils literal notranslate"><span class="pre">(*</span> <span class="pre">1b</span> <span class="pre">*)</span></code> and <code class="docutils literal notranslate"><span class="pre">(*</span> <span class="pre">2</span> <span class="pre">*)</span></code> we have:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">type</span> <span class="s1">&#39;a ground = Nil | Cons of &#39;</span><span class="n">a</span> <span class="o">*</span> <span class="s1">&#39;a ground  (* 2b *)</span>
+</pre></div>
+</div>
+<p>Equation <code class="docutils literal notranslate"><span class="pre">(*</span> <span class="pre">2b</span> <span class="pre">*)</span></code> is the usual definition of a list type, which we
+call a <em>ground list type</em>.</p>
+<p>The abstract list type can also be used to define logic list types.</p>
+</div>
+<div class="section" id="logic-types">
+<h2>Logic Types<a class="headerlink" href="#logic-types" title="Permalink to this headline">¶</a></h2>
+<p>In a relational program, a list engages with logic variables (like
+<code class="docutils literal notranslate"><span class="pre">X,</span> <span class="pre">Y,</span> <span class="pre">Z</span></code>) in cases like: 1) <code class="docutils literal notranslate"><span class="pre">Cons</span> <span class="pre">(1,Nil)</span></code> and <code class="docutils literal notranslate"><span class="pre">Nil</span></code> — No logic
+variable occurrence at all. The lists are actually ground. 1)
+<code class="docutils literal notranslate"><span class="pre">Cons</span> <span class="pre">(X,</span> <span class="pre">Nil)</span></code> and <code class="docutils literal notranslate"><span class="pre">Cons</span> <span class="pre">(X,</span> <span class="pre">Cons</span> <span class="pre">(Y,</span> <span class="pre">Nil))</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Cons</span> <span class="pre">(1,</span> <span class="pre">Cons</span> <span class="pre">(X,</span> <span class="pre">Cons</span> <span class="pre">(Y,</span> <span class="pre">Nil)))</span></code> — There are only unknown list
+members. 1) <code class="docutils literal notranslate"><span class="pre">Cons</span> <span class="pre">(1,Y)</span></code> — There is only an unknown sub-list. 1)
+<code class="docutils literal notranslate"><span class="pre">Cons</span> <span class="pre">(X,Y)</span></code> and <code class="docutils literal notranslate"><span class="pre">Cons</span> <span class="pre">(X,</span> <span class="pre">Cons</span> <span class="pre">(Y,</span> <span class="pre">Z))</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Cons</span> <span class="pre">(X,</span> <span class="pre">Cons</span> <span class="pre">(3,</span> <span class="pre">Cons</span> <span class="pre">(Y,</span> <span class="pre">Z)))</span></code> — There are both unknown list
+members and an unknown sub-list. 1) <code class="docutils literal notranslate"><span class="pre">X</span></code> — The list itself is wholly
+unknown.</p>
+<p>Due to possible presence of logic variables in various ways shown above,
+the concept of a list in a relational program is more general than the
+concept of a ground list. We call them <em>logic lists</em>, for which we now
+define a type.</p>
+<p>Observe that for cases 1-4, we have some knowledge about the structure
+of the list: we know whether it is empty or not because there is a top
+level constructor to inspect. We call such logic lists <em>guarded</em>. But
+for case 5, we have no idea about the structure of the list for there is
+no top level constructor to provide a clue : we call it a <em>pure logic
+list</em>, which is just a logic variable. This is an important distinction
+needed for typing logic lists, and we summarize it as follows:</p>
+<div class="code ebnf highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logic</span> <span class="nb">list</span>          <span class="o">=</span> <span class="n">pure</span> <span class="n">logic</span> <span class="nb">list</span>
+                    <span class="o">|</span> <span class="n">guarded</span> <span class="n">logic</span> <span class="nb">list</span><span class="p">;</span>
+
+<span class="n">pure</span> <span class="n">logic</span> <span class="nb">list</span>     <span class="o">=</span> <span class="n">logic</span> <span class="n">variable</span><span class="p">;</span>
+
+<span class="n">guarded</span> <span class="n">logic</span> <span class="nb">list</span>  <span class="o">=</span> <span class="s1">&#39;Nil&#39;</span>
+                    <span class="o">|</span> <span class="s1">&#39;Cons&#39;</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="n">logic</span> <span class="nb">list</span> <span class="n">member</span><span class="p">,</span> <span class="n">logic</span> <span class="nb">list</span><span class="p">,</span> <span class="s1">&#39;)&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>The type for a (polymorphic) logic list can then be implemented with
+mutual recursion as follows:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">A</span> <span class="n">logic</span> <span class="nb">list</span> <span class="nb">type</span> <span class="n">definition</span> <span class="o">*</span><span class="p">)</span>
+<span class="nb">type</span> <span class="s1">&#39;b logic_list  =  Value of &#39;</span><span class="n">b</span> <span class="n">guarded_logic_list</span>
+                    <span class="o">|</span>  <span class="n">Var</span>   <span class="n">of</span> <span class="nb">int</span> <span class="o">*</span> <span class="s1">&#39;b logic_list list</span>
+<span class="ow">and</span>  <span class="s1">&#39;b guarded_logic_list  = (&#39;</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;b logic_list) MyList.t</span>
+</pre></div>
+</div>
+<p>where the constructors <code class="docutils literal notranslate"><span class="pre">Value</span></code> and <code class="docutils literal notranslate"><span class="pre">Var</span></code> are used to distinguish a
+guarded logic list from a pure logic list. Moreover, The <code class="docutils literal notranslate"><span class="pre">Var</span></code>
+constructor’s <code class="docutils literal notranslate"><span class="pre">int</span></code> argument uniquely identifies a pure logic list,
+and the second argument is a (possibly empty) list of logic lists that
+can be used to instantiate the pure logic list.</p>
+<hr><p><strong>Example.</strong> Below are some inhabitants of the type <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">logic_list</span></code>:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Value</span> <span class="n">Nil</span><span class="p">;;</span>                    <span class="p">(</span><span class="o">**</span> <span class="n">case</span> <span class="mi">1</span><span class="p">:</span> <span class="n">a</span> <span class="n">guarded</span> <span class="n">logic</span> <span class="nb">list</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Value</span> <span class="p">(</span><span class="n">Cons</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Value</span> <span class="n">Nil</span><span class="p">));;</span>  <span class="p">(</span><span class="o">**</span> <span class="n">case</span> <span class="mi">1</span><span class="p">:</span> <span class="n">a</span> <span class="n">guarded</span> <span class="n">logic</span> <span class="nb">list</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">integer</span>
+                                           <span class="n">cons</span><span class="s1">&#39;ed to another guarded logic list *)</span>
+<span class="n">Value</span> <span class="p">(</span><span class="n">Cons</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Var</span> <span class="p">(</span><span class="mi">1</span><span class="p">,[])));;</span> <span class="p">(</span><span class="o">**</span> <span class="n">case</span> <span class="mi">3</span><span class="p">:</span> <span class="n">a</span>  <span class="n">guarded</span> <span class="n">logic</span> <span class="nb">list</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">integer</span>
+                                           <span class="n">cons</span><span class="s1">&#39;ed to a pure logic list*)</span>
+<span class="n">Var</span> <span class="p">(</span><span class="mi">1</span><span class="p">,[]);;</span>                   <span class="p">(</span><span class="o">**</span> <span class="n">case</span> <span class="mi">5</span><span class="p">:</span> <span class="n">a</span> <span class="n">pure</span> <span class="n">logic</span> <span class="nb">list</span> <span class="o">*</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We could see that the inhabitants are logic lists where logic variables
+may only denote unknown sub-lists. This is because the parameter of
+<code class="docutils literal notranslate"><span class="pre">logic_list</span></code> is instantiated by a ground type (<code class="docutils literal notranslate"><span class="pre">int</span></code>). To allow
+logic variables as list members (as in cases 2 and 4), we need to define
+the type of <em>logic number</em> and use it as the type parameter instead of
+<code class="docutils literal notranslate"><span class="pre">int</span></code>, as follows.</p>
+<hr><p>We define the Peano numbers. A <em>Peano number</em> is a natural number
+denoted with two symbols <code class="docutils literal notranslate"><span class="pre">O</span></code> and <code class="docutils literal notranslate"><span class="pre">S</span></code> with auxiliary parentheses
+<code class="docutils literal notranslate"><span class="pre">()</span></code>. The symbol <code class="docutils literal notranslate"><span class="pre">O</span></code> is interpreted as the number zero, and the
+symbol <code class="docutils literal notranslate"><span class="pre">S</span></code> a successor function. Then the number one is denoted
+<code class="docutils literal notranslate"><span class="pre">S(O)</span></code>, two <code class="docutils literal notranslate"><span class="pre">S(S(O))</span></code>, three <code class="docutils literal notranslate"><span class="pre">S(S(S(O)))</span></code> and so on. Peano numbers
+are frequently used in relational programming, where they appear like: -
+<code class="docutils literal notranslate"><span class="pre">O</span></code>, <code class="docutils literal notranslate"><span class="pre">S(O)</span></code> — Ground (Peano) numbers. - <code class="docutils literal notranslate"><span class="pre">X</span></code>, <code class="docutils literal notranslate"><span class="pre">S(X)</span></code>, <code class="docutils literal notranslate"><span class="pre">S(S(X))</span></code>
+— Numbers with a logic variable (<code class="docutils literal notranslate"><span class="pre">X</span></code>).</p>
+<p>Regarding all these as <em>logic numbers</em>, we distinguish: - <code class="docutils literal notranslate"><span class="pre">X</span></code> — The
+pure logic number. - <code class="docutils literal notranslate"><span class="pre">O</span></code>, <code class="docutils literal notranslate"><span class="pre">S(O)</span></code>, <code class="docutils literal notranslate"><span class="pre">S(X)</span></code>, <code class="docutils literal notranslate"><span class="pre">S(S(X))</span></code> — Guarded
+logic numbers.</p>
+<p>We can define abstract, ground and logic Peano number types as well:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Abstarct</span><span class="p">,</span> <span class="n">ground</span> <span class="ow">and</span> <span class="n">logic</span> <span class="n">Peano</span> <span class="n">number</span> <span class="n">types</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">Peano</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="s1">&#39;a t    = O | S of &#39;</span><span class="n">a</span>             <span class="p">(</span><span class="o">**</span> <span class="n">Abstract</span> <span class="o">*</span><span class="p">)</span>
+  <span class="nb">type</span> <span class="n">ground</span>  <span class="o">=</span> <span class="n">ground</span> <span class="n">t</span>                <span class="p">(</span><span class="o">**</span> <span class="n">Ground</span> <span class="o">*</span><span class="p">)</span>
+  <span class="nb">type</span> <span class="n">logic</span>   <span class="o">=</span> <span class="n">Value</span> <span class="n">of</span> <span class="n">guarded</span>        <span class="p">(</span><span class="o">**</span> <span class="n">Logic</span>  <span class="o">*</span><span class="p">)</span>
+               <span class="o">|</span> <span class="n">Var</span> <span class="n">of</span> <span class="nb">int</span> <span class="o">*</span> <span class="n">logic</span> <span class="nb">list</span>
+  <span class="ow">and</span>  <span class="n">guarded</span> <span class="o">=</span> <span class="n">logic</span> <span class="n">t</span>                 <span class="p">(</span><span class="o">**</span> <span class="o">...</span> <span class="ow">and</span> <span class="n">Guarded</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>Similar to logic lists, a logic number is either i) a pure logic number
+(e.g., <code class="docutils literal notranslate"><span class="pre">X</span></code>) or ii) a guarded logic number that is either <code class="docutils literal notranslate"><span class="pre">O</span></code> or
+<code class="docutils literal notranslate"><span class="pre">S</span></code> applied recursively to a logic number. Pure and guarded logic
+numbers are again distinguished using constructors <code class="docutils literal notranslate"><span class="pre">Var</span></code> and <code class="docutils literal notranslate"><span class="pre">Value</span></code>
+respectively.</p>
+<hr><p><strong>Example.</strong> Below are some inhabitants of the type <code class="docutils literal notranslate"><span class="pre">Peano.logic</span></code>:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Var</span> <span class="p">(</span><span class="mi">1</span><span class="p">,[]);;</span>                        <span class="p">(</span><span class="o">**</span> <span class="n">a</span> <span class="n">pure</span> <span class="n">logic</span> <span class="n">number</span> <span class="n">X</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Value</span> <span class="n">O</span><span class="p">;;</span>                           <span class="p">(</span><span class="o">**</span> <span class="n">a</span> <span class="n">guarded</span> <span class="n">logic</span> <span class="n">number</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">constructor</span> <span class="p">[</span><span class="n">O</span><span class="p">]</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Value</span> <span class="p">(</span><span class="n">S</span> <span class="p">(</span><span class="n">Var</span> <span class="p">(</span><span class="mi">1</span><span class="p">,[])));;</span>            <span class="p">(</span><span class="o">**</span> <span class="n">a</span> <span class="n">guarded</span> <span class="n">logic</span> <span class="n">number</span> <span class="n">S</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">constructor</span> <span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="n">applied</span> <span class="n">to</span>
+                                        <span class="n">a</span> <span class="p">(</span><span class="n">pure</span><span class="p">)</span> <span class="n">logic</span> <span class="n">number</span> <span class="n">X</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Value</span> <span class="p">(</span><span class="n">S</span> <span class="p">(</span><span class="n">Value</span> <span class="n">O</span><span class="p">))</span>                 <span class="p">(</span><span class="o">**</span> <span class="n">a</span> <span class="n">guarded</span> <span class="n">logic</span> <span class="n">number</span> <span class="n">S</span><span class="p">(</span><span class="n">O</span><span class="p">)</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">constructor</span> <span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="n">applied</span> <span class="n">to</span>
+                                        <span class="n">a</span> <span class="p">(</span><span class="n">guarded</span><span class="p">)</span> <span class="n">logic</span> <span class="n">number</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">constructor</span> <span class="p">[</span><span class="n">O</span><span class="p">]</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Value</span> <span class="p">(</span><span class="n">S</span> <span class="p">(</span><span class="n">Value</span> <span class="p">(</span><span class="n">S</span> <span class="p">(</span><span class="n">Var</span> <span class="p">(</span><span class="mi">1</span><span class="p">,[])))))</span>  <span class="p">(</span><span class="o">**</span> <span class="n">a</span> <span class="n">guarded</span> <span class="n">logic</span> <span class="n">number</span> <span class="n">S</span><span class="p">(</span><span class="n">S</span><span class="p">(</span><span class="n">X</span><span class="p">))</span> <span class="o">*</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then the type <code class="docutils literal notranslate"><span class="pre">Peano.logic</span> <span class="pre">logic_list</span></code> has the following inhabitants:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Value</span> <span class="n">Nil</span><span class="p">;;</span>                                       <span class="p">(</span><span class="o">*</span> <span class="n">case</span> <span class="mi">1</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Value</span> <span class="p">(</span><span class="n">Cons</span> <span class="p">(</span><span class="n">Value</span> <span class="p">(</span><span class="n">S</span> <span class="p">(</span><span class="n">Value</span> <span class="n">O</span><span class="p">))</span> <span class="p">,</span> <span class="n">Value</span> <span class="n">Nil</span><span class="p">));;</span>  <span class="p">(</span><span class="o">*</span> <span class="n">case</span> <span class="mi">1</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Value</span> <span class="p">(</span><span class="n">Cons</span> <span class="p">(</span><span class="n">Var</span> <span class="p">(</span><span class="mi">1</span><span class="p">,[]),</span> <span class="n">Value</span> <span class="n">Nil</span><span class="p">));;</span>            <span class="p">(</span><span class="o">*</span> <span class="n">case</span> <span class="mi">2</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Value</span> <span class="p">(</span><span class="n">Cons</span> <span class="p">(</span><span class="n">Value</span> <span class="p">(</span><span class="n">S</span> <span class="p">(</span><span class="n">Value</span> <span class="n">O</span><span class="p">))</span> <span class="p">,</span> <span class="n">Var</span> <span class="p">(</span><span class="mi">2</span><span class="p">,[])));;</span> <span class="p">(</span><span class="o">*</span> <span class="n">case</span> <span class="mi">3</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Value</span> <span class="p">(</span><span class="n">Cons</span> <span class="p">(</span><span class="n">Var</span> <span class="p">(</span><span class="mi">1</span><span class="p">,[]),</span> <span class="n">Var</span> <span class="p">(</span><span class="mi">2</span><span class="p">,[])));;</span>           <span class="p">(</span><span class="o">*</span> <span class="n">case</span> <span class="mi">4</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">Var</span> <span class="p">(</span><span class="mi">1</span><span class="p">,[]);;</span>                                      <span class="p">(</span><span class="o">*</span> <span class="n">case</span> <span class="mi">5</span> <span class="o">*</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Therefore, when we talk about a list of numbers in relational
+programming, we are actually talking about a logic list of logic
+numbers.</p>
+<hr><div class="section" id="more-abstraction-over-logic-types">
+<h3>More abstraction over logic types<a class="headerlink" href="#more-abstraction-over-logic-types" title="Permalink to this headline">¶</a></h3>
+<p>Compare the types of logic lists and logic numbers (reproduced below):</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">*</span> <span class="n">Comparing</span> <span class="n">the</span> <span class="n">types</span> <span class="n">of</span> <span class="n">logic</span> <span class="n">lists</span> <span class="ow">and</span> <span class="n">logic</span> <span class="n">numbers</span> <span class="o">*</span><span class="p">)</span>
+
+<span class="p">(</span><span class="o">*</span> <span class="n">The</span> <span class="n">logic</span> <span class="nb">list</span> <span class="nb">type</span><span class="o">*</span><span class="p">)</span>
+<span class="nb">type</span> <span class="s1">&#39;b logic_list  =  Value of &#39;</span><span class="n">b</span> <span class="n">guarded_logic_list</span>
+                    <span class="o">|</span>  <span class="n">Var</span>   <span class="n">of</span> <span class="nb">int</span> <span class="o">*</span> <span class="s1">&#39;b logic_list list</span>
+<span class="ow">and</span>  <span class="s1">&#39;b guarded_logic_list  = (&#39;</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;b logic_list) MyList.t</span>
+
+<span class="p">(</span><span class="o">*</span> <span class="n">logic</span> <span class="n">number</span> <span class="nb">type</span><span class="o">.</span> <span class="n">Excerpt</span> <span class="kn">from</span> <span class="nn">module</span> <span class="n">Peano</span> <span class="o">*</span><span class="p">)</span>
+<span class="nb">type</span> <span class="n">logic</span>   <span class="o">=</span> <span class="n">Value</span> <span class="n">of</span> <span class="n">guarded</span>
+             <span class="o">|</span> <span class="n">Var</span> <span class="n">of</span> <span class="nb">int</span> <span class="o">*</span> <span class="n">logic</span> <span class="nb">list</span>
+<span class="ow">and</span>  <span class="n">guarded</span> <span class="o">=</span> <span class="n">logic</span> <span class="n">t</span>
+</pre></div>
+</div>
+<p>** I should mention that so-called guarded types are not very useful
+(for me) during realtional programming, so explaining stuff in terms of
+them is questionable **</p>
+<p>We could see that they both involve the constructors <code class="docutils literal notranslate"><span class="pre">Value</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Var</span></code> with similar argument structures: the <code class="docutils literal notranslate"><span class="pre">Value</span></code> constructor’s
+argument is always a guarded type, and the <code class="docutils literal notranslate"><span class="pre">Var</span></code> constructor’s first
+argument is always <code class="docutils literal notranslate"><span class="pre">int</span></code> and second argument is always a <code class="docutils literal notranslate"><span class="pre">list</span></code> of
+the logic type itself. This imlpies that we can extract these common
+parts for reuse , by equating them to a new type constructor with one
+type parameter that abstracts from the guarded types, as follows:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">The</span> <span class="n">new</span><span class="p">,</span> <span class="n">reusable</span> <span class="nb">type</span> <span class="n">constructor</span> <span class="k">for</span> <span class="n">defining</span> <span class="n">logic</span> <span class="n">types</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">MyLogic</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="s1">&#39;a logic = Value of &#39;</span><span class="n">a</span> <span class="o">|</span> <span class="n">Var</span> <span class="n">of</span> <span class="nb">int</span> <span class="o">*</span> <span class="s1">&#39;a logic list</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>Next time when we what to define <code class="docutils literal notranslate"><span class="pre">('a1,</span> <span class="pre">...,</span> <span class="pre">'an)</span> <span class="pre">Something.logic</span></code>,
+instead of writing:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">longer</span> <span class="n">logic</span> <span class="nb">type</span> <span class="n">definition</span>  <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">Something</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">,</span> <span class="s1">&#39;self) t = (* ... type information omitted *)</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">logic</span> <span class="o">=</span> <span class="n">Value</span> <span class="n">of</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">guarded</span>
+                             <span class="o">|</span> <span class="n">Var</span> <span class="n">of</span> <span class="nb">int</span> <span class="o">*</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">logic</span> <span class="nb">list</span>
+  <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">guarded</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">logic</span><span class="p">)</span> <span class="n">t</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>we could write:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">shorter</span> <span class="n">logic</span> <span class="nb">type</span> <span class="n">definition</span>  <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">Something</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">,</span> <span class="s1">&#39;self) t = (* ... type information omitted *)</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">logic</span> <span class="o">=</span>  <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">guarded</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span>
+  <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">guarded</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">logic</span><span class="p">)</span> <span class="n">t</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>for we can derive the longer from the shorter using <code class="docutils literal notranslate"><span class="pre">MyLogic</span></code> (the
+reader may write down the derivation as an exercise). As examples: the
+logic list type can be rewritten as:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Defining</span> <span class="n">the</span> <span class="n">logic</span> <span class="nb">list</span> <span class="nb">type</span> <span class="n">using</span> <span class="p">[</span><span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span><span class="p">]</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">MyList</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">b</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Nil</span> <span class="o">|</span> <span class="n">Cons</span> <span class="n">of</span> <span class="s1">&#39;a * &#39;</span><span class="n">b</span>
+  <span class="nb">type</span> <span class="s1">&#39;b logic   =  &#39;</span><span class="n">b</span> <span class="n">guarded</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span> <span class="ow">and</span> <span class="s1">&#39;b guarded  = (&#39;</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;b logic) t</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>and the logic number type as:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Defining</span> <span class="n">the</span> <span class="n">logic</span> <span class="n">number</span> <span class="nb">type</span> <span class="n">using</span> <span class="p">[</span><span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span><span class="p">]</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">Peano</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="s1">&#39;a t   = O | S of &#39;</span><span class="n">a</span>
+  <span class="nb">type</span> <span class="n">logic</span>  <span class="o">=</span>  <span class="n">guarded</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span> <span class="ow">and</span> <span class="n">guarded</span> <span class="o">=</span> <span class="n">logic</span> <span class="n">t</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>Or even shorter, skipping the guarded types:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Concise</span> <span class="n">definitions</span> <span class="n">of</span> <span class="n">abstract</span> <span class="ow">and</span> <span class="n">logic</span> <span class="n">types</span>
+    <span class="k">for</span> <span class="n">lists</span> <span class="ow">and</span> <span class="n">Peano</span> <span class="n">numbers</span> <span class="o">*</span><span class="p">)</span>
+
+<span class="n">module</span> <span class="n">MyList</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">b</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Nil</span> <span class="o">|</span> <span class="n">Cons</span> <span class="n">of</span> <span class="s1">&#39;a * &#39;</span><span class="n">b</span>
+  <span class="nb">type</span> <span class="s1">&#39;b logic   =  (&#39;</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;b logic) t MyLogic.logic</span>
+<span class="n">end</span><span class="p">;;</span>
+
+<span class="n">module</span> <span class="n">Peano</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="s1">&#39;a t   = O | S of &#39;</span><span class="n">a</span>
+  <span class="nb">type</span> <span class="n">logic</span>  <span class="o">=</span>  <span class="n">logic</span> <span class="n">t</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="injected-types">
+<h2>Injected Types<a class="headerlink" href="#injected-types" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">injected</span></code> type constructor collects the corresponding ground and
+logic type constructors, to which we assign the name <code class="docutils literal notranslate"><span class="pre">groundi</span></code> (read
+“groun-dee”):</p>
+<p>** I should mention that names <code class="docutils literal notranslate"><span class="pre">groundi</span></code> was invented kind of
+randomly. In more recent code bases I use <code class="docutils literal notranslate"><span class="pre">injected</span></code> **</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Complete</span> <span class="n">definitions</span> <span class="n">of</span> <span class="n">injected</span> <span class="n">types</span>
+    <span class="k">for</span> <span class="n">lists</span> <span class="ow">and</span> <span class="n">Peano</span> <span class="n">numbers</span> <span class="o">*</span><span class="p">)</span>
+
+<span class="n">module</span> <span class="n">MyList</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">b</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Nil</span> <span class="o">|</span> <span class="n">Cons</span> <span class="n">of</span> <span class="s1">&#39;a * &#39;</span><span class="n">b</span>
+  <span class="nb">type</span> <span class="s1">&#39;a ground = (&#39;</span><span class="n">a</span><span class="p">,</span> <span class="s1">&#39;a ground) t</span>
+  <span class="nb">type</span> <span class="s1">&#39;b logic   =  (&#39;</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;b logic) t MyLogic.logic</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">b</span><span class="p">)</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a ground, &#39;</span><span class="n">b</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span>
+<span class="n">end</span><span class="p">;;</span>
+
+<span class="n">module</span> <span class="n">Peano</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="s1">&#39;a t   = O | S of &#39;</span><span class="n">a</span>
+  <span class="nb">type</span> <span class="n">ground</span> <span class="o">=</span> <span class="n">ground</span> <span class="n">t</span>
+  <span class="nb">type</span> <span class="n">logic</span>  <span class="o">=</span>  <span class="n">logic</span> <span class="n">t</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span>
+  <span class="nb">type</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">(</span><span class="n">ground</span><span class="p">,</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">injected</span></code> type constructor is abstract in the sense that its type
+information is hidden from the user. Therefore we do not concern
+ourselves as to what an inhabitant of an injected type looks like.</p>
+<div class="section" id="injecting-non-recursive-types">
+<h3>Injecting non-recursive types<a class="headerlink" href="#injecting-non-recursive-types" title="Permalink to this headline">¶</a></h3>
+<p>This is even simpler: no need to abstract over self. The consequence is
+that the abstract type and the ground type coincide (and the guarded
+type as well if made explicit).</p>
+<p>** I think things are a little bit more complicated. Fully abstract
+type coincide with ground only if type is fully abstract from the
+beggining. If a type definition uses some predefined types in it, we
+will still need a fully abstract type, even where this type definition
+is not recursive**</p>
+<p>For example, logic pairs:
+<code class="docutils literal notranslate"><span class="pre">ocaml</span> <span class="pre">(**</span> <span class="pre">logic</span> <span class="pre">pair</span> <span class="pre">type</span> <span class="pre">*)</span> <span class="pre">module</span> <span class="pre">MyPair</span> <span class="pre">=</span> <span class="pre">struct</span>&#160;&#160; <span class="pre">type</span> <span class="pre">('a1,</span> <span class="pre">'a2)</span> <span class="pre">t</span> <span class="pre">=</span> <span class="pre">'a1</span> <span class="pre">*</span> <span class="pre">'a2</span>&#160;&#160; <span class="pre">type</span> <span class="pre">('a1,</span> <span class="pre">'a2)</span> <span class="pre">ground</span> <span class="pre">=</span> <span class="pre">('a1,</span> <span class="pre">'a2)</span> <span class="pre">t</span>&#160;&#160; <span class="pre">type</span> <span class="pre">('b1,</span> <span class="pre">'b2)</span> <span class="pre">logic</span> <span class="pre">=</span>&#160; <span class="pre">('b1,</span> <span class="pre">'b2)</span> <span class="pre">t</span> <span class="pre">MyLogic.logic</span>&#160;&#160; <span class="pre">type</span> <span class="pre">('a1,</span> <span class="pre">'a2,</span> <span class="pre">'b1,</span> <span class="pre">'b2)</span> <span class="pre">groundi</span> <span class="pre">=</span> <span class="pre">(('a1,</span> <span class="pre">'a2)</span> <span class="pre">ground,</span> <span class="pre">('b1,</span> <span class="pre">'b2)</span> <span class="pre">logic)</span> <span class="pre">injected</span> <span class="pre">end;;</span></code>
+We can now talk about:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Peano</span> <span class="n">number</span> <span class="n">Pairs</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">PP</span> <span class="o">=</span> <span class="n">struct</span>
+
+  <span class="p">(</span><span class="o">**</span> <span class="n">Ground</span> <span class="n">pairs</span> <span class="n">of</span> <span class="n">ground</span> <span class="n">Peano</span> <span class="n">numbers</span><span class="p">,</span> <span class="n">like</span> <span class="p">(</span><span class="n">O</span><span class="p">,</span> <span class="n">O</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">O</span><span class="p">,</span> <span class="n">S</span><span class="p">(</span><span class="n">O</span><span class="p">))</span> <span class="o">*</span><span class="p">)</span>
+  <span class="nb">type</span> <span class="n">ground</span> <span class="o">=</span> <span class="p">(</span><span class="n">Peano</span><span class="o">.</span><span class="n">ground</span><span class="p">,</span> <span class="n">Peano</span><span class="o">.</span><span class="n">ground</span><span class="p">)</span> <span class="n">MyPair</span><span class="o">.</span><span class="n">ground</span><span class="p">;;</span>
+
+  <span class="p">(</span><span class="o">**</span> <span class="n">Logic</span> <span class="n">pairs</span> <span class="n">of</span> <span class="n">logic</span> <span class="n">Peano</span> <span class="n">numbers</span><span class="p">,</span> <span class="n">like</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">S</span><span class="p">(</span><span class="n">Y</span><span class="p">)),</span> <span class="n">Y</span> <span class="ow">and</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span> <span class="o">*</span><span class="p">)</span>
+  <span class="nb">type</span> <span class="n">logic</span> <span class="o">=</span> <span class="p">(</span><span class="n">Peano</span><span class="o">.</span><span class="n">logic</span><span class="p">,</span> <span class="n">Peano</span><span class="o">.</span><span class="n">logic</span><span class="p">)</span> <span class="n">MyPair</span><span class="o">.</span><span class="n">logic</span><span class="p">;;</span>
+
+  <span class="p">(</span><span class="o">**</span> <span class="n">Injected</span> <span class="n">pairs</span> <span class="n">of</span> <span class="n">Peano</span> <span class="n">numbers</span> <span class="p">(</span><span class="n">abstract</span> <span class="nb">type</span><span class="p">)</span> <span class="o">*</span><span class="p">)</span>
+  <span class="nb">type</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">(</span><span class="n">Peano</span><span class="o">.</span><span class="n">ground</span><span class="p">,</span> <span class="n">Peano</span><span class="o">.</span><span class="n">ground</span><span class="p">,</span> <span class="n">Peano</span><span class="o">.</span><span class="n">logic</span><span class="p">,</span> <span class="n">Peano</span><span class="o">.</span><span class="n">logic</span><span class="p">)</span> <span class="n">MyPair</span><span class="o">.</span><span class="n">groundi</span><span class="p">;;</span>
+            <span class="p">(</span><span class="o">*</span> <span class="o">=</span> <span class="p">(</span><span class="n">ground</span><span class="p">,</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span> <span class="o">*</span><span class="p">)</span>
+
+<span class="n">end</span><span class="p">;;</span>
+
+<span class="p">(</span><span class="o">**</span> <span class="n">Peano</span> <span class="n">number</span> <span class="o">*</span> <span class="n">Peano</span> <span class="n">number</span> <span class="nb">list</span> <span class="o">---</span> <span class="n">Pairs</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">PPL</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="n">ground</span> <span class="o">=</span> <span class="p">(</span><span class="n">Peano</span><span class="o">.</span><span class="n">ground</span><span class="p">,</span> <span class="n">Peano</span><span class="o">.</span><span class="n">ground</span> <span class="n">MyList</span><span class="o">.</span><span class="n">ground</span><span class="p">)</span> <span class="n">MyPair</span><span class="o">.</span><span class="n">ground</span><span class="p">;;</span>
+  <span class="nb">type</span> <span class="n">logic</span>  <span class="o">=</span> <span class="p">(</span><span class="n">Peano</span><span class="o">.</span><span class="n">logic</span><span class="p">,</span>  <span class="n">Peano</span><span class="o">.</span><span class="n">logic</span> <span class="n">MyList</span><span class="o">.</span><span class="n">logic</span><span class="p">)</span> <span class="n">MyPair</span><span class="o">.</span><span class="n">logic</span><span class="p">;;</span>
+  <span class="nb">type</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span> <span class="o">=</span> <span class="p">(</span><span class="n">ground</span><span class="p">,</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span> <span class="o">*</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">Peano</span><span class="o">.</span><span class="n">ground</span><span class="p">,</span>
+     <span class="n">Peano</span><span class="o">.</span><span class="n">ground</span> <span class="n">MyList</span><span class="o">.</span><span class="n">ground</span><span class="p">,</span>
+     <span class="n">Peano</span><span class="o">.</span><span class="n">logic</span><span class="p">,</span>
+     <span class="n">Peano</span><span class="o">.</span><span class="n">logic</span> <span class="n">MyList</span><span class="o">.</span><span class="n">logic</span><span class="p">)</span> <span class="n">MyPair</span><span class="o">.</span><span class="n">groundi</span><span class="p">;;</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>As an exercise, the reader may define the injected types for pairs of
+polymorphic lists, and lists of polymorphic pairs.</p>
+</div>
+<div class="section" id="injecting-non-regular-recursive-types">
+<h3>Injecting non-regular recursive types<a class="headerlink" href="#injecting-non-regular-recursive-types" title="Permalink to this headline">¶</a></h3>
+<p>A non-regular recursve type is a parameterized type constructor in whose
+recurisve definition at least one type parameter is instantiated (See
+also
+<a class="reference external" href="https://ocaml.org/releases/4.11/htmlman/polymorphism.html#s:polymorphic-recursion">this</a>).
+Injection of non-regular recursive types is not discussed here.</p>
+</div>
+</div>
+<div class="section" id="compiling-the-program">
+<h2>Compiling the Program<a class="headerlink" href="#compiling-the-program" title="Permalink to this headline">¶</a></h2>
+<p>The types that we learnt in this lesson are put together in the file
+<a class="reference external" href="digTypes.ml">digTypes.ml</a> which can be compilied successfully using
+the lightweight <a class="reference external" href="Makefile">Makefile</a>, where we need the <code class="docutils literal notranslate"><span class="pre">-rectypes</span></code>
+compiler option to deal with the rather liberal recurisve types that
+appear in this lesson.</p>
+<p>** ‘to deal with the rather liberal recurisve types that appear in
+this lesson.’ should be rephrased because I don’t quite understand what
+you wanted to say **</p>
+<div class="section" id="the-use-of-mylogic-logic-and-mylogic-injected-instead-of-resp-ocanren-logic-and-ocanren-injected">
+<h3>The use of <code class="docutils literal notranslate"><span class="pre">MyLogic.logic</span></code> and <code class="docutils literal notranslate"><span class="pre">MyLogic.injected</span></code> instead of (resp.) <code class="docutils literal notranslate"><span class="pre">OCanren.logic</span></code> and <code class="docutils literal notranslate"><span class="pre">OCanren.injected</span></code><a class="headerlink" href="#the-use-of-mylogic-logic-and-mylogic-injected-instead-of-resp-ocanren-logic-and-ocanren-injected" title="Permalink to this headline">¶</a></h3>
+<p>Note that we defined the module <code class="docutils literal notranslate"><span class="pre">MyLogic</span></code> for pedagogical purposes
+only, so that we do not have to refer to the OCanren package during
+compilation. The reader is encouraged to find the corresponding
+definitions in the OCanren module
+<a class="reference external" href="../../Installation/ocanren/src/core/Logic.mli">Logic</a> by himself.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>OCanren works on injected types that are defined via abstract, ground
+and logic types. The table below organizes these types into four levels
+by complexity and dependency.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="47%" />
+<col width="53%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Level No.</th>
+<th class="head">Level Name</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>Abstract</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>Ground</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>Logic</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>Injected</td>
+</tr>
+</tbody>
+</table>
+<p>We give templates for definig injected types:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">open</span> <span class="n">OCanren</span><span class="p">;;</span>
+
+<span class="p">(</span><span class="o">**</span> <span class="n">Template</span> <span class="n">of</span> <span class="n">an</span> <span class="n">injeced</span><span class="p">,</span> <span class="n">regular</span> <span class="n">recursive</span> <span class="nb">type</span> <span class="o">*</span><span class="p">)</span>
+
+<span class="n">module</span> <span class="n">Something</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">,</span> <span class="s1">&#39;self) t = (* ... add type information here *)</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">ground</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">ground</span><span class="p">)</span> <span class="n">t</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;b1, ..., &#39;</span><span class="n">bn</span><span class="p">)</span> <span class="n">logic</span> <span class="o">=</span>  <span class="p">(</span><span class="s1">&#39;b1, ..., &#39;</span><span class="n">bn</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;b1, ..., &#39;</span><span class="n">bn</span><span class="p">)</span> <span class="n">logic</span><span class="p">)</span> <span class="n">t</span> <span class="n">OCanren</span><span class="o">.</span><span class="n">logic</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">,</span> <span class="s1">&#39;b1, ..., &#39;</span><span class="n">bn</span><span class="p">)</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">ground</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;b1, ..., &#39;</span><span class="n">bn</span><span class="p">)</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span>
+<span class="n">end</span><span class="p">;;</span>
+
+<span class="p">(</span><span class="o">**</span> <span class="n">Template</span> <span class="n">of</span> <span class="n">an</span> <span class="n">injeced</span><span class="p">,</span> <span class="n">non</span><span class="o">-</span><span class="n">recursive</span> <span class="nb">type</span> <span class="o">*</span><span class="p">)</span>
+
+<span class="n">module</span> <span class="n">Something</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span> <span class="o">...</span> <span class="n">add</span> <span class="nb">type</span> <span class="n">information</span> <span class="n">here</span> <span class="o">*</span><span class="p">)</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">ground</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">t</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;b1, ..., &#39;</span><span class="n">bn</span><span class="p">)</span> <span class="n">logic</span> <span class="o">=</span>  <span class="p">(</span><span class="s1">&#39;b1, ..., &#39;</span><span class="n">bn</span><span class="p">)</span> <span class="n">t</span> <span class="n">OCanren</span><span class="o">.</span><span class="n">logic</span>
+  <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">,</span> <span class="s1">&#39;b1, ..., &#39;</span><span class="n">bn</span><span class="p">)</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;a1, ..., &#39;</span><span class="n">an</span><span class="p">)</span> <span class="n">ground</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;b1, ..., &#39;</span><span class="n">bn</span><span class="p">)</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>The reader may apply these templates to define his own types. OCanren is
+for typed relational programming.Two points here: it is typed, and it is
+relational. We have now studied how to work with the types. This clears
+the way so that we can then focus on the relational part.</p>
+<div class="section" id="allusion-to-ocanren-standard-libraries">
+<h3>Allusion to OCanren standard libraries<a class="headerlink" href="#allusion-to-ocanren-standard-libraries" title="Permalink to this headline">¶</a></h3>
+<p>As examples, we defined types of Peano numbers, and polymorphic lists
+and pairs, each showing the four-level structure. The <code class="docutils literal notranslate"><span class="pre">Peano</span></code>,
+<code class="docutils literal notranslate"><span class="pre">MyList</span></code> and <code class="docutils literal notranslate"><span class="pre">MyPair</span></code> modules correspond to the OCanren <a class="reference external" href="../../Installation/ocanren/src/std">standard
+libraries</a> <code class="docutils literal notranslate"><span class="pre">LNat</span></code>, <code class="docutils literal notranslate"><span class="pre">LList</span></code>
+and <code class="docutils literal notranslate"><span class="pre">LPair</span></code> respectively where the leading <code class="docutils literal notranslate"><span class="pre">L</span></code> in the module names
+stands for “logic”.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../ascii_ctrl_db/README.html" class="btn btn-neutral float-right" title="A Simple Data Base" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../helloWorld/README.html" class="btn btn-neutral float-left" title="Say “Hello World!” in OCanren" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, JetBrains-Research
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

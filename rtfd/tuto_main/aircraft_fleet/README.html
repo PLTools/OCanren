@@ -1,0 +1,477 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>The Range of a Fleet of Aircraft &mdash; OCanren  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="OCanren from README.md" href="../../oldreadme.html" />
+    <link rel="prev" title="A Library for Peano Arithmetic" href="../peano/README.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> OCanren
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tuto_main.html">Tutorial Outline</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../helloWorld/README.html">Say “Hello World!” in OCanren</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../digTypes/README.html">Digesting the Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ascii_ctrl_db/README.html">A Simple Data Base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../peano/README.html">A Library for Peano Arithmetic</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">The Range of a Fleet of Aircraft</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#background">Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-design-of-the-program">The Design of the Program</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#discrete-motion">Discrete motion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#discrete-fuel-trasnfer">Discrete fuel trasnfer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#picking-an-abstract-capacity">Picking an abstract capacity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#states-of-the-fleet">States of the fleet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fleet-actions">Fleet actions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fleet-state-transition-rules">Fleet state transition rules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ocanren-at-work">OCanren at Work</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reference">Reference</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../oldreadme.html">OCanren from README.md</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OCanren</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../tuto_main.html">Tutorial Outline</a> &raquo;</li>
+        
+      <li>The Range of a Fleet of Aircraft</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/JetBrains-Research/OCanren/blob/master/doc/tuto_main/aircraft_fleet/README.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="the-range-of-a-fleet-of-aircraft">
+<h1>The Range of a Fleet of Aircraft<a class="headerlink" href="#the-range-of-a-fleet-of-aircraft" title="Permalink to this headline">¶</a></h1>
+<p>List of symbols</p>
+<ul class="simple">
+<li>B : <a class="reference external" href="#discrete-motion">abstract capacity</a></li>
+<li>C : <a class="reference external" href="#background">fuel capacity</a></li>
+<li>D : <a class="reference external" href="#background">distance</a> (between target and airbase)</li>
+<li>N : <a class="reference external" href="#background">fleet size</a></li>
+<li>R : <a class="reference external" href="#background">fuel efficiency</a></li>
+</ul>
+<div class="section" id="background">
+<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>There is a fleet of N identical aircraft, where every aircraft has a
+fuel capacity of C liters and fuel efficiency of R miles per liter of
+fuel. The fleet has a mission of reaching some target located at a
+distance D from the airbase, where CR &lt; D &lt; NCR. Once taking off, there
+is no more airbase along the way for the fleet to land and refuel. The
+fleet adopts such a strategy that at any stage, any one aircraft could
+be abandoned, whose fuel is simultaneously transferred to some fellow
+aircraft. The mission is considered as successful if at least one
+aircraft finally reaches the target. The typical behaviour of the fleet
+is like (read bottom-up):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>            <span class="n">X</span>   <span class="p">:</span> <span class="n">Reaching</span> <span class="n">the</span> <span class="n">target</span>
+            <span class="o">^</span>
+            <span class="o">|</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">1</span>
+          <span class="n">X</span> <span class="n">X</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">2</span>
+          <span class="o">^</span> <span class="o">^</span>
+          <span class="o">|</span> <span class="o">|</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">1</span>
+        <span class="n">X</span> <span class="n">X</span> <span class="n">X</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">2</span>
+        <span class="o">^</span> <span class="o">^</span> <span class="o">^</span>
+        <span class="o">|</span> <span class="o">|</span> <span class="o">|</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">1</span>
+      <span class="n">X</span> <span class="n">X</span> <span class="n">X</span> <span class="n">X</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">2</span>
+      <span class="o">^</span> <span class="o">^</span> <span class="o">^</span> <span class="o">^</span>
+      <span class="o">|</span> <span class="o">|</span> <span class="o">|</span> <span class="o">|</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">1</span>
+    <span class="n">X</span> <span class="n">X</span> <span class="n">X</span> <span class="n">X</span> <span class="n">X</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">2</span>
+    <span class="o">^</span> <span class="o">^</span> <span class="o">^</span> <span class="o">^</span> <span class="o">^</span>
+    <span class="o">|</span> <span class="o">|</span> <span class="o">|</span> <span class="o">|</span> <span class="o">|</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">1</span>
+  <span class="n">X</span> <span class="n">X</span> <span class="n">X</span> <span class="n">X</span> <span class="n">X</span> <span class="n">X</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">2</span>
+  <span class="o">^</span> <span class="o">^</span> <span class="o">^</span> <span class="o">^</span> <span class="o">^</span> <span class="o">^</span>
+  <span class="o">|</span> <span class="o">|</span> <span class="o">|</span> <span class="o">|</span> <span class="o">|</span> <span class="o">|</span>   <span class="p">:</span> <span class="n">Action</span> <span class="mi">1</span>
+  <span class="n">X</span> <span class="n">X</span> <span class="n">X</span> <span class="n">X</span> <span class="n">X</span> <span class="n">X</span>   <span class="p">:</span> <span class="n">Taking</span> <span class="n">off</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">airbase</span> <span class="p">(</span><span class="n">initially</span> <span class="n">six</span> <span class="n">aircraft</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">fleet</span><span class="p">)</span><span class="o">.</span>
+<span class="o">----------------------------------------------------------------------------------------</span>
+<span class="n">Action</span> <span class="mi">2</span> <span class="p">:</span> <span class="n">Abandoning</span> <span class="n">one</span> <span class="n">aircraft</span><span class="p">,</span> <span class="n">whose</span> <span class="n">fuel</span> <span class="ow">is</span> <span class="n">shared</span> <span class="n">by</span> <span class="n">the</span> <span class="n">rest</span> <span class="n">of</span> <span class="n">the</span> <span class="n">fleet</span><span class="o">.</span>
+<span class="n">Action</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">Flying</span> <span class="n">forward</span><span class="o">.</span>
+<span class="n">Symbol</span> <span class="n">X</span> <span class="p">:</span> <span class="n">An</span> <span class="n">aircraft</span>
+</pre></div>
+</div>
+<p>There are two problems of interest: 1. Given a fleet travel plan (which
+specifies how far the fleet shall fly together after taking off or after
+some aircraft is abondoned, and how to distribute the fuel of the
+abandoned aircraft among the rest of the fleet), how far can the fleet
+fly ? 1. Given a target distance, what shall the travel plan be for the
+fleet to reach the target, if possible?</p>
+<p>The first problem is relatively easy. For instance, if we know that the
+plan is to let the fleet fly forward until they all run out of fuel,
+then they can fly as far as a single aircraft. We can even write a
+computer program to do the calculation for us, given the size of the
+fleet, the fuel capacity and efficiency of the aircraft model, and the
+travel plan.</p>
+<p>However, the second problem is less straightforward, and it may require
+some trial-and-error and creativity to solve. We might do something
+like:</p>
+<p>“Oh, I got a plan, let’s try it !”</p>
+<p>“No it won’t work.”</p>
+<p>“Then … what about this modified plan?”</p>
+<p>“Sorry, this won’t work either !”</p>
+<p>“Ok, let’s see … this one?”</p>
+<p>” … “</p>
+<p>The gift of OCanren is that we can use it to write a program to solve
+the first problem, but the same piece of program can also solve the
+second problem for us without any modification. It works likes this: we
+define a relation: <em>steps(pre, acts, post)</em> where <em>pre</em> is a state of
+the fleet, <em>acts</em> is a travel plan, and <em>post</em> is the state of the fleet
+after executing the travel plan. To solve the first problem, we pose the
+query: <em>steps(initial_state, travel_plan, where?)</em> and to solve to the
+second problem we pose the query: <em>steps(initial_state, what_plan?,
+desired_state)</em>.</p>
+</div>
+<div class="section" id="the-design-of-the-program">
+<h2>The Design of the Program<a class="headerlink" href="#the-design-of-the-program" title="Permalink to this headline">¶</a></h2>
+<p>We adopt the following mathematical abstractions.</p>
+<div class="section" id="discrete-motion">
+<h3>Discrete motion<a class="headerlink" href="#discrete-motion" title="Permalink to this headline">¶</a></h3>
+<p>For some arbitrary positive interger B, we take C/B liters as one unit
+of fuel and take (RC)/B miles as one unit of distance, and say that an
+aircraft has a maximum capacity of B units of fuel, and with which it
+can fly for B units of distance at the most. We call B the <em>abstract
+capacity</em> of an aircraft.</p>
+<p>Moreover, we assume that an aircraft consumes fuel and covers distance
+in a discrete (or unit-by-unit) and propotional manner, where one unit
+of fuel is consumed at a time, resulting in one unit of distance flied.</p>
+</div>
+<div class="section" id="discrete-fuel-trasnfer">
+<h3>Discrete fuel trasnfer<a class="headerlink" href="#discrete-fuel-trasnfer" title="Permalink to this headline">¶</a></h3>
+<p>Transfer of fuel within the fleet is also discrete: only whole units are
+allowed. For example, if an aircraft has 3 units of fuel left in the
+tank that has a capacity of 5 units, then it can only refuel for 1 unit
+or 2 units.</p>
+</div>
+<div class="section" id="picking-an-abstract-capacity">
+<h3>Picking an abstract capacity<a class="headerlink" href="#picking-an-abstract-capacity" title="Permalink to this headline">¶</a></h3>
+<p>Although the value of the abstract capacity B is arbitrarily picked, we
+must set it to at least 2. If we set B = 1 then it would be impossible
+for the fleet to reach the target (now B &lt; D &lt; NB), given our <em>discrete
+motion</em> and <em>discrete fuel transfer</em> assumptions.</p>
+<p>For instance, B = 1 implies that the fleet would move forward for 1 unit
+of distance, running out of fuel and all aircraft abandoned. If the
+fleet has two aircraft, and B = 2, then there are two possibilities:</p>
+<ol class="arabic simple">
+<li>The fleet flies for 2 units of distance, and then run out of fuel
+before reaching the target;</li>
+<li>The fleet flies for 1 unit, then one aircraft is abandoned,
+transferring the fuel (1 unit) to the other, who then continues to
+fly for 2 units. Thus the fleet achieves the range of 3 units.</li>
+</ol>
+</div>
+<div class="section" id="states-of-the-fleet">
+<h3>States of the fleet<a class="headerlink" href="#states-of-the-fleet" title="Permalink to this headline">¶</a></h3>
+<p>A state of the fleet consists of the position of the fleet and a list of
+the amount of fuel available for each aircraft in the fleet, called the
+<em>fuel profile</em>. Implicitly the fuel profile shows how many aircraft are
+currently in the fleet: this is the length of the list.</p>
+<p><strong>Example.</strong> From the fuel profile <code class="docutils literal notranslate"><span class="pre">[5;5;5]</span></code> we can read that there
+are three aircraft in the fleet and each has five units of fuel. If this
+fleet fly together for 3 units of distance, the fuel profile would
+become <code class="docutils literal notranslate"><span class="pre">[2;2;2]</span></code>. Now if we abondon one aircraft (any one is ok, for
+the result is the same), and give its fuel to the rest of the fleet, the
+possible fuel profiles after the abandoning would be: <code class="docutils literal notranslate"><span class="pre">[2;4]</span></code>,
+<code class="docutils literal notranslate"><span class="pre">[3;3]</span></code> or <code class="docutils literal notranslate"><span class="pre">[4;2]</span></code>.</p>
+</div>
+<div class="section" id="fleet-actions">
+<h3>Fleet actions<a class="headerlink" href="#fleet-actions" title="Permalink to this headline">¶</a></h3>
+<p>There are two possible actions of the fleet: flying forward (together),
+and abandoning (with fuel sharing at the same time). A travel plan
+should be a list of actions as informative as possible, for example,
+showing how far the fleet flies, and how the fuel is shared. Therefore
+we define two action labels: <code class="docutils literal notranslate"><span class="pre">Forward(n)</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Abandon([n1;...;nk])</span></code>. A initial state and a list of action labels
+would allow us to compute the state when the actions have been executed.</p>
+<p><strong>Example.</strong> Let <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">[5;5])</span></code> be the initial state, and
+<code class="docutils literal notranslate"><span class="pre">[Forward</span> <span class="pre">(2);</span> <span class="pre">Abandon</span> <span class="pre">([5]);</span> <span class="pre">Forward</span> <span class="pre">(5)]</span></code> be a list of actions. We
+could read that initially the fleet has two aircraft and is at position
+0. They would fly forward for 2 units of distance, then the state would
+be (we are calculating by hand now) <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">[3;3])</span></code>. The next action is
+<code class="docutils literal notranslate"><span class="pre">Abandon([5])</span></code>, which means that one aircraft is abandoned, and the
+new fuel profile of the fleet is the parameter of the <code class="docutils literal notranslate"><span class="pre">Abandon</span></code> label:
+<code class="docutils literal notranslate"><span class="pre">[5]</span></code>. The change of the fleet fuel profile from <code class="docutils literal notranslate"><span class="pre">[3;3]</span></code> (before
+abandoning an aircraft) to <code class="docutils literal notranslate"><span class="pre">[5]</span></code> (after abandoning the aircraft)
+implies that 2 units of fuel from the abandoned aircraft has been
+transferred to the remaining aircraft. Now the state is <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">[5])</span></code>: we
+assume that abondoning and fuel transfer happen simultaneously and take
+no time. The final action is <code class="docutils literal notranslate"><span class="pre">Forward(5)</span></code> meaning the singleton fleet
+would fly forward for 5 units of distance. The last state is
+<code class="docutils literal notranslate"><span class="pre">(7,</span> <span class="pre">[0])</span></code>: there is one aircraft remaining in the fleet; it is 7
+units of distance away from the airbase and it has no fuel. We have
+given an example of computing the final state given an initial state and
+a list of actions. It is interesting to note that the range (or maximum
+reach) of the two-aircraft fleet (each aircraft has an abstract capacity
+of 5 units) is 7 units.</p>
+</div>
+<div class="section" id="fleet-state-transition-rules">
+<h3>Fleet state transition rules<a class="headerlink" href="#fleet-state-transition-rules" title="Permalink to this headline">¶</a></h3>
+<p>A state transition rule relates a pre-state, a single action and the
+post-state. We also chain the state transition rules to obtain a
+multi-step state transition rule which relates a pre-state, a list of
+actions and the post-state. To avoid unnecessarily verbose travel plan,
+we require that a forward action must not be followed immediately by
+another forward action: if so, why not combine them into one? Subject to
+reasonable alternatives, we also require that after abandoning one
+aircraft, the fleet shall move forward before abandoning another. In the
+example above we have actually executed the multi-step state transition
+rule by hand.</p>
+</div>
+</div>
+<div class="section" id="ocanren-at-work">
+<h2>OCanren at Work<a class="headerlink" href="#ocanren-at-work" title="Permalink to this headline">¶</a></h2>
+<p>So far we have discussed about the design of an algorithm to compute the
+post-state from a pre-state and a list of actions. We indicated that
+this algorithm, written in OCanren, can be run “backward”: given a
+pre-state and a post-state, find the list of actions that bridges them.
+Below are some such results.</p>
+<p>Let B = 5 and OCanren suggested the following solutions for fleets of
+various sizes to achieve certain ranges.It took about 10 mins to compute
+for the 6-aircraft fleet.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Fleet Size</th>
+<th class="head">Range</th>
+<th class="head">Moves</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>2</td>
+<td>7</td>
+<td>[Forward (2); Abandon
+([5]); Forward (5)]</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>9</td>
+<td>[Forward (2); Abandon
+([4; 5]); Forward
+(2); Abandon ([5]);
+Forward (5)]</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>10</td>
+<td>[Forward (2); Abandon
+([5; 4; 3]); Forward
+(1); Abandon ([4;
+5]); Forward (2);
+Abandon ([5]);
+Forward (5)]</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>11</td>
+<td>[Forward (1); Abandon
+([5; 5; 5; 4]);
+Forward (1); Abandon
+([5; 5; 5]); Forward
+(2); Abandon ([4;
+5]); Forward (2);
+Abandon ([5]);
+Forward (5)]</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>12</td>
+<td>[Forward (1); Abandon
+([5; 5; 5; 5; 4]);
+Forward (1); Abandon
+([5; 5; 5; 4]);
+Forward (1); Abandon
+([5; 5; 5]); Forward
+(2); Abandon ([4;
+5]); Forward (2);
+Abandon ([5]);
+Forward (5)]</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="reference">
+<h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
+<p>J. N. Franklin 1960 <a class="reference external" href="https://doi.org/10.1137/0108039">The Range of a Fleet of
+Aircraft</a> Journal of the Society for
+Industrial and Applied Mathematics, 8(3), 541–548. (8 pages)</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../oldreadme.html" class="btn btn-neutral float-right" title="OCanren from README.md" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../peano/README.html" class="btn btn-neutral float-left" title="A Library for Peano Arithmetic" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, JetBrains-Research
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

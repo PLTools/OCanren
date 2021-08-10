@@ -1,0 +1,578 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>OCanren from README.md &mdash; OCanren  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="The Range of a Fleet of Aircraft" href="tuto_main/aircraft_fleet/README.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> OCanren
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tuto_main/tuto_main.html">Tutorial Outline</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">OCanren from README.md</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ocanren-vs-minikanren">OCanren vs. miniKanren</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Injecting and Projecting User-Type Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Bool, Nat, List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">Syntax Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">Sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#camlp5-syntax-extensions">Camlp5 syntax extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ppx-syntax-extensions">PPX syntax extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">More info</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OCanren</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>OCanren from README.md</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/JetBrains-Research/OCanren/blob/master/doc/oldreadme.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ocanren-from-readme-md">
+<h1>OCanren from README.md<a class="headerlink" href="#ocanren-from-readme-md" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="#ocanren-from-readme-md">OCanren from README.md</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#ocanren-vs-minikanren">OCanren vs. miniKanren</a></li>
+<li><a class="reference external" href="#injecting-and-projecting-user-type-data">Injecting and Projecting User-Type Data</a></li>
+<li><a class="reference external" href="#bool-nat-list">Bool, Nat, List</a></li>
+<li><a class="reference external" href="#syntax-extensions">Syntax Extensions</a></li>
+<li><a class="reference external" href="#run">Run</a></li>
+<li><a class="reference external" href="#sample">Sample</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#more-info">More info</a></li>
+</ul>
+<p>OCanren is a strongly-typed embedding of <a class="reference external" href="http://minikanren.org">miniKanren</a> relational
+programming language into <a class="reference external" href="http://ocaml.org">OCaml</a>. Nowadays, implementation of
+OCanren strongly reminds <a class="reference external" href="https://github.com/michaelballantyne/faster-miniKanren">faster-miniKanren</a>.
+Previous implementation was based on
+<a class="reference external" href="http://webyrd.net/scheme-2013/papers/HemannMuKanren2013.pdf">microKanren</a>
+with <a class="reference external" href="http://scheme2011.ucombinator.org/papers/Alvis2011.pdf">disequality constraints</a>.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>OCanren can be installed using <a class="reference external" href="https://opam.ocaml.org/doc/Install.html">opam</a> 2.x. Frist,
+install opam itself and right compiler version.</p>
+<ul class="simple">
+<li>either <code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">init</span> <span class="pre">-c</span> <span class="pre">4.07.1+fp+flambda</span></code> for fresh opam installation</li>
+<li>or <code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">switch</span> <span class="pre">create</span> <span class="pre">4.07.1+fp+flambda</span></code> to install right version of OCaml compiler</li>
+<li><code class="docutils literal notranslate"><span class="pre">eval</span> <span class="pre">$(opam</span> <span class="pre">env)</span></code></li>
+</ul>
+<p>Then, install dependencies and <code class="docutils literal notranslate"><span class="pre">OCanren</span></code>:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">pin</span> <span class="pre">add</span> <span class="pre">GT</span> <span class="pre">https://github.com/JetBrains-Research/GT.git</span> <span class="pre">-n</span> <span class="pre">-y</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/JetBrains-Research/OCanren.git</span> <span class="pre">ocanren</span> <span class="pre">&amp;&amp;</span> <span class="pre">cd</span> <span class="pre">ocanren</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">install</span> <span class="pre">.</span> <span class="pre">--deps-only</span> <span class="pre">--yes</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">make</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">tests</span></code></li>
+</ul>
+<p>Expected workflow: add new test to try something out.</p>
+</div>
+<div class="section" id="ocanren-vs-minikanren">
+<h2>OCanren vs. miniKanren<a class="headerlink" href="#ocanren-vs-minikanren" title="Permalink to this headline">¶</a></h2>
+<p>The correspondence between original miniKanren and OCanren constructs is shown below:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">miniKanren</th>
+<th class="head">OCanren</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">#u</span></code></td>
+<td>success</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">#f</span></code></td>
+<td>failure</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">((==)</span> <span class="pre">a</span> <span class="pre">b)</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">(a</span> <span class="pre">===</span> <span class="pre">b)</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">((=/=)</span> <span class="pre">a</span> <span class="pre">b)</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">(a</span> <span class="pre">=/=</span> <span class="pre">b)</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">(conde</span> <span class="pre">(a</span> <span class="pre">b</span> <span class="pre">...)</span> <span class="pre">(c</span> <span class="pre">d</span> <span class="pre">...)</span> <span class="pre">...)</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">conde</span> <span class="pre">[a</span> <span class="pre">&amp;&amp;&amp;</span> <span class="pre">b</span> <span class="pre">&amp;&amp;&amp;</span> <span class="pre">...;</span> <span class="pre">c</span> <span class="pre">&amp;&amp;&amp;</span> <span class="pre">d</span> <span class="pre">&amp;&amp;&amp;</span> <span class="pre">...;</span> <span class="pre">...]</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">(fresh</span> <span class="pre">(x</span> <span class="pre">y</span> <span class="pre">...)</span> <span class="pre">a</span> <span class="pre">b</span> <span class="pre">...</span> <span class="pre">)</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">fresh</span> <span class="pre">(x</span> <span class="pre">y</span> <span class="pre">...)</span> <span class="pre">a</span> <span class="pre">b</span> <span class="pre">...</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>In addition, OCanren introduces explicit disjunction (<code class="docutils literal notranslate"><span class="pre">|||</span></code>) and conjunction
+(<code class="docutils literal notranslate"><span class="pre">&amp;&amp;&amp;</span></code>) operators for goals.</p>
+</div>
+<div class="section" id="id1">
+<h2>Injecting and Projecting User-Type Data<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>To make it possible to work with OCanren, user-type data have to be <em>injected</em> into
+logic domain. In the simplest case (non-parametric, non-recursive) the function</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">inj</span>  <span class="o">:</span> <span class="o">(</span><span class="k">&#39;</span><span class="n">a</span><span class="o">,</span> <span class="k">&#39;</span><span class="n">b</span><span class="o">)</span> <span class="n">injected</span> <span class="o">-&gt;</span> <span class="o">(</span><span class="k">&#39;</span><span class="n">a</span><span class="o">,</span> <span class="k">&#39;</span><span class="n">b</span> <span class="n">logic</span><span class="o">)</span> <span class="n">injected</span>
+<span class="k">val</span> <span class="n">lift</span> <span class="o">:</span> <span class="k">&#39;</span><span class="n">a</span> <span class="o">-&gt;</span>  <span class="o">(</span><span class="k">&#39;</span><span class="n">a</span><span class="o">,</span> <span class="k">&#39;</span><span class="n">a</span><span class="o">)</span> <span class="n">injected</span>
+</pre></div>
+</div>
+<p>can be used for this purpose:</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="n">inj</span> <span class="o">@@</span> <span class="n">lift</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="n">inj</span> <span class="o">@@</span> <span class="n">lift</span> <span class="bp">true</span>
+</pre></div>
+</div>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="n">inj</span> <span class="o">@@</span> <span class="n">lift</span> <span class="s2">&quot;abc&quot;</span>
+</pre></div>
+</div>
+<!--
+If the type is parametric (but non-recursive), then (as a rule) all its type parameters
+have to be injected as well:
+
+```ocaml
+!! (gmap(option) (!!) (Some x))
+```
+
+```ocaml
+!! (gmap(pair) (!!) (!!) (x, y))
+```
+
+Here `gmap(type)` is a type-indexed morphism for the type `type`; it can be written
+by hands, or constructed using one of the existing generic programming
+frameworks (the library itself uses [GT](https://github.com/dboulytchev/generic-transformers)).
+--><p>If the type is a (possibly recursive) algebraic type definition, then, as a rule, it has to be
+abstracted from itself, and then we can write smart constructor for constructing
+injected values,</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="k">type</span> <span class="n">tree</span> <span class="o">=</span> <span class="nc">Leaf</span> <span class="o">|</span> <span class="nc">Node</span> <span class="k">of</span> <span class="n">tree</span> <span class="o">*</span> <span class="n">tree</span>
+</pre></div>
+</div>
+<p>is converted into</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="k">module</span> <span class="nc">T</span> <span class="o">=</span> <span class="k">struct</span>
+  <span class="k">type</span> <span class="k">&#39;</span><span class="n">self</span> <span class="n">tree</span> <span class="o">=</span> <span class="nc">Leaf</span> <span class="o">|</span> <span class="nc">Node</span> <span class="k">of</span> <span class="k">&#39;</span><span class="n">self</span> <span class="o">*</span> <span class="k">&#39;</span><span class="n">self</span>
+
+  <span class="k">let</span> <span class="n">fmap</span> <span class="n">f</span> <span class="o">=</span> <span class="k">function</span>
+  <span class="o">|</span> <span class="nc">Leaf</span> <span class="o">-&gt;</span> <span class="nc">Leaf</span>
+  <span class="o">|</span> <span class="nc">Node</span> <span class="o">(</span><span class="n">l</span><span class="o">,</span> <span class="n">r</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="nc">Node</span> <span class="o">(</span><span class="n">f</span> <span class="n">l</span><span class="o">,</span> <span class="n">f</span> <span class="n">r</span><span class="o">)</span>
+<span class="k">end</span>
+<span class="k">include</span> <span class="nc">T</span>
+<span class="k">module</span> <span class="nc">F</span> <span class="o">=</span>  <span class="nc">Fmap2</span><span class="o">(</span><span class="nc">T</span><span class="o">)</span>
+<span class="k">include</span> <span class="nc">F</span>
+
+<span class="k">let</span> <span class="n">leaf</span>    <span class="bp">()</span>  <span class="o">=</span> <span class="n">inj</span> <span class="o">@@</span> <span class="n">distrib</span> <span class="o">@@</span> <span class="nn">T</span><span class="p">.</span><span class="nc">Leaf</span>
+<span class="k">let</span> <span class="n">node</span>   <span class="n">b</span> <span class="n">c</span>  <span class="o">=</span> <span class="n">inj</span> <span class="o">@@</span> <span class="n">distrib</span> <span class="o">@@</span> <span class="nn">T</span><span class="p">.</span><span class="nc">Node</span> <span class="o">(</span><span class="n">b</span><span class="o">,</span><span class="n">c</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>Using fully abstract type we can construct type of <code class="docutils literal notranslate"><span class="pre">ground</span></code>
+(without logic values) trees and type of <code class="docutils literal notranslate"><span class="pre">logic</span> <span class="pre">trees</span></code> –
+the trees that can contain logic variables inside.</p>
+<p>Using this fully abstract type and a few OCanren builtins we can
+construct <code class="docutils literal notranslate"><span class="pre">reification</span></code> procedure which translates <code class="docutils literal notranslate"><span class="pre">('a,</span> <span class="pre">'b)</span> <span class="pre">injected</span></code>
+into it’s right counterpart.</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="k">type</span> <span class="n">gtree</span> <span class="o">=</span> <span class="n">gtree</span> <span class="nn">T</span><span class="p">.</span><span class="n">t</span>
+<span class="k">type</span> <span class="n">ltree</span> <span class="o">=</span> <span class="n">ltree</span> <span class="nn">X</span><span class="p">.</span><span class="n">t</span> <span class="n">logic</span>
+<span class="k">type</span> <span class="n">ftree</span> <span class="o">=</span> <span class="o">(</span><span class="n">rtree</span><span class="o">,</span> <span class="n">ltree</span><span class="o">)</span> <span class="n">injected</span>
+</pre></div>
+</div>
+<p>Using another function <code class="docutils literal notranslate"><span class="pre">reify</span></code> provided by the functor application we can
+translate <code class="docutils literal notranslate"><span class="pre">(_,</span> <span class="pre">'b)</span> <span class="pre">injected</span></code> values to <code class="docutils literal notranslate"><span class="pre">'b</span></code> type.</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">reify_tree</span> <span class="o">:</span> <span class="n">ftree</span> <span class="o">-&gt;</span> <span class="n">ltree</span>
+<span class="k">let</span> <span class="k">rec</span> <span class="n">reify_tree</span> <span class="n">eta</span> <span class="o">=</span> <span class="nn">F</span><span class="p">.</span><span class="n">reify</span> <span class="nn">LNat</span><span class="p">.</span><span class="n">reify</span> <span class="n">reify_tree</span> <span class="n">eta</span>
+</pre></div>
+</div>
+<p>And using this function we can run query and get lazy stream of reified logic
+answers</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="k">let</span> <span class="o">_:</span> <span class="nn">Tree</span><span class="p">.</span><span class="n">ltree</span> <span class="nn">RStream</span><span class="p">.</span><span class="n">t</span> <span class="o">=</span>
+  <span class="n">run</span> <span class="n">q</span> <span class="o">(</span><span class="k">fun</span> <span class="n">q</span>  <span class="o">-&gt;</span> <span class="n">q</span> <span class="o">===</span> <span class="n">leaf</span> <span class="bp">()</span><span class="o">)</span>
+        <span class="o">(</span><span class="k">fun</span> <span class="n">qs</span> <span class="o">-&gt;</span> <span class="n">qs</span><span class="o">#</span><span class="n">reify</span> <span class="nn">Tree</span><span class="p">.</span><span class="n">reify_tree</span><span class="o">)</span>
+</pre></div>
+</div>
+<!--
+Pragmatically speaking, it is desirable to make a type fully abstract, thus
+logic variables can be placed in arbitrary position, for example,
+
+```ocaml
+type ('a, 'b, 'self) tree = Leaf of 'a | Node of 'b * 'self * 'self
+
+let rec inj_tree t = !! (gmap(tree) (!!) (!!) inj_tree t)
+
+```
+
+instead of
+
+```ocaml
+type tree = Leaf of int | Node of string * t * t
+```
+
+
+
+Symmetrically, there is a projection function `prj` (and a prefix
+synonym `!?`), which can be used to project logical values into
+regular ones. Note, that this function is partial, and can
+raise `Not_a_value` exception. There is failure-continuation-passing
+version of `prj`, which can be used to react on this situation. See
+autogenerated documentation for details.
+--></div>
+<div class="section" id="id2">
+<h2>Bool, Nat, List<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>There is some built-in support for a few basic types — booleans, natural
+numbers in Peano form, logical lists. See corresponding modules.</p>
+<p>The following table summarizes the correspondence between some expressions
+on regular lists and their OCanren counterparts:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Regular lists</th>
+<th class="head">OCanren</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">[]</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">nil</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">[x]</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">!&lt;</span> <span class="pre">x</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">[x;</span> <span class="pre">y]</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">%&lt;</span> <span class="pre">y</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">[x;</span> <span class="pre">y;</span> <span class="pre">z]</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">%</span> <span class="pre">(y</span> <span class="pre">%&lt;</span> <span class="pre">z)</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">x::y::z::tl</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">%</span> <span class="pre">(y</span> <span class="pre">%</span> <span class="pre">(z</span> <span class="pre">%</span> <span class="pre">tl))</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">x::xs</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">%</span> <span class="pre">xs</span></code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id3">
+<h2>Syntax Extensions<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>There are two constructs, implemented as syntax extensions: <code class="docutils literal notranslate"><span class="pre">fresh</span></code> and <code class="docutils literal notranslate"><span class="pre">defer</span></code>. The latter
+is used to eta-expand enclosed goal (“inverse-eta delay”).</p>
+<p>However, neither of them actually needed. Instead of <code class="docutils literal notranslate"><span class="pre">defer</span> <span class="pre">(g)</span></code> manual expansion can
+be used:</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="n">delay</span> <span class="o">(</span><span class="k">fun</span> <span class="bp">()</span> <span class="o">-&gt;</span> <span class="n">g</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>To get rid of <code class="docutils literal notranslate"><span class="pre">fresh</span></code> one can use <code class="docutils literal notranslate"><span class="pre">Fresh</span></code> module, which introduces variadic function
+support by means of a few predefined numerals and a successor function. For
+example, instead of</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="n">fresh</span> <span class="o">(</span><span class="n">x</span> <span class="n">y</span> <span class="n">z</span><span class="o">)</span> <span class="n">g</span>
+</pre></div>
+</div>
+<p>one can write</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Fresh</span><span class="p">.</span><span class="n">three</span> <span class="o">(</span><span class="k">fun</span> <span class="n">x</span> <span class="n">y</span> <span class="n">z</span> <span class="o">-&gt;</span> <span class="n">g</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>or even</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nn">Fresh</span><span class="p">.</span><span class="n">succ</span> <span class="nn">Fresh</span><span class="p">.</span><span class="n">two</span><span class="o">)</span> <span class="o">(</span><span class="k">fun</span> <span class="n">x</span> <span class="n">y</span> <span class="n">z</span> <span class="o">-&gt;</span> <span class="n">g</span><span class="o">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>Run<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>The top-level primitive in OCanren is <code class="docutils literal notranslate"><span class="pre">run</span></code>, which can be used in the following
+pattern:</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="n">run</span> <span class="n">n</span> <span class="o">(</span><span class="k">fun</span> <span class="n">q1</span> <span class="n">q2</span> <span class="o">...</span> <span class="n">qn</span> <span class="o">-&gt;</span> <span class="n">g</span><span class="o">)</span> <span class="o">(</span><span class="k">fun</span> <span class="n">a1</span> <span class="n">a2</span> <span class="o">...</span> <span class="n">an</span> <span class="o">-&gt;</span> <span class="n">h</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>Here <code class="docutils literal notranslate"><span class="pre">n</span></code> stands for <em>numeral</em> (some value, describing the number of arguments,
+<code class="docutils literal notranslate"><span class="pre">q1</span></code>, <code class="docutils literal notranslate"><span class="pre">q2</span></code>, …, <code class="docutils literal notranslate"><span class="pre">qn</span></code> — free logic variables, <code class="docutils literal notranslate"><span class="pre">a1</span></code>, <code class="docutils literal notranslate"><span class="pre">a2</span></code>, …, <code class="docutils literal notranslate"><span class="pre">an</span></code> — streams
+of answers for <code class="docutils literal notranslate"><span class="pre">q1</span></code>, <code class="docutils literal notranslate"><span class="pre">q2</span></code>, …, <code class="docutils literal notranslate"><span class="pre">qn</span></code> respectively, <code class="docutils literal notranslate"><span class="pre">g</span></code> — some goal, <code class="docutils literal notranslate"><span class="pre">h</span></code> — a
+<em>handler</em> (some piece of code, presumable making use of <code class="docutils literal notranslate"><span class="pre">a1</span></code>, <code class="docutils literal notranslate"><span class="pre">a2</span></code>, …, <code class="docutils literal notranslate"><span class="pre">an</span></code>).</p>
+<p>There are a few predefined numerals (<code class="docutils literal notranslate"><span class="pre">q</span></code>, <code class="docutils literal notranslate"><span class="pre">qr</span></code>, <code class="docutils literal notranslate"><span class="pre">qrs</span></code>, <code class="docutils literal notranslate"><span class="pre">qrst</span></code> etc.) and a
+successor function, <code class="docutils literal notranslate"><span class="pre">succ</span></code>, which can be used to “manufacture” greater
+numerals from smaller ones.</p>
+</div>
+<div class="section" id="id5">
+<h2>Sample<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p>We consider here a complete example of OCanren specification (relational
+binary search tree):</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="k">open</span> <span class="nc">Printf</span>
+<span class="k">open</span> <span class="nc">GT</span>
+<span class="k">open</span> <span class="nc">OCanren</span>
+<span class="k">open</span> <span class="nn">OCanren</span><span class="p">.</span><span class="nc">Std</span>
+
+<span class="k">module</span> <span class="nc">Tree</span> <span class="o">=</span> <span class="k">struct</span>
+  <span class="k">module</span> <span class="nc">X</span> <span class="o">=</span> <span class="k">struct</span>
+    <span class="c">(* Abstracted type for the tree *)</span>
+    <span class="o">@</span><span class="k">type</span> <span class="o">(</span><span class="k">&#39;</span><span class="n">a</span><span class="o">,</span> <span class="k">&#39;</span><span class="n">self</span><span class="o">)</span> <span class="n">t</span> <span class="o">=</span> <span class="nc">Leaf</span> <span class="o">|</span> <span class="nc">Node</span> <span class="k">of</span> <span class="k">&#39;</span><span class="n">a</span> <span class="o">*</span> <span class="k">&#39;</span><span class="n">self</span> <span class="o">*</span> <span class="k">&#39;</span><span class="n">self</span> <span class="k">with</span> <span class="n">gmap</span><span class="o">,</span><span class="n">show</span><span class="o">;;</span>
+    <span class="k">let</span> <span class="n">fmap</span> <span class="n">eta</span> <span class="o">=</span> <span class="nn">GT</span><span class="p">.</span><span class="n">gmap</span> <span class="n">t</span> <span class="n">eta</span>
+  <span class="k">end</span>
+  <span class="k">include</span> <span class="nc">X</span>
+  <span class="k">include</span> <span class="nc">Fmap2</span><span class="o">(</span><span class="nc">X</span><span class="o">)</span>
+
+  <span class="o">@</span><span class="k">type</span> <span class="n">inttree</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">,</span> <span class="n">inttree</span><span class="o">)</span> <span class="nn">X</span><span class="p">.</span><span class="n">t</span> <span class="k">with</span> <span class="n">show</span>
+  <span class="c">(* A shortcut for &quot;ground&quot; tree we&#39;re going to work with in &quot;functional&quot; code *)</span>
+  <span class="o">@</span><span class="k">type</span> <span class="n">rtree</span> <span class="o">=</span> <span class="o">(</span><span class="nn">LNat</span><span class="p">.</span><span class="n">ground</span><span class="o">,</span> <span class="n">rtree</span><span class="o">)</span> <span class="nn">X</span><span class="p">.</span><span class="n">t</span> <span class="k">with</span> <span class="n">show</span>
+
+  <span class="c">(* Logic counterpart *)</span>
+  <span class="o">@</span><span class="k">type</span> <span class="n">ltree</span> <span class="o">=</span> <span class="o">(</span><span class="nn">LNat</span><span class="p">.</span><span class="n">logic</span><span class="o">,</span> <span class="n">ltree</span><span class="o">)</span> <span class="nn">X</span><span class="p">.</span><span class="n">t</span> <span class="n">logic</span> <span class="k">with</span> <span class="n">show</span>
+
+  <span class="k">type</span> <span class="n">ftree</span> <span class="o">=</span> <span class="o">(</span><span class="n">rtree</span><span class="o">,</span> <span class="n">ltree</span><span class="o">)</span> <span class="n">injected</span>
+
+  <span class="k">let</span> <span class="n">leaf</span>    <span class="bp">()</span> <span class="o">:</span> <span class="n">ftree</span> <span class="o">=</span> <span class="n">inj</span> <span class="o">@@</span> <span class="n">distrib</span> <span class="o">@@</span> <span class="nn">X</span><span class="p">.</span><span class="nc">Leaf</span>
+  <span class="k">let</span> <span class="n">node</span> <span class="n">a</span> <span class="n">b</span> <span class="n">c</span> <span class="o">:</span> <span class="n">ftree</span> <span class="o">=</span> <span class="n">inj</span> <span class="o">@@</span> <span class="n">distrib</span> <span class="o">@@</span> <span class="nn">X</span><span class="p">.</span><span class="nc">Node</span> <span class="o">(</span><span class="n">a</span><span class="o">,</span><span class="n">b</span><span class="o">,</span><span class="n">c</span><span class="o">)</span>
+
+  <span class="c">(* Injection *)</span>
+  <span class="k">let</span> <span class="k">rec</span> <span class="n">inj_tree</span> <span class="o">:</span> <span class="n">inttree</span> <span class="o">-&gt;</span> <span class="n">ftree</span> <span class="o">=</span> <span class="k">fun</span> <span class="n">tree</span> <span class="o">-&gt;</span>
+     <span class="n">inj</span> <span class="o">@@</span> <span class="n">distrib</span> <span class="o">@@</span> <span class="nn">GT</span><span class="p">.</span><span class="o">(</span><span class="n">gmap</span> <span class="n">t</span> <span class="n">nat</span> <span class="n">inj_tree</span> <span class="n">tree</span><span class="o">)</span>
+
+  <span class="c">(* Projection *)</span>
+  <span class="k">let</span> <span class="k">rec</span> <span class="n">prj_tree</span> <span class="o">:</span> <span class="n">rtree</span> <span class="o">-&gt;</span> <span class="n">inttree</span> <span class="o">=</span>
+    <span class="k">fun</span> <span class="n">x</span> <span class="o">-&gt;</span> <span class="nn">GT</span><span class="p">.</span><span class="o">(</span><span class="n">gmap</span> <span class="n">t</span><span class="o">)</span> <span class="nn">LNat</span><span class="p">.</span><span class="n">to_int</span> <span class="n">prj_tree</span> <span class="n">x</span>
+
+<span class="k">end</span>
+
+<span class="k">open</span> <span class="nc">Tree</span>
+
+<span class="c">(* Relational insert into a search tree *)</span>
+<span class="k">let</span> <span class="k">rec</span> <span class="n">inserto</span> <span class="n">a</span> <span class="n">t&#39;</span> <span class="n">t&#39;&#39;</span> <span class="o">=</span> <span class="n">conde</span> <span class="o">[</span>
+  <span class="o">(</span><span class="n">t&#39;</span> <span class="o">===</span> <span class="n">leaf</span> <span class="bp">()</span><span class="o">)</span> <span class="o">&amp;&amp;&amp;</span> <span class="o">(</span><span class="n">t&#39;&#39;</span> <span class="o">===</span> <span class="n">node</span> <span class="n">a</span> <span class="o">(</span><span class="n">leaf</span> <span class="bp">()</span><span class="o">)</span> <span class="o">(</span><span class="n">leaf</span> <span class="bp">()</span><span class="o">)</span> <span class="o">);</span>
+  <span class="n">fresh</span> <span class="o">(</span><span class="n">x</span> <span class="n">l</span> <span class="n">r</span> <span class="n">l&#39;</span><span class="o">)</span>
+    <span class="o">(</span><span class="n">t&#39;</span> <span class="o">===</span> <span class="n">node</span> <span class="n">x</span> <span class="n">l</span> <span class="n">r</span><span class="o">)</span>
+    <span class="nn">Nat</span><span class="p">.</span><span class="o">(</span><span class="n">conde</span> <span class="o">[</span>
+      <span class="o">(</span><span class="n">t&#39;&#39;</span> <span class="o">===</span> <span class="n">t&#39;</span><span class="o">)</span> <span class="o">&amp;&amp;&amp;</span> <span class="o">(</span><span class="n">a</span> <span class="o">===</span> <span class="n">x</span><span class="o">);</span>
+      <span class="o">(</span><span class="n">t&#39;&#39;</span> <span class="o">===</span> <span class="o">(</span><span class="n">node</span> <span class="n">x</span> <span class="n">l&#39;</span> <span class="n">r</span>  <span class="o">))</span> <span class="o">&amp;&amp;&amp;</span> <span class="o">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="n">x</span><span class="o">)</span> <span class="o">&amp;&amp;&amp;</span> <span class="o">(</span><span class="n">inserto</span> <span class="n">a</span> <span class="n">l</span> <span class="n">l&#39;</span><span class="o">);</span>
+      <span class="o">(</span><span class="n">t&#39;&#39;</span> <span class="o">===</span> <span class="o">(</span><span class="n">node</span> <span class="n">x</span> <span class="n">l</span>  <span class="n">l&#39;</span> <span class="o">))</span> <span class="o">&amp;&amp;&amp;</span> <span class="o">(</span><span class="n">a</span> <span class="o">&gt;</span> <span class="n">x</span><span class="o">)</span> <span class="o">&amp;&amp;&amp;</span> <span class="o">(</span><span class="n">inserto</span> <span class="n">a</span> <span class="n">r</span> <span class="n">l&#39;</span><span class="o">)</span>
+    <span class="o">])</span>
+<span class="o">]</span>
+
+<span class="c">(* Top-level wrapper for insertion --- takes and returns non-logic data *)</span>
+<span class="k">let</span> <span class="n">insert</span> <span class="o">:</span> <span class="kt">int</span> <span class="o">-&gt;</span> <span class="n">inttree</span> <span class="o">-&gt;</span> <span class="n">inttree</span> <span class="o">=</span> <span class="k">fun</span> <span class="n">a</span> <span class="n">t</span> <span class="o">-&gt;</span>
+  <span class="n">prj_tree</span> <span class="o">@@</span> <span class="nn">RStream</span><span class="p">.</span><span class="n">hd</span> <span class="o">@@</span>
+  <span class="n">run</span> <span class="n">q</span> <span class="o">(</span><span class="k">fun</span> <span class="n">q</span>  <span class="o">-&gt;</span> <span class="n">inserto</span> <span class="o">(</span><span class="n">nat</span> <span class="n">a</span><span class="o">)</span> <span class="o">(</span><span class="n">inj_tree</span> <span class="n">t</span><span class="o">)</span> <span class="n">q</span><span class="o">)</span>
+        <span class="o">(</span><span class="k">fun</span> <span class="n">qs</span> <span class="o">-&gt;</span> <span class="n">qs</span><span class="o">#</span><span class="n">prj</span><span class="o">)</span>
+
+<span class="c">(* Top-level wrapper for &quot;inverse&quot; insertion --- returns an integer, which</span>
+<span class="c">   has to be inserted to convert t into t&#39; *)</span>
+<span class="k">let</span> <span class="n">insert&#39;</span> <span class="n">t</span> <span class="n">t&#39;</span> <span class="o">=</span>
+  <span class="nn">LNat</span><span class="p">.</span><span class="n">to_int</span> <span class="o">@@</span> <span class="nn">RStream</span><span class="p">.</span><span class="n">hd</span> <span class="o">@@</span>
+  <span class="n">run</span> <span class="n">q</span> <span class="o">(</span><span class="k">fun</span> <span class="n">q</span>  <span class="o">-&gt;</span> <span class="n">inserto</span> <span class="n">q</span> <span class="o">(</span><span class="n">inj_tree</span> <span class="n">t</span><span class="o">)</span> <span class="o">(</span><span class="n">inj_tree</span> <span class="n">t&#39;</span><span class="o">))</span>
+        <span class="o">(</span><span class="k">fun</span> <span class="n">qs</span> <span class="o">-&gt;</span> <span class="n">qs</span><span class="o">#</span><span class="n">prj</span><span class="o">)</span>
+
+<span class="c">(* Entry point *)</span>
+<span class="k">let</span> <span class="o">_</span> <span class="o">=</span>
+  <span class="k">let</span> <span class="n">insert_list</span> <span class="n">l</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="k">rec</span> <span class="n">inner</span> <span class="n">t</span> <span class="o">=</span> <span class="k">function</span>
+    <span class="o">|</span> <span class="bp">[]</span>    <span class="o">-&gt;</span> <span class="n">t</span>
+    <span class="o">|</span> <span class="n">x</span><span class="o">::</span><span class="n">xs</span> <span class="o">-&gt;</span>
+      <span class="k">let</span> <span class="n">t&#39;</span> <span class="o">=</span> <span class="n">insert</span> <span class="n">x</span> <span class="n">t</span> <span class="k">in</span>
+      <span class="n">printf</span> <span class="s2">&quot;Inserting %d into %s makes %s</span><span class="se">\n</span><span class="s2">%!&quot;</span> <span class="n">x</span> <span class="o">(</span><span class="n">show_inttree</span> <span class="n">t</span><span class="o">)</span> <span class="o">(</span><span class="n">show_inttree</span> <span class="n">t&#39;</span><span class="o">);</span>
+      <span class="n">inner</span> <span class="n">t&#39;</span> <span class="n">xs</span>
+    <span class="k">in</span>
+    <span class="n">inner</span> <span class="nc">Leaf</span> <span class="n">l</span>
+  <span class="k">in</span>
+  <span class="n">ignore</span> <span class="o">@@</span> <span class="n">insert_list</span> <span class="o">[</span><span class="mi">1</span><span class="o">;</span> <span class="mi">2</span><span class="o">;</span> <span class="mi">3</span><span class="o">;</span> <span class="mi">4</span><span class="o">];</span>
+  <span class="k">let</span> <span class="n">t</span>  <span class="o">=</span> <span class="n">insert_list</span> <span class="o">[</span><span class="mi">3</span><span class="o">;</span> <span class="mi">2</span><span class="o">;</span> <span class="mi">4</span><span class="o">;</span> <span class="mi">1</span><span class="o">]</span> <span class="k">in</span>
+  <span class="k">let</span> <span class="n">t&#39;</span> <span class="o">=</span> <span class="n">insert</span> <span class="mi">8</span> <span class="n">t</span> <span class="k">in</span>
+  <span class="nn">Printf</span><span class="p">.</span><span class="n">printf</span> <span class="s2">&quot;Inverse insert: %d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">@@</span> <span class="n">insert&#39;</span> <span class="n">t</span> <span class="n">t&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="camlp5-syntax-extensions">
+<h2>Camlp5 syntax extensions<a class="headerlink" href="#camlp5-syntax-extensions" title="Permalink to this headline">¶</a></h2>
+<p>A few syntax extensions are used in this project.</p>
+<p>For testing we use the one from <code class="docutils literal notranslate"><span class="pre">logger-p5</span></code> opam package. It allows to convert OCaml
+expression to its string form. For example, it rewrites <code class="docutils literal notranslate"><span class="pre">let</span> <span class="pre">_</span> <span class="pre">=</span> <span class="pre">REPR(1+2)</span></code> to</p>
+<p>For OCanren itself we use syntax extension to simplify writing relational programs</p>
+</div>
+<div class="section" id="ppx-syntax-extensions">
+<h2>PPX syntax extensions<a class="headerlink" href="#ppx-syntax-extensions" title="Permalink to this headline">¶</a></h2>
+<p>PPX syntax extensions are not related to camlp5 and should be used, for example,
+if you want decent IDE support. Main extensions are compilable by <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">ppx</span></code></p>
+<p>An analogue for logger library is called <code class="docutils literal notranslate"><span class="pre">ppx_repr</span></code>:</p>
+<p>An OCanren-specific syntax extension includes both <code class="docutils literal notranslate"><span class="pre">ppx_repr</span></code> and extension for
+creating fresh variables</p>
+<p>There also syntax extensions for simplifyng developing data type for OCanren
+but they are not fully documented.</p>
+</div>
+<div class="section" id="id6">
+<h2>More info<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>See autogenerated documentation or samples in <code class="docutils literal notranslate"><span class="pre">/regression</span></code> and <code class="docutils literal notranslate"><span class="pre">/samples</span></code> subdirectories.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="tuto_main/aircraft_fleet/README.html" class="btn btn-neutral float-left" title="The Range of a Fleet of Aircraft" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, JetBrains-Research
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,610 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>A Simple Data Base &mdash; OCanren  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="A Library for Peano Arithmetic" href="../peano/README.html" />
+    <link rel="prev" title="Digesting the Types" href="../digTypes/README.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> OCanren
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tuto_main.html">Tutorial Outline</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../helloWorld/README.html">Say “Hello World!” in OCanren</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../digTypes/README.html">Digesting the Types</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">A Simple Data Base</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#reading-the-program">Reading the Program</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#syntax-of-a-formula">Syntax of a Formula</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#a-note-on-the-concept-of-a-goal">A Note on the Concept of a <em>Goal</em></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-semantics-of-a-formula">The Semantics of a Formula</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#streams">Streams</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#substitution">Substitution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#formulae-as-stream-builders">Formulae as Stream Builders</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disjunction-as-a-stream-zipper">Disjunction as a Stream Zipper</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#conjuction-as-a-stream-map-zipper">Conjuction as a Stream Map-Zipper</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#working-with-gt-and-camlp5">Working with GT and Camlp5</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#the-type-syntax">The &#64;type syntax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-injection-functions-and-the-ocanren-quotation">The injection functions and the <code class="docutils literal notranslate"><span class="pre">ocanren{...}</span></code> quotation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../peano/README.html">A Library for Peano Arithmetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aircraft_fleet/README.html">The Range of a Fleet of Aircraft</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../oldreadme.html">OCanren from README.md</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OCanren</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../tuto_main.html">Tutorial Outline</a> &raquo;</li>
+        
+      <li>A Simple Data Base</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/JetBrains-Research/OCanren/blob/master/doc/tuto_main/ascii_ctrl_db/README.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="a-simple-data-base">
+<h1>A Simple Data Base<a class="headerlink" href="#a-simple-data-base" title="Permalink to this headline">¶</a></h1>
+<p>In this lesson we learn the basic form of relational programming:
+defining and querying a data base. In particular, we build a toy data
+base of the 32 control characters in the ASCII table, associating each
+character with its integer number and description, for example: <code class="docutils literal notranslate"><span class="pre">BS</span></code>
+with number 8 and description “Back space”.</p>
+<p>The <a class="reference external" href="ASCII_Ctrl_DB.ml">program</a> is a bit long, yet simple in the
+sense that the relation defined therein is not recursive: it is a
+straightforward listing of the data base, which is the very basic form
+of relational programs.</p>
+<div class="section" id="reading-the-program">
+<h2>Reading the Program<a class="headerlink" href="#reading-the-program" title="Permalink to this headline">¶</a></h2>
+<p>The structure of the program is as follows: 1. The initial opening
+statement 1. Type definitions and utilities 1. The ASCII control
+characters type - Injection utilities 1. The logic string type 1. The
+data base as a relation <code class="docutils literal notranslate"><span class="pre">ascii_ctrl</span></code> 1. Some queries on the data base</p>
+<p>Read the definition of <code class="docutils literal notranslate"><span class="pre">ascii_ctrl</span></code> as: &gt; <em>c</em>, <em>n</em> and <em>s</em> form the
+relation <em>ascii_ctrl</em> iff <em>c</em> is NUL and <em>n</em> is 0 and <em>s</em> is the string
+“Null”, or <em>c</em> is SOH and <em>n</em> is 1 and <em>s</em> is the string “Start of
+heading”, or …, or <em>c</em> is US and <em>n</em> is 31 and <em>s</em> is the string “Unit
+separator”.</p>
+<p>Read the query:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Find</span> <span class="n">the</span> <span class="n">control</span> <span class="n">characters</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">given</span> <span class="nb">range</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">let</span> <span class="n">_</span> <span class="o">=</span>
+  <span class="n">List</span><span class="o">.</span><span class="n">iter</span> <span class="n">print_endline</span> <span class="o">@@</span>
+    <span class="n">Stream</span><span class="o">.</span><span class="n">take</span> <span class="o">~</span><span class="n">n</span><span class="p">:</span><span class="mi">18</span> <span class="o">@@</span>
+      <span class="n">run</span> <span class="n">q</span> <span class="p">(</span><span class="n">fun</span> <span class="n">s</span> <span class="o">-&gt;</span>
+          <span class="n">ocanren</span> <span class="p">{</span><span class="n">fresh</span> <span class="n">c</span><span class="p">,</span><span class="n">n</span> <span class="ow">in</span> <span class="n">Std</span><span class="o">.</span><span class="n">Nat</span><span class="o">.</span><span class="p">(</span><span class="o">&lt;=</span><span class="p">)</span> <span class="mi">0</span> <span class="n">n</span>
+                                <span class="o">&amp;</span> <span class="n">Std</span><span class="o">.</span><span class="n">Nat</span><span class="o">.</span><span class="p">(</span><span class="o">&lt;=</span><span class="p">)</span> <span class="n">n</span> <span class="mi">10</span>
+                                <span class="o">&amp;</span> <span class="n">ascii_ctrl</span> <span class="n">c</span> <span class="n">n</span> <span class="n">s</span><span class="p">})</span> <span class="n">project</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>** <code class="docutils literal notranslate"><span class="pre">Std.Nat.(&lt;=)</span> <span class="pre">0</span> <span class="pre">n</span></code> in real OCanren is better to be written as
+<code class="docutils literal notranslate"><span class="pre">Std.Nat.(0</span> <span class="pre">&lt;=</span> <span class="pre">n)</span></code> **</p>
+<p>as: &gt; Print at most 18 possible values of <em>s</em>, such that exist some <em>c</em>
+and <em>n</em> where <em>n</em> ranges from 0 to 10 inclusive, and the tuple <em>(c, n,
+s)</em> satisfies the relation <em>ascii_ctrl</em>.</p>
+<p>OCanren will print the following (eleven) strings:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Null</span>
+<span class="n">Start</span> <span class="n">of</span> <span class="n">heading</span>
+<span class="n">Start</span> <span class="n">of</span> <span class="n">text</span>
+<span class="n">End</span> <span class="n">of</span> <span class="n">text</span>
+<span class="n">End</span> <span class="n">of</span> <span class="n">transmission</span>
+<span class="n">Enquiry</span>
+<span class="n">Ackonwledge</span>
+<span class="n">Bell</span>
+<span class="n">Back</span> <span class="n">space</span>
+<span class="n">Horizontal</span> <span class="n">tab</span>
+<span class="n">Line</span> <span class="n">Feed</span>
+</pre></div>
+</div>
+<p>We could see that the relational program specifies a relation, and it
+has been used to find missing elements of a tuple that is claimed to
+satisfy some constraint of which the relation is a part. In so doing, we
+did not tell the program <em>how</em> to find these missing elements. It was
+the semantics of the programming language that did this automatically.
+We explain the syntax and semantics next.</p>
+</div>
+<div class="section" id="syntax-of-a-formula">
+<h2>Syntax of a Formula<a class="headerlink" href="#syntax-of-a-formula" title="Permalink to this headline">¶</a></h2>
+<p>The notion of a formula in OCanren is different from that in logic
+programming, i.e., the Horn clause subset of first-order predicate
+logic. Instead it is quite close to formulae in the system
+<a class="reference external" href="https://doi.org/10.1007/978-3-540-75560-9_9">μMALL</a>.</p>
+<p>A formula is either atomic, or is compound and built from atomic
+formulae using conjunction (<code class="docutils literal notranslate"><span class="pre">&amp;</span></code>), disjunction (<code class="docutils literal notranslate"><span class="pre">|</span></code>) and existential
+quantification (<code class="docutils literal notranslate"><span class="pre">fresh</span></code>). Atomic formulae are built from predicate
+symbols followed by their arguments. There are only two predicate
+symbols <code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">=/=</span></code>. A formula is allowed to be infinitely long
+but it shall always contain a finite number of free logic variabes.
+Formulae can be abbreviated by (possibly recurisive) definitions.</p>
+<p>** <code class="docutils literal notranslate"><span class="pre">infinitely</span> <span class="pre">long</span></code> will probably require a clarification. I kind
+of understand that you are saying about ifinite list of phormulas
+connected with disjunction, but 1st idea that will come to mind of the
+reader is that we allow infinite programs **</p>
+<p><strong>Example.</strong> Atomic, compound, named and infinite formulae: - <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">==</span> <span class="pre">y</span></code>
+and <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">=/=</span> <span class="pre">2</span></code> are two atomic formulae. - By the definition
+<code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">x</span> <span class="pre">y</span> <span class="pre">:=</span>&#160; <span class="pre">x</span> <span class="pre">==</span> <span class="pre">1</span> <span class="pre">&amp;</span> <span class="pre">y</span> <span class="pre">=/=</span> <span class="pre">2</span></code>, we can use <code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">x</span> <span class="pre">y</span></code> to abbreviate
+the compound formula <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">==</span> <span class="pre">1</span> <span class="pre">&amp;</span> <span class="pre">y</span> <span class="pre">=/=</span> <span class="pre">2</span></code>. - By the recursive definition
+<code class="docutils literal notranslate"><span class="pre">is_nat</span> <span class="pre">x</span> <span class="pre">:=</span> <span class="pre">x</span> <span class="pre">==</span> <span class="pre">O</span> <span class="pre">|</span> <span class="pre">fresh</span> <span class="pre">y</span> <span class="pre">in</span> <span class="pre">x</span> <span class="pre">==</span> <span class="pre">S</span> <span class="pre">y</span> <span class="pre">&amp;</span> <span class="pre">is_nat</span> <span class="pre">y</span></code> we can use
+<code class="docutils literal notranslate"><span class="pre">is_nat</span> <span class="pre">x</span></code> to abbreviate the infinitely long formula:
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">==</span> <span class="pre">O</span>&#160;&#160; <span class="pre">|</span> <span class="pre">fresh</span> <span class="pre">y1</span> <span class="pre">in</span>&#160;&#160;&#160;&#160; <span class="pre">x</span> <span class="pre">==</span> <span class="pre">S</span> <span class="pre">y1</span> <span class="pre">&amp;</span> <span class="pre">{</span> <span class="pre">y1</span> <span class="pre">==</span> <span class="pre">O</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">|</span> <span class="pre">fresh</span> <span class="pre">y2</span> <span class="pre">in</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">y1</span> <span class="pre">==</span> <span class="pre">S</span> <span class="pre">y2</span> <span class="pre">&amp;</span> <span class="pre">{</span> <span class="pre">y2</span> <span class="pre">==</span> <span class="pre">O</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">|</span> <span class="pre">fresh</span> <span class="pre">y3</span> <span class="pre">in</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">y2</span> <span class="pre">==</span> <span class="pre">S</span> <span class="pre">y3</span> <span class="pre">&amp;</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}}}</span></code>
+We now give the concrete syntax of a formula in OCanren.</p>
+<div class="code ebnf highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">formula</span>  <span class="o">=</span> <span class="n">atomic</span> <span class="n">formula</span>
+         <span class="o">|</span> <span class="n">compound</span> <span class="n">formula</span>
+     <span class="o">|</span> <span class="n">named</span> <span class="n">formula</span>
+     <span class="o">|</span> <span class="s1">&#39;{&#39;</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="s1">&#39;}&#39;</span> <span class="p">;</span>
+
+<span class="n">atomic</span> <span class="n">formula</span> <span class="o">=</span> <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;==&#39;</span><span class="p">,</span> <span class="n">value</span> <span class="o">|</span> <span class="n">value</span><span class="p">,</span> <span class="s1">&#39;=/=&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">;</span>
+
+<span class="n">compound</span> <span class="n">formula</span> <span class="o">=</span> <span class="n">formula</span><span class="p">,</span> <span class="s1">&#39;&amp;&#39;</span><span class="p">,</span> <span class="n">formula</span>
+                 <span class="o">|</span> <span class="n">formula</span><span class="p">,</span> <span class="s1">&#39;|&#39;</span><span class="p">,</span> <span class="n">formula</span>
+         <span class="o">|</span> <span class="s1">&#39;fresh&#39;</span><span class="p">,</span> <span class="n">lparams</span><span class="p">,</span> <span class="s1">&#39;in&#39;</span><span class="p">,</span>  <span class="n">formula</span><span class="p">;</span>
+
+<span class="n">named</span> <span class="n">formula</span> <span class="o">=</span> <span class="n">formula</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">values</span><span class="p">;</span>
+
+<span class="n">formula</span> <span class="n">name</span> <span class="n">definition</span> <span class="o">=</span> <span class="s1">&#39;let&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;rec&#39;</span><span class="p">],</span> <span class="n">let</span><span class="o">-</span><span class="n">binding</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;and&#39;</span><span class="p">,</span> <span class="n">let</span><span class="o">-</span><span class="n">binding</span><span class="p">};</span>
+
+<span class="n">let</span><span class="o">-</span><span class="n">binding</span> <span class="o">=</span>  <span class="n">formula</span> <span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">typexpr</span><span class="p">,</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;goal&#39;</span> <span class="p">],</span> <span class="s1">&#39;=&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;fun&#39;</span><span class="p">,</span> <span class="n">fparams</span><span class="p">,</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;ocanren&#39;</span><span class="p">,</span><span class="s1">&#39;{&#39;</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="s1">&#39;}&#39;</span> <span class="p">;</span>
+
+<span class="n">lparams</span> <span class="o">=</span> <span class="n">param</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">param</span><span class="p">};</span>
+<span class="n">fparams</span> <span class="o">=</span> <span class="n">param</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">param</span><span class="p">};</span>
+<span class="n">values</span>  <span class="o">=</span> <span class="n">value</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">};</span>
+</pre></div>
+</div>
+<p>The scope of <code class="docutils literal notranslate"><span class="pre">fresh...in</span></code> extends as far as possible. <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> binds
+tighter than <code class="docutils literal notranslate"><span class="pre">|</span></code>. A formula always has the type <code class="docutils literal notranslate"><span class="pre">goal</span></code> (this type
+constructor is provided by the module Core). The braces <code class="docutils literal notranslate"><span class="pre">{}</span></code> could be
+used for explicit grouping, as in <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">x</span> <span class="pre">==</span> <span class="pre">1</span> <span class="pre">|</span> <span class="pre">x</span> <span class="pre">==</span> <span class="pre">2</span> <span class="pre">}</span> <span class="pre">&amp;</span> <span class="pre">y</span> <span class="pre">==</span> <span class="pre">0</span></code>.</p>
+</div>
+<div class="section" id="a-note-on-the-concept-of-a-goal">
+<h2>A Note on the Concept of a <em>Goal</em><a class="headerlink" href="#a-note-on-the-concept-of-a-goal" title="Permalink to this headline">¶</a></h2>
+<p>In logic programming, we call the formula which we want to refute a
+<em>goal</em>. This term (i.e., goal) is inherited by the modern successor of
+logic programming, which is called <em>relational programming</em>. However,
+the semantics of a <em>goal</em> nevertheless changes: it is no longer
+something that we want to refute, but something for which we want to
+find variable substitutions so that it is true. In other words: - Logic
+programming is proof by contradiction: we want to find variable
+substitutions so that a formula <em>F</em> is true, but what we do is to find
+substitutions so that the negation of F is false. - Relational
+programming is proof by straightforward construction without the logical
+detour of “negation of negation”.</p>
+</div>
+<div class="section" id="the-semantics-of-a-formula">
+<h2>The Semantics of a Formula<a class="headerlink" href="#the-semantics-of-a-formula" title="Permalink to this headline">¶</a></h2>
+<p>A formula has two semantics: the <em>declarational semantics</em> and the
+<em>operational semantics</em>. <a class="reference external" href="#the-relation-and-queries">The way</a> in
+which the reader is advised to read the relation definition and the
+query is actually part of the declarational semantics. The operational
+semantics concerns how the answers shall be searched for (mechanically),
+which is part of the implementation of the language.</p>
+<p>Declaratively, the two predicate symbols <code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">=/=</span></code> means
+respectively “syntactic equality” and “syntactic disequality”. The logic
+connectives mean as usual, and a value just denote itself as a syntactic
+object. The operational semantics of OCanren is a set of stream
+manipulation rules attached to the logic connectives and the predicate
+symbols, and formulae are viewed as functions taking a stream member as
+input and returning a stream. We explain the operational semantics of
+OCanren in more detail below. Firstly the concept of a <em>stream</em>.</p>
+<div class="section" id="streams">
+<h3>Streams<a class="headerlink" href="#streams" title="Permalink to this headline">¶</a></h3>
+<p>A stream is a generalization of a list: members of a list can be put on
+one-on-one correspondence with members of some <em>finite</em> subset of the
+natural numbers, whilst members of a stream can be put on one-on-one
+correspondence with members of some possibly infinite subset of the
+natural numbers. Intuitively, the imaginary, infinitely long sequence of
+all natural numbers itself is an example of a stream. The sequence of
+all integers <code class="docutils literal notranslate"><span class="pre">...-3</span> <span class="pre">-2</span> <span class="pre">-1</span> <span class="pre">0</span> <span class="pre">1</span> <span class="pre">2</span> <span class="pre">3...</span></code> or equivalently
+<code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">1</span> <span class="pre">-1</span> <span class="pre">2</span> <span class="pre">-2</span> <span class="pre">3</span> <span class="pre">-3</span> <span class="pre">...</span></code> is another.</p>
+<p>The set of all streams can also be defined in the more technical,
+<em>coinductive</em> manner as follows: 1. Let <strong>FS</strong> be an operator whose
+input is a set of sequences and whose output is also a set of sequences.
+A sequence is said to be composed of its members drawn from a set of
+possible members. 1. The output of <strong>FS</strong> is constructed by: 1. Starting
+with an empty set, to add members to it incrementally; 1. Adding the
+empty stream; 1. Prefixing each sequence of the input set with an
+arbitrary member, then adding the results. 1. The set St of all streams
+is the <em>largest</em> set that is a fixed-point of <strong>FS</strong>, in other words,
+<strong>FS</strong>(St) = St and St is a superset of st for all <strong>FS</strong>(st) = st.</p>
+<p><strong>Example</strong> If we restrict sequence members to integers, and let the
+input be <code class="docutils literal notranslate"><span class="pre">{123,</span> <span class="pre">111}</span></code>, which is the set whose members are the
+sequences <code class="docutils literal notranslate"><span class="pre">123</span></code> and <code class="docutils literal notranslate"><span class="pre">111</span></code>. One possible output of <strong>FS</strong> operating
+on the input is <code class="docutils literal notranslate"><span class="pre">{e,</span> <span class="pre">0123,</span> <span class="pre">5111}</span></code> where <code class="docutils literal notranslate"><span class="pre">e</span></code> is the empty stream.
+Another possible output is <code class="docutils literal notranslate"><span class="pre">{e,1123,</span> <span class="pre">1111}</span></code>. In neither case the
+output equals the input, which is quite usual. The two notable
+exceptions are the set Lmin of all lists of integers, and the set Lmax
+of all finite and infinite sequences of integers. They are both
+fixed-points of <strong>FS</strong>, known as the <em>least fixpoint</em> and the <em>greatest
+fixpoint</em>. Lmax is also the set of all streams of integers.</p>
+<p>Note that in a typical inductive specification we could require that the
+set being defined is the samllest fixed-point. Here instead we ask for
+the <em>largest</em>, hence the <em>coinductive manner</em>.</p>
+<p>** It looks like very complex description of a stream but maybe it is
+only for me **</p>
+</div>
+<div class="section" id="substitution">
+<h3>Substitution<a class="headerlink" href="#substitution" title="Permalink to this headline">¶</a></h3>
+<p>A <em>substitution</em> is a list of substitution components. A <em>substitution
+component</em> (for short: <em>component</em>) is a pair (<em>lvar</em>, <em>value</em>) where
+<em>lvar</em> is a logic variable. A substitution component (<em>lvar</em>, <em>value</em>)
+can be <em>applied</em> to some value <em>valuepre</em>, so that all occurrences of
+<em>lvar</em> in <em>valuepre</em> are simultaneously replaced by <em>value</em>, and the
+result is another value <em>valuepost</em>. A component is <em>applicable</em> if
+applying it would make a difference. To apply a substitution is to
+repeatedly apply its components until none is applicable.</p>
+<p><strong>Example</strong> Applying <code class="docutils literal notranslate"><span class="pre">[(x,</span> <span class="pre">Cons(1,y));(y,</span> <span class="pre">Cons(2,z));(z,</span> <span class="pre">Nil)]</span></code> to
+<code class="docutils literal notranslate"><span class="pre">Cons(0,x)</span></code> results in: <code class="docutils literal notranslate"><span class="pre">Cons(0,Cons(1,Cons(2,Nil)))</span></code>.</p>
+</div>
+<div class="section" id="formulae-as-stream-builders">
+<h3>Formulae as Stream Builders<a class="headerlink" href="#formulae-as-stream-builders" title="Permalink to this headline">¶</a></h3>
+<p>A formula is a stream builder as far as the operational semantics is
+concerned. It takes a substitution <em>substin</em> as input and returns a
+stream of substitutions as output:</p>
+<p>substin —&gt; Formula—&gt; substout, substout, substout, …</p>
+<p>For each substitution <em>substout</em> in the returned stream, applying the
+concatenation <em>substin ^ substout</em> makes the formula true in the sense
+of the declarational semantics.</p>
+<p><strong>Example.</strong> Given as input the empty substitution <code class="docutils literal notranslate"><span class="pre">[]</span></code>: - The formula
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">==</span> <span class="pre">Cons(1,Nil)</span></code> returns the stream that consists of the
+substitution <code class="docutils literal notranslate"><span class="pre">[(x,</span> <span class="pre">Cons(1,Nil))]</span></code>. - The formula
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">==</span> <span class="pre">Cons(1,Nil)</span> <span class="pre">&amp;</span> <span class="pre">y</span> <span class="pre">==</span> <span class="pre">Cons(2,x)</span></code> returns the stream that consists
+of the substitution <code class="docutils literal notranslate"><span class="pre">[(x,</span> <span class="pre">Cons(1,Nil));(y,</span> <span class="pre">Cons(2,x))]</span></code>. - The formula
+<code class="docutils literal notranslate"><span class="pre">is_nat</span> <span class="pre">x</span></code> returns the stream that consists of the substitutions
+<code class="docutils literal notranslate"><span class="pre">[(x,</span> <span class="pre">O)]</span></code>, <code class="docutils literal notranslate"><span class="pre">[(x,</span> <span class="pre">S(y1));(y1,</span> <span class="pre">O)]</span></code>,
+<code class="docutils literal notranslate"><span class="pre">[(x,</span> <span class="pre">S(y1));(y1,</span> <span class="pre">S(y2));(y2,</span> <span class="pre">O)]</span></code>, … - The formula <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">==</span> <span class="pre">1</span></code> returns
+the stream whose only member is <code class="docutils literal notranslate"><span class="pre">[]</span></code>. - The formula <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">==</span> <span class="pre">2</span></code> returns
+the empty stream: there is no way to make the formula true.</p>
+</div>
+<div class="section" id="disjunction-as-a-stream-zipper">
+<h3>Disjunction as a Stream Zipper<a class="headerlink" href="#disjunction-as-a-stream-zipper" title="Permalink to this headline">¶</a></h3>
+<p>To <em>zip</em> two streams means to merge them by interleaving their members.</p>
+<p>** I think that Zipper in literature has different meaning, so it is
+not wise to use this term here **</p>
+<p><strong>Example.</strong> Let <em>s</em>1 denote the stream of all positive intergers, and
+<em>s</em>2 the stream of all negative intergers. The result of zipping
+<em>s</em>1 with <em>s</em>2, denoted <em>s</em>1 |zip <em>s</em>2 , is
+<code class="docutils literal notranslate"><span class="pre">1,</span> <span class="pre">-1,</span> <span class="pre">2,</span> <span class="pre">-2,</span> <span class="pre">...</span></code> or <code class="docutils literal notranslate"><span class="pre">-1,</span> <span class="pre">1,</span> <span class="pre">-2,</span> <span class="pre">2,</span> <span class="pre">...</span></code>.</p>
+<p>** The reader may think that <code class="docutils literal notranslate"><span class="pre">zip</span></code> operation is nondeterministic…
+**</p>
+<p>The disjunction <em>F</em>1 <code class="docutils literal notranslate"><span class="pre">|</span></code> <em>F</em>2 of two formulae <em>F</em>1, <em>F</em>2 is
+itself a formula on the top level, so it is a stream builder, taking a
+substitution as input and returns a stream of substitutions. It builds
+the output stream by zipping the two streams built separately by <em>F</em>1
+and <em>F</em>2, both of which share the same input as their immediate top
+level formula. In more formal terms:</p>
+<p><code class="docutils literal notranslate"><span class="pre">(</span></code> <em>F</em>1 <code class="docutils literal notranslate"><span class="pre">|</span></code> <em>F</em>2 <code class="docutils literal notranslate"><span class="pre">)</span></code> substin = <code class="docutils literal notranslate"><span class="pre">(</span></code> <em>F</em>1 substin <code class="docutils literal notranslate"><span class="pre">)</span></code>
+|zip <code class="docutils literal notranslate"><span class="pre">(</span></code> <em>F</em>2 substin <code class="docutils literal notranslate"><span class="pre">)</span></code></p>
+<p>Every substitution from the output stream (concatenated with the input)
+makes either of the two disjuncts true.</p>
+</div>
+<div class="section" id="conjuction-as-a-stream-map-zipper">
+<h3>Conjuction as a Stream Map-Zipper<a class="headerlink" href="#conjuction-as-a-stream-map-zipper" title="Permalink to this headline">¶</a></h3>
+<p>To <em>map-zip</em> a stream builder <em>F</em> with a stream <em>s</em> := <em>m</em>1, <em>m</em>2,
+<em>m</em>3, … (denoted <em>F</em> &amp;mzip <em>s</em> ), is to apply <em>F</em> individually to each
+member <em>m</em>k of the stream, resulting in streams <em>s</em>k, and then zip
+all <em>s</em>k together.</p>
+<p><em>F</em> &amp;mzip <em>s</em></p>
+<p>= <em>F</em> &amp;mzip <em>m</em>1, <em>m</em>2, <em>m</em>3, …</p>
+<p>= <em>F</em> <em>m</em>1 |zip (<em>F</em> <em>m</em>2 |zip (<em>F</em> <em>m</em>3 |zip (…)))</p>
+<p>= <em>s</em>1 |zip (<em>s</em>2 |zip (<em>s</em>3 |zip (…)))</p>
+<p><strong>Example.</strong> Let <em>F</em> be a stream builder that works like this: <em>F n =
+n,n,n,…</em> Then:</p>
+<p><em>F</em> &amp;mzip 1,2,3</p>
+<p>= F 1 |zip (F 2 |zip F 3)</p>
+<p>=1,1,1,… |zip (2,2,2,… |zip 3,3,3,…)</p>
+<p>= 1,1,1,… |zip 2,3,2,3,…</p>
+<p>= 1,2,1,3,1,2,1,3, …</p>
+<p>A conjunction F1 <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> F2 provides the input substitution to F1 first,
+and then map-zips the output of F1 with F2:</p>
+<p><code class="docutils literal notranslate"><span class="pre">(</span></code> <em>F</em>1 <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> <em>F</em>2 <code class="docutils literal notranslate"><span class="pre">)</span></code> substin = <em>F</em>2 &amp;mzip <code class="docutils literal notranslate"><span class="pre">(</span></code> <em>F</em>1
+substin <code class="docutils literal notranslate"><span class="pre">)</span></code></p>
+<p>Every substitution from the output stream (concatenated with the input)
+makes both of the two conjuncts true.</p>
+</div>
+</div>
+<div class="section" id="working-with-gt-and-camlp5">
+<h2>Working with GT and Camlp5<a class="headerlink" href="#working-with-gt-and-camlp5" title="Permalink to this headline">¶</a></h2>
+<p>We use packages GT and Camlp5 in OCanren programs. The influence of GT
+is that we can use the <code class="docutils literal notranslate"><span class="pre">&#64;type</span></code> syntax to define types, which
+convenienty generates useful functions for the defined type, for
+example, a <em>show</em> function that converts values of the defined type into
+a string, which we use to print the result of a query. Camlp5 expands
+the content of the <code class="docutils literal notranslate"><span class="pre">ocanren{}</span></code> quotation, allowing us to write
+readable code.</p>
+<div class="section" id="the-type-syntax">
+<h3>The &#64;type syntax<a class="headerlink" href="#the-type-syntax" title="Permalink to this headline">¶</a></h3>
+<p>In OCanren, type constructors are often defined by :</p>
+<div class="code ebnf highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">type</span> <span class="n">definition</span> <span class="o">=</span> <span class="s1">&#39;@type&#39;</span><span class="p">,</span> <span class="n">typedef</span><span class="p">,</span> <span class="s1">&#39;with&#39;</span><span class="p">,</span> <span class="n">plugins</span>
+
+<span class="n">plugins</span> <span class="o">=</span> <span class="n">plugin</span> <span class="p">{</span> <span class="s1">&#39;,&#39;</span> <span class="p">,</span> <span class="n">plugin</span> <span class="p">}</span>
+
+<span class="n">plugin</span>  <span class="p">::</span><span class="o">=</span> <span class="s1">&#39;show&#39;</span> <span class="o">|</span> <span class="s1">&#39;gmap&#39;</span> <span class="o">|</span> <span class="n">etc</span>
+</pre></div>
+</div>
+<p>where the syntactic category <code class="docutils literal notranslate"><span class="pre">typedef</span></code> is the same as
+<a class="reference external" href="https://ocaml.org/releases/4.11/htmlman/typedecl.html">that</a> of
+OCaml, and the category <code class="docutils literal notranslate"><span class="pre">etc</span></code> signifies omission: the most frequently
+used plugins in OCanren are <em>show</em> and <em>gmap</em>, providing for the defined
+type a string converson function (like
+<a class="reference external" href="https://ocaml.org/releases/4.11/htmlman/libref/Stdlib.html">Stdlib.string_of_int</a>)
+and a structure preserving map function (a generalization of
+<a class="reference external" href="https://ocaml.org/releases/4.11/htmlman/libref/List.html">List.map</a>)
+respectively. The other less used plugins are not shown here.</p>
+<p>A type definition of the form <code class="docutils literal notranslate"><span class="pre">&#64;type</span> <span class="pre">&lt;typedef&gt;</span> <span class="pre">with</span> <span class="pre">&lt;plugins&gt;</span></code> is
+expanded at the syntactic level by GT into: 1) A type definition of the
+usual form <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">&lt;typedef&gt;</span></code>, where the value of <code class="docutils literal notranslate"><span class="pre">&lt;typedef&gt;</span></code> is
+preserved, and 1) Several (auto-generated) plugin definitions.</p>
+<p>The effect of syntactic transformation, including what the <code class="docutils literal notranslate"><span class="pre">&#64;type</span></code>
+definitions become after expansion, can be viewed by adding the “dump
+source” option <code class="docutils literal notranslate"><span class="pre">-dsource</span></code> in the Makefile as explained in a comment
+line there. For instance, the <code class="docutils literal notranslate"><span class="pre">LString</span></code> module:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="p">(</span><span class="o">**</span> <span class="p">{</span><span class="mi">2</span>  <span class="n">The</span> <span class="n">logic</span> <span class="n">string</span> <span class="nb">type</span><span class="p">}</span> <span class="o">*</span><span class="p">)</span>
+<span class="n">module</span> <span class="n">LString</span> <span class="o">=</span> <span class="n">struct</span>
+  <span class="nd">@type</span> <span class="n">t</span> <span class="o">=</span> <span class="n">GT</span><span class="o">.</span><span class="n">string</span> <span class="k">with</span> <span class="n">show</span><span class="p">;;</span>
+  <span class="nd">@type</span> <span class="n">ground</span> <span class="o">=</span> <span class="n">t</span> <span class="k">with</span> <span class="n">show</span><span class="p">;;</span>
+  <span class="nd">@type</span> <span class="n">logic</span> <span class="o">=</span> <span class="n">t</span> <span class="n">OCanren</span><span class="o">.</span><span class="n">logic</span> <span class="k">with</span> <span class="n">show</span><span class="p">;;</span>
+  <span class="nb">type</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">(</span><span class="n">ground</span><span class="p">,</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span><span class="p">;;</span>
+<span class="n">end</span><span class="p">;;</span>
+</pre></div>
+</div>
+<p>would be expanded into <a class="reference external" href="lstring.ml">this</a>, where we could see that
+besides the type constructor definitions a lot more codes have actually
+been auto-generated to support any GT plugin that the user may request.</p>
+<p>Note in the <code class="docutils literal notranslate"><span class="pre">LString</span></code> module that the type constructor name <code class="docutils literal notranslate"><span class="pre">string</span></code>
+is qualified by the module name <code class="docutils literal notranslate"><span class="pre">GT</span></code>, for we need to use the GT
+version of the string type which provides the useful plugins and
+otherwise it is the same as the OCaml built-in string type. Plugins are
+(auto-)created inductively: GT provides plugins for base types and rules
+for building plugins for compound types from component types.</p>
+<p>** I will clarify this a bit. We do not use the GT version of
+<code class="docutils literal notranslate"><span class="pre">string</span></code> type, in reality it is a just type alias:
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">GT</span> <span class="pre">=</span> <span class="pre">struct</span> <span class="pre">type</span> <span class="pre">string</span> <span class="pre">=</span> <span class="pre">Stdlib.string</span> <span class="pre">...</span> <span class="pre">end</span></code>. What is
+really happening here, is that functions for showing and gmapping string
+type are located in module GT. So we need 1) either write <code class="docutils literal notranslate"><span class="pre">GT.string</span></code>
+instead of <code class="docutils literal notranslate"><span class="pre">string</span></code> and preprocessor will generate
+<code class="docutils literal notranslate"><span class="pre">GT.show</span> <span class="pre">GT.string</span></code> instead of <code class="docutils literal notranslate"><span class="pre">GT.show</span> <span class="pre">string</span></code>, 2) or make
+<code class="docutils literal notranslate"><span class="pre">open</span> <span class="pre">GT</span></code> somewhere about and use type <code class="docutils literal notranslate"><span class="pre">string</span></code> without fully
+qualified name. **</p>
+</div>
+<div class="section" id="the-injection-functions-and-the-ocanren-quotation">
+<h3>The injection functions and the <code class="docutils literal notranslate"><span class="pre">ocanren{...}</span></code> quotation<a class="headerlink" href="#the-injection-functions-and-the-ocanren-quotation" title="Permalink to this headline">¶</a></h3>
+<p>The signature of the <code class="docutils literal notranslate"><span class="pre">ASCII_Ctrl.Inj</span></code> module shall explain itself. For
+every value constructor, an accompanying injection function shall be
+defined (either by the user or auto-generated by the tool
+<a class="reference external" href="https://github.com/Lozov-Petr/noCanren">noCanren</a>), whose name shall
+be the same as the constructor name except that the first letter is set
+to lower case. In the <code class="docutils literal notranslate"><span class="pre">ocanren{...}</span></code> quotation, wherever a value
+constructor occurs, its corresponding injection function is implicitly
+called. Hence the <code class="docutils literal notranslate"><span class="pre">let</span> <span class="pre">open</span> <span class="pre">ASCII_Ctrl.Inj</span> <span class="pre">in</span></code> statement that preceeds
+the body of the <code class="docutils literal notranslate"><span class="pre">ascii_ctrl</span></code> relation. The quotation in the body of
+<code class="docutils literal notranslate"><span class="pre">ascii_ctrl</span></code> is expanded as follows:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">let</span> <span class="n">ascii_ctrl</span> <span class="o">=</span>
+  <span class="p">(</span><span class="n">fun</span> <span class="n">c</span> <span class="o">-&gt;</span>
+     <span class="n">fun</span> <span class="n">n</span> <span class="o">-&gt;</span>
+       <span class="n">fun</span> <span class="n">s</span> <span class="o">-&gt;</span>
+         <span class="n">let</span> <span class="nb">open</span> <span class="n">ASCII_Ctrl</span><span class="o">.</span><span class="n">Inj</span> <span class="ow">in</span>
+           <span class="n">OCanren</span><span class="o">.</span><span class="n">disj</span>
+             <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">conj</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">unify</span> <span class="n">c</span> <span class="p">(</span><span class="n">nUL</span> <span class="p">()))</span>
+                <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">conj</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">unify</span> <span class="n">n</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">Std</span><span class="o">.</span><span class="n">nat</span> <span class="mi">0</span><span class="p">))</span>
+                   <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">unify</span> <span class="n">s</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">inj</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">lift</span> <span class="s2">&quot;Null&quot;</span><span class="p">)))))</span>
+             <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">disj</span>
+                <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">conj</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">unify</span> <span class="n">c</span> <span class="p">(</span><span class="n">sOH</span> <span class="p">()))</span>
+                   <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">conj</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">unify</span> <span class="n">n</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">Std</span><span class="o">.</span><span class="n">nat</span> <span class="mi">1</span><span class="p">))</span>
+                      <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">unify</span> <span class="n">s</span>
+                         <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">inj</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">lift</span> <span class="s2">&quot;Start of heading&quot;</span><span class="p">)))))</span>
+                <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">disj</span>
+                   <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">conj</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">unify</span> <span class="n">c</span> <span class="p">(</span><span class="n">sTX</span> <span class="p">()))</span>
+                      <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">conj</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">unify</span> <span class="n">n</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">Std</span><span class="o">.</span><span class="n">nat</span> <span class="mi">2</span><span class="p">))</span>
+                         <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">unify</span> <span class="n">s</span>
+                            <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">inj</span> <span class="p">(</span><span class="n">OCanren</span><span class="o">.</span><span class="n">lift</span> <span class="s2">&quot;Start of text&quot;</span><span class="p">)))))</span>
+<span class="p">(</span><span class="o">*</span> <span class="o">...</span> <span class="n">etc</span> <span class="o">*</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above code excerpt is also from what is displayed on the terminal
+after compiling the source with the “dump source” option <code class="docutils literal notranslate"><span class="pre">-dsource</span></code>.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>A program in OCanren is understood with respect to its syntax and
+semantics. We define types in four levels, using the <code class="docutils literal notranslate"><span class="pre">&#64;type</span></code> syntax of
+GT. We define injection functions for value constructors. We then define
+formulae in OCanren formula syntax, which are put in the <code class="docutils literal notranslate"><span class="pre">ocanren{}</span></code>
+quotation powered by Camlp5. In set theory when we think about a
+relation, we are actually thinking about a function <em>R</em> that can be
+applied to its arguments and return either true or false, like this:</p>
+<p><em>arg1, …, argn</em> —&gt; <em>R</em> —&gt; true | false</p>
+<p>But in relational programming, when we think about a relation <em>R</em>, the
+most important thing is not that <em>R</em> is a function, but <em>R(arg1, …,
+argn)</em> <em>in whole</em> is a function, i.e., we regard what is known by
+logicians as a formula, as a function whose input is an initial variable
+substitution and whose output is the set of all possible variable
+substitutions where each member when combined with the initial
+substitution makes the formula true, like this:</p>
+<p>substin —&gt; <em>R(arg1, …, argn)</em> —&gt; substout, substout, substout, …</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../peano/README.html" class="btn btn-neutral float-right" title="A Library for Peano Arithmetic" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../digTypes/README.html" class="btn btn-neutral float-left" title="Digesting the Types" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, JetBrains-Research
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
