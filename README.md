@@ -9,7 +9,7 @@
 # Table of Contents
 
 - [Introduction](#introduction)
-  - [What is miniKanren](#what-is-minikenren)
+  - [What is miniKanren](#what-is-minikanren)
   - [OCanren vs. miniKanren](#ocanren-vs-minikanren)
   - [Injecting and Projecting User-Type Data](#injecting-and-projecting-user-type-data)
   - [Bool, Nat, List](#bool-nat-list)
@@ -31,6 +31,11 @@
 into [OCaml](http://ocaml.org). Nowadays, the implementation of `OCanren` strongly reminds [faster-miniKanren](https://github.com/michaelballantyne/faster-miniKanren).
 Previous implementation was based on [microKanren](http://webyrd.net/scheme-2013/papers/HemannMuKanren2013.pdf)
 with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis2011.pdf).
+
+See [installation instructions](#installation-via-opam), [API documentation](https://jetbrains-research.github.io/OCanren/api/) for more details. 
+The following README is currently being ported to sphinx engine, see intermediate results and Yue Li's OCanren tutorial [there](https://jetbrains-research.github.io/OCanren/rtfd). 
+
+Check our [template repository for OCanren projects](https://github.com/Kakadu/OCanren-basic-template) for faster startup!
 
 
 ## What is miniKanren
