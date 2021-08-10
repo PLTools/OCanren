@@ -61,11 +61,28 @@ jobs:
       - run: opam exec -- make #dune build
       - run: opam exec -- make test # dune runtest
 
-      - name: Build documentation
+
+      #### API documentation
+      - name: Build API documentation
         run: opam exec -- dune build @doc
 
-      - name: Deploy documentation
+      - name: Deploy API documentation
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./_build/default/_doc/_html
+          destination_dir: api
+
+      #### RTFD documenetation
+      - name: Install dependecies for RTFD documentation
+        run: sudo apt install python3-sphinx-rtd-theme python3-sphinx-autobuild --yes
+
+      - name: Build RTFD documentation
+        run: make -C doc
+
+      - name: Deploy RTFD documentation
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: doc/_build
+          destination_dir: rtfd
