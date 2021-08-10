@@ -43,7 +43,7 @@ This also means that we suppose that we know what answers any relational call in
 
 To present the whole process in a clearer way we will go through it with a specific artificial example, in which almost all important details are presented. The example is a relational program
 for generating all prefixes of a list \lstinline|$[1,\dots,n]$| (with numbers represented in Peano encoding with constructors \lstinline|O| and \lstinline|S|). Consider the
-following creative recursive solution: we either take an empty prefix or take any prefix for the same task for $n - 1$ (if $n > 0$), increment all the elements, and add $1$ at the beginning.
+following creative recursive solution: we either take an empty prefix or take any prefix for the same task for $n - 1$ (if $n > 0$), increment all the elements and add $1$ at the beginning.
 The relation \lstinline|prefix$^o$| in \figureword~\ref{fig:prefixo_definition}, relating a number $n$ to some prefix $p$, follows this description directly. It uses a straightforwardly implemented relation \lstinline|incr-list$^o$|
 that increments all numbers in a given list. This relation provides the required results: if we instantiate $n$ with some
 Peano number and put a free logical variable for $p$ then $p$ will be bound to every prefix exactly once. It is an inefficient solution in many ways, but it is nice for presentation.
@@ -66,10 +66,10 @@ by using the estimations described in the previous sections.
 We put a number of restrictions for the examined relational call for our approach (however, as can be seen from the
 \sectionword~\ref{sec:evaluation}, the huge variety of real examples satisfy them): the two criteria from \sectionword~\ref{sec:uni-rei} should be satisfied (which we can check using the symbolic execution, too), relations should be in disjunctive normal form.
 
-We need to know also two extra pieces of information to perform the analysis for a given call. First, to  know how to proceed after recursive calls we need to know the answers that the calls produce.
+We need to know also two extra pieces of information to perform the analysis for a given call. First, to know how to proceed after recursive calls we need to know the answers that the calls produce.
 We describe them by sets of substitutions binding all the logical variables in the query to terms, possibly containing fresh logic variables and symbolic variables, the latter we then specify in the metatheory (for example, $ANS^{pref}\,(k) = \{[a^? \gets \overline{p}] \mid \textit{$p$ is a prefix of the list \texttt{\lstinline|[$1$, .., $k$]|}} \} $). Second, we need to know all information for non-recursive relational calls
 in the scheme (the values of all the complexity factors, produced answers, whether the requirements are satisfied). So we need to go and analyze these calls using the same approach
-before we can examine the given call or reuse the information if we have already analyzed relevant call before. For this reason, we require the absence of mutual recursion in the examined calls
+before we can examine the given call or reuse the information if we have already analyzed relevant calls before. For this reason, we require the absence of mutual recursion in the examined calls
 (it should be eliminated using standard techniques) and analyze them in the order of topological sorting. For $pref$ call we will need this information for the internal call $incr = $ \lstinline{incr-list$^o$ $\overline{l}$ $r^?$}, so we will analyze it first along the way.
 
 % Here we just give it without details of the analysis (the analysis is much simpler than that for the $pref$ call): the requirements are satisfied,
@@ -184,15 +184,15 @@ If there are no recursive calls in the scheme, we can allow variable-to-variable
 
 The second criterion (linearity and constant size of one of the terms for every unification) we can easily check directly: for every unification on the scheme each logical variable should occur at most once and one of the terms should have no symbolic variables. We also need the criterion to be satisfied for all the internal calls.
 
-For the calls $incr$ and $pref$ the both criteria are satisfied.
+For the calls $incr$ and $pref$ both criteria are satisfied.
 
-\item To estimate $d^{incr}\,(l)$ and $d^{pref}\,(k)$ we use lemmas \ref{lem:conjunction_metrics_calc} and \ref{lem:disjunction_metrics_calc}. Specifically, we just add the corresponding value for every internal call summed up for all the answers for which the call is executed, and also add a constant to handle the rest (unifications and fresh variable introductions). We know the value of $d^q\,(\dots)$ for every internal call $q$: for non-recursive internal calls we have the estimation up to a multiplicative constant from the previous analysis, for recursive internal calls it's just the value of the same function with a different argument.
+\item To estimate $d^{incr}\,(l)$ and $d^{pref}\,(k)$ we use lemmas \ref{lem:conjunction_metrics_calc} and \ref{lem:disjunction_metrics_calc}. Specifically, we just add the corresponding value for every internal call summed up for all the answers for which the call is executed and also add a constant to handle the rest (unifications and fresh variable introductions). We know the value of $d^q\,(\dots)$ for every internal call $q$: for non-recursive internal calls we have the estimation up to a multiplicative constant from the previous analysis, for recursive internal calls it's just the value of the same function with a different argument.
   
 So, for the $incr$ call we have:
 
 \[ d^{incr}\,(l) \le C + \displaystyle\sum\limits_{\overline{l} \;=\; \texttt{Cons($\overline{x}$, $\overline{l'}$)}} d^{incr}\,(l') \]
 
-Considering two cases when $l$ is empty and non-empty list we can simplify the inequality above into the following two:
+Considering two cases when $l$ is an empty and a non-empty list we can simplify the inequality above into the following two:
 
 \[
 \begin{array}{lcl}

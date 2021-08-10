@@ -43,7 +43,7 @@ orders of conjuncts. Although the \lstinline|length$_d^o$| relation can be seen 
 it is well-known that the \lstinline|length$^o$| with the recursive call in the end is much faster when running this relation backward (in fact, the search diverges if we
 run \lstinline|length$_d^o$| backward, while for \lstinline|length$^o$| it terminates). What is less known and what we find more unexpected is the fact that if we run both relations
 forward (specifying a list and asking for its length) \lstinline|length$^o$| is still much faster than \lstinline|length$_d^o$|, although they perform the same number of unifications. One can see the comparative time of the search in \figureword~\ref{fig:length_plots}. The difference is even
-more staggering if we switch off occurs checks in unifications. It's OK because for simple queries like this occurs checks never violated. In the same \figureword~\ref{fig:length_plots} you can see that
+more staggering if we switch off occurs checks in unifications. It's OK because for simple queries like this occurs checks are never violated. In the same \figureword~\ref{fig:length_plots} you can see that
 the \emph{asymptotic complexity} becomes different in this case: it is linear for \lstinline|length$^o$| and quadratic for \lstinline|length$_d^o$|.
 
 After investigating the execution for this example in detail we found that the difference is caused not by unifications but by the process of \emph{scheduling} of goals during the search.
@@ -55,7 +55,7 @@ This paper presents such a model. We study evaluation in a specific (canonical) 
 unifications, the time required to perform these unifications, and the time of reifications ($T_r$) that reconstruct the result in an expected form in the end. The time of unifications can be further
 divided into the time of occurs checks ($T_{occ}$) during the unification and the time ($T_{uni}$) of the rest of the unification algorithm (this division will help us to see how large
 is the part of the total time that occurs check, which often can be omitted, takes). So the total time of the search can be calculated as the sum of four components:
-
+\noindent
 \[ T = T_s + T_{uni} + T_{occ} + T_r \]
 
 We show how these components can be estimated and compared to each other in terms of asymptotics. The scheduling time complexity can be measured precisely since we link it to a specific value which we
