@@ -1,5 +1,16 @@
+Syntax extensions
+=================
+
+.. _without-syntax-extensions:
+
+Writing OCanren **without** syntax extensions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO
+
+
 PPX syntax extensions
-=====================
+~~~~~~~~~~~~~~~~~~~~~
 
 PPX syntax extensions are not related to camlp5 and should be used, for example,
 if you want decent IDE support. Main extensions are compilable by ``make ppx``

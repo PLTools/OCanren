@@ -49,3 +49,10 @@ The correspondence between original miniKanren and OCanren constructs is shown b
 
 In addition, OCanren introduces explicit disjunction (``|||``) and conjunction
 (``&&&``) operators for goals.
+
+.. _let-ocanren:
+
+OCanren-specific Camlp5 syntax extension
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO

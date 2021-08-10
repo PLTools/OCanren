@@ -1,3 +1,5 @@
+.. _Digesting-the-Types:
+
 Digesting the Types
 ===================
 

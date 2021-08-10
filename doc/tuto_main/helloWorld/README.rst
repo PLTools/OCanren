@@ -2,30 +2,29 @@ Say “Hello World!” in OCanren
 =============================
 
 We first execute the program, and then we read and explain through the
-source code line by line. ## Executing the Program
+source code line by line.
 
-The source code has to be compiled and linked, for which you would need
-the `Makefile <Makefile>`__. Now open terminal under your local copy of
-the ```helloWorld`` <./>`__ direcory, and:
+
+Executing the Program
+~~~~~~~~~~~~~~~~~~~~~
+
+The `source code <https://github.com/YueLiPicasso/OCanrenTutorial/tree/main/Main>`_ has to be compiled and linked, for which you would need
+the `Makefile <Makefile>`__. Now open terminal under your local copy ofthe ``helloWorld`` directory, and:
 
 ::
 
    make
 
-This would produce a native-code file ``hello.opt``, execution of which
-by:
+This would produce a native-code file ``hello.opt``, execution of which by:
 
 ::
 
    ./hello.opt
 
-shall print ``hello world!`` in your terminal.
-
-\*\* It is probably worth to have two versions of build system: Makefile
-and dune (which is a de facto standart for OCaml right now) \*\*
+will print ``hello world!`` in your terminal.
 
 Reading the Program
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 The first line:
 
@@ -39,13 +38,12 @@ Important Interfaces
 ~~~~~~~~~~~~~~~~~~~~
 
 The source code of the module OCanren resides in
-`OCanren.ml <../../Installation/ocanren/src/OCanren.ml>`__ (It does not
+`OCanren.ml <https://github.com/JetBrains-Research/OCanren/tree/0.2.0/src>`__ (It does not
 have an accompanying ``.mli`` file). Inspecting the content thereof, we
-shall see that basically it includes two modules
-`Logic <../../Installation/ocanren/src/core/Logic.mli>`__ and
-`Core <../../Installation/ocanren/src/core/Core.mli>`__, and renames the
-module `RStream <../../Installation/ocanren/src/core/RStream.mli>`__ to
-Stream, and finally defines the Std module. You should open the module
+shall see that basically it includes three modules
+`Logic <https://github.com/JetBrains-Research/OCanren/tree/0.2.0/src/core/Logic.mli>`__,
+`Core <https://github.com/JetBrains-Research/OCanren/tree/0.2.0/src/core/Core.mli>`__ and
+module `Stream <https://github.com/JetBrains-Research/OCanren/tree/0.2.0/src/core/RStream.mli>`__, and finally defines the Std module. You should open the module
 OCanren at the beginning of every source file where you use OCanren
 features.
 
@@ -59,9 +57,8 @@ associates the value name ``str`` with the expression that is the prefix
 operator ``!!`` (named *primitive injection*) applied to the string
 literal ``"hello world!\n"``.
 
-Injecting (or Type Casting) to the OCanren Internal Representation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+Internal Representation
+~~~~~~~~~~~~~~~~~~~~~~~
 The operator ``!!``, provided by the module Logic, makes type conversion
 to the OCanren internal representation, something like what a calculator
 program does when it receives an input string “1” and converts it to the
@@ -75,8 +72,9 @@ the interface that:
 The ``injected`` type constructor is provided by the module Logic as an
 abstract type (so we do not concern ourselves with its implementation).
 
-\*\* Maybe it is worth saying here why two type parameters and what they
-do reperesent \*\*
+More information about various typed being used and the meaning of type
+parameters of the `('a, 'b) injected` could be get from
+:ref:`digesting-the-types`.
 
 Logic Variables
 ^^^^^^^^^^^^^^^
@@ -99,15 +97,19 @@ The 3rd line:
 
    let _ =
      List.iter print_string @@
-       Stream.take ~n:1 @@
-         run q (fun q -> ocanren { q == str }) project;;
+     Stream.take ~n:1 @@
+     run q (fun q -> ocanren { q == str }) project
 
 is divided into three sub-expressions by the right associative infix
 operator ``@@`` that is provided by OCaml’s core library
 `Stdlib <http://caml.inria.fr/pub/docs/manual-ocaml/libref/Stdlib.html>`__.
 The most important sub-expression is:
-``ocaml  run q (fun q -> ocanren { q == str }) project`` whose most
+``run q (fun q -> ocanren { q == str }) project`` whose most
 important part is: ``q == str``.
+
+.. note::
+
+   The piece of code on the discussion uses an OCanren-specific syntax extension that doesn't appear in other languages of miniKanren family. See :ref:`let-ocanren` for details.
 
 Next we start with explaining the inner most and the most important
 part: ``q == str``, followed by its immediate enclosing environment
@@ -119,14 +121,12 @@ which is the *run* statement:
 
 and finally the top most expression for taking and printing answers.
 
-\*\* I think it is a right thing to say that there are a few syntaxes
-for OCanren and there we are using one of them \*\*
-
 Syntactic Identity and Unification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Syntactic identity between two expressions *expr*\ 1 and *expr*\ 2 (of
-the same type) is denoted *expr*\ 1 ``==`` *expr*\ 2. Usually we are
+
+Syntactic identity between two expressions :math:`expr_1` and :math:`expr_2` (of
+the same type) is denoted using two equation symbols: :math:`expr_1 == expr_2`. Usually we are
 given two different expressions both of which have zero or more
 sub-expressions considered as logic variables, and we are interested in
 finding (type sensitive) substitutes for these logic variables so that
@@ -134,9 +134,9 @@ the resulting expressions are syntactically identical. Finding such
 substitutes is know as *unification* of the original expressions.
 
 **Example** In order for both ``(x + 1) == (2 + y)`` and
-``Node (x,1) == Node (2,y)`` to be true, we replace ``x`` by ``2``\ and
+``Node (x,1) == Node (2,y)`` to be true, we replace ``x`` by ``2`` and
 ``y`` by ``1``, making both sides of ``==`` the expression ``2 + 1`` or
-``Node (2,1)`` respectively. We now unified ``( x + 1)`` with
+``Node (2,1)`` respectively. We now unified ``(x + 1)`` with
 ``(2 + y)``. Moreover, ``Node (x,1)`` is unified with ``Node (2,y)``.
 
 **Example** How to substitute the logic variable ``z`` so that
@@ -144,8 +144,8 @@ substitutes is know as *unification* of the original expressions.
 ``"hello world!"``. This is essentially what our program does: solving a
 unification problem.
 
-The OCanren Top Level: the *run* statement
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The OCanren Top Level: the *run* expression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can parse the ``run ...`` expression following the syntax below,
 which is given in
@@ -177,9 +177,9 @@ proposition as given by the goal body (in which these parameters are
 expected to occur) holds?
 
 The ``ocanren { }`` environment in a goal body instructs the
-`camlp5 <https://camlp5.github.io/>`__ preprocessor to transform on the
+`Camlp5 <https://camlp5.github.io/>`__ preprocessor to transform on the
 syntactic level the ``pretty goal body`` into the more verbose and less
-intuitive OCanren internal representation. As a reference, the rules by
+intuitive calls of OCanren's functions. As a reference, the rules by
 which the preprocessing is done is given in ``pa_ocanren.ml``
 `where <../../Installation/ocanren/camlp5/pa_ocanren.ml#L238>`__ we
 could find, for example, the ``==`` symbol is transformed into the name
