@@ -182,11 +182,15 @@ syntactic level the ``pretty goal body`` into the more verbose and less
 intuitive calls of OCanren's functions. As a reference, the rules by
 which the preprocessing is done is given in ``pa_ocanren.ml``
 `where <../../Installation/ocanren/camlp5/pa_ocanren.ml#L238>`__ we
-could find, for example, the ``==`` symbol is transformed into the name
+could find, for example, the ``==``  symbol is transformed into the name
 ``unify``.
 
+.. todo::
+
+   fix links
+
 The number of parameters shall agree with the size indicator, where
-``q``\ …\ ``qrstu`` are just alternative names for ``one``\ …\ ``five``
+``q`` … ``qrstu`` are just alternative names for ``one`` … ``five``
 respectively. If there are more than five parameters, the successor
 function ``succ`` can be applied to build larger size indicators, e.g.,
 ``(succ (succ five))`` is for seven parameters.
@@ -198,8 +202,13 @@ exeption (provided by OCanren.Logic) is thrown if we use ``project`` as
 the handler but the answer contains free logic variables: in this case
 some other handler shall be used.
 
-The ``run`` function and the size indicators are provided by Core. Basic
-answer handlers are provided by Logic.
+
+.. todo::
+
+   Reference reifiers
+
+The ``run`` function and the size indicators are provided by module ``OCanren.Core``. Basic
+answer handlers are provided by module ``OCanren.Logic``.
 
 Taking and Displaying Answers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
