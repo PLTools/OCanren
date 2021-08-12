@@ -1,3 +1,5 @@
+.. _Digesting the Types:
+
 Digesting the Types
 ===================
 
@@ -86,6 +88,16 @@ call a *ground list type*.
 
 The abstract list type can also be used to define logic list types.
 
+.. note::
+
+   The type definition `type 'a ground = ('a, 'a ground) t` above require an non-conventional compiler switch `-rectypes`. It allows more liberal types definitions by disable infamously known in the area of logic programming "occurs check". Without this switch
+   we can't not construct a type ground list which type system considers equal to predefined ``Stdlib.list`` .
+   While using this switch we pay by seeing less trivial type errors in compile time.
+
+.. todo::
+
+   Actually in the moment we can't declare the list type which is the same as predfined one. We need a small patch.
+
 Logic Types
 -----------
 
@@ -143,6 +155,9 @@ constructor’s ``int`` argument uniquely identifies a pure logic list,
 and the second argument is a (possibly empty) list of logic lists that
 can be used to instantiate the pure logic list.
 
+.. todo::
+
+   Say explicilty about disequalty constraints
 
 .. todo::
 
@@ -325,7 +340,8 @@ logic list type can be rewritten as:
    (** Defining the logic list type using [MyLogic.logic] *)
    module MyList = struct
      type ('a, 'b) t = Nil | Cons of 'a * 'b
-     type 'b logic   =  'b guarded MyLogic.logic and 'b guarded  = ('b, 'b logic) t
+     type 'b logic   =  'b guarded MyLogic.logic
+     and 'b guarded  = ('b, 'b logic) t
    end
 
 and the logic number type as:
@@ -335,7 +351,8 @@ and the logic number type as:
    (** Defining the logic number type using [MyLogic.logic] *)
    module Peano = struct
      type 'a t   = O | S of 'a
-     type logic  =  guarded MyLogic.logic and guarded = logic t
+     type logic  =  guarded MyLogic.logic
+     and guarded = logic t
    end
 
 Or even shorter, skipping the guarded types:
@@ -362,8 +379,10 @@ The ``injected`` type constructor collects the corresponding ground and
 logic type constructors, to which we assign the name ``groundi`` (read
 “groun-dee”):
 
-\*\* I should mention that names ``groundi`` was invented kind of
-randomly. In more recent code bases I use ``injected`` \*\*
+.. todo::
+
+   Rename groundi to injected in the source code, and in the tutorial after that
+
 
 .. code:: ocaml
 
@@ -373,14 +392,14 @@ randomly. In more recent code bases I use ``injected`` \*\*
    module MyList = struct
      type ('a, 'b) t = Nil | Cons of 'a * 'b
      type 'a ground = ('a, 'a ground) t
-     type 'b logic   =  ('b, 'b logic) t MyLogic.logic
+     type 'b logic =  ('b, 'b logic) t MyLogic.logic
      type ('a, 'b) groundi = ('a ground, 'b logic) injected
    end
 
    module Peano = struct
-     type 'a t   = O | S of 'a
+     type 'a t = O | S of 'a
      type ground = ground t
-     type logic  =  logic t MyLogic.logic
+     type logic =  logic t MyLogic.logic
      type groundi = (ground, logic) injected
    end
 
@@ -391,23 +410,32 @@ ourselves as to what an inhabitant of an injected type looks like.
 Injecting non-recursive types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is even simpler: no need to abstract over self. The consequence is
-that the abstract type and the ground type coincide (and the guarded
-type as well if made explicit).
+This is even simpler: no need to abstract over self.
 
-\*\* I think things are a little bit more complicated. Fully abstract
-type coincide with ground only if type is fully abstract from the
-beggining. If a type definition uses some predefined types in it, we
-will still need a fully abstract type, even where this type definition
-is not recursive*\*
+.. The consequence is that the abstract type and the ground type coincide (and the guarded type as well if made explicit).
+
+.. \*\* I think things are a little bit more complicated. Fully abstract
+.. type coincide with ground only if type is fully abstract from the
+.. beggining. If a type definition uses some predefined types in it, we
+.. will still need a fully abstract type, even where this type definition
+.. is not recursive*\*
 
 For example, logic pairs:
-``ocaml (** logic pair type *) module MyPair = struct   type ('a1, 'a2) t = 'a1 * 'a2   type ('a1, 'a2) ground = ('a1, 'a2) t   type ('b1, 'b2) logic =  ('b1, 'b2) t MyLogic.logic   type ('a1, 'a2, 'b1, 'b2) groundi = (('a1, 'a2) ground, ('b1, 'b2) logic) injected end``
+
+.. code:: ocaml
+
+   module MyPair = struct
+      type ('a1, 'a2) t = 'a1 * 'a2
+      type ('a1, 'a2) ground = ('a1, 'a2) t
+      type ('b1, 'b2) logic =  ('b1, 'b2) t MyLogic.logic
+      type ('a1, 'a2, 'b1, 'b2) groundi = (('a1, 'a2) ground, ('b1, 'b2) logic) injected
+   end
+
 We can now talk about:
 
 .. code:: ocaml
 
-   (** Peano number Pairs *)
+   (** Pair of Peano numbers *)
    module PP = struct
 
      (** Ground pairs of ground Peano numbers, like (O, O) and (O, S(O)) *)
@@ -443,7 +471,7 @@ A non-regular recursve type is a parameterized type constructor in whose
 recurisve definition at least one type parameter is instantiated (See
 also
 `this <https://ocaml.org/releases/4.11/htmlman/polymorphism.html#s:polymorphic-recursion>`__).
-Injection of non-regular recursive types is not discussed here.
+Injection of non-regular recursive types is not discussed here, and, frankly speaking, never required in relational progrmming in OCanren.
 
 Compiling the Program
 ---------------------
@@ -454,9 +482,6 @@ the lightweight `Makefile <Makefile>`__, where we need the ``-rectypes``
 compiler option to deal with the rather liberal recurisve types that
 appear in this lesson.
 
-\*\* ‘to deal with the rather liberal recurisve types that appear in
-this lesson.’ should be rephrased because I don’t quite understand what
-you wanted to say \*\*
 
 The use of ``MyLogic.logic`` and ``MyLogic.injected`` instead of (resp.) ``OCanren.logic`` and ``OCanren.injected``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -472,16 +497,18 @@ Conclusion
 
 OCanren works on injected types that are defined via abstract, ground
 and logic types. The table below organizes these types into four levels
-by complexity and dependency.
+by dependency.
 
-========= ==========
+========= ==============
 Level No. Level Name
-========= ==========
-1         Abstract
+========= ==============
+1         Fully Abstract
 2         Ground
-3         Logic
-4         Injected
-========= ==========
+3         Injected
+4         Logic
+========= ==============
+
+In principle, OCanren can be implemented without injected types by performing unification on logic types. But it will hurt the performance a lot. Detailed motivation about 'injected' typed they can get in the  :ref:`paper <papers>` `Typed Embedding of Relational Programming Language`.
 
 We give templates for definig injected types:
 
@@ -518,6 +545,5 @@ Allusion to OCanren standard libraries
 As examples, we defined types of Peano numbers, and polymorphic lists
 and pairs, each showing the four-level structure. The ``Peano``,
 ``MyList`` and ``MyPair`` modules correspond to the OCanren `standard
-libraries <../../Installation/ocanren/src/std>`__ ``LNat``, ``LList``
-and ``LPair`` respectively where the leading ``L`` in the module names
-stands for “logic”.
+libraries <../../Installation/ocanren/src/std>`__ ``OCanren.Std.Nat``, ``OCanren.Std.List``
+and ``OCanren.Std.Pair`` respectively.

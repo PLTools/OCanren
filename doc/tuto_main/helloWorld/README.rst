@@ -74,7 +74,7 @@ abstract type (so we do not concern ourselves with its implementation).
 
 More information about various typed being used and the meaning of type
 parameters of the `('a, 'b) injected` could be get from
-:ref:`digesting-the-types`.
+:ref:`Digesting the Types`.
 
 Logic Variables
 ^^^^^^^^^^^^^^^

@@ -1,10 +1,27 @@
 (library
  (name pa_ocanren)
  (public_name OCanren.syntax)
+ (modules pa_ocanren)
  (libraries camlp5)
  (preprocess
   (action
    (run %{project_root}/camlp5/pp5+dump.byte %{input-file}))))
+
+;(executable
+; (name pa_ocanren_test)
+; (modules pa_ocanren_test)
+; (libraries
+; camlp5
+;  pa_ocanren
+;  pa_ppx
+;  camlp5.pa_r.link
+;  camlp5.pr_r.link
+;  camlp5.parser_quotations.link)
+; (preprocess
+;  (action
+;   (run
+;    %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
+;    %{input-file}))))
 
 (rule
  (targets pp5+gt+plugins+ocanren+dump.exe)
