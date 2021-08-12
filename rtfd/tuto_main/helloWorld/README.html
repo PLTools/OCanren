@@ -25,6 +25,7 @@
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
         <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -36,7 +37,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Digesting the Types" href="../digTypes/README.html" />
-    <link rel="prev" title="Tutorial Outline" href="../tuto_main.html" /> 
+    <link rel="prev" title="The Tutorial" href="../tuto_main.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -81,20 +82,19 @@
             
             
               <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../tuto_main.html">Tutorial Outline</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../tuto_main.html">The Tutorial</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Say “Hello World!” in OCanren</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#reading-the-program">Reading the Program</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#important-interfaces">Important Interfaces</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#injecting-or-type-casting-to-the-ocanren-internal-representation">Injecting (or Type Casting) to the OCanren Internal Representation</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="#logic-variables">Logic Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#executing-the-program">Executing the Program</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reading-the-program">Reading the Program</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#important-interfaces">Important Interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#internal-representation">Internal Representation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#logic-variables">Logic Variables</a></li>
 </ul>
 </li>
-<li class="toctree-l4"><a class="reference internal" href="#making-a-query">Making a Query</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#syntactic-identity-and-unification">Syntactic Identity and Unification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-ocanren-top-level-the-run-statement">The OCanren Top Level: the <em>run</em> statement</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#taking-and-displaying-answers">Taking and Displaying Answers</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#making-a-query">Making a Query</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#syntactic-identity-and-unification">Syntactic Identity and Unification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-ocanren-top-level-the-run-expression">The OCanren Top Level: the <em>run</em> expression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#taking-and-displaying-answers">Taking and Displaying Answers</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../digTypes/README.html">Digesting the Types</a></li>
@@ -103,7 +103,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../aircraft_fleet/README.html">The Range of a Fleet of Aircraft</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../oldreadme.html">OCanren from README.md</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../camlp5.html">Camlp5 syntax extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PPX.html">Syntax extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../papers.html">Papers</a></li>
 </ul>
 
             
@@ -149,7 +152,7 @@
     
       <li><a href="../../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="../tuto_main.html">Tutorial Outline</a> &raquo;</li>
+          <li><a href="../tuto_main.html">The Tutorial</a> &raquo;</li>
         
       <li>Say “Hello World!” in OCanren</li>
     
@@ -175,21 +178,20 @@
   <div class="section" id="say-hello-world-in-ocanren">
 <h1>Say “Hello World!” in OCanren<a class="headerlink" href="#say-hello-world-in-ocanren" title="Permalink to this headline">¶</a></h1>
 <p>We first execute the program, and then we read and explain through the
-source code line by line. ## Executing the Program</p>
-<p>The source code has to be compiled and linked, for which you would need
-the <a class="reference external" href="Makefile">Makefile</a>. Now open terminal under your local copy of
-the <code class="docutils literal notranslate"><span class="pre">`helloWorld</span></code> &lt;./&gt;`__ direcory, and:</p>
+source code line by line.</p>
+<div class="section" id="executing-the-program">
+<h2>Executing the Program<a class="headerlink" href="#executing-the-program" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://github.com/YueLiPicasso/OCanrenTutorial/tree/main/Main">source code</a> has to be compiled and linked, for which you would need
+the <a class="reference external" href="Makefile">Makefile</a>. Now open terminal under your local copy ofthe <code class="docutils literal notranslate"><span class="pre">helloWorld</span></code> directory, and:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span>
 </pre></div>
 </div>
-<p>This would produce a native-code file <code class="docutils literal notranslate"><span class="pre">hello.opt</span></code>, execution of which
-by:</p>
+<p>This would produce a native-code file <code class="docutils literal notranslate"><span class="pre">hello.opt</span></code>, execution of which by:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">hello</span><span class="o">.</span><span class="n">opt</span>
 </pre></div>
 </div>
-<p>shall print <code class="docutils literal notranslate"><span class="pre">hello</span> <span class="pre">world!</span></code> in your terminal.</p>
-<p>** It is probably worth to have two versions of build system: Makefile
-and dune (which is a de facto standart for OCaml right now) **</p>
+<p>will print <code class="docutils literal notranslate"><span class="pre">hello</span> <span class="pre">world!</span></code> in your terminal.</p>
+</div>
 <div class="section" id="reading-the-program">
 <h2>Reading the Program<a class="headerlink" href="#reading-the-program" title="Permalink to this headline">¶</a></h2>
 <p>The first line:</p>
@@ -197,16 +199,16 @@ and dune (which is a de facto standart for OCaml right now) **</p>
 </pre></div>
 </div>
 <p>makes the names from the module OCanren available for later use.</p>
+</div>
 <div class="section" id="important-interfaces">
-<h3>Important Interfaces<a class="headerlink" href="#important-interfaces" title="Permalink to this headline">¶</a></h3>
+<h2>Important Interfaces<a class="headerlink" href="#important-interfaces" title="Permalink to this headline">¶</a></h2>
 <p>The source code of the module OCanren resides in
-<a class="reference external" href="../../Installation/ocanren/src/OCanren.ml">OCanren.ml</a> (It does not
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/tree/0.2.0/src">OCanren.ml</a> (It does not
 have an accompanying <code class="docutils literal notranslate"><span class="pre">.mli</span></code> file). Inspecting the content thereof, we
-shall see that basically it includes two modules
-<a class="reference external" href="../../Installation/ocanren/src/core/Logic.mli">Logic</a> and
-<a class="reference external" href="../../Installation/ocanren/src/core/Core.mli">Core</a>, and renames the
-module <a class="reference external" href="../../Installation/ocanren/src/core/RStream.mli">RStream</a> to
-Stream, and finally defines the Std module. You should open the module
+shall see that basically it includes three modules
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/tree/0.2.0/src/core/Logic.mli">Logic</a>,
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/tree/0.2.0/src/core/Core.mli">Core</a> and
+module <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/tree/0.2.0/src/core/RStream.mli">Stream</a>, and finally defines the Std module. You should open the module
 OCanren at the beginning of every source file where you use OCanren
 features.</p>
 <p>The second line:</p>
@@ -217,8 +219,8 @@ features.</p>
 operator <code class="docutils literal notranslate"><span class="pre">!!</span></code> (named <em>primitive injection</em>) applied to the string
 literal <code class="docutils literal notranslate"><span class="pre">&quot;hello</span> <span class="pre">world!\n&quot;</span></code>.</p>
 </div>
-<div class="section" id="injecting-or-type-casting-to-the-ocanren-internal-representation">
-<h3>Injecting (or Type Casting) to the OCanren Internal Representation<a class="headerlink" href="#injecting-or-type-casting-to-the-ocanren-internal-representation" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="internal-representation">
+<h2>Internal Representation<a class="headerlink" href="#internal-representation" title="Permalink to this headline">¶</a></h2>
 <p>The operator <code class="docutils literal notranslate"><span class="pre">!!</span></code>, provided by the module Logic, makes type conversion
 to the OCanren internal representation, something like what a calculator
 program does when it receives an input string “1” and converts it to the
@@ -229,10 +231,11 @@ the interface that:</p>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">injected</span></code> type constructor is provided by the module Logic as an
 abstract type (so we do not concern ourselves with its implementation).</p>
-<p>** Maybe it is worth saying here why two type parameters and what they
-do reperesent **</p>
+<p>More information about various typed being used and the meaning of type
+parameters of the <cite>(‘a, ‘b) injected</cite> could be get from
+<span class="xref std std-ref">digesting-the-types</span>.</p>
 <div class="section" id="logic-variables">
-<h4>Logic Variables<a class="headerlink" href="#logic-variables" title="Permalink to this headline">¶</a></h4>
+<h3>Logic Variables<a class="headerlink" href="#logic-variables" title="Permalink to this headline">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">logic</span></code> type constructor which appears in the type of <code class="docutils literal notranslate"><span class="pre">!!</span></code> above
 is also provided by the module <code class="docutils literal notranslate"><span class="pre">OCanren.Logic</span></code>. It takes one type
 parameter and its type representation is exposed: we could see from the
@@ -244,20 +247,24 @@ integer type and <code class="docutils literal notranslate"><span class="pre">1<
 </div>
 </div>
 <div class="section" id="making-a-query">
-<h3>Making a Query<a class="headerlink" href="#making-a-query" title="Permalink to this headline">¶</a></h3>
+<h2>Making a Query<a class="headerlink" href="#making-a-query" title="Permalink to this headline">¶</a></h2>
 <p>The 3rd line:</p>
 <div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">let</span> <span class="n">_</span> <span class="o">=</span>
   <span class="n">List</span><span class="o">.</span><span class="n">iter</span> <span class="n">print_string</span> <span class="o">@@</span>
-    <span class="n">Stream</span><span class="o">.</span><span class="n">take</span> <span class="o">~</span><span class="n">n</span><span class="p">:</span><span class="mi">1</span> <span class="o">@@</span>
-      <span class="n">run</span> <span class="n">q</span> <span class="p">(</span><span class="n">fun</span> <span class="n">q</span> <span class="o">-&gt;</span> <span class="n">ocanren</span> <span class="p">{</span> <span class="n">q</span> <span class="o">==</span> <span class="nb">str</span> <span class="p">})</span> <span class="n">project</span><span class="p">;;</span>
+  <span class="n">Stream</span><span class="o">.</span><span class="n">take</span> <span class="o">~</span><span class="n">n</span><span class="p">:</span><span class="mi">1</span> <span class="o">@@</span>
+  <span class="n">run</span> <span class="n">q</span> <span class="p">(</span><span class="n">fun</span> <span class="n">q</span> <span class="o">-&gt;</span> <span class="n">ocanren</span> <span class="p">{</span> <span class="n">q</span> <span class="o">==</span> <span class="nb">str</span> <span class="p">})</span> <span class="n">project</span>
 </pre></div>
 </div>
 <p>is divided into three sub-expressions by the right associative infix
 operator <code class="docutils literal notranslate"><span class="pre">&#64;&#64;</span></code> that is provided by OCaml’s core library
 <a class="reference external" href="http://caml.inria.fr/pub/docs/manual-ocaml/libref/Stdlib.html">Stdlib</a>.
 The most important sub-expression is:
-<code class="docutils literal notranslate"><span class="pre">ocaml</span>&#160; <span class="pre">run</span> <span class="pre">q</span> <span class="pre">(fun</span> <span class="pre">q</span> <span class="pre">-&gt;</span> <span class="pre">ocanren</span> <span class="pre">{</span> <span class="pre">q</span> <span class="pre">==</span> <span class="pre">str</span> <span class="pre">})</span> <span class="pre">project</span></code> whose most
+<code class="docutils literal notranslate"><span class="pre">run</span> <span class="pre">q</span> <span class="pre">(fun</span> <span class="pre">q</span> <span class="pre">-&gt;</span> <span class="pre">ocanren</span> <span class="pre">{</span> <span class="pre">q</span> <span class="pre">==</span> <span class="pre">str</span> <span class="pre">})</span> <span class="pre">project</span></code> whose most
 important part is: <code class="docutils literal notranslate"><span class="pre">q</span> <span class="pre">==</span> <span class="pre">str</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The piece of code on the discussion uses an OCanren-specific syntax extension that doesn’t appear in other languages of miniKanren family. See <a class="reference internal" href="../../camlp5.html#let-ocanren"><span class="std std-ref">OCanren-specific Camlp5 syntax extension</span></a> for details.</p>
+</div>
 <p>Next we start with explaining the inner most and the most important
 part: <code class="docutils literal notranslate"><span class="pre">q</span> <span class="pre">==</span> <span class="pre">str</span></code>, followed by its immediate enclosing environment
 which is the <em>run</em> statement:</p>
@@ -265,30 +272,28 @@ which is the <em>run</em> statement:</p>
 </pre></div>
 </div>
 <p>and finally the top most expression for taking and printing answers.</p>
-<p>** I think it is a right thing to say that there are a few syntaxes
-for OCanren and there we are using one of them **</p>
 </div>
 <div class="section" id="syntactic-identity-and-unification">
-<h3>Syntactic Identity and Unification<a class="headerlink" href="#syntactic-identity-and-unification" title="Permalink to this headline">¶</a></h3>
-<p>Syntactic identity between two expressions <em>expr</em>1 and <em>expr</em>2 (of
-the same type) is denoted <em>expr</em>1 <code class="docutils literal notranslate"><span class="pre">==</span></code> <em>expr</em>2. Usually we are
+<h2>Syntactic Identity and Unification<a class="headerlink" href="#syntactic-identity-and-unification" title="Permalink to this headline">¶</a></h2>
+<p>Syntactic identity between two expressions <span class="math notranslate nohighlight">\(expr_1\)</span> and <span class="math notranslate nohighlight">\(expr_2\)</span> (of
+the same type) is denoted using two equation symbols: <span class="math notranslate nohighlight">\(expr_1 == expr_2\)</span>. Usually we are
 given two different expressions both of which have zero or more
 sub-expressions considered as logic variables, and we are interested in
 finding (type sensitive) substitutes for these logic variables so that
 the resulting expressions are syntactically identical. Finding such
 substitutes is know as <em>unification</em> of the original expressions.</p>
 <p><strong>Example</strong> In order for both <code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span> <span class="pre">==</span> <span class="pre">(2</span> <span class="pre">+</span> <span class="pre">y)</span></code> and
-<code class="docutils literal notranslate"><span class="pre">Node</span> <span class="pre">(x,1)</span> <span class="pre">==</span> <span class="pre">Node</span> <span class="pre">(2,y)</span></code> to be true, we replace <code class="docutils literal notranslate"><span class="pre">x</span></code> by <code class="docutils literal notranslate"><span class="pre">2</span></code>and
+<code class="docutils literal notranslate"><span class="pre">Node</span> <span class="pre">(x,1)</span> <span class="pre">==</span> <span class="pre">Node</span> <span class="pre">(2,y)</span></code> to be true, we replace <code class="docutils literal notranslate"><span class="pre">x</span></code> by <code class="docutils literal notranslate"><span class="pre">2</span></code> and
 <code class="docutils literal notranslate"><span class="pre">y</span></code> by <code class="docutils literal notranslate"><span class="pre">1</span></code>, making both sides of <code class="docutils literal notranslate"><span class="pre">==</span></code> the expression <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">+</span> <span class="pre">1</span></code> or
-<code class="docutils literal notranslate"><span class="pre">Node</span> <span class="pre">(2,1)</span></code> respectively. We now unified <code class="docutils literal notranslate"><span class="pre">(</span> <span class="pre">x</span> <span class="pre">+</span> <span class="pre">1)</span></code> with
+<code class="docutils literal notranslate"><span class="pre">Node</span> <span class="pre">(2,1)</span></code> respectively. We now unified <code class="docutils literal notranslate"><span class="pre">(x</span> <span class="pre">+</span> <span class="pre">1)</span></code> with
 <code class="docutils literal notranslate"><span class="pre">(2</span> <span class="pre">+</span> <span class="pre">y)</span></code>. Moreover, <code class="docutils literal notranslate"><span class="pre">Node</span> <span class="pre">(x,1)</span></code> is unified with <code class="docutils literal notranslate"><span class="pre">Node</span> <span class="pre">(2,y)</span></code>.</p>
 <p><strong>Example</strong> How to substitute the logic variable <code class="docutils literal notranslate"><span class="pre">z</span></code> so that
 <code class="docutils literal notranslate"><span class="pre">z</span> <span class="pre">==</span> <span class="pre">&quot;hello</span> <span class="pre">world!&quot;</span></code> ? Trivial: replacing <code class="docutils literal notranslate"><span class="pre">z</span></code> with the constant
 <code class="docutils literal notranslate"><span class="pre">&quot;hello</span> <span class="pre">world!&quot;</span></code>. This is essentially what our program does: solving a
 unification problem.</p>
 </div>
-<div class="section" id="the-ocanren-top-level-the-run-statement">
-<h3>The OCanren Top Level: the <em>run</em> statement<a class="headerlink" href="#the-ocanren-top-level-the-run-statement" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="the-ocanren-top-level-the-run-expression">
+<h2>The OCanren Top Level: the <em>run</em> expression<a class="headerlink" href="#the-ocanren-top-level-the-run-expression" title="Permalink to this headline">¶</a></h2>
 <p>We can parse the <code class="docutils literal notranslate"><span class="pre">run</span> <span class="pre">...</span></code> expression following the syntax below,
 which is given in
 <a class="reference external" href="https://github.com/YueLiPicasso/language-grammars">EBNF</a> except that
@@ -316,15 +321,19 @@ no single syntactic category named <code class="docutils literal notranslate"><s
 proposition as given by the goal body (in which these parameters are
 expected to occur) holds?</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">ocanren</span> <span class="pre">{</span> <span class="pre">}</span></code> environment in a goal body instructs the
-<a class="reference external" href="https://camlp5.github.io/">camlp5</a> preprocessor to transform on the
+<a class="reference external" href="https://camlp5.github.io/">Camlp5</a> preprocessor to transform on the
 syntactic level the <code class="docutils literal notranslate"><span class="pre">pretty</span> <span class="pre">goal</span> <span class="pre">body</span></code> into the more verbose and less
-intuitive OCanren internal representation. As a reference, the rules by
+intuitive calls of OCanren’s functions. As a reference, the rules by
 which the preprocessing is done is given in <code class="docutils literal notranslate"><span class="pre">pa_ocanren.ml</span></code>
 <a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L238">where</a> we
-could find, for example, the <code class="docutils literal notranslate"><span class="pre">==</span></code> symbol is transformed into the name
+could find, for example, the <code class="docutils literal notranslate"><span class="pre">==</span></code>  symbol is transformed into the name
 <code class="docutils literal notranslate"><span class="pre">unify</span></code>.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">fix links</p>
+</div>
 <p>The number of parameters shall agree with the size indicator, where
-<code class="docutils literal notranslate"><span class="pre">q</span></code>…<code class="docutils literal notranslate"><span class="pre">qrstu</span></code> are just alternative names for <code class="docutils literal notranslate"><span class="pre">one</span></code>…<code class="docutils literal notranslate"><span class="pre">five</span></code>
+<code class="docutils literal notranslate"><span class="pre">q</span></code> … <code class="docutils literal notranslate"><span class="pre">qrstu</span></code> are just alternative names for <code class="docutils literal notranslate"><span class="pre">one</span></code> … <code class="docutils literal notranslate"><span class="pre">five</span></code>
 respectively. If there are more than five parameters, the successor
 function <code class="docutils literal notranslate"><span class="pre">succ</span></code> can be applied to build larger size indicators, e.g.,
 <code class="docutils literal notranslate"><span class="pre">(succ</span> <span class="pre">(succ</span> <span class="pre">five))</span></code> is for seven parameters.</p>
@@ -334,11 +343,15 @@ logic variables in the answer we use <code class="docutils literal notranslate">
 exeption (provided by OCanren.Logic) is thrown if we use <code class="docutils literal notranslate"><span class="pre">project</span></code> as
 the handler but the answer contains free logic variables: in this case
 some other handler shall be used.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">run</span></code> function and the size indicators are provided by Core. Basic
-answer handlers are provided by Logic.</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Reference reifiers</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">run</span></code> function and the size indicators are provided by module <code class="docutils literal notranslate"><span class="pre">OCanren.Core</span></code>. Basic
+answer handlers are provided by module <code class="docutils literal notranslate"><span class="pre">OCanren.Logic</span></code>.</p>
 </div>
 <div class="section" id="taking-and-displaying-answers">
-<h3>Taking and Displaying Answers<a class="headerlink" href="#taking-and-displaying-answers" title="Permalink to this headline">¶</a></h3>
+<h2>Taking and Displaying Answers<a class="headerlink" href="#taking-and-displaying-answers" title="Permalink to this headline">¶</a></h2>
 <p>The top level constructs a lazy stream out of which an arbitrary number
 of answers could be pulled, subject to answer availability. We use a
 stream instead of a finite list to hold the answers because generally
@@ -346,7 +359,6 @@ the set of all answers is enumerable. Omission of the optional argument
 <code class="docutils literal notranslate"><span class="pre">~n</span></code> of <code class="docutils literal notranslate"><span class="pre">take</span></code> means “take all”. Finally we use OCaml standard
 functions to iterate through the taken list of answers and print each
 one in the terminal. Our program has only one answer.</p>
-</div>
 </div>
 </div>
 
@@ -361,7 +373,7 @@ one in the terminal. Our program has only one answer.</p>
         <a href="../digTypes/README.html" class="btn btn-neutral float-right" title="Digesting the Types" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../tuto_main.html" class="btn btn-neutral float-left" title="Tutorial Outline" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../tuto_main.html" class="btn btn-neutral float-left" title="The Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

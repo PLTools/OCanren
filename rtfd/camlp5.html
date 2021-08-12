@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Camlp5 syntax extensions &mdash; OCanren  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Syntax extensions" href="PPX.html" />
+    <link rel="prev" title="Installation" href="Installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> OCanren
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tuto_main/tuto_main.html">The Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Camlp5 syntax extensions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ocanren-vs-minikanren">OCanren vs. miniKanren</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ocanren-specific-camlp5-syntax-extension">OCanren-specific Camlp5 syntax extension</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="PPX.html">Syntax extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="papers.html">Papers</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OCanren</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Camlp5 syntax extensions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/JetBrains-Research/OCanren/blob/master/doc/camlp5.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="camlp5-syntax-extensions">
+<h1>Camlp5 syntax extensions<a class="headerlink" href="#camlp5-syntax-extensions" title="Permalink to this headline">¶</a></h1>
+<p>A few syntax extensions are used in this project.</p>
+<p>For testing we use the one from <code class="docutils literal notranslate"><span class="pre">logger-p5</span></code> opam package. It allows to convert OCaml
+expression to its string form. For example, it rewrites <code class="docutils literal notranslate"><span class="pre">let</span> <span class="pre">_</span> <span class="pre">=</span> <span class="pre">REPR(1+2)</span></code> to</p>
+<p>For OCanren itself we use syntax extension to simplify writing relational programs</p>
+<div class="section" id="ocanren-vs-minikanren">
+<span id="id1"></span><h2>OCanren vs. miniKanren<a class="headerlink" href="#ocanren-vs-minikanren" title="Permalink to this headline">¶</a></h2>
+<p>The correspondence between original miniKanren and OCanren constructs is shown below:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">miniKanren</th>
+<th class="head">OCanren</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">#u</span></code></td>
+<td>success</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">#f</span></code></td>
+<td>failure</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">((==)</span> <span class="pre">a</span> <span class="pre">b)</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">(a</span> <span class="pre">===</span> <span class="pre">b)</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">((=/=)</span> <span class="pre">a</span> <span class="pre">b)</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">(a</span> <span class="pre">=/=</span> <span class="pre">b)</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">(conde</span> <span class="pre">(a</span> <span class="pre">b</span> <span class="pre">...)</span> <span class="pre">(c</span> <span class="pre">d</span> <span class="pre">...)</span> <span class="pre">...)</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">conde</span> <span class="pre">[a</span> <span class="pre">&amp;&amp;&amp;</span> <span class="pre">b</span> <span class="pre">&amp;&amp;&amp;</span> <span class="pre">...;</span> <span class="pre">c</span> <span class="pre">&amp;&amp;&amp;</span> <span class="pre">d</span> <span class="pre">&amp;&amp;&amp;</span> <span class="pre">...;</span> <span class="pre">...]</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">(fresh</span> <span class="pre">(x</span> <span class="pre">y</span> <span class="pre">...)</span> <span class="pre">a</span> <span class="pre">b</span> <span class="pre">...</span> <span class="pre">)</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">fresh</span> <span class="pre">(x</span> <span class="pre">y</span> <span class="pre">...)</span> <span class="pre">a</span> <span class="pre">b</span> <span class="pre">...</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>In addition, OCanren introduces explicit disjunction (<code class="docutils literal notranslate"><span class="pre">|||</span></code>) and conjunction
+(<code class="docutils literal notranslate"><span class="pre">&amp;&amp;&amp;</span></code>) operators for goals.</p>
+<div class="section" id="ocanren-specific-camlp5-syntax-extension">
+<span id="let-ocanren"></span><h3>OCanren-specific Camlp5 syntax extension<a class="headerlink" href="#ocanren-specific-camlp5-syntax-extension" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="PPX.html" class="btn btn-neutral float-right" title="Syntax extensions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, JetBrains-Research
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

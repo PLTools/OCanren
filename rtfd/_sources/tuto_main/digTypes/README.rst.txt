@@ -7,7 +7,7 @@ the types. This clears the way so that we can then focus on the
 relational part.
 
 We have seen that the OCanren internal representation of a string has a
-type of the form ``('a, 'a logic) injected`` and we have named it an
+type of the form ``('a, 'b) injected`` and we have named it an
 *injected type*, referring to the injection of data from user level
 representation into the internal representation. This type expression
 involves several subtleties that are, when combined together, not
@@ -15,42 +15,44 @@ apparent. In this lesson we break down such type expressions into their
 very components, so that the reader can appreciate the construction of
 these internal types and can build his own.
 
-Abstract Types
---------------
+Fully Abstract Types
+--------------------
 
 First we need a notion of *abstract type*. OCaml also has a notion of
 abstract type which refers to a type constructor whose equation and
 representation are hidden from the user and is considered incompatible
-with any other type. However, the abstract type that we are talking
+with any other type. However, the fully abstract type that we are talking
 about here is a different concept, and it comes from the fact that some
 recurive types can be defined in the following way.
 
-\*\* D.Boulytchev calls these kind of types: fully abstract types. IDK
-is it a well establish term or his invention \*\*
+.. todo::
+
+   Mention where fully abstract types were 1st time introduced.
 
 Say we want to define a polymorphic list type:
 
 .. code:: ocaml
 
-   (** The abstract list type *)
    module MyList = struct
      type ('a, 'b) t = Nil | Cons of 'a * 'b
-   end;;
+   end
 
-The type constructor ``MyList.t`` is called an *abstract list type* for
+The type constructor ``MyList.t`` is called an *fully abstract list type* for
 it not only abstracts over the list member type by means of the type
 parameter ``'a``, but also (and more importantly) abstracts over the
 list tail type or in other words over the list type itself by means of
-the type parameter ``'b``. We can use the abstract list type to define
+the type parameter ``'b``. We can use the fully abstract list type to define
 other useful types of lists, as we shall see next.
 
 Ground Types
 ------------
 
 The usual definition of the recursive list type can be decomposed into
-the three finer steps: 1. Abstracting over the self type. 1.
-Instantiating the abstract type by self type. 1. Equating the instance
-with the self type to close the loop.
+the three finer steps:
+
+   #. Abstracting over the self type.
+   #. Instantiating the abstract type by self type.
+   #. Equating the instance with the self type to close the loop.
 
 As in:
 
@@ -58,9 +60,10 @@ As in:
 
    (** Defining the ground list type from the abstract type *)
    module MyList = struct
-     type ('a, 'b) t = Nil | Cons of 'a * 'b   (* 1 *)
-     type 'a ground = ('a, 'a ground) t        (* 2 *)
-   end;;
+     type ('a, 'b) t = Nil | Cons of 'a * 'b   (* 1 (step 1) *)
+     type 'a ground = ('a, 'b) t
+         constraint 'b = 'a ground             (* 2 (steps 2 & 3) *)
+   end
 
 Equation ``(* 1 *)`` is for step 1. Equation ``(* 2 *)`` is for steps 2
 and 3: if you instantiate ``'b`` with ``'a ground`` in ``(* 1 *)``, you
@@ -79,21 +82,21 @@ Then by ``(* 1b *)`` and ``(* 2 *)`` we have:
 Equation ``(* 2b *)`` is the usual definition of a list type, which we
 call a *ground list type*.
 
+.. The equation ``(* 2b *)`` is recommended way to define your own types. We should mention that you can use a little bit longer syntax that will give the same result but
+
 The abstract list type can also be used to define logic list types.
 
 Logic Types
 -----------
 
 In a relational program, a list engages with logic variables (like
-``X, Y, Z``) in cases like: 1) ``Cons (1,Nil)`` and ``Nil`` — No logic
-variable occurrence at all. The lists are actually ground. 1)
-``Cons (X, Nil)`` and ``Cons (X, Cons (Y, Nil))`` and
-``Cons (1, Cons (X, Cons (Y, Nil)))`` — There are only unknown list
-members. 1) ``Cons (1,Y)`` — There is only an unknown sub-list. 1)
-``Cons (X,Y)`` and ``Cons (X, Cons (Y, Z))`` and
-``Cons (X, Cons (3, Cons (Y, Z)))`` — There are both unknown list
-members and an unknown sub-list. 1) ``X`` — The list itself is wholly
-unknown.
+``X, Y, Z``, capitalized as in Prolog) in cases like:
+
+#. ``Cons (1,Nil)`` and ``Nil`` — No logic variable occurrence at all. The lists are actually ground.
+#. ``Cons (X, Nil)`` and ``Cons (X, Cons (Y, Nil))`` and ``Cons (1, Cons (X, Cons (Y, Nil)))`` — There are only unknown list members.
+#. ``Cons (1,Y)`` — There is only an unknown sub-list.
+#. ``Cons (X,Y)`` and ``Cons (X, Cons (Y, Z))`` and ``Cons (X, Cons (3, Cons (Y, Z)))`` — There are both unknown list members and an unknown sub-list.
+#. ``X`` — The list itself is wholly unknown.
 
 Due to possible presence of logic variables in various ways shown above,
 the concept of a list in a relational program is more general than the
@@ -102,9 +105,15 @@ define a type.
 
 Observe that for cases 1-4, we have some knowledge about the structure
 of the list: we know whether it is empty or not because there is a top
-level constructor to inspect. We call such logic lists *guarded*. But
+level constructor to inspect. We call such logic lists *guarded*.
+
+.. todo::
+
+   I would recommend to use the term *partially ground* instead of *guarded*. What do you think, Yue Li?
+
+But
 for case 5, we have no idea about the structure of the list for there is
-no top level constructor to provide a clue : we call it a *pure logic
+no top level constructor to provide a clue: we call it a *pure logic
 list*, which is just a logic variable. This is an important distinction
 needed for typing logic lists, and we summarize it as follows:
 
@@ -134,22 +143,31 @@ constructor’s ``int`` argument uniquely identifies a pure logic list,
 and the second argument is a (possibly empty) list of logic lists that
 can be used to instantiate the pure logic list.
 
+
+.. todo::
+
+   Discuss with Yue Li why concept of guarded types is 'illuminating'.
+
 .. raw:: html
 
    <hr>
 
-**Example.** Below are some inhabitants of the type ``int logic_list``:
+**Example.** Below are some inhabitants of the type ``int logic_list`` :
 
 .. code:: ocaml
 
-   Value Nil;;                    (** case 1: a guarded logic list *)
-   Value (Cons (1, Value Nil));;  (** case 1: a guarded logic list which is an integer
-                                              cons'ed to another guarded logic list *)
-   Value (Cons (1, Var (1,[])));; (** case 3: a  guarded logic list which is an integer
-                                              cons'ed to a pure logic list*)
-   Var (1,[]);;                   (** case 5: a pure logic list *)
+   (** case 1: a guarded logic list *)
+   Value Nil
+   (** case 1: a guarded logic list which is an integer
+    *  cons'ed to another guarded logic list *)
+   Value (Cons (1, Value Nil))
+   (** case 3: a  guarded logic list which is an integer
+     * cons'ed to a pure logic list*)
+   Value (Cons (1, Var (1,[])))
+   (** case 5: a pure logic list *)
+   Var (1,[])
 
-We could see that the inhabitants are logic lists where logic variables
+In all examples above we could see that the inhabitants are logic lists where logic variables
 may only denote unknown sub-lists. This is because the parameter of
 ``logic_list`` is instantiated by a ground type (``int``). To allow
 logic variables as list members (as in cases 2 and 4), we need to define
@@ -167,11 +185,12 @@ symbol ``S`` a successor function. Then the number one is denoted
 ``S(O)``, two ``S(S(O))``, three ``S(S(S(O)))`` and so on. Peano numbers
 are frequently used in relational programming, where they appear like: -
 ``O``, ``S(O)`` — Ground (Peano) numbers. - ``X``, ``S(X)``, ``S(S(X))``
-— Numbers with a logic variable (``X``).
+— Numbers with a logic variable ``X``.
 
-Regarding all these as *logic numbers*, we distinguish: - ``X`` — The
-pure logic number. - ``O``, ``S(O)``, ``S(X)``, ``S(S(X))`` — Guarded
-logic numbers.
+Regarding all these as *logic numbers*, we distinguish:
+
+- ``X`` — The pure logic number.
+- ``O``, ``S(O)``, ``S(X)``, ``S(S(X))`` — Guarded logic numbers.
 
 We can define abstract, ground and logic Peano number types as well:
 
@@ -184,40 +203,51 @@ We can define abstract, ground and logic Peano number types as well:
      type logic   = Value of guarded        (** Logic  *)
                   | Var of int * logic list
      and  guarded = logic t                 (** ... and Guarded *)
-   end;;
+   end
 
-Similar to logic lists, a logic number is either i) a pure logic number
-(e.g., ``X``) or ii) a guarded logic number that is either ``O`` or
-``S`` applied recursively to a logic number. Pure and guarded logic
-numbers are again distinguished using constructors ``Var`` and ``Value``
-respectively.
+.. .. note::
+..
+..    For peano numbers we declare constructors ``Var`` and ``Value`` that are distinct from the ones from List module. In real OCanren implementation these two constructors belog to ``OCanren.logic`` type.
+
+Similar to logic lists, a logic number is either
+
+- a pure logic number (e.g., ``X``), or
+- a guarded logic number that is either ``O`` or ``S`` applied recursively to a logic number.
+
+Pure and guarded logic numbers are again distinguished using constructors ``Var`` and ``Value`` respectively.
 
 .. raw:: html
 
    <hr>
 
-**Example.** Below are some inhabitants of the type ``Peano.logic``:
+**Example.** Below are some inhabitants of the type ``Peano.logic`` :
 
 .. code:: ocaml
 
-   Var (1,[]);;                        (** a pure logic number X *)
-   Value O;;                           (** a guarded logic number which is the constructor [O] *)
-   Value (S (Var (1,[])));;            (** a guarded logic number S(X) which is the constructor [S] applied to
-                                           a (pure) logic number X *)
-   Value (S (Value O))                 (** a guarded logic number S(O) which is the constructor [S] applied to
-                                           a (guarded) logic number which is the constructor [O] *)
-   Value (S (Value (S (Var (1,[])))))  (** a guarded logic number S(S(X)) *)
+   (** a pure logic number X *)
+   Var (1,[])
+   (** a guarded logic number which is the constructor [O] *)
+   Value O
+   (** a guarded logic number S(X) which is the constructor [S] applied to
+      a (pure) logic number X *)
+   Value (S (Var (1,[])))
+   (** a guarded logic number S(O) which is the constructor [S] applied to
+      a (guarded) logic number which is the constructor [O] *)
+   Value (S (Value O))
+   (** a guarded logic number S(S(X)) *)
+   Value (S (Value (S (Var (1,[])))))
+
 
 Then the type ``Peano.logic logic_list`` has the following inhabitants:
 
 .. code:: ocaml
 
-   Value Nil;;                                       (* case 1 *)
-   Value (Cons (Value (S (Value O)) , Value Nil));;  (* case 1 *)
-   Value (Cons (Var (1,[]), Value Nil));;            (* case 2 *)
-   Value (Cons (Value (S (Value O)) , Var (2,[])));; (* case 3 *)
-   Value (Cons (Var (1,[]), Var (2,[])));;           (* case 4 *)
-   Var (1,[]);;                                      (* case 5 *)
+   Value Nil                                       (* case 1 *)
+   Value (Cons (Value (S (Value O)) , Value Nil))  (* case 1 *)
+   Value (Cons (Var (1,[]), Value Nil))            (* case 2 *)
+   Value (Cons (Value (S (Value O)) , Var (2,[]))) (* case 3 *)
+   Value (Cons (Var (1,[]), Var (2,[])))           (* case 4 *)
+   Var (1,[])                                      (* case 5 *)
 
 Therefore, when we talk about a list of numbers in relational
 programming, we are actually talking about a logic list of logic
@@ -236,7 +266,7 @@ Compare the types of logic lists and logic numbers (reproduced below):
 
    (* Comparing the types of logic lists and logic numbers *)
 
-   (* The logic list type*)
+   (* The logic list type *)
    type 'b logic_list  =  Value of 'b guarded_logic_list
                        |  Var   of int * 'b logic_list list
    and  'b guarded_logic_list  = ('b, 'b logic_list) MyList.t
@@ -246,9 +276,6 @@ Compare the types of logic lists and logic numbers (reproduced below):
                 | Var of int * logic list
    and  guarded = logic t
 
-\*\* I should mention that so-called guarded types are not very useful
-(for me) during realtional programming, so explaining stuff in terms of
-them is questionable \*\*
 
 We could see that they both involve the constructors ``Value`` and
 ``Var`` with similar argument structures: the ``Value`` constructor’s
@@ -263,7 +290,7 @@ type parameter that abstracts from the guarded types, as follows:
    (** The new, reusable type constructor for defining logic types *)
    module MyLogic = struct
      type 'a logic = Value of 'a | Var of int * 'a logic list
-   end;;
+   end
 
 Next time when we what to define ``('a1, ..., 'an) Something.logic``,
 instead of writing:
@@ -276,7 +303,7 @@ instead of writing:
      type ('a1, ..., 'an) logic = Value of ('a1, ..., 'an) guarded
                                 | Var of int * ('a1, ..., 'an) logic list
      and ('a1, ..., 'an) guarded = ('a1, ..., 'an, ('a1, ..., 'an) logic) t
-   end;;
+   end
 
 we could write:
 
@@ -287,7 +314,7 @@ we could write:
      type ('a1, ..., 'an, 'self) t = (* ... type information omitted *)
      type ('a1, ..., 'an) logic =  ('a1, ..., 'an) guarded MyLogic.logic
      and ('a1, ..., 'an) guarded = ('a1, ..., 'an, ('a1, ..., 'an) logic) t
-   end;;
+   end
 
 for we can derive the longer from the shorter using ``MyLogic`` (the
 reader may write down the derivation as an exercise). As examples: the
@@ -299,7 +326,7 @@ logic list type can be rewritten as:
    module MyList = struct
      type ('a, 'b) t = Nil | Cons of 'a * 'b
      type 'b logic   =  'b guarded MyLogic.logic and 'b guarded  = ('b, 'b logic) t
-   end;;
+   end
 
 and the logic number type as:
 
@@ -309,7 +336,7 @@ and the logic number type as:
    module Peano = struct
      type 'a t   = O | S of 'a
      type logic  =  guarded MyLogic.logic and guarded = logic t
-   end;;
+   end
 
 Or even shorter, skipping the guarded types:
 
@@ -321,12 +348,12 @@ Or even shorter, skipping the guarded types:
    module MyList = struct
      type ('a, 'b) t = Nil | Cons of 'a * 'b
      type 'b logic   =  ('b, 'b logic) t MyLogic.logic
-   end;;
+   end
 
    module Peano = struct
      type 'a t   = O | S of 'a
      type logic  =  logic t MyLogic.logic
-   end;;
+   end
 
 Injected Types
 --------------
@@ -348,14 +375,14 @@ randomly. In more recent code bases I use ``injected`` \*\*
      type 'a ground = ('a, 'a ground) t
      type 'b logic   =  ('b, 'b logic) t MyLogic.logic
      type ('a, 'b) groundi = ('a ground, 'b logic) injected
-   end;;
+   end
 
    module Peano = struct
      type 'a t   = O | S of 'a
      type ground = ground t
      type logic  =  logic t MyLogic.logic
      type groundi = (ground, logic) injected
-   end;;
+   end
 
 The ``injected`` type constructor is abstract in the sense that its type
 information is hidden from the user. Therefore we do not concern
@@ -375,7 +402,7 @@ will still need a fully abstract type, even where this type definition
 is not recursive*\*
 
 For example, logic pairs:
-``ocaml (** logic pair type *) module MyPair = struct   type ('a1, 'a2) t = 'a1 * 'a2   type ('a1, 'a2) ground = ('a1, 'a2) t   type ('b1, 'b2) logic =  ('b1, 'b2) t MyLogic.logic   type ('a1, 'a2, 'b1, 'b2) groundi = (('a1, 'a2) ground, ('b1, 'b2) logic) injected end;;``
+``ocaml (** logic pair type *) module MyPair = struct   type ('a1, 'a2) t = 'a1 * 'a2   type ('a1, 'a2) ground = ('a1, 'a2) t   type ('b1, 'b2) logic =  ('b1, 'b2) t MyLogic.logic   type ('a1, 'a2, 'b1, 'b2) groundi = (('a1, 'a2) ground, ('b1, 'b2) logic) injected end``
 We can now talk about:
 
 .. code:: ocaml
@@ -384,27 +411,27 @@ We can now talk about:
    module PP = struct
 
      (** Ground pairs of ground Peano numbers, like (O, O) and (O, S(O)) *)
-     type ground = (Peano.ground, Peano.ground) MyPair.ground;;
+     type ground = (Peano.ground, Peano.ground) MyPair.ground
 
      (** Logic pairs of logic Peano numbers, like (X, S(Y)), Y and (X, X) *)
-     type logic = (Peano.logic, Peano.logic) MyPair.logic;;
+     type logic = (Peano.logic, Peano.logic) MyPair.logic
 
      (** Injected pairs of Peano numbers (abstract type) *)
-     type groundi = (Peano.ground, Peano.ground, Peano.logic, Peano.logic) MyPair.groundi;;
+     type groundi = (Peano.ground, Peano.ground, Peano.logic, Peano.logic) MyPair.groundi
                (* = (ground, logic) injected *)
 
-   end;;
+   end
 
    (** Peano number * Peano number list --- Pairs *)
    module PPL = struct
-     type ground = (Peano.ground, Peano.ground MyList.ground) MyPair.ground;;
-     type logic  = (Peano.logic,  Peano.logic MyList.logic) MyPair.logic;;
+     type ground = (Peano.ground, Peano.ground MyList.ground) MyPair.ground
+     type logic  = (Peano.logic,  Peano.logic MyList.logic) MyPair.logic
      type groundi = (* = (ground, logic) injected *)
        (Peano.ground,
         Peano.ground MyList.ground,
         Peano.logic,
-        Peano.logic MyList.logic) MyPair.groundi;;
-   end;;
+        Peano.logic MyList.logic) MyPair.groundi
+   end
 
 As an exercise, the reader may define the injected types for pairs of
 polymorphic lists, and lists of polymorphic pairs.
@@ -460,7 +487,7 @@ We give templates for definig injected types:
 
 .. code:: ocaml
 
-   open OCanren;;
+   open OCanren
 
    (** Template of an injeced, regular recursive type *)
 
@@ -469,7 +496,7 @@ We give templates for definig injected types:
      type ('a1, ..., 'an) ground = ('a1, ..., 'an, ('a1, ..., 'an) ground) t
      type ('b1, ..., 'bn) logic =  ('b1, ..., 'bn, ('b1, ..., 'bn) logic) t OCanren.logic
      type ('a1, ..., 'an, 'b1, ..., 'bn) groundi = (('a1, ..., 'an) ground, ('b1, ..., 'bn) logic) injected
-   end;;
+   end
 
    (** Template of an injeced, non-recursive type *)
 
@@ -478,7 +505,7 @@ We give templates for definig injected types:
      type ('a1, ..., 'an) ground = ('a1, ..., 'an) t
      type ('b1, ..., 'bn) logic =  ('b1, ..., 'bn) t OCanren.logic
      type ('a1, ..., 'an, 'b1, ..., 'bn) groundi = (('a1, ..., 'an) ground, ('b1, ..., 'bn) logic) injected
-   end;;
+   end
 
 The reader may apply these templates to define his own types. OCanren is
 for typed relational programming.Two points here: it is typed, and it is

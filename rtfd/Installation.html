@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; OCanren  documentation</title>
+  <title>Installation &mdash; OCanren  documentation</title>
   
 
   
@@ -26,7 +26,6 @@
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script type="text/javascript" src="_static/language_data.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/javascript" src="_static/searchtools.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -36,7 +35,9 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Camlp5 syntax extensions" href="camlp5.html" />
+    <link rel="prev" title="The Range of a Fleet of Aircraft" href="tuto_main/aircraft_fleet/README.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -63,7 +64,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -80,9 +81,9 @@
               
             
             
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="tuto_main/tuto_main.html">The Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="camlp5.html">Camlp5 syntax extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="PPX.html">Syntax extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="papers.html">Papers</a></li>
@@ -131,14 +132,14 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Search</li>
+      <li>Installation</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/JetBrains-Research/OCanren/blob/master/doc/search" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/JetBrains-Research/OCanren/blob/master/doc/Installation.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -152,24 +153,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search
-      functionality.
-    </p>
-  </div>
-  </noscript>
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>OCanren can be installed using <a class="reference external" href="https://opam.ocaml.org/doc/Install.html">opam</a> 2.x. Frist,
+install opam itself and right compiler version.</p>
+<ul class="simple">
+<li>either <code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">init</span> <span class="pre">-c</span> <span class="pre">4.10.1+flambda</span></code> for fresh opam installation</li>
+<li>or <code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">switch</span> <span class="pre">create</span> <span class="pre">4.10.1+flambda</span></code> to install minimal required version of OCaml compiler</li>
+<li>or your favourite OCaml version</li>
+<li><code class="docutils literal notranslate"><span class="pre">eval</span> <span class="pre">$(opam</span> <span class="pre">env)</span></code></li>
+</ul>
+<p>Then, install dependencies and <code class="docutils literal notranslate"><span class="pre">OCanren</span></code>:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">pin</span> <span class="pre">add</span> <span class="pre">GT</span> <span class="pre">https://github.com/JetBrains-Research/GT.git</span> <span class="pre">-n</span> <span class="pre">-y</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/JetBrains-Research/OCanren.git</span> <span class="pre">&amp;&amp;</span> <span class="pre">cd</span> <span class="pre">OCanren</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">install</span> <span class="pre">.</span> <span class="pre">--deps-only</span> <span class="pre">--yes</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">make</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">tests</span></code></li>
+</ul>
+<p>Expected workflow: add new test to try something out, or use our <a class="reference external" href="https://github.com/Kakadu/OCanren-basic-template">template repository</a>.</p>
+</div>
 
-  
-  <div id="search-results">
-  
-  </div>
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="camlp5.html" class="btn btn-neutral float-right" title="Camlp5 syntax extensions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tuto_main/aircraft_fleet/README.html" class="btn btn-neutral float-left" title="The Range of a Fleet of Aircraft" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -202,14 +220,7 @@
   
   
     
-  
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
    
-
 
 </body>
 </html>

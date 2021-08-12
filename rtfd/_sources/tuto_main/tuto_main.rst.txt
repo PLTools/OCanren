@@ -1,5 +1,5 @@
-Tutorial Outline
-================
+The Tutorial
+============
 
 .. toctree::
    :maxdepth: 1
