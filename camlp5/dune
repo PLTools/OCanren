@@ -8,74 +8,112 @@
 
 (rule
  (targets pp5+gt+plugins+ocanren+dump.exe)
- (deps %{project_root}/config/package-doc.cfg (:cmas pa_ocanren.cmxa))
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (:cmas pa_ocanren.cmxa))
  (action
-  (run mkcamlp5.opt -package
-    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
-    %{read-lines:../config/package-doc.cfg}
-    %{cmas} -o %{targets})))
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
+   %{read-lines:../config/package-doc.cfg}
+   %{cmas}
+   -o
+   %{targets})))
 
 (rule
  (targets pp5+gt+plugins+dump.byte)
  (deps %{project_root}/config/package-doc.cfg)
  (action
-  (run mkcamlp5 -package
-    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
-    %{read-lines:../config/package-doc.cfg}
-    ;%{deps}
-    -o %{targets})))
+  (run
+   mkcamlp5
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
+   %{read-lines:../config/package-doc.cfg}
+   ;%{deps}
+   -o
+   %{targets})))
 
 (rule
  (targets pp5+gt+plugins+dump.exe)
  (deps %{project_root}/config/package-doc.cfg)
  (action
-  (run mkcamlp5.opt -package
-    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
-    %{read-lines:../config/package-doc.cfg}
-    ;s%{deps}
-    -o %{targets})))
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
+   %{read-lines:../config/package-doc.cfg}
+   ;s%{deps}
+   -o
+   %{targets})))
 
 (rule
  (targets pp5+gt+plugins+o.exe)
  (deps %{project_root}/config/package-doc.cfg)
  (action
-  (run mkcamlp5.opt -package
-    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all
-    %{read-lines:../config/package-doc.cfg}
-    -o %{targets})))
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all
+   %{read-lines:../config/package-doc.cfg}
+   -o
+   %{targets})))
 
 (rule
  (targets pp5+gt+plugins+ocanren+o.byte)
- (deps %{project_root}/config/package-doc.cfg (:cmas pa_ocanren.cma))
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (:cmas pa_ocanren.cma))
  (action
-  (run mkcamlp5 -package
-    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all
-    %{read-lines:../config/package-doc.cfg}
-    %{cmas}
-    -o %{targets})))
+  (run
+   mkcamlp5
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all
+   %{read-lines:../config/package-doc.cfg}
+   %{cmas}
+   -o
+   %{targets})))
 
 (rule
  (targets pp5+gt+plugins+ocanren+logger+dump.exe)
- (deps %{project_root}/config/package-doc.cfg  (:cmas pa_ocanren.cmxa))
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (:cmas pa_ocanren.cmxa))
  (action
-  (run mkcamlp5.opt -package
-    camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
-    %{read-lines:../config/package-doc.cfg}
-    %{cmas} pr_dump.cmx
-    -o %{targets} -)))
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
+   %{read-lines:../config/package-doc.cfg}
+   %{cmas}
+   pr_dump.cmx
+   -o
+   %{targets}
+   -)))
 
-; (rule
-;  (targets pp5+gt+plugins+ocanren+logger+o.byte)
-;  (deps pa_ocanren.cma)
-;  (action
-;   (run mkcamlp5 -package camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
-;     %{deps} -o %{targets})))
+(rule
+ (targets pp5+gt+plugins+ocanren+logger+o.exe)
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (:cmas pa_ocanren.cmxa))
+ (action
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
+   %{read-lines:../config/package-doc.cfg}
+   %{cmas}
+   -o
+   %{targets})))
 
 (rule
  (targets pp5+dump.byte)
  (deps %{project_root}/config/package-doc.cfg)
  (action
-  (run mkcamlp5 -package
-    camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations
-    %{read-lines:../config/package-doc.cfg}
-    -o %{targets})))
+  (run
+   mkcamlp5
+   -package
+   camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations
+   %{read-lines:../config/package-doc.cfg}
+   -o
+   %{targets})))

@@ -17,3 +17,4 @@ test018prjc
 test019tablingCache
 test020
 test021structural
+test022newsyntax
