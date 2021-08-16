@@ -87,7 +87,7 @@ Second, we can see that sometimes a rather counter-intuitively running execution
 than the intended ``forward'' execution. For example, the division via multiplication relation is faster than multiplication itself, the list reversing is faster if we specify the result and
 ask for a suitable argument. If we look closer into these examples we can see that the reason for this is the fact that the optimal order of conjuncts for backward execution has
 the recursive call at the end while the optimal order of conjuncts for forward execution does not. When the recursive call is not the last it forces us to add the number of semantic steps
-for this call when calculating the scheduling factor, which often increases the complexity. This supports a well-known rule of thumb in \mK which recommends to place recursive calls
+for this call when calculating the scheduling factor, which often increases the complexity. This supports a well-known rule of thumb in \mK which recommends placing recursive calls
 at the end of conjunctions whenever possible. We can now see that one reason for it is smaller time penalty of scheduling discipline.\footnote{There are other reasons. For example, executing all constraints before possibly diverging relational calls is one of the methods of ensuring termination of relational programs~\cite{WillThesis}. }
 
 \begin{figure}[t]

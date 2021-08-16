@@ -7,6 +7,7 @@ Here are the definitions of the \mK relations we used for evaluation. Different 
 
 \item Comparison of Peano numbers
 
+\begin{minipage}{\linewidth}
 Definition:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -18,7 +19,9 @@ Definition:
         (le$^o$ x' y')
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For queries:
 
 \begin{itemize}
@@ -28,10 +31,12 @@ For queries:
 
 \item[-] \lstinline{le$^o$ $\overline{n}$ $y^?$}
 \end{itemize}
+\end{minipage}
 
 
 \item Sum of Peano numbers
 
+\begin{minipage}{\linewidth}
 Definition:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -43,7 +48,9 @@ Definition:
         (plus$^o$ x' y r')
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For queries:
 
 \begin{itemize}
@@ -53,10 +60,12 @@ For queries:
 
 \item[-] \lstinline{plus$^o$ $x^?$ $y^?$ $\overline{k}$}
 \end{itemize}
+\end{minipage}
 
 
 \item Product of Peano numbers
 
+\begin{minipage}{\linewidth}
 Definition \#1:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -68,13 +77,17 @@ Definition \#1:
         (plus$^o$ r' y r)
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For query:
 
 \begin{itemize}
 \item[-] \lstinline{mult$^o$ $\overline{n}$ $\overline{m}$ $r^?$}
 \end{itemize}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 Definition \#2:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -86,7 +99,9 @@ Definition \#2:
         (mult$^o$ x' y r')
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For queries:
 
 \begin{itemize}
@@ -94,10 +109,12 @@ For queries:
 
 \item[-] \lstinline{mult$^o$ S($x^?$) S($y^?$) $\overline{k}$}
 \end{itemize}
+\end{minipage}
 
 
 \item Length of a list
 
+\begin{minipage}{\linewidth}
 Definition \#1:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -109,13 +126,17 @@ Definition \#1:
         (r === S(r'))
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For query:
 
 \begin{itemize}
 \item[-] \lstinline{length$_d^o$ $\overline{l}$ $r^?$}
 \end{itemize}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 Definition \#2:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -127,7 +148,9 @@ Definition \#2:
         (length$^o$ t r')
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For queries:
 
 \begin{itemize}
@@ -135,10 +158,12 @@ For queries:
 
 \item[-] \lstinline{length$^o$ $a^?$ $\overline{n}$}
 \end{itemize}
+\end{minipage}
 
 
 \item Incrementing all elements in a list
 
+\begin{minipage}{\linewidth}
 Definition:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -150,7 +175,9 @@ Definition:
         (incr_list$^o$ t tr)
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For queries:
 
 \begin{itemize}
@@ -158,10 +185,13 @@ For queries:
 
 \item[-] \lstinline{incr_list$^o$ $a^?$ $\overline{l}$}
 \end{itemize}
+\end{minipage}
+
 
 
 \item Concatination of two lists
 
+\begin{minipage}{\linewidth}
 Definition:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -173,7 +203,9 @@ Definition:
         (append$^o$ t b tb)
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For queries:
 
 \begin{itemize}
@@ -181,10 +213,12 @@ For queries:
 
 \item[-] \lstinline{append$^o$ $a^?$ $b^?$ $\overline{l}$}
 \end{itemize}
+\end{minipage}
 
 
 \item Inversion of a list
 
+\begin{minipage}{\linewidth}
 Definition \#1:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -196,13 +230,17 @@ Definition \#1:
         (append$^o$ tr Cons(h, Nil) r)
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For query:
 
 \begin{itemize}
 \item[-] \lstinline{reverse$^o$ $\overline{l}$ $r^?$}
 \end{itemize}
-
+\end{minipage}
+ 
+\begin{minipage}{\linewidth}
 Definition \#2:
 
 \begin{lstlisting}[basicstyle=\small]
@@ -214,11 +252,14 @@ Definition \#2:
         (reverse$^o$ t tr)
      )
 \end{lstlisting}
+\end{minipage}
 
+\begin{minipage}{\linewidth}
 For query:
 
 \begin{itemize}
 \item[-] \lstinline{reverse$^o$ $a^?$ $\overline{l}$}
 \end{itemize}
+\end{minipage}
 
 \end{enumerate} 

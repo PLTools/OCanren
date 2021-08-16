@@ -29,7 +29,7 @@ The actual time of unification depends on a concrete choice for a data structure
 Therefore we parameterize our estimations by two values~--- $\lookuptime{\sigma}$ and $\addtime{\sigma}$,~--- which represent, respectively, the
 worst-case asymptotic complexity for lookup and add operations w.r.t. to a substitution $\sigma$. The obvious candidate data structure is standard library maps
 for a host language (and many implementations like \textsc{miniKanren}-with-symbolic-constraints and \textsc{OCanren} follow this recipe). 
-Fot this data stucture the both operations have logarithmic complexity,
+For this data structure both operations have logarithmic complexity,
 so we expect this multiplier to be negligible. However, some implementations like \textsc{microKanren} use associative lists for simplicity of presentation (which have linear-time
 lookup and constant-time addition complexities) or more complex data structures like random-access lists (which have a log-time lookup and average constant-time addition complexities),
 so we keep this parameterization for the general case. The review of the performance of different date structures for triangular substitutions is given in~\cite{SubstDataStructs}.
@@ -38,7 +38,7 @@ The basic building block for the unification with triangular substitution is a \
 term with a constructor at the top level. ``Walk'' continually looks up the substitution until a binding to a non-variable is found or until there is no binding at all. This
 process can diverge only when there is a circular binding in the substitution, which, in turn, is excluded by the occurs check, so the substitutions are always consistent
 in this sense~\cite{NominalUnificationWithTriangularSubstitutions}. Nevertheless ``walk'' can require a linear number (on the size of substitution) of lookups.
-However, the variable-to-variable bindings occur rarely in practice and usually ``walk'' finds the required binding in one step. We can take the absence of variable-to-variable bindings
+However, the variable-to-variable bindings occur rarely in practice, and usually ``walk'' finds the required binding in one step. We can take the absence of variable-to-variable bindings
 as our first criterion: for \emph{flat} substitutions (substitutions without such bindings) ``walk'' always makes only one lookup. We can relax this requirement by allowing a
 constant number, independent of the input parameters of the topmost goal, of variable-to-variable bindings.
 
@@ -74,11 +74,7 @@ For now, as we estimate the time of every individual unification it might be not
 is relatively fast (constant number of basic operations), the number of unifications during an execution plays a more important role. And the number of unifications can be simply limited by the number of semantic
 steps $d\,(s_{init}\,(input))$ (because every unification is a separate step in the semantics). Similarly, although the time of basic operations depends on the size of substitution in different points
 of execution, logical variables for these bindings come either from the input (where there is usually a constant number of them) or from fresh variable allocations during the evaluation
-(each of which is a separate step in the semantics). So the number of allocated logic variables and, therefore, the maximum possible number of bindings are limited by
-
-\[
-FV\,(input) + d\,(s_{init}\,(input))
-\]
+(each of which is a separate step in the semantics). So the number of allocated logic variables and, therefore, the maximum possible number of bindings are limited by $FV\,(input) + d\,(s_{init}\,(input))$.
 
 So, for example, for a usual case, when our two criteria are satisfied and the input contains a constant number of logic variables, for a standard implementation and without occurs checks
 the total time of unifications $T_{uni}$ is $\O\,(d\,(s_{init}\,(input))\cdot \log d\,(s_{init}\,(input)))$
