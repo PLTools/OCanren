@@ -44,6 +44,7 @@ let rec ctor e =
   let loc = MLast.loc_of_expr e in
   match e with
   | <:expr< $uid:u$ >>   -> Some (<:expr< $lid:decapitalize u$ >>)
+  | <:expr< $longid:m$ . ($e$) >> -> (match ctor e with Some e -> Some (<:expr< $longid:m$ . ($e$) >>) | _ -> None)
   | <:expr< $m$ . ($e$) >> -> (match ctor e with Some e -> Some (<:expr< $m$ . ($e$) >>) | _ -> None)
   | _                    -> None
 
@@ -254,35 +255,35 @@ EXTEND
     t=ocanren_term' -> fix_term t
   ]];
 
-  ocanren_term':  [
-    "app"  LEFTA  [ l=SELF; r=SELF -> <:expr< $l$ $r$ >>] |
-    "list" RIGHTA [ l=SELF; "::"; r=SELF -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ] |
-    "primary" [ "!"; "("; e=expr; ")" -> e
-    | c=INT ->
-      let n = <:expr< $int:c$ >> in
-      <:expr< OCanren.Std.nat $n$ >>
-    | c=CHAR ->
-       let s = <:expr< $chr:c$ >> in
-       <:expr< OCanren.inj (OCanren.lift $s$) >>
-    | s=STRING ->
-      let s = <:expr< $str:s$ >> in
-      <:expr< OCanren.inj (OCanren.lift $s$) >>
-    | "true"   -> <:expr< OCanren.Std.Bool.truo >>
-    | "false"  -> <:expr< OCanren.Std.Bool.falso >>
-    | "["; ts=LIST0 ocanren_term' SEP ";"; "]" ->
-      (match ts with
-       | [] -> <:expr< OCanren.Std.nil () >>
-       | _  -> List.fold_right (fun x l -> <:expr< OCanren.Std.List.cons $x$ $l$ >> ) ts <:expr< OCanren.Std.nil () >>
-      )
-    | "("; op=operator_rparen                  -> <:expr< $lid:op$ >>
-    | "("; ts=LIST0 ocanren_term' SEP ","; ")" ->
-      (match ts with
-       | []  -> <:expr< OCanren.inj (OCanren.lift ()) >>
-       | [t] -> t
-       | _   -> <:expr< ( $list:ts$ ) >>
-      )
-    ] |
-    [ long_ident ]
+  ocanren_term':
+    [ "app"  LEFTA  [ l=SELF; r=SELF -> <:expr< $l$ $r$ >>]
+    | "list" RIGHTA [ l=SELF; "::"; r=SELF -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ]
+    | "primary" [ "!"; "("; e=expr; ")" -> e
+        | c=INT ->
+          let n = <:expr< $int:c$ >> in
+          <:expr< OCanren.Std.nat $n$ >>
+        | c=CHAR ->
+          let s = <:expr< $chr:c$ >> in
+          <:expr< OCanren.inj (OCanren.lift $s$) >>
+        | s=STRING ->
+          let s = <:expr< $str:s$ >> in
+          <:expr< OCanren.inj (OCanren.lift $s$) >>
+        | "true"   -> <:expr< OCanren.Std.Bool.truo >>
+        | "false"  -> <:expr< OCanren.Std.Bool.falso >>
+        | "["; ts=LIST0 ocanren_term' SEP ";"; "]" ->
+          (match ts with
+          | [] -> <:expr< OCanren.Std.nil () >>
+          | _  -> List.fold_right (fun x l -> <:expr< OCanren.Std.List.cons $x$ $l$ >> ) ts <:expr< OCanren.Std.nil () >>
+          )
+        | "("; op=operator_rparen                  -> <:expr< $lid:op$ >>
+        | "("; ts=LIST0 ocanren_term' SEP ","; ")" ->
+          (match ts with
+          | []  -> <:expr< OCanren.inj (OCanren.lift ()) >>
+          | [t] -> t
+          | _   -> <:expr< ( $list:ts$ ) >>
+          )
+    ]
+    | [ e = expr LEVEL "simple" -> e ]
   ];
 
   ctyp: [
