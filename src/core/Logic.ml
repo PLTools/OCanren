@@ -149,7 +149,7 @@ module Fmap (T : T1) =
 
 module Fmap2 (T : T2) =
   struct
-    external distrib : (('a,'b) injected, ('c, 'd) injected) T.t -> (('a, 'b) T.t, ('c, 'd) T.t) injected = "%identity"
+    external distrib : (('a, 'b) injected, ('c, 'd) injected) T.t -> (('a, 'c) T.t, ('b, 'd) T.t) injected = "%identity"
 
     let rec reify r1 r2 env x =
       match Env.var env x with

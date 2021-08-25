@@ -1,7 +1,7 @@
 .PHONY: celan \
 	lib ppx syntax package \
 	test promote discover-tests clean-test \
-	regression samples clean-samples \
+	regression samples clean-samples watch \
 	install uninstall
 
 .DEFAULT_GOAL: all
@@ -43,6 +43,9 @@ clean-samples:
 celan: clean
 clean: clean-test clean-samples
 	dune clean
+
+watch:
+	dune build -w camlp5/pa_ocanren.cma ppx/ src/
 
 install:
 	dune build @install
