@@ -184,7 +184,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="digesting-the-types">
-<h1>Digesting the Types<a class="headerlink" href="#digesting-the-types" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>Digesting the Types<a class="headerlink" href="#digesting-the-types" title="Permalink to this headline">¶</a></h1>
 <p>OCanren is designed for typed relational programming. Two points here:
 it is typed, and it is relational. We shall now study how to work with
 the types. This clears the way so that we can then focus on the
@@ -255,6 +255,16 @@ would get (literally):</p>
 <p>Equation <code class="docutils literal notranslate"><span class="pre">(*</span> <span class="pre">2b</span> <span class="pre">*)</span></code> is the usual definition of a list type, which we
 call a <em>ground list type</em>.</p>
 <p>The abstract list type can also be used to define logic list types.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The type definition <cite>type ‘a ground = (‘a, ‘a ground) t</cite> above require an non-conventional compiler switch <cite>-rectypes</cite>. It allows more liberal types definitions by disable infamously known in the area of logic programming “occurs check”. Without this switch
+we can’t not construct a type ground list which type system considers equal to predefined <code class="docutils literal notranslate"><span class="pre">Stdlib.list</span></code> .
+While using this switch we pay by seeing less trivial type errors in compile time.</p>
+</div>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Actually in the moment we can’t declare the list type which is the same as predfined one. We need a small patch.</p>
+</div>
 </div>
 <div class="section" id="logic-types">
 <h2>Logic Types<a class="headerlink" href="#logic-types" title="Permalink to this headline">¶</a></h2>
@@ -274,7 +284,7 @@ define a type.</p>
 <p>Observe that for cases 1-4, we have some knowledge about the structure
 of the list: we know whether it is empty or not because there is a top
 level constructor to inspect. We call such logic lists <em>guarded</em>.</p>
-<div class="admonition-todo admonition" id="index-1">
+<div class="admonition-todo admonition" id="index-2">
 <p class="first admonition-title">Todo</p>
 <p class="last">I would recommend to use the term <em>partially ground</em> instead of <em>guarded</em>. What do you think, Yue Li?</p>
 </div>
@@ -305,7 +315,11 @@ guarded logic list from a pure logic list. Moreover, The <code class="docutils l
 constructor’s <code class="docutils literal notranslate"><span class="pre">int</span></code> argument uniquely identifies a pure logic list,
 and the second argument is a (possibly empty) list of logic lists that
 can be used to instantiate the pure logic list.</p>
-<div class="admonition-todo admonition" id="index-2">
+<div class="admonition-todo admonition" id="index-3">
+<p class="first admonition-title">Todo</p>
+<p class="last">Say explicilty about disequalty constraints</p>
+</div>
+<div class="admonition-todo admonition" id="index-4">
 <p class="first admonition-title">Todo</p>
 <p class="last">Discuss with Yue Li why concept of guarded types is ‘illuminating’.</p>
 </div>
@@ -440,7 +454,8 @@ logic list type can be rewritten as:</p>
 <div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Defining</span> <span class="n">the</span> <span class="n">logic</span> <span class="nb">list</span> <span class="nb">type</span> <span class="n">using</span> <span class="p">[</span><span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span><span class="p">]</span> <span class="o">*</span><span class="p">)</span>
 <span class="n">module</span> <span class="n">MyList</span> <span class="o">=</span> <span class="n">struct</span>
   <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">b</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Nil</span> <span class="o">|</span> <span class="n">Cons</span> <span class="n">of</span> <span class="s1">&#39;a * &#39;</span><span class="n">b</span>
-  <span class="nb">type</span> <span class="s1">&#39;b logic   =  &#39;</span><span class="n">b</span> <span class="n">guarded</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span> <span class="ow">and</span> <span class="s1">&#39;b guarded  = (&#39;</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;b logic) t</span>
+  <span class="nb">type</span> <span class="s1">&#39;b logic   =  &#39;</span><span class="n">b</span> <span class="n">guarded</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span>
+  <span class="ow">and</span> <span class="s1">&#39;b guarded  = (&#39;</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;b logic) t</span>
 <span class="n">end</span>
 </pre></div>
 </div>
@@ -448,7 +463,8 @@ logic list type can be rewritten as:</p>
 <div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Defining</span> <span class="n">the</span> <span class="n">logic</span> <span class="n">number</span> <span class="nb">type</span> <span class="n">using</span> <span class="p">[</span><span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span><span class="p">]</span> <span class="o">*</span><span class="p">)</span>
 <span class="n">module</span> <span class="n">Peano</span> <span class="o">=</span> <span class="n">struct</span>
   <span class="nb">type</span> <span class="s1">&#39;a t   = O | S of &#39;</span><span class="n">a</span>
-  <span class="nb">type</span> <span class="n">logic</span>  <span class="o">=</span>  <span class="n">guarded</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span> <span class="ow">and</span> <span class="n">guarded</span> <span class="o">=</span> <span class="n">logic</span> <span class="n">t</span>
+  <span class="nb">type</span> <span class="n">logic</span>  <span class="o">=</span>  <span class="n">guarded</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span>
+  <span class="ow">and</span> <span class="n">guarded</span> <span class="o">=</span> <span class="n">logic</span> <span class="n">t</span>
 <span class="n">end</span>
 </pre></div>
 </div>
@@ -474,22 +490,24 @@ logic list type can be rewritten as:</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">injected</span></code> type constructor collects the corresponding ground and
 logic type constructors, to which we assign the name <code class="docutils literal notranslate"><span class="pre">groundi</span></code> (read
 “groun-dee”):</p>
-<p>** I should mention that names <code class="docutils literal notranslate"><span class="pre">groundi</span></code> was invented kind of
-randomly. In more recent code bases I use <code class="docutils literal notranslate"><span class="pre">injected</span></code> **</p>
+<div class="admonition-todo admonition" id="index-5">
+<p class="first admonition-title">Todo</p>
+<p class="last">Rename groundi to injected in the source code, and in the tutorial after that</p>
+</div>
 <div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Complete</span> <span class="n">definitions</span> <span class="n">of</span> <span class="n">injected</span> <span class="n">types</span>
     <span class="k">for</span> <span class="n">lists</span> <span class="ow">and</span> <span class="n">Peano</span> <span class="n">numbers</span> <span class="o">*</span><span class="p">)</span>
 
 <span class="n">module</span> <span class="n">MyList</span> <span class="o">=</span> <span class="n">struct</span>
   <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">b</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Nil</span> <span class="o">|</span> <span class="n">Cons</span> <span class="n">of</span> <span class="s1">&#39;a * &#39;</span><span class="n">b</span>
   <span class="nb">type</span> <span class="s1">&#39;a ground = (&#39;</span><span class="n">a</span><span class="p">,</span> <span class="s1">&#39;a ground) t</span>
-  <span class="nb">type</span> <span class="s1">&#39;b logic   =  (&#39;</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;b logic) t MyLogic.logic</span>
+  <span class="nb">type</span> <span class="s1">&#39;b logic =  (&#39;</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;b logic) t MyLogic.logic</span>
   <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a, &#39;</span><span class="n">b</span><span class="p">)</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a ground, &#39;</span><span class="n">b</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span>
 <span class="n">end</span>
 
 <span class="n">module</span> <span class="n">Peano</span> <span class="o">=</span> <span class="n">struct</span>
-  <span class="nb">type</span> <span class="s1">&#39;a t   = O | S of &#39;</span><span class="n">a</span>
+  <span class="nb">type</span> <span class="s1">&#39;a t = O | S of &#39;</span><span class="n">a</span>
   <span class="nb">type</span> <span class="n">ground</span> <span class="o">=</span> <span class="n">ground</span> <span class="n">t</span>
-  <span class="nb">type</span> <span class="n">logic</span>  <span class="o">=</span>  <span class="n">logic</span> <span class="n">t</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span>
+  <span class="nb">type</span> <span class="n">logic</span> <span class="o">=</span>  <span class="n">logic</span> <span class="n">t</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span>
   <span class="nb">type</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">(</span><span class="n">ground</span><span class="p">,</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span>
 <span class="n">end</span>
 </pre></div>
@@ -499,18 +517,18 @@ information is hidden from the user. Therefore we do not concern
 ourselves as to what an inhabitant of an injected type looks like.</p>
 <div class="section" id="injecting-non-recursive-types">
 <h3>Injecting non-recursive types<a class="headerlink" href="#injecting-non-recursive-types" title="Permalink to this headline">¶</a></h3>
-<p>This is even simpler: no need to abstract over self. The consequence is
-that the abstract type and the ground type coincide (and the guarded
-type as well if made explicit).</p>
-<p>** I think things are a little bit more complicated. Fully abstract
-type coincide with ground only if type is fully abstract from the
-beggining. If a type definition uses some predefined types in it, we
-will still need a fully abstract type, even where this type definition
-is not recursive**</p>
-<p>For example, logic pairs:
-<code class="docutils literal notranslate"><span class="pre">ocaml</span> <span class="pre">(**</span> <span class="pre">logic</span> <span class="pre">pair</span> <span class="pre">type</span> <span class="pre">*)</span> <span class="pre">module</span> <span class="pre">MyPair</span> <span class="pre">=</span> <span class="pre">struct</span>&#160;&#160; <span class="pre">type</span> <span class="pre">('a1,</span> <span class="pre">'a2)</span> <span class="pre">t</span> <span class="pre">=</span> <span class="pre">'a1</span> <span class="pre">*</span> <span class="pre">'a2</span>&#160;&#160; <span class="pre">type</span> <span class="pre">('a1,</span> <span class="pre">'a2)</span> <span class="pre">ground</span> <span class="pre">=</span> <span class="pre">('a1,</span> <span class="pre">'a2)</span> <span class="pre">t</span>&#160;&#160; <span class="pre">type</span> <span class="pre">('b1,</span> <span class="pre">'b2)</span> <span class="pre">logic</span> <span class="pre">=</span>&#160; <span class="pre">('b1,</span> <span class="pre">'b2)</span> <span class="pre">t</span> <span class="pre">MyLogic.logic</span>&#160;&#160; <span class="pre">type</span> <span class="pre">('a1,</span> <span class="pre">'a2,</span> <span class="pre">'b1,</span> <span class="pre">'b2)</span> <span class="pre">groundi</span> <span class="pre">=</span> <span class="pre">(('a1,</span> <span class="pre">'a2)</span> <span class="pre">ground,</span> <span class="pre">('b1,</span> <span class="pre">'b2)</span> <span class="pre">logic)</span> <span class="pre">injected</span> <span class="pre">end</span></code>
-We can now talk about:</p>
-<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Peano</span> <span class="n">number</span> <span class="n">Pairs</span> <span class="o">*</span><span class="p">)</span>
+<p>This is even simpler: no need to abstract over self.</p>
+<p>For example, logic pairs:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="n">MyPair</span> <span class="o">=</span> <span class="n">struct</span>
+   <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, &#39;</span><span class="n">a2</span><span class="p">)</span> <span class="n">t</span> <span class="o">=</span> <span class="s1">&#39;a1 * &#39;</span><span class="n">a2</span>
+   <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, &#39;</span><span class="n">a2</span><span class="p">)</span> <span class="n">ground</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a1, &#39;</span><span class="n">a2</span><span class="p">)</span> <span class="n">t</span>
+   <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;b1, &#39;</span><span class="n">b2</span><span class="p">)</span> <span class="n">logic</span> <span class="o">=</span>  <span class="p">(</span><span class="s1">&#39;b1, &#39;</span><span class="n">b2</span><span class="p">)</span> <span class="n">t</span> <span class="n">MyLogic</span><span class="o">.</span><span class="n">logic</span>
+   <span class="nb">type</span> <span class="p">(</span><span class="s1">&#39;a1, &#39;</span><span class="n">a2</span><span class="p">,</span> <span class="s1">&#39;b1, &#39;</span><span class="n">b2</span><span class="p">)</span> <span class="n">groundi</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;a1, &#39;</span><span class="n">a2</span><span class="p">)</span> <span class="n">ground</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;b1, &#39;</span><span class="n">b2</span><span class="p">)</span> <span class="n">logic</span><span class="p">)</span> <span class="n">injected</span>
+<span class="n">end</span>
+</pre></div>
+</div>
+<p>We can now talk about:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="o">**</span> <span class="n">Pair</span> <span class="n">of</span> <span class="n">Peano</span> <span class="n">numbers</span> <span class="o">*</span><span class="p">)</span>
 <span class="n">module</span> <span class="n">PP</span> <span class="o">=</span> <span class="n">struct</span>
 
   <span class="p">(</span><span class="o">**</span> <span class="n">Ground</span> <span class="n">pairs</span> <span class="n">of</span> <span class="n">ground</span> <span class="n">Peano</span> <span class="n">numbers</span><span class="p">,</span> <span class="n">like</span> <span class="p">(</span><span class="n">O</span><span class="p">,</span> <span class="n">O</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">O</span><span class="p">,</span> <span class="n">S</span><span class="p">(</span><span class="n">O</span><span class="p">))</span> <span class="o">*</span><span class="p">)</span>
@@ -546,7 +564,7 @@ polymorphic lists, and lists of polymorphic pairs.</p>
 recurisve definition at least one type parameter is instantiated (See
 also
 <a class="reference external" href="https://ocaml.org/releases/4.11/htmlman/polymorphism.html#s:polymorphic-recursion">this</a>).
-Injection of non-regular recursive types is not discussed here.</p>
+Injection of non-regular recursive types is not discussed here, and, frankly speaking, never required in relational progrmming in OCanren.</p>
 </div>
 </div>
 <div class="section" id="compiling-the-program">
@@ -556,9 +574,6 @@ Injection of non-regular recursive types is not discussed here.</p>
 the lightweight <a class="reference external" href="Makefile">Makefile</a>, where we need the <code class="docutils literal notranslate"><span class="pre">-rectypes</span></code>
 compiler option to deal with the rather liberal recurisve types that
 appear in this lesson.</p>
-<p>** ‘to deal with the rather liberal recurisve types that appear in
-this lesson.’ should be rephrased because I don’t quite understand what
-you wanted to say **</p>
 <div class="section" id="the-use-of-mylogic-logic-and-mylogic-injected-instead-of-resp-ocanren-logic-and-ocanren-injected">
 <h3>The use of <code class="docutils literal notranslate"><span class="pre">MyLogic.logic</span></code> and <code class="docutils literal notranslate"><span class="pre">MyLogic.injected</span></code> instead of (resp.) <code class="docutils literal notranslate"><span class="pre">OCanren.logic</span></code> and <code class="docutils literal notranslate"><span class="pre">OCanren.injected</span></code><a class="headerlink" href="#the-use-of-mylogic-logic-and-mylogic-injected-instead-of-resp-ocanren-logic-and-ocanren-injected" title="Permalink to this headline">¶</a></h3>
 <p>Note that we defined the module <code class="docutils literal notranslate"><span class="pre">MyLogic</span></code> for pedagogical purposes
@@ -572,11 +587,11 @@ definitions in the OCanren module
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
 <p>OCanren works on injected types that are defined via abstract, ground
 and logic types. The table below organizes these types into four levels
-by complexity and dependency.</p>
+by dependency.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="47%" />
-<col width="53%" />
+<col width="39%" />
+<col width="61%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Level No.</th>
@@ -585,19 +600,20 @@ by complexity and dependency.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>1</td>
-<td>Abstract</td>
+<td>Fully Abstract</td>
 </tr>
 <tr class="row-odd"><td>2</td>
 <td>Ground</td>
 </tr>
 <tr class="row-even"><td>3</td>
-<td>Logic</td>
+<td>Injected</td>
 </tr>
 <tr class="row-odd"><td>4</td>
-<td>Injected</td>
+<td>Logic</td>
 </tr>
 </tbody>
 </table>
+<p>In principle, OCanren can be implemented without injected types by performing unification on logic types. But it will hurt the performance a lot. Detailed motivation about ‘injected’ typed they can get in the  <a class="reference internal" href="../../papers.html#papers"><span class="std std-ref">paper</span></a> <cite>Typed Embedding of Relational Programming Language</cite>.</p>
 <p>We give templates for definig injected types:</p>
 <div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">open</span> <span class="n">OCanren</span>
 
@@ -629,9 +645,8 @@ the way so that we can then focus on the relational part.</p>
 <p>As examples, we defined types of Peano numbers, and polymorphic lists
 and pairs, each showing the four-level structure. The <code class="docutils literal notranslate"><span class="pre">Peano</span></code>,
 <code class="docutils literal notranslate"><span class="pre">MyList</span></code> and <code class="docutils literal notranslate"><span class="pre">MyPair</span></code> modules correspond to the OCanren <a class="reference external" href="../../Installation/ocanren/src/std">standard
-libraries</a> <code class="docutils literal notranslate"><span class="pre">LNat</span></code>, <code class="docutils literal notranslate"><span class="pre">LList</span></code>
-and <code class="docutils literal notranslate"><span class="pre">LPair</span></code> respectively where the leading <code class="docutils literal notranslate"><span class="pre">L</span></code> in the module names
-stands for “logic”.</p>
+libraries</a> <code class="docutils literal notranslate"><span class="pre">OCanren.Std.Nat</span></code>, <code class="docutils literal notranslate"><span class="pre">OCanren.Std.List</span></code>
+and <code class="docutils literal notranslate"><span class="pre">OCanren.Std.Pair</span></code> respectively.</p>
 </div>
 </div>
 </div>
@@ -656,7 +671,7 @@ stands for “logic”.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, JetBrains-Research
+        &copy; Copyright 2021, JetBrains Research
 
     </p>
   </div>

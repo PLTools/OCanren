@@ -85,8 +85,18 @@
 <li class="toctree-l1"><a class="reference internal" href="tuto_main/tuto_main.html">The Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Camlp5 syntax extensions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#ocanren-vs-minikanren">OCanren vs. miniKanren</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ocanren-specific-camlp5-syntax-extension">OCanren-specific Camlp5 syntax extension</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ocanren-vs-minikanren">OCanren vs. miniKanren</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ocanren-specific-camlp5-syntax-extension">OCanren-specific Camlp5 syntax extension</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-structure-of-the-parser-an-overview">The structure of the parser: an overview</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#what-we-see">What we see</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#how-it-works">How it works</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#the-global-entry-expr">The global entry: <code class="docutils literal notranslate"><span class="pre">expr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local-entries-i-ocanren-embedding-and-ocanren-expr">Local entries I: <code class="docutils literal notranslate"><span class="pre">ocanren_embedding</span></code> and <code class="docutils literal notranslate"><span class="pre">ocanren_expr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quotations-and-antiquotations">Quotations and antiquotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local-entries-ii-ocanren-term-and-ocanren-term">Local entries II: <code class="docutils literal notranslate"><span class="pre">ocanren_term</span></code> and <code class="docutils literal notranslate"><span class="pre">ocanren_term'</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -201,9 +211,373 @@ expression to its string form. For example, it rewrites <code class="docutils li
 </table>
 <p>In addition, OCanren introduces explicit disjunction (<code class="docutils literal notranslate"><span class="pre">|||</span></code>) and conjunction
 (<code class="docutils literal notranslate"><span class="pre">&amp;&amp;&amp;</span></code>) operators for goals.</p>
+</div>
 <div class="section" id="ocanren-specific-camlp5-syntax-extension">
-<span id="let-ocanren"></span><h3>OCanren-specific Camlp5 syntax extension<a class="headerlink" href="#ocanren-specific-camlp5-syntax-extension" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<span id="let-ocanren"></span><h2>OCanren-specific Camlp5 syntax extension<a class="headerlink" href="#ocanren-specific-camlp5-syntax-extension" title="Permalink to this headline">¶</a></h2>
+<p>(Also known as regular extension)</p>
+<p>This section is a part of Yue Li’s tutorial on OCanren.</p>
+<p>We take a
+look at the
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml">implementation</a> of
+the <code class="docutils literal notranslate"><span class="pre">ocanren{}</span></code> quotation which we will call <em>the formula parser</em> in
+the rest of this lesson. Our terminology follows <a class="reference external" href="https://camlp5.github.io/doc/htmlc/">Camlp5 Reference
+Manual</a>. We take a top-down
+approach, starting with an overview of the structure of the parser, then
+explain its individual parts.</p>
+<div class="section" id="the-structure-of-the-parser-an-overview">
+<h3>The structure of the parser: an overview<a class="headerlink" href="#the-structure-of-the-parser-an-overview" title="Permalink to this headline">¶</a></h3>
+<p>We describe the formula parser as the reader (a Camlp5 novice) sees it,
+and then putting it in perspective, briefly explain how it works.</p>
+<div class="section" id="what-we-see">
+<h4>What we see<a class="headerlink" href="#what-we-see" title="Permalink to this headline">¶</a></h4>
+<p>This code links with Camlp5 libraries, in particular the one that provide ways to extend syntax: <cite>pa_extend</cite>.
+Loading them amounts to extending the OCaml syntactic category
+<a class="reference external" href="https://ocaml.org/releases/4.11/htmlman/expr.html">expression</a> with
+several sub-categories one of which is named <em>extend</em>:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">expr</span> <span class="o">=</span> <span class="o">...</span> <span class="o">|</span> <span class="n">extend</span> <span class="p">;</span>
+<span class="n">extend</span> <span class="o">=</span> <span class="s2">&quot;EXTEND&quot;</span><span class="p">,</span> <span class="n">extend</span><span class="o">-</span><span class="n">body</span><span class="p">,</span> <span class="s2">&quot;END&quot;</span> <span class="p">;</span>
+</pre></div>
+</div>
+<p>An expression that belongs to the category “extend” would be called an
+<em>EXTEND statement</em>.</p>
+<p>Our formula parser has only
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L167">one</a> EXTEND
+statement, whose extend-body starts with a <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L168">global
+indicator</a>
+followed by a semicolon separated list of <em>entries</em> (whose names are,
+exhaustively,
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L170">long_ident</a>,
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L185">expr</a>,
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L221">ocanren_embedding</a>,
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L225">ocanren_expr</a>,
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L254">ocanren_term</a>,
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L258">ocanren_term’</a>
+and
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L289">ctyp</a>). An
+<em>entry</em> is a (vertical bar separated) list of <em>levels</em> (with a pair of
+enclosing square brackets); a <em>level</em> is a (vertical bar separated) list
+of <em>rules</em> (with a pair of enclosing square brackets); a (non-empty)
+<em>rule</em> is a (semicolon separated) list of “psymbols” (collectively
+acting as a pattern) followed by an optional semantic action that
+produces an abstract syntax tree (or AST, of any string that matches the
+pattern specified by the list of psymbols). The details on the syntax
+and semantics of the “extend” category can be found in the <a class="reference external" href="https://camlp5.github.io/doc/htmlc/grammars.html#a:Syntax-of-the-EXTEND-statement">Extensible
+Grammars</a>
+section of the Camlp5 Manual.</p>
+<p>Besides the EXTEND statement our formula parser has some auxiliary
+functions such as
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L170">decapitalize</a>,
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L43">ctor</a> and
+<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L56">fix_term</a>
+etc.</p>
+</div>
+<div class="section" id="how-it-works">
+<h4>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h4>
+<p>The syntax extension kit <code class="docutils literal notranslate"><span class="pre">pa_extend</span></code> is fundamental for the
+cascade of extensions described below. The entries <code class="docutils literal notranslate"><span class="pre">expr</span></code> and <code class="docutils literal notranslate"><span class="pre">ctyp</span></code>
+origin from the module Pcaml that is the core of Camlp5 and is
+<a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L37">opened</a> by the
+formula parser. Pcaml initializes the (empty) grammar entries <code class="docutils literal notranslate"><span class="pre">expr</span></code>
+and <code class="docutils literal notranslate"><span class="pre">ctyp</span></code>. The standard OCaml parsing kit of Camlp5 then defines them
+by means of an EXTEND statement and accordng to the standard syntax of
+OCaml. Our EXTEND statement further extends these global entries with
+locally defined entries — entries other than <code class="docutils literal notranslate"><span class="pre">expr</span></code> and <code class="docutils literal notranslate"><span class="pre">ctyp</span></code> in
+our EXTEND statement are locally defined, such as <code class="docutils literal notranslate"><span class="pre">ocanren_embedding</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ocanren_expr</span></code> and <code class="docutils literal notranslate"><span class="pre">ocanren_term</span></code> etc. Below you can find
+three stages of extension with links to documentation
+..  The following table summarizes the stages of extension, providing links to copies of relevant files from either OCanren  ource or Camlp5 source, together with their documentations.</p>
+<ol class="arabic simple">
+<li>Initialization is documented in <a class="reference external" href="https://camlp5.github.io/doc/htmlc/pcaml.html">The Pcaml module</a> and happend in file <cite>pcaml.ml</cite> : <a class="reference external" href="https://github.com/camlp5/camlp5/blob/rel8.00.02/main/pcaml.ml#L57">expr</a> and <a class="reference external" href="https://github.com/camlp5/camlp5/blob/rel8.00.02/main/pcaml.ml#L60">ctyp</a>.</li>
+<li>Parsing Kit for Standard OCaml <cite>pa_o.ml</cite> : <a class="reference external" href="https://github.com/camlp5/camlp5/blob/rel8.00.02/etc/pa_o.ml#L1193">expr</a>, <a class="reference external" href="https://github.com/camlp5/camlp5/blob/rel8.00.02/etc/pa_o.ml#L1971">ctyp</a></li>
+<li>OCanren Formula Parser <cite>pa_ocanren.ml</cite>: <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L185">expr</a>, <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L289">ctyp</a></li>
+</ol>
+<p>As a preprocessing tool, Camlp5 defines its own parser <code class="docutils literal notranslate"><span class="pre">pa_o.ml</span></code> for
+standard OCaml, so that any standard OCaml code can be converted by it
+into an AST recongnizable by the <a class="reference external" href="https://ocaml.org/releases/4.11/htmlman/comp.html">OCaml
+compiler</a>. Is
+<code class="docutils literal notranslate"><span class="pre">pa_o.ml</span></code> a redundant piece of work for we can just use the OCaml
+compiler to build the AST? Not exactly, because besides <code class="docutils literal notranslate"><span class="pre">pa_o.ml</span></code>,
+Camlp5 also provides EXTEND statments so that syntactic categories
+defined in <code class="docutils literal notranslate"><span class="pre">pa_o.ml</span></code> can be extended. The result is that using the
+combination of <code class="docutils literal notranslate"><span class="pre">pa_ocanren.ml</span></code> and <code class="docutils literal notranslate"><span class="pre">pa_o.ml</span></code> we can convert code
+that is not wholly in OCaml into a purely OCaml AST.</p>
+</div>
+<div class="section" id="conclusion">
+<h4>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h4>
+<p>The OCanren formula parser has the EXTEND statement as its core, which
+consists of a list of entries, notably the global entries <code class="docutils literal notranslate"><span class="pre">expr</span></code> and
+<code class="docutils literal notranslate"><span class="pre">ctyp</span></code> that extend the corresponding predefined entries that conform
+to standard OCaml. Such extension is characterized by the locally
+defined entries such as <code class="docutils literal notranslate"><span class="pre">ocanren_embedding</span></code>.</p>
+<p>We will next focus on the extension of <code class="docutils literal notranslate"><span class="pre">expr</span></code> and leave <code class="docutils literal notranslate"><span class="pre">ctyp</span></code>.
+As far as the semantics is concerned entries are
+parsers for syntactic categories. From now on we use the words “entry”
+and “parser” interchangeably.</p>
+</div>
+</div>
+<div class="section" id="the-global-entry-expr">
+<h3>The global entry: <code class="docutils literal notranslate"><span class="pre">expr</span></code><a class="headerlink" href="#the-global-entry-expr" title="Permalink to this headline">¶</a></h3>
+<p>This is the major entry of the OCanren formula parser, which starts like:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">expr</span><span class="p">:</span> <span class="n">LEVEL</span> <span class="s2">&quot;expr1&quot;</span> <span class="p">[</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>where we see the entry name <em>expr</em> and the position <code class="docutils literal notranslate"><span class="pre">LEVEL</span> <span class="pre">&quot;expr1&quot;</span></code>.
+We now use OCanren-expr to refer to the <code class="docutils literal notranslate"><span class="pre">expr</span></code> entry in the
+OCanren formula parser, and OCaml-expr to refer to the predefined
+entry <code class="docutils literal notranslate"><span class="pre">expr</span></code> in the Camlp5 parsing kit for standard OCaml.
+OCanren-expr extends OCaml-expr in the position
+<code class="docutils literal notranslate"><span class="pre">LEVEL</span> <span class="pre">&quot;expr1&quot;</span></code> : the first level of the OCanren-expr is merged
+with the <a class="reference external" href="camlp5_src_ref/pa_o.ml#L563">level named “expr1”</a> of the
+OCaml-expr, i.e., their rules are put together and grouped as a
+single level named “expr1”; other levels from OCanren-expr are
+inserted into OCaml-expr as new levels, right below the extended
+“expr1” level. There are three levels in the OCanren-expr, the third
+of which is:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span> <span class="n">e</span><span class="o">=</span><span class="n">ocanren_embedding</span> <span class="o">-&gt;</span> <span class="n">e</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p>This third level of OCanren-expr is inserted as a new level in
+OCaml-expr, and the entry <code class="docutils literal notranslate"><span class="pre">ocanren_embedding</span></code> directly corresponds
+to the <code class="docutils literal notranslate"><span class="pre">ocanren{}</span></code> quotations we see in the library implementation, so
+that we can mix <code class="docutils literal notranslate"><span class="pre">ocanren{}</span></code> quotations with standard OCaml
+expressions, and Camlp5 will take care to convert such mixture into
+standard OCaml AST. We now explain the local entry
+<code class="docutils literal notranslate"><span class="pre">ocanren_embedding</span></code>.</p>
+</div>
+<div class="section" id="local-entries-i-ocanren-embedding-and-ocanren-expr">
+<h3>Local entries I: <code class="docutils literal notranslate"><span class="pre">ocanren_embedding</span></code> and <code class="docutils literal notranslate"><span class="pre">ocanren_expr</span></code><a class="headerlink" href="#local-entries-i-ocanren-embedding-and-ocanren-expr" title="Permalink to this headline">¶</a></h3>
+<p>The entry <code class="docutils literal notranslate"><span class="pre">ocanren_embedding</span></code> directly corresponds to the
+<code class="docutils literal notranslate"><span class="pre">ocanren{}</span></code> quotations we see in the library implementation, and it
+further calls the entry <code class="docutils literal notranslate"><span class="pre">ocanren_expr</span></code> to parse the content between
+the braces:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ocanren_embedding</span><span class="p">:</span> <span class="p">[[</span> <span class="s2">&quot;ocanren&quot;</span><span class="p">;</span> <span class="s2">&quot;{&quot;</span><span class="p">;</span> <span class="n">e</span><span class="o">=</span><span class="n">ocanren_expr</span><span class="p">;</span> <span class="s2">&quot;}&quot;</span> <span class="o">-&gt;</span> <span class="n">e</span> <span class="p">]];</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">ocanren_expr</span></code> entry has four levels which strongly reminds us of
+the recursive definition of a formula, i.e, a formula is either atomic,
+or a conjunction/ disjunction of two formulae, or an existential
+quantification over a formula, or an explicitly delimited formula (with
+braces).</p>
+<p>1. The <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L226">first level</a> parses a
+disjunction:</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>&quot;top&quot; RIGHTA [ l=SELF; &quot;|&quot;; r=SELF -&gt; &lt;:expr&lt; OCanren.disj $l$ $r$ &gt;&gt; ]
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>The <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L227">second level</a> parses a conjunction:</li>
+</ol>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>RIGHTA [ l=SELF; &quot;&amp;&quot;; r=SELF -&gt; &lt;:expr&lt; OCanren.conj $l$ $r$ &gt;&gt; ]
+</pre></div>
+</div>
+<p>3. The <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L2289">third level</a> parses a
+fresh variable introduction (i.e., existential quantification):</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>[ &quot;fresh&quot;; vars=LIST1 LIDENT SEP &quot;,&quot;; &quot;in&quot;; b=ocanren_expr LEVEL &quot;top&quot; -&gt;
+   List.fold_right
+     (fun x b -&gt;
+        let p = &lt;:patt&lt; $lid:x$ &gt;&gt; in
+        &lt;:expr&lt; OCanren.call_fresh ( fun $p$ -&gt; $b$ ) &gt;&gt;
+     )
+     vars
+     b
+]
+</pre></div>
+</div>
+<p>4. The <a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L238">fourth level</a> parses
+atomic, named and grouped formulae (and else):</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>&quot;primary&quot; [
+    p=prefix; t=ocanren_term                      -&gt; let p = &lt;:expr&lt; $lid:p$ &gt;&gt; in &lt;:expr&lt; $p$ $t$ &gt;&gt;
+  | l=ocanren_term; &quot;==&quot; ; r=ocanren_term         -&gt; &lt;:expr&lt; OCanren.unify $l$ $r$ &gt;&gt;
+  | l=ocanren_term; &quot;=/=&quot;; r=ocanren_term         -&gt; &lt;:expr&lt; OCanren.diseq $l$ $r$ &gt;&gt;
+  | l=ocanren_term; op=operator; r=ocanren_term   -&gt; let p = &lt;:expr&lt; $lid:op$ &gt;&gt; in
+                                                     let a = &lt;:expr&lt; $p$ $l$ &gt;&gt; in
+                                                     &lt;:expr&lt; $a$ $r$ &gt;&gt;
+  | x=ocanren_term                                -&gt; x
+  | &quot;{&quot;; e=ocanren_expr; &quot;}&quot;                      -&gt; e
+  (* other rules omitted *)
+  ...
+]
+</pre></div>
+</div>
+<p>The order of the levels determines the precedence of the logic
+connectives: the parser first sees if the formula is a disjunction at
+the top level, if not, sees if it is conjunction, and so on, implying
+that disjunction has the least precedence, above which is conjunction,
+then existential quantification, and finally syntactic equality,
+disequality and braced groups (among others) enjoy the highest
+precedence. We can justly call a level: a “precedence level”.</p>
+<p>The first and second level also have the associativity indicator
+<code class="docutils literal notranslate"><span class="pre">RIGHTA</span></code>, requiring that the conjunction and disjunction connectives
+associate to the right.</p>
+<p>The third level refers back to the first level (named “top”) when
+parsing the <code class="docutils literal notranslate"><span class="pre">&lt;body&gt;</span></code> part of a formula of the form
+<code class="docutils literal notranslate"><span class="pre">fresh</span> <span class="pre">&lt;vars&gt;</span> <span class="pre">in</span> <span class="pre">&lt;body&gt;</span></code>, implying that the scope of <code class="docutils literal notranslate"><span class="pre">fresh</span></code> extends
+to the right as far as possible.</p>
+</div>
+<div class="section" id="quotations-and-antiquotations">
+<h3>Quotations and antiquotations<a class="headerlink" href="#quotations-and-antiquotations" title="Permalink to this headline">¶</a></h3>
+<p>In every rule above we could see at least one
+<a class="reference external" href="https://camlp5.github.io/doc/htmlc/quot.html">quotation</a>:</p>
+<div class="code ebnf highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quotation</span> <span class="o">=</span> <span class="s2">&quot;&lt;:&quot;</span><span class="p">,</span> <span class="n">quotation</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">,</span> <span class="n">quotation</span> <span class="n">body</span><span class="p">,</span> <span class="s2">&quot;&gt;&gt;&quot;</span>
+</pre></div>
+</div>
+<p>Within a quotation body we may see an
+<a class="reference external" href="https://camlp5.github.io/doc/htmlc/quot.html#a:Antiquotations">antiquotation</a>:</p>
+<div class="code ebnf highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">antiquotation</span> <span class="o">=</span> <span class="s2">&quot;$&quot;</span><span class="p">,</span> <span class="n">antiquotation</span> <span class="n">body</span><span class="p">,</span> <span class="s2">&quot;$&quot;</span>
+</pre></div>
+</div>
+<p>If antiquotations are not allowed, then a quotation body is any
+expression in the <a class="reference external" href="https://camlp5.github.io/doc/htmlc/revsynt.html">revised
+syntax</a> of OCaml. At
+parse time a quotation is expanded by the
+(<a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L35">loaded</a> and
+<a class="reference external" href="https://camlp5.github.io/doc/htmlc/ast_strict.html#a:Nodes-and-Quotations">predefined</a>)
+quotation expander <code class="docutils literal notranslate"><span class="pre">q_MLast.cmo</span></code> into an AST of the quotation body. An
+antiquotaion body is usually a pattern variable bound to some other AST
+which is inserted into the the quotation body’s AST.</p>
+</div>
+<div class="section" id="local-entries-ii-ocanren-term-and-ocanren-term">
+<h3>Local entries II: <code class="docutils literal notranslate"><span class="pre">ocanren_term</span></code> and <code class="docutils literal notranslate"><span class="pre">ocanren_term'</span></code><a class="headerlink" href="#local-entries-ii-ocanren-term-and-ocanren-term" title="Permalink to this headline">¶</a></h3>
+<p>The values that we write in an <code class="docutils literal notranslate"><span class="pre">ocanren{}</span></code> quotation, such as
+<code class="docutils literal notranslate"><span class="pre">&quot;this</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">string&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">'c'</span></code> (a single character), <code class="docutils literal notranslate"><span class="pre">true</span></code> (a
+boolean value), <code class="docutils literal notranslate"><span class="pre">S</span> <span class="pre">(S</span> <span class="pre">O)</span></code> (a constructor application), <code class="docutils literal notranslate"><span class="pre">(O,</span> <span class="pre">S</span> <span class="pre">O)</span></code> (a
+tuple), <code class="docutils literal notranslate"><span class="pre">15</span></code> (an integer), <code class="docutils literal notranslate"><span class="pre">[1;2;3]</span></code> (a list) and <code class="docutils literal notranslate"><span class="pre">false</span> <span class="pre">::</span> <span class="pre">[]</span></code>
+(amending a list) etc., are converted into the injected level from the
+ground level where they seem to be. For example, the occurrence of
+<code class="docutils literal notranslate"><span class="pre">S</span> <span class="pre">(S</span> <span class="pre">O)</span></code> in the expression below is transformed into
+<code class="docutils literal notranslate"><span class="pre">s</span> <span class="pre">(s</span> <span class="pre">(o</span> <span class="pre">()))</span></code> :</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ocanren</span> <span class="p">{</span> <span class="n">fresh</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">S</span> <span class="p">(</span><span class="n">S</span> <span class="n">O</span><span class="p">)</span> <span class="o">==</span> <span class="n">x</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>Such conversion bridges the gap between the programmer’s intuition of
+writing OCaml values and OCanren’s internal representation of the same
+values, Inspecting the entries <code class="docutils literal notranslate"><span class="pre">ocanren_term</span></code>, <code class="docutils literal notranslate"><span class="pre">ocanren_term'</span></code> and
+their auxiliary functions help us know precisely how the conversion is
+performed.</p>
+<p>Below is the definition of the entry <code class="docutils literal notranslate"><span class="pre">ocanren_term</span></code> :</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ocanren_term</span><span class="p">:</span> <span class="p">[[</span> <span class="n">t</span><span class="o">=</span><span class="n">ocanren_term</span><span class="s1">&#39; -&gt; fix_term t ]];</span>
+</pre></div>
+</div>
+<p>where the <code class="docutils literal notranslate"><span class="pre">ocanren_term'</span></code> parser is called immediately to process
+expressions like <code class="docutils literal notranslate"><span class="pre">S</span> <span class="pre">(S</span> <span class="pre">O)</span></code> and the intermediate result (an AST) is
+bound to the pattern variable <code class="docutils literal notranslate"><span class="pre">t</span></code> and then passed to the auxiliary
+function <code class="docutils literal notranslate"><span class="pre">fix_term</span></code>. The AST returned by <code class="docutils literal notranslate"><span class="pre">fix_term</span></code> is returned by
+the parser <code class="docutils literal notranslate"><span class="pre">ocanren_term</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ocanren_term'</span></code> parser has four levels, namely:</p>
+<p>1. <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L259">“app”</a>, for
+applications.</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>&quot;app&quot;  LEFTA  [ l=SELF; r=SELF -&gt; &lt;:expr&lt; $l$ $r$ &gt;&gt; ]``
+</pre></div>
+</div>
+<p>Applications are treated as being left associative as indicated by
+<code class="docutils literal notranslate"><span class="pre">LEFTA</span></code>. This level not yet converts constructor applications into
+injection function applications. Instead it simply builds the AST of the
+application in a straightforward manner, not distinguishing a
+constructor application from a function application.</p>
+<ol class="arabic simple" start="2">
+<li><a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L261">“list”</a> , for non-empty lists with <code class="docutils literal notranslate"><span class="pre">::</span></code> as the top level constructor.</li>
+</ol>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>&quot;list&quot; RIGHTA [ l=SELF; &quot;::&quot;; r=SELF -&gt; &lt;:expr&lt; OCanren.Std.List.cons $l$ $r$ &gt;&gt; ]
+</pre></div>
+</div>
+<p>The constructor <code class="docutils literal notranslate"><span class="pre">::</span></code> is replaced by the OCanren standard library
+function <a class="reference external" href="../../Installation/ocanren/src/std/LList.mli#L47">cons</a>
+which is the injection function for the constructor
+<a class="reference external" href="../../Installation/ocanren/src/std/LList.mli#L27">OCanren.Std.List.Cons</a>.</p>
+<p>3. <a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L262">“primary”</a>,
+which has rules for:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L262">anti-quotations</a></li>
+</ul>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;!&quot;</span><span class="p">;</span> <span class="s2">&quot;(&quot;</span><span class="p">;</span> <span class="n">e</span><span class="o">=</span><span class="n">expr</span><span class="p">;</span> <span class="s2">&quot;)&quot;</span> <span class="o">-&gt;</span> <span class="n">e</span>
+</pre></div>
+</div>
+<p>So that the <code class="docutils literal notranslate"><span class="pre">ocanren{}</span></code> quotation would take any <code class="docutils literal notranslate"><span class="pre">&lt;value&gt;</span></code> from <code class="docutils literal notranslate"><span class="pre">!(&lt;value&gt;)</span></code> as is without further processing. In other words, the <code class="docutils literal notranslate"><span class="pre">&lt;value&gt;</span></code> will be parsed using the entry <code class="docutils literal notranslate"><span class="pre">expr</span></code>.</p>
+<ul class="simple">
+<li><a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L263">integers</a></li>
+</ul>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>c=INT -&gt; let n = &lt;:expr&lt; $int:c$ &gt;&gt; in &lt;:expr&lt; OCanren.Std.nat $n$ &gt;&gt;
+</pre></div>
+</div>
+<p>Thus, occurrences of integers like <code class="docutils literal notranslate"><span class="pre">15</span></code> within the <code class="docutils literal notranslate"><span class="pre">ocanren{}</span></code> quotation would be converted to values of the Peano number type that is provided by the OCanren standard library <a class="reference external" href="../../Installation/ocanren/src/std/LNat.mli">OCanren.Std.Nat</a>.</p>
+<ul class="simple">
+<li><a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L266">characters</a> and <a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L269">strings</a></li>
+</ul>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>c=CHAR   -&gt; let s = &lt;:expr&lt; $chr:c$ &gt;&gt; in &lt;:expr&lt; OCanren.inj (OCanren.lift $s$) &gt;&gt;      | s=STRING -&gt; let s = &lt;:expr&lt; $str:s$ &gt;&gt; in &lt;:expr&lt; OCanren.inj (OCanren.lift $s$) &gt;&gt;
+</pre></div>
+</div>
+<p>Characters and strings are injected using the primary injection function <code class="docutils literal notranslate"><span class="pre">!!</span></code> (see its <a class="reference external" href="../../Installation/ocanren/src/core/Logic.mli#L57">signature</a> and <a class="reference external" href="../../Installation/ocanren/src/core/Logic.ml#L65">implementation</a>).</p>
+<ul class="simple">
+<li><a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L272">booleans</a></li>
+</ul>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span> <span class="n">true</span><span class="s2">&quot;   -&gt; &lt;:expr&lt; OCanren.Std.Bool.truo &gt;&gt;</span>
+<span class="o">|</span> <span class="s2">&quot;false&quot;</span>  <span class="o">-&gt;</span> <span class="o">&lt;</span><span class="p">:</span><span class="n">expr</span><span class="o">&lt;</span> <span class="n">OCanren</span><span class="o">.</span><span class="n">Std</span><span class="o">.</span><span class="n">Bool</span><span class="o">.</span><span class="n">falso</span> <span class="o">&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Boolean values are converted into the corresponding injected values from the OCanren standard library <a class="reference external" href="../../Installation/ocanren/src/std/LBool.mli#L45">LBool</a>.</p>
+<ul class="simple">
+<li>lists delimited by <code class="docutils literal notranslate"><span class="pre">[]</span></code> and <code class="docutils literal notranslate"><span class="pre">;</span></code> &lt;<a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L273">https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L273</a>&gt;`__</li>
+</ul>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>&quot;[&quot;; ts=LIST0 ocanren_term&#39; SEP &quot;;&quot;; &quot;]&quot; -&gt;
+  ( match ts with
+  | [] -&gt; &lt;:expr&lt; OCanren.Std.nil () &gt;&gt;
+  | _  -&gt;
+      List.fold_right (fun x l -&gt; &lt;:expr&lt; OCanren.Std.List.cons $x$ $l$ &gt;&gt; )
+      ts
+      &lt;:expr&lt; OCanren.Std.nil () &gt;&gt;
+  )
+</pre></div>
+</div>
+<p>The entry <cite>ocanren_term’</cite> is recursively called to process the list members and the injection functions for list constructors are applied.</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L278">operators</a> (which are not qualified)</li>
+</ul>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>&quot;(&quot;; op=operator_rparen -&gt; &lt;:expr&lt; $lid:op$ &gt;&gt;
+</pre></div>
+</div>
+<p>Operators are specified by the auxiliary function <code class="docutils literal notranslate"><span class="pre">`is_operator</span></code> &lt;.https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L87&gt;`__ and extracted by another auxiliary function <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L99">operator_rparen</a> (the name of which reads “operator right parenthesis”).</p>
+<ul class="simple">
+<li>(possibly empty) <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L279">tuples</a></li>
+</ul>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>&quot;(&quot;; ts=LIST0 ocanren_term&#39; SEP &quot;,&quot;; &quot;)&quot; -&gt;
+(match ts with
+  | []  -&gt; &lt;:expr&lt; OCanren.inj (OCanren.lift ()) &gt;&gt;
+  | [t] -&gt; t
+  | _   -&gt; &lt;:expr&lt; ( $list:ts$ ) &gt;&gt; )
+</pre></div>
+</div>
+<p>There is a recursive call of the entry itself to process members of the tuple, and then the AST of the tuple is built.</p>
+</div></blockquote>
+<ol class="arabic">
+<li><p class="first">The level for long identifiers.</p>
+<blockquote>
+<div><div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span> <span class="n">long_ident</span> <span class="p">]</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+<p>This level calls the entry <a class="reference external" href="../../Installation/ocanren/camlp5/pa_ocanren.ml#L171">long_ident</a> to build AST’s of (possibly qualified) upper / lower case identifiers and operators which are taken as is.</p>
+<p>Therefore, given <code class="docutils literal notranslate"><span class="pre">S</span> <span class="pre">(S</span> <span class="pre">O)</span></code> the <code class="docutils literal notranslate"><span class="pre">ocanren_term'</span></code> parser would return a straightforward translation into an AST. The interesting thing is done by <code class="docutils literal notranslate"><span class="pre">fix_term</span></code> and its helper <code class="docutils literal notranslate"><span class="pre">ctor</span></code> (read “C-tour”). The latter tests the input: if it is a (possibly qualified) uppercase identifier then sets the initial letter to lowercase and wraps the whole thing by
+<code class="docutils literal notranslate"><span class="pre">Some</span></code>, e.g., <code class="docutils literal notranslate"><span class="pre">Mod1.Mod2.ABC</span></code> becomes (roughly) <code class="docutils literal notranslate"><span class="pre">Some</span> <span class="pre">Mod1.Mod2.aBC</span></code> ; if the input is not a (qualified) uppercase
+identifier then returns <code class="docutils literal notranslate"><span class="pre">None</span></code> :</p>
+<div class="code ocaml highlight-default notranslate"><div class="highlight"><pre><span></span>let rec ctor e =
+  let loc = MLast.loc_of_expr e in
+  match e with
+  | &lt;:expr&lt; $uid:u$ &gt;&gt;   -&gt; Some (&lt;:expr&lt; $lid:decapitalize u$ &gt;&gt;)
+  | &lt;:expr&lt; $m$ . $e$ &gt;&gt; -&gt; (match ctor e with Some e -&gt; Some (&lt;:expr&lt; $m$ . $e$ &gt;&gt;) | _ -&gt; None)
+  | _                    -&gt; None
+</pre></div>
+</div>
+<p>The <a class="reference external" href="https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml#L56">fix_term</a> function then recurses down the structure of applications to systematically replace uppercase identifiers with lowercase identifiers
+produced by <code class="docutils literal notranslate"><span class="pre">ctor</span></code>. After a constant constructor is changed to lowercase, it is provided with the unit value <code class="docutils literal notranslate"><span class="pre">()</span></code> as the argument, e.g., <code class="docutils literal notranslate"><span class="pre">O</span></code> becomes <code class="docutils literal notranslate"><span class="pre">o</span> <span class="pre">()</span></code>. A non-constant constructor is not only set to lowercase, but also has its argument list transformed, e.g., <code class="docutils literal notranslate"><span class="pre">Cons(a,b)</span></code> becomes (roughly) <code class="docutils literal notranslate"><span class="pre">cons</span> <span class="pre">a</span> <span class="pre">b</span></code>. Tuples are also replaced
+by their OCanren standard library counterpart — <a class="reference external" href="../../Installation/ocanren/src/std/LPair.mli">logic tuples</a>.</p>
+<p>These lowercase identifiers converted from constructors are supposed to
+be injection functions, which must be defined by the programmer
+somewhere in the program, otherwise there would be some compile-time
+error like “unbound identifier”. This explains why the injection
+function names are always differ from the corresponding constructor
+names by one letter: the initial letter.</p>
 </div>
 </div>
 </div>
@@ -228,7 +602,7 @@ expression to its string form. For example, it rewrites <code class="docutils li
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, JetBrains-Research
+        &copy; Copyright 2021, JetBrains Research
 
     </p>
   </div>
