@@ -100,7 +100,7 @@ exception Different_shape of int * int
 
 type label = L | R
 
-(* [fold ~fvar ~fval ~fvarval ~init x y] folds two OCaml's value extended with logic variables simultaneously;
+(* [fold ~fvar ~fval ~fk ~init x y] folds two OCaml's value extended with logic variables simultaneously;
  *   handles primitive types with the help of [fval] and logic variables with the help of [fvar];
  *   if it finds logic variable in one term but regular value in another term in same place, it calls [fk];
  *   if two terms cannot be traversed simultaneously raises exception [Different_shape (tx, ty)],

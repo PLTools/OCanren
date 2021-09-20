@@ -17,14 +17,14 @@ let runBool eta = runR OCanren.reify (GT.show(GT.bool)) (show(logic) @@ show boo
 
 
 
-let f_ _ =
+let _ =
   runInt 1 q qh (REPR(fun q -> wc (fun __ -> q === __) ));
   runInt 1 q qh (REPR(fun q -> wc (fun __ -> __ === q) ));
   runInt 1 q qh (REPR(fun q -> wc (fun __ -> wc (fun __ -> __ === __)) ));
 
   runInt 1 q qh (REPR(fun q -> wc (fun __ -> __ =/= __) ));
   runInt 1 q qh (REPR(fun q -> wc (fun __ -> __ =/= q) ));
-  runInt 1 q qh (REPR(fun q -> wc (fun __ -> wc (fun __ -> __ =/= __)) ));
+  runInt 1 q qh (REPR(fun q -> wc (fun __1 -> wc (fun __ -> __1 =/= __)) ));
   ()
 
 
@@ -68,6 +68,9 @@ let runPair eta = runR (Pair.reify OCanren.reify OCanren.reify) (GT.show(Pair.gr
   (show Pair.logic show_intl show_intl) eta
 let runPairB eta = runR (Pair.reify OCanren.reify OCanren.reify) (GT.show(Pair.ground) show_bool show_bool)
   (show Pair.logic show_booll show_booll) eta
+let run_option_int eta =
+  runR (Option.reify OCanren.reify) (GT.show(Option.ground) show_int)
+  (show Option.logic show_intl) eta
 
 let  _ =
   runPair (-1) q qh (REPR(fun q ->
@@ -90,8 +93,8 @@ let  _ =
   ));
   (* no answers *)
   ()
-let _f =
 
+let _ =
   runInt (-1) q qh (REPR(fun q -> pair_has_true (pair !!true !!true) q) );
   runInt (-1) q qh (REPR(fun q -> fresh (r) (pair_has_true (pair r !!true) q)) );
   runInt (-1) q qh (REPR(fun q -> fresh (r t) (pair_has_true (pair r t) q)) );
@@ -186,3 +189,11 @@ let _f _ =
 
   *)
   ()
+
+
+let not_some q = wc (fun __ -> q =/= Std.Option.some __)
+
+let _ =
+  run_option_int (-1) q qh (REPR(fun q -> not_some q ));
+  run_option_int (-1) q qh (REPR(fun q -> (not_some q) &&& (q === Option.none ())));
+  run_option_int (-1) q qh (REPR(fun q -> (not_some q) &&& (q === Option.some !!11)));

@@ -1,0 +1,61 @@
+fun q -> wc (fun __ -> q === __), 1 answer {
+q=_.10;
+}
+fun q -> wc (fun __ -> __ === q), 1 answer {
+q=_.10;
+}
+fun q -> wc (fun __ -> wc (fun __ -> __ === __)), 1 answer {
+q=_.10;
+}
+fun q -> wc (fun __ -> __ =/= __), 1 answer {
+}
+fun q -> wc (fun __ -> __ =/= q), 1 answer {
+}
+fun q -> wc (fun __1 -> wc (fun __ -> __1 =/= __)), 1 answer {
+}
+fun q ->
+  OCanren.Fresh.two
+    (fun a b -> delay (fun () -> conj (q =/= pair a !!1) (q === pair !!1 b))), all answers {
+q=(1, _.12);
+}
+fun q ->
+  OCanren.Fresh.two
+    (fun a b ->
+       delay (fun () -> conj (q =/= pair a !!1) (q === pair !!1 !!1))), all answers {
+q=(1, 1);
+}
+fun q ->
+  OCanren.Fresh.two
+    (fun a b ->
+       delay
+         (fun () ->
+            conj (conj (q =/= pair a !!1) (q === pair !!1 !!1)) (a === !!1))), all answers {
+}
+fun q -> pair_has_true (pair !!(true) !!(true)) q, all answers {
+q=1;
+}
+fun q ->
+  OCanren.Fresh.one
+    (fun r -> delay (fun () -> pair_has_true (pair r !!(true)) q)), all answers {
+q=1;
+q=2;
+}
+fun q ->
+  OCanren.Fresh.two (fun r t -> delay (fun () -> pair_has_true (pair r t) q)), all answers {
+q=1;
+q=3;
+q=2;
+}
+fun q -> OCanren.Fresh.one (fun r -> delay (fun () -> pair_has_true r q)), all answers {
+q=1;
+q=3;
+q=2;
+}
+fun q -> not_some q, all answers {
+q=_.10 [=/= Some (_.-42)];
+}
+fun q -> not_some q &&& (q === Option.none ()), all answers {
+q=None;
+}
+fun q -> not_some q &&& (q === Option.some !!11), all answers {
+}

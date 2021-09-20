@@ -488,6 +488,8 @@ let wc f st =
   let x = State.wc st in
   f x st
 
+(* let __ = Term.Var.make_wc () *)
+
 module Fresh =
   struct
     let succ prev f = call_fresh (fun x -> prev (f x))
