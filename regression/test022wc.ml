@@ -17,7 +17,7 @@ let runBool eta = runR OCanren.reify (GT.show(GT.bool)) (show(logic) @@ show boo
 
 
 
-let _ =
+let __ _ =
   runInt 1 q qh (REPR(fun q -> wc (fun __ -> q === __) ));
   runInt 1 q qh (REPR(fun q -> wc (fun __ -> __ === q) ));
   runInt 1 q qh (REPR(fun q -> wc (fun __ -> wc (fun __ -> __ === __)) ));
@@ -36,7 +36,7 @@ let is_empty l r = wc (fun __1 -> wc (fun __2 ->
   ]))
 
 
-let f_ _ =
+let __ _ =
   runBool (-1) q qh (REPR(fun q -> is_empty (Std.nil()) q));
   runBool (-1) q qh (REPR(fun q -> is_empty (!< !!42) q));
   runBool (-1) q qh (REPR(fun q -> fresh (two) (is_empty two q) ));
@@ -72,7 +72,7 @@ let run_option_int eta =
   runR (Option.reify OCanren.reify) (GT.show(Option.ground) show_int)
   (show Option.logic show_intl) eta
 
-let  _ =
+let __ _ =
   runPair (-1) q qh (REPR(fun q ->
     fresh (a b)
     (q =/= pair a !!1)
@@ -94,15 +94,28 @@ let  _ =
   (* no answers *)
   ()
 
-let  _ =
+let () = Format.printf "%s %d\n%!" __FILE__ __LINE__
+
+let _ =
   runPair (-1) q qh (REPR(fun q ->
-    wc (fun a -> wc (fun b ->
+    wc (fun __ ->
       fresh ()
-        (q =/= pair a !!1)
-        (q === pair !!1 b)
-    ))
+        (q === pair __ !!1)
+        (q === pair !!1 __)
+        (q === pair !!2 !!1)
+    )
+  ))
+
+let __ _ =
+  runPair (-1) q qh (REPR(fun q ->
+    wc (fun __ ->
+      fresh ()
+        (q =/= pair __ !!1)
+        (q === pair !!1 __)
+    )
   ));
   (* q=(1, _.12); *)
+  (*
   runPair (-1) q qh (REPR(fun q ->
     wc (fun a -> wc (fun b ->
       fresh ()
@@ -119,12 +132,13 @@ let  _ =
         (a === !!1)
     ))
   ));
+  *)
   (* no answers *)
   ()
 
 
 
-let _ =
+let __ _ =
   runInt (-1) q qh (REPR(fun q -> pair_has_true (pair !!true !!true) q) );
   runInt (-1) q qh (REPR(fun q -> fresh (r) (pair_has_true (pair r !!true) q)) );
   runInt (-1) q qh (REPR(fun q -> fresh (r t) (pair_has_true (pair r t) q)) );
@@ -179,7 +193,7 @@ let _ =
   *)
   ()
 
-let _f _ =
+let __ _ =
   runInt (-1) q qh (REPR(fun q -> (wc (fun __ ->
       fresh (r)
         (pair __ !!2 =/= r)
@@ -223,7 +237,20 @@ let _f _ =
 
 let not_some q = wc (fun __ -> q =/= Std.Option.some __)
 
-let _ =
+let __ _ =
   run_option_int (-1) q qh (REPR(fun q -> not_some q ));
   run_option_int (-1) q qh (REPR(fun q -> (not_some q) &&& (q === Option.none ())));
   run_option_int (-1) q qh (REPR(fun q -> (not_some q) &&& (q === Option.some !!11)));
+
+
+  (*
+  let foo = cons __ __
+
+  let rec appendo xs ys zs =
+    conde
+      [ (x === foo) &&& (x =/= foo)
+        ...
+      ]
+
+
+  *)

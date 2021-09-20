@@ -16,12 +16,15 @@
  * (enclosed in the file COPYING).
  *)
 
+IFDEF STATS THEN
 type stat = {mutable walk_count : int}
 
 let stat = {walk_count = 0}
 
 let walk_counter () = stat.walk_count
 let walk_incr () = stat.walk_count <- stat.walk_count + 1
+END
+
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
 
@@ -67,7 +70,13 @@ type lterm = Var of Term.Var.t | Value of Term.t
 let walk env subst x =
   (* walk var *)
   let rec walkv env subst v =
-    walk_incr ();
+    let () =
+      IFDEF STATS THEN
+      walk_incr ();
+      ELSE
+      ()
+      END
+    in
     Env.check_exn env v;
     if Term.Var.is_wildcard v then Var v else
     match v.Term.Var.subst with
@@ -77,7 +86,13 @@ let walk env subst x =
         with Not_found -> Var v
   (* walk term *)
   and walkt env subst t =
-    walk_incr ();
+    let () =
+      IFDEF STATS THEN
+      walk_incr ();
+      ELSE
+      ()
+      END
+    in
     match Env.var env t with
     | Some v -> walkv env subst v
     | None   -> Value t
@@ -155,8 +170,12 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
     fold2 x y ~init:acc
       ~fvar:(fun ((_, subst) as acc) x y ->
         match walk env subst x, walk env subst y with
-        | _, Var v when Term.Var.is_wildcard v -> acc
-        | Var v, _ when Term.Var.is_wildcard v -> acc
+        | z, Var v when Term.Var.is_wildcard v ->
+            let newvar  = Env.fresh ~scope:Term.Var.non_local_scope env in
+            extend newvar (Obj.magic z) acc
+        | Var v, z when Term.Var.is_wildcard v ->
+            let newvar  = Env.fresh ~scope:Term.Var.non_local_scope env in
+            extend newvar (Obj.magic z) acc
         | Var x, Var y      ->
           if Var.equal x y then acc else extend x (Term.repr y) acc
         | Var x, Value y    -> extend x y acc
@@ -167,7 +186,9 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
           if x = y then acc else raise Unification_failed
       )
       ~fk:(fun ((_, subst) as acc) l v y ->
-          if Term.Var.is_wildcard v then acc
+          if Term.Var.is_wildcard v then
+            let newvar  = Env.fresh ~scope:Term.Var.non_local_scope env in
+            extend newvar (Obj.magic y) acc
           else
           if subsume && (l = Term.R)
           then raise Unification_failed
