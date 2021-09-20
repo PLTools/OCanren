@@ -31,6 +31,30 @@ fun q ->
          (fun () ->
             conj (conj (q =/= pair a !!1) (q === pair !!1 !!1)) (a === !!1))), all answers {
 }
+fun q ->
+  wc
+    (fun a ->
+       wc
+         (fun b ->
+            delay (fun () -> conj (q =/= pair a !!1) (q === pair !!1 b)))), all answers {
+}
+fun q ->
+  wc
+    (fun a ->
+       wc
+         (fun b ->
+            delay (fun () -> conj (q =/= pair a !!1) (q === pair !!1 !!1)))), all answers {
+}
+fun q ->
+  wc
+    (fun a ->
+       wc
+         (fun b ->
+            delay
+              (fun () ->
+                 conj (conj (q =/= pair a !!1) (q === pair !!1 !!1))
+                   (a === !!1)))), all answers {
+}
 fun q -> pair_has_true (pair !!(true) !!(true)) q, all answers {
 q=1;
 }

@@ -94,6 +94,36 @@ let  _ =
   (* no answers *)
   ()
 
+let  _ =
+  runPair (-1) q qh (REPR(fun q ->
+    wc (fun a -> wc (fun b ->
+      fresh ()
+        (q =/= pair a !!1)
+        (q === pair !!1 b)
+    ))
+  ));
+  (* q=(1, _.12); *)
+  runPair (-1) q qh (REPR(fun q ->
+    wc (fun a -> wc (fun b ->
+      fresh ()
+        (q =/= pair a !!1)
+        (q === pair !!1 !!1)
+    ))
+  ));
+  (* q=(1, 1); *)
+  runPair (-1) q qh (REPR(fun q ->
+    wc (fun a -> wc (fun b ->
+      fresh ()
+        (q =/= pair a !!1)
+        (q === pair !!1 !!1)
+        (a === !!1)
+    ))
+  ));
+  (* no answers *)
+  ()
+
+
+
 let _ =
   runInt (-1) q qh (REPR(fun q -> pair_has_true (pair !!true !!true) q) );
   runInt (-1) q qh (REPR(fun q -> fresh (r) (pair_has_true (pair r !!true) q)) );
