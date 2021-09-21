@@ -23,7 +23,13 @@
  (modules pp_noinjected))
 
 (executable
+ (public_name pp_wildcard)
+ (package OCanren-ppx)
+ (libraries ppx_wildcard)
+ (modules pp_wildcard))
+
+(executable
  (public_name pp_ocanren_all)
  (package OCanren-ppx)
- (libraries ppx_repr ppx_fresh ppx_distrib)
+ (libraries ppx_repr ppx_fresh ppx_distrib ppx_wildcard)
  (modules pp_ocanren_all))
