@@ -17,6 +17,12 @@
  (modules pp_distrib))
 
 (executable
+ (public_name pp_tester)
+ (package OCanren-ppx)
+ (libraries ppx_tester)
+ (modules pp_tester))
+
+(executable
  (public_name pp_noinjected)
  (package OCanren-ppx)
  (libraries ppx_noinjected)
