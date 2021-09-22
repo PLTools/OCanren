@@ -160,7 +160,7 @@ let parse_to_list alist =
   List.rev @@ helper [] alist
 
 let name_of_loc loc =
-  Format.printf "name_of_loc: %a\n%!" Location.print loc;
+  (* Format.printf "name_of_loc: %a\n%!" Location.print loc; *)
   let start = loc.Location.loc_start in
   Printf.sprintf "__%d" Lexing.(start.pos_cnum - start.pos_bol)
 
@@ -170,6 +170,7 @@ let wildcard_extractor expr =
       inherit [_] Ppxlib.Ast_traverse.fold_map as super
 
       method! expression e acc =
+        (* Format.printf "wildcard_extractor: %a\n%!" Pprintast.expression e; *)
         let open Ppxlib.Ast_pattern in
         let loc = e.pexp_loc in
         let on_OK =
@@ -180,15 +181,17 @@ let wildcard_extractor expr =
           (pexp_ident (lident (string "__")))
           loc e
           (on_OK, e.pexp_loc :: acc)
-          ~on_error:(fun () -> super#expression e acc)
+          ~on_error:(fun () ->
+            (* Format.printf "%s %d: matching failed on `%a`\n%!" __FILE__ __LINE__ Pprintast.expression e; *)
+            super#expression e acc)
     end in
   folder#expression expr []
-
 let mapper =
   object (self)
     inherit Ast_traverse.map as super
 
     method! expression e =
+      (* Format.printf "%a\n%!" Pprintast.expression  e; *)
       let loc = e.pexp_loc in
       let pat =
         let open Ppxlib.Ast_pattern in
@@ -196,18 +199,25 @@ let mapper =
           (pexp_ident (lident (string "===")))
           ((nolabel ** __) ^:: (nolabel ** __) ^:: nil) in
       let on_unif l r =
+        (* Format.printf "%s %d: got unification (`%a` === `%a`)\n%!" __FILE__ __LINE__ Pprintast.expression l Pprintast.expression r; *)
         let l, accl = wildcard_extractor l in
-        let r, accr = wildcard_extractor l in
+        (* Format.printf "accl = %a\n%!"  (Format.pp_print_list Location.print) accl; *)
+        let r, accr = wildcard_extractor r in
+        (* Format.printf "accr = %a\n%!" (Format.pp_print_list Location.print) accr; *)
         let f acc loc =
           let open Ppxlib.Ast_builder.Default in
           [%expr
             wc (fun [%p ppat_var ~loc (Located.mk ~loc (name_of_loc loc))] ->
                 [%e acc] )] in
-        List.fold_left ~f
-          ~init:[%expr [%e l] === [%e r]]
-          (List.append accl accr) in
-      Ppxlib.Ast_pattern.parse pat loc e on_unif
+        let ans1 =
+          List.fold_left ~f
+            ~init:[%expr [%e l] === [%e r]]
+            accr
+        in
+        List.fold_left ~f ~init:ans1 accl
+      in
+      Ppxlib.Ast_pattern.parse pat loc e on_unif ~on_error:(fun () -> super#expression e)
   end
 
 let () =
-  Ppxlib.Driver.register_transformation ~impl:mapper#structure "pa_minikanren"
+  Ppxlib.Driver.register_transformation ~impl:mapper#structure "ppx_wildcard"
