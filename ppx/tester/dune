@@ -1,0 +1,10 @@
+(library
+ (name ppx_tester)
+ (public_name OCanren-ppx.ppx_tester)
+ (kind ppx_rewriter)
+ (libraries base ppxlib)
+ (modules ppx_tester ppx_distrib_expander)
+ (flags
+  (:standard -linkall))
+ (preprocess
+  (pps ppxlib.metaquot)))
