@@ -64,6 +64,15 @@ let _ =
 
 let _ =
   [%tester
+    run_pair (-1) (fun q -> fresh ( ) (q =/= pair !!1 __) (q =/= pair __ !!1))]
+
+let _ =
+  [%tester
+    run_pair (-1) (fun q -> fresh (__) (q =/= pair !!1 __) (q =/= pair __ !!1))]
+
+(*
+let _ =
+  [%tester
     run_pair (-1) (fun q ->
         fresh (a b) (q =/= pair !!1 __) (q === pair __ !!1) (q === pair a b) )]
 
@@ -79,3 +88,4 @@ let _ =
   [%tester
     run_list (-1) (fun q ->
         fresh (a b) (q === __ % __) (q === !<(!!1)) (q === !<(!!2)) )]
+*)

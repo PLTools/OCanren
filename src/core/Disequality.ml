@@ -91,6 +91,8 @@ module Disjunct :
     (* Disjunction.t is a set of single disequalities joint by disjunction *)
     type t
 
+    val pp: Format.formatter -> t -> unit
+
     (* [make env subst x y] creates new disjunct from the disequality [x =/= y] *)
     val make : Env.t -> Subst.t -> 'a -> 'a -> t
 
@@ -222,6 +224,8 @@ module Conjunct :
   sig
     type t
 
+    val pp: Format.formatter -> t -> unit
+
     val empty : t
 
     val is_empty : t -> bool
@@ -252,6 +256,11 @@ module Conjunct :
 
     type t = Disjunct.t M.t
 
+    let pp ppf t =
+      Format.fprintf ppf "{| ";
+      M.iter (fun k v -> Format.fprintf ppf " %d -> %a, " k Disjunct.pp v) t;
+      Format.fprintf ppf "|}"
+
     let empty = M.empty
 
     let is_empty = M.is_empty
@@ -280,6 +289,7 @@ module Conjunct :
       ) t M.empty
 
     let merge_disjoint env subst =
+
       M.union (fun _ _ _ ->
         invalid_arg "OCanren fatal (Conjunct.merge_disjoint): conjuncts intersect"
       )
@@ -327,6 +337,8 @@ module Conjunct :
       remove_subsumed env subst @@ helper fv
 
     let reify env subst t x =
+      Format.printf "%s %d Conjunct.reify\n%!" __FILE__ __LINE__;
+      Format.printf "\t@[%a@]\n%!" pp t;
       let t = M.fold (fun id disj acc ->
         match Disjunct.simplify env subst disj with
         | Some disj -> M.add id disj acc
@@ -366,6 +378,11 @@ module Conjunct :
 
 type t = Conjunct.t Term.VarMap.t
 
+let pp ppf t =
+  Format.fprintf ppf "{| ";
+  Term.VarMap.iter (fun k v -> Format.fprintf ppf " %d -> %a, " Term.VarTbl.(k.index) Conjunct.pp v) t;
+  Format.fprintf ppf "|}"
+
 let empty = Term.VarMap.empty
 
 (* merges all conjuncts (linked to different variables) into one *)
@@ -380,10 +397,15 @@ let merge_disjoint env subst = Term.VarMap.union (fun _ c1 c2 ->
 let update env subst conj = merge_disjoint env subst (Conjunct.split conj)
 
 let add env subst cstore x y =
+  Format.printf "add: %s %d\n%!" __FILE__ __LINE__;
   try
-    Some (update env subst (Conjunct.make env subst x y) cstore)
+    let ans =  (update env subst (Conjunct.make env subst x y) cstore) in
+    Format.printf "after add: %a\n%!" pp ans;
+    Some ans
   with
-    | Disequality_fulfilled -> Some cstore
+    | Disequality_fulfilled ->
+        Format.printf "fulfilled: %s %d\n%!" __FILE__ __LINE__;
+        Some cstore
     | Disequality_violated  -> None
 
 let recheck env subst cstore bs =
@@ -411,4 +433,5 @@ let project env subst cstore fv =
   Conjunct.(split @@ project env subst (combine env subst cstore) fv)
 
 let reify env subst cstore x =
+  Format.printf "%s %d Disequality.reify\n%!" __FILE__ __LINE__;
   Conjunct.reify env subst (combine env subst cstore) x
