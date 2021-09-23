@@ -20,6 +20,12 @@
 open Base
 open Ppxlib
 
+let string_of_expression e =
+  Format.set_margin 1000;
+  Format.set_max_indent 0;
+  let ans = Format.asprintf "%a" Pprintast.expression e in
+  ans
+
 let name = "tester"
 
 let () =
@@ -53,5 +59,12 @@ let () =
                 failwith
                   (Printf.sprintf "5 and more arguments are not supported")
           in
-          pexp_apply ~loc f (List.concat [prefix; middle; [last]]) ) ] in
+          let last =
+            let s = string_of_expression @@ snd last in
+            let open Ppxlib.Ast_builder.Default in
+            [%expr
+              [%e pexp_constant ~loc (Pconst_string (s, loc, None))]
+              , [%e snd last]] in
+          pexp_apply ~loc f (List.concat [prefix; middle; [(Nolabel, last)]]) )
+    ] in
   Ppxlib.Driver.register_transformation ~extensions name

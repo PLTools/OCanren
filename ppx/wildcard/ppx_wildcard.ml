@@ -53,8 +53,10 @@ let wildcard_extractor expr =
     end in
   folder#expression expr []
 
+type kind = Unif | Diseq
+
 let mapper =
-  object (self)
+  object
     inherit Ast_traverse.map as super
 
     method! expression e =
@@ -64,16 +66,26 @@ let mapper =
         let open Ppxlib.Ast_pattern in
         pexp_apply
           (pexp_ident (lident (string "===")))
-          ((nolabel ** __) ^:: (nolabel ** __) ^:: nil) in
-      let on_unif l r =
+          ((nolabel ** __) ^:: (nolabel ** __) ^:: nil)
+        |> map2 ~f:(fun a b -> (Unif, a, b))
+        ||| ( pexp_apply
+                (pexp_ident (lident (string "=/=")))
+                ((nolabel ** __) ^:: (nolabel ** __) ^:: nil)
+            |> map2 ~f:(fun a b -> (Diseq, a, b)) ) in
+      let on_unif (kind, l, r) =
         let l, accl = wildcard_extractor l in
         let r, accr = wildcard_extractor r in
         let f acc loc =
           let open Ppxlib.Ast_builder.Default in
-          [%expr
-            wc (fun [%p ppat_var ~loc (Located.mk ~loc (name_of_loc loc))] ->
-                [%e acc] )] in
-        let ans1 = List.fold_left ~f ~init:[%expr [%e l] === [%e r]] accr in
+          let pat = ppat_var ~loc (Located.mk ~loc (name_of_loc loc)) in
+          match kind with
+          | Diseq -> [%expr wc (fun [%p pat] -> [%e acc])]
+          | Unif -> [%expr OCanren.Fresh.one (fun [%p pat] -> [%e acc])] in
+        let init =
+          match kind with
+          | Unif -> [%expr [%e l] === [%e r]]
+          | Diseq -> [%expr [%e l] =/= [%e r]] in
+        let ans1 = List.fold_left ~f ~init accr in
         List.fold_left ~f ~init:ans1 accl in
       Ppxlib.Ast_pattern.parse pat loc e on_unif ~on_error:(fun () ->
           super#expression e )

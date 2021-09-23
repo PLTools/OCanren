@@ -150,11 +150,11 @@ module Disjunct :
       match Subst.unify env subst x y with
       | None              -> Fulfiled
       | Some ([], _)      ->
-        Format.printf "%s %d\n%!" __FILE__ __LINE__;
+        (* Format.printf "%s %d\n%!" __FILE__ __LINE__; *)
         Violated
       | Some (prefix, _)  ->
-        Format.printf "Refined prefix = %s\n%!"
-          (Term.show @@ Obj.repr prefix);
+(*         Format.printf "Refined prefix = %s\n%!"
+          (Term.show @@ Obj.repr prefix); *)
         Refined prefix
 
     let make env subst x y =
@@ -164,8 +164,8 @@ module Disjunct :
       | Violated      -> raise Disequality_violated
 
     let rec recheck env subst t =
-      Format.printf "Disj.recheck: t = %a\n%!"
-        pp t;
+(*       Format.printf "Disj.recheck: t = %a\n%!"
+        pp t; *)
       let var, term = Term.VarMap.max_binding t in
       let unchecked = Term.VarMap.remove var t in
       match refine env subst (Obj.magic var) term with
@@ -272,7 +272,7 @@ module Conjunct :
       ) t Term.VarMap.empty
 
     let recheck env subst t =
-      Format.printf "Conj.recheck\n%!";
+      (* Format.printf "Conj.recheck\n%!"; *)
       M.fold (fun id disj acc ->
           try
             M.add id (Disjunct.recheck env subst disj) acc
@@ -397,7 +397,7 @@ let recheck env subst cstore bs =
   try
     let cstore = ListLabels.fold_left bs ~init:cstore
       ~f:(let open Subst.Binding in fun cstore {var; term} ->
-        Format.printf "%d\n%!" (var.Term.Var.index);
+        (* Format.printf "%d\n%!" (var.Term.Var.index); *)
         let cstore = helper var cstore in
         match Env.var env term with
         | Some u -> helper u cstore

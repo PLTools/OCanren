@@ -171,11 +171,13 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
       ~fvar:(fun ((_, subst) as acc) x y ->
         match walk env subst x, walk env subst y with
         | z, Var v when Term.Var.is_wildcard v ->
-            let newvar  = Env.fresh ~scope:Term.Var.non_local_scope env in
-            extend newvar (Obj.magic z) acc
+            (* let newvar  = Env.fresh ~scope:Term.Var.non_local_scope env in
+            extend newvar (Obj.magic z) acc *)
+            acc
         | Var v, z when Term.Var.is_wildcard v ->
-            let newvar  = Env.fresh ~scope:Term.Var.non_local_scope env in
-            extend newvar (Obj.magic z) acc
+            (* let newvar  = Env.fresh ~scope:Term.Var.non_local_scope env in
+            extend newvar (Obj.magic z) acc *)
+            acc
         | Var x, Var y      ->
           if Var.equal x y then acc else extend x (Term.repr y) acc
         | Var x, Value y    -> extend x y acc
@@ -187,8 +189,9 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
       )
       ~fk:(fun ((_, subst) as acc) l v y ->
           if Term.Var.is_wildcard v then
-            let newvar  = Env.fresh ~scope:Term.Var.non_local_scope env in
-            extend newvar (Obj.magic y) acc
+            (* let newvar  = Env.fresh ~scope:Term.Var.non_local_scope env in
+            extend newvar (Obj.magic y) acc *)
+            acc
           else
           if subsume && (l = Term.R)
           then raise Unification_failed
