@@ -1,4 +1,4 @@
-regression/test022wc.ml 97
+line 97
 fun q ->
   wc
     (fun __ ->

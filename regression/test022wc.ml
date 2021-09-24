@@ -94,7 +94,7 @@ let __ _ =
   (* no answers *)
   ()
 
-let () = Format.printf "%s %d\n%!" __FILE__ __LINE__
+let () = Format.printf "line %d\n%!" __LINE__
 
 let _ =
   runPair (-1) q qh (REPR(fun q ->

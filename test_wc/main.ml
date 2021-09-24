@@ -70,7 +70,6 @@ let _ =
   [%tester
     run_pair (-1) (fun q -> fresh __ (q =/= pair !!1 __) (q =/= pair __ !!1))]
 
-(*
 let _ =
   [%tester
     run_pair (-1) (fun q ->
@@ -88,4 +87,10 @@ let _ =
   [%tester
     run_list (-1) (fun q ->
         fresh (a b) (q === __ % __) (q === !<(!!1)) (q === !<(!!2)) )]
-*)
+
+let _ = [%tester run_int (-1) (fun q -> q === !!1 &&& (__ =/= !!1 % __))]
+
+let _ =
+  [%tester run_int (-1) (fun q -> fresh (a b) (q === !!1) (a =/= !!1 % b))]
+
+let _ = [%tester run_int (-1) (fun q -> fresh a (q === !!1) (a =/= !!1 % a))]

@@ -226,14 +226,17 @@ module Disjunct :
       let exception Found in
       let rec helper o =
         (* printfn "helper: %s" (Term.show o); *)
+        let o = Obj.repr o  in
+        if Term.is_box (Obj.tag o) then
         match Term.var o with
         | Some { Term.Var.index = -42 } -> raise Found
         | Some _ -> ()
-        | None when Obj.is_block (Obj.repr o) ->
-            for i = 0 to Obj.(size @@ repr o)-1 do
+        | None ->
+            (* assert (Obj.is_block o); *)
+            let sz = Obj.size o in
+            for i = 0 to sz-1 do
               helper Obj.(field (repr o) i)
             done
-        | _ -> ()
       in
       try helper term; false
       with Found -> true
