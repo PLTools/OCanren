@@ -64,11 +64,11 @@ let _ =
 
 let _ =
   [%tester
-    run_pair (-1) (fun q -> fresh ( ) (q =/= pair !!1 __) (q =/= pair __ !!1))]
+    run_pair (-1) (fun q -> fresh () (q =/= pair !!1 __) (q =/= pair __ !!1))]
 
 let _ =
   [%tester
-    run_pair (-1) (fun q -> fresh (__) (q =/= pair !!1 __) (q =/= pair __ !!1))]
+    run_pair (-1) (fun q -> fresh __ (q =/= pair !!1 __) (q =/= pair __ !!1))]
 
 (*
 let _ =

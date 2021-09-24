@@ -6,6 +6,20 @@
  (libraries GT mtime.clock.os)
  (flags
   (:standard -short-paths))
+ (inline_tests)
  (preprocess
-  (action
-   (run %{project_root}/camlp5/pp5+gt+plugins+dump.exe %{input-file}))))
+  (per_module
+   ((pps ppx_expect ppx_inline_test)
+    Disequality)
+   ((action
+     (run %{project_root}/camlp5/pp5+gt+plugins+dump.exe %{input-file}))
+    Pair
+    Option
+    Nat
+    List
+    Bool
+    Subst
+    Stream
+    Peep
+    Logic
+    Core))))

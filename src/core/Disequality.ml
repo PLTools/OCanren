@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2021
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -121,13 +121,13 @@ module Disjunct :
     type t = Term.t Term.VarMap.t
 
     let pp ppf t =
-      Format.fprintf ppf "{|@ ";
+      Format.fprintf ppf "@[<hov>{|@ ";
       Term.VarMap.iter (fun k v ->
         let idx = Term.Var.(k.index) in
         Format.fprintf ppf "@[%d -> %s;@] " idx
           (Term.show @@ Obj.repr v)
       ) t;
-      Format.fprintf ppf "|}"
+      Format.fprintf ppf "|}@]"
 
     let update t =
       ListLabels.fold_left ~init:t
@@ -257,9 +257,9 @@ module Conjunct :
     type t = Disjunct.t M.t
 
     let pp ppf t =
-      Format.fprintf ppf "{| ";
-      M.iter (fun k v -> Format.fprintf ppf " %d -> %a, " k Disjunct.pp v) t;
-      Format.fprintf ppf "|}"
+      Format.fprintf ppf "@[<hov>{| ";
+      M.iter (fun k v -> Format.fprintf ppf " @[%d -> %a@], " k Disjunct.pp v) t;
+      Format.fprintf ppf "|}@]"
 
     let empty = M.empty
 
@@ -435,3 +435,36 @@ let project env subst cstore fv =
 let reify env subst cstore x =
   Format.printf "%s %d Disequality.reify\n%!" __FILE__ __LINE__;
   Conjunct.reify env subst (combine env subst cstore) x
+
+let%expect_test "addition" =
+  Printf.printf "%d" (1 + 2);
+  [%expect {| 3 |}]
+
+let%expect_test _ =
+  let env = Env.create ~anchor:1 in
+  let q = Env.fresh ~scope:Term.Var.non_local_scope env in
+  let __ = Env.wc ~scope:Term.Var.non_local_scope env in
+  let store0 = empty in
+  Format.printf "%a\n%!" pp store0;
+  [%expect {xxx| {| |} |xxx}];
+  let Some store1 = add env Subst.empty store0 q (Obj.magic (__, Obj.magic 1)) in
+  Format.printf "%a\n%!" pp store1;
+  [%expect {xxx|
+    add: src/core/Disequality.ml 400
+    after add: {|  10 -> {|  0 -> {| 10 -> boxed 0 <_.-42, int<1>>; |}, |}, |}
+    {|  10 -> {|  0 -> {| 10 -> boxed 0 <_.-42, int<1>>; |}, |}, |} |xxx}];
+
+  let Some store2 = add env Subst.empty store1 q (Obj.magic (Obj.magic 1, __)) in
+
+  [%expect {xxx|
+    add: src/core/Disequality.ml 400
+    after add: {|  10 -> {|  0 -> {| 10 -> boxed 0 <_.-42, int<1>>; |},
+                         1 -> {| 10 -> boxed 0 <int<1>, _.-42>; |}, |}, |}
+  |xxx}];
+  let ans = reify env Subst.empty store2 q in
+  ();
+  [%expect {xxx|
+    src/core/Disequality.ml 436 Disequality.reify
+    src/core/Disequality.ml 340 Conjunct.reify
+    	{|  0 -> {| 10 -> boxed 0 <_.-42, int<1>>; |},  1 -> {|
+                                                          10 -> boxed 0 <int<1>, _.-42>; |}, |} |xxx}]
