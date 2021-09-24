@@ -229,12 +229,12 @@ let merge_disjoint env =
     invalid_arg "OCanren fatal (Subst.merge_disjoint): substitutions intersect"
   )
 
-let subsumed env subst =
+let subsumed env subst more_general =
   Term.VarMap.for_all (fun var term ->
     match unify env subst (Obj.magic var) term with
     | Some ([], _)  -> true
     | _             -> false
-  )
+  ) more_general
 
 module Answer =
   struct

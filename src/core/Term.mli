@@ -60,7 +60,11 @@ module Var :
     val make_wc : env:env -> scope:scope -> t
   end
 
-module VarSet : Set.S with type elt = Var.t
+module VarSet : sig
+  include Set.S with type elt = Var.t
+
+  val pp: Format.formatter -> t -> unit
+end
 
 module VarTbl : Hashtbl.S with type key = Var.t
 

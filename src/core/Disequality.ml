@@ -19,6 +19,9 @@
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
 
+let printfn fmt = Format.kfprintf (fun ppf -> Format.fprintf ppf "\n%!") Format.std_formatter fmt
+
+
 module Answer =
   struct
     module S = Set.Make(Term)
@@ -121,13 +124,16 @@ module Disjunct :
     type t = Term.t Term.VarMap.t
 
     let pp ppf t =
-      Format.fprintf ppf "@[<hov>{|@ ";
+      Format.fprintf ppf "@[<hov>(";
+      let is_first = ref true in
       Term.VarMap.iter (fun k v ->
         let idx = Term.Var.(k.index) in
-        Format.fprintf ppf "@[%d -> %s;@] " idx
+        if !is_first then is_first := false
+        else Format.fprintf ppf " || ";
+        Format.fprintf ppf "@[%d -> %s@] " idx
           (Term.show @@ Obj.repr v)
       ) t;
-      Format.fprintf ppf "|}@]"
+      Format.fprintf ppf ")@]"
 
     let update t =
       ListLabels.fold_left ~init:t
@@ -214,9 +220,37 @@ module Disjunct :
       Term.VarMap.fold (fun _ term acc ->
         Term.VarSet.union acc @@ Subst.freevars env subst term
       ) t Term.VarSet.empty
+      |> Term.VarSet.filter (fun { Term.Var.index } -> index <> -42)
 
-    let subsumed env subst t t' =
-      Subst.(subsumed env (of_map t') (of_map t))
+    let has_wilcard_inside term =
+      let exception Found in
+      let rec helper o =
+        (* printfn "helper: %s" (Term.show o); *)
+        match Term.var o with
+        | Some { Term.Var.index = -42 } -> raise Found
+        | Some _ -> ()
+        | None when Obj.is_block (Obj.repr o) ->
+            for i = 0 to Obj.(size @@ repr o)-1 do
+              helper Obj.(field (repr o) i)
+            done
+        | _ -> ()
+      in
+      try helper term; false
+      with Found -> true
+
+    let has_wildcard_in_t mapa =
+      Term.VarMap.exists (fun _k -> has_wilcard_inside) mapa
+
+    let subsumed env subst t1 t2 =
+      (* printfn "Disjunct.subsumed between %a and %a" pp t1 pp t2; *)
+      let ans =
+        if has_wildcard_in_t t1 || has_wildcard_in_t t2
+        then false
+        else
+          Subst.(subsumed env (of_map t2) (of_map t1))
+      in
+      (* printfn "Disjunct.subsumed says %b" ans; *)
+      ans
 
   end
 
@@ -250,16 +284,20 @@ module Conjunct :
 
     val reify : Env.t -> Subst.t -> t -> 'a -> Answer.t list
   end = struct
-    let next_id = ref 0
+    let next_id = ref 100
 
     module M = Map.Make(struct type t = int let compare = (-) end)
 
     type t = Disjunct.t M.t
 
     let pp ppf t =
-      Format.fprintf ppf "@[<hov>{| ";
-      M.iter (fun k v -> Format.fprintf ppf " @[%d -> %a@], " k Disjunct.pp v) t;
-      Format.fprintf ppf "|}@]"
+      Format.fprintf ppf "@[<hov>(";
+      let is_first = ref true in
+      M.iter (fun k v ->
+        if !is_first then is_first := false
+        else Format.fprintf ppf " && ";
+        Format.fprintf ppf "@[%d -> %a@]" k Disjunct.pp v) t;
+      Format.fprintf ppf ")@]"
 
     let empty = M.empty
 
@@ -306,8 +344,10 @@ module Conjunct :
       ) t' (M.empty, M.empty)
 
     let remove_subsumed env subst cs =
+      (* Format.printf "remove_subsumed: size = %d,\n\t%a\n%!" (M.cardinal cs) pp cs; *)
       M.fold (fun id disj acc ->
         if M.exists (fun _ disj' -> Disjunct.subsumed env subst disj' disj) acc then
+          (* let () = printfn "%s %d: doesnt exist" __FILE__ __LINE__ in *)
           (* if new disjunct subsumes some another then we don't add it;
            * that's because we have conjunction of disjuncts and we can keep only
            * the most specialized disjuncts
@@ -320,15 +360,21 @@ module Conjunct :
       ) cs M.empty
 
     let project env subst t fv =
+      (* let () = Format.printf "calling Conjunct.project\n%!" in *)
+      (* let () = Format.printf "  fv = %a\n%!" Term.VarSet.pp fv in *)
       let rec helper fv =
         let fv', t' = M.fold (fun id disj (fv', conj) ->
           (* left those disjuncts that contain bindings only for variables from [fv],
            * and obtain a set of free variables from terms mentioned in those disjuncts
            *)
+          (* let () = Format.printf "Disjunct: %a\n%!" Disjunct.pp disj in *)
+          (* let () = Format.printf "     fv': %a\n%!" Term.VarSet.pp fv' in *)
           if Disjunct.is_relevant env subst disj fv then
+            (* let () = Format.printf "\tRelevant\n%!" in *)
             let fv' = Term.VarSet.union fv' @@ Disjunct.freevars env subst disj in
             fv', M.add id disj conj
           else
+            (* let () = Format.printf "\tNot relevant\n%!" in *)
             fv', conj
         ) t (fv, M.empty)
         in
@@ -337,8 +383,8 @@ module Conjunct :
       remove_subsumed env subst @@ helper fv
 
     let reify env subst t x =
-      Format.printf "%s %d Conjunct.reify\n%!" __FILE__ __LINE__;
-      Format.printf "\t@[%a@]\n%!" pp t;
+      (* Format.printf "%s %d Conjunct.reify\n%!" __FILE__ __LINE__; *)
+      (* Format.printf "\t@[%a@]\n%!" pp t; *)
       let t = M.fold (fun id disj acc ->
         match Disjunct.simplify env subst disj with
         | Some disj -> M.add id disj acc
@@ -346,7 +392,10 @@ module Conjunct :
       ) t M.empty
       in
       let fv = Subst.freevars env subst x in
+      (* Format.printf "Freevars:\n%a\n%!" Term.VarSet.pp fv; *)
+
       let t = project env subst t fv in
+      (* Format.printf "After project: @[%a@]\n%!" pp t; *)
       (* here we convert disequality in CNF form into DNF form;
        * we maintain a list of answers, that is a mapping [var -> term list] ---
        * list of disequality terms (without duplicates) for each variable
@@ -397,14 +446,14 @@ let merge_disjoint env subst = Term.VarMap.union (fun _ c1 c2 ->
 let update env subst conj = merge_disjoint env subst (Conjunct.split conj)
 
 let add env subst cstore x y =
-  Format.printf "add: %s %d\n%!" __FILE__ __LINE__;
+  (* Format.printf "add: %s %d\n%!" __FILE__ __LINE__; *)
   try
     let ans =  (update env subst (Conjunct.make env subst x y) cstore) in
-    Format.printf "after add: %a\n%!" pp ans;
+    (* Format.printf "after add: %a\n%!" pp ans; *)
     Some ans
   with
     | Disequality_fulfilled ->
-        Format.printf "fulfilled: %s %d\n%!" __FILE__ __LINE__;
+        (* Format.printf "fulfilled: %s %d\n%!" __FILE__ __LINE__; *)
         Some cstore
     | Disequality_violated  -> None
 
@@ -433,7 +482,7 @@ let project env subst cstore fv =
   Conjunct.(split @@ project env subst (combine env subst cstore) fv)
 
 let reify env subst cstore x =
-  Format.printf "%s %d Disequality.reify\n%!" __FILE__ __LINE__;
+  (* Format.printf "%s %d Disequality.reify\n%!" __FILE__ __LINE__; *)
   Conjunct.reify env subst (combine env subst cstore) x
 
 let%expect_test "addition" =
@@ -450,21 +499,11 @@ let%expect_test _ =
   let Some store1 = add env Subst.empty store0 q (Obj.magic (__, Obj.magic 1)) in
   Format.printf "%a\n%!" pp store1;
   [%expect {xxx|
-    add: src/core/Disequality.ml 400
-    after add: {|  10 -> {|  0 -> {| 10 -> boxed 0 <_.-42, int<1>>; |}, |}, |}
-    {|  10 -> {|  0 -> {| 10 -> boxed 0 <_.-42, int<1>>; |}, |}, |} |xxx}];
+    {|  10 -> (100 -> (10 -> boxed 0 <_.-42, int<1>> )), |}
+  |xxx}];
 
   let Some store2 = add env Subst.empty store1 q (Obj.magic (Obj.magic 1, __)) in
-
-  [%expect {xxx|
-    add: src/core/Disequality.ml 400
-    after add: {|  10 -> {|  0 -> {| 10 -> boxed 0 <_.-42, int<1>>; |},
-                         1 -> {| 10 -> boxed 0 <int<1>, _.-42>; |}, |}, |}
-  |xxx}];
+  [%expect {xxx| |xxx}];
   let ans = reify env Subst.empty store2 q in
   ();
-  [%expect {xxx|
-    src/core/Disequality.ml 436 Disequality.reify
-    src/core/Disequality.ml 340 Conjunct.reify
-    	{|  0 -> {| 10 -> boxed 0 <_.-42, int<1>>; |},  1 -> {|
-                                                          10 -> boxed 0 <int<1>, _.-42>; |}, |} |xxx}]
+  [%expect {xxx| |xxx}]

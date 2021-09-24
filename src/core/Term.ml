@@ -84,7 +84,14 @@ module Var =
 
   end
 
-module VarSet = Set.Make(Var)
+module VarSet = struct
+  include Set.Make(Var)
+  let pp ppf s =
+    Format.fprintf ppf "{| ";
+    iter (fun { Var.index } -> Format.fprintf ppf "%d " index) s;
+    Format.fprintf ppf " |}";
+end
+
 module VarTbl = Hashtbl.Make(Var)
 
 module VarMap =
