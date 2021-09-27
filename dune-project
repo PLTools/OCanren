@@ -1,4 +1,6 @@
-(lang dune 2.5)
+(lang dune 2.7)
+
+(cram enable)
 
 (name OCanren)
 

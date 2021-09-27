@@ -7,3 +7,6 @@
    OCanren-ppx.ppx_fresh
    OCanren-ppx.ppx_tester))
  (libraries OCanren OCanren.tester))
+
+(cram
+ (deps ./main.exe))
