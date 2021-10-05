@@ -24,21 +24,21 @@ module Type = Aez.Smt.Type
 
 let (!!!) = Obj.magic;;
 
-@type var_idx = GT.int with fmt
-@type term = Var of var_idx | Const of GT.int with fmt
-@type phormula =
+type var_idx = GT.int [@@deriving gt ~options:{fmt}]
+type term = Var of var_idx | Const of GT.int [@@deriving gt ~options:{fmt}]
+type phormula =
   | FMDom of var_idx * GT.int GT.list
   | FMLT of term * term
   | FMLE of term * term
   | FMEQ of term * term
   | FMNEQ of term * term
-  with fmt
+[@@deriving gt ~options:{fmt}]
 
 type inti = (int, int logic) injected
 (* type ph_desc = phormula list *)
 (* type item = VarSet.t * ph_desc *)
 
-
+include (struct end : sig end)
 
 let var_of_idx idx = Aez.Hstring.make (sprintf "x%d" idx)
 let decl_var idx =
@@ -126,7 +126,7 @@ end = struct
         | Some v -> VarSet.singleton v
         | None -> VarSet.empty
       in
-      { empty () with vars = set; phs = [ FMDom (v.Term.Var.index, ints) ] }
+      { (empty ()) with vars = set; phs = [ FMDom (v.Term.Var.index, ints) ] }
 
     let refresh ({phs} as pack) =
       Solver.clear ();

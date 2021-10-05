@@ -9,8 +9,9 @@
  (inline_tests)
  (preprocess
   (per_module
-   ((pps ppx_expect ppx_inline_test)
-    Disequality)
+   ((pps ppx_expect ppx_inline_test GT.ppx_all)
+    Disequality
+    FM)
    ((action
      (run %{project_root}/camlp5/pp5+gt+plugins+dump.exe %{input-file}))
     Pair
