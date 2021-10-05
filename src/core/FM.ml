@@ -16,44 +16,123 @@ let list_fold_lefti ~init ~f =
   in
   helper init 0
 
-module T = Aez.Smt.Term
-module F = Aez.Smt.Formula
-module Solver = Aez.Smt.Make (struct end)
-module Symbol = Aez.Smt.Symbol
-module Type = Aez.Smt.Type
-
 let (!!!) = Obj.magic;;
 
 type var_idx = GT.int [@@deriving gt ~options:{fmt}]
-type term = Var of var_idx | Const of GT.int [@@deriving gt ~options:{fmt}]
-type phormula =
+type term0 = Var of var_idx | Const of GT.int [@@deriving gt ~options:{fmt}]
+type phormula0 =
   | FMDom of var_idx * GT.int GT.list
-  | FMLT of term * term
-  | FMLE of term * term
-  | FMEQ of term * term
-  | FMNEQ of term * term
+  | FMLT of term0 * term0
+  | FMLE of term0 * term0
+  | FMEQ of term0 * term0
+  | FMNEQ of term0 * term0
 [@@deriving gt ~options:{fmt}]
 
 type inti = (int, int logic) injected
 (* type ph_desc = phormula list *)
 (* type item = VarSet.t * ph_desc *)
 
-include (struct end : sig end)
+type checked
+type nonchecked
 
-let var_of_idx idx = Aez.Hstring.make (sprintf "x%d" idx)
-let decl_var idx =
-  let x = var_of_idx idx in
-  try
-    Symbol.declare x [] Type.type_int
-  with
-    | Aez.Smt.Error (Aez.Smt.DuplicateSymb _) -> ()
-    | Aez.Smt.Error (Aez.Smt.DuplicateTypeName _) -> ()
+module type MYSOLVER = sig
+  type 'a t
+  type state
 
+  val make_solver: unit -> checked t
+
+  val save_state : checked t -> state
+  val restore_state: state -> checked t
+
+  type ph
+  val domain : Term.Var.t -> int list -> ph
+  val add_phormula0: _ t -> phormula0 -> nonchecked t
+
+  val merge: _ t -> _ t -> nonchecked t
+  val singleton : phormula0 -> nonchecked t
+
+  type term
+  val tint : int -> term
+  val tvar : Term.Var.t -> term
+  val tvar_of_index : int -> term
+  val eq : term -> term -> ph
+
+  type rez = SAT | UNSAT
+  val check: _ t -> checked t option
+end
+
+
+(*
+ *)
 let wrap_term = function
   | Var n   ->
       decl_var n;
       T.make_app (var_of_idx n) []
   | Const m -> T.make_int (Num.num_of_int m)
+
+module MYAEZ : MYSOLVER = struct
+  module T = Aez.Smt.Term
+  module F = Aez.Smt.Formula
+  module Solver = Aez.Smt.Make (struct end)
+  module Symbol = Aez.Smt.Symbol
+  module Type = Aez.Smt.Type
+
+  let var_of_idx idx = Aez.Hstring.make (sprintf "x%d" idx)
+  let decl_var idx =
+    let x = var_of_idx idx in
+    try
+      Symbol.declare x [] Type.type_int
+    with
+      | Aez.Smt.Error (Aez.Smt.DuplicateSymb _) -> ()
+      | Aez.Smt.Error (Aez.Smt.DuplicateTypeName _) -> ()
+
+  type ph = phormula
+  type state = Solver.state
+  type _ t = phormula list
+
+  let make_solver () = []
+  let save_state _ = Solver.save_state ()
+  let restore_state st =
+    Solver.restore_state st;
+    []
+
+
+  type nonrec term = T.t
+  let tint m = T.make_int (Num.num_of_int m)
+  let tvar_of_index n =
+    decl_var n;
+    T.make_app (var_of_idx n) []
+  let tvar { Term.Var.index } = tvar_of_index index
+
+  let wrap_binop op a b = F.make_lit op [ a; b ]
+  let eq a b = wrap_binop F.Lt a b
+  let domain v ints =
+    FMDom (v.Term.Var.index, ints)
+
+
+  let add_phormula : _ t -> ph -> nonchecked t = fun solver ph -> Solver.assume ~profiling:false ~id:1 ph; solver
+
+  let singleton ph =
+    [ ph ]
+
+  let merge phs1 phs2 =
+    let _ph3 =
+      list_fold_lefti phs1 ~init:phs2 ~f:(fun () i ph ->
+        add_phormula () ph;
+        ()
+      )
+    in
+    (_ph3)
+
+  type rez = SAT | UNSAT
+
+  let check () =
+    try Solver.check (); Some ()
+    with Aez.Smt.Unsat _core -> None
+end
+
+
+
 
 
 module Store : sig
@@ -152,11 +231,11 @@ end = struct
 
   let check_pack : Pack.t -> bool = function { state } as p ->
     try
-      printf "check_pack %s %d the pack of size %d\n" __FILE__ __LINE__ (Pack.size p);
+      (* printf "check_pack %s %d the pack of size %d\n" __FILE__ __LINE__ (Pack.size p); *)
       Format.printf "%a\n%!" Pack.pp p ;
       Pack.refresh p;
       Solver.clear ();
-      Solver.restore_state state;
+      Solver.restore_state p.Pack.state;
       Solver.check ();
       true
   with Aez.Smt.Unsat _core -> false
