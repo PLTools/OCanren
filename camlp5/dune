@@ -60,7 +60,6 @@
    -package
    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
    %{read-lines:../config/package-doc.cfg}
-   ;s%{deps}
    -o
    %{targets})))
 
