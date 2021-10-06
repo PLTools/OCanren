@@ -25,15 +25,22 @@ type term0 =
   | Const of GT.int
 [@@deriving gt ~options:{ fmt }]
 
+type op =
+  | LT
+  | LE
+  | EQ
+  | NEQ
+[@@deriving gt ~options:{ fmt }]
+
 type phormula0 =
   | FMDom of var_idx * GT.int GT.list
-  | FMLT of term0 * term0
-  | FMLE of term0 * term0
-  | FMEQ of term0 * term0
-  | FMNEQ of term0 * term0
+  | FMBinop of op * term0 * term0
 [@@deriving gt ~options:{ fmt }]
 
 let domain v ints = FMDom (v.Term.Var.index, ints)
+let fmneq l r = FMBinop (NEQ, l, r)
+let fmeq l r = FMBinop (EQ, l, r)
+let fmlt l r = FMBinop (LT, l, r)
 
 type inti = (int, int logic) injected
 
@@ -76,7 +83,8 @@ module type MYSOLVER = sig
   val check : unit -> bool
 end
 
-module MYSOLVER : MYSOLVER = struct
+(*
+module MYAEZ : MYSOLVER = struct
   module Solver = Aez.Smt.Make ()
   module Symbol = Aez.Smt.Symbol
   module Type = Aez.Smt.Type
@@ -139,20 +147,27 @@ module MYSOLVER : MYSOLVER = struct
 
   let of_term0 : term0 -> term = function
     | Var n ->
+      Format.printf "%s %d\n%!" __FILE__ __LINE__;
       decl_var n;
-      T.make_app (var_of_idx n) []
+      Format.printf "%s %d\n%!" __FILE__ __LINE__;
+      let ans = T.make_app (var_of_idx n) [] in
+      Format.printf "%s %d\n%!" __FILE__ __LINE__;
+      ans
     | Const m -> T.make_int (Num.num_of_int m)
   ;;
 
   (* phormulas *)
-  let of_phormula0 : phormula0 -> ph = fun _ -> assert false
-
   let of_phormula0 = function
     | FMLT (a, b) -> wrap_binop F.Lt (of_term0 a) (of_term0 b)
     | FMLE (a, b) -> wrap_binop F.Le (of_term0 a) (of_term0 b)
     | FMEQ (a, b) -> wrap_binop F.Eq (of_term0 a) (of_term0 b)
-    | FMNEQ (a, b) -> wrap_binop F.Neq (of_term0 a) (of_term0 b)
+    | FMNEQ (a, b) ->
+      Format.printf "%s %d\n%!" __FILE__ __LINE__;
+      let ans = wrap_binop F.Neq (of_term0 a) (of_term0 b) in
+      Format.printf "%s %d\n%!" __FILE__ __LINE__;
+      ans
     | FMDom (v, xs) ->
+      Format.printf "%s %d\n%!" __FILE__ __LINE__;
       F.make
         F.Or
         (xs
@@ -160,26 +175,28 @@ module MYSOLVER : MYSOLVER = struct
                wrap_binop F.Eq (of_term0 @@ Var v) (of_term0 @@ Const n)))
   ;;
 
+  let last_phormula = ref 0
+
   let add_phormula0 : phormula0 -> unit =
    fun ph0 ->
     cur_phormulas := ph0 :: !cur_phormulas;
-    Solver.assume ~profiling:false ~id:1 (of_phormula0 ph0)
+    Format.printf "adding a phormula: %s %d\n%!" __FILE__ __LINE__;
+    incr last_phormula;
+    Solver.assume ~profiling:false ~id:!last_phormula (of_phormula0 ph0);
+    Format.printf "phormula is assumed: %s %d\n%!" __FILE__ __LINE__
  ;;
 
   let add_phormula_hacky : phormula0 -> unit =
-   fun ph0 -> Solver.assume ~profiling:false ~id:1 (of_phormula0 ph0)
+   fun ph0 ->
+    Format.printf "hacky adding a phormula: %s %d\n%!" __FILE__ __LINE__;
+    let f = of_phormula0 ph0 in
+    incr last_phormula;
+    Format.printf "%s %d\n%!" __FILE__ __LINE__;
+    Solver.assume ~profiling:false ~id:!last_phormula f;
+    Format.printf "hacky phormula is assumed: %s %d\n%!" __FILE__ __LINE__
  ;;
 
   let singleton ph = [ ph ]
-
-  (* let merge phs1 phs2 =
-     let _ph3 =
-       list_fold_lefti phs1 ~init:phs2 ~f:(fun () i ph ->
-         add_phormula () ph;
-         ()
-       )
-     in
-     (_ph3) *)
 
   type rez =
     | SAT
@@ -187,6 +204,7 @@ module MYSOLVER : MYSOLVER = struct
 
   let check () =
     try
+      Format.printf "check: %s %d\n%!" __FILE__ __LINE__;
       Solver.check ();
       true
     with
@@ -200,6 +218,96 @@ module MYSOLVER : MYSOLVER = struct
     | Const m -> T.make_int (Num.num_of_int m)
   ;;
 end
+*)
+module MYZ3 = struct
+  open Z3
+
+  let ctx = Z3.mk_context []
+
+  module IntMap = Map.Make (Int)
+
+  type state =
+    { solver : Z3.Solver.solver
+    ; mutable vars : (Z3.Expr.expr * int list) IntMap.t
+    }
+
+  let mk solver vars = { solver; vars }
+
+  let check { solver } =
+    match Z3.Solver.check solver [] with
+    | Z3.Solver.SATISFIABLE -> true
+    | Z3.Solver.UNSATISFIABLE -> false
+    | Z3.Solver.UNKNOWN -> assert false
+  ;;
+
+  let make () = mk (Z3.Solver.mk_simple_solver ctx) IntMap.empty
+
+  let clone { solver; vars } =
+    (* TODO: maybe we neeed a new context here *)
+    mk (Z3.Solver.translate solver ctx) vars
+  ;;
+
+  let list_find_index v xs =
+    Format.printf
+      "list_find_index %d in %a\n%!"
+      v
+      (Format.pp_print_list Format.pp_print_int)
+      xs;
+    let rec helper idx = function
+      | [] -> raise Not_found
+      | h :: _ when h = v -> idx
+      | _ :: tl -> helper (1 + idx) tl
+    in
+    helper 0 xs
+  ;;
+
+  let extend ({ solver; vars } as s) ph0 =
+    let on_var idx =
+      match IntMap.find idx vars with
+      | exception Not_found -> failwith "suspicious"
+      | vexpr, ints -> vexpr
+    in
+    let on_int_const c = Expr.mk_numeral_int ctx c (Arithmetic.Integer.mk_sort ctx) in
+    let ph s = function
+      | FMDom (vidx, ints) ->
+        (match IntMap.find vidx vars with
+        | _, _ -> assert false
+        | exception Not_found ->
+          let sort =
+            Enumeration.mk_sort
+              ctx
+              (Symbol.mk_string ctx @@ Printf.sprintf "sort_%d" vidx)
+              (Caml.List.map (Symbol.mk_int ctx) ints)
+          in
+          let v = Expr.mk_fresh_const ctx (sprintf "v%d" vidx) sort in
+          mk solver (IntMap.add vidx (v, ints) vars))
+      | FMBinop (op, Var v1, Var v2) -> assert false
+      | FMBinop (op, Const v1, Const _) -> assert false
+      | FMBinop (op, Const n, Var v) | FMBinop (op, Var v, Const n) ->
+        let makef = function
+          | EQ -> Boolean.mk_eq
+          | LT -> Arithmetic.mk_lt
+          | LE -> Arithmetic.mk_le
+          | NEQ -> fun ctx l r -> Boolean.mk_not ctx (Boolean.mk_eq ctx l r)
+        in
+        let vexpr, ints = IntMap.find v vars in
+        let vsort = Expr.get_sort vexpr in
+        let rhs = Enumeration.get_const vsort (list_find_index n ints) in
+        Solver.add solver [ makef op ctx vexpr rhs ];
+        s
+      (* | _ -> assert false *)
+    in
+    (* let s = clone s in *)
+    ph s ph0
+  ;;
+
+  let extend_and_check so ph0 =
+    let s = extend so ph0 in
+    if check s then Some s else None
+  ;;
+end
+
+module MYSOLVER = MYZ3
 
 module type STORE = sig
   type t = MYSOLVER.state
@@ -214,21 +322,18 @@ module type STORE = sig
   val add_domain : Term.Var.t -> int list -> t -> t option
 end
 
-module Store : STORE = struct
+module Store = struct
   type t = MYSOLVER.state
 
-  let empty () =
-    MYSOLVER.clear ();
-    MYSOLVER.save_state ()
-  ;;
+  let empty () = MYSOLVER.make ()
 
-  let get () = MYSOLVER.save_state ()
-  let load st = MYSOLVER.load_state st
-  let is_var_interesting _ _ = true
+  (* let get () = MYSOLVER.save_state () *)
+  (* let load st = MYSOLVER.load_state st *)
+  (* let is_var_interesting _ _ = true *)
 
-  let check () =
+  let check store =
     (* let solver = MYSOLVER.load_state state in *)
-    match MYSOLVER.check () with
+    match MYSOLVER.check store with
     | false -> false
     | true -> true
   ;;
@@ -237,248 +342,48 @@ module Store : STORE = struct
       Some state *)
 
   let add_domain var dom state =
-    let () = MYSOLVER.load_state state in
-    let () = MYSOLVER.add_phormula0 (FMDom (var.Term.Var.index, dom)) in
-    match MYSOLVER.check () with
+    (* let () = MYSOLVER.load_state state in *)
+    let state = MYSOLVER.clone state in
+    let state = MYSOLVER.extend state (FMDom (var.Term.Var.index, dom)) in
+    match MYSOLVER.check state with
     | false -> None
     | true ->
-      let state = MYSOLVER.save_state () in
+      (* let state = MYSOLVER.save_state () in *)
       Some state
   ;;
 
-  let extend op a b =
+  let clone = MYSOLVER.clone
+
+  let extend ~clone solver op a b =
+    let solver = if clone then MYSOLVER.clone solver else solver in
     let open Subst in
     (* We should iter prefix and see if some new substitution affect
       our constraints.
       In some cases our constraints can be merged
     *)
     let on_var_and_term v term =
-      MYSOLVER.add_phormula_hacky (op (Var v.Term.Var.index) (Const term))
+      MYSOLVER.extend solver (op (Var v.Term.Var.index) (Const term))
     in
     let on_two_vars v1 v2 =
-      MYSOLVER.add_phormula_hacky (op (Var v1.Term.Var.index) (Var v2.Term.Var.index))
+      MYSOLVER.extend solver (op (Var v1.Term.Var.index) (Var v2.Term.Var.index))
     in
     (* let () = printf "a  = %s\n" (Term.show !!!a) in
     let () = printf "b  = %s\n" (Term.show !!!b) in *)
     match Term.(var a, var b) with
-    | None, None when !!!a = !!!b -> ()
-    | None, None -> ()
+    | None, None when !!!a = !!!b -> solver
+    | None, None -> solver
     | Some v1, Some v2 -> on_two_vars v1 v2
     | Some v, x | x, Some v -> on_var_and_term v !!!x
   ;;
 
-  let extend_and_check op a b store =
-    load store;
-    extend op a b;
-    match check () with
+  let extend_and_check ~clone op a b store =
+    (* let store = if clone then MYSOLVER.clone store else store in *)
+    let store = extend ~clone store op a b in
+    match check store with
     | false -> None
-    | true -> Some (get ())
+    | true -> Some store
   ;;
 end
-
-(*
-module Store : sig
-  type t
-
-  val empty: unit -> t
-  val is_var_interesting: t -> Term.Var.t -> bool
-
-  val check: t -> t option
-
-  val recheck_helper1: (term -> term -> phormula) -> t -> 'a -> 'b -> t option
-
-  val add_domain: Term.Var.t -> int list -> t -> t option
-end = struct
-
-  module Pack = struct
-    type t = P : { vars: VarSet.t; mutable state: 'a MYAEZ.t} -> t
-
-    let size : t -> int = fun {phs} -> Stdlib.List.length phs
-    let state {state} = state
-
-    let make vars state phs = { vars; state; phs }
-    let empty () =
-      Solver.clear ();
-      make VarSet.empty (Solver.save_state ()) []
-
-    let pp fmt pack =
-      Format.pp_print_list (GT.fmt phormula0) Format.std_formatter pack.phs
-
-    (* TODO: add phantom argument checked/nonchecked *)
-    let singleton : _ -> Term.Var.t -> 'a -> t = fun op var t ->
-      let vars, ta, tb =
-        let f set x = match Term.var x with
-          | None   -> (set, Const (Obj.magic x))
-          | Some v -> (VarSet.add v set, Var v.Term.Var.index)
-        in
-        let set = VarSet.empty in
-        let set,ta = f set !!!var in
-        let set,tb = f set !!!t in
-        (set, ta, tb)
-      in
-      Solver.clear ();
-      let state = Solver.save_state () in
-      make vars state [op ta tb]
-
-    let domain v ints =
-      let set =
-        match Term.var v with
-        | Some v -> VarSet.singleton v
-        | None -> VarSet.empty
-      in
-      { (empty ()) with vars = set; phs = [ FMDom (v.Term.Var.index, ints) ] }
-
-    let refresh ({phs} as pack) =
-      Solver.clear ();
-      Stdlib.List.iteri assume_item_exn phs;
-      pack.state <- Solver.save_state ()
-
-
-  end
-
-  type t = Pack.t list
-
-  type lookup_rez =
-    | One of Pack.t
-    | Zero
-
-
-  let empty () = []
-
-  let is_var_interesting _ _ = true
-  exception Bad
-
-
-
-  let check_pack : Pack.t -> bool = function { state } as p ->
-    try
-      (* printf "check_pack %s %d the pack of size %d\n" __FILE__ __LINE__ (Pack.size p); *)
-      Format.printf "%a\n%!" Pack.pp p ;
-      Pack.refresh p;
-      Solver.clear ();
-      Solver.restore_state p.Pack.state;
-      Solver.check ();
-      true
-  with Aez.Smt.Unsat _core -> false
-
-
-  let rec merge_packs p1 p2  =
-    if Pack.(size p1 > size p2) then merge_packs p2 p1
-    else
-      let () = Solver.restore_state (Pack.state p2) in
-      let p2_size = Pack.size p2 in
-      let ph3 =
-        list_fold_lefti p1.Pack.phs ~init:p2.Pack.phs ~f:(fun acc i ph ->
-          assume_item_exn (i+p2_size) ph;
-          (ph::acc)
-        )
-      in
-      let set3 = VarSet.union p2.Pack.vars p1.Pack.vars in
-      Pack.make set3 (Solver.save_state ()) ph3
-
-
-  let check store : t option =
-    try
-      store |> Stdlib.List.iter (fun p ->
-        if not (check_pack p) then raise Bad
-      );
-      Some store
-    with Bad -> None
-
-  let on_two_vars op v1 v2 store =
-    (* let ext_set set = VarSet.(add v1 (add v2 set)) in *)
-    let ans =
-      fold_cps ~init:(Zero,[]) store ~f:(fun acc pack tl k ->
-        if VarSet.mem v1 pack.Pack.vars || VarSet.mem v2 pack.Pack.vars
-        then begin
-            match acc with
-            | Zero,tl -> k (One pack, tl)
-            | (One pack2),tl2 ->
-                let pack3 = merge_packs pack pack2 in
-                (One pack3, Stdlib.List.append tl2 tl)
-        end else
-          let v,xs = acc in
-          k (v,pack::xs)
-      )
-    in
-    let (p, other_packs) =
-      match ans with
-      | Zero, tl -> (Pack.empty (), tl)
-      | One pack,tl -> (pack,tl)
-    in
-
-    (* we need to prepend to tail new pack of constraints *)
-    let p_new = Pack.singleton op v1 v2 in
-      (* let state =
-        Solver.clear ();
-        Solver.save_state ()
-      in
-      let (set,h) = add_binop op !!!v1 !!!v2 (VarSet.empty, []) in
-      Pack.make set state h
-    in *)
-
-    let pack = merge_packs p_new p in
-    match check_pack pack with
-      | true -> Some (pack::other_packs)
-      | false -> None
-
-
-  let recheck_helper1 op (store: t) a b =
-    let open Subst in
-    (* We should iter prefix and see if some new substitution affect our constraints.
-      In some cases our constraints can be merged
-    *)
-
-    let on_var_and_term v term store =
-      (* printf "on_var_and_term %s %d\n" __FILE__ __LINE__; *)
-      try
-        fold_cps ~init:[] store ~f:(fun acc pack tl k ->
-          if VarSet.mem v pack.Pack.vars
-          then
-            let new_pack = Pack.singleton op v term in
-            let p = merge_packs new_pack pack in
-            match check_pack p with
-            | false -> raise Bad
-            | true  -> acc @ pack :: tl
-          else
-            k ( pack :: acc)
-        ) |> Stdlib.Option.some
-      with Bad -> None
-    in
-
-
-    (* let () = printf "a  = %s\n" (Term.show !!!a) in
-    let () = printf "b  = %s\n" (Term.show !!!b) in *)
-    match Term.(var a, var b) with
-    | None,None when !!!a = !!!b -> Some store
-    | None,None                  -> None
-    | Some v1, Some v2 -> on_two_vars op v1 v2 store
-    | Some v, x
-    | x, Some v -> on_var_and_term v x store
-
-
-  let add_domain v ints store =
-    (* if is_var_interesting v.Term.Var.index store
-    then *)
-      try
-        fold_cps ~init:[] store ~f:(fun acc pack tl k ->
-          if VarSet.mem v pack.Pack.vars
-          then begin
-            let new_pack = Pack.domain v ints in
-            let p = merge_packs new_pack pack in
-            match check_pack p with
-            | false -> raise Bad
-            | true  -> acc @ pack :: tl
-          end else
-            k (pack :: acc)
-        ) |> Stdlib.Option.some
-      with Bad -> None
-    (* else
-      Some (VarSet.(add v empty, [d]) :: store)
- *)
-
-end
- *)
 
 type t = Store.t
 
@@ -487,20 +392,25 @@ exception Bad
 let empty () = Store.empty ()
 
 let recheck_helper op (store : Store.t) (_prefix : Subst.Binding.t list) =
-  Store.load store;
-  ListLabels.iter _prefix ~f:(fun bin ->
-      Store.extend
-        (fun x y -> FMEQ (x, y))
-        !!!(bin.Subst.Binding.var)
-        !!!(bin.Subst.Binding.term));
-  match Store.check () with
+  (* Store.load store; *)
+  let store =
+    ListLabels.fold_left ~init:store _prefix ~f:(fun store bin ->
+        Store.extend
+          store
+          ~clone:false
+          fmeq
+          !!!(bin.Subst.Binding.var)
+          !!!(bin.Subst.Binding.term))
+  in
+  match Store.check store with
   | false -> None
-  | true -> Some (Store.get ())
+  | true -> Some store
 ;;
 
 let recheck _env _subst (store : Store.t) (_prefix : Subst.Binding.t list) =
   (* printf "%s %d length of _prefix=%d\n" __FILE__ __LINE__ (Stdlib.List.length _prefix); *)
-  match recheck_helper (fun a b -> FMEQ (a, b)) store _prefix with
+  let store = Store.clone store in
+  match recheck_helper fmeq store _prefix with
   | None ->
     (* printf "recheck failed\n";  *)
     None
@@ -508,13 +418,13 @@ let recheck _env _subst (store : Store.t) (_prefix : Subst.Binding.t list) =
 ;;
 
 let check store =
-  Store.load store;
-  if Store.check () then Some store else None
+  (* Store.load store; *)
+  if Store.check store then Some store else None
 ;;
 
-let neq eta = Store.extend_and_check (fun a b -> FMNEQ (a, b)) eta
-let eq eta = Store.extend_and_check (fun a b -> FMEQ (a, b)) eta
-let lt x = Store.extend_and_check (fun a b -> FMLT (a, b)) x
+let neq eta = Store.extend_and_check ~clone:true fmneq eta
+let eq eta = Store.extend_and_check ~clone:true fmeq eta
+let lt x = Store.extend_and_check ~clone:true fmlt x
 let ( =/= ) = neq
 
 let domain (v : inti) ints store =

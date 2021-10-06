@@ -3,7 +3,7 @@
 (library
  (name OCanren)
  (public_name OCanren)
- (libraries GT mtime.clock.os)
+ (libraries GT mtime.clock.os z3)
  (flags
   (:standard -short-paths -rectypes))
  (inline_tests)
