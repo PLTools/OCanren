@@ -158,7 +158,10 @@ let all_flags     = ref false
 let all           = ref false
 
 let args =
-  let set_tests_dir s = tests_dir := Some s in
+  let set_tests_dir s =
+    Format.printf "Setting tests dir to '%s'\n%!" s;
+    let _ =Sys.command "pwd" in
+    tests_dir := Some s in
   Arg.align @@
     [ ("-tests-dir"   , Arg.String set_tests_dir, "DIR discover tests in this directory"      )
     ; ("-tests"       , Arg.Set tests           , " discover tests (tests.txt)"               )

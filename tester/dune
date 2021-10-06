@@ -1,8 +1,7 @@
 (library
-  (name tester)
-  (modules tester)
-  (libraries OCanren)
-  (public_name OCanren.tester)
-)
-
-
+ (name tester)
+ (modules tester)
+ (libraries OCanren)
+ (public_name OCanren.tester)
+ (flags
+  (:standard -short-paths -rectypes)))

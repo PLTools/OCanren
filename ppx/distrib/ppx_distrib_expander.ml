@@ -386,15 +386,8 @@ let revisit_adt
       let functorized_type = Naming.fabst_name full_t.ptype_name.txt in
       let fully_abstract_typ =
         (* a type name for which we will generate `fmap` *)
-<<<<<<< HEAD
-        let extra_params =
-          FoldInfo.map mapa ~f:(fun fi ->
-              ( Ast_helper.Typ.var fi.FoldInfo.param_name
-              , (Asttypes.NoVariance, Asttypes.NoInjectivity) ))
-=======
         let extra_params = FoldInfo.map mapa
           ~f:(fun fi -> (Ast_helper.Typ.var fi.FoldInfo.param_name, (Asttypes.NoVariance, Asttypes.NoInjectivity)))
->>>>>>> ace16101 (WIP. Will continue this tomorrow)
         in
         let open Location in
         { full_t with

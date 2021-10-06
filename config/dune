@@ -1,18 +1,32 @@
 (executable
-  (name discover)
-  (modules Discover)
-  (libraries str dune-configurator)
-)
+ (name discover)
+ (modules Discover)
+ (libraries str dune-configurator))
 
 (rule
-  (targets camlp5-flags.cfg gt-flags.cfg gt-flags-native.cfg logger-flags.cfg stublibs-dir.cfg instrumentalization.cfg package-doc.cfg)
-  (action (run ./discover.exe -all-flags))
-)
+ (targets
+  camlp5-flags.cfg
+  gt-flags.cfg
+  gt-flags-native.cfg
+  logger-flags.cfg
+  stublibs-dir.cfg
+  instrumentalization.cfg
+  package-doc.cfg)
+ (action
+  (run ./discover.exe -all-flags)))
 
 (rule
-  (targets tests.txt dune.tests)
-  (alias discover-tests)
-  (deps tests.dune.tpl (source_tree ../regression))
-  (mode (promote-into ../regression))
-  (action (run ./discover.exe -tests -tests-dune -tests-dir %{project_root}/../../regression))
-)
+ (targets tests.txt dune.tests)
+ (alias discover-tests)
+ (deps
+  tests.dune.tpl
+  (source_tree ../regression))
+ (mode
+  (promote-into ../regression))
+ (action
+  (run
+   ./discover.exe
+   -tests
+   -tests-dune
+   -tests-dir
+   %{project_root}/regression)))

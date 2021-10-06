@@ -5,7 +5,7 @@
  (public_name OCanren)
  (libraries GT mtime.clock.os)
  (flags
-  (:standard -short-paths))
+  (:standard -short-paths -rectypes))
  (inline_tests)
  (preprocess
   (per_module
