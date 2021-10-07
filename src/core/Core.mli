@@ -393,3 +393,10 @@ module PrunesControl : sig
   val is_exceeded: unit -> bool
   val skipped_prunes : unit -> int
 end
+
+module FD : sig
+  (* val lt : (int, int logic) injected -> (int, int logic) injected -> goal *)
+  val eq : (int, int logic) injected -> (int, int logic) injected -> goal
+  val neq : (int, int logic) injected -> (int, int logic) injected -> goal
+  val domain  : (int, int logic) injected -> int list -> goal
+end

@@ -26,8 +26,8 @@ type term0 =
 [@@deriving gt ~options:{ fmt }]
 
 type op =
-  | LT
-  | LE
+  (* | LT *)
+  (* | LE *)
   | EQ
   | NEQ
 [@@deriving gt ~options:{ fmt }]
@@ -40,7 +40,7 @@ type phormula0 =
 let domain v ints = FMDom (v.Term.Var.index, ints)
 let fmneq l r = FMBinop (NEQ, l, r)
 let fmeq l r = FMBinop (EQ, l, r)
-let fmlt l r = FMBinop (LT, l, r)
+(* let fmlt l r = FMBinop (LT, l, r) *)
 
 type inti = (int, int logic) injected
 
@@ -251,7 +251,9 @@ module MYZ3 = struct
     Format.printf
       "list_find_index %d in %a\n%!"
       v
-      (Format.pp_print_list Format.pp_print_int)
+      (Format.pp_print_list
+         ~pp_sep:(fun ppf () -> Format.fprintf ppf " ")
+         Format.pp_print_int)
       xs;
     let rec helper idx = function
       | [] -> raise Not_found
@@ -262,13 +264,20 @@ module MYZ3 = struct
   ;;
 
   let extend ({ solver; vars } as s) ph0 =
+    Format.printf "extending by %a\n%!" (GT.fmt phormula0) ph0;
     let on_var idx =
       match IntMap.find idx vars with
       | exception Not_found -> failwith "suspicious"
       | vexpr, ints -> vexpr
     in
     let on_int_const c = Expr.mk_numeral_int ctx c (Arithmetic.Integer.mk_sort ctx) in
-    let ph s = function
+    let makef = function
+      | EQ -> Boolean.mk_eq
+      (* | LT -> Arithmetic.mk_lt *)
+      (* | LE -> Arithmetic.mk_le *)
+      | NEQ -> fun ctx l r -> Boolean.mk_not ctx (Boolean.mk_eq ctx l r)
+    in
+    let ph _s = function
       | FMDom (vidx, ints) ->
         (match IntMap.find vidx vars with
         | _, _ -> assert false
@@ -281,15 +290,13 @@ module MYZ3 = struct
           in
           let v = Expr.mk_fresh_const ctx (sprintf "v%d" vidx) sort in
           mk solver (IntMap.add vidx (v, ints) vars))
-      | FMBinop (op, Var v1, Var v2) -> assert false
+      | FMBinop (op, Var v1, Var v2) ->
+        let e1, dom = IntMap.find v1 vars in
+        let e2, dom = IntMap.find v2 vars in
+        Solver.add solver [ makef op ctx e1 e2 ];
+        s
       | FMBinop (op, Const v1, Const _) -> assert false
       | FMBinop (op, Const n, Var v) | FMBinop (op, Var v, Const n) ->
-        let makef = function
-          | EQ -> Boolean.mk_eq
-          | LT -> Arithmetic.mk_lt
-          | LE -> Arithmetic.mk_le
-          | NEQ -> fun ctx l r -> Boolean.mk_not ctx (Boolean.mk_eq ctx l r)
-        in
         let vexpr, ints = IntMap.find v vars in
         let vsort = Expr.get_sort vexpr in
         let rhs = Enumeration.get_const vsort (list_find_index n ints) in
@@ -367,13 +374,14 @@ module Store = struct
     let on_two_vars v1 v2 =
       MYSOLVER.extend solver (op (Var v1.Term.Var.index) (Var v2.Term.Var.index))
     in
-    (* let () = printf "a  = %s\n" (Term.show !!!a) in
-    let () = printf "b  = %s\n" (Term.show !!!b) in *)
+    let () = printf "a  = %s\n" (Term.show !!!a) in
+    let () = printf "b  = %s\n" (Term.show !!!b) in
     match Term.(var a, var b) with
     | None, None when !!!a = !!!b -> solver
     | None, None -> solver
     | Some v1, Some v2 -> on_two_vars v1 v2
-    | Some v, x | x, Some v -> on_var_and_term v !!!x
+    | Some v, _ -> on_var_and_term v (!!!b : int)
+    | _, Some v -> on_var_and_term v (!!!a : int)
   ;;
 
   let extend_and_check ~clone op a b store =
@@ -424,7 +432,8 @@ let check store =
 
 let neq eta = Store.extend_and_check ~clone:true fmneq eta
 let eq eta = Store.extend_and_check ~clone:true fmeq eta
-let lt x = Store.extend_and_check ~clone:true fmlt x
+
+(* let lt x = Store.extend_and_check ~clone:true fmlt x *)
 let ( =/= ) = neq
 
 let domain (v : inti) ints store =

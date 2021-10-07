@@ -16,9 +16,12 @@ let rel3 dom a b c d =
     (FD.domain b dom)
     (FD.domain c dom)
     (FD.domain d dom)
-    (FD.lt a b)
-    (FD.lt b c)
-    (FD.lt c d)
+    (FD.neq a b)
+    (FD.neq a c)
+    (FD.neq a d)
+    (FD.neq b c)
+    (FD.neq b d)
+    (FD.neq c d)
 
 let _freeVars =
   runL   1  q     qh (REPR (fun x -> (FD.domain x [1;2])  ));

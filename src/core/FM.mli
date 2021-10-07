@@ -14,5 +14,6 @@ val recheck : Env.t -> Subst.t -> t -> Subst.Binding.t list -> t option
 val check : t -> t option
 val eq : inti -> inti -> t -> t option
 val neq : inti -> inti -> t -> t option
-val lt : inti -> inti -> t -> t option
+
+(* val lt : inti -> inti -> t -> t option *)
 val domain : inti -> int list -> t -> t option

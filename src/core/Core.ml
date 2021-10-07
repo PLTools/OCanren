@@ -357,6 +357,29 @@ let only_head g st =
   try Stream.single @@ Stream.hd stream
   with Failure _ -> Stream.nil
 
+module FD = struct
+  (* let lt a b st =
+    match FM.lt a b (State.fds st) with
+    | None -> failure ()
+    | Some fd -> success {st with State.fd = fd } *)
+
+  let eq a b st =
+    match FM.eq a b (State.fds st) with
+    | None -> failure ()
+    | Some fd -> success {st with State.fd = fd }
+
+  let neq a b st =
+    match FM.neq a b (State.fds st) with
+    | None -> failure ()
+    | Some fd -> success {st with State.fd = fd }
+
+  let domain v xs st =
+    match FM.domain v xs (State.fds st) with
+    | None -> failure ()
+    | Some fd -> success {st with State.fd = fd }
+
+end
+
 let (===) x y st =
   let _t =
     IFDEF STATS THEN
