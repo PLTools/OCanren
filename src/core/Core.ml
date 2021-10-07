@@ -259,6 +259,7 @@ module State =
       ; ctrs  : Disequality.t
       ; prunes: Prunes.t
       ; scope : Term.Var.scope
+      ; fd    : FM.t
       }
 
     type reified = Env.t * Term.t
@@ -269,6 +270,7 @@ module State =
       ; ctrs  = Disequality.empty
       ; prunes = Prunes.empty
       ; scope = Term.Var.new_scope ()
+      ; fd = FM.empty ()
       }
 
     let env   {env} = env
@@ -276,32 +278,30 @@ module State =
     let constraints {ctrs} = ctrs
     let scope {scope} = scope
     let prunes {prunes} = prunes
+    let fds {fd} = fd
 
     let fresh {env; scope} = Env.fresh ~scope env
     let wc {env; scope} = Env.wc ~scope env
 
     let new_scope st = {st with scope = Term.Var.new_scope ()}
 
-    let unify x y ({env; subst; ctrs; scope} as st) =
-        match Subst.unify ~scope env subst x y with
-        | None -> None
-        | Some (prefix, subst) ->
-          match Disequality.recheck env subst ctrs prefix with
-          | None      -> None
-          | Some ctrs ->
-            let next_state = {st with subst; ctrs} in
-            if PrunesControl.is_exceeded ()
-            then begin
-              let () = PrunesControl.reset_cur_counter () in
-              match Prunes.recheck (prunes next_state) env subst with
-              | Prunes.Violated -> None
-              | NonViolated -> Some next_state
-            end else begin
-(*              print_endline "check skipped";*)
-              let () = PrunesControl.incr () in
-              Some next_state
-            end
+    let unify x y ({env; subst; ctrs; scope; fd } as st) =
+      let (>>=?) x f  = match x with Some a -> f a | None -> None in
 
+      Subst.unify ~scope env subst x y         >>=? fun (prefix, subst) ->
+      Disequality.recheck env subst ctrs prefix >>=? fun ctrs ->
+      FM.recheck env subst fd prefix            >>=? fun fd ->
+        let next_state = { st with subst; ctrs; fd } in
+        if PrunesControl.is_exceeded ()
+        then begin
+          let () = PrunesControl.reset_cur_counter () in
+          match Prunes.recheck (prunes next_state) env subst with
+          | Prunes.Violated -> None
+          | NonViolated -> Some next_state
+        end else begin
+          let () = PrunesControl.incr () in
+          Some next_state
+        end
 
     let diseq x y ({env; subst; ctrs; scope} as st) =
       match Disequality.add env subst ctrs x y with
