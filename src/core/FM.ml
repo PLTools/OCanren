@@ -369,6 +369,21 @@ module Store = struct
 
   let clone = MYSOLVER.clone
 
+  let on_var_and_term solver op v term =
+    let idx = v.Term.Var.index in
+    if MYSOLVER.is_interesting_var solver idx
+    then MYSOLVER.extend solver (op (Var idx) (Const term))
+    else solver
+  ;;
+
+  let on_two_vars solver op v1 v2 =
+    let idx1 = v1.Term.Var.index in
+    let idx2 = v2.Term.Var.index in
+    if MYSOLVER.is_interesting_var solver idx1 || MYSOLVER.is_interesting_var solver idx2
+    then MYSOLVER.extend solver (op (Var idx1) (Var idx2))
+    else solver
+  ;;
+
   let extend ~clone solver op a b =
     let solver = if clone then MYSOLVER.clone solver else solver in
     let open Subst in
@@ -376,28 +391,14 @@ module Store = struct
       our constraints.
       In some cases our constraints can be merged
     *)
-    let on_var_and_term v term =
-      let idx = v.Term.Var.index in
-      if MYSOLVER.is_interesting_var solver idx
-      then MYSOLVER.extend solver (op (Var idx) (Const term))
-      else solver
-    in
-    let on_two_vars v1 v2 =
-      let idx1 = v1.Term.Var.index in
-      let idx2 = v2.Term.Var.index in
-      if MYSOLVER.is_interesting_var solver idx1
-         || MYSOLVER.is_interesting_var solver idx2
-      then MYSOLVER.extend solver (op (Var idx1) (Var idx2))
-      else solver
-    in
     (* let () = printf "a  = %s\n" (Term.show !!!a) in
     let () = printf "b  = %s\n" (Term.show !!!b) in *)
     match Term.(var a, var b) with
     | None, None when !!!a = !!!b -> solver
     | None, None -> solver
-    | Some v1, Some v2 -> on_two_vars v1 v2
-    | Some v, _ -> on_var_and_term v (!!!b : int)
-    | _, Some v -> on_var_and_term v (!!!a : int)
+    | Some v1, Some v2 -> on_two_vars solver op v1 v2
+    | Some v, _ -> on_var_and_term solver op v (!!!b : int)
+    | _, Some v -> on_var_and_term solver op v (!!!a : int)
   ;;
 
   let extend_and_check ~clone op a b store =
@@ -406,47 +407,75 @@ module Store = struct
     | false -> None
     | true -> Some store
   ;;
+
+  type store_rez =
+    | Extended of t
+    | Old
+    | UnsatFound
+
+  let extend_list store prefix =
+    let exception Unsat in
+    try
+      ListLabels.fold_left
+        prefix
+        ~init:(false, store)
+        ~f:(fun ((was_extended, store) as acc) bin ->
+          let a = bin.Subst.Binding.var in
+          let b = bin.Subst.Binding.term in
+          match Term.(var a, var b) with
+          | None, None when !!!a = !!!b -> acc
+          | None, None -> raise Unsat
+          | Some v1, Some v2 ->
+            let idx1 = v1.Term.Var.index in
+            let idx2 = v2.Term.Var.index in
+            if MYSOLVER.is_interesting_var store idx1
+               || MYSOLVER.is_interesting_var store idx2
+            then (
+              let store = if was_extended then store else MYSOLVER.clone store in
+              true, MYSOLVER.extend store (fmeq (Var idx1) (Var idx2)))
+            else false, store
+          | Some v, _ ->
+            let idx = v.Term.Var.index in
+            if MYSOLVER.is_interesting_var store idx
+            then (
+              let store = if was_extended then store else MYSOLVER.clone store in
+              true, MYSOLVER.extend store (fmeq (Var idx) (Const !!!b)))
+            else false, store
+          | _, Some v ->
+            let idx = v.Term.Var.index in
+            if MYSOLVER.is_interesting_var store idx
+            then (
+              let store = if was_extended then store else MYSOLVER.clone store in
+              true, MYSOLVER.extend store (fmeq (Var idx) (Const !!!a)))
+            else false, store)
+      |> function
+      | true, store -> Extended store
+      | false, store -> Old
+    with
+    | Unsat -> UnsatFound
+  ;;
 end
 
 type t = Store.t
 
-exception Bad
-
 let empty () = Store.empty ()
 
 let recheck_helper op (store : Store.t) (_prefix : Subst.Binding.t list) =
-  (* Store.load store; *)
-  let store =
-    ListLabels.fold_left ~init:store _prefix ~f:(fun store bin ->
-        (* TODO: extend should demonstrate if solver has changed *)
-        Store.extend
-          store
-          ~clone:false
-          fmeq
-          !!!(bin.Subst.Binding.var)
-          !!!(bin.Subst.Binding.term))
-  in
-  match Store.check store with
-  | false -> None
-  | true -> Some store
+  match Store.extend_list store _prefix with
+  | Store.UnsatFound -> None
+  | Store.Old -> Some store
+  | Store.Extended store ->
+    (match Store.check store with
+    | false -> None
+    | true -> Some store)
 ;;
 
 let recheck _env _subst (store : Store.t) (_prefix : Subst.Binding.t list) =
   (* printf "%s %d length of _prefix=%d\n" __FILE__ __LINE__ (Stdlib.List.length _prefix); *)
-  let store = Store.clone store in
-  (* TODO: cloning here is not an option *)
-  match recheck_helper fmeq store _prefix with
-  | None ->
-    (* printf "recheck failed\n";  *)
-    None
-  | x -> x
+  recheck_helper fmeq store _prefix
 ;;
 
-let check store =
-  (* Store.load store; *)
-  if Store.check store then Some store else None
-;;
-
+let check store = if Store.check store then Some store else None
 let neq eta = Store.extend_and_check ~clone:true fmneq eta
 let eq eta = Store.extend_and_check ~clone:true fmeq eta
 
