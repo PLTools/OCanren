@@ -1,0 +1,16 @@
+fun x -> FD.domain x [1; 2], 1 answer {
+q=_.10;
+}
+fun x -> FD.domain x [1; 2] &&& FD.neq x !!1, 1 answer {
+q=_.10;
+}
+fun x -> (FD.domain x [1; 2] &&& FD.neq x !!1) &&& FD.neq x !!2, 1 answer {
+}
+fun x -> FD.domain x [1; 2] &&& FD.neq x !!1, 1 answer {
+q=_.10;
+}
+rel3 [1; 2; 3], 1 answer {
+}
+rel3 [1; 2; 3; 4], 1 answer {
+q=_.10; r=_.11; s=_.12; t=_.13;
+}

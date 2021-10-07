@@ -226,12 +226,36 @@ module MYZ3 = struct
 
   module IntMap = Map.Make (Int)
 
+  module IntListMap = Map.Make (struct
+    type t = int list
+
+    let cmp : int -> int -> int = Caml.compare
+
+    let rec compare : t -> t -> int =
+     fun a b ->
+      match a, b with
+      | h1 :: t1, h2 :: t2 ->
+        let c = cmp h1 h2 in
+        if c = 0 then compare t1 t2 else c
+      | [], _ :: _ -> -1
+      | _ :: _, [] -> 1
+      | [], [] -> 0
+   ;;
+  end)
+
   type state =
     { solver : Z3.Solver.solver
-    ; mutable vars : (Z3.Expr.expr * int list) IntMap.t
+    ; vars : (Z3.Expr.expr * int list) IntMap.t
+    ; sorts : Z3.Sort.sort IntListMap.t
     }
 
-  let mk solver vars = { solver; vars }
+  let is_interesting_var { vars } idx =
+    match IntMap.find idx vars with
+    | exception Not_found -> false
+    | _ -> true
+  ;;
+
+  let mk solver vars sorts = { solver; vars; sorts }
 
   let check { solver } =
     match Z3.Solver.check solver [] with
@@ -240,21 +264,22 @@ module MYZ3 = struct
     | Z3.Solver.UNKNOWN -> assert false
   ;;
 
-  let make () = mk (Z3.Solver.mk_simple_solver ctx) IntMap.empty
+  let make () = mk (Z3.Solver.mk_simple_solver ctx) IntMap.empty IntListMap.empty
 
-  let clone { solver; vars } =
+  let clone { solver; vars; sorts } =
     (* TODO: maybe we neeed a new context here *)
-    mk (Z3.Solver.translate solver ctx) vars
+    (* TODO: maybe we should clone sorts too ? *)
+    mk (Z3.Solver.translate solver ctx) vars sorts
   ;;
 
   let list_find_index v xs =
-    Format.printf
+    (* Format.printf
       "list_find_index %d in %a\n%!"
       v
       (Format.pp_print_list
          ~pp_sep:(fun ppf () -> Format.fprintf ppf " ")
          Format.pp_print_int)
-      xs;
+      xs; *)
     let rec helper idx = function
       | [] -> raise Not_found
       | h :: _ when h = v -> idx
@@ -263,14 +288,8 @@ module MYZ3 = struct
     helper 0 xs
   ;;
 
-  let extend ({ solver; vars } as s) ph0 =
-    Format.printf "extending by %a\n%!" (GT.fmt phormula0) ph0;
-    let on_var idx =
-      match IntMap.find idx vars with
-      | exception Not_found -> failwith "suspicious"
-      | vexpr, ints -> vexpr
-    in
-    let on_int_const c = Expr.mk_numeral_int ctx c (Arithmetic.Integer.mk_sort ctx) in
+  let extend ({ solver; vars; sorts } as s) ph0 =
+    (* Format.printf "extending by %a\n%!" (GT.fmt phormula0) ph0; *)
     let makef = function
       | EQ -> Boolean.mk_eq
       (* | LT -> Arithmetic.mk_lt *)
@@ -283,13 +302,15 @@ module MYZ3 = struct
         | _, _ -> assert false
         | exception Not_found ->
           let sort =
-            Enumeration.mk_sort
-              ctx
-              (Symbol.mk_string ctx @@ Printf.sprintf "sort_%d" vidx)
-              (Caml.List.map (Symbol.mk_int ctx) ints)
+            try IntListMap.find ints sorts with
+            | Not_found ->
+              Enumeration.mk_sort
+                ctx
+                (Symbol.mk_string ctx @@ Printf.sprintf "sort_%d" vidx)
+                (Caml.List.map (Symbol.mk_int ctx) ints)
           in
           let v = Expr.mk_fresh_const ctx (sprintf "v%d" vidx) sort in
-          mk solver (IntMap.add vidx (v, ints) vars))
+          mk solver (IntMap.add vidx (v, ints) vars) (IntListMap.add ints sort sorts))
       | FMBinop (op, Var v1, Var v2) ->
         let e1, dom = IntMap.find v1 vars in
         let e2, dom = IntMap.find v2 vars in
@@ -302,9 +323,7 @@ module MYZ3 = struct
         let rhs = Enumeration.get_const vsort (list_find_index n ints) in
         Solver.add solver [ makef op ctx vexpr rhs ];
         s
-      (* | _ -> assert false *)
     in
-    (* let s = clone s in *)
     ph s ph0
   ;;
 
@@ -334,29 +353,18 @@ module Store = struct
 
   let empty () = MYSOLVER.make ()
 
-  (* let get () = MYSOLVER.save_state () *)
-  (* let load st = MYSOLVER.load_state st *)
-  (* let is_var_interesting _ _ = true *)
-
   let check store =
-    (* let solver = MYSOLVER.load_state state in *)
     match MYSOLVER.check store with
     | false -> false
     | true -> true
   ;;
 
-  (* let state = MYAEZ.save_state solver in
-      Some state *)
-
   let add_domain var dom state =
-    (* let () = MYSOLVER.load_state state in *)
     let state = MYSOLVER.clone state in
     let state = MYSOLVER.extend state (FMDom (var.Term.Var.index, dom)) in
     match MYSOLVER.check state with
     | false -> None
-    | true ->
-      (* let state = MYSOLVER.save_state () in *)
-      Some state
+    | true -> Some state
   ;;
 
   let clone = MYSOLVER.clone
@@ -369,13 +377,21 @@ module Store = struct
       In some cases our constraints can be merged
     *)
     let on_var_and_term v term =
-      MYSOLVER.extend solver (op (Var v.Term.Var.index) (Const term))
+      let idx = v.Term.Var.index in
+      if MYSOLVER.is_interesting_var solver idx
+      then MYSOLVER.extend solver (op (Var idx) (Const term))
+      else solver
     in
     let on_two_vars v1 v2 =
-      MYSOLVER.extend solver (op (Var v1.Term.Var.index) (Var v2.Term.Var.index))
+      let idx1 = v1.Term.Var.index in
+      let idx2 = v2.Term.Var.index in
+      if MYSOLVER.is_interesting_var solver idx1
+         || MYSOLVER.is_interesting_var solver idx2
+      then MYSOLVER.extend solver (op (Var idx1) (Var idx2))
+      else solver
     in
-    let () = printf "a  = %s\n" (Term.show !!!a) in
-    let () = printf "b  = %s\n" (Term.show !!!b) in
+    (* let () = printf "a  = %s\n" (Term.show !!!a) in
+    let () = printf "b  = %s\n" (Term.show !!!b) in *)
     match Term.(var a, var b) with
     | None, None when !!!a = !!!b -> solver
     | None, None -> solver
@@ -385,7 +401,6 @@ module Store = struct
   ;;
 
   let extend_and_check ~clone op a b store =
-    (* let store = if clone then MYSOLVER.clone store else store in *)
     let store = extend ~clone store op a b in
     match check store with
     | false -> None
@@ -403,6 +418,7 @@ let recheck_helper op (store : Store.t) (_prefix : Subst.Binding.t list) =
   (* Store.load store; *)
   let store =
     ListLabels.fold_left ~init:store _prefix ~f:(fun store bin ->
+        (* TODO: extend should demonstrate if solver has changed *)
         Store.extend
           store
           ~clone:false
@@ -418,6 +434,7 @@ let recheck_helper op (store : Store.t) (_prefix : Subst.Binding.t list) =
 let recheck _env _subst (store : Store.t) (_prefix : Subst.Binding.t list) =
   (* printf "%s %d length of _prefix=%d\n" __FILE__ __LINE__ (Stdlib.List.length _prefix); *)
   let store = Store.clone store in
+  (* TODO: cloning here is not an option *)
   match recheck_helper fmeq store _prefix with
   | None ->
     (* printf "recheck failed\n";  *)
