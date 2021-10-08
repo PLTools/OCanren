@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2021
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -114,6 +114,11 @@ let rec to_list f = function
 | Cons (x,xs) -> f x :: to_list f xs
 
 let rec inj f xs = to_logic (GT.gmap list f (inj f) xs)
+
+let rec prj_exn f = function
+| Var _ -> raise Logic.Not_a_value
+| Value Nil -> Nil
+| Value (Cons (h, tl)) -> Cons (f h, prj_exn f tl)
 
 let rec list = function
 | []    -> nil ()

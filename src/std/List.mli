@@ -72,6 +72,8 @@ val to_list : ('a -> 'b) -> 'a ground -> 'b GT.list
 (** [inj x] makes a logic list from a ground one *)
 val inj : ('a -> 'b) -> 'a ground -> 'b logic
 
+val prj_exn : ('a -> 'b) -> 'a logic -> 'b ground
+
 (** Make injected [list] from ground one of injected elements *)
 val list : ('a, 'b) injected GT.list -> ('a, 'b) groundi
 
