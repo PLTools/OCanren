@@ -245,7 +245,7 @@ module MYZ3 = struct
 
   type state =
     { solver : Z3.Solver.solver
-    ; vars : (Z3.Expr.expr * int list) IntMap.t
+    ; vars : (Z3.Expr.expr * int list option) IntMap.t
     ; sorts : Z3.Sort.sort IntListMap.t
     }
 
@@ -299,7 +299,31 @@ module MYZ3 = struct
     let ph _s = function
       | FMDom (vidx, ints) ->
         (match IntMap.find vidx vars with
-        | _, _ -> assert false
+        | vexpr, None ->
+          let sort =
+            try IntListMap.find ints sorts with
+            | Not_found ->
+              Enumeration.mk_sort
+                ctx
+                (Symbol.mk_string ctx @@ Printf.sprintf "sort_%d" vidx)
+                (Caml.List.map (Symbol.mk_int ctx) ints)
+          in
+          mk
+            solver
+            (IntMap.add vidx (vexpr, Some ints) vars)
+            (IntListMap.add ints sort sorts)
+        | _, Some ints_old when ints_old = ints -> _s
+        | _, Some ints_old ->
+          failwith
+            Format.(
+              asprintf
+                "Trying to assign domain %a to var _.%d when domain %a is already \
+                 assigned"
+                (pp_print_list ~pp_sep:pp_print_space pp_print_int)
+                ints
+                vidx
+                (pp_print_list ~pp_sep:pp_print_space pp_print_int)
+                ints_old)
         | exception Not_found ->
           let sort =
             try IntListMap.find ints sorts with
@@ -310,15 +334,28 @@ module MYZ3 = struct
                 (Caml.List.map (Symbol.mk_int ctx) ints)
           in
           let v = Expr.mk_fresh_const ctx (sprintf "v%d" vidx) sort in
-          mk solver (IntMap.add vidx (v, ints) vars) (IntListMap.add ints sort sorts))
-      | FMBinop (op, Var v1, Var v2) ->
-        let e1, dom = IntMap.find v1 vars in
-        let e2, dom = IntMap.find v2 vars in
-        Solver.add solver [ makef op ctx e1 e2 ];
-        s
+          let __ () =
+            Format.(
+              printf
+                "Assigning domain %a to variable _.%d\n%!"
+                (pp_print_list ~pp_sep:pp_print_space pp_print_int)
+                ints
+                vidx)
+          in
+          mk solver (IntMap.add vidx (v, Some ints) vars) (IntListMap.add ints sort sorts))
+      | FMBinop (op, Var v1, Var v2) as ph ->
+        (try
+           let e1, dom = IntMap.find v1 vars in
+           let e2, dom = IntMap.find v2 vars in
+           Solver.add solver [ makef op ctx e1 e2 ];
+           s
+         with
+        | Not_found ->
+          Format.eprintf "Can't add to Z3 phormula %a\n%!" (GT.fmt phormula0) ph;
+          s)
       | FMBinop (op, Const v1, Const _) -> assert false
       | FMBinop (op, Const n, Var v) | FMBinop (op, Var v, Const n) ->
-        let vexpr, ints = IntMap.find v vars in
+        let vexpr, Some ints = IntMap.find v vars in
         let vsort = Expr.get_sort vexpr in
         let rhs = Enumeration.get_const vsort (list_find_index n ints) in
         Solver.add solver [ makef op ctx vexpr rhs ];
@@ -360,6 +397,7 @@ module Store = struct
   ;;
 
   let add_domain var dom state =
+    (* TODO: if the same domain is already assigned, maybe we can skip cloning *)
     let state = MYSOLVER.clone state in
     let state = MYSOLVER.extend state (FMDom (var.Term.Var.index, dom)) in
     match MYSOLVER.check state with
