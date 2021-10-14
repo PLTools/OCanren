@@ -18,6 +18,7 @@
 
 open Logic
 
+IFDEF STATS THEN
 type stat = {
   mutable unification_count : int;
   mutable unification_time  : Mtime.span;
@@ -34,7 +35,6 @@ let stat = {
   delay_counter     = 0
 }
 
-IFDEF STATS THEN
 let unification_counter () = stat.unification_count
 let unification_time    () = stat.unification_time
 let conj_counter        () = stat.conj_counter
@@ -758,3 +758,43 @@ module Tabling =
       g := currier g_tabled;
       !g
   end
+
+
+
+let unif_hack x y rez st =
+  match State.unify (Obj.magic x) (Obj.magic y) st with
+  | Some _ -> (===) rez !!true st
+  | None   -> (===) rez !!false st
+
+(* let gives_single_answer g : goal = fun st ->
+  let stream = g st in
+  let xs = Stream.take ~n:2 stream in
+  match xs with
+  | [] -> sin *)
+
+let rec my_to_string t =
+  if Obj.is_int t then string_of_int (!!!t)
+  else if Term.is_var t then "var"
+  else
+    let b = Buffer.create 10 in
+    let () = Printf.bprintf b "Block<%d, " (Obj.tag t)  in
+    let () =
+      for i=0 to Obj.size t -1 do
+         Printf.bprintf b " %s" (my_to_string @@ Obj.field t i)
+      done in
+    let () = Printf.bprintf b ">" in
+    Buffer.contents b
+
+
+let unique_answers g v  (rez: (int option, int logic option logic) injected) = fun st ->
+  let stream = g st in
+  if Stream.is_empty stream
+  then (===) rez (Obj.magic None) st
+  else
+    let xs = Stream.take stream |> List.map (fun subst -> State.reify v st) in
+    let first = List.hd xs in
+    if Stdlib.List.for_all (fun el -> el = first ) xs
+    then (===) rez (Obj.magic (Some first)) st
+    else
+      let () = List.iter (fun x -> Format.printf "%s\n%!" (my_to_string !!!x)) xs in
+       assert false

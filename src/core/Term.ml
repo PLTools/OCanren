@@ -21,88 +21,90 @@ open Printf
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
 
-module Var =
-  struct
-    type env    = int
-    type scope  = int
-    type anchor = int list
+module Var = struct
+  type env = int
+  type scope = int
+  type anchor = int list
 
-    let tabling_env = -1
+  let tabling_env = -1
+  let unused_index = -1
+  let non_local_scope = -6
 
-    let unused_index = -1
+  let new_scope =
+    let scope = ref 0 in
+    fun () ->
+      incr scope;
+      !scope
+  ;;
 
-    let non_local_scope = -6
+  let global_anchor = [ -8 ]
 
-    let new_scope =
-      let scope = ref 0 in
-      fun () -> (incr scope; !scope)
-
-    let global_anchor = [-8]
-
-    type t =
-      { anchor        : anchor;
-        env           : env;
-        index         : int;
-        mutable subst : Obj.t option;
-        scope         : scope;
-        constraints   : Obj.t list;
-        (* is_wildcard   : bool *)
-      }
-
-    let make ~env ~scope index = {
-      env         = env;
-      anchor      = global_anchor;
-      subst       = None;
-      constraints = [];
-      (* is_wildcard = false; *)
-      index;
-      scope;
+  type t =
+    { anchor : anchor
+    ; env : env
+    ; index : int
+    ; mutable subst : Obj.t option
+    ; scope : scope
+    ; constraints : Obj.t list (* is_wildcard   : bool *)
     }
 
-    let is_wildcard { index } = (index = -42)
-    let make_wc ~env ~scope = (make ~env ~scope (-42))
-      (* with is_wildcard = true  *)
+  let make ~env ~scope index =
+    { env
+    ; anchor = global_anchor
+    ; subst = None
+    ; constraints = []
+    ; (* is_wildcard = false; *)
+      index
+    ; scope
+    }
+  ;;
 
-    let dummy =
-      let env   = 0 in
-      let scope = 0 in
-      make ~env ~scope 0
+  let is_wildcard { index } = index = -42
+  let make_wc ~env ~scope = make ~env ~scope (-42)
+  (* with is_wildcard = true  *)
 
-    let valid_anchor anchor =
-      anchor == global_anchor
+  let dummy =
+    let env = 0 in
+    let scope = 0 in
+    make ~env ~scope 0
+  ;;
 
-    let reify r {index; constraints} =
-      (index, List.map (fun x -> r @@ Obj.obj x) constraints)
+  let valid_anchor anchor = anchor == global_anchor
 
-    let equal x y =
-      (x.index = y.index) && (x.env = y.env)
+  let reify r { index; constraints } =
+    index, List.map (fun x -> r @@ Obj.obj x) constraints
+  ;;
 
-    let compare x y =
-      if x.index <> y.index then x.index - y.index else x.env - y.env
-
-    let hash x = Hashtbl.hash (x.env, x.index)
-
-  end
+  let equal x y = x.index = y.index && x.env = y.env
+  let compare x y = if x.index <> y.index then x.index - y.index else x.env - y.env
+  let hash x = Hashtbl.hash (x.env, x.index)
+end
 
 module VarSet = struct
-  include Set.Make(Var)
+  include Set.Make (Var)
+
   let pp ppf s =
     Format.fprintf ppf "{| ";
     iter (fun { Var.index } -> Format.fprintf ppf "%d " index) s;
-    Format.fprintf ppf " |}";
+    Format.fprintf ppf " |}"
+  ;;
 end
 
-module VarTbl = Hashtbl.Make(Var)
+module VarTbl = Hashtbl.Make (Var)
 
-module VarMap =
-  struct
-    include Map.Make(Var)
+module VarMap = struct
+  include Map.Make (Var)
 
-    let update k f m =
-      match f (try Some (find k m) with Not_found -> None) with
-      | Some x -> add k x m
-      | None   -> remove k m
-  end
+  let update k f m =
+    match
+      f
+        (try Some (find k m) with
+        | Not_found -> None)
+    with
+    | Some x -> add k x m
+    | None -> remove k m
+  ;;
+end
 
 type t = Obj.t
 type value = Obj.t
@@ -112,188 +114,237 @@ let repr = Obj.repr
 let var_tag, var_size =
   let dummy = Obj.repr Var.dummy in
   Obj.tag dummy, Obj.size dummy
+;;
 
 let has_var_structure tx sx x =
-  if (tx = var_tag) && (sx = var_size) then
-     let anchor = (Obj.obj x : Var.t).Var.anchor in
-     (Obj.is_block @@ Obj.repr anchor) && (Var.valid_anchor anchor)
+  if tx = var_tag && sx = var_size
+  then (
+    let anchor = (Obj.obj x : Var.t).Var.anchor in
+    (Obj.is_block @@ Obj.repr anchor) && Var.valid_anchor anchor)
   else false
+;;
 
 let is_box t =
-  if (t <= Obj.last_non_constant_constructor_tag) &&
-     (t >= Obj.first_non_constant_constructor_tag)
+  if t <= Obj.last_non_constant_constructor_tag
+     && t >= Obj.first_non_constant_constructor_tag
   then true
   else false
+;;
 
-let is_int = (=) Obj.int_tag
-let is_str = (=) Obj.string_tag
-let is_dbl = (=) Obj.double_tag
-
-let is_valid_tag t = (is_int t) || (is_str t) || (is_dbl t)
+let is_int = ( = ) Obj.int_tag
+let is_str = ( = ) Obj.string_tag
+let is_dbl = ( = ) Obj.double_tag
+let is_valid_tag t = is_int t || is_str t || is_dbl t
 
 let is_valid_tag_exn t =
-  if is_valid_tag t then () else failwith (sprintf "OCanren fatal: invalid value tag (%d)" t)
+  if is_valid_tag t
+  then ()
+  else failwith (sprintf "OCanren fatal: invalid value tag (%d)" t)
+;;
 
 let var x =
   let x = Obj.repr x in
   let tx = Obj.tag x in
-  if is_box tx then
+  if is_box tx
+  then (
     let sx = Obj.size x in
-    if has_var_structure tx sx x then Some (Obj.magic x) else None
+    if has_var_structure tx sx x then Some (Obj.magic x) else None)
   else None
+;;
 
 let is_var x =
   let x = Obj.repr x in
   let tx = Obj.tag x in
-  (is_box tx) && (has_var_structure tx (Obj.size x) x)
+  is_box tx && has_var_structure tx (Obj.size x) x
+;;
 
 let rec map ~fvar ~fval x =
   let tx = Obj.tag x in
-  if (is_box tx) then
+  if is_box tx
+  then (
     let sx = Obj.size x in
-    if has_var_structure tx sx x then
-      fvar @@ Obj.magic x
-    else
+    if has_var_structure tx sx x
+    then fvar @@ Obj.magic x
+    else (
       let y = Obj.dup x in
       for i = 0 to sx - 1 do
         Obj.set_field y i @@ map ~fvar ~fval (Obj.field x i)
       done;
-      y
-  else begin
+      y))
+  else (
     is_valid_tag_exn tx;
-    fval x
-  end
+    fval x)
+;;
 
 let rec iter ~fvar ~fval x =
   let tx = Obj.tag x in
-  if (is_box tx) then
+  if is_box tx
+  then (
     let sx = Obj.size x in
-    if has_var_structure tx sx x then
-      fvar @@ Obj.magic x
+    if has_var_structure tx sx x
+    then fvar @@ Obj.magic x
     else
       for i = 0 to sx - 1 do
         iter ~fvar ~fval (Obj.field x i)
-      done;
-  else begin
+      done)
+  else (
     is_valid_tag_exn tx;
-    fval x
-  end
+    fval x)
+;;
 
 let rec show x =
-  let tx = Obj.tag x in
-  if (is_box tx) then
-    let sx = Obj.size x in
-    if has_var_structure tx sx x then
-      let v = Obj.magic x in
-      match v.Var.constraints with
-      | [] -> Printf.sprintf "_.%d" v.Var.index
-      | cs -> Printf.sprintf "_.%d{=/= %s}" v.Var.index (String.concat "; " @@ List.map show cs)
-    else
-      let rec inner i =
-        if i < sx then
-          (show @@ Obj.field x i)::(inner (i+1))
-        else []
-      in
-      Printf.sprintf "boxed %d <%s>" tx (String.concat ", " @@ inner 0)
-  else begin
-    is_valid_tag_exn tx;
-    if tx = Obj.int_tag then
-      Printf.sprintf "int<%d>" @@ Obj.magic x
-    else if tx = Obj.string_tag then
-      Printf.sprintf "string<%s>" @@ Obj.magic x
-    else if tx = Obj.double_tag then
-      Printf.sprintf "double<%e>" @@ Obj.magic x
-    else assert false
-  end
+  if Obj.is_block x
+  then (
+    let tx = Obj.tag x in
+    if is_box tx
+    then (
+      let sx = Obj.size x in
+      if has_var_structure tx sx x
+      then (
+        let v = Obj.magic x in
+        match v.Var.constraints with
+        | [] -> Printf.sprintf "_.%d" v.Var.index
+        | cs ->
+          Printf.sprintf
+            "_.%d{=/= %s}"
+            v.Var.index
+            (String.concat "; " @@ List.map show cs))
+      else (
+        let rec inner i =
+          if i < sx then (show @@ Obj.field x i) :: inner (i + 1) else []
+        in
+        Printf.sprintf "boxed %d <%s>" tx (String.concat ", " @@ inner 0)))
+    else (
+      is_valid_tag_exn tx;
+      if tx = Obj.int_tag
+      then Printf.sprintf "int<%d>" @@ Obj.magic x
+      else if tx = Obj.string_tag
+      then Printf.sprintf "string<%s>" @@ Obj.magic x
+      else if tx = Obj.double_tag
+      then Printf.sprintf "double<%e>" @@ Obj.magic x
+      else assert false))
+  else string_of_int (Obj.magic x)
+;;
 
 let rec fold ~fvar ~fval ~init x =
   let tx = Obj.tag x in
-  if (is_box tx) then
+  if is_box tx
+  then (
     let sx = Obj.size x in
-    if has_var_structure tx sx x then
-      fvar init @@ Obj.magic x
-    else
+    if has_var_structure tx sx x
+    then fvar init @@ Obj.magic x
+    else (
       let rec inner i acc =
-        if i < sx then
+        if i < sx
+        then (
           let acc = fold ~fvar ~fval ~init:acc (Obj.field x i) in
-          inner (i+1) acc
+          inner (i + 1) acc)
         else acc
       in
-      inner 0 init
-  else begin
+      inner 0 init))
+  else (
     is_valid_tag_exn tx;
-    fval init x
-  end
+    fval init x)
+;;
 
 exception Different_shape of int * int
 
-type label = L | R
+type label =
+  | L
+  | R
 
 let rec fold2 ~fvar ~fval ~fk ~init x y =
   let tx, ty = Obj.tag x, Obj.tag y in
   match is_box tx, is_box ty with
-  | true, true -> begin
+  | true, true ->
     let sx, sy = Obj.size x, Obj.size y in
-    match has_var_structure tx sx x, has_var_structure ty sy y with
-    | true, true    -> fvar init (Obj.magic x) (Obj.magic y)
-    | true, false   -> fk init L (Obj.magic x) y
-    | false, true   -> fk init R (Obj.magic y) x
-    | false, false  ->
-      if (tx = ty) && (sx = sy) then
+    (match has_var_structure tx sx x, has_var_structure ty sy y with
+    | true, true -> fvar init (Obj.magic x) (Obj.magic y)
+    | true, false -> fk init L (Obj.magic x) y
+    | false, true -> fk init R (Obj.magic y) x
+    | false, false ->
+      if tx = ty && sx = sy
+      then (
         let fx, fy = Obj.field x, Obj.field y in
         let rec inner i acc =
-          if i < sx then
+          if i < sx
+          then (
             let acc = fold2 ~fvar ~fval ~fk ~init:acc (fx i) (fy i) in
-            inner (i+1) acc
+            inner (i + 1) acc)
           else acc
         in
-        inner 0 init
-      else raise (Different_shape (tx, ty))
-    end
+        inner 0 init)
+      else raise (Different_shape (tx, ty)))
   | true, false ->
     is_valid_tag_exn ty;
     let sx = Obj.size x in
-    if has_var_structure tx sx x then fk init L (Obj.magic x) y else raise (Different_shape (tx, ty))
+    if has_var_structure tx sx x
+    then fk init L (Obj.magic x) y
+    else raise (Different_shape (tx, ty))
   | false, true ->
     is_valid_tag_exn tx;
     let sy = Obj.size y in
-    if has_var_structure ty sy y then fk init R (Obj.magic y) x else raise (Different_shape (tx, ty))
+    if has_var_structure ty sy y
+    then fk init R (Obj.magic y) x
+    else raise (Different_shape (tx, ty))
   | false, false ->
     is_valid_tag_exn tx;
     is_valid_tag_exn ty;
-    if tx = ty then
-      fval init x y
-    else raise (Different_shape (tx, ty))
+    if tx = ty then fval init x y else raise (Different_shape (tx, ty))
+;;
 
 let rec equal x y =
   try
-    fold2 x y ~init:true
+    fold2
+      x
+      y
+      ~init:true
       ~fvar:(fun acc v u ->
-        acc &&
-        (Var.equal v u) &&
-        (List.length v.Var.constraints = List.length u.Var.constraints) &&
-        (List.for_all2 equal v.Var.constraints u.Var.constraints)
-      )
-      ~fval:(fun acc x y -> acc && (x = y))
+        acc
+        && Var.equal v u
+        && List.length v.Var.constraints = List.length u.Var.constraints
+        && List.for_all2 equal v.Var.constraints u.Var.constraints)
+      ~fval:(fun acc x y -> acc && x = y)
       ~fk:(fun _ _ _ _ -> false)
-  with Different_shape _ -> false
+  with
+  | Different_shape _ -> false
+;;
 
 let compare' = compare
 
 let rec compare x y =
   try
-    fold2 x y ~init:0
+    fold2
+      x
+      y
+      ~init:0
       ~fvar:(fun acc v u ->
-        if acc <> 0 then acc
-        else
+        if acc <> 0
+        then acc
+        else (
           let acc = Var.compare v u in
-          if acc <> 0 then acc
-          else List.fold_left2 (fun acc x y -> if acc <> 0 then acc else compare x y) 0 v.Var.constraints u.Var.constraints
-      )
-      ~fval:(fun acc x y -> if acc <> 0 then acc else (compare' x y))
+          if acc <> 0
+          then acc
+          else
+            List.fold_left2
+              (fun acc x y -> if acc <> 0 then acc else compare x y)
+              0
+              v.Var.constraints
+              u.Var.constraints))
+      ~fval:(fun acc x y -> if acc <> 0 then acc else compare' x y)
       ~fk:(fun _ _ _ _ -> -1)
-  with Different_shape (tx, ty) -> compare' tx ty
+  with
+  | Different_shape (tx, ty) -> compare' tx ty
+;;
 
-let rec hash x = fold x ~init:1
-  ~fvar:(fun acc v -> Hashtbl.hash (Var.hash v, List.fold_left (fun acc x -> Hashtbl.hash (acc, hash x)) acc v.Var.constraints))
-  ~fval:(fun acc x -> Hashtbl.hash (acc, Hashtbl.hash x))
+let rec hash x =
+  fold
+    x
+    ~init:1
+    ~fvar:(fun acc v ->
+      Hashtbl.hash
+        ( Var.hash v
+        , List.fold_left (fun acc x -> Hashtbl.hash (acc, hash x)) acc v.Var.constraints
+        ))
+    ~fval:(fun acc x -> Hashtbl.hash (acc, Hashtbl.hash x))
+;;

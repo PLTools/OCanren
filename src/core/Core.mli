@@ -400,3 +400,6 @@ module FD : sig
   val neq : (int, int logic) injected -> (int, int logic) injected -> goal
   val domain  : (int, int logic) injected -> int list -> goal
 end
+
+val unif_hack: ('a, 'b) injected as 'v -> 'v -> (bool, bool logic) injected -> goal
+val unique_answers: goal -> (int , int logic) injected ->  (int option, int logic option logic) injected -> goal

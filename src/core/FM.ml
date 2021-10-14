@@ -344,13 +344,21 @@ module MYZ3 = struct
           in
           mk solver (IntMap.add vidx (v, Some ints) vars) (IntListMap.add ints sort sorts))
       | FMBinop (op, Var v1, Var v2) as ph ->
-        (try
-           let e1, dom = IntMap.find v1 vars in
-           let e2, dom = IntMap.find v2 vars in
-           Solver.add solver [ makef op ctx e1 e2 ];
-           s
-         with
-        | Not_found ->
+        (match IntMap.find_opt v1 vars, IntMap.find_opt v2 vars with
+        | Some (e1, dom1), Some (e2, dom2) ->
+          Solver.add solver [ makef op ctx e1 e2 ];
+          s
+        | Some (e1, Some dom1), None ->
+          let sort = IntListMap.find dom1 sorts in
+          let e2 = Expr.mk_fresh_const ctx (sprintf "v%d" v2) sort in
+          Solver.add solver [ makef op ctx e1 e2 ];
+          s
+        | None, Some (e2, Some dom2) ->
+          let sort = IntListMap.find dom2 sorts in
+          let e1 = Expr.mk_fresh_const ctx (sprintf "v%d" v1) sort in
+          Solver.add solver [ makef op ctx e1 e2 ];
+          s
+        | None, _ | _, None ->
           Format.eprintf "Can't add to Z3 phormula %a\n%!" (GT.fmt phormula0) ph;
           s)
       | FMBinop (op, Const v1, Const _) -> assert false
