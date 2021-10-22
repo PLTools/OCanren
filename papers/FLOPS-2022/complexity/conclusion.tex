@@ -1,0 +1,12 @@
+\section{Conclusion}
+
+We presented a first attempt to build a theory that would allow one to calculate adequate worst-case time
+complexity estimations for relational programs in \mK. While our research is not completed the current results still
+allow explaining some observable phenomena in some relational programs behavior.
+
+For now, we confine ourselves to the problem of estimating the time of the full search for a given query. Estimating the time before the first (or some specific) answer is found is an important and probably more practical task. Unfortunately, the described model can not be adjusted naturally to this case. The reason for this is that the reasoning about time (scheduling time in particular) in our terms becomes non-compositional for the case of interrupted search: if the answer is found in some branch, the search is cut short in other branches too. We can still calculate the number of semantic steps for this case, just focusing on one branch in such cases. But for the scheduling factor this will not work, because the size of states can be different in different branches, so the equal number of semantic steps can take different amounts of time in different branches. This picture requires more complicated notions with non-trivial dependencies between them and the model becomes impractical. We are currently looking into ways to tame it.
+
+Among other directions for future research, we can mention relaxing the requirements which we put on
+terms and substitutions in order to provide accurate unification time estimations. It would be also
+interesting to come up with an automated (or semi-automated) procedure to deduce the complexity
+estimations in symbolic forms by making use of the symbolic execution model presented in Section~\ref{sec:symbolic}.
