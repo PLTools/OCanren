@@ -1,0 +1,163 @@
+\section{Complexity Analysis via Symbolic Execution Schemes}
+\label{sec:symbolic}
+
+To make it more clear we will demonatrate our approach on a specific example~--- analyzing a list reversing relation. The definition is given in \figureword~\ref{fig:reverso_definition}. It is a straightforward declarative definition that reverses the tail of the list and then make use of the separate \lstinline|append$^o$| relation to place the head of the list at the end.\footnote{As usual there is a more efficient tail-recursive version of the reverse relation. But we will go with the naive version here as it is more illustrative and the analysis will help us to understand just how inefficient the naive version is.}
+
+\begin{figure}[t]
+\begin{tabular}{p{6cm}p{6cm}}
+\begin{lstlisting}[basicstyle=\small]
+   revers$^o$ = fun a r ->
+     ((a === Nil) /\ (r === Nil)) \/
+     (fresh (h t tr)
+        (a === Cons(h, t)) /\
+        (revers$^o$ t tr) /\
+        (append$^o$ tr Cons(h, Nil) r)
+     )
+\end{lstlisting} &
+\begin{lstlisting}[basicstyle=\small]
+   append$^o$ = fun a b ab ->
+     ((a === Nil) /\ (ab === b)) \/
+     (fresh (h t tb)
+        (a === Cons(h, t)) /\
+        (ab === Cons(h, tb)) /\
+        (append$^o$ t b tb)
+     )
+\end{lstlisting}
+\end{tabular}
+
+\caption{Relational List Reverse Defintion}
+\label{fig:reverso_definition}
+\end{figure}
+
+We will study the situation when we provide some ground term as a first argument and a free logical variable as a second argument. So our task is to estimate time measures for the base state \[ q^{rev}(\overline{a}) = \taskst{\texttt{revers$^o$} \, \overline{a} \, \alpha_1^? }{1} \] depending on ground term we substitute $\overline{a}$ with. Also, we are usually intrested in situation when arguments are taken from some specific domain. In our case the domain is the set of all ground terms that are lists constructed with constructors $Nil$ and $Cons$.
+
+\[ \mathcal{L} = Nil \; \mid \; Cons(D, \mathcal{L}) \]
+
+We start our analysis by deriving a symbolic scheme for this call. It is shown in \figureword~\ref{fig:reverso_scheme}.
+
+\begin{figure}[t]
+\begin{center}
+\xymatrix{
+     & \texttt{revers$^o$ $\overline{a}$ $r^?$} & \\
+     & \cdot \ar[dl] \ar[dr] & \\
+     \overline{a} \equiv \texttt{Nil} \ar[d]^{ \overline{a} = \texttt{Nil} } & & \overline{a} \equiv \texttt{Cons($h^?$, $t^?$)} \ar[d]^{\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}, \, h^? \gets \overline{h}, \, t^? \gets \overline{t} } \\
+     r^? \equiv \texttt{Nil} & & \texttt{revers$^o$ $\overline{t}$ $tr^?$} \ar[d]^{ (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket, \, tr^? \gets \overline{tr} } \\
+     & & \texttt{append$^o$ $\overline{tr}$ Cons($\overline{h}$, Nil) $r^?$} \\
+}
+\end{center}
+
+\caption{Symbolic execution scheme for the $q^{rev}$ call}
+\label{fig:reverso_scheme}
+\end{figure}
+
+
+We can see that the scheme contain two relational calls: a version of the same relational call $q^{rev}$ and another relational call \[ q^{app}(\overline{l_1}, \overline{l_2}) = \taskst{\texttt{append$^o$} \, \overline{l_1} \, \overline{l_2} \, \alpha_1^? }{1} \]
+
+The traversing extracts the following recursive approximations for both measures from the scheme.
+
+\[
+\begin{array}{lcl}
+d(q^{rev}(\overline{a})) & = & \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} ( d(q^{rev}(\overline{t})) + \sum\limits_{\overline{tr}: (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\overline{tr},\texttt{Cons($\overline{h}$, Nil)}))) + \\
+& & \Theta(((1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} (1 + \sum\limits_{\overline{tr}: (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} 1))) \\
+\\
+t(q^{rev}(\overline{a})) & = & \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} ( t(q^{rev}(\overline{t})) + \sum\limits_{\overline{tr}: (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} t(q^{app}(\overline{tr},\texttt{Cons($\overline{h}$, Nil)}))) + \\
+& & \Theta( \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} ( d(q^{rev}(\overline{t})) + \sum\limits_{\overline{tr}: (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\overline{tr},\texttt{Cons($\overline{h}$, Nil)}))) \\
+& & - \max\limits_{\scriptsize \begin{array}{c} g \textit{ is a leaf} \\ E \textit{ is envs for } g \end{array}} d(\taskst{g}{\alpha(g, E)}) + 1) \\
+\end{array}
+\]
+
+To make use of our approximations we need to analyze this call separately. \figureword~\ref{fig:appendo_scheme} shows the symbolic scheme for this call. We extract the following approximations from it.
+
+\[
+\begin{array}{lcl}
+d(q^{app}(\overline{a}, \overline{b})) & = & \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} d(q^{app}(\overline{t}, \overline{b})) +  \\
+& & \Theta(((1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} 1)) \\
+\\
+t(q^{app}(\overline{a}, \overline{b})) & = & \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} t(q^{app}(\overline{t}, \overline{b})) + \\
+& & \Theta( \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} d(q^{app}(\overline{t}, \overline{b})) \\
+& & - \max\limits_{\scriptsize \begin{array}{c} g \textit{ is a leaf} \\ E \textit{ is envs for } g \end{array}} d(\taskst{g}{\alpha(g, E)}) + 1) \\
+\end{array}
+\]
+
+\begin{figure}[t]
+\begin{center}
+\xymatrix{
+     & \texttt{append$^o$ $\overline{a}$ $\overline{b}$ $ab^?$} & \\
+     & \cdot \ar[dl] \ar[dr] & \\
+     \overline{a} \equiv \texttt{Nil} \ar[d]^{ \overline{a} = \texttt{Nil} } & & \overline{a} \equiv \texttt{Cons($h^?$, $t^?$)} \ar[d]^{\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}, \, h^? \gets \overline{h}, \, t^? \gets \overline{t} } \\
+     r^? \equiv \overline{b} & & ab^? \equiv \texttt{Cons($\overline{h}$, $tb^?$)} \ar[d]^{ ab^? \gets \texttt{Cons($\overline{h}$, $tb^?$)} } \\
+     & & \texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb^?$} \\
+}
+\end{center}
+
+\caption{Symbolic execution scheme for the $q^{app}$ call}
+\label{fig:appendo_scheme}
+\end{figure}
+
+Now we move into the metatheory to solve this systems of recursive approximations and deduce the complexity. As usual, when we add the informations from the metatheory the approximations became quite simple.
+
+For $q^{app}$ we consider two cases: when the first list is empty or not. Also, since there is only one non-trivial leaf in the scheme with only one enviroment, so we know that the senior addend is reached at the recursive call. After we exclude the recursive call from costs part, we get the following linear approximations. 
+
+\[
+\begin{array}{lcl}
+d(q^{app}(\texttt{Nil}, \overline{b})) & = & \Theta(1) \\
+d(q^{app}(\texttt{Cons($\overline{h}$, $\overline{t}$)}, \overline{b})) & = & d(q^{app}(\overline{t}, \overline{b})) + \Theta(1) \\
+\\
+t(q^{app}(\texttt{Nil}, \overline{b})) & = & \Theta(1) \\
+t(q^{app}(\texttt{Cons($\overline{h}$, $\overline{t}$)}, \overline{b})) & = & t(q^{app}(\overline{t}, \overline{b})) + \Theta(1) \\
+\end{array}
+ \]
+ 
+In this case the interleaving does not add a significant penalty, because we have recursive call in the end and its cost is eliminated as the senior leaf. From these approximation it is clear that the complexity of both measures is linear on the length of the first argument.
+
+\[
+\begin{array}{lcl}
+d(q^{app}(\overline{a}, \overline{b})) & = & \Theta(len(\overline{a})) \\
+t(q^{app}(\overline{a}, \overline{b})) & = & \Theta(len(\overline{a})) \\
+\end{array}
+ \]
+ 
+For initial relational call $q^{rev}$ we do the same and incorporate just calculated complexities of $q^{app}$. The senior addend is obvious again, it is value for $q^{app}$ call, but this time we also have an additional value for recursive call $q^{rev}$ in the costs part.
+
+\[
+\begin{array}{lcl}
+d(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
+d(q^{rev}(\texttt{Cons($\overline{h}$, $\overline{t}$)})) & = & d(q^{rev}(\overline{t})) + d(q^{app}(rev(\overline{t}), \texttt{Cons($\overline{h}$, Nil)})) + \Theta(1) \\
+\\
+t(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
+t(q^{rev}(\texttt{Cons($\overline{h}$, $\overline{t}$)})) & = & t(q^{rev}(\overline{t})) + t(q^{app}(rev(\overline{t}), \texttt{Cons($\overline{h}$, Nil)})) + \Theta(d(q^{rev}(\overline{t}))) \\
+\end{array}
+ \]
+ 
+We can now substitute the calculated measures for $q^{app}$ call. Since will know them only up to a multiplicative constant, they move under $\Theta$.
+
+\[
+\begin{array}{lcl}
+d(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
+d(q^{rev}(\texttt{Cons($\overline{h}$, $\overline{t}$)})) & = & d(q^{rev}(\overline{t})) + \Theta(len(\overline{t})) \\
+\\
+t(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
+t(q^{rev}(\texttt{Cons($\overline{h}$, $\overline{t}$)})) & = & t(q^{rev}(\overline{t})) + \Theta(len(\overline{t}) + d(q^{rev}(\overline{t}))) \\
+\end{array}
+ \]
+ 
+These approximation are linear and easily solvable, but in this case the additional cost of interleaving search is not negligible and the resulting complexity is not linear on the length of the argument.\footnote{Unlike the complexity for the tail-recursive version of reverse relation which is linear.}
+ 
+ \[
+\begin{array}{lcl}
+d(q^{rev}(\overline{a})) & = & \Theta(len^2(a)) \\
+t(q^{rev}(\overline{a})) & = & \Theta(len^3(a)) \\
+\end{array}
+ \]
+ 
+ \vspace{10mm}
+ \begin{center}
+% \textcolor{red}{\bf \large OR ANOTHER EXAMPLE}
+ \end{center}
+ \vspace{10mm}
+
+ 
+ 
+ 
+ 
+ 
