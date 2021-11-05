@@ -1,6 +1,13 @@
 \section{Introduction}
 \label{sec:intro}
 
+{\color{red}
+
+We also restrict our considerations only by the case when the evaluation of a goal in question terminates. Indeed,
+if the search diverges, no reasonable complexity estimation for the time of the whole search can be given. A much more interesting question would be
+the complexity estimation for coming up with some \emph{specific} answer. For now we do not have a complete solution for this case; we discuss the issue in details in Section~\ref{sec:discussion}.
+}
+
 This paper deals with the problem of the worst-case time complexity estimations for relational program evaluation in the canonical implementation of \mK based on interleaving search~\cite{TRS}. Despite its simple implementation, the search in \mK has a number of subtleties
 affecting the performance, which are hard to think about intuitively altogether. It is easy to overlook some of them and the behavior of the search in certain cases can be really surprising.
 
