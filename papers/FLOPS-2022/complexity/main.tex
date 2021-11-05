@@ -18,6 +18,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{todonotes}
+\usepackage{stmaryrd}
 \usepackage{xspace}
 \usepackage{listings}
 \usepackage{comment}
@@ -104,22 +105,15 @@ language=minikanren
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{A Complexity Study for Interleaving Search}
+\title{Scheduling Complexity of Interleaving Search}
 
-\author{First Author\inst{1}\orcidID{0000-1111-2222-3333} \and
-Second Author\inst{2,3}\orcidID{1111-2222-3333-4444} \and
-Third Author\inst{3}\orcidID{2222--3333-4444-5555}}
+\author{Anonymous author(s)}
 %
-\authorrunning{F. Author et al.}
+\authorrunning{Anonymous author(s)}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-\institute{Princeton University, Princeton NJ 08544, USA \and
-Springer Heidelberg, Tiergartenstr. 17, 69121 Heidelberg, Germany
-\email{lncs@springer.com}\\
-\url{http://www.springer.com/gp/computer-science/lncs} \and
-ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
-\email{\{abc,lncs\}@uni-heidelberg.de}}
+\institute{Anonymous institute(s)}
 
 %%
 %% This command processes the author and affiliation and title
@@ -135,17 +129,18 @@ ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
   analyzing the complexity of recursive relations using the ideas originating from symbolic execution. Our approach puts a number of limitations
   on the program being analyzed but we show that is still practically applicable by applying it to a number of typical relations in \mK.
   
-\keywords{miniKanren, time complexity, interleaving search, triangular substitution, symbolic execution}
+\keywords{miniKanren, interleaving search, time complexity, symbolic execution}
 \end{abstract}
 
 
-\input{intro}
+% \input{intro}
 \input{background}
 \input{scheduling}
-\input{uni-rei}
-\input{symbolic_schemes}
-\input{evaluation}
-\input{conclusion}
+\input{symbolic}
+% \input{uni-rei}
+% \input{symbolic_schemes}
+% \input{evaluation}
+% \input{conclusion}
 
 %%
 %% The acknowledgments section is defined using the "acks" environment
@@ -159,14 +154,14 @@ ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
 %%
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
-\bibliographystyle{splncs04}
-\bibliography{main}
+% \bibliographystyle{splncs04}
+% \bibliography{main}
 
 %%
 %% If your work has an appendix, this is the place to put it.
 \appendix
 
-\input{examples_definitions}
+% \input{examples_definitions}
 
 \end{document}
 \endinput

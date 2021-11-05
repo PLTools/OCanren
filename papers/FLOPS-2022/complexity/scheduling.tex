@@ -43,6 +43,9 @@ The first lemma provides a fundamental relation between these two~--- $d$ and $t
   \]
   
 \end{lemma}
+\begin{proof}
+  Follows immediately from the definitions of the estimated values and the fact that the height of a state increases by at most $1$ at each step.\qed
+\end{proof}
 
 Our next goal is to derive recurrent equations which would relate the scheduling complexity for states to the scheduling complexity for their
 (immediate) substates. It turns out that to come up with such equations both $t$ and $d$ values have to be estimated simultaneously.  
@@ -66,7 +69,7 @@ The following trivial lemma handles the basic (leaf state) case:
   \[t\,(\taskst{g}{e}) = t\,(s^\prime) + 1\]
 \end{lemma}
 \begin{proof}
-  By a direct inspection of operational semantics rules.\qed
+    Follows immediately from the definitions of the estimated values.\qed
 \end{proof}
 
 %In $\oplus$-states the substates are evaluated separately, one step at a time for each substate,
@@ -145,7 +148,7 @@ Note, $\otimes$-node is always placed immediately over the left substate so this
 addition is exactly the number of steps for the left substate.
 
 Unfolding costs definitions in $(\dagger)$ gives us a cumbersome formula which 
-includes all intermediate states encountered during the evaluation. However, as ultimately
+includes some intermediate states encountered during the evaluation. However, as ultimately
 we are interested in an asymptotic estimations, we can approximate these costs up to a multiplicative constant.
 
 First, we rewrite the equation $(\dagger)$ in the following form:
