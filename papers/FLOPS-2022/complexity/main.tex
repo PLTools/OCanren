@@ -35,7 +35,13 @@
 \newcommand{\bigslant}[2]{{\raisebox{.2em}{$#1$}\left/\raisebox{-.2em}{$#2$}\right.}}
 \newcommand{\lowupbound}[2]{\;\; \overset{\makebox[0pt]{\mbox{\normalfont\tiny {C = $#2$}}}}{ \underset{\makebox[0pt]{\mbox{\normalfont\tiny {C = $#1$}}}}{\gtrless}} \;\;}
 \newcommand{\argmax}[1]{\underset{\makebox[0pt]{\mbox{\normalfont\tiny {$#1$}}}}{argmax} \;\;}
+\newcommand{\maxd}{\max^{\bullet}}
 
+\newcommand{\grterms}{\mathcal{T}_{\emptyset}}
+\newcommand{\Dom}{\mathcal{D}om}
+\newcommand{\VRan}{\mathcal{VR}an}
+
+\newcommand{\substitute}[3]{#1\,[\bigslant{#2}{#3}]}
 \newcommand{\substupd}[3]{#1[#2 \mapsto #3]}
 
 \newcommand{\taskst}[2]{\langle #1 ,\, #2 \rangle}
@@ -45,14 +51,26 @@
 \newcommand{\disjgoal}[2]{#1 \lor #2}
 \newcommand{\freshgoal}[2]{\texttt{\underline {fresh}} \, #1\;.\; #2}
 \newcommand{\invokegoal}[3]{#1\,(#2, \, \dots, \, #3)}
+\newcommand{\einit}{e_{init}}
+\newcommand{\ninit}{n_{init}}
+
+\newcommand{\schemetrans}[6]{#1, \, #2, \, #3, \, #4, \, #5 \; \rightsquigarrow \; #6}
+\newcommand{\schemewithvset}[2]{#1^{#2}}
+\newcommand{\schemenode}[2]{\langle #1 ,\, #2 \rangle}
+\newcommand{\schemesarrow}[3]{\begin{array}{cl} #1 \\ \downarrow & #2 \\ #3 \end{array}}
+\newcommand{\schemedarrow}[3]{\begin{array}{cl} #1 \\ \Downarrow & #2 \\ #3 \end{array}}
+\newcommand{\schemefork}[2]{\begin{array}{cccc} & \swarrow & \searrow \\ #1 & & & #2 \end{array}}
+
+\newcommand{\onepremrule}[2]{\frac{#1}{#2}}
+\newcommand{\twopremrule}[3]{\frac{\begin{array}{c} #1 \\ #2 \end{array}}{#3}}
+\newcommand{\threepremrule}[4]{\frac{\begin{array}{c} #1 \\ #2 \\ #3 \end{array}}{#4}}
 
 \newcommand{\lazystream}[1]{\texttt{Lazy [{#1}]}}
 \newcommand{\consstream}[2]{\texttt{Cons #1 [{#2}]}}
 
+\newcommand{\sembr}[1]{\llbracket #1 \rrbracket}
 \newcommand{\tra}[1]{\mathcal{T}r^{ans}(#1)}
 \newcommand{\trs}[1]{\mathcal{T}r^{st}(#1)}
-
-\newcommand{\expranalog}[1]{E(#1)}
 
 \newcommand{\mK}{\textsc{miniKanren}\xspace}
 

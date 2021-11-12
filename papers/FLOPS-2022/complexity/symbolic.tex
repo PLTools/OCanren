@@ -1,6 +1,255 @@
 \section{Complexity Analysis via Symbolic Execution Schemes}
 \label{sec:symbolic}
 
+We build schemes in the following form.
+
+\[  \schemewithvset{\mathfrak{S}}{V} \; = \;
+\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}} \; \mid \;
+\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}} \; \mid \; \]\[ 
+\schemesarrow{\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}}{\{ \mathcal{A} = \mathcal{T}_\mathcal{A} \}_i}{\schemewithvset{\mathfrak{S}}{U}} \; \mid \;
+\schemedarrow{\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}}{ (\mathcal{T}_\mathcal{A}, \dots, \mathcal{T}_\mathcal{A}) \in \sembr{R^k}  }{\schemewithvset{\mathfrak{S}}{U}} \; \mid \;
+\schemefork{\schemewithvset{\mathfrak{S}}{V}}{\schemewithvset{\mathfrak{S}}{V}} \]
+
+For building schemes we need the two following notions.
+
+\[
+\begin{array}{lcll}
+Upd(U, \delta) & = & U & \quad \textit{if } x \in U \Rightarrow FV(\delta(x)) \subset U \\
+Upd(U, \delta) & = & Upd(U \cup \bigcup\limits_{x \in U} FV(\delta(x)), \delta) & \quad \textit{otherwise} \\
+\end{array}
+\]
+
+\[ Constr(\delta, U) = \{ x = \delta(x) \mid x \in U \cap \mathcal{D}om(\delta) \} \]
+
+The rules for building a scheme have the following form. \[ \schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}} \]
+
+Here are these rules:
+
+\[ \twopremrule
+		{  \schemetrans{g_1}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S_1}}{V}}  }
+		{  \schemetrans{g_2}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S_2}}{V}}  }
+		{  \schemetrans{\disjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{  \schemefork{\schemewithvset{\mathfrak{S_1}}{V}}{\schemewithvset{\mathfrak{S_2}}{V}} }  } \]
+		
+\[ \onepremrule
+		{  \schemetrans{g_1}{g_2 : \Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}}  }
+		{  \schemetrans{\conjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } \]
+		
+\[ \onepremrule
+		{  \schemetrans{\substitute{g}{\alpha_n}{x}}{\Gamma}{\sigma}{n + 1}{V}{\schemewithvset{\mathfrak{S}}{V}}  }
+		{  \schemetrans{\freshgoal{x}{g}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } \]
+
+\[ \schemetrans{\unigoal{t_1}{t_2}}{\epsilon}{\sigma}{n}{V}{\unigoal{t_1 \sigma}{t_2 \sigma}} \]
+
+\[ \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{\epsilon}{\sigma}{n}{V}{\invokegoal{R^k}{t_1 \sigma}{t_k \sigma}} \]
+		
+\[ \onepremrule
+		{  \not\exists mgu(t_1 \sigma, t_2 \sigma)  }
+		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\unigoal{t_1 \sigma}{t_2 \sigma}} } \]
+
+\[ \threepremrule
+		{  mgu(t_1 \sigma, t_2 \sigma) = \delta  }
+		{  U = Upd(V, \delta)  }
+		{  \schemetrans{g}{\Gamma}{\sigma \delta}{n}{U}{\schemewithvset{\mathfrak{S}}{U}}  }
+		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\schemesarrow{\unigoal{t_1 \sigma}{t_2 \sigma}}{Constr(\delta, U)}{\schemewithvset{\mathfrak{S}}{U}} }   } \]
+		
+\[ \twopremrule
+		{  U =  V \cup \bigcup_{i} FV(t_i \sigma) }
+		{  \schemetrans{g}{\Gamma}{\sigma}{n}{U}{\schemewithvset{\mathfrak{S}}{U}}  }
+		{  \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{g : \Gamma}{\sigma}{n}{V}{ \schemedarrow{\invokegoal{R^k}{t_1 \sigma}{t_k \sigma}}{ (t_1 \sigma, \dots, t_k \sigma) \in \sembr{R^k}  }{\schemewithvset{\mathfrak{S}}{U}} }   } \]
+
+It is important to note that both our time measures are 'stable' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
+
+\begin{lemma}
+
+Suppose \[ FV(g) \cup \Dom(\sigma) \cup \VRan(\sigma) \subset \{ \alpha_i \mid i > n \} \]
+and \[ FV(g') \cup \Dom(\sigma') \cup \VRan(\sigma') \subset \{ \alpha_i \mid i > n' \} \]
+and there is a bijection $\pi \colon FV(g \sigma) \to FV(g' \sigma')$, s.t. $g \sigma \pi = g' \sigma'$.
+
+Then \[ d(\taskst{g}{\mkenv{\sigma}{n}}) = d(\taskst{g'}{\mkenv{\sigma'}{n'}}) \] and \[ t(\taskst{g}{\mkenv{\sigma}{n}}) = t(\taskst{g}{\mkenv{\sigma}{n}}) \] 
+
+\end{lemma}
+
+So the following definition will be usefull to construct a leaf-state representative for an arbitrary goal.
+
+\begin{definition}
+\[ n_{init}(g) \eqdef \min \{ n \mid FV(g) \cap \{ \alpha_i \mid i > n \} = \emptyset \} \]
+
+We will also shortcut $\taskst{g}{\einit}$ for a given goal $g$ to denote $\taskst{g}{(\varepsilon, \ninit(g))}$. 
+\end{definition}
+		
+The extracted approximations will use the following definition.
+
+\begin{definition}
+For $V \subset U \subset \mathcal{A}$, $\rho \colon V \to \mathcal{T}_{\emptyset}$, $\rho' \colon \rho' \to \mathcal{T}_{\emptyset}$,
+
+\[ \rho' \succ \rho \xLeftrightarrow{def}  \forall x \in V \Rightarrow \rho'(x) = \rho(x) \]
+\end{definition}
+
+Here are the traversals of scheme that will be used for approximations. For a scheme $\schemewithvset{\mathfrak{S}}{V}$ it is a function from representative function $\rho \colon V \to \grterms$ to natural numbers (for $\mathcal{D}$ and $\mathcal{T}$) or to sets of leaf-states (for $\mathcal{L}$).
+
+\[ \mathcal{D}(\unigoal{t_2}{t_2})(\rho) = 1  \]
+
+\[ \mathcal{D}(\invokegoal{R^k}{t_1}{t_k})(\rho) = d(\taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}}) \]
+
+\[ \mathcal{D}( \schemesarrow{\unigoal{t_1}{t_2}}{Cs}{\schemewithvset{\mathfrak{S}}{U}} )(\rho) = 1 +
+      \sum\limits_{\substack{ \rho' \colon V \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      \forall (y, t) \in Cs, \rho'(y) = t \rho'  }}
+           \mathcal{D}(\schemewithvset{\mathfrak{S}}{U})(\rho')  \]
+
+\[ \mathcal{D}( \schemedarrow{\invokegoal{R^k}{t_1}{t_k}}{ (t_1, \dots, t_k) \in \sembr{R^k}  }{\schemewithvset{\mathfrak{S}}{U}} )(\rho) =
+      d(\taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}}) +
+      \sum\limits_{\substack{ \rho' \colon V \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      (t_1 \rho', \dots, t_k \rho') \in \sembr{R^k}  }}
+           \mathcal{D}(\schemewithvset{\mathfrak{S}}{U})(\rho')  \]
+
+\[ \mathcal{D}(\schemefork{\schemewithvset{\mathfrak{S}_1}{V}}{\schemewithvset{\mathfrak{S}_2}{V}})(\rho) =
+      \mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) + \mathcal{D}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) \]
+      
+\[ \mathcal{T}(\unigoal{t_2}{t_2})(\rho) = 1  \]
+
+\[ \mathcal{T}(\invokegoal{R^k}{t_1}{t_k})(\rho) = t(\taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}}) \]
+
+\[ \mathcal{T}( \schemesarrow{\unigoal{t_1}{t_2}}{Cs}{\schemewithvset{\mathfrak{S}}{U}} )(\rho) = 1 +
+      \sum\limits_{\substack{ \rho' \colon V \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      \forall (y, t) \in Cs, \rho'(y) = t \rho'  }}
+           \mathcal{T}(\schemewithvset{\mathfrak{S}}{U})(\rho')  \]
+
+\[ \mathcal{T}( \schemedarrow{\invokegoal{R^k}{t_1}{t_k}}{ (t_1, \dots, t_k) \in \sembr{R^k}  }{\schemewithvset{\mathfrak{S}}{U}} )(\rho) =
+      t(\taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}}) +
+      \sum\limits_{\substack{ \rho' \colon V \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      (t_1 \rho', \dots, t_k \rho') \in \sembr{R^k}  }}
+           \mathcal{T}(\schemewithvset{\mathfrak{S}}{U})(\rho')  \]
+
+\[ \mathcal{T}(\schemefork{\schemewithvset{\mathfrak{S}_1}{V}}{\schemewithvset{\mathfrak{S}_2}{V}})(\rho) =
+      \mathcal{T}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) + \mathcal{T}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) \]
+
+
+\[ \mathcal{L}(\unigoal{t_2}{t_2})(\rho) = \{ \taskst{\unigoal{t_2 \rho}{t_2 \rho}}{\einit} \} \]
+
+\[ \mathcal{L}(\invokegoal{R^k}{t_1}{t_k})(\rho) = \{ \taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}} \} \]
+
+\[ \mathcal{L}(\schemesarrow{\unigoal{t_1}{t_2}}{Cs}{\schemewithvset{\mathfrak{S}}{U}} )(\rho) =
+      \bigcup\limits_{\substack{ \rho' \colon V \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      \forall (y, t) \in Cs, \rho'(y) = t \rho'  }}
+           \mathcal{L}(\schemewithvset{\mathfrak{S}}{U})(\rho')  \]
+
+\[ \mathcal{L}( \schemedarrow{\invokegoal{R^k}{t_1}{t_k}}{ (t_1, \dots, t_k) \in \sembr{R^k}  }{\schemewithvset{\mathfrak{S}}{U}} )(\rho) =
+      t(\taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}}) +
+      \bigcup\limits_{\substack{ \rho' \colon V \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      (t_1 \rho', \dots, t_k \rho') \in \sembr{R^k}  }}
+           \mathcal{L}(\schemewithvset{\mathfrak{S}}{U})(\rho')  \]
+
+\[ \mathcal{L}(\schemefork{\schemewithvset{\mathfrak{S}_1}{V}}{\schemewithvset{\mathfrak{S}_2}{V}})(\rho) =
+      \mathcal{L}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) \cup \mathcal{L}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) \]
+
+We prove the theorem only for goals in DNF.
+
+\[
+\begin{array}{lcl}
+B_{nf} & = &  \unigoal{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \; \mid \;
+                     \invokegoal{R^k}{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \\
+C_{nf} & = & B_{nf} \; \mid \; \disjgoal{C_{nf}}{B_{nf}} \\
+F_{nf} & = & C_{nf} \; \mid \; \freshgoal{X}{F_{nf} } \\
+D_{nf} & = & F_{nf} \; \mid \; \disjgoal{D_{nf}}{F_{nf}}
+\end{array}
+\]
+
+We also have a requirement that all recursive calls performed during unification are \emph{grounding} and \emph{non-repetitive}.
+
+\begin{definition}
+Recursive call $s = \taskst{\invokegoal{R^k}{t_1}{t_k}}{e}$ is \emph{grounding} and \emph{non-repetitive} if 
+
+\[ \forall (\sigma^{a}, n^{a}) \in \tra{s} \quad FV(t_i \sigma^{a}) = \emptyset \]
+and
+\[ \forall (\sigma_1^{a}, n_1^{a}), (\sigma_2^{a}, n_2^{a}) \in \tra{s} \quad (t_1 \sigma_1^{a}, \dots, t_k \sigma_1^{a}) \ne (t_1 \sigma_2^{a}, \dots, t_k \sigma_2^{a}) \]
+\end{definition}
+
+One last auxiliary definition that we need.
+
+\begin{definition}
+
+For a set of natural numbers $S$
+
+\[
+\maxd \, S \eqdef
+\begin{cases}
+\max S,  & S \ne \emptyset \\
+0, & S = \emptyset\\
+\end{cases}
+\]
+
+\end{definition}
+
+The following main theorem provides the principal recursive approximations, extracted from the scheme for a given goal.
+ 
+\begin{theorem}
+For $g$ in $D_{nf}$ 
+
+If \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\mathfrak{S}}{V}}  \]
+  then \[ d(\taskst{g\rho}{\einit}) = \mathcal{D}(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta(1) \]
+  and
+  \[ t(\taskst{g\rho}{\einit}) = \mathcal{T}(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta(\mathcal{D}(\schemewithvset{\mathfrak{S}}{V})(\rho)
+  - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}}{V})(\rho)} d(\taskst{g_i}{e_i}) \]
+  as functions on $\rho \colon V \to T_{\emptyset}$.
+\end{theorem}
+
+It is based on the to following facts as well as lemma~\ref{lem:sum_estimation} and soundness and completeness of operational semantics w.r.t. the denotational one.
+
+\begin{lemma}
+For two terms $t_1, \,t_2$, $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$,
+
+if \[ mgu(t_1, t_2) = \delta \] and \[ U = Upd(V, \delta) \]
+
+then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in Cons(\delta, U), \rho'(y) = t \rho'$.
+
+In such case $ \rho \circ mgu(t_1 \rho, t_2 \rho) = \delta \rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu(t_1 \rho, t_2 \rho) = \delta \rho' \pi$).
+\end{lemma}
+ 
+ \begin{lemma}
+\label{lem:conjunction_metrics_calc}
+
+Let $s = ((s_0 \otimes g_1) \dots \otimes g_k)$ and let $A_i$ be a set of all answers that are passed to $g_i$, i.e.
+
+\[
+\begin{array}{rcl}
+A_1 &=& \tra{s_0} \\
+A_{i + 1} & = & \bigcup\limits_{a \in A_i} \tra{\taskst{g_i}{a}} 
+\end{array}
+\]
+
+Then
+
+\[
+\begin{array}{rcrl}
+d\,(s) &=& & d\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) \\
+\\
+t\,(s) &=& & t\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) + \\
+& & + \Theta( & d\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) - \maxd\limits_{a \in A_k}  d\,(\taskst{g_k}{a})) \\
+\end{array}
+\]
+
+\end{lemma}
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+\subsection{Example}
+
 To make it more clear we will demonatrate our approach on a specific example~--- analyzing a list reversing relation. The definition is given in \figureword~\ref{fig:reverso_definition}. It is a straightforward declarative definition that reverses the tail of the list and then make use of the separate \lstinline|append$^o$| relation to place the head of the list at the end.\footnote{As usual there is a more efficient tail-recursive version of the reverse relation. But we will go with the naive version here as it is more illustrative and the analysis will help us to understand just how inefficient the naive version is.}
 
 \begin{figure}[t]
@@ -149,15 +398,5 @@ d(q^{rev}(\overline{a})) & = & \Theta(len^2(a)) \\
 t(q^{rev}(\overline{a})) & = & \Theta(len^3(a)) \\
 \end{array}
  \]
- 
- \vspace{10mm}
- \begin{center}
-% \textcolor{red}{\bf \large OR ANOTHER EXAMPLE}
- \end{center}
- \vspace{10mm}
-
- 
- 
- 
- 
+  
  
