@@ -159,8 +159,9 @@ where
 
 \[ C\,(s \otimes g) = \costconj{s}{g} + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} \costdisj{\taskst{g}{a_i}}{(s'_i \otimes g)} \]
 
-Next, we introduce the following definition.
+Next, we need the following definition to handle corner cases.
 
+\begin{comment}
 \begin{definition}
 Let $E$ be a set of environments, $g$~--- a goal. Then we call the value
 
@@ -172,22 +173,38 @@ a \emph{pincipal environment}.
 \end{definition}
 
 In other words, $\alpha\,(g, E)$ is an element of $E$ which delivers the longest trace of $g$.
+\end{comment}
 
-With principal environment being defined we can prove the following lemma\footnote{We assume the following definition for 
-$h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}:
+\begin{definition}
+
+For a set of natural numbers $S$
+
+\[
+\maxd \, S \eqdef
+\begin{cases}
+\max S,  & S \ne \emptyset \\
+0, & S = \emptyset\\
+\end{cases}
+\]
+
+\end{definition}
+
+% With principal environment being defined we can prove the following lemma\footnote{We assume the following definition for 
+% $h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}:
+
+Now we can state the following approximation\footnote{We assume the following definition for
+$h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}
+for $C\,(s \otimes g)$.
 
 \begin{lemma}
 
 \[
 C\,(s \otimes g) =
-\Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{\begin{array}{c}
-                                                                                   \scalebox{0.7}{$a_i \in \tra{s}$} \\
-                                                                                   \scalebox{0.7}{$a_i \ne \alpha\,(g, \tra{s}) $} \\
-                                                                              \end{array}}} d\,(\taskst{g}{a_i}))	
+\Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \maxd\limits_{a_i \in \tra{s}}  d\,(\taskst{g}{a_i}))	
 \]
 \end{lemma}
 
-We can see that this approximation is very similar to the $(\star)$ except that here the principal environment is excluded. This difference
+We can see that this approximation is very similar to the $(\star)$ except that here we exclude $d$ value for one of the answers from the sum (the maximal one). This difference
 is essential and, as we will see later, it is in fact responsible for the difference in complexities for our motivation example.
 
 Finally, as a result we have the following approximation for the scheduling factor of $\otimes$-states.
@@ -196,10 +213,7 @@ Finally, as a result we have the following approximation for the scheduling fact
 \label{lem:otimes_t_approximation}
 \[
  t\,(s \otimes g)  =  t\,(s) + \left({\sum\limits_{a_i \in \tra{s}}} t\,(\taskst{g}{a_i})\right) +
- \Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{\begin{array}{c}
-                                                                                   \scalebox{0.7}{$a_i \in \tra{s}$} \\
-                                                                                   \scalebox{0.7}{$a_i \ne \alpha\,(g, \tra{s}) $} \\
-                                                                              \end{array}}} d\,(\taskst{g}{a_i}))	
+ \Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \maxd\limits_{a_i \in \tra{s}}  d\,(\taskst{g}{a_i}))	
 \]
 \end{corollary}
 
