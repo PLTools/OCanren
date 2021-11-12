@@ -3,60 +3,79 @@
 
 We build schemes in the following form.
 
-\[  \schemewithvset{\mathfrak{S}}{V} \; = \;
-\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}} \; \mid \;
-\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}} \; \mid \; \]\[ 
-\schemesarrow{\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}}{\{ \mathcal{A} = \mathcal{T}_\mathcal{A} \}_i}{\schemewithvset{\mathfrak{S}}{U}} \; \mid \;
-\schemedarrow{\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}}{ (\mathcal{T}_\mathcal{A}, \dots, \mathcal{T}_\mathcal{A}) \in \sembr{R^k}  }{\schemewithvset{\mathfrak{S}}{U}} \; \mid \;
-\schemefork{\schemewithvset{\mathfrak{S}}{V}}{\schemewithvset{\mathfrak{S}}{V}} \]
+\[
+\renewcommand{\arraystretch}{3}
+\begin{array}{ccm{0.5cm}m{3cm}m{4cm}m{4cm}}
+  \schemewithvset{\mathfrak{S}}{V} & = && \schemenode{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} & \schemenode{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} 
+                                       & \multirow{2}{*}{\schemefork{$\schemewithvset{\mathfrak{S}}{V}$}{$\schemewithvset{\mathfrak{S}}{V}$}} \\
+                                   &   && \schemesarrow{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$\{\mathcal{A}=\mathcal{T}_\mathcal{A}\}$}{$\schemewithvset{\mathfrak{S}}{U}$}
+                                       & \schemedarrow{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$(\mathcal{T}_\mathcal{A}, \dots, \mathcal{T}_\mathcal{A}) \in \sembr{R^k}$}{$\schemewithvset{\mathfrak{S}}{U}$}
+                                       & 
+\end{array}
+\]
 
 For building schemes we need the two following notions.
 
 \[
-\begin{array}{lcll}
-Upd(U, \delta) & = & U & \quad \textit{if } x \in U \Rightarrow FV(\delta(x)) \subset U \\
-Upd(U, \delta) & = & Upd(U \cup \bigcup\limits_{x \in U} FV(\delta(x)), \delta) & \quad \textit{otherwise} \\
-\end{array}
+\upd{U}{\delta} = \begin{cases}
+                           U & \quad\forall x \in U : FV\,(\delta\,(x)) \subset U \\
+                           \upd{U \cup \displaystyle\bigcup\limits_{x \in U} FV\,(\delta\,(x))}{\delta} & \quad\mbox{otherwise}
+                          \end{cases}
 \]
 
-\[ Constr(\delta, U) = \{ x = \delta(x) \mid x \in U \cap \mathcal{D}om(\delta) \} \]
+\[ \constr{\delta}{U} = \{ x = \delta\,(x) \mid x \in U \cap \mathcal{D}om\,(\delta) \} \]
 
 The rules for building a scheme have the following form. \[ \schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}} \]
 
 Here are these rules:
 
-\[ \twopremrule
+\begin{figure}[t]  
+\renewcommand{\arraystretch}{5}
+  \[
+\begin{array}{ccc}
+  \onepremrule
+		{  \schemetrans{g_1}{g_2 : \Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}}  } 
+		{  \schemetrans{\conjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } 
+		& \qquad\qquad &
+ \onepremrule
+		{  \schemetrans{\substitute{g}{\alpha_n}{x}}{\Gamma}{\sigma}{n + 1}{V}{\schemewithvset{\mathfrak{S}}{V}}  }
+		{  \schemetrans{\freshgoal{x}{g}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } \\
+                
+  \multicolumn{3}{c}{
+  \twopremrule
 		{  \schemetrans{g_1}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S_1}}{V}}  }
 		{  \schemetrans{g_2}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S_2}}{V}}  }
-		{  \schemetrans{\disjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{  \schemefork{\schemewithvset{\mathfrak{S_1}}{V}}{\schemewithvset{\mathfrak{S_2}}{V}} }  } \]
+		{  \schemetrans{\disjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{ \schemefork{$\schemewithvset{\mathfrak{S_1}}{V}$}{$\schemewithvset{\mathfrak{S_2}}{V}$}} }  }} \\ 
 		
-\[ \onepremrule
-		{  \schemetrans{g_1}{g_2 : \Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}}  }
-		{  \schemetrans{\conjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } \]
+
+ \multicolumn{3}{c}{
+  \schemetrans{\unigoal{t_1}{t_2}}{\epsilon}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\unigoal{t_1 \sigma}{t_2 \sigma}$}}}}\\
+
+ \multicolumn{3}{c}{
+ \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{\epsilon}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\invokegoal{R^k}{t_1 \sigma}{t_k \sigma}$}}}}\\ 
 		
-\[ \onepremrule
-		{  \schemetrans{\substitute{g}{\alpha_n}{x}}{\Gamma}{\sigma}{n + 1}{V}{\schemewithvset{\mathfrak{S}}{V}}  }
-		{  \schemetrans{\freshgoal{x}{g}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } \]
+ \multicolumn{3}{c}{
+  \onepremrule
+		{  \nexists mgu\,(t_1 \sigma, t_2 \sigma)  }
+		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\unigoal{t_1 \sigma}{t_2 \sigma}$}}} }}\\
 
-\[ \schemetrans{\unigoal{t_1}{t_2}}{\epsilon}{\sigma}{n}{V}{\unigoal{t_1 \sigma}{t_2 \sigma}} \]
-
-\[ \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{\epsilon}{\sigma}{n}{V}{\invokegoal{R^k}{t_1 \sigma}{t_k \sigma}} \]
-		
-\[ \onepremrule
-		{  \not\exists mgu(t_1 \sigma, t_2 \sigma)  }
-		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\unigoal{t_1 \sigma}{t_2 \sigma}} } \]
-
-\[ \threepremrule
-		{  mgu(t_1 \sigma, t_2 \sigma) = \delta  }
-		{  U = Upd(V, \delta)  }
+ \multicolumn{3}{c}{
+  \threepremrule
+		{  mgu\,(t_1 \sigma, t_2 \sigma) = \delta  }
+		{  U = \upd{V}{\delta}  }
 		{  \schemetrans{g}{\Gamma}{\sigma \delta}{n}{U}{\schemewithvset{\mathfrak{S}}{U}}  }
-		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\schemesarrow{\unigoal{t_1 \sigma}{t_2 \sigma}}{Constr(\delta, U)}{\schemewithvset{\mathfrak{S}}{U}} }   } \]
+		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemesarrow{$\unigoal{t_1 \sigma}{t_2 \sigma}$}{$\constr{\delta}{U}$}{$\schemewithvset{\mathfrak{S}}{U}$}} }   } }\\
 		
-\[ \twopremrule
-		{  U =  V \cup \bigcup_{i} FV(t_i \sigma) }
-		{  \schemetrans{g}{\Gamma}{\sigma}{n}{U}{\schemewithvset{\mathfrak{S}}{U}}  }
-		{  \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{g : \Gamma}{\sigma}{n}{V}{ \schemedarrow{\invokegoal{R^k}{t_1 \sigma}{t_k \sigma}}{ (t_1 \sigma, \dots, t_k \sigma) \in \sembr{R^k}  }{\schemewithvset{\mathfrak{S}}{U}} }   } \]
+ \multicolumn{3}{c}{
+  \twopremrule
+		{  \mbox{\phantom{XXXXXX}} U =  V \cup \displaystyle\bigcup\limits_{i} FV\,(t_i \sigma) }
+		{  \schemetrans{g}{\Gamma}{\sigma}{n}{U}{\schemewithvset{\mathfrak{S}}{U}} \mbox{\phantom{XXXXXX}} }
+		{  \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{g : \Gamma}{\sigma}{n}{V}{ \parbox[m]{2cm}{\schemedarrow{$\invokegoal{R^k}{t_1 \sigma}{t_k \sigma}$}{$ (t_1 \sigma, \dots, t_k \sigma) \in \sembr{R^k} $}{$\schemewithvset{\mathfrak{S}}{U}$}} }   } }
+ \end{array}
+ \]
+\end{figure}
 
+                \begin{comment}
 It is important to note that both our time measures are 'stable' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
 
 \begin{lemma}
@@ -386,3 +405,4 @@ t(q^{rev}(\overline{a})) & = & \Theta(len^3(a)) \\
  \]
   
  
+\end{comment}
