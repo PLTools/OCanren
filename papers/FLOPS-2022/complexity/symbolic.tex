@@ -225,15 +225,18 @@ We also have a requirement that all recursive calls performed during unification
 The following main theorem provides the principal recursive approximations, extracted from the scheme for a given goal.
  
 \begin{theorem}
-Let $g \in D_{nf}$ and 
+Let $g \in D_{nf}$ and all sub-calls encountered during its evaluation are grounding and non-repetitive, and let
 
 \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\mathfrak{S}}{V}}  \]
 
 Then
-   \[ d\,(\taskst{g\rho}{\einit}) = \mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(1) \]
-and
-  \[ t\,(\taskst{g\rho}{\einit}) = \mathcal{T}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(\mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho)
-  - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}}{V})(\rho)} d\,(\taskst{g_i}{e_i}) \]
+\[
+\begin{array}{rcl}
+    d\,(init\,(g\,\rho)) &=& \mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(1) \\
+   t\,(init\,(g\,\rho)) &=& \mathcal{T}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(\mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho)
+   - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}}{V})(\rho)} d\,(\taskst{g_i}{e_i})
+\end{array}
+   \]
   being considered as functions on
 
   \[\rho \colon V \to T_{\emptyset}\]
@@ -242,52 +245,19 @@ and
 It is based on the to following facts as well as lemma~\ref{lem:sum_estimation} and soundness and completeness of operational semantics w.r.t. the denotational one.
 
 \begin{lemma}
-For two terms $t_1, \,t_2$, $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$,
 
-if \[ mgu(t_1, t_2) = \delta \] and \[ U = Upd(V, \delta) \]
+  Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$. If
 
-then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in Cons(\delta, U), \rho'(y) = t \rho'$.
+  \[ mgu\,(t_1, t_2) = \delta \]
 
-In such case $ \rho \circ mgu(t_1 \rho, t_2 \rho) = \delta \rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu(t_1 \rho, t_2 \rho) = \delta \rho' \pi$).
+  and
+
+  \[ U = \upd{V}{\delta} \]
+
+  then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in \constr{\delta}{U}\,:\, \rho'\,(y) = t \rho'$.
+In such case $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
 \end{lemma}
- 
- \begin{lemma}
-\label{lem:conjunction_metrics_calc}
 
-Let $s = ((s_0 \otimes g_1) \dots \otimes g_k)$ and let $A_i$ be a set of all answers that are passed to $g_i$, i.e.
-
-\[
-\begin{array}{rcl}
-A_1 &=& \tra{s_0} \\
-A_{i + 1} & = & \bigcup\limits_{a \in A_i} \tra{\taskst{g_i}{a}} 
-\end{array}
-\]
-
-Then
-
-\[
-\begin{array}{rcrl}
-d\,(s) &=& & d\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) \\
-\\
-t\,(s) &=& & t\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) + \\
-& & + \Theta( & d\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) - \maxd\limits_{a \in A_k}  d\,(\taskst{g_k}{a})) \\
-\end{array}
-\]
-
-\end{lemma}
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
 \subsection{Example}
 
 To make it more clear we will demonatrate our approach on a specific example~--- analyzing a list reversing relation. The definition is given in \figureword~\ref{fig:reverso_definition}. It is a straightforward declarative definition that reverses the tail of the list and then make use of the separate \lstinline|append$^o$| relation to place the head of the list at the end.\footnote{As usual there is a more efficient tail-recursive version of the reverse relation. But we will go with the naive version here as it is more illustrative and the analysis will help us to understand just how inefficient the naive version is.}
@@ -438,3 +408,4 @@ d(q^{rev}(\overline{a})) & = & \Theta(len^2(a)) \\
 t(q^{rev}(\overline{a})) & = & \Theta(len^3(a)) \\
 \end{array}
  \]
+
