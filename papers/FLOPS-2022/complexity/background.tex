@@ -60,15 +60,12 @@ This semantics corresponds to the canonical implementation of interleaving searc
 \begin{figure}[t]
 \centering
 \[
-\begin{array}{ccll}
-  \Sigma & = & \mathcal{A} \to \mathcal{T}_\mathcal{A} & \mbox{substitutions} \\
-  E & = & \Sigma \times \mathbb{N} & \mbox{environments} \\
-  \\
-  S & = & \taskst{\mathcal{G}}{E} & \mbox{task} \\
-    &   & S \oplus S & \mbox{sum} \\
-    &   & S \otimes \mathcal{G} & \mbox{product} \\
-  \hat{S} & = & \diamond \; \mid \; S & \mbox{states} \\
-  L & = & \circ \; \mid \; E & \mbox{labels} \\
+\begin{array}{ccllcccll}
+  \Sigma & = & \mathcal{A} \to \mathcal{T}_\mathcal{A} & \mbox{substitutions} &\qquad\qquad&        S & = & \taskst{\mathcal{G}}{E} & \mbox{task} \\
+       E & = & \Sigma \times \mathbb{N}              & \mbox{environments}  &\qquad\qquad&          &   & S \oplus S              & \mbox{sum} \\
+         &   &                                       &                      &\qquad\qquad&          &   & S \otimes \mathcal{G}   & \mbox{product} \\
+         &   &                                       &                      &\qquad\qquad&  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} \\
+         &   &                                       &                      &\qquad\qquad&        L & = & \circ \; \mid \; E      & \mbox{labels} 
 \end{array}
 \]
 \caption{States and labels in the LTS for \mK}
@@ -84,7 +81,7 @@ We also need a terminal state $\diamond$ to represent the end of the evaluation.
 The label ``$\circ$'' is used to mark those steps which do not provide an answer; otherwise, a transition is labeled by an updated
 environment.
 
-\begin{figure*}
+\begin{figure*}[h]
   \renewcommand{\arraystretch}{1.6}
   \[
   \begin{array}{cr}

@@ -35,12 +35,7 @@ found in Appendix~\ref{sec:appendix}.
 
 The first lemma provides a fundamental relation between these two~--- $d$ and $t$,~--- estimations for the scheduling complexity:
 
-\begin{lemma}
-  For any state $s$
-
-  \[
-  d\,(s) \le t\,(s) \le d^2\,(s)
-  \]
+\begin{lemma} $d\,(s) \le t\,(s) \le d^2\,(s)$ for any state $s$.
   
 \end{lemma}
 \begin{proof}
@@ -63,11 +58,12 @@ The following trivial lemma handles the basic (leaf state) case:
 
   then
 
-  \[d\,(\taskst{g}{e}) = d\,(s^\prime) + 1\]
-
-  and
-
-  \[t\,(\taskst{g}{e}) = t\,(s^\prime) + 1\]
+  \[
+    \begin{array}{rcl}
+    d\,(\taskst{g}{e}) &=& d\,(s^\prime) + 1\\
+    t\,(\taskst{g}{e}) &=& t\,(s^\prime) + 1
+    \end{array}
+  \]
 \end{lemma}
 \begin{proof}
     Follows immediately from the definitions of the estimated values.\qed
@@ -89,8 +85,6 @@ For any two states $s_1$ and $s_2$
 \[
 \begin{array}{rcl}
   d\,(s_1 \oplus s_2) &=& d\,(s_1) + d\,(s_2) \\
-
-%  t\,(s_1 \oplus s_2) &=& t\,(s_1) + t\,(s_2) + \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\}
     t\,(s_1 \oplus s_2) &=& t\,(s_1) + t\,(s_2) + \costdisj{s_1}{s_2}
 \end{array}
 \]

@@ -217,13 +217,37 @@ language=minikanren
 %% end of the preamble, start of the body of the document source.
 \begin{document}
 
+\makeatletter
+\let\origsection\section
+\renewcommand\section{\@ifstar{\starsection}{\nostarsection}}
+
+\newcommand\nostarsection[1]
+{\sectionprelude\origsection{#1}\sectionpostlude}
+
+\newcommand\starsection[1]
+{\sectionprelude\origsection*{#1}\sectionpostlude}
+
+\newcommand\sectionprelude{%
+  \vspace{-2mm}
+}
+
+\newcommand\sectionpostlude{%
+  \vspace{-2mm}
+}
+\makeatother
+
 \setlength{\abovecaptionskip}{0pt plus 3pt minus 2pt}
 \setlength{\belowcaptionskip}{-10pt plus 3pt minus 2pt}
 
-\abovedisplayskip0mm
+\abovedisplayskip-1mm
 \belowdisplayskip0mm
-\abovedisplayshortskip0mm
+\abovedisplayshortskip-3mm
 \belowdisplayshortskip0mm
+
+\setlength{\topsep}{0pt}
+\setlength{\partopsep}{0pt plus 0pt minus 0pt}
+\setlength{\parskip}{0pt}
+%\setlength{\parindent}{0pt}
 
 %%
 %% The "title" command has an optional parameter,
