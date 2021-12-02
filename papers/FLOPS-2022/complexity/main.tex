@@ -23,10 +23,19 @@
 \usepackage{listings}
 \usepackage{comment}
 \usepackage{mathtools}
-\usepackage[all]{xy}
 \usepackage{environ}
 \usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{graphics}
+\usepackage[cmtip,all]{xy}
+\usepackage{units}
 
+%\xymatrix@C-=0.5cm
+
+\newcommand{\longsquiggly}{\xymatrix@C-=0.5cm{{}\ar@{~>}[r]&{}}}
 
 \newcommand{\todonote}[1]{\todo[inline, color=blue!20]{\textbf{TODO:} #1}}
 \newcommand{\sectionword}{section}
@@ -58,19 +67,39 @@
 \newcommand{\einit}{e_{init}}
 \newcommand{\ninit}{n_{init}}
 
-\newcommand{\schemetrans}[6]{#1, \, #2, \, #3, \, #4, \, #5 \; \rightsquigarrow \; #6}
-\newcommand{\schemewithvset}[2]{#1^{#2}}
-\newcommand{\schemenode}[2]{\langle #1 ,\, #2 \rangle}
-\newcommand{\schemesarrow}[3]{\begin{array}{cl} #1 \\ \downarrow & #2 \\ #3 \end{array}}
-\newcommand{\schemedarrow}[3]{\begin{array}{cl} #1 \\ \Downarrow & #2 \\ #3 \end{array}}
-\newcommand{\schemefork}[2]{\begin{array}{cccc} & \swarrow & \searrow \\ #1 & & & #2 \end{array}}
+\newcommand{\schemetrans}[6]{\withenv{#2,\,#3,\,#4,\,#5}{#1} \longsquiggly #6}
+\newcommand{\schemewithvset}[2]{{#1}^{#2}}
+
+\newcommand{\schemenode}[1]{
+\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
+  \node[rectangle,draw]{#1};
+\end{tikzpicture}
+ }
+
+\newcommand{\schemesarrow}[3]{
+\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
+  \node[rectangle,draw]{#1}child {node[circle,draw]{#3}edge from parent node[right]{\tiny{#2}}};
+\end{tikzpicture}}
+
+\newcommand{\schemedarrow}[3]{
+\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
+  \node[rectangle,draw]{#1}child {node[circle,draw]{#3}edge from parent node[right]{\tiny{#2}}};
+\end{tikzpicture}}
+
+\newcommand{\schemefork}[2]{
+  \begin{tikzpicture}[edge from parent/.style={draw,-latex}]
+   \coordinate   
+      child {node[circle,draw]{#1}}
+      child {node[circle,draw]{#2}} ;
+\end{tikzpicture}}
 
 \newcommand{\upd}[2]{\mbox{\textbf{upd}}\,(#1,\, #2)}
 \newcommand{\constr}[2]{\mbox{\textbf{constr}}\,(#1,\, #2)}
 
-\newcommand{\onepremrule}[2]{\frac{#1}{#2}}
-\newcommand{\twopremrule}[3]{\frac{\begin{array}{c} #1 \\ #2 \end{array}}{#3}}
-\newcommand{\threepremrule}[4]{\frac{\begin{array}{c} #1 \\ #2 \\ #3 \end{array}}{#4}}
+\newcommand{\withenv}[2]{\left< #1 \right> \;\vdash\; #2}
+\newcommand{\onepremrule}[2]{\dfrac{#1}{#2}}
+\newcommand{\twopremrule}[3]{\dfrac{#1,\; #2}{#3}}
+\newcommand{\threepremrule}[4]{\dfrac{#1,\;  #2,\;  #3}{#4}}
 
 \newcommand{\lazystream}[1]{\texttt{Lazy [{#1}]}}
 \newcommand{\consstream}[2]{\texttt{Cons #1 [{#2}]}}
@@ -116,14 +145,14 @@
   \global\expandafter\xdef\csname replemma@#1\endcsname{%
     \unexpanded\expandafter{\BODY}%
   }%
-  \expandafter\lemma\BODY\unskip\label{#1}\endlemma
+  \expandafter\lemma\BODY\label{#1}\endlemma
 }
 
 \NewEnviron{reptheorem}[1]{%
   \global\expandafter\xdef\csname reptheorem@#1\endcsname{%
     \unexpanded\expandafter{\BODY}%
   }%
-  \expandafter\theorem\BODY\unskip\label{#1}\endtheorem
+  \expandafter\theorem\BODY\label{#1}\endtheorem
 }
 
 
@@ -232,4 +261,3 @@ language=minikanren
 \end{document}
 \endinput
 %%
-%% End of file `sample-acmlarge.tex'.
