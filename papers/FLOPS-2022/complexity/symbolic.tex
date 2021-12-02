@@ -1,6 +1,121 @@
 \section{Complexity Analysis via Symbolic Execution Schemes}
 \label{sec:symbolic}
 
+\colorbox{yellow!20}{\textbf{TO INTRODUCTION}}
+\begin{lstlisting}[basicstyle=\small]
+   append$^o_{naive}$ = fun a b ab ->
+     ((a === Nil) /\ (ab === b)) \/
+     (fresh (h t tb)
+        (a === Cons(h, t)) /\
+        (ab === Cons(h, tb) /\
+        (append$^o$ t b tb)) 
+     )
+\end{lstlisting}
+
+\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 1}: Overview of the analysis algorithms.
+Analyzing relational calls, symbolic variables as subset of logic variables, symbolic schemes, extracting approximations for d-measure and t-measure, solving approximations in metatheory.}}
+
+For clarity we will provide demonstration of the complexity analysis for a specific example -- \lstinline|append$^o_{naive}$| relation the introduction  -- throughout the section.
+
+\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 2}: Symbolic variables and symbolic analysis problem statement.}}
+
+\colorbox{blue!20}{\parbox{\textwidth}{Substituting logic variables by ground values, valuations $\rho : V \to \grterms$}}
+
+Extension for valuations:
+
+\begin{definition}
+  Suppose
+
+  \[V \subset U \subset \mathcal{A}\]
+
+  and
+
+  \[\rho \colon V \to \mathcal{T}_{\emptyset}\]
+
+  and
+
+  \[\rho^\prime \colon U \to \mathcal{T}_{\emptyset}\]
+
+  We say that $\rho^\prime$ extends $\rho$ (denotation: $ \rho^\prime \succ \rho$) if
+  
+\[ \forall x \in V \,:\, \rho^\prime\,(x) = \rho\,(x) \]
+\end{definition}
+
+Let's say we want to analyze what happen if we substitute first argument of \lstinline|length$^o_{last}$| with ground variable and left the second argument free.
+
+\colorbox{blue!20}{\parbox{\textwidth}{Stability wrt free variables, counter and substitution}}
+
+It is important to note that both our time measures are 'stable' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
+
+\begin{replemma}{lem:measures_changing_env}
+
+  Suppose
+
+  \[ FV\,(g) \cup \Dom\,(\sigma) \cup \VRan\,(\sigma) \subseteq \{ \alpha_1\dots\alpha_n \} \]
+  
+  and
+
+  \[ FV\,(g^\prime) \cup \Dom\,(\sigma^\prime) \cup \VRan\,(\sigma^\prime) \subseteq \{ \alpha_1\dots \alpha_{n^\prime} \} \]
+
+  and there is a bijective substitution
+
+  \[\pi \colon FV\,(g \sigma) \to FV\,(g^\prime \sigma^\prime)\]
+
+  such that
+
+  \[ g \sigma \pi = g^\prime \sigma^\prime \]
+
+  Then \[ d\,(\taskst{g}{\mkenv{\sigma}{n}}) = d\,(\taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}}) \] and \[ t\,(\taskst{g}{\mkenv{\sigma}{n}}) = t\,(\taskst{g}{\mkenv{\sigma}{n}}) \] 
+
+\end{replemma}
+
+So the following definition will be useful to construct a base-state representative for an arbitrary goal.
+
+\begin{definition} Let $g$ be a goal. An initial state for $g$ is
+
+  \[
+   init\,(g)=\taskst{g}{(\varepsilon, \ninit\,(g))}
+  \]
+
+  where
+  
+  \[ n_{init}\,(g) = \min\, \{ n \mid FV\,(g) \subseteq \{ \alpha_1\dots\alpha_n \} \} \]
+\end{definition}
+
+So we will be studying the family of queries \[ q^{app}(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$^o$} \, \mathbf{a} \, \mathbf{b} \, ab^?) \]
+
+\colorbox{blue!20}{\parbox{\textwidth}{Symbolic unifications. Use usual unificatoion, but add constrains on symbolic variables}}
+
+Notions for constrains:
+
+\[
+\upd{U}{\delta} = \begin{cases}
+                           U & \quad\forall x \in U : FV\,(\delta\,(x)) \subset U \\
+                           \upd{U \cup \displaystyle\bigcup\limits_{x \in U} FV\,(\delta\,(x))}{\delta} & \quad\mbox{otherwise}
+                          \end{cases}
+\]
+
+\[ \constr{\delta}{U} = \{ x = \delta\,(x) \mid x \in U \cap \mathcal{D}om\,(\delta) \} \]
+
+Soundness of symbolic unification:
+
+\begin{replemma}{lem:symbolic_unification_soundness}
+
+  Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$. If
+
+  \[ mgu\,(t_1, t_2) = \delta \]
+
+  and
+
+  \[ U = \upd{V}{\delta} \]
+
+  then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in \constr{\delta}{U}\,:\, \rho'\,(y) = t \rho'$.
+In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
+\end{replemma}
+
+
+\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 3}: Symbolic schemes. Form and derivation rules}}
+
 We build schemes in the following form.
 
 \[
@@ -14,29 +129,12 @@ We build schemes in the following form.
 \end{array}
 \]
 
-For building schemes we need the two following notions.
+The rules for building a scheme have the following form. \[ \schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}} \]
 
-\[
-\upd{U}{\delta} = \begin{cases}
-                           U & \quad\forall x \in U : FV\,(\delta\,(x)) \subset U \\
-                           \upd{U \cup \displaystyle\bigcup\limits_{x \in U} FV\,(\delta\,(x))}{\delta} & \quad\mbox{otherwise}
-                          \end{cases}
-\]
-
-\[ \constr{\delta}{U} = \{ x = \delta\,(x) \mid x \in U \cap \mathcal{D}om\,(\delta) \} \]
-
-The rules for building schemes have the following form:
-
-\[
-\schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}}
-\]
-
-% TODO: an explanation is required here or elsewhere
-where $\Gamma$ is a list of goals, $\sigma$ and $n$ are current substitution and free variable counter respectively, $V$~--- a set of ground variables, $g$ --- current 
-goal. Scheme formation rules are shown in the Fig.~\ref{fig:scheme_formation}.
+They are shown on \figureword~\ref{fig:scheme_formation}.
 
 \begin{figure}[t]  
-%\renewcommand{\arraystretch}{2}
+\renewcommand{\arraystretch}{3}
   \[
 \begin{array}{cr}
   \onepremrule
@@ -53,6 +151,7 @@ goal. Scheme formation rules are shown in the Fig.~\ref{fig:scheme_formation}.
 		{  \schemetrans{g_2}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S_2}}{V}}  }
 		{  \schemetrans{\disjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{ \schemefork{$\schemewithvset{\mathfrak{S_1}}{V}$}{$\schemewithvset{\mathfrak{S_2}}{V}$}} }  } & \ruleno{Disj$_\mathfrak S$}\\ 
 		
+
  %\multicolumn{3}{c}{
   \schemetrans{\unigoal{t_1}{t_2}}{\epsilon}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\unigoal{t_1 \sigma}{t_2 \sigma}$}}}& \ruleno{UnifyLeaf$_\mathfrak S$}\\
 
@@ -82,68 +181,31 @@ goal. Scheme formation rules are shown in the Fig.~\ref{fig:scheme_formation}.
 \label{fig:scheme_formation}
 \end{figure}
 
-              
-It is important to note that both our time measures are ``stable'' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
+The scheme for our example is shown in \figureword~\ref{fig:example_scheme}.
+
+\begin{figure}[t]
+\begin{center}
+\begin{tikzpicture}[sibling distance=10em, edge from parent/.style={draw,-latex}]
+   \coordinate   
+      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Nil}}$}
+        child { node[rectangle, draw] {$\unigoal{ab^?}{\overline{b}}$}
+                  edge from parent node[right]{\tiny{$\overline{a} = \texttt{Nil}$}} } }
+      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Cons($h^?$, $t^?$)}}$} 
+      	child { node[rectangle, draw] {$\unigoal{ab^?}{\texttt{Cons($\overline{h}$, $tb^?$)}}$}
+      	   child { node[rectangle, draw] {\texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb^?$}} }
+      	   edge from parent node[right]{\tiny{$\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}$}}  } } ;
+\end{tikzpicture}
+\end{center}
+
+\caption{Symbolic execution scheme for the goal $\texttt{append$^o$} \, a^? \, b^? \, ab^?$ with initial $V = \{ a^?, b^? \}$. Variables from the set of ground variables $V$ for each node are overlined (on edges variables are overlined in accordance with $V$ for the next node). }
+\label{fig:example_scheme}
+\end{figure}
 
 \FloatBarrier
 
-\begin{replemma}{lem:measures_changing_env}
+\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 4}: Extracting recursive approximations.}}
 
-  Suppose
-
-  \[ FV\,(g) \cup \Dom\,(\sigma) \cup \VRan\,(\sigma) \subseteq \{ \alpha_1\dots\alpha_n \} \]
-  
-  and
-
-  \[ FV\,(g^\prime) \cup \Dom\,(\sigma^\prime) \cup \VRan\,(\sigma^\prime) \subseteq \{ \alpha_1\dots \alpha_{n^\prime} \} \]
-
-  and there is a bijective substitution
-
-  \[\pi \colon FV\,(g \sigma) \to FV\,(g^\prime \sigma^\prime)\]
-
-  such that
-
-  \[ g \sigma \pi = g^\prime \sigma^\prime \]
-
-  Then \[ d\,(\taskst{g}{\mkenv{\sigma}{n}}) = d\,(\taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}}) \] and \[ t\,(\taskst{g}{\mkenv{\sigma}{n}}) = t\,(\taskst{g}{\mkenv{\sigma}{n}}) \] 
-
-\end{replemma}
-
-So the following definition will be useful to construct a leaf-state representative for an arbitrary goal.
-
-\begin{definition} Let $g$ be a goal. An initial state for $g$ is
-
-
-  \[
-   init\,(g)=\taskst{g}{(\varepsilon, \ninit\,(g))}
-  \]
-
-  where
-  
-  \[ n_{init}\,(g) = \min\, \{ n \mid FV\,(g) \subseteq \{ \alpha_1\dots\alpha_n \} \} \]
-\end{definition}
-		
-The extracted approximations will use the following definition.
-
-\begin{definition}
-  Suppose
-
-  \[V \subset U \subset \mathcal{A}\]
-
-  and
-
-  \[\rho \colon V \to \mathcal{T}_{\emptyset}\]
-
-  and
-
-  \[\rho^\prime \colon U \to \mathcal{T}_{\emptyset}\]
-
-  We say that $\rho^\prime$ extends $\rho$ (denotation: $ \rho^\prime \succ \rho$) if
-  
-\[ \forall x \in V \,:\, \rho^\prime\,(x) = \rho\,(x) \]
-\end{definition}
-
-Here are the traversals of scheme that will be used for approximations. For a scheme $\schemewithvset{\mathfrak{S}}{V}$ it is a function from representative function $\rho \colon V \to \grterms$ to natural numbers (for $\mathcal{D}$ and $\mathcal{T}$) or to sets of leaf-states (for $\mathcal{L}$).
+Here are the traversals of scheme that will be used for approximations. For a scheme $\schemewithvset{\mathfrak{S}}{V}$ it is a function from a valuation $\rho \colon V \to \grterms$ to natural numbers (for $\mathcal{D}$ and $\mathcal{T}$) or to sets of base-states (for $\mathcal{L}$).
 
 \begin{figure}[t]
 \[
@@ -202,6 +264,8 @@ Here are the traversals of scheme that will be used for approximations. For a sc
 \label{fig:scheduling_extraction_l}
 \end{figure}
 
+\colorbox{yellow!20}{\parbox{\textwidth}{Maybe desribe DNF and call requirements informally?}}
+
 We prove the theorem only for goals in DNF.
 
 \[
@@ -237,7 +301,7 @@ Let $g \in D_{nf}$ and all sub-calls encountered during its evaluation are groun
 
 \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\mathfrak{S}}{V}}  \]
 
-\noindent Then
+Then
 \[
 \begin{array}{rcl}
     d\,(init\,(g\,\rho)) &=& \mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(1) \\
@@ -250,97 +314,9 @@ Let $g \in D_{nf}$ and all sub-calls encountered during its evaluation are groun
   \[\rho \colon V \to T_{\emptyset}\]
 \end{reptheorem}
 
-It is based on the following fact as well as \lemmaword~\ref{lem:sum_estimation}, generalization of the \lemmaword~\ref{lem:times_measure_equations} and soundness and completeness of operational semantics w.r.t. the denotational one.
+It is based on the  \lemmaword~\ref{lem:symbolic_unification_soundness}, \lemmaword~\ref{lem:sum_estimation}, generalization of the \lemmaword~\ref{lem:times_measure_equations} and soundness and completeness of operational semantics w.r.t. the denotational one.
 
-\begin{replemma}{lem:symbolic_unification_soundness}
-
-  Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$. If
-
-  \[ mgu\,(t_1, t_2) = \delta \]
-
-  and
-
-  \[ U = \upd{V}{\delta} \]
-
-  then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in \constr{\delta}{U}\,:\, \rho'\,(y) = t \rho'$.
-In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
-\end{replemma}
-
-\subsection{Example}
-
-To make it more clear we will demonatrate our approach on a specific example~--- analyzing a list reversing relation. The definition is given in \figureword~\ref{fig:reverso_definition}. It is a straightforward declarative definition that reverses the tail of the list and then make use of the separate \lstinline|append$^o$| relation to place the head of the list at the end.\footnote{As usual there is a more efficient tail-recursive version of the reverse relation. But we will go with the naive version here as it is more illustrative and the analysis will help us to understand just how inefficient the naive version is.}
-
-\begin{figure}[t]
-\begin{tabular}{p{6cm}p{6cm}}
-\begin{lstlisting}[basicstyle=\small]
-   revers$^o$ = fun a r ->
-     ((a === Nil) /\ (r === Nil)) \/
-     (fresh (h t tr)
-        (a === Cons(h, t)) /\
-        (revers$^o$ t tr) /\
-        (append$^o$ tr Cons(h, Nil) r)
-     )
-\end{lstlisting} &
-\begin{lstlisting}[basicstyle=\small]
-   append$^o$ = fun a b ab ->
-     ((a === Nil) /\ (ab === b)) \/
-     (fresh (h t tb)
-        (a === Cons(h, t)) /\
-        (ab === Cons(h, tb)) /\
-        (append$^o$ t b tb)
-     )
-\end{lstlisting}
-\end{tabular}
-
-\caption{Relational List Reverse Defintion}
-\label{fig:reverso_definition}
-\end{figure}
-
-We will study the situation when we provide some ground term as a first argument and a free logical variable as a second argument. So our task is to estimate time measures for the base state \[ q^{rev}(\mathbf{a}) = init\,(\texttt{revers$^o$} \, \mathbf{a} \, r^?) \] depending on ground value $\mathbf{a}$. Also, we are usually intrested in situation when arguments are taken from some specific domain. In our case the domain is the set of all ground terms that are lists constructed with constructors $Nil$ and $Cons$.
-
-\[ \mathcal{L} = Nil \; \mid \; Cons(D, \mathcal{L}) \]
-
-We start our analysis by deriving a symbolic scheme for this call. To do it, we build the scheme for the goal $\texttt{revers$^o$} \, a^? \, r^?$ and take $\{ a^? \}$ as the set of ground variables $V$. The scheme is shown in \figureword~\ref{fig:reverso_scheme}.
-
-\begin{figure}[t]
-\begin{center}
-\begin{tikzpicture}[sibling distance=10em, edge from parent/.style={draw,-latex}]
-   \coordinate   
-      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Nil}}$}
-        child { node[rectangle, draw] {$\unigoal{r^?}{\texttt{Nil}}$}
-                  edge from parent node[right]{\tiny{$\overline{a} = \texttt{Nil}$}} } }
-      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Cons($h^?$, $t^?$)}}$} 
-      	child { node[rectangle, draw] {\texttt{revers$^o$ $\overline{t}$ $tr^?$} }
-      	   child { node[rectangle, draw] {\texttt{append$^o$ $\overline{tr}$ Cons($\overline{h}$, Nil) $r^?$}}
-      	     edge from parent node[right]{\tiny{$(\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket$}} }
-      	   edge from parent node[right]{\tiny{$\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}$}}  } } ;
-\end{tikzpicture}
-\end{center}
-
-\caption{Symbolic execution scheme for the goal $\texttt{revers$^o$} \, a^? \, r^?$ with initial $V = \{ a^? \}$. Variables from the set of ground variables $V$ for each node are overlined (on edges variables are overlined in accordance with $V$ for the next node). }
-\label{fig:reverso_scheme}
-\end{figure}
-
-
-We can see that the scheme contain two relational calls: a version of the same relational call $q^{rev}$ and another relational call \[ q^{app}(\mathbf{a}, \mathbf{b}) = init\,( \texttt{append$^o$} \, \mathbf{a} \, \mathbf{b} \, r^? ) \]
-
-The traversing extracts the following recursive approximations for both measures from the scheme. Instead of passing mapping $\rho$ through the approximation, we will write it down as a dependency on ground value $\mathbf{a}$, as $\rho$ is defined by the value on the single element of $V$. We do the same for all mappings in the approximation.
-
-\[
-\begin{array}{lcll}
-d(q^{rev}(\mathbf{a})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + \\
- & & & + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} ( d(q^{rev}(\mathbf{t})) + \sum\limits_{\mathbf{tr}: (\mathbf{t}, \mathbf{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\mathbf{tr},\texttt{Cons($\mathbf{h}$, Nil)}))) + \\
- & & + \Theta( & 1) \\
-\\
-t(q^{rev}(\mathbf{a})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + \\
- & & & \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} ( t(q^{rev}(\mathbf{t})) + \sum\limits_{\mathbf{tr}: (\mathbf{t}, \mathbf{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} t(q^{app}(\mathbf{tr},\texttt{Cons($\mathbf{h}$, Nil)}))) + \\
- & & + \Theta( & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + \\
- & & & + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} ( d(q^{rev}(\mathbf{t})) + \sum\limits_{\mathbf{tr}: (\mathbf{t}, \mathbf{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\mathbf{tr},\texttt{Cons($\mathbf{h}$, Nil)}))) - \\
- & & & - \maxd\limits_{\mathbf{h}, \mathbf{t}, \mathbf{tr}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)} \land (\mathbf{t}, \mathbf{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\mathbf{tr},\texttt{Cons($\mathbf{h}$, Nil)})) + 1)
-\end{array}
-\]
-
-To make use of our approximations we need to analyze $q^{app}$ call separately. \figureword~\ref{fig:appendo_scheme} shows the symbolic scheme for this call. We extract the following approximations from it.
+The traversing extracts the following recursive approximations for both measures from the scheme. Instead of passing mapping $\rho$ through the approximation, we will write it down as a dependency on ground values $\mathbf{a}$ and $\mathbf{b}$ that are values of $\rho$ on $a$ and $b$ respecively. We use values instead of valuations for nodes too.
 
 \[
 \begin{array}{lcll}
@@ -353,27 +329,12 @@ t(q^{app}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\overline{a} = \tex
 \end{array}
 \]
 
-\begin{figure}[t]
-\begin{center}
-\begin{tikzpicture}[sibling distance=10em, edge from parent/.style={draw,-latex}]
-   \coordinate   
-      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Nil}}$}
-        child { node[rectangle, draw] {$\unigoal{ab^?}{\overline{b}}$}
-                  edge from parent node[right]{\tiny{$\overline{a} = \texttt{Nil}$}} } }
-      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Cons($h^?$, $t^?$)}}$} 
-      	child { node[rectangle, draw] {$\unigoal{ab^?}{\texttt{Cons($\overline{h}$, $tb^?$)}}$}
-      	   child { node[rectangle, draw] {\texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb^?$}} }
-      	   edge from parent node[right]{\tiny{$\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}$}}  } } ;
-\end{tikzpicture}
-\end{center}
 
-\caption{Symbolic execution scheme for the goal $\texttt{append$^o$} \, a^? \, b^? \, ab^?$ with initial $V = \{ a^?, b^? \}$. Variables from the set of ground variables $V$ for each node are overlined (on edges variables are overlined in accordance with $V$ for the next node). }
-\label{fig:appendo_scheme}
-\end{figure}
+\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 5:} simplification in matatheory.}}
 
 Now we move into the metatheory to solve this systems of recursive approximations and deduce the complexity. As usual, when we add the informations from the metatheory the approximations became quite simple.
 
-For $q^{app}$ we consider two cases: when the first list is empty or not. Also, since there is only one non-trivial leaf in the scheme with only one enviroment, so we know that the excluded maximum is reached at the recursive call. After we exclude the recursive call from costs part, we get the following linear approximations. 
+We consider two cases: when the first list is empty or not. Also, since there is only one non-trivial leaf in the scheme with only one enviroment, so we know that the excluded maximum is reached at the recursive call. After we exclude the recursive call from costs part, we get the following linear approximations. 
 
 \[
 \begin{array}{lcl}
@@ -394,36 +355,16 @@ t(q^{app}(\mathbf{a}, \mathbf{b})) & = & \Theta(len(\mathbf{a})) \\
 \end{array}
  \]
  
-For initial relational call $q^{rev}$ we do the same and incorporate just calculated complexities of $q^{app}$. The senior addend is obvious again, it is value for $q^{app}$ call, but this time we also have an additional value for recursive call $q^{rev}$ in the costs part.
+In contrast, for the naive version the $d$ would not be eliminated and we would have approximations
 
 \[
 \begin{array}{lcl}
-d(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
-d(q^{rev}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)})) & = & d(q^{rev}(\overline{t})) + d(q^{app}(rev(\mathbf{t}), \texttt{Cons($\mathbf{h}$, Nil)})) + \Theta(1) \\
+d(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
+d(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & d(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(1) \\
 \\
-t(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
-t(q^{rev}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)})) & = & t(q^{rev}(\overline{t})) + t(q^{app}(rev(\mathbf{t}), \texttt{Cons($\mathbf{h}$, Nil)})) + \Theta(d(q^{rev}(\mathbf{t}))) \\
-\end{array}
- \]
- 
-We can now substitute the calculated measures for $q^{app}$ call. Since will know them only up to a multiplicative constant, they move under $\Theta$.
-
-\[
-\begin{array}{lcl}
-d(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
-d(q^{rev}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)})) & = & d(q^{rev}(\mathbf{t})) + \Theta(len(\mathbf{t})) \\
-\\
-t(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
-t(q^{rev}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)})) & = & t(q^{rev}(\mathbf{t})) + \Theta(len(\mathbf{t}) + d(q^{rev}(\mathbf{t}))) \\
-\end{array}
- \]
- 
-These approximation are linear and easily solvable, but in this case the additional cost of interleaving search is not negligible and the resulting complexity is not the same as the $d$ mesure.\footnote{Unlike the tail-recursive version of reverse where both measures have linear complexity.}
- 
- \[
-\begin{array}{lcl}
-d(q^{rev}(\mathbf{a})) & = & \Theta(len^2(\mathbf{a})) \\
-t(q^{rev}(\mathbf{a})) & = & \Theta(len^3(\mathbf{a})) \\
+t(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
+t(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(d(q^{app}(\mathbf{t}, \mathbf{b})) ) \\
 \end{array}
  \]
 
+Which gives quadratic complexity.
