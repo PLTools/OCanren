@@ -2,7 +2,7 @@
 % LLNCS macro package for Springer Computer Science proceedings;
 % Version 2.20 of 2017/10/04
 %
-\documentclass[runningheads]{llncs}
+\documentclass[runningheadsm, envcountsect]{llncs}
 %
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
@@ -24,12 +24,15 @@
 \usepackage{comment}
 \usepackage{mathtools}
 \usepackage[all]{xy}
+\usepackage{environ}
+\usepackage{enumitem}
 
 
 \newcommand{\todonote}[1]{\todo[inline, color=blue!20]{\textbf{TODO:} #1}}
 \newcommand{\sectionword}{section}
 \newcommand{\appendixword}{appendix}
 \newcommand{\figureword}{Fig.}
+\newcommand{\lemmaword}{Lem.}
 \newcommand{\eqdef}{\overset{\mathrm{def}}{=}}
 \newcommand{\ruleno}[1]{\mbox{[\textsc{#1}]}}
 \newcommand{\bigslant}[2]{{\raisebox{.2em}{$#1$}\left/\raisebox{-.2em}{$#2$}\right.}}
@@ -62,6 +65,9 @@
 \newcommand{\schemedarrow}[3]{\begin{array}{cl} #1 \\ \Downarrow & #2 \\ #3 \end{array}}
 \newcommand{\schemefork}[2]{\begin{array}{cccc} & \swarrow & \searrow \\ #1 & & & #2 \end{array}}
 
+\newcommand{\upd}[2]{\mbox{\textbf{upd}}\,(#1,\, #2)}
+\newcommand{\constr}[2]{\mbox{\textbf{constr}}\,(#1,\, #2)}
+
 \newcommand{\onepremrule}[2]{\frac{#1}{#2}}
 \newcommand{\twopremrule}[3]{\frac{\begin{array}{c} #1 \\ #2 \end{array}}{#3}}
 \newcommand{\threepremrule}[4]{\frac{\begin{array}{c} #1 \\ #2 \\ #3 \end{array}}{#4}}
@@ -80,6 +86,45 @@
 \newcommand{\lookuptime}[1]{\texttt{lookup}\,(#1)}
 \newcommand{\addtime}[1]{\texttt{add}\,(#1)}
 \renewcommand{\O}{\mathcal{O}}
+
+\renewcommand{\labelenumii}{\arabic{enumi}.\arabic{enumii}}
+\renewcommand{\labelenumiii}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}}
+\renewcommand{\labelenumiv}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}.\arabic{enumiv}}
+
+\let\lemma\relax
+\spnewtheorem{lemma}{Lemma}[section]{\bfseries}{\itshape}
+
+\newcommand{\repeatlemma}[1]{%
+  \begingroup
+  \renewcommand{\thelemma}{\ref{#1}}%
+  \expandafter\expandafter\expandafter\lemma
+  \csname replemma@#1\endcsname
+  \endlemma
+  \endgroup
+}
+
+\newcommand{\repeattheorem}[1]{%
+  \begingroup
+  \renewcommand{\thetheorem}{\ref{#1}}%
+  \expandafter\expandafter\expandafter\theorem
+  \csname reptheorem@#1\endcsname
+  \endtheorem
+  \endgroup
+}
+
+\NewEnviron{replemma}[1]{%
+  \global\expandafter\xdef\csname replemma@#1\endcsname{%
+    \unexpanded\expandafter{\BODY}%
+  }%
+  \expandafter\lemma\BODY\unskip\label{#1}\endlemma
+}
+
+\NewEnviron{reptheorem}[1]{%
+  \global\expandafter\xdef\csname reptheorem@#1\endcsname{%
+    \unexpanded\expandafter{\BODY}%
+  }%
+  \expandafter\theorem\BODY\unskip\label{#1}\endtheorem
+}
 
 
 %% Listings
@@ -179,6 +224,8 @@ language=minikanren
 %%
 %% If your work has an appendix, this is the place to put it.
 \appendix
+
+\input{proofs_appendix}
 
 % \input{examples_definitions}
 

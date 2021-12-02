@@ -59,15 +59,13 @@ Here are these rules:
 
 It is important to note that both our time measures are 'stable' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
 
-\begin{lemma}
-
+\begin{replemma}{lem:measures_changing_env}
 Suppose \[ FV(g) \cup \Dom(\sigma) \cup \VRan(\sigma) \subset \{ \alpha_i \mid i > n \} \]
 and \[ FV(g') \cup \Dom(\sigma') \cup \VRan(\sigma') \subset \{ \alpha_i \mid i > n' \} \]
 and there is a bijection $\pi \colon FV(g \sigma) \to FV(g' \sigma')$, s.t. $g \sigma \pi = g' \sigma'$.
 
 Then \[ d(\taskst{g}{\mkenv{\sigma}{n}}) = d(\taskst{g'}{\mkenv{\sigma'}{n'}}) \] and \[ t(\taskst{g}{\mkenv{\sigma}{n}}) = t(\taskst{g}{\mkenv{\sigma}{n}}) \] 
-
-\end{lemma}
+\end{replemma}
 
 So the following definition will be usefull to construct a leaf-state representative for an arbitrary goal.
 
@@ -174,7 +172,7 @@ One last auxiliary definition that we need.
 
 The following main theorem provides the principal recursive approximations, extracted from the scheme for a given goal.
  
-\begin{theorem}
+\begin{reptheorem}{extracted_approximations}
 For $g$ in $D_{nf}$ 
 
 If \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\mathfrak{S}}{V}}  \]
@@ -183,44 +181,19 @@ If \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\m
   \[ t(\taskst{g\rho}{\einit}) = \mathcal{T}(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta(\mathcal{D}(\schemewithvset{\mathfrak{S}}{V})(\rho)
   - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}}{V})(\rho)} d(\taskst{g_i}{e_i}) \]
   as functions on $\rho \colon V \to T_{\emptyset}$.
-\end{theorem}
+\end{reptheorem}
 
 It is based on the to following facts as well as lemma~\ref{lem:sum_estimation} and soundness and completeness of operational semantics w.r.t. the denotational one.
 
-\begin{lemma}
+\begin{replemma}{lem:symbolic_unification_soundness}
 For two terms $t_1, \,t_2$, $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$,
 
 if \[ mgu(t_1, t_2) = \delta \] and \[ U = Upd(V, \delta) \]
 
 then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in Cons(\delta, U), \rho'(y) = t \rho'$.
 
-In such case $ \rho \circ mgu(t_1 \rho, t_2 \rho) = \delta \rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu(t_1 \rho, t_2 \rho) = \delta \rho' \pi$).
-\end{lemma}
- 
- \begin{lemma}
-\label{lem:conjunction_metrics_calc}
-
-Let $s = ((s_0 \otimes g_1) \dots \otimes g_k)$ and let $A_i$ be a set of all answers that are passed to $g_i$, i.e.
-
-\[
-\begin{array}{rcl}
-A_1 &=& \tra{s_0} \\
-A_{i + 1} & = & \bigcup\limits_{a \in A_i} \tra{\taskst{g_i}{a}} 
-\end{array}
-\]
-
-Then
-
-\[
-\begin{array}{rcrl}
-d\,(s) &=& & d\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) \\
-\\
-t\,(s) &=& & t\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) + \\
-& & + \Theta( & d\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) - \maxd\limits_{a \in A_k}  d\,(\taskst{g_k}{a})) \\
-\end{array}
-\]
-
-\end{lemma}
+In such case the $\rho'$ is unique and $\rho \circ mgu(t_1 \rho, t_2 \rho) = \delta \rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu(t_1 \rho, t_2 \rho) = \delta \rho' \pi$).
+\end{replemma}
  
  
  
