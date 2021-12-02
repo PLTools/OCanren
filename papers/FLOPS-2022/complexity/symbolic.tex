@@ -3,7 +3,7 @@
 
 \colorbox{yellow!20}{\textbf{TO INTRODUCTION}}
 \begin{lstlisting}[basicstyle=\small]
-   append$^o_{naive}$ = fun a b ab ->
+   append$^o$ = fun a b ab ->
      ((a === Nil) /\ (ab === b)) \/
      (fresh (h t tb)
         (a === Cons(h, t)) /\
@@ -12,10 +12,10 @@
      )
 \end{lstlisting}
 
-\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 1}: Overview of the analysis algorithms.
+\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 1}: Overview of the symbolic analysis approach.
 Analyzing relational calls, symbolic variables as subset of logic variables, symbolic schemes, extracting approximations for d-measure and t-measure, solving approximations in metatheory.}}
 
-For clarity we will provide demonstration of the complexity analysis for a specific example -- \lstinline|append$^o_{naive}$| relation the introduction  -- throughout the section.
+For clarity we will provide demonstration of the complexity analysis for a specific example -- \lstinline|append$^o$| relation the introduction  -- throughout the section.
 
 \colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 2}: Symbolic variables and symbolic analysis problem statement.}}
 
@@ -41,7 +41,7 @@ Extension for valuations:
 \[ \forall x \in V \,:\, \rho^\prime\,(x) = \rho\,(x) \]
 \end{definition}
 
-Let's say we want to analyze what happen if we substitute first argument of \lstinline|length$^o_{last}$| with ground variable and left the second argument free.
+Let's say we want to analyze what happen if we substitute first two argument of \lstinline|append$^o$| with ground variables and left the last argument free.
 
 \colorbox{blue!20}{\parbox{\textwidth}{Stability wrt free variables, counter and substitution}}
 
@@ -185,14 +185,14 @@ The scheme for our example is shown in \figureword~\ref{fig:example_scheme}.
 
 \begin{figure}[t]
 \begin{center}
-\begin{tikzpicture}[sibling distance=10em, edge from parent/.style={draw,-latex}]
+\begin{tikzpicture}[level distance=30pt, sibling distance=10em, edge from parent/.style={draw,-latex}]
    \coordinate   
-      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Nil}}$}
-        child { node[rectangle, draw] {$\unigoal{ab^?}{\overline{b}}$}
+      child { node {$\unigoal{\overline{a}}{\texttt{Nil}}$}
+        child { node {$\unigoal{ab^?}{\overline{b}}$}
                   edge from parent node[right]{\tiny{$\overline{a} = \texttt{Nil}$}} } }
-      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Cons($h^?$, $t^?$)}}$} 
-      	child { node[rectangle, draw] {$\unigoal{ab^?}{\texttt{Cons($\overline{h}$, $tb^?$)}}$}
-      	   child { node[rectangle, draw] {\texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb^?$}} }
+      child { node {$\unigoal{\overline{a}}{\texttt{Cons($h^?$, $t^?$)}}$} 
+      	child { node {$\unigoal{ab^?}{\texttt{Cons($\overline{h}$, $tb^?$)}}$}
+      	   child { node {\texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb^?$}} }
       	   edge from parent node[right]{\tiny{$\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}$}}  } } ;
 \end{tikzpicture}
 \end{center}
