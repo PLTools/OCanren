@@ -3,6 +3,7 @@
 % Version 2.20 of 2017/10/04
 %
 \documentclass[runningheadsm, envcountsect]{llncs}
+
 %
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
@@ -10,10 +11,6 @@
 % If you use the hyperref package, please uncomment the following line
 % to display URLs in blue roman font according to Springer's eBook style:
 % \renewcommand\UrlFont{\color{blue}\rmfamily}
-
-
-
-
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -32,6 +29,7 @@
 \usepackage{graphics}
 \usepackage[cmtip,all]{xy}
 \usepackage{units}
+\usepackage{placeins}
 
 %\xymatrix@C-=0.5cm
 
@@ -70,6 +68,7 @@
 \newcommand{\schemetrans}[6]{\withenv{#2,\,#3,\,#4,\,#5}{#1} \longsquiggly #6}
 \newcommand{\schemewithvset}[2]{{#1}^{#2}}
 
+\begin{comment}
 \newcommand{\schemenode}[1]{
 \begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
   \node[rectangle,draw]{#1};
@@ -91,6 +90,30 @@
    \coordinate   
       child {node[circle,draw]{#1}}
       child {node[circle,draw]{#2}} ;
+\end{tikzpicture}}
+\end{comment}
+
+\newcommand{\schemenode}[1]{
+\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
+  \node{#1};
+\end{tikzpicture}
+ }
+
+\newcommand{\schemesarrow}[3]{
+\begin{tikzpicture}[level distance=30pt,sibling distance=3cm,edge from parent/.style={draw,-latex}]
+  \node{#1}child {node{#3}edge from parent node[right]{\tiny{#2}}};
+\end{tikzpicture}}
+
+\newcommand{\schemedarrow}[3]{
+\begin{tikzpicture}[level distance=30pt,sibling distance=3cm,edge from parent/.style={draw,-latex}]
+  \node{#1}child {node{#3}edge from parent node[right]{\tiny{#2}}};
+\end{tikzpicture}}
+
+\newcommand{\schemefork}[2]{
+  \begin{tikzpicture}[level distance=20pt,edge from parent/.style={draw,-latex}]
+   \coordinate   
+      child {node{#1}}
+      child {node{#2}} ;
 \end{tikzpicture}}
 
 \newcommand{\upd}[2]{\mbox{\textbf{upd}}\,(#1,\, #2)}
@@ -190,10 +213,17 @@ language=minikanren
   \SavedLstInline
 }
 
-
 %%
 %% end of the preamble, start of the body of the document source.
 \begin{document}
+
+\setlength{\abovecaptionskip}{0pt plus 3pt minus 2pt}
+\setlength{\belowcaptionskip}{-10pt plus 3pt minus 2pt}
+
+\abovedisplayskip0mm
+\belowdisplayskip0mm
+\abovedisplayshortskip0mm
+\belowdisplayshortskip0mm
 
 %%
 %% The "title" command has an optional parameter,

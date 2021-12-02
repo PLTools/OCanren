@@ -25,12 +25,18 @@ For building schemes we need the two following notions.
 
 \[ \constr{\delta}{U} = \{ x = \delta\,(x) \mid x \in U \cap \mathcal{D}om\,(\delta) \} \]
 
-The rules for building a scheme have the following form. \[ \schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}} \]
+The rules for building schemes have the following form:
 
-Here are these rules:
+\[
+\schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}}
+\]
+
+% TODO: an explanation is required here or elsewhere
+where $\Gamma$ is a list of goals, $\sigma$ and $n$ are current substitution and free variable counter respectively, $V$~--- a set of ground variables, $g$ --- current 
+goal. Scheme formation rules are shown in the Fig.~\ref{fig:scheme_formation}.
 
 \begin{figure}[t]  
-\renewcommand{\arraystretch}{3}
+%\renewcommand{\arraystretch}{2}
   \[
 \begin{array}{cr}
   \onepremrule
@@ -47,7 +53,6 @@ Here are these rules:
 		{  \schemetrans{g_2}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S_2}}{V}}  }
 		{  \schemetrans{\disjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{ \schemefork{$\schemewithvset{\mathfrak{S_1}}{V}$}{$\schemewithvset{\mathfrak{S_2}}{V}$}} }  } & \ruleno{Disj$_\mathfrak S$}\\ 
 		
-
  %\multicolumn{3}{c}{
   \schemetrans{\unigoal{t_1}{t_2}}{\epsilon}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\unigoal{t_1 \sigma}{t_2 \sigma}$}}}& \ruleno{UnifyLeaf$_\mathfrak S$}\\
 
@@ -78,7 +83,9 @@ Here are these rules:
 \end{figure}
 
               
-It is important to note that both our time measures are 'stable' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
+It is important to note that both our time measures are ``stable'' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
+
+\FloatBarrier
 
 \begin{replemma}{lem:measures_changing_env}
 
@@ -105,6 +112,7 @@ It is important to note that both our time measures are 'stable' w.r.t. renaming
 So the following definition will be useful to construct a leaf-state representative for an arbitrary goal.
 
 \begin{definition} Let $g$ be a goal. An initial state for $g$ is
+
 
   \[
    init\,(g)=\taskst{g}{(\varepsilon, \ninit\,(g))}
@@ -229,7 +237,7 @@ Let $g \in D_{nf}$ and all sub-calls encountered during its evaluation are groun
 
 \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\mathfrak{S}}{V}}  \]
 
-Then
+\noindent Then
 \[
 \begin{array}{rcl}
     d\,(init\,(g\,\rho)) &=& \mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(1) \\
