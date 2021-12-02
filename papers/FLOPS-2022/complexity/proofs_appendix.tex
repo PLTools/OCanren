@@ -1,0 +1,337 @@
+\section{Proofs}
+\label{sec:proofs_appendix}
+
+\begin{lemma}
+\label{lem:theta_constant}
+Let $C_f$ and $C_g$ be real positive constants. If
+\[ h(x) = f(x) + C_f + \Theta(g(x) + C_g) \]
+and value $g(x)$ is always positive then
+\[ h(x) = f(x) + \Theta(g(x)) \]
+\end{lemma}
+\begin{proof}
+\begin{enumerate}
+\item For some real  postive $C_1$: $h(x) \ge f(x) + C_f + C_1 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + C_1 \cdot g(x)$
+\item For some real  postive $C_2$: $h(x) \le f(x) + C_f + C_2 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + (C_f + C_2 + C_2 \cdot C_g) \cdot g(x)$
+\end{enumerate}
+\end{proof}
+
+\begin{lemma}
+\label{lem:theta_sum}
+If
+\[ h_1(x) = f_1(x) + \Theta(g_1(x)) \]
+and
+\[ h_2(x) = f_2(x) + \Theta(g_2(x)) \]
+then
+\[ (h_1(x) + h_2(x)) = (f_1(x) + f_2(x)) + \Theta(g_1(x) + g_2(x)) \]
+\end{lemma}
+\begin{proof}
+Both lower and apper constants are the sums of two corresponding constants for the given approximations.
+\end{proof}
+
+\begin{lemma}
+\label{lem:theta_absorb}
+Let $g_1(x) \ge g_2(x) > 0$ for all $x$.
+If
+\[ h(x) = f(x) + \Theta(g_1(x) + g_2(x)) \]
+then
+\[ h(x) = f(x) + \Theta(g_1(x)) \]
+\end{lemma}
+\begin{proof}
+\begin{enumerate}
+\item For some real  postive $C_1$: \[ h(x) \ge f(x) + C_1 \cdot (g_1(x) + g_2(x)) \ge f(x) + C_1 \cdot g_1(x) \]
+\item For some real  postive $C_2$: \[ h(x) \le f(x) + C_2 \cdot (g_1(x) + g_2(x)) \le f(x) + 2 C_2 \cdot g_1(x) \]
+\end{enumerate}
+\end{proof}
+
+
+\repeatlemma{lem:sum_measure_equations}
+
+\repeatlemma{lem:times_measure_equations}
+
+\repeatlemma{lem:times_costs_approximation}
+
+We will need the \lemmaword~\ref{lem:measures_changing_env} in the following generalized form.
+
+\begin{lemma}
+\label{lem:gen_measures_changing_env}
+Let $\pi \colon \{ \alpha_1, \dots, \alpha_N \} \to \{ \alpha_1, \dots, \alpha_{N'} \}$ be an injective function on variables and let $R_{\pi}$ be the following inductively defined relation on states:
+\[ \begin{array}{lcl}
+\Diamond R_{\pi} \Diamond & & \\
+\taskst{g}{\mkenv{\sigma}{n}} R_{\pi} \taskst{g'}{\mkenv{\sigma'}{n'}} & \textit{iff} & g \sigma \pi = g' \sigma' \\
+(s_1 \oplus s_2) R_{\pi} (s'_1 \oplus s'_2) & \textit{iff} & s_1 R_{\pi} s'_1 \land s_2 R_{\pi} s'_2  \\
+(s \otimes g) R_{\pi} (s' \otimes g') & \textit{iff} & s R_{\pi} s' \land \\
+\multicolumn{3}{l}{\textit{\quad for all substates $\taskst{g_i}{\mkenv{\sigma_i}{n_i}}$ in $s$}}\\
+\multicolumn{3}{l}{\textit{\quad and corresponding substates $\taskst{g'_i}{\mkenv{\sigma'_i}{n'_i}}$ in $s'$,}} \\
+\multicolumn{3}{l}{\quad g \sigma_i \pi = g' \sigma'_i} \\
+\end{array} \]
+
+Then for any two well-formed states $s$ and $s'$, such that all counters occuring in $s$ are less or equal than some $n$ and all counters occuring in $s'$ are less or equal than some $n'$ and $s R_{\pi} s'$ for some injective function $\pi \colon \{ \alpha_1, \dots, \alpha_n \} \to \{ \alpha_1, \dots, \alpha_n' \}$,
+
+\[ d(s) = d(s') \]
+and \[ t(s) = t(s') \]
+and there is a bijection $b$ between sets of answers $\tra{s}$ and $\tra{s'}$ such that for any answer $a = \mkenv{\sigma_r}{n_r} \in \tra{s}$ there is a corresponding answer $b(a) = \mkenv{\sigma'_r}{n'_r} \in \tra{s'}$, s.t. $\sigma_r = \sigma \delta$ for some $\sigma$ that is a subtitution in some base substate of $s$ and $\sigma'_r = \sigma' \delta'$ for $\sigma'$ that is the substitutution of the corresponding base substate of $s'$ and there is an injective function $\pi_r \colon \{ \alpha_1, \dots, \alpha_{n_r} \} \to \{ \alpha_1, \dots, \alpha_{n'_r} \}$ such that $\pi_r \succ \pi$ and $\pi \delta' = \delta \pi_r$.
+\end{lemma}
+\begin{proof}
+We prove it by induciton on length of the trace for $s$, simultaniously we prove that the next states in the traces for $s$ and $s'$ also satisfy the relation $R_{\pi_r}$ for some $\pi_r$ (s.t. $\pi_r \succ \pi$). Equalities $d(s) = d(s')$ and $t(s) = t(s')$ are obvious in this induction, because states in the relation $R_{\pi}$ always have the same form (and therefore the same left height). To prove the fact about bijection between answers and the fact that next states are also in the relation we conduct an internal induction on the relation of operational semantics step. When we move trough the introduction of the fresh variable we extend the injective fuction changing the variable by a binding between new fresh variables. In the base case of unification when we extend the substitutions by the most general unifiers, we have the fact about the bijection between the sets of answers (singleton in this case) for the same injective renaming function by definition of the unification algorithm (we may change the names of variables before the unification the result will be the same as if we do it after the unification):
+
+\[ \pi \, mgu(t_1 \sigma \pi, t_2 \sigma \pi) = mgu(t_1 \sigma, t_2 \sigma) \, \pi  \]
+
+For the case when we incorporate the answer obtained at this step in the next state (in rules $\ruleno{ConjStopAns} $ and $\ruleno{ConjStepAns}$) we use the statement about bijection between the sets of answers from the inductive hypothesis to prove that the next states satisfy the relation:
+
+\[ g \sigma \delta \pi_r = g \sigma \pi \delta' = g' \sigma' \delta'  \] 
+
+All other cases naturally follow from inductive hypotheses.
+
+\end{proof}
+
+\repeatlemma{lem:measures_changing_env}
+\begin{proof}
+It is a special case of \lemmaword~\ref{lem:gen_measures_changing_env}.
+\end{proof}
+
+\repeatlemma{lem:symbolic_unification_soundness}
+\begin{proof} $ $
+
+From the corectness of the Robinson's unification algoithm we know that a substitution unifies the pair of terms $(t_1, t_2)$ iff it unifies all pairs of terms from the set $Cons(\delta, U) = \{ (x, \delta(x)) \mid x \in \Dom(\delta) \}$ (because we obtain $\delta$ from the pair $(t_1, t_2)$ by Robinson's algorithm that maintains equivalent unification problem).
+
+First, let's notice that similarly a substitution unifies the pair of terms $(t_1 \rho, t_2 \rho)$ iff it unifies all pairs of terms  $T = \{ (\rho(x), \delta(x) \rho) \mid x \in \Dom(\delta) \}$: $\nu$ is such substitution iff $\rho \nu$ unifies the terms $(t_1, t_2)$. And then also any most general unifier for $(t_1 \rho, t_2 \rho)$ is the most general unifier for $T$ and vice versa (by definition).
+
+So now we need to show that $T$ is unifiable iff the unique $\rho'$ from the statement of the lemma exists (and that the most general unifier for $T$ can be defined with $\rho'$ and $\delta$). In both directions, we will use induction on construction of the set of variables $U$, so lets consider the following sequence $U_i$: $U_0 = V$ and $U_{i+1} = \{ U_i \cup \bigcup\limits_{x \in U_{i}} FV(\delta(x)) \}$ (so $U$ is $U_l$ such that $U_l = U_{l + 1}$).
+
+\begin{enumerate}
+\item Suppose there is a substitution $\tau$ that unifies all the terms in $T$. Let's show that there is a unique $\rho'$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in Cons(\delta, U), \\ \rho'(y) = t \rho'$.
+
+We know that $\rho(x) \tau = \delta(x) \rho \tau$ for all $x \in \Dom(\delta)$. We need the same condition for $\rho'$ for all $x \in U \cap \Dom(\delta)$. We can now show by induction on $i$ that for all variables $x \in U_i$ ($i \ge 1$) the value $\tau(x)$ is ground and uniquely defined for a given $\rho$, so it is suitable values for $\rho'$ on variables from $U \setminus V$ and the only ones possible. First, look at a pair $(\rho(x), \delta(x) \rho)$ in $T$ for some $x \in V$. We know that $\rho(x) \tau = \delta(x) \rho \tau$ and the term on the lhs is ground and uniquely defined by $\rho$. So the values of $\tau$ for all free variables of $\delta(x) \rho$ are ground and uniquely defined by $\rho$ too. If we do it for all such pairs in $T$ we will get the statement for $U_1$, then we can repeat this reasoning by induction for all $U_i$.
+
+\item Now suppose there is $\rho'$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in Cons(\delta, U), \rho'(y) = t \rho'$. Let's construct the most general unifier for $T$ using the Robinson's algorithm.
+
+Let's split $T$ on $T_U = \{ (\rho(x), \delta(x) \rho) \mid x \in U \cap \Dom(\delta) \}$ and $T_{-U} = \{ (\rho(x), \delta(x) \rho) \mid x \in  \Dom(\delta) \setminus U \}$. We will be applying rules from the Robinson's algorithm to $T$ for pairs of terms from $T_U$.
+
+First, let's look at some pair $(\rho(x), \delta(x) \rho)$ for $x \in V \cap \Dom(\delta)$. By definition of $\rho'$ we have $\rho(x) \rho' = \delta(x) \rho \rho'$. The first term in the pair is ground, the second one may contain free variables (then they are variables from $U_1$). If the second term is ground too, they are equal and we can delete this pair. Otherwise, using decomposition rule we decompose this pair to pairs of terms with second term being variable. After this, we will have pairs $(\rho'(y), y)$ for all $y \in FV(\delta(x) \rho)$. After we do it with all such pairs for all variables from $V \cap \Dom(\delta)$, this pairs will turn into swapped bindings $(\rho'(y), y)$ for all $y \in U_1$ (mybe with repetitions). We then can discard duplicates, swap the elements and apply this bindings in the rest of $T$. Now all the pairs $(\rho(x), \delta(x) \rho)$ for $x \in (U_1 \setminus V) \cap \Dom(\delta)$ after substitution have ground term as the left term and we can repeat the transformation for all these pairs. We can repeat this process by induction on $i$ for $x \in U_i$, it will stop when $U_i$ becomes equal to $U$.
+
+After this application of rules all pairs from $T_U$ are decomposed and it is turned into the substitution (as a set of bindings) $\rho'\restriction_{U \setminus V}$. On the other hand the pairs from $T_{-U}$ we did not decompose, just applied substitutions to them so every pair from this part still have some variable $z$ as the first term (because $z \not\in U$) and term $\delta(z) \rho (\rho'\restriction_{U \setminus V})$ as the second them. So we can see that we turned the set of terms $T$ into the substitution ${(\delta\restriction_{\Dom(\delta) \setminus U} \rho')\restriction_{\Dom(\delta) \setminus V}}$ which equals ${(\delta \rho')\restriction_{\Dom(\delta) \setminus V}}$ because $\rho'$ unifies bindings in $\delta$, so this substitution is the most general unifier for $T$ and therefore for terms $t_1 \rho$ and $t_2 \rho$. Then this substitution is alpha-equivalent to $mgu(t_1 \rho, t_2 \rho)$ (because most general unifiers are unique up to alpha-equivalence). So if we take $\rho mgu(t_1 \rho, t_2 \rho)$, we will get substitution alpha-equivalent to the substitution ${\rho ((\delta \rho')\restriction_{\Dom(\delta) \setminus V})}$ which equals substitution $\delta \rho'$ (obvious separately for variables from $V$ and outside $V$).
+ 
+
+\end{enumerate}
+
+
+\end{proof}
+
+\begin{lemma}
+\label{lem:times_gen_measure_approximations}
+
+Let $s = ((s_0 \otimes g_1) \dots \otimes g_k)$ and let $A_i$ be a set of all answers that are passed to $g_i$, i.e.
+
+\[
+\begin{array}{rcl}
+A_1 &=& \tra{s_0} \\
+A_{i + 1} & = & \bigcup\limits_{a \in A_i} \tra{\taskst{g_i}{a}} 
+\end{array}
+\]
+
+Then
+
+\[
+\begin{array}{rcrl}
+d\,(s) &=& & d\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) \\
+\\
+t\,(s) &=& & t\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) + \\
+& & + \Theta( & d\,(s_0) + \sum\limits_{1 \le i \le k} \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) - \maxd\limits_{a \in A_k}  d\,(\taskst{g_k}{a})) \\
+\end{array}
+\]
+
+\end{lemma}
+
+\repeattheorem{extracted_approximations}
+\begin{proof}
+$ $\newline
+\begin{enumerate}
+\item Suppose we have proven this statement for $g \in C_{nf}$. Let's show it holds for $g \in D_{nf}$.
+	\begin{enumerate}
+	\item First, we prove it for  $g \in F_{nf}$ by induction on goal.
+	After unfolding each fresh constructor we get a goal with the same scheme.	
+	Also moving through each fresh constriuctor increases the values of $d(\cdot)$ and $t(\cdot)$ by $1$ by \lemmaword~\ref{lem:task_measure_equations}, this additional constant can be deleted by \lemmaword~\ref{lem:theta_constant}.
+	
+	\item Now we prove it for $g \in D_{nf}$ by induction on goal. Let $g = \disjgoal{g_1}{g_2}$. Let $\schemewithvset{\mathfrak{S}_1}{V}$ be $\schemewithvset{\mathfrak{S}_2}{V}$ be children of the root in $\schemewithvset{\mathfrak{S}}{V}$.
+		
+	By \lemmaword~\ref{lem:task_measure_equations} and \lemmaword~\ref{lem:sum_measure_equations} and \lemmaword~\ref{lem:measures_changing_env} we have the following equations:
+
+    \[ \begin{array}{lcl}
+	d(\taskst{\disjgoal{g_1}{g_2}}{e_{init}}) &=& d(\taskst{g_1}{e_{init}}) + d(\taskst{g_2}{e_{init}}) + 1 \\
+	\\
+	t(\taskst{\disjgoal{g_1}{g_2}}{e_{init}}) &=& t(\taskst{g_1}{e_{init}}) + t(\taskst{g_2}{e_{init}}) \\
+	&& + \min(2 d(\taskst{g_1}{e_{init}}) - 1, 2 d(\taskst{g_2}{e_{init}})) + 1
+	\end{array} \]
+	
+	After rewriting the right part with inductive hypotheses (combining them using \lemmaword~\ref{lem:theta_constant} and \lemmaword~\ref{lem:theta_sum}) we get the following approximations.
+	
+	 \[ \begin{array}{lcl}
+	d(\taskst{\disjgoal{g_1 \rho}{g_2 \rho}}{e_{init}}) &=& \mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) + \mathcal{D}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) + \Theta(1) \\
+	\\
+	t(\taskst{\disjgoal{g_1 \rho}{g_2 \rho}}{e_{init}}) &=& \mathcal{T}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) + \mathcal{T}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) + \\
+	& & \Theta(\min(\mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho), \mathcal{D}(\schemewithvset{\mathfrak{S}_2}{V})(\rho)) + \\
+	& & + (\mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_1}{V})(\rho)} d(\taskst{g_i}{e_i})) + \\
+	& & + (\mathcal{D}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_2}{V})(\rho)} d(\taskst{g_i}{e_i})) + 1) \\
+	\end{array} \]
+	
+	For $d(\cdot)$ it is exactly what we need. 
+   
+   	W.l.o.g. let's suppose the minimum in the approximation for $t(\cdot)$ is achieved at the first argument.
+   
+   	Let's consider two cases: which of $\maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_l}{V})(\rho)} d(\taskst{g_i}{e_i})$ is the maximal leaf for the whole scheme.
+   
+   		\begin{enumerate}
+   		\item Suppose $\maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_1}{V})(\rho)} d(\taskst{g_i}{e_i}) \le \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_2}{V})(\rho)} d(\taskst{g_i}{e_i})$.
+   		
+   		Then we can eat absorb the summand $(\mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_1}{V})(\rho)} d(\taskst{g_i}{e_i}))$ under $\Theta$ by the bigger summand $\mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho)$ (which came from $\min$) by \lemmaword~\ref{lem:theta_absorb}. We get the following approximation which is exactly what we need.
+   		
+   		\[ \begin{array}{lcl}
+		t(\taskst{\disjgoal{g_1 \rho}{g_2 \rho}}{e_{init}}) &=& \mathcal{T}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) + \mathcal{T}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) + \\
+		& & \Theta(\mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) + \\
+		& & + (\mathcal{D}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_2}{V})(\rho)} d(\taskst{g_i}{e_i})) + 1) \\
+		\end{array} \]
+		
+		\item Suppose $\maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_1}{V})(\rho)} d(\taskst{g_i}{e_i}) > \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_2}{V})(\rho)} d(\taskst{g_i}{e_i})$.
+		
+		Then we establish the lower and the upper bounds separately.
+		
+			\begin{enumerate}
+   			\item For the lower bound we again first absorb the summand $(\mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_1}{V})(\rho)} d(\taskst{g_i}{e_i}))$ by \lemmaword~\ref{lem:theta_absorb} to get the following.
+
+			\[ \begin{array}{lcl}
+			t(\taskst{\disjgoal{g_1 \rho}{g_2 \rho}}{e_{init}}) &\ge& \mathcal{T}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) + \mathcal{T}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) + \\
+			& & C_1 \cdot (\mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho) + \\
+			& & + (\mathcal{D}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_2}{V})(\rho)} d(\taskst{g_i}{e_i})) + 1) \\
+			\end{array} \]		
+		
+			And then replace $(- \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_2}{V})(\rho)} d(\taskst{g_i}{e_i}))$ \\ by $(- \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_1}{V})(\rho)} d(\taskst{g_i}{e_i}))$ which is smaller by assumption.
+		
+			\item For the upper bound we first replace $\mathcal{D}(\schemewithvset{\mathfrak{S}_1}{V})(\rho)$ that came form $\min$ by $\mathcal{D}(\schemewithvset{\mathfrak{S}_2}{V})(\rho)$ which is bigger by assumption and then absorb the summand $(\mathcal{D}(\schemewithvset{\mathfrak{S}_2}{V})(\rho) - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}_2}{V})(\rho)} d(\taskst{g_i}{e_i}))$ by it.
+			
+			\end{enumerate}		
+   		\end{enumerate}
+	\end{enumerate}
+
+\item Now let's prove the statement of the theorem for $g \in C_{nf}$.
+
+Let $g = { \conjgoal{(\conjgoal{(\conjgoal{g_1}{g_2})}{\dots})}{g_k} }$ with $g_i \in B_{nf}$.
+
+First, notice that the state $\taskst{g}{e_{init}}$ is transformed into the state \\ ${ ((\taskst{g_1}{\mkenv{\varepsilon}{n_{init}(g)}} \otimes g_2) \otimes \dots) \otimes g_k }$ after $(k - 1)$ steps of turning conjunctions into $\otimes$-states. All states during this steps except the resulting one add $(k - 1)$ to the value $d(\taskst{g}{e_{init}})$ and $\frac{(k - 1)(k - 2)}{2}$ to the value $t(\taskst{g}{e_{init}})$, we can hide this constants under $\Theta$ by \lemmaword~\ref{lem:theta_absorb}. \lemmaword~\ref{lem:times_gen_measure_approximations} gives us the approximations of the measures for the state ${ ((\taskst{g_1}{\mkenv{\varepsilon}{n_{init}(g)}} \otimes g_2) \otimes \dots) \otimes g_k }$. To put it in a convenient form we will use the following definitions.
+
+\[ \begin{array}{lcl}
+D(s, \epsilon) & = & d(s) \\
+D(s, g : \Gamma) & = & d(s) + \sum\limits_{a \in \tra{s}} D(\taskst{g}{a}, \Gamma) \\
+\\
+T(s, \epsilon) & = & t(s) \\
+T(s, g : \Gamma) & = & t(s) + \sum\limits_{a \in \tra{s}} T(\taskst{g}{a}, \Gamma) \\
+\\
+L(s, \epsilon) & = & \{ s \} \\
+L(s, g : \Gamma) & = & \bigcup\limits_{a \in \tra{s}} T(\taskst{g}{a}, \Gamma) \\
+\end{array}
+\]
+
+Now,  \lemmaword~\ref{lem:times_gen_measure_approximations} gives us the following approximations if we denote ${ g_2 \rho : \dots g_k \rho}$ by $\Gamma$.
+
+\[ \begin{array}{lcl}
+
+d(\taskst{g \rho}{e_{init}}) &=& D(\taskst{g_1 \rho}{\mkenv{\varepsilon}{n_{init}(g)}}, \Gamma) + \Theta(1) \\
+\\
+t(\taskst{g \rho}{e_{init}}) &=& T(\taskst{g_1 \rho}{\mkenv{\varepsilon}{n_{init}(g)}}, \Gamma) + \\ 
+& & \Theta(D(\taskst{g_1 \rho}{\mkenv{\varepsilon}{n_{init}(g)}}, \Gamma) - \maxd\limits_{s \in L(\taskst{g_1 \rho}{\mkenv{\varepsilon}{n_{init}(g)}}, \Gamma)} d(s) + 1) \\
+\end{array} \]
+
+It's the approximation in the form required in the statement of the theorem. What remains to be proven is the following equalities:
+
+\[ \begin{array}{lcl}
+D(\taskst{g_1 \rho}{\mkenv{\varepsilon}{n_{init}(g)}}, \Gamma) &=& \mathcal{D}(\schemewithvset{\mathfrak{S}}{V})(\rho) \\
+T(\taskst{g_1 \rho}{\mkenv{\varepsilon}{n_{init}(g)}}, \Gamma) &=& \mathcal{T}(\schemewithvset{\mathfrak{S}}{V})(\rho) \\
+\{ d(s) \mid s \in L(\taskst{g_1 \rho}{\mkenv{\varepsilon}{n_{init}(g)}}, \Gamma)\} &=& \{ d(s) \mid s \in \mathcal{L}(\schemewithvset{\mathfrak{S}}{V})(\rho) \} \\
+\end{array} \]
+	
+We can prove it by induction, but first we need to generalize the statement. Let $g$ be a goal from $B_{nf}$ and $\Gamma = { g_1 : \dots : g_m : \epsilon }$~--- a sequence of goals from $B_{nf}$, $\sigma$ be a substitution, $n$ be a fresh variable counter such that the state ${ (((\taskst{g}{\mkenv{\sigma}{n}} \otimes g_1) \otimes \dots) \otimes g_m) }$ is well-formed, and $V$ be a subset of variables $\{ \alpha_1, \dots, \alpha_n \}$. Then if \[ \schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}} \] then the following equalities hold for any $\rho \colon V \to \mathcal{T}_{\emptyset}$.
+
+\[ \begin{array}{lcl}
+D(\taskst{g}{\mkenv{\sigma \rho}{n}}, \Gamma) &=& \mathcal{D}(\schemewithvset{\mathfrak{S}}{V})(\rho) \\
+T(\taskst{g}{\mkenv{\sigma \rho}{n}}, \Gamma) &=& \mathcal{T}(\schemewithvset{\mathfrak{S}}{V})(\rho) \\
+\{ d(s) \mid s \in L(\taskst{g}{\mkenv{\sigma \rho}{n}}, \Gamma)\} &=& \{ d(s) \mid s \in \mathcal{L}(\schemewithvset{\mathfrak{S}}{V})(\rho) \} \\
+\end{array} \]
+
+(to get from this generalization to the equations above we should take $\sigma = \varepsilon$ and apply \lemmaword~\ref{lem:measures_changing_env} to move $\rho$ from environment to goal).
+
+We prove the generalized statement by induction on $\Gamma$ and considering cases when $g$ is a unification or a relational call. The reasoning is exactly the same for all three notions $D(\cdot)$, $T(\cdot)$ and $L(\cdot)$, so we demostrate only the proof of the equalitity between $D(\cdot)$ and $\mathcal{D}(\cdot)(\cdot)$.
+
+	\begin{enumerate}
+
+	\item Let $\Gamma = \epsilon$ and $g = (\unigoal{t_1}{t_2})$.
+	
+	In this case we have \[ d(\taskst{\unigoal{t_1}{t_2}}{\mkenv{\sigma \rho}{n}}) = d(\taskst{\unigoal{t_1 \sigma \rho}{t_2 \sigma \rho}}{e_{init}}) = 1 \]
+	
+	\item Let $\Gamma = \epsilon$ and $g = (\invokegoal{R^k}{t_1}{t_k})$.
+	
+	In this case we have \[ d(\taskst{\invokegoal{R^k}{t_1}{t_k}}{\mkenv{\sigma \rho}{n}}) = d(\taskst{\invokegoal{R^k}{t_1 \sigma \rho}{t_k \sigma \rho}}{e_{init}}) \]
+	
+	Which is true by \lemmaword~\ref{lem:measures_changing_env}.
+	
+	\item Let $\Gamma = g' : \Gamma'$ and $g = (\unigoal{t_1}{t_2})$.
+	
+	\begin{enumerate}
+	
+	    \item If terms $t_1 \sigma$ and $t_2 \sigma$ are non-unifiable, we have \[ d(\taskst{\unigoal{t_1}{t_2}}{\mkenv{\sigma \rho}{n}}) + \sum\limits_{mgu(t_1 \sigma \rho, t_2 \sigma \rho) = \delta'} D(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') = 1 \]
+	    
+	    And it is obviously true, because the sum is empty since the more specific terms there are non-unifiable also.
+	
+	    \item If they are unifiable, we have \[ d(\taskst{\unigoal{t_1}{t_2}}{\mkenv{\sigma \rho}{n}}) + \sum\limits_{mgu(t_1 \sigma \rho, t_2 \sigma \rho) = \delta'} D(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') = \]
+	
+	\[ = 1 +
+      \sum\limits_{\substack{ \rho' \colon U \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      \forall (y, t) \in Cs, \rho'(y) = t \rho'  }}
+           \mathcal{D}(\schemewithvset{\mathfrak{S}}{U})(\rho')  \]
+           
+    		where
+    
+    \[ \begin{array}{lcl}
+    \delta & = & mgu(t_1 \sigma, t_2 \sigma) \\
+    U & = & \upd{V}{\delta} \\
+    Cs & = & \constr{\delta}{U} \\
+	\end{array} \]
+	
+			The left addend are obiously equal. The rest is basically covered by \lemmaword~\ref{lem:symbolic_unification_soundness}. By this lemma there exists a most general unifier $\delta'$ iff the required $\rho'$ exists. So the both sums are non-empty under the same conditions and have at most one summand (since $\rho'$ is unique), and if it is the case this summands are equal by \lemmaword~\ref{lem:symbolic_unification_soundness}, the inductive hypothesis and the fact that the value $D$ is stable w.r.t. renaming of variables (it is a genentalization of \lemmaword~\ref{lem:measures_changing_env} that follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}):
+	
+\[ \begin{array}{l}
+D(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') \stackrel{\text{\lemmaword~\ref{lem:symbolic_unification_soundness}}}{=} D(\taskst{g'}{\mkenv{\sigma \delta \rho' \tau}{n}}, \Gamma') = \\
+= D(\taskst{g'}{\mkenv{\sigma \delta \rho'}{n}}, \Gamma') \stackrel{\text{ind.hyp.}}{=} \mathcal{D}(\schemewithvset{\mathfrak{S}}{U})(\rho')
+\end{array} \] 
+
+	\end{enumerate}
+	
+	\item Let $\Gamma = g' : \Gamma'$ and $g = (\invokegoal{R^k}{t_1}{t_k})$.
+	
+	In this case we have \[ d(\taskst{\invokegoal{R^k}{t_1}{t_k}}{\mkenv{\sigma\rho}{n}}) + \sum\limits_{a \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{\mkenv{\sigma\rho}{n}}}} D(\taskst{g'}{a}, \Gamma') = \]
+	
+	\[ = d(\taskst{\invokegoal{R^k}{t_1 \sigma \rho}{t_k \sigma \rho}}{e_{init}}) +
+      \sum\limits_{\substack{ \rho' \colon U \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      (t_1 \sigma \rho', \dots, t_k \sigma \rho') \in \sembr{R^k}  }}
+           \mathcal{D}(\schemewithvset{\mathfrak{S}}{U})(\rho')  \]
+           
+    where
+    
+    \[ \begin{array}{lcl}
+    U & = &  V \cup \bigcup_{i} FV(t_i \sigma) \\
+    \end{array} \]
+    
+    Left addends are equal by \lemmaword~\ref{lem:measures_changing_env}.
+    
+    Each $a \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{\mkenv{\sigma\rho}{n}}}$ has the form $(\sigma \rho \delta, n')$ for some $\delta$ and some $n' > n$ by \lemmaword~\ref{lem:gen_measures_changing_env}. All free variables of terms $t_i$ are mapped into ground terms in each delta, because the relational call is grounding.
+    
+    There is a bijection between the set of answers under the sum on the lhs and a set of suitable $\rho'$ at the rhs: all ground values for the free variables that are consistent with the denotational semantics are present in some answer (because of completeness of the operational semantics wrt to the denotational one) and in exactly one (because the call is non-repetitive).
+    
+    Now, we need to show that if we take any answer $(\sigma \rho \delta, n')$ and $\rho'$ that corresponds to it by the described bijection then the values for them under the sums are equal. First, we need to replace $D(\taskst{g'}{(\sigma \rho \delta, n')}, \Gamma')$ by $D(\taskst{g'}{(\sigma \rho \delta\restriction_U, n)}, \Gamma')$, we can do it because all variables from $\Dom(\delta) \setminus U$ have indices greater or equal than $n$ (by \lemmaword~\ref{lem:bounded_variables_of_answer}) and therefore these variables are not free variables of goals from $(g' : \Gamma')$, so the values of $d$ on this goals will be the same for the restricted substitution (it follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}). After this replacement we can directly apply the inductive hypothesis.
+	
+	\end{enumerate}
+
+
+\end{enumerate}
+\end{proof}
+

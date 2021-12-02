@@ -80,7 +80,7 @@ Here are these rules:
               
 It is important to note that both our time measures are 'stable' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
 
-\begin{lemma}
+\begin{replemma}{lem:measures_changing_env}
 
   Suppose
 
@@ -96,11 +96,11 @@ It is important to note that both our time measures are 'stable' w.r.t. renaming
 
   such that
 
-  \[g \sigma \pi = g' \sigma^\prime\]
+  \[ g \sigma \pi = g^\prime \sigma^\prime \]
 
-Then \[ d\,(\taskst{g}{\mkenv{\sigma}{n}}) = d\,(\taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}}) \] and \[ t\,(\taskst{g}{\mkenv{\sigma}{n}}) = t\,(\taskst{g}{\mkenv{\sigma}{n}}) \] 
+  Then \[ d\,(\taskst{g}{\mkenv{\sigma}{n}}) = d\,(\taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}}) \] and \[ t\,(\taskst{g}{\mkenv{\sigma}{n}}) = t\,(\taskst{g}{\mkenv{\sigma}{n}}) \] 
 
-\end{lemma}
+\end{replemma}
 
 So the following definition will be useful to construct a leaf-state representative for an arbitrary goal.
 
@@ -223,8 +223,8 @@ We also have a requirement that all recursive calls performed during unification
 \end{definition}
 
 The following main theorem provides the principal recursive approximations, extracted from the scheme for a given goal.
- 
-\begin{theorem}
+
+\begin{reptheorem}{extracted_approximations}
 Let $g \in D_{nf}$ and all sub-calls encountered during its evaluation are grounding and non-repetitive, and let
 
 \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\mathfrak{S}}{V}}  \]
@@ -234,17 +234,17 @@ Then
 \begin{array}{rcl}
     d\,(init\,(g\,\rho)) &=& \mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(1) \\
    t\,(init\,(g\,\rho)) &=& \mathcal{T}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(\mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho)
-   - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}}{V})(\rho)} d\,(\taskst{g_i}{e_i})
+   - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}}{V})(\rho)} d\,(\taskst{g_i}{e_i}) + 1)
 \end{array}
    \]
   being considered as functions on
 
   \[\rho \colon V \to T_{\emptyset}\]
-\end{theorem}
+\end{reptheorem}
 
-It is based on the to following facts as well as lemma~\ref{lem:sum_estimation} and soundness and completeness of operational semantics w.r.t. the denotational one.
+It is based on the following fact as well as \lemmaword~\ref{lem:sum_estimation}, generalization of the \lemmaword~\ref{lem:times_measure_equations} and soundness and completeness of operational semantics w.r.t. the denotational one.
 
-\begin{lemma}
+\begin{replemma}{lem:symbolic_unification_soundness}
 
   Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$. If
 
@@ -255,8 +255,8 @@ It is based on the to following facts as well as lemma~\ref{lem:sum_estimation} 
   \[ U = \upd{V}{\delta} \]
 
   then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in \constr{\delta}{U}\,:\, \rho'\,(y) = t \rho'$.
-In such case $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
-\end{lemma}
+In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
+\end{replemma}
 
 \subsection{Example}
 
@@ -288,91 +288,101 @@ To make it more clear we will demonatrate our approach on a specific example~---
 \label{fig:reverso_definition}
 \end{figure}
 
-We will study the situation when we provide some ground term as a first argument and a free logical variable as a second argument. So our task is to estimate time measures for the base state \[ q^{rev}(\overline{a}) = \taskst{\texttt{revers$^o$} \, \overline{a} \, \alpha_1^? }{1} \] depending on ground term we substitute $\overline{a}$ with. Also, we are usually intrested in situation when arguments are taken from some specific domain. In our case the domain is the set of all ground terms that are lists constructed with constructors $Nil$ and $Cons$.
+We will study the situation when we provide some ground term as a first argument and a free logical variable as a second argument. So our task is to estimate time measures for the base state \[ q^{rev}(\mathbf{a}) = init\,(\texttt{revers$^o$} \, \mathbf{a} \, r^?) \] depending on ground value $\mathbf{a}$. Also, we are usually intrested in situation when arguments are taken from some specific domain. In our case the domain is the set of all ground terms that are lists constructed with constructors $Nil$ and $Cons$.
 
 \[ \mathcal{L} = Nil \; \mid \; Cons(D, \mathcal{L}) \]
 
-We start our analysis by deriving a symbolic scheme for this call. It is shown in \figureword~\ref{fig:reverso_scheme}.
+We start our analysis by deriving a symbolic scheme for this call. To do it, we build the scheme for the goal $\texttt{revers$^o$} \, a^? \, r^?$ and take $\{ a^? \}$ as the set of ground variables $V$. The scheme is shown in \figureword~\ref{fig:reverso_scheme}.
 
 \begin{figure}[t]
 \begin{center}
-\xymatrix{
-     & \texttt{revers$^o$ $\overline{a}$ $r^?$} & \\
-     & \cdot \ar[dl] \ar[dr] & \\
-     \overline{a} \equiv \texttt{Nil} \ar[d]^{ \overline{a} = \texttt{Nil} } & & \overline{a} \equiv \texttt{Cons($h^?$, $t^?$)} \ar[d]^{\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}, \, h^? \gets \overline{h}, \, t^? \gets \overline{t} } \\
-     r^? \equiv \texttt{Nil} & & \texttt{revers$^o$ $\overline{t}$ $tr^?$} \ar[d]^{ (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket, \, tr^? \gets \overline{tr} } \\
-     & & \texttt{append$^o$ $\overline{tr}$ Cons($\overline{h}$, Nil) $r^?$} \\
-}
+\begin{tikzpicture}[sibling distance=10em, edge from parent/.style={draw,-latex}]
+   \coordinate   
+      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Nil}}$}
+        child { node[rectangle, draw] {$\unigoal{r^?}{\texttt{Nil}}$}
+                  edge from parent node[right]{\tiny{$\overline{a} = \texttt{Nil}$}} } }
+      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Cons($h^?$, $t^?$)}}$} 
+      	child { node[rectangle, draw] {\texttt{revers$^o$ $\overline{t}$ $tr^?$} }
+      	   child { node[rectangle, draw] {\texttt{append$^o$ $\overline{tr}$ Cons($\overline{h}$, Nil) $r^?$}}
+      	     edge from parent node[right]{\tiny{$(\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket$}} }
+      	   edge from parent node[right]{\tiny{$\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}$}}  } } ;
+\end{tikzpicture}
 \end{center}
 
-\caption{Symbolic execution scheme for the $q^{rev}$ call}
+\caption{Symbolic execution scheme for the goal $\texttt{revers$^o$} \, a^? \, r^?$ with initial $V = \{ a^? \}$. Variables from the set of ground variables $V$ for each node are overlined (on edges variables are overlined in accordance with $V$ for the next node). }
 \label{fig:reverso_scheme}
 \end{figure}
 
 
-We can see that the scheme contain two relational calls: a version of the same relational call $q^{rev}$ and another relational call \[ q^{app}(\overline{l_1}, \overline{l_2}) = \taskst{\texttt{append$^o$} \, \overline{l_1} \, \overline{l_2} \, \alpha_1^? }{1} \]
+We can see that the scheme contain two relational calls: a version of the same relational call $q^{rev}$ and another relational call \[ q^{app}(\mathbf{a}, \mathbf{b}) = init\,( \texttt{append$^o$} \, \mathbf{a} \, \mathbf{b} \, r^? ) \]
 
-The traversing extracts the following recursive approximations for both measures from the scheme.
+The traversing extracts the following recursive approximations for both measures from the scheme. Instead of passing mapping $\rho$ through the approximation, we will write it down as a dependency on ground value $\mathbf{a}$, as $\rho$ is defined by the value on the single element of $V$. We do the same for all mappings in the approximation.
 
 \[
-\begin{array}{lcl}
-d(q^{rev}(\overline{a})) & = & \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} ( d(q^{rev}(\overline{t})) + \sum\limits_{\overline{tr}: (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\overline{tr},\texttt{Cons($\overline{h}$, Nil)}))) + \\
-& & \Theta(((1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} (1 + \sum\limits_{\overline{tr}: (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} 1))) \\
+\begin{array}{lcll}
+d(q^{rev}(\mathbf{a})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + \\
+ & & & + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} ( d(q^{rev}(\mathbf{t})) + \sum\limits_{\mathbf{tr}: (\mathbf{t}, \mathbf{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\mathbf{tr},\texttt{Cons($\mathbf{h}$, Nil)}))) + \\
+ & & + \Theta( & 1) \\
 \\
-t(q^{rev}(\overline{a})) & = & \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} ( t(q^{rev}(\overline{t})) + \sum\limits_{\overline{tr}: (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} t(q^{app}(\overline{tr},\texttt{Cons($\overline{h}$, Nil)}))) + \\
-& & \Theta( \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} ( d(q^{rev}(\overline{t})) + \sum\limits_{\overline{tr}: (\overline{t}, \overline{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\overline{tr},\texttt{Cons($\overline{h}$, Nil)}))) \\
-& & - \max\limits_{\scriptsize \begin{array}{c} g \textit{ is a leaf} \\ E \textit{ is envs for } g \end{array}} d(\taskst{g}{\alpha(g, E)}) + 1) \\
+t(q^{rev}(\mathbf{a})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + \\
+ & & & \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} ( t(q^{rev}(\mathbf{t})) + \sum\limits_{\mathbf{tr}: (\mathbf{t}, \mathbf{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} t(q^{app}(\mathbf{tr},\texttt{Cons($\mathbf{h}$, Nil)}))) + \\
+ & & + \Theta( & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + \\
+ & & & + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} ( d(q^{rev}(\mathbf{t})) + \sum\limits_{\mathbf{tr}: (\mathbf{t}, \mathbf{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\mathbf{tr},\texttt{Cons($\mathbf{h}$, Nil)}))) - \\
+ & & & - \maxd\limits_{\mathbf{h}, \mathbf{t}, \mathbf{tr}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)} \land (\mathbf{t}, \mathbf{tr}) \in \llbracket \texttt{revers$^o$} \rrbracket} d(q^{app}(\mathbf{tr},\texttt{Cons($\mathbf{h}$, Nil)})) + 1)
 \end{array}
 \]
 
-To make use of our approximations we need to analyze this call separately. \figureword~\ref{fig:appendo_scheme} shows the symbolic scheme for this call. We extract the following approximations from it.
+To make use of our approximations we need to analyze $q^{app}$ call separately. \figureword~\ref{fig:appendo_scheme} shows the symbolic scheme for this call. We extract the following approximations from it.
 
 \[
-\begin{array}{lcl}
-d(q^{app}(\overline{a}, \overline{b})) & = & \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} d(q^{app}(\overline{t}, \overline{b})) +  \\
-& & \Theta(((1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} 1)) \\
+\begin{array}{lcll}
+d(q^{app}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (1 + d(q^{app}(\mathbf{t}, \mathbf{b})))) \\
+& & + \Theta( & 1) \\
 \\
-t(q^{app}(\overline{a}, \overline{b})) & = & \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} t(q^{app}(\overline{t}, \overline{b})) + \\
-& & \Theta( \sum\limits_{\overline{h}, \overline{t}: \overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}} d(q^{app}(\overline{t}, \overline{b})) \\
-& & - \max\limits_{\scriptsize \begin{array}{c} g \textit{ is a leaf} \\ E \textit{ is envs for } g \end{array}} d(\taskst{g}{\alpha(g, E)}) + 1) \\
+t(q^{app}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (1 + t(q^{app}(\mathbf{t}, \mathbf{b})))) + \\
+& & + \Theta( & (1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (1 + d(q^{app}(\mathbf{t}, \mathbf{b})))) - \\
+& & &  - \maxd\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} d(q^{app}(\mathbf{t}, \mathbf{b})) + 1) 
 \end{array}
 \]
 
 \begin{figure}[t]
 \begin{center}
-\xymatrix{
-     & \texttt{append$^o$ $\overline{a}$ $\overline{b}$ $ab^?$} & \\
-     & \cdot \ar[dl] \ar[dr] & \\
-     \overline{a} \equiv \texttt{Nil} \ar[d]^{ \overline{a} = \texttt{Nil} } & & \overline{a} \equiv \texttt{Cons($h^?$, $t^?$)} \ar[d]^{\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}, \, h^? \gets \overline{h}, \, t^? \gets \overline{t} } \\
-     r^? \equiv \overline{b} & & ab^? \equiv \texttt{Cons($\overline{h}$, $tb^?$)} \ar[d]^{ ab^? \gets \texttt{Cons($\overline{h}$, $tb^?$)} } \\
-     & & \texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb^?$} \\
-}
+\begin{tikzpicture}[sibling distance=10em, edge from parent/.style={draw,-latex}]
+   \coordinate   
+      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Nil}}$}
+        child { node[rectangle, draw] {$\unigoal{ab^?}{\overline{b}}$}
+                  edge from parent node[right]{\tiny{$\overline{a} = \texttt{Nil}$}} } }
+      child { node[rectangle, draw] {$\unigoal{\overline{a}}{\texttt{Cons($h^?$, $t^?$)}}$} 
+      	child { node[rectangle, draw] {$\unigoal{ab^?}{\texttt{Cons($\overline{h}$, $tb^?$)}}$}
+      	   child { node[rectangle, draw] {\texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb^?$}} }
+      	   edge from parent node[right]{\tiny{$\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}$}}  } } ;
+\end{tikzpicture}
 \end{center}
 
-\caption{Symbolic execution scheme for the $q^{app}$ call}
+\caption{Symbolic execution scheme for the goal $\texttt{append$^o$} \, a^? \, b^? \, ab^?$ with initial $V = \{ a^?, b^? \}$. Variables from the set of ground variables $V$ for each node are overlined (on edges variables are overlined in accordance with $V$ for the next node). }
 \label{fig:appendo_scheme}
 \end{figure}
 
 Now we move into the metatheory to solve this systems of recursive approximations and deduce the complexity. As usual, when we add the informations from the metatheory the approximations became quite simple.
 
-For $q^{app}$ we consider two cases: when the first list is empty or not. Also, since there is only one non-trivial leaf in the scheme with only one enviroment, so we know that the senior addend is reached at the recursive call. After we exclude the recursive call from costs part, we get the following linear approximations. 
+For $q^{app}$ we consider two cases: when the first list is empty or not. Also, since there is only one non-trivial leaf in the scheme with only one enviroment, so we know that the excluded maximum is reached at the recursive call. After we exclude the recursive call from costs part, we get the following linear approximations. 
 
 \[
 \begin{array}{lcl}
-d(q^{app}(\texttt{Nil}, \overline{b})) & = & \Theta(1) \\
-d(q^{app}(\texttt{Cons($\overline{h}$, $\overline{t}$)}, \overline{b})) & = & d(q^{app}(\overline{t}, \overline{b})) + \Theta(1) \\
+d(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
+d(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & d(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(1) \\
 \\
-t(q^{app}(\texttt{Nil}, \overline{b})) & = & \Theta(1) \\
-t(q^{app}(\texttt{Cons($\overline{h}$, $\overline{t}$)}, \overline{b})) & = & t(q^{app}(\overline{t}, \overline{b})) + \Theta(1) \\
+t(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
+t(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(1) \\
 \end{array}
  \]
  
-In this case the interleaving does not add a significant penalty, because we have recursive call in the end and its cost is eliminated as the senior leaf. From these approximation it is clear that the complexity of both measures is linear on the length of the first argument.
+In this case the interleaving does not add a significant penalty, because we have recursive call in the end and its cost is eliminated. From these approximation it is clear that the complexity of both measures is linear on the length of the first argument.
 
 \[
 \begin{array}{lcl}
-d(q^{app}(\overline{a}, \overline{b})) & = & \Theta(len(\overline{a})) \\
-t(q^{app}(\overline{a}, \overline{b})) & = & \Theta(len(\overline{a})) \\
+d(q^{app}(\mathbf{a}, \mathbf{b})) & = & \Theta(len(\mathbf{a})) \\
+t(q^{app}(\mathbf{a}, \mathbf{b})) & = & \Theta(len(\mathbf{a})) \\
 \end{array}
  \]
  
@@ -381,10 +391,10 @@ For initial relational call $q^{rev}$ we do the same and incorporate just calcul
 \[
 \begin{array}{lcl}
 d(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
-d(q^{rev}(\texttt{Cons($\overline{h}$, $\overline{t}$)})) & = & d(q^{rev}(\overline{t})) + d(q^{app}(rev(\overline{t}), \texttt{Cons($\overline{h}$, Nil)})) + \Theta(1) \\
+d(q^{rev}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)})) & = & d(q^{rev}(\overline{t})) + d(q^{app}(rev(\mathbf{t}), \texttt{Cons($\mathbf{h}$, Nil)})) + \Theta(1) \\
 \\
 t(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
-t(q^{rev}(\texttt{Cons($\overline{h}$, $\overline{t}$)})) & = & t(q^{rev}(\overline{t})) + t(q^{app}(rev(\overline{t}), \texttt{Cons($\overline{h}$, Nil)})) + \Theta(d(q^{rev}(\overline{t}))) \\
+t(q^{rev}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)})) & = & t(q^{rev}(\overline{t})) + t(q^{app}(rev(\mathbf{t}), \texttt{Cons($\mathbf{h}$, Nil)})) + \Theta(d(q^{rev}(\mathbf{t}))) \\
 \end{array}
  \]
  
@@ -393,19 +403,19 @@ We can now substitute the calculated measures for $q^{app}$ call. Since will kno
 \[
 \begin{array}{lcl}
 d(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
-d(q^{rev}(\texttt{Cons($\overline{h}$, $\overline{t}$)})) & = & d(q^{rev}(\overline{t})) + \Theta(len(\overline{t})) \\
+d(q^{rev}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)})) & = & d(q^{rev}(\mathbf{t})) + \Theta(len(\mathbf{t})) \\
 \\
 t(q^{rev}(\texttt{Nil})) & = & \Theta(1) \\
-t(q^{rev}(\texttt{Cons($\overline{h}$, $\overline{t}$)})) & = & t(q^{rev}(\overline{t})) + \Theta(len(\overline{t}) + d(q^{rev}(\overline{t}))) \\
+t(q^{rev}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)})) & = & t(q^{rev}(\mathbf{t})) + \Theta(len(\mathbf{t}) + d(q^{rev}(\mathbf{t}))) \\
 \end{array}
  \]
  
-These approximation are linear and easily solvable, but in this case the additional cost of interleaving search is not negligible and the resulting complexity is not linear on the length of the argument.\footnote{Unlike the complexity for the tail-recursive version of reverse relation which is linear.}
+These approximation are linear and easily solvable, but in this case the additional cost of interleaving search is not negligible and the resulting complexity is not the same as the $d$ mesure.\footnote{Unlike the tail-recursive version of reverse where both measures have linear complexity.}
  
  \[
 \begin{array}{lcl}
-d(q^{rev}(\overline{a})) & = & \Theta(len^2(a)) \\
-t(q^{rev}(\overline{a})) & = & \Theta(len^3(a)) \\
+d(q^{rev}(\mathbf{a})) & = & \Theta(len^2(\mathbf{a})) \\
+t(q^{rev}(\mathbf{a})) & = & \Theta(len^3(\mathbf{a})) \\
 \end{array}
  \]
 

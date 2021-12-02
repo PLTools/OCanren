@@ -56,6 +56,7 @@ Our next goal is to derive recurrent equations which would relate the scheduling
 The following trivial lemma handles the basic (leaf state) case:
 
 \begin{lemma}
+\label{lem:task_measure_equations}
   If
 
   \[\taskst{g}{e} \xrightarrow{l} s^\prime\]
@@ -82,8 +83,7 @@ The following trivial lemma handles the basic (leaf state) case:
 
 The next lemma provides the equations for $\oplus$-states:
 
-\begin{lemma}
-\label{lem:sum_estimation}
+\begin{replemma}{lem:sum_measure_equations}
 For any two states $s_1$ and $s_2$
 
 \[
@@ -98,8 +98,7 @@ For any two states $s_1$ and $s_2$
 where
 
 \[ \costdisj{s_1}{s_2} = \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\} \] 
-
-\end{lemma}
+\end{replemma}
 
 Informally, for a state in the form $s_1 \oplus s_2$ the substates are evaluated separately, one step at a time for
 each substate, so the total number of semantic steps is the sum of those for the substates. However, for the scheduling factor, 
@@ -109,7 +108,7 @@ of one of the substates comes to an end, so the scheduling factor is increased b
 
 The next lemma provides the equations for $\otimes$-states:
 
-\begin{lemma}
+\begin{replemma}{lem:times_measure_equations}
 For any state $s$ and any goal $g$
 
 \[
@@ -130,7 +129,7 @@ s'_i & = & \mbox{the first state in the trace for $s$ after} \\
  & & \mbox{a transition delivering the answer $a_i$} \\
 \end{array}
 \]
-\end{lemma}
+\end{replemma}
 
 For the states of the form $s \otimes g$ the reasoning is the same, but the resulting equations are more complicated.
 In $\otimes$-state the left substate is evaluated until an answer is found, which is then taken as
@@ -196,13 +195,12 @@ Now we can state the following approximation\footnote{We assume the following de
 $h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}
 for $C\,(s \otimes g)$.
 
-\begin{lemma}
-
+\begin{replemma}{lem:times_costs_approximation}
 \[
 C\,(s \otimes g) =
 \Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \maxd\limits_{a_i \in \tra{s}}  d\,(\taskst{g}{a_i}))	
 \]
-\end{lemma}
+\end{replemma}
 
 We can see that this approximation is very similar to the $(\star)$ except that here we exclude $d$ value for one of the answers from the sum (the maximal one). This difference
 is essential and, as we will see later, it is in fact responsible for the difference in complexities for our motivation example.
