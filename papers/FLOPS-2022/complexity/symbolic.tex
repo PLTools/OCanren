@@ -24,48 +24,30 @@ For clarity we will provide demonstration of the complexity analysis for a speci
 Extension for valuations:
 
 \begin{definition}
-  Suppose
-
-  \[V \subset U \subset \mathcal{A}\]
-
-  and
-
-  \[\rho \colon V \to \mathcal{T}_{\emptyset}\]
-
-  and
-
-  \[\rho^\prime \colon U \to \mathcal{T}_{\emptyset}\]
-
-  We say that $\rho^\prime$ extends $\rho$ (denotation: $ \rho^\prime \succ \rho$) if
-  
-\[ \forall x \in V \,:\, \rho^\prime\,(x) = \rho\,(x) \]
+  Suppose $V \subset U \subset \mathcal{A}$, $\rho \colon V \to \mathcal{T}_{\emptyset}$, and $\rho^\prime \colon U \to \mathcal{T}_{\emptyset}$. We say that $\rho^\prime$ extends $\rho$ (denotation: $ \rho^\prime \succ \rho$) if $ \forall x \in V \,:\, \rho^\prime\,(x) = \rho\,(x) $
 \end{definition}
 
 Let's say we want to analyze what happen if we substitute first two argument of \lstinline|append$^o$| with ground variables and left the last argument free.
 
 \colorbox{blue!20}{\parbox{\textwidth}{Stability wrt free variables, counter and substitution}}
 
-It is important to note that both our time measures are 'stable' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
+It is important to note that both our time measures are ``stable'' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
 
 \begin{replemma}{lem:measures_changing_env}
 
   Suppose
 
-  \[ FV\,(g) \cup \Dom\,(\sigma) \cup \VRan\,(\sigma) \subseteq \{ \alpha_1\dots\alpha_n \} \]
+  \vskip-2mm\begin{gather*}
+      FV\,(g) \cup \Dom\,(\sigma) \cup \VRan\,(\sigma) \subseteq \{ \alpha_1\dots\alpha_n \} \\
+      FV\,(g^\prime) \cup \Dom\,(\sigma^\prime) \cup \VRan\,(\sigma^\prime) \subseteq \{ \alpha_1\dots \alpha_{n^\prime} \}
+    \end{gather*}
   
-  and
+  and there is a bijective substitution $\pi \colon FV\,(g \sigma) \to FV\,(g^\prime \sigma^\prime)$ such that $g \sigma \pi = g^\prime \sigma^\prime$. Then
 
-  \[ FV\,(g^\prime) \cup \Dom\,(\sigma^\prime) \cup \VRan\,(\sigma^\prime) \subseteq \{ \alpha_1\dots \alpha_{n^\prime} \} \]
-
-  and there is a bijective substitution
-
-  \[\pi \colon FV\,(g \sigma) \to FV\,(g^\prime \sigma^\prime)\]
-
-  such that
-
-  \[ g \sigma \pi = g^\prime \sigma^\prime \]
-
-  Then \[ d\,(\taskst{g}{\mkenv{\sigma}{n}}) = d\,(\taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}}) \] and \[ t\,(\taskst{g}{\mkenv{\sigma}{n}}) = t\,(\taskst{g}{\mkenv{\sigma}{n}}) \] 
+  \vskip-3mm\begin{gather*}
+    d\,(\taskst{g}{\mkenv{\sigma}{n}}) = d\,(\taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}})\\
+    t\,(\taskst{g}{\mkenv{\sigma}{n}}) = t\,(\taskst{g}{\mkenv{\sigma}{n}})
+  \end{gather*}
 
 \end{replemma}
 
@@ -101,16 +83,8 @@ Soundness of symbolic unification:
 
 \begin{replemma}{lem:symbolic_unification_soundness}
 
-  Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$. If
-
-  \[ mgu\,(t_1, t_2) = \delta \]
-
-  and
-
-  \[ U = \upd{V}{\delta} \]
-
-  then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in \constr{\delta}{U}\,:\, \rho'\,(y) = t \rho'$.
-In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
+  Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$. If $mgu\,(t_1, t_2) = \delta$ and
+  $U = \upd{V}{\delta}$ then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in \constr{\delta}{U}\,:\, \rho'\,(y) = t \rho'$. In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
 \end{replemma}
 
 
@@ -134,7 +108,7 @@ The rules for building a scheme have the following form. \[ \schemetrans{g}{\Gam
 They are shown on \figureword~\ref{fig:scheme_formation}.
 
 \begin{figure}[t]  
-\renewcommand{\arraystretch}{3}
+\renewcommand{\arraystretch}{2}
   \[
 \begin{array}{cr}
   \onepremrule
@@ -201,7 +175,7 @@ The scheme for our example is shown in \figureword~\ref{fig:example_scheme}.
 \label{fig:example_scheme}
 \end{figure}
 
-\FloatBarrier
+%\FloatBarrier
 
 \colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 4}: Extracting recursive approximations.}}
 
@@ -287,11 +261,10 @@ We also have a requirement that all recursive calls performed during unification
 
   \emph{grounding} and \emph{non-repetitive} if 
 
-  \[ \forall (\sigma^{a}, n^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, FV(t_i \sigma^{a}) = \emptyset \]
-
-  and
-  
-  \[ \forall (\sigma_1^{a},\, n_1^{a}),\, (\sigma_2^{a},\, n_2^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, (t_1 \sigma_1^{a}, \dots, t_k \sigma_1^{a}) \ne (t_1 \sigma_2^{a},\, \dots, t_k \sigma_2^{a}) \]
+  \vskip-2mm\begin{gather*}
+    \forall (\sigma^{a}, n^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, FV(t_i \sigma^{a}) = \emptyset\\
+    \forall (\sigma_1^{a},\, n_1^{a}),\, (\sigma_2^{a},\, n_2^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, (t_1 \sigma_1^{a}, \dots, t_k \sigma_1^{a}) \ne (t_1 \sigma_2^{a},\, \dots, t_k \sigma_2^{a})
+  \end{gather*}
 \end{definition}
 
 The following main theorem provides the principal recursive approximations, extracted from the scheme for a given goal.
@@ -301,7 +274,8 @@ Let $g \in D_{nf}$ and all sub-calls encountered during its evaluation are groun
 
 \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\mathfrak{S}}{V}}  \]
 
-Then
+\noindent Then
+
 \[
 \begin{array}{rcl}
     d\,(init\,(g\,\rho)) &=& \mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(1) \\
