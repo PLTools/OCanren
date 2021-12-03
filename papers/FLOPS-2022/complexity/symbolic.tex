@@ -1,14 +1,14 @@
 \section{Complexity Analysis via Symbolic Execution Schemes}
 \label{sec:symbolic}
 
-\colorbox{yellow!20}{\textbf{TO INTRODUCTION}}
+\colorbox{red!20}{\textbf{SHOULD BE DEFINED IN THE INTRODUCTION}}
 \begin{lstlisting}[basicstyle=\small]
    append$^o$ = fun a b ab ->
      ((a === Nil) /\ (ab === b)) \/
      (fresh (h t tb)
         (a === Cons(h, t)) /\
-        (ab === Cons(h, tb) /\
-        (append$^o$ t b tb)) 
+        (append$^o$ t b tb) /\
+        (ab === Cons(h, tb)) 
      )
 \end{lstlisting}
 
@@ -24,44 +24,32 @@ For clarity we will provide demonstration of the complexity analysis for a speci
 Extension for valuations:
 
 \begin{definition}
-  Suppose $V \subset U \subset \mathcal{A}$, $\rho \colon V \to \mathcal{T}_{\emptyset}$, and $\rho^\prime \colon U \to \mathcal{T}_{\emptyset}$. We say that $\rho^\prime$ extends $\rho$ (denotation: $ \rho^\prime \succ \rho$) if $ \forall x \in V \,:\, \rho^\prime\,(x) = \rho\,(x) $
+  Suppose
+  $ V \subset U \subset \mathcal{A} $
+  and
+  $ \rho \colon V \to \mathcal{T}_{\emptyset} $
+  and
+  $ \rho^\prime \colon U \to \mathcal{T}_{\emptyset} $
+  We say that $\rho^\prime$ extends $\rho$ (denotation: $ \rho^\prime \succ \rho$) if
+  $ \forall x \in V \,:\, \rho^\prime\,(x) = \rho\,(x) $
 \end{definition}
 
-Let's say we want to analyze what happen if we substitute first two argument of \lstinline|append$^o$| with ground variables and left the last argument free.
+Let's say we want to analyze what happen if we substitute first two argument of \lstinline|append$^o$| with grounded variables and left the last argument free.
 
 \colorbox{blue!20}{\parbox{\textwidth}{Stability wrt free variables, counter and substitution}}
 
-It is important to note that both our time measures are ``stable'' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
+It is important to note that both our time measures are 'stable' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
 
 \begin{replemma}{lem:measures_changing_env}
 
-  Suppose
-
-  \vskip-2mm\begin{gather*}
-      FV\,(g) \cup \Dom\,(\sigma) \cup \VRan\,(\sigma) \subseteq \{ \alpha_1\dots\alpha_n \} \\
-      FV\,(g^\prime) \cup \Dom\,(\sigma^\prime) \cup \VRan\,(\sigma^\prime) \subseteq \{ \alpha_1\dots \alpha_{n^\prime} \}
-    \end{gather*}
-  
-  and there is a bijective substitution $\pi \colon FV\,(g \sigma) \to FV\,(g^\prime \sigma^\prime)$ such that $g \sigma \pi = g^\prime \sigma^\prime$. Then
-
-  \vskip-3mm\begin{gather*}
-    d\,(\taskst{g}{\mkenv{\sigma}{n}}) = d\,(\taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}})\\
-    t\,(\taskst{g}{\mkenv{\sigma}{n}}) = t\,(\taskst{g}{\mkenv{\sigma}{n}})
-  \end{gather*}
+  Suppose $FV\,(g) \cup \Dom\,(\sigma) \cup \VRan\,(\sigma) \subseteq \{ \alpha_1\dots\alpha_n \} $ and $FV\,(g^\prime) \cup \Dom\,(\sigma^\prime) \cup \VRan\,(\sigma^\prime) \subseteq \{ \alpha_1\dots \alpha_{n^\prime} \} $
+  and there is a bijective substitution $\pi \colon FV\,(g \sigma) \to FV\,(g^\prime \sigma^\prime)$  such that  $g \sigma \pi = g^\prime \sigma^\prime $ Then $ d\,(\taskst{g}{\mkenv{\sigma}{n}}) = d\,(\taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}}) $ and $ t\,(\taskst{g}{\mkenv{\sigma}{n}}) = t\,(\taskst{g}{\mkenv{\sigma}{n}}) $
 
 \end{replemma}
 
 So the following definition will be useful to construct a base-state representative for an arbitrary goal.
 
-\begin{definition} Let $g$ be a goal. An initial state for $g$ is
-
-  \[
-   init\,(g)=\taskst{g}{(\varepsilon, \ninit\,(g))}
-  \]
-
-  where
-  
-  \[ n_{init}\,(g) = \min\, \{ n \mid FV\,(g) \subseteq \{ \alpha_1\dots\alpha_n \} \} \]
+\begin{definition} Let $g$ be a goal. An initial state for $g$ is $init\,(g)=\taskst{g}{(\varepsilon, \ninit\,(g))} $ where $ n_{init}\,(g) = \min\, \{ n \mid FV\,(g) \subseteq \{ \alpha_1\dots\alpha_n \} \} $
 \end{definition}
 
 So we will be studying the family of queries \[ q^{app}(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$^o$} \, \mathbf{a} \, \mathbf{b} \, ab^?) \]
@@ -83,41 +71,42 @@ Soundness of symbolic unification:
 
 \begin{replemma}{lem:symbolic_unification_soundness}
 
-  Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$. If $mgu\,(t_1, t_2) = \delta$ and
-  $U = \upd{V}{\delta}$ then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in \constr{\delta}{U}\,:\, \rho'\,(y) = t \rho'$. In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
+  Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$. If $mgu\,(t_1, t_2) = \delta$ and $U = \upd{V}{\delta} $  then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in \constr{\delta}{U}\,:\, \rho'\,(y) = t \rho'$.
+In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
 \end{replemma}
 
 
 \colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 3}: Symbolic schemes. Form and derivation rules}}
 
-We build schemes in the following form.
+The first step of the analysis is construction of a symbolic scheme. Symbolic schemes represents visually execution of the body of a relation for a given set of grounded variables. Differenct branches correspond to different disjuncts and nodes are internal equalities and relational calls in the body, with specified subset of variables that are grounded at the point of their execution. Constrains on substituted grounded variables that determine whether the execution continues are presented as labels on edges of a scheme.
+
+More formally, each scheme has one of the following 5 forms (scheme is indexed by the subset of grounded variables, $\Upsilon = 2^{\mathcal{A}}$ denoting such subsets).
 
 \[
 \renewcommand{\arraystretch}{3}
 \begin{array}{ccm{0.5cm}m{3cm}m{4cm}m{4cm}}
-  \schemewithvset{\mathfrak{S}}{V} & = && \schemenode{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} & \schemenode{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} 
-                                       & \multirow{2}{*}{\schemefork{$\schemewithvset{\mathfrak{S}}{V}$}{$\schemewithvset{\mathfrak{S}}{V}$}} \\
-                                   &   && \schemesarrow{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$\{\mathcal{A}=\mathcal{T}_\mathcal{A}\}$}{$\schemewithvset{\mathfrak{S}}{U}$}
-                                       & \schemedarrow{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$(\mathcal{T}_\mathcal{A}, \dots, \mathcal{T}_\mathcal{A}) \in \sembr{R^k}$}{$\schemewithvset{\mathfrak{S}}{U}$}
+  \schemewithvset{\mathfrak{S}}{\Upsilon} & = && \schemenode{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} & \schemenode{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} 
+                                       & \multirow{2}{*}{\schemefork{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}} \\
+                                   &   && \schemesarrow{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$\{\mathcal{A}=\mathcal{T}_\mathcal{A}\}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}
+                                       & \schemedarrow{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$(\mathcal{T}_\mathcal{A}, \dots, \mathcal{T}_\mathcal{A}) \in \sembr{R^k}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}
                                        & 
 \end{array}
 \]
 
-The rules for building a scheme have the following form. \[ \schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}} \]
+Notice that constrains after nodes of different types differ: unification puts a constraint in form of set of equations on substituted ground values that should be satisfied and relational call puts a constraint in form of a tuple of ground terms that should belong to denotational semantics of a relation.
 
-They are shown on \figureword~\ref{fig:scheme_formation}.
+Construction of a scheme for the given goal (initially, the body of a relation) mimics ordinary execution of a relational program. The deriavtion rules for scheme formation have the following form.
+\[ \schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}} \]
+Here $g$ is the given goal, $\Gamma$ is the list of postponed goals (these goals should be executed after the execution of $g$ in every branch in the same order, initially this list is empty), $\sigma$ and $n$ are the substitution and the counter from the current substitution respectively, $V$ is a set of grounded variables at the moment.
 
 \begin{figure}[t]  
-\renewcommand{\arraystretch}{2}
+\renewcommand{\arraystretch}{3}
   \[
 \begin{array}{cr}
   \onepremrule
 		{  \schemetrans{g_1}{g_2 : \Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}}  } 
 		{  \schemetrans{\conjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } & \ruleno{Conj$_\mathfrak S$}
 		\\
- \onepremrule
-		{  \schemetrans{\substitute{g}{\alpha_n}{x}}{\Gamma}{\sigma}{n + 1}{V}{\schemewithvset{\mathfrak{S}}{V}}  }
-		{  \schemetrans{\freshgoal{x}{g}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } & \ruleno{Fresh$_\mathfrak S$}\\
                 
   % \multicolumn{3}{c}{
   \twopremrule
@@ -125,6 +114,10 @@ They are shown on \figureword~\ref{fig:scheme_formation}.
 		{  \schemetrans{g_2}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S_2}}{V}}  }
 		{  \schemetrans{\disjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{ \schemefork{$\schemewithvset{\mathfrak{S_1}}{V}$}{$\schemewithvset{\mathfrak{S_2}}{V}$}} }  } & \ruleno{Disj$_\mathfrak S$}\\ 
 		
+		
+ \onepremrule
+		{  \schemetrans{\substitute{g}{\alpha_n}{x}}{\Gamma}{\sigma}{n + 1}{V}{\schemewithvset{\mathfrak{S}}{V}}  }
+		{  \schemetrans{\freshgoal{x}{g}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } & \ruleno{Fresh$_\mathfrak S$}\\
 
  %\multicolumn{3}{c}{
   \schemetrans{\unigoal{t_1}{t_2}}{\epsilon}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\unigoal{t_1 \sigma}{t_2 \sigma}$}}}& \ruleno{UnifyLeaf$_\mathfrak S$}\\
@@ -155,38 +148,41 @@ They are shown on \figureword~\ref{fig:scheme_formation}.
 \label{fig:scheme_formation}
 \end{figure}
 
-The scheme for our example is shown in \figureword~\ref{fig:example_scheme}.
+The rules are shown on \figureword~\ref{fig:scheme_formation}. \ruleno{Conj$_\mathfrak S$} and \ruleno{Disj$_\mathfrak S$} are structural rules: when investigatig conjunctions we postpone the second conjuct by putting it in the list $\Gamma$ and continue with the first conjunct, disjunctions we simply present as forks. \ruleno{Fresh$_\mathfrak S$} introduses a fresh logic variable (not grounded) and updates counter of occupied variables accordingly. When investigated goal is equality or relational call it is added as node to the scheme. If there are no postponed goals, it is just added as a leaf (rules \ruleno{UnifyLeaf$_\mathfrak S$} and \ruleno{InvokeLeaf$_\mathfrak S$}). Equality is also added as a leaf if there are postponed goals, but the terms are non-unifiable and so the execution stops (rule \ruleno{UnifyFail$_\mathfrak S$}). If the terms in the equality are unifiable and there are postponed goals (rule \ruleno{UnifySuccess$_\mathfrak S$}), the equality is added as a node and the execution continues for postponed goals, starting with the fist one, and also the set of grounded variables is updated and constrains are added on the edge in accordance with \lemmaword~\ref{lem:symbolic_unification_soundness}. The same way for relational call if there are postponed goals (rule \ruleno{Invoke$_\mathfrak S$}), all variables occuring in the call become grounded (its the grounding condition we impose) and should satisfy the denotational semantics of the invoked relation.
 
 \begin{figure}[t]
 \begin{center}
 \begin{tikzpicture}[level distance=30pt, sibling distance=10em, edge from parent/.style={draw,-latex}]
    \coordinate   
       child { node {$\unigoal{\overline{a}}{\texttt{Nil}}$}
-        child { node {$\unigoal{ab^?}{\overline{b}}$}
-                  edge from parent node[right]{\tiny{$\overline{a} = \texttt{Nil}$}} } }
-      child { node {$\unigoal{\overline{a}}{\texttt{Cons($h^?$, $t^?$)}}$} 
-      	child { node {$\unigoal{ab^?}{\texttt{Cons($\overline{h}$, $tb^?$)}}$}
-      	   child { node {\texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb^?$}} }
-      	   edge from parent node[right]{\tiny{$\overline{a} = \texttt{Cons($\overline{h}$, $\overline{t}$)}$}}  } } ;
+        child { node {$\unigoal{ab}{\overline{b}}$}
+                  edge from parent node[right]{\tiny{${a} = \texttt{Nil}$}} } }
+      child { node {$\unigoal{\overline{a}}{\texttt{Cons($h$, $t$)}}$} 
+      	child { node {\texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb$}}
+      	   child { node {$\unigoal{ab}{\texttt{Cons($\overline{h}$, $\overline{tb}$)}}$}
+      	             edge from parent node[right]{\tiny{$({t}, {b}, {tb}) \in \llbracket \texttt{append$^o$} \rrbracket$}}  }
+      	   edge from parent node[right]{\tiny{${a} = \texttt{Cons(${h}$, ${t}$)}$}}  } } ;
 \end{tikzpicture}
 \end{center}
 
-\caption{Symbolic execution scheme for the goal $\texttt{append$^o$} \, a^? \, b^? \, ab^?$ with initial $V = \{ a^?, b^? \}$. Variables from the set of ground variables $V$ for each node are overlined (on edges variables are overlined in accordance with $V$ for the next node). }
+\caption{Symbolic execution scheme for the goal $\texttt{append$^o$} \, a \, b \, ab$ with initial set of grounded variables $V = \{ a, b \}$. For each node, variables that are grounded at the point of execution of this node are overlined. }
 \label{fig:example_scheme}
 \end{figure}
 
-%\FloatBarrier
+The scheme constructed by these rules for our \lstinline|append$^o$| example is shown in \figureword~\ref{fig:example_scheme}. For simplicity we do not put the set of grounded variables for each node, but instead overline variables that are grounded. Note that all variables that occur in constraints on edges are grounded after the parent node is executed.
+
+\FloatBarrier
 
 \colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 4}: Extracting recursive approximations.}}
 
-Here are the traversals of scheme that will be used for approximations. For a scheme $\schemewithvset{\mathfrak{S}}{V}$ it is a function from a valuation $\rho \colon V \to \grterms$ to natural numbers (for $\mathcal{D}$ and $\mathcal{T}$) or to sets of base-states (for $\mathcal{L}$).
+Now, we can use schemes to see how the basic goals in relation body are combined with conjunctions and disjuntions. Then we can apply formulae from \sectionword~\ref{sec:scheduling} to get recursive inequalities (providing lower and upper bounds simultaniously) for both complexity measures.
 
 \begin{figure}[t]
 \[
 \begin{array}{rclcl}
  \mathcal{\nicefrac{D}{T}}\,(&\parbox[m]{1.3cm}{\schemenode{$\unigoal{t_2}{t_2}$}}&)(\rho) &=& 1  \\
 
- \mathcal{\nicefrac{D}{T}}\,(&\parbox[m]{2.5cm}{\schemenode{$\invokegoal{R^k}{t_1}{t_k}$}}&)(\rho) &=& \nicefrac{d}{t}\,(\taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}}) \\
+ \mathcal{\nicefrac{D}{T}}\,(&\parbox[m]{2.5cm}{\schemenode{$\invokegoal{R^k}{t_1}{t_k}$}}&)(\rho) &=& \nicefrac{d}{t}\,(init\,(\invokegoal{R^k}{t_1 \rho}{t_k \rho})) \\
 
  \mathcal{\nicefrac{D}{T}}\,(&\parbox[m]{2cm}{\schemesarrow{$\unigoal{t_1}{t_2}$}{$Cs$}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=& 1 +
       \sum\limits_{\substack{ \rho' \colon V \to \grterms \\
@@ -195,7 +191,7 @@ Here are the traversals of scheme that will be used for approximations. For a sc
            \mathcal{\nicefrac{D}{T}}\,(\schemewithvset{\mathfrak{S}}{U})(\rho')  \\
 
  \mathcal{\nicefrac{D}{T}}\,(& \parbox[m]{4cm}{\schemedarrow{$\invokegoal{R^k}{t_1}{t_k}$}{ $(t_1, \dots, t_k) \in \sembr{R^k}  $}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=&
-      \nicefrac{d}{t}\,(\taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}}) +
+      \nicefrac{d}{t}\,(init\,(\invokegoal{R^k}{t_1 \rho}{t_k \rho})) +
       \sum\limits_{\substack{ \rho' \colon V \to \grterms \\
                                       \rho' \succ \rho \\
                                       (t_1 \rho', \dots, t_k \rho') \in \sembr{R^k}  }}
@@ -209,22 +205,26 @@ Here are the traversals of scheme that will be used for approximations. For a sc
 \label{fig:scheduling_extraction_d_t}
 \end{figure}
 
+In this inequalities we need to sum values of $d$-measure and $t$-measure for all basic goals of a body and for all environments that these basic goals are evaluated on. The basic goals are the nodes of a scheme and evaluated environments can be derived from constraints written on edges. So, for this summation we introduce the following notions: $\mathcal{D}$ is sum of $d$-measure values and $\mathcal{T}$ is sum of $t$-measure values for execution of the body with specific valuation $\rho$. Their defintions are shown in the \figureword~\ref{fig:scheduling_extraction_d_t} (they are written jointly, as these defintions coincide, only the measure changes). For nodes we take corresponding value (for equality it always equals to $1$). When going through an equality we sum the rest with updated valuation (by \lemmaword~\ref{lem:symbolic_unification_soundness} this sum always has one or zero summands depending on whether unification is successful or not). When going through a relational call we take a sum of all valuations that satisfy denotational semantics (these valuations will correspond exactly to the set of all answers produced by the call because operational semantics is sound and complete w.r.t. the denotational one and because we require all calls to be non-repetitive). For disjunctions we take sum of both branches.
+
 
 \begin{figure}[t]
+\colorbox{yellow!20}{\parbox{\textwidth}{\textbf{Maybe move this to appendix and leave here description explanation only}}}
+
 \[
 \begin{array}{rclcl}
- \mathcal{L}\,(&\parbox[m]{1.3cm}{\schemenode{$\unigoal{t_2}{t_2}$}}&)(\rho) &=& \{\taskst{\unigoal{t_2}{t_2}}{e_{init}}\} \\
+ \mathcal{L}\,(&\parbox[m]{1.3cm}{\schemenode{$\unigoal{t_2}{t_2}$}}&)(\rho) &=& \{init\,(\unigoal{t_2}{t_2})\} \\
 
- \mathcal{L}\,(&\parbox[m]{2.5cm}{\schemenode{$\invokegoal{R^k}{t_1}{t_k}$}}&)(\rho) &=& \{\taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}}\} \\
+ \mathcal{L}\,(&\parbox[m]{2.5cm}{\schemenode{$\invokegoal{R^k}{t_1}{t_k}$}}&)(\rho) &=& \{init\,(\invokegoal{R^k}{t_1 \rho}{t_k \rho})\} \\
 
- \mathcal{L}\,(&\parbox[m]{2cm}{\schemesarrow{$\unigoal{t_1}{t_2}$}{$Cs$}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=&  \{\taskst{\unigoal{t_2}{t_2}}{e_{init}}\} \cup
+ \mathcal{L}\,(&\parbox[m]{2cm}{\schemesarrow{$\unigoal{t_1}{t_2}$}{$Cs$}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=&  \{init\,(\unigoal{t_2}{t_2})\} \cup
       \bigcup\limits_{\substack{ \rho' \colon V \to \grterms \\
                                       \rho' \succ \rho \\
                                       \forall (y, t) \in Cs\,:\, \rho'\,(y) = t\, \rho'  }}
            \mathcal{L}\,(\schemewithvset{\mathfrak{S}}{U})(\rho')  \\
 
  \mathcal{L}\,(& \parbox[m]{4cm}{\schemedarrow{$\invokegoal{R^k}{t_1}{t_k}$}{ $(t_1, \dots, t_k) \in \sembr{R^k}  $}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=&
-      \{\taskst{\invokegoal{R^k}{t_1 \rho}{t_k \rho}}{e_{init}}\} \cup
+      \{init\,(\invokegoal{R^k}{t_1 \rho}{t_k \rho})\} \cup
       \bigcup\limits_{\substack{ \rho' \colon V \to \grterms \\
                                       \rho' \succ \rho \\
                                       (t_1 \rho', \dots, t_k \rho') \in \sembr{R^k}  }}
@@ -238,7 +238,19 @@ Here are the traversals of scheme that will be used for approximations. For a sc
 \label{fig:scheduling_extraction_l}
 \end{figure}
 
-\colorbox{yellow!20}{\parbox{\textwidth}{Maybe desribe DNF and call requirements informally?}}
+As we saw in \sectionword~\ref{sec:scheduling} when computing scheduling factor we need to exclude from the additional cost the value of $d$-measure for one of the environments (the biggest one). It will be the case with the generalized formula for a whole scheme too, this time we need to take all executed environments for all the leaves of a scheme and exclude the $d$-measure value maximal one (formula for conjunction ensures that we make the exclusion for the leaf, and the formula for disjuntion ensures that we make it for only one of the leaves). So, we will need additional notion $\mathcal{L}$, similar to $\mathcal{D}$ and $\mathcal{T}$ that will collect all the goals of the form $init\,(g_i \rho)$, where $g_i$ is a goal at leaf and $\rho$ is valuation corresponding to one of the environments that this leaf is evaluated on. Definition of $\mathcal{L}$ is shown in \figureword~\ref{fig:scheduling_extraction_l}.
+
+
+\FloatBarrier
+
+
+
+
+
+
+
+
+\colorbox{red!20}{\parbox{\textwidth}{\textbf{These are the requirements of the method that should be stated earlier (likely, without formal definitions)}}}
 
 We prove the theorem only for goals in DNF.
 
@@ -261,21 +273,24 @@ We also have a requirement that all recursive calls performed during unification
 
   \emph{grounding} and \emph{non-repetitive} if 
 
-  \vskip-2mm\begin{gather*}
-    \forall (\sigma^{a}, n^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, FV(t_i \sigma^{a}) = \emptyset\\
-    \forall (\sigma_1^{a},\, n_1^{a}),\, (\sigma_2^{a},\, n_2^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, (t_1 \sigma_1^{a}, \dots, t_k \sigma_1^{a}) \ne (t_1 \sigma_2^{a},\, \dots, t_k \sigma_2^{a})
-  \end{gather*}
+  \[ \forall (\sigma^{a}, n^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, FV(t_i \sigma^{a}) = \emptyset \]
+
+  and
+  
+  \[ \forall (\sigma_1^{a},\, n_1^{a}),\, (\sigma_2^{a},\, n_2^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, (t_1 \sigma_1^{a}, \dots, t_k \sigma_1^{a}) \ne (t_1 \sigma_2^{a},\, \dots, t_k \sigma_2^{a}) \]
 \end{definition}
 
-The following main theorem provides the principal recursive approximations, extracted from the scheme for a given goal.
+
+\colorbox{red!20}{\parbox{\textwidth}{\textbf{==================}}}
+
+Now we can formulate the following main theorem that provides the principal recursive approximations, extracted from the scheme for a given goal.
 
 \begin{reptheorem}{extracted_approximations}
-Let $g \in D_{nf}$ and all sub-calls encountered during its evaluation are grounding and non-repetitive, and let
+Let $g$ be a goal in DNF and all sub-calls encountered during its evaluation are grounding and non-repetitive, and let
 
 \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\mathfrak{S}}{V}}  \]
 
-\noindent Then
-
+Then
 \[
 \begin{array}{rcl}
     d\,(init\,(g\,\rho)) &=& \mathcal{D}\,(\schemewithvset{\mathfrak{S}}{V})(\rho) + \Theta\,(1) \\
@@ -283,32 +298,38 @@ Let $g \in D_{nf}$ and all sub-calls encountered during its evaluation are groun
    - \maxd\limits_{\taskst{g_i}{e_i} \in \mathcal{L}(\schemewithvset{\mathfrak{S}}{V})(\rho)} d\,(\taskst{g_i}{e_i}) + 1)
 \end{array}
    \]
-  being considered as functions on
-
-  \[\rho \colon V \to T_{\emptyset}\]
+being considered as functions on $\rho \colon V \to T_{\emptyset}$
 \end{reptheorem}
 
-It is based on the  \lemmaword~\ref{lem:symbolic_unification_soundness}, \lemmaword~\ref{lem:sum_estimation}, generalization of the \lemmaword~\ref{lem:times_measure_equations} and soundness and completeness of operational semantics w.r.t. the denotational one.
+The theorem allows to extract two inequalities (upper and lower bounds) for both measures with a multiplicative constant that is the same for all valuations.
 
-The traversing extracts the following recursive approximations for both measures from the scheme. Instead of passing mapping $\rho$ through the approximation, we will write it down as a dependency on ground values $\mathbf{a}$ and $\mathbf{b}$ that are values of $\rho$ on $a$ and $b$ respecively. We use values instead of valuations for nodes too.
+
+For our running example we can extract the following recursive inequalities from the scheme in \figureword~\ref{fig:example_scheme}. For presentation purposes we will not put valuation in inequalities explicitly, but put the ground values of grounded variables (using variables in bold font) that determine each valuation instead. For a specific relation this presentation is always easier.
 
 \[
 \begin{array}{lcll}
-d(q^{app}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (1 + d(q^{app}(\mathbf{t}, \mathbf{b})))) \\
+d(q^{app}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (d(q^{app}(\mathbf{t}, \mathbf{b})) + \sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket} 1)) \\
 & & + \Theta( & 1) \\
 \\
-t(q^{app}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (1 + t(q^{app}(\mathbf{t}, \mathbf{b})))) + \\
-& & + \Theta( & (1 + \sum\limits_{\overline{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (1 + d(q^{app}(\mathbf{t}, \mathbf{b})))) - \\
-& & &  - \maxd\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} d(q^{app}(\mathbf{t}, \mathbf{b})) + 1) 
+t(q^{app}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (t(q^{app}(\mathbf{t}, \mathbf{b})) + \sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket} 1)) + \\
+& & + \Theta( & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (d(q^{app}(\mathbf{t}, \mathbf{b})) + \sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket} 1)) - \\
+& & &  - \maxd\limits{} \{ d\,(init\,(\unigoal{ab}{\mathbf{b}})), d\,(init\,(\unigoal{ab}{\texttt{Cons($\mathbf{h}$, $\mathbf{tb}$)}})) \\
+& & & \qquad \qquad  \qquad  \mid \mathbf{h}, \mathbf{t}, \mathbf{tb}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)} \land (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket \} + 1) 
 \end{array}
 \]
 
 
-\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 5:} simplification in matatheory.}}
 
-Now we move into the metatheory to solve this systems of recursive approximations and deduce the complexity. As usual, when we add the informations from the metatheory the approximations became quite simple.
 
-We consider two cases: when the first list is empty or not. Also, since there is only one non-trivial leaf in the scheme with only one enviroment, so we know that the excluded maximum is reached at the recursive call. After we exclude the recursive call from costs part, we get the following linear approximations. 
+
+
+
+
+\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 5:} simplification in metatheory.}}
+
+Extracted recursive inequalities are big and clumsy, but they contain all the information on how scheduling affects the complexity. We can simlify these inequalities greatly by applying information from metatheory about the given relation.
+
+For our example, we are only interested in the case when substituted values represent some lists. We may consider two cases: when the first list is empty or not. We also can notice that excluded summand equals to one. So we can rewrite our inequalities in the following way.
 
 \[
 \begin{array}{lcl}
@@ -316,29 +337,23 @@ d(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
 d(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & d(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(1) \\
 \\
 t(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
-t(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(1) \\
+t(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(d(q^{app}(\mathbf{t}, \mathbf{b}))) \\
 \end{array}
  \]
  
-In this case the interleaving does not add a significant penalty, because we have recursive call in the end and its cost is eliminated. From these approximation it is clear that the complexity of both measures is linear on the length of the first argument.
+These trivial linear inequalities can be easily solved.
 
 \[
 \begin{array}{lcl}
 d(q^{app}(\mathbf{a}, \mathbf{b})) & = & \Theta(len(\mathbf{a})) \\
-t(q^{app}(\mathbf{a}, \mathbf{b})) & = & \Theta(len(\mathbf{a})) \\
+t(q^{app}(\mathbf{a}, \mathbf{b})) & = & \Theta(len^2(\mathbf{a})) \\
 \end{array}
  \]
  
-In contrast, for the naive version the $d$ would not be eliminated and we would have approximations
+In this case scheduling makes big difference and changes resulting complexity. Notice, that we can express the result using notions from metatheory ($len$ for the length of the list represented by a term).
 
-\[
-\begin{array}{lcl}
-d(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
-d(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & d(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(1) \\
-\\
-t(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
-t(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(d(q^{app}(\mathbf{t}, \mathbf{b})) ) \\
-\end{array}
- \]
+In contrast, if we consider conventional definitoin of \lstinline|append$^o$| the analysis of the call $q^{app}(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$^o$} \, \mathbf{a} \, \mathbf{b} \, ab^?)$ will be analagous, but among the candidates for exclusion will be the value $d(d(q^{app}(\mathbf{t}, \mathbf{b})))$ since the recursive call is placed in a leaf. So the last simplified recursive apprioximation will be the following (the rest will be same as in our running example).
 
-Which gives quadratic complexity.
+\[ t(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) = t(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(1) \]
+
+So in this case complexity of both measures will be linear on $len(\mathbf{a})$.
