@@ -89,6 +89,56 @@ All other cases naturally follow from inductive hypotheses.
 It is a special case of \lemmaword~\ref{lem:gen_measures_changing_env}.
 \end{proof}
 
+\begin{lemma}
+\label{lem:update_substitutions_FV}
+
+Let $\taskst{g_0}{\mkenv{\sigma_0}{n_0}}$ be a base state. Then for every answer $\mkenv{\sigma'}{n'}$ in $\tra{\taskst{g_0}{\mkenv{\sigma_0}{n_0}}}$, $\sigma' = \sigma_0 \delta$ for some substitution $\delta$, such that $\Dom(\delta) \cup \VRan(\delta) \subset FV(g_0 \sigma_0) \cup \{ \alpha_i \mid i > n_0 \}$.
+
+\end{lemma}
+\begin{proof}
+
+First, we need some notions to generalize the statement.
+
+Let $ENV(s)$ be the set of environments that occur in the given state.
+
+\[ \begin{array}{lcl}
+ENV(\Diamond) & = & \emptyset \\
+ENV(\taskst{g}{e}) & = & \{ e \} \\
+ENV(s_1 \oplus s_2) & = & ENV(s_1) \cup ENV(s_2) \\
+ENV(s \otimes g) & = & ENV(s) 
+\end{array} \]
+
+Now, let's generalize the set of variables updated by answers from the statement to an arbitrary state.
+
+\[ \begin{array}{lcl}
+\Delta(\Diamond) & = & \emptyset \\
+\Delta(\taskst{g}{\mkenv{\sigma}{n}}) & = & FV(g \sigma) \cup \{ \alpha_i \mid i > n \} \\
+\Delta(s_1 \oplus s_2) & = & \Delta(s_1) \cup \Delta(s_2) \\
+\Delta(s \otimes g) & = & \Delta(s_1) \cup \bigcup\limits_{\mkenv{\sigma}{n} \in ENV(s)} FV(g \sigma)
+\end{array} \]
+
+Now we can generalize the statement but for one semantical step only: if $s \xrightarrow{l} s'$, then the following three condition hold:
+
+\begin{enumerate}
+\item $\Delta(s) \supset \Delta(s')$
+\item If $l = \mkenv{\sigma'}{n'}$ then there exists $\mkenv{\sigma}{n} \in ENV(s)$ and substitution $\delta$, such that $\sigma' = \sigma \delta$ and $n' = n$ and $\Dom(\delta) \cup \VRan(\delta) \subset \Delta(s)$
+\item For any $\mkenv{\sigma'}{n'} \in ENV(s')$ there exists $\mkenv{\sigma}{n} \in ENV(s)$ and substitution $\delta$, such that $\sigma' = \sigma \delta$ and $n' \ge n$ and $\Dom(\delta) \cup \VRan(\delta) \subset \Delta(s)$
+\end{enumerate}
+
+We prove it by induction on semantical step relation (we have to prove all three conditions simultantiously).
+
+\begin{enumerate}
+\item The first condition is simple for the steps from base goals: counters of occupied variables can only increase and the sets of free variables of subgoals can only decrease (except for the case of fresh variable introduction, where a new free variable appears but it is greater than the counter), in case of invocation we use the fact that the body of any relation is closed (there are no free variables except arguments). For the $\ruleno{ConjStopAns}$ rule we use the second condition: the next step has the environment that updates one of the environments in $s$, so it does not introduce new variables in $\Delta$ and the counter also may only inrease. For the $\ruleno{ConjStep}$ rule we use the third condition: all substitutions from environments of updated state after application to goal does not introduce new variables in $\Delta$, the rest is handled by inductive hypothesis. For the $\ruleno{ConjStepAns}$ rule we combine two previous arguments and for other cases the first condition is obvious from the inductive hypothesis.
+
+\item The second condition needs to be proven only for the $\ruleno{UnifySuccess}$ rule (where it is follows from the properties of the unification algorithm) and for the rules $\ruleno{DisjStopAns}$ and $\ruleno{DisjStepAns}$ (where it is obvious from inductive hypothesis).
+
+\item The third condition follows simply in all cases from the inductive hypothesis and from the second condition (for the rules $\ruleno{ConjStep}$ and $\ruleno{ConjStepAns}$ where the answer is incorporated in the next state).
+\end{enumerate}
+
+Now, the statement of the lemma follows from the generalized statement for one step: at each step substitutions in the answers and in the next step are composed with some additional substitutions that manipulate only variables from the set $\Delta$ for this step, which is a subset of the set $\Delta$ in the beginning, which is exactly what we need.
+
+\end{proof}
+
 \repeatlemma{lem:symbolic_unification_soundness}
 \begin{proof} $ $
 
@@ -327,7 +377,7 @@ D(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') \stackrel{\text{\lemmawo
     
     There is a bijection between the set of answers under the sum on the lhs and a set of suitable $\rho'$ at the rhs: all ground values for the free variables that are consistent with the denotational semantics are present in some answer (because of completeness of the operational semantics wrt to the denotational one) and in exactly one (because the call is non-repetitive).
     
-    Now, we need to show that if we take any answer $(\sigma \rho \delta, n')$ and $\rho'$ that corresponds to it by the described bijection then the values for them under the sums are equal. First, we need to replace $D(\taskst{g'}{(\sigma \rho \delta, n')}, \Gamma')$ by $D(\taskst{g'}{(\sigma \rho \delta\restriction_U, n)}, \Gamma')$, we can do it because all variables from $\Dom(\delta) \setminus U$ have indices greater or equal than $n$ (by \lemmaword~\ref{lem:bounded_variables_of_answer}) and therefore these variables are not free variables of goals from $(g' : \Gamma')$, so the values of $d$ on this goals will be the same for the restricted substitution (it follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}). After this replacement we can directly apply the inductive hypothesis.
+    Now, we need to show that if we take any answer $(\sigma \rho \delta, n')$ and $\rho'$ that corresponds to it by the described bijection then the values for them under the sums are equal. First, we need to replace $D(\taskst{g'}{(\sigma \rho \delta, n')}, \Gamma')$ by $D(\taskst{g'}{(\sigma \rho \delta\restriction_U, n)}, \Gamma')$, we can do it because all variables from $\Dom(\delta) \setminus U$ have indices greater or equal than $n$ (by \lemmaword~\ref{lem:update_substitutions_FV}) and therefore these variables are not free variables of goals from $(g' : \Gamma')$, so the values of $d$ on this goals will be the same for the restricted substitution (it follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}). After this replacement we can directly apply the inductive hypothesis.
 	
 	\end{enumerate}
 
