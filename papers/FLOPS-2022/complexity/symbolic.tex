@@ -1,6 +1,38 @@
 \section{Complexity Analysis via Symbolic Execution Schemes}
 \label{sec:symbolic}
 
+Our approach to complexity analysis is based on a semi-automatic procedure involving symbolic evaluation.
+In the previous section we presented formulas to compositionally estimate the complexity factors for
+\emph{non-leaf states} of operational semantics under assumption that coresponding estimations for
+\emph{leaf states} are given. In order to obtain corresponding estimations for relations we
+would need to take into account the effects of relational invocations, including the recursive ones.
+
+Another observation is that as a rule we are interested in complexity estimations in terms of some \emph{metatheory}. For
+example, dealing with relations on lists we would be interested in estimations in terms of list lengths,
+with trees~--- in terms of depth or number of nodes, with numbers~--- in terms of their values, etc. It is
+unlikely that a generic term-based framework would provide such a specific information automatically. Thus,
+a viable approach would be to extract some inequalities involving the complexity factors of certain relational
+calls automatically and then let a human being solve these inequalities in terms of a relevant metatheory.
+
+The extraction procedure utilizes the symbolic execution technique and is completely automatic. It turns out that
+the semantics we have is already abstract enough to be used for symblolic execution with minor adjustments.
+First, we introduce a notion of \emph{symbolic variables}; symbolic variables behave like regular free logic
+variables, but at certain moments we additionally interpret them as ground terms. Informally, for some
+goal with free and symbolic variables we consider the complexity of a search procedure which finds
+the \emph{bindings} for all free variables based on the \emph{ground values} of the symbolic ones. This
+seach procedure is defined precisely by the operational semantics; however, as the concrete values of symbolic
+variables are unknown (only the fact of their \emph{groundness}), the whole procedure becomes symbolic. In particular,
+in unification the groundness of initial symbolic variables can be propagated to some other free variables. Thus,
+the symbolic execution is parameterized over the initial set of symbolic varibles (hereafter denoted as $V\subset\mathcal A$).
+The initial choice of $V$ defines the problem we analyze. [Example]
+
+
+
+
+Then, we consider
+\emph{valuations}~--- mappings from symbolic variables to ground terms.
+
+
 \colorbox{red!20}{\textbf{SHOULD BE DEFINED IN THE INTRODUCTION}}
 \begin{lstlisting}[basicstyle=\small]
    append$^o$ = fun a b ab ->
