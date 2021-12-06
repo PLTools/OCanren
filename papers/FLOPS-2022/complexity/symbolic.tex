@@ -2,7 +2,7 @@
 \label{sec:symbolic}
 
 Our approach to complexity analysis is based on a semi-automatic procedure involving symbolic evaluation.
-In the previous section we presented formulas to compositionally estimate the complexity factors for
+In the previous section we presented formulae to compositionally estimate the complexity factors for
 \emph{non-leaf states} of operational semantics under assumption that coresponding estimations for
 \emph{leaf states} are given. In order to obtain corresponding estimations for relations we
 would need to take into account the effects of relational invocations, including the recursive ones.
@@ -14,81 +14,61 @@ unlikely that a generic term-based framework would provide such a specific infor
 a viable approach would be to extract some inequalities involving the complexity factors of certain relational
 calls automatically and then let a human being solve these inequalities in terms of a relevant metatheory.
 
-The extraction procedure utilizes the symbolic execution technique and is completely automatic. It turns out that
-the semantics we have is already abstract enough to be used for symblolic execution with minor adjustments.
-First, we introduce a notion of \emph{symbolic variables}; symbolic variables behave like regular free logic
-variables, but at certain moments we additionally interpret them as ground terms. Informally, for some
-goal with free and symbolic variables we consider the complexity of a search procedure which finds
-the \emph{bindings} for all free variables based on the \emph{ground values} of the symbolic ones. This
-seach procedure is defined precisely by the operational semantics; however, as the concrete values of symbolic
-variables are unknown (only the fact of their \emph{groundness}), the whole procedure becomes symbolic. In particular,
-in unification the groundness of initial symbolic variables can be propagated to some other free variables. Thus,
-the symbolic execution is parameterized over the initial set of symbolic varibles (hereafter denoted as $V\subset\mathcal A$).
-The initial choice of $V$ defines the problem we analyze. [Example]
+For clarity we will provide demonstration of the complexity analysis for a specific example -- \lstinline|append$^o_{naive}$| relation from the introduction  -- throughout the section.
 
+The extraction procedure utilizes the symbolic execution technique and is completely automatic.
+It turns out that the semantics we have is already abstract enough to be used for symblolic
+execution with minor adjustments.
+In this symbolic procedure we mark some of the logic variables as ``grounded'' and at certain
+moments substitute them with ground terms.
+Informally, for some goal with some free logic variables we consider the complexity of a search
+procedure which finds the bindings for all non-grounded variables based on the ground values
+substituted for the grounded ones.
+This seach procedure is defined precisely by the operational semantics; however, as the concrete
+values of grounded variables are unknown (only the fact of their \emph{groundness}), the whole
+procedure becomes symbolic.
+In particular, in unification the groundness can be propagated to some non-grounded free variables.
+Thus, the symbolic execution is determined by the subset of grounded varibles (hereafter denoted
+as $V\subset\mathcal A$).
+The initial choice of $V$ defines the problem we analyze.
 
+For our example, we want to study the execution when we specialize the first two arguments with
+ground values and left the last argument with free variable. 
+So we start with the goal \lstinline|append$^o_{naive}$ $a$ $b$ $ab$| (with three distinct logic variables
+$a$, $b$ and $ab$) and set the initial $V = \{ a, b \}$.
 
-
-Then, we consider
-\emph{valuations}~--- mappings from symbolic variables to ground terms.
-
-
-\colorbox{red!20}{\textbf{SHOULD BE DEFINED IN THE INTRODUCTION}}
-\begin{lstlisting}[basicstyle=\small]
-   append$^o$ = fun a b ab ->
-     ((a === Nil) /\ (ab === b)) \/
-     (fresh (h t tb)
-        (a === Cons(h, t)) /\
-        (append$^o$ t b tb) /\
-        (ab === Cons(h, tb)) 
-     )
-\end{lstlisting}
-
-\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 1}: Overview of the symbolic analysis approach.
-Analyzing relational calls, symbolic variables as subset of logic variables, symbolic schemes, extracting approximations for d-measure and t-measure, solving approximations in metatheory.}}
-
-For clarity we will provide demonstration of the complexity analysis for a specific example -- \lstinline|append$^o$| relation the introduction  -- throughout the section.
-
-\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 2}: Symbolic variables and symbolic analysis problem statement.}}
-
-\colorbox{blue!20}{\parbox{\textwidth}{Substituting logic variables by ground values, valuations $\rho : V \to \grterms$}}
-
-Extension for valuations:
-
-\begin{definition}
-  Suppose
-  $ V \subset U \subset \mathcal{A} $
-  and
-  $ \rho \colon V \to \mathcal{T}_{\emptyset} $
-  and
-  $ \rho^\prime \colon U \to \mathcal{T}_{\emptyset} $
-  We say that $\rho^\prime$ extends $\rho$ (denotation: $ \rho^\prime \succ \rho$) if
-  $ \forall x \in V \,:\, \rho^\prime\,(x) = \rho\,(x) $
-\end{definition}
-
-Let's say we want to analyze what happen if we substitute first two argument of \lstinline|append$^o$| with grounded variables and left the last argument free.
-
-\colorbox{blue!20}{\parbox{\textwidth}{Stability wrt free variables, counter and substitution}}
-
-It is important to note that both our time measures are 'stable' w.r.t. renaming of logical variables and change of counter of fresh logical variables (as long as it stays adequate).
+It is important to note that both our complexity factors are stable w.r.t. renaming of free
+variables.
+The measures are also stable w.r.t. change of the fresh variables counter, as long as it stays
+adequate, and change of current substitution, as long as it gives the same terms after application.
+This observation shows that it does not matter at which point of execution a relational call is invoked and so
+we can analyze every call separatelly.
 
 \begin{replemma}{lem:measures_changing_env}
 
-  Suppose $FV\,(g) \cup \Dom\,(\sigma) \cup \VRan\,(\sigma) \subseteq \{ \alpha_1\dots\alpha_n \} $ and $FV\,(g^\prime) \cup \Dom\,(\sigma^\prime) \cup \VRan\,(\sigma^\prime) \subseteq \{ \alpha_1\dots \alpha_{n^\prime} \} $
-  and there is a bijective substitution $\pi \colon FV\,(g \sigma) \to FV\,(g^\prime \sigma^\prime)$  such that  $g \sigma \pi = g^\prime \sigma^\prime $ Then $ d\,(\taskst{g}{\mkenv{\sigma}{n}}) = d\,(\taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}}) $ and $ t\,(\taskst{g}{\mkenv{\sigma}{n}}) = t\,(\taskst{g}{\mkenv{\sigma}{n}}) $
-
+Let $s = \taskst{g}{\mkenv{\sigma}{n}}$ and $s' = \taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}}$ be two well-formed states.
+If  there exists a bijective substitution $\pi \colon FV\,(g \sigma) \to FV\,(g^\prime \sigma^\prime)$  such that  $g \sigma \pi = g^\prime \sigma^\prime $, then $d\,(s) = d\,(s^\prime)$ and $t\,(s) = t\,(s^\prime)$.
 \end{replemma}
 
-So the following definition will be useful to construct a base-state representative for an arbitrary goal.
+We therefore can construct an initial state for any given goal using the following definition and
+analyze its execution.
 
-\begin{definition} Let $g$ be a goal. An initial state for $g$ is $init\,(g)=\taskst{g}{(\varepsilon, \ninit\,(g))} $ where $ n_{init}\,(g) = \min\, \{ n \mid FV\,(g) \subseteq \{ \alpha_1\dots\alpha_n \} \} $
+\begin{definition} Let $g$ be a goal. An initial state for $g$ is $init\,(g)=\taskst{g}{(\varepsilon, \ninit\,(g))} $ with $ n_{init}\,(g) = \min\, \{ n \mid FV\,(g) \subseteq \{ \alpha_1\dots\alpha_n \} \} $
 \end{definition}
 
-So we will be studying the family of queries \[ q^{app}(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$^o$} \, \mathbf{a} \, \mathbf{b} \, ab^?) \]
+For our example, we will be studying the family of initial states $q^{appn}(\mathbf{a}, \mathbf{b}) = init\,(\lstinline|append$^o_{naive}$ $\mathbf{a}$ $\mathbf{b}$ $ab$|)$ with arbitrary ground terms $\mathbf{a}$ and $\mathbf{b}$.
 
-\colorbox{blue!20}{\parbox{\textwidth}{Symbolic unifications. Use usual unificatoion, but add constrains on symbolic variables}}
+We are aiming at the complexity function depending on specific ground values substituted for grounded variables, so in general case extracted inequalities will be parameterized by \emph{valuations}~--- mappings from the set of grounded variables to ground terms. As the new variables are added to this set during execution, the valuations need to be extended on these new variables. We will use the following definition to capture it.
 
-Notions for constrains:
+\begin{definition}
+  Let $ V \subset U \subset \mathcal{A} $ and $ \rho \colon V \to \mathcal{T}_{\emptyset} $ and $ \rho^\prime \colon U \to \mathcal{T}_{\emptyset} $ be two valuations. We say that $\rho^\prime$ extends $\rho$ (denotation: $ \rho^\prime \succ \rho$) if $\rho^\prime\,(x) = \rho\,(x)$ for all $x \in V$.
+\end{definition}
+
+The main objective of the symbolic execution in our case is to find constraints on valuations for every basic goal in the body of a relation that determine whether the execution will continue and how valuation change after this goal.
+
+For internal relational calls we will describe constraints in term of denotational semantics (to be later given meaning inside metatheory). We can do it beacuse of precise equivalence between the anwers found by operational semantics and values described by denotational semantics thanks to soundness and completness as well as our requirements of grounding and non-repetitiveness of calls.
+
+Our symbolic treatment of equalities will rely on the fact that subtitution of ground terms commutes, in a certain sense, with unification. More specifically, we can use the most general unifier for two terms to see how unification goes for these two terms with some free variables substituted with ground terms. The most general unifier may contain bindings for both grounded and non-grounded variables. Potential most general unifier for terms after substitution contains the same bindings for non-grounding terms (with valuation applied to their rhs), while bindings for grounding variables turn into equations that should be satisfied by unifier with ground value on the left and binded term on the right. In particular, this means that all variables in bindings for grounded variables become grounded too. We can use this observation to define an iterative process that determines the updated set of grounded variables $\upd{U}{\delta}$ for a current set $U$ and a most general unifier $\delta$ and a set of equations $\constr{\delta}{U}$ that should be satisfied by the valuation.
 
 \[
 \upd{U}{\delta} = \begin{cases}
@@ -99,18 +79,14 @@ Notions for constrains:
 
 \[ \constr{\delta}{U} = \{ x = \delta\,(x) \mid x \in U \cap \mathcal{D}om\,(\delta) \} \]
 
-Soundness of symbolic unification:
+Using these definitions we can describe symbolic unification in our case by the following lemma.
 
 \begin{replemma}{lem:symbolic_unification_soundness}
-
-  Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$. If $mgu\,(t_1, t_2) = \delta$ and $U = \upd{V}{\delta} $  then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y, \, t) \in \constr{\delta}{U}\,:\, \rho'\,(y) = t \rho'$.
-In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a permutation $\pi$ on $FV(t_1) \cup FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
+Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$ be a valuation. If $mgu\,(t_1, t_2) = \delta$ and $U = \upd{V}{\delta} $  then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y = t) \in \constr{\delta}{U}\,:\, t_1 \rho = t_2 \rho'$.
+In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a bijective substitution $\pi : FV(t_1) \to FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
 \end{replemma}
 
-
-\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 3}: Symbolic schemes. Form and derivation rules}}
-
-The first step of the analysis is construction of a symbolic scheme. Symbolic schemes represents visually execution of the body of a relation for a given set of grounded variables. Differenct branches correspond to different disjuncts and nodes are internal equalities and relational calls in the body, with specified subset of variables that are grounded at the point of their execution. Constrains on substituted grounded variables that determine whether the execution continues are presented as labels on edges of a scheme.
+Our extraction will be based on a visual representation of execution of the body of a relation for a given set of grounded variables as a symbolic scheme. It is a tree structure with differenct branches corresponding to different disjuncts and nodes that are internal equalities and relational calls in the body, with specified subset of variables that are grounded at the point of their execution.~\footnote{Notice that the difference with usual symbolic execution graphs with different branches representing mutually exclusive possible paths of evaluation, not the different parts of one evaluation.} Constrains on substituted grounded variables that determine whether the execution continues are presented as labels on edges of a scheme.
 
 More formally, each scheme has one of the following 5 forms (scheme is indexed by the subset of grounded variables, $\Upsilon = 2^{\mathcal{A}}$ denoting such subsets).
 
@@ -190,22 +166,18 @@ The rules are shown on \figureword~\ref{fig:scheme_formation}. \ruleno{Conj$_\ma
         child { node {$\unigoal{ab}{\overline{b}}$}
                   edge from parent node[right]{\tiny{${a} = \texttt{Nil}$}} } }
       child { node {$\unigoal{\overline{a}}{\texttt{Cons($h$, $t$)}}$} 
-      	child { node {\texttt{append$^o$ $\overline{t}$ $\overline{b}$ $tb$}}
+      	child { node {\texttt{append$^o_{naive}$ $\overline{t}$ $\overline{b}$ $tb$}}
       	   child { node {$\unigoal{ab}{\texttt{Cons($\overline{h}$, $\overline{tb}$)}}$}
-      	             edge from parent node[right]{\tiny{$({t}, {b}, {tb}) \in \llbracket \texttt{append$^o$} \rrbracket$}}  }
+      	             edge from parent node[right]{\tiny{$({t}, {b}, {tb}) \in \llbracket \texttt{append$^o_{naive}$} \rrbracket$}}  }
       	   edge from parent node[right]{\tiny{${a} = \texttt{Cons(${h}$, ${t}$)}$}}  } } ;
 \end{tikzpicture}
 \end{center}
 
-\caption{Symbolic execution scheme for the goal $\texttt{append$^o$} \, a \, b \, ab$ with initial set of grounded variables $V = \{ a, b \}$. For each node, variables that are grounded at the point of execution of this node are overlined. }
+\caption{Symbolic execution scheme for the goal  \lstinline|append$^o_{naive}$ $a$ $b$ $ab$|  with initial set of grounded variables $V = \{ a, b \}$. For each node, variables that are grounded at the point of execution of this node are overlined. }
 \label{fig:example_scheme}
 \end{figure}
 
 The scheme constructed by these rules for our \lstinline|append$^o$| example is shown in \figureword~\ref{fig:example_scheme}. For simplicity we do not put the set of grounded variables for each node, but instead overline variables that are grounded. Note that all variables that occur in constraints on edges are grounded after the parent node is executed.
-
-\FloatBarrier
-
-\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 4}: Extracting recursive approximations.}}
 
 Now, we can use schemes to see how the basic goals in relation body are combined with conjunctions and disjuntions. Then we can apply formulae from \sectionword~\ref{sec:scheduling} to get recursive inequalities (providing lower and upper bounds simultaniously) for both complexity measures.
 
@@ -241,7 +213,7 @@ In this inequalities we need to sum values of $d$-measure and $t$-measure for al
 
 
 \begin{figure}[t]
-\colorbox{yellow!20}{\parbox{\textwidth}{\textbf{Maybe move this to appendix and leave here description explanation only}}}
+\colorbox{yellow!20}{\parbox{\textwidth}{\textbf{Maybe move this to appendix and leave here the informal description only}}}
 
 \[
 \begin{array}{rclcl}
@@ -272,49 +244,6 @@ In this inequalities we need to sum values of $d$-measure and $t$-measure for al
 
 As we saw in \sectionword~\ref{sec:scheduling} when computing scheduling factor we need to exclude from the additional cost the value of $d$-measure for one of the environments (the biggest one). It will be the case with the generalized formula for a whole scheme too, this time we need to take all executed environments for all the leaves of a scheme and exclude the $d$-measure value maximal one (formula for conjunction ensures that we make the exclusion for the leaf, and the formula for disjuntion ensures that we make it for only one of the leaves). So, we will need additional notion $\mathcal{L}$, similar to $\mathcal{D}$ and $\mathcal{T}$ that will collect all the goals of the form $init\,(g_i \rho)$, where $g_i$ is a goal at leaf and $\rho$ is valuation corresponding to one of the environments that this leaf is evaluated on. Definition of $\mathcal{L}$ is shown in \figureword~\ref{fig:scheduling_extraction_l}.
 
-
-\FloatBarrier
-
-
-
-
-
-
-
-
-\colorbox{red!20}{\parbox{\textwidth}{\textbf{These are the requirements of the method that should be stated earlier (likely, without formal definitions)}}}
-
-We prove the theorem only for goals in DNF.
-
-\[
-\begin{array}{lcl}
-B_{nf} & = &  \unigoal{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \; \mid \;
-                     \invokegoal{R^k}{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \\
-C_{nf} & = & B_{nf} \; \mid \; \conjgoal{C_{nf}}{B_{nf}} \\
-F_{nf} & = & C_{nf} \; \mid \; \freshgoal{X}{F_{nf} } \\
-D_{nf} & = & F_{nf} \; \mid \; \disjgoal{D_{nf}}{F_{nf}}
-\end{array}
-\]
-
-We also have a requirement that all recursive calls performed during unification are \emph{grounding} and \emph{non-repetitive}.
-
-\begin{definition}
-  We call relational invocation
-  
-  \[\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}\]
-
-  \emph{grounding} and \emph{non-repetitive} if 
-
-  \[ \forall (\sigma^{a}, n^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, FV(t_i \sigma^{a}) = \emptyset \]
-
-  and
-  
-  \[ \forall (\sigma_1^{a},\, n_1^{a}),\, (\sigma_2^{a},\, n_2^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, (t_1 \sigma_1^{a}, \dots, t_k \sigma_1^{a}) \ne (t_1 \sigma_2^{a},\, \dots, t_k \sigma_2^{a}) \]
-\end{definition}
-
-
-\colorbox{red!20}{\parbox{\textwidth}{\textbf{==================}}}
-
 Now we can formulate the following main theorem that provides the principal recursive approximations, extracted from the scheme for a given goal.
 
 \begin{reptheorem}{extracted_approximations}
@@ -340,24 +269,16 @@ For our running example we can extract the following recursive inequalities from
 
 \[
 \begin{array}{lcll}
-d(q^{app}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (d(q^{app}(\mathbf{t}, \mathbf{b})) + \sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket} 1)) \\
+d(q^{appn}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (d(q^{appn}(\mathbf{t}, \mathbf{b})) + \sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o_{naive}$} \rrbracket} 1)) \\
 & & + \Theta( & 1) \\
 \\
-t(q^{app}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (t(q^{app}(\mathbf{t}, \mathbf{b})) + \sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket} 1)) + \\
-& & + \Theta( & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (d(q^{app}(\mathbf{t}, \mathbf{b})) + \sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket} 1)) - \\
+t(q^{appn}(\mathbf{a}, \mathbf{b})) & = & & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (t(q^{appn}(\mathbf{t}, \mathbf{b})) + \sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o_{naive}$} \rrbracket} 1)) + \\
+& & + \Theta( & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}} (d(q^{appn}(\mathbf{t}, \mathbf{b})) + \sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o_{naive}$} \rrbracket} 1)) - \\
 & & &  - \maxd\limits{} \{ d\,(init\,(\unigoal{ab}{\mathbf{b}})), d\,(init\,(\unigoal{ab}{\texttt{Cons($\mathbf{h}$, $\mathbf{tb}$)}})) \\
-& & & \qquad \qquad  \qquad  \mid \mathbf{h}, \mathbf{t}, \mathbf{tb}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)} \land (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket \} + 1) 
+& & & \qquad \qquad  \qquad  \mid \mathbf{h}, \mathbf{t}, \mathbf{tb}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)} \land (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o_{naive}$} \rrbracket \} + 1) 
 \end{array}
 \]
 
-
-
-
-
-
-
-
-\colorbox{blue!20}{\parbox{\textwidth}{\textbf{PART 5:} simplification in metatheory.}}
 
 Extracted recursive inequalities are big and clumsy, but they contain all the information on how scheduling affects the complexity. We can simlify these inequalities greatly by applying information from metatheory about the given relation.
 
@@ -365,11 +286,11 @@ For our example, we are only interested in the case when substituted values repr
 
 \[
 \begin{array}{lcl}
-d(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
-d(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & d(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(1) \\
+d(q^{appn}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
+d(q^{appn}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & d(q^{appn}(\mathbf{t}, \mathbf{b})) + \Theta(1) \\
 \\
-t(q^{app}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
-t(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(d(q^{app}(\mathbf{t}, \mathbf{b}))) \\
+t(q^{appn}(\texttt{Nil}, \mathbf{b})) & = & \Theta(1) \\
+t(q^{appn}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t(q^{appn}(\mathbf{t}, \mathbf{b})) + \Theta(d(q^{appn}(\mathbf{t}, \mathbf{b}))) \\
 \end{array}
  \]
  
@@ -377,15 +298,15 @@ These trivial linear inequalities can be easily solved.
 
 \[
 \begin{array}{lcl}
-d(q^{app}(\mathbf{a}, \mathbf{b})) & = & \Theta(len(\mathbf{a})) \\
-t(q^{app}(\mathbf{a}, \mathbf{b})) & = & \Theta(len^2(\mathbf{a})) \\
+d(q^{appn}(\mathbf{a}, \mathbf{b})) & = & \Theta(len(\mathbf{a})) \\
+t(q^{appn}(\mathbf{a}, \mathbf{b})) & = & \Theta(len^2(\mathbf{a})) \\
 \end{array}
  \]
  
 In this case scheduling makes big difference and changes resulting complexity. Notice, that we can express the result using notions from metatheory ($len$ for the length of the list represented by a term).
 
-In contrast, if we consider conventional definitoin of \lstinline|append$^o$| the analysis of the call $q^{app}(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$^o$} \, \mathbf{a} \, \mathbf{b} \, ab^?)$ will be analagous, but among the candidates for exclusion will be the value $d(d(q^{app}(\mathbf{t}, \mathbf{b})))$ since the recursive call is placed in a leaf. So the last simplified recursive apprioximation will be the following (the rest will be same as in our running example).
+In contrast, if we consider conventional definitoin of \lstinline|append$^o$| the analysis of the call $q^{appo}(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$^o_{opt}$} \, \mathbf{a} \, \mathbf{b} \, ab)$ will be analagous, but among the candidates for exclusion will be the value $d(q^{app}(\mathbf{t}, \mathbf{b}))$ since the recursive call is placed in a leaf. So the last simplified recursive apprioximation will be the following (the rest will be same as in our running example).
 
-\[ t(q^{app}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) = t(q^{app}(\mathbf{t}, \mathbf{b})) + \Theta(1) \]
+\[ t(q^{appo}(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) = t(q^{appo}(\mathbf{t}, \mathbf{b})) + \Theta(1) \]
 
 So in this case complexity of both measures will be linear on $len(\mathbf{a})$.
