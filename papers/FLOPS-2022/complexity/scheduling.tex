@@ -48,27 +48,6 @@ Our next goal is to derive recurrent equations which would relate the scheduling
 
 % We take scheduling factor $t\,(s)$ as a value that determines the scheduling complexity $T_s$, but we will also need to calculate $d\,(s)$ as it will be used in the equations for $t\,(s)$. 
 
-The following trivial lemma handles the basic (leaf state) case:
-
-\begin{lemma}
-\label{lem:task_measure_equations}
-  If
-
-  \[\taskst{g}{e} \xrightarrow{l} s^\prime\]
-
-  then
-
-  \[
-    \begin{array}{rcl}
-    d\,(\taskst{g}{e}) &=& d\,(s^\prime) + 1\\
-    t\,(\taskst{g}{e}) &=& t\,(s^\prime) + 1
-    \end{array}
-  \]
-\end{lemma}
-\begin{proof}
-    Follows immediately from the definitions of the estimated values.\qed
-\end{proof}
-
 %In $\oplus$-states the substates are evaluated separately, one step at a time for each substate,
 %so the total number of semantic steps is just a sum.
 %However, for the scheduling factor, there is an extra summand since the heights of the states in

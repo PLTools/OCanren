@@ -1,6 +1,8 @@
 \section{Background: syntax and operational semantics}
 \label{sec:background}
 
+\colorbox{red!20}{\parbox{\textwidth}{General description of \mK as embedded language based on lazy streams}}
+
 In this section, we recollect some known formal descriptions for \mK language that will be used as a basis for our development.
 Specifically, we restate the syntax of the basic version of the language and the operational semantics for program evaluation.
 The descriptions here are taken from~\cite{CertifiedSemantics} (with a few non-essential adjustments for presentation purposes) to make
@@ -64,8 +66,9 @@ This semantics corresponds to the canonical implementation of interleaving searc
   \Sigma & = & \mathcal{A} \to \mathcal{T}_\mathcal{A} & \mbox{substitutions} &\qquad\qquad&        S & = & \taskst{\mathcal{G}}{E} & \mbox{task} \\
        E & = & \Sigma \times \mathbb{N}              & \mbox{environments}  &\qquad\qquad&          &   & S \oplus S              & \mbox{sum} \\
          &   &                                       &                      &\qquad\qquad&          &   & S \otimes \mathcal{G}   & \mbox{product} \\
-         &   &                                       &                      &\qquad\qquad&  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} \\
-         &   &                                       &                      &\qquad\qquad&        L & = & \circ \; \mid \; E      & \mbox{labels} 
+%         &   &                                       &                      &\qquad\qquad&  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} \\
+       L & = & \circ \; \mid \; E      & \mbox{labels}        &\qquad\qquad&  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} \\
+%         &   &                                       &                      &\qquad\qquad&        L & = & \circ \; \mid \; E      & \mbox{labels} 
 \end{array}
 \]
 \caption{States and labels in the LTS for \mK}
@@ -112,3 +115,7 @@ them.
 It may be either finite (ending with the terminal state $\Diamond$) or infinite.
 We will denote by $\trs{s}$ the sequence of states in the trace for initial state $s$ and by $\tra{s}$ the sequence of answers
 in the trace for initial state $s$. The sequence $\tra{s}$ corresponds to the stream of answers in the reference \mK implementations.
+
+\colorbox{red!20}{\parbox{\textwidth}{Definition of well-foundness of states}}
+
+\colorbox{red!20}{\parbox{\textwidth}{Denotatinal semantics and its equivalence to the operational one}}

@@ -11,7 +11,7 @@ and value $g(x)$ is always positive then
 \begin{proof}
 \begin{enumerate}
 \item For some real  postive $C_1$: $h(x) \ge f(x) + C_f + C_1 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + C_1 \cdot g(x)$
-\item For some real  postive $C_2$: $h(x) \le f(x) + C_f + C_2 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + (C_f + C_2 + C_2 \cdot C_g) \cdot g(x)$
+\item For some real  postive $C_2$: $h(x) \le f(x) + C_f + C_2 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + (C_f + C_2 + C_2 \cdot C_g) \cdot g(x)$\qed
 \end{enumerate}
 \end{proof}
 
@@ -25,7 +25,7 @@ then
 \[ (h_1(x) + h_2(x)) = (f_1(x) + f_2(x)) + \Theta(g_1(x) + g_2(x)) \]
 \end{lemma}
 \begin{proof}
-Both lower and apper constants are the sums of two corresponding constants for the given approximations.
+Both lower and apper constants are the sums of two corresponding constants for the given approximations.\qed
 \end{proof}
 
 \begin{lemma}
@@ -39,8 +39,29 @@ then
 \begin{proof}
 \begin{enumerate}
 \item For some real  postive $C_1$: \[ h(x) \ge f(x) + C_1 \cdot (g_1(x) + g_2(x)) \ge f(x) + C_1 \cdot g_1(x) \]
-\item For some real  postive $C_2$: \[ h(x) \le f(x) + C_2 \cdot (g_1(x) + g_2(x)) \le f(x) + 2 C_2 \cdot g_1(x) \]
+\item For some real  postive $C_2$: \[ h(x) \le f(x) + C_2 \cdot (g_1(x) + g_2(x)) \le f(x) + 2 C_2 \cdot g_1(x) \]\qed
 \end{enumerate}
+\end{proof}
+
+The following trivial lemma handles the basic (leaf state) case:
+
+\begin{lemma}
+\label{lem:task_measure_equations}
+  If
+
+  \[\taskst{g}{e} \xrightarrow{l} s^\prime\]
+
+  then
+
+  \[
+    \begin{array}{rcl}
+    d\,(\taskst{g}{e}) &=& d\,(s^\prime) + 1\\
+    t\,(\taskst{g}{e}) &=& t\,(s^\prime) + 1
+    \end{array}
+  \]
+\end{lemma}
+\begin{proof}
+    Follows immediately from the definitions of the estimated values.\qed
 \end{proof}
 
 
@@ -80,13 +101,13 @@ For the case when we incorporate the answer obtained at this step in the next st
 
 \[ g \sigma \delta \pi_r = g \sigma \pi \delta' = g' \sigma' \delta'  \] 
 
-All other cases naturally follow from inductive hypotheses.
+All other cases naturally follow from inductive hypotheses.\qed
 
 \end{proof}
 
 \repeatlemma{lem:measures_changing_env}
 \begin{proof}
-It is a special case of \lemmaword~\ref{lem:gen_measures_changing_env}.
+It is a special case of \lemmaword~\ref{lem:gen_measures_changing_env}.\qed
 \end{proof}
 
 \begin{lemma}
@@ -135,7 +156,7 @@ We prove it by induction on semantical step relation (we have to prove all three
 \item The third condition follows simply in all cases from the inductive hypothesis and from the second condition (for the rules $\ruleno{ConjStep}$ and $\ruleno{ConjStepAns}$ where the answer is incorporated in the next state).
 \end{enumerate}
 
-Now, the statement of the lemma follows from the generalized statement for one step: at each step substitutions in the answers and in the next step are composed with some additional substitutions that manipulate only variables from the set $\Delta$ for this step, which is a subset of the set $\Delta$ in the beginning, which is exactly what we need.
+Now, the statement of the lemma follows from the generalized statement for one step: at each step substitutions in the answers and in the next step are composed with some additional substitutions that manipulate only variables from the set $\Delta$ for this step, which is a subset of the set $\Delta$ in the beginning, which is exactly what we need.\qed
 
 \end{proof}
 
@@ -159,7 +180,7 @@ Let's split $T$ on $T_U = \{ (\rho(x), \delta(x) \rho) \mid x \in U \cap \Dom(\d
 
 First, let's look at some pair $(\rho(x), \delta(x) \rho)$ for $x \in V \cap \Dom(\delta)$. By definition of $\rho'$ we have $\rho(x) \rho' = \delta(x) \rho \rho'$. The first term in the pair is ground, the second one may contain free variables (then they are variables from $U_1$). If the second term is ground too, they are equal and we can delete this pair. Otherwise, using decomposition rule we decompose this pair to pairs of terms with second term being variable. After this, we will have pairs $(\rho'(y), y)$ for all $y \in FV(\delta(x) \rho)$. After we do it with all such pairs for all variables from $V \cap \Dom(\delta)$, this pairs will turn into swapped bindings $(\rho'(y), y)$ for all $y \in U_1$ (mybe with repetitions). We then can discard duplicates, swap the elements and apply this bindings in the rest of $T$. Now all the pairs $(\rho(x), \delta(x) \rho)$ for $x \in (U_1 \setminus V) \cap \Dom(\delta)$ after substitution have ground term as the left term and we can repeat the transformation for all these pairs. We can repeat this process by induction on $i$ for $x \in U_i$, it will stop when $U_i$ becomes equal to $U$.
 
-After this application of rules all pairs from $T_U$ are decomposed and it is turned into the substitution (as a set of bindings) $\rho'\restriction_{U \setminus V}$. On the other hand the pairs from $T_{-U}$ we did not decompose, just applied substitutions to them so every pair from this part still have some variable $z$ as the first term (because $z \not\in U$) and term $\delta(z) \rho (\rho'\restriction_{U \setminus V})$ as the second them. So we can see that we turned the set of terms $T$ into the substitution ${(\delta\restriction_{\Dom(\delta) \setminus U} \rho')\restriction_{\Dom(\delta) \setminus V}}$ which equals ${(\delta \rho')\restriction_{\Dom(\delta) \setminus V}}$ because $\rho'$ unifies bindings in $\delta$, so this substitution is the most general unifier for $T$ and therefore for terms $t_1 \rho$ and $t_2 \rho$. Then this substitution is alpha-equivalent to $mgu(t_1 \rho, t_2 \rho)$ (because most general unifiers are unique up to alpha-equivalence). So if we take $\rho mgu(t_1 \rho, t_2 \rho)$, we will get substitution alpha-equivalent to the substitution ${\rho ((\delta \rho')\restriction_{\Dom(\delta) \setminus V})}$ which equals substitution $\delta \rho'$ (obvious separately for variables from $V$ and outside $V$).
+After this application of rules all pairs from $T_U$ are decomposed and it is turned into the substitution (as a set of bindings) $\rho'\restriction_{U \setminus V}$. On the other hand the pairs from $T_{-U}$ we did not decompose, just applied substitutions to them so every pair from this part still have some variable $z$ as the first term (because $z \not\in U$) and term $\delta(z) \rho (\rho'\restriction_{U \setminus V})$ as the second them. So we can see that we turned the set of terms $T$ into the substitution ${(\delta\restriction_{\Dom(\delta) \setminus U} \rho')\restriction_{\Dom(\delta) \setminus V}}$ which equals ${(\delta \rho')\restriction_{\Dom(\delta) \setminus V}}$ because $\rho'$ unifies bindings in $\delta$, so this substitution is the most general unifier for $T$ and therefore for terms $t_1 \rho$ and $t_2 \rho$. Then this substitution is alpha-equivalent to $mgu(t_1 \rho, t_2 \rho)$ (because most general unifiers are unique up to alpha-equivalence). So if we take $\rho mgu(t_1 \rho, t_2 \rho)$, we will get substitution alpha-equivalent to the substitution ${\rho ((\delta \rho')\restriction_{\Dom(\delta) \setminus V})}$ which equals substitution $\delta \rho'$ (obvious separately for variables from $V$ and outside $V$).\qed
  
 
 \end{enumerate}
@@ -377,7 +398,7 @@ D(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') \stackrel{\text{\lemmawo
     
     There is a bijection between the set of answers under the sum on the lhs and a set of suitable $\rho'$ at the rhs: all ground values for the free variables that are consistent with the denotational semantics are present in some answer (because of completeness of the operational semantics wrt to the denotational one) and in exactly one (because the call is non-repetitive).
     
-    Now, we need to show that if we take any answer $(\sigma \rho \delta, n')$ and $\rho'$ that corresponds to it by the described bijection then the values for them under the sums are equal. First, we need to replace $D(\taskst{g'}{(\sigma \rho \delta, n')}, \Gamma')$ by $D(\taskst{g'}{(\sigma \rho \delta\restriction_U, n)}, \Gamma')$, we can do it because all variables from $\Dom(\delta) \setminus U$ have indices greater or equal than $n$ (by \lemmaword~\ref{lem:update_substitutions_FV}) and therefore these variables are not free variables of goals from $(g' : \Gamma')$, so the values of $d$ on this goals will be the same for the restricted substitution (it follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}). After this replacement we can directly apply the inductive hypothesis.
+    Now, we need to show that if we take any answer $(\sigma \rho \delta, n')$ and $\rho'$ that corresponds to it by the described bijection then the values for them under the sums are equal. First, we need to replace $D(\taskst{g'}{(\sigma \rho \delta, n')}, \Gamma')$ by $D(\taskst{g'}{(\sigma \rho \delta\restriction_U, n)}, \Gamma')$, we can do it because all variables from $\Dom(\delta) \setminus U$ have indices greater or equal than $n$ (by \lemmaword~\ref{lem:update_substitutions_FV}) and therefore these variables are not free variables of goals from $(g' : \Gamma')$, so the values of $d$ on this goals will be the same for the restricted substitution (it follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}). After this replacement we can directly apply the inductive hypothesis.\qed
 	
 	\end{enumerate}
 
