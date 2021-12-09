@@ -171,7 +171,7 @@ for $C\,(s \otimes g)$.
 \begin{replemma}{lem:times_costs_approximation}
 \[
 C\,(s \otimes g) =
-\Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \maxd\limits_{a_i \in \tra{s}}  d\,(\taskst{g}{a_i}))	
+\Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \smashoperator{\maxd\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}))	
 \]
 \end{replemma}
 
@@ -184,7 +184,7 @@ Finally, as a result we have the following approximation for the scheduling fact
 \label{lem:otimes_t_approximation}
 \[
  t\,(s \otimes g)  =  t\,(s) + \left({\sum\limits_{a_i \in \tra{s}}} t\,(\taskst{g}{a_i})\right) +
- \Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \maxd\limits_{a_i \in \tra{s}}  d\,(\taskst{g}{a_i}))	
+ \Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \smashoperator{\maxd\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}))	
 \]
 \end{corollary}
 
