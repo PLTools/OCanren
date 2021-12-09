@@ -36,8 +36,8 @@
 \newcommand{\longsquiggly}{\xymatrix@C-=0.5cm{{}\ar@{~>}[r]&{}}}
 
 \newcommand{\todonote}[1]{\todo[inline, color=blue!20]{\textbf{TODO:} #1}}
-\newcommand{\sectionword}{section}
-\newcommand{\appendixword}{appendix}
+\newcommand{\sectionword}{Section}
+\newcommand{\appendixword}{Appendix}
 \newcommand{\figureword}{Fig.}
 \newcommand{\lemmaword}{Lem.}
 \newcommand{\eqdef}{\overset{\mathrm{def}}{=}}
@@ -47,6 +47,9 @@
 \newcommand{\argmax}[1]{\underset{\makebox[0pt]{\mbox{\normalfont\tiny {$#1$}}}}{argmax} \;\;}
 \newcommand{\maxd}{\max^{\bullet}}
 \let\emptyset\varnothing
+
+\newcommand{\inbr}[1]{\left<{#1}\right>}
+\newcommand{\fv}[1]{\mathcal{FV}\,({#1})}
 
 \newcommand{\grterms}{\mathcal{T}_{\emptyset}}
 \newcommand{\Dom}{\mathcal{D}om}
@@ -271,11 +274,13 @@ language=minikanren
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-  We study the worst-case time complexity of relational programs for the canonical implementation of \mK. We propose a model that breaks the evaluation time in \mK into
-  several different parts and provides methods to estimate the complexity of these parts. These methods can be combined into an approach for
-  analyzing the complexity of recursive relations using the ideas originating from symbolic execution. Our approach puts a number of limitations
-  on the program being analyzed but we show that is still practically applicable by applying it to a number of typical relations in \mK.
-  
+  \mK is a lightweight embedded language for logic and relational programming. Many of its useful features come from
+  a distinctive search strategy, called \emph{interleaving search}. However, with interleaving search conventional  
+  ways of reasoning on complexity and performance of logical programs become irrelevant. We identify an important
+  key component~--- \emph{scheduling}~--- which makes the reasoning for \mK so different, and present a semi-automatic
+  technique to estimate the scheduling impact via symbolic execution for a reasonably wide class of programs. We evaluate the
+  proposed technique by analyzing time complexity for a number of programs from the literature and verify the results
+  experimentally.
 \keywords{miniKanren, interleaving search, time complexity, symbolic execution}
 \end{abstract}
 

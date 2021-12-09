@@ -1,10 +1,10 @@
 \section{Background: syntax and operational semantics}
 \label{sec:background}
 
-\colorbox{red!20}{\parbox{\textwidth}{General description of \mK as embedded language based on lazy streams}}
+%\colorbox{red!20}{\parbox{\textwidth}{General description of \mK as embedded language based on lazy streams}}
 
-In this section, we recollect some known formal descriptions for \mK language that will be used as a basis for our development.
-Specifically, we restate the syntax of the basic version of the language and the operational semantics for program evaluation.
+In this section we recollect some known formal descriptions for \mK language that will be used as a basis for our development.
+Specifically, we restate the syntax of core language and the operational semantics for program evaluation.
 The descriptions here are taken from~\cite{CertifiedSemantics} (with a few non-essential adjustments for presentation purposes) to make
 the paper self-contained, more details and explanations can be found there.
 
@@ -30,14 +30,14 @@ the paper self-contained, more details and explanations can be found there.
 \label{fig:syntax}
 \end{figure}
 
-The syntax of the basic version of \mK is shown in Fig.~\ref{fig:syntax}. 
+The syntax of core \mK is shown in Fig.~\ref{fig:syntax}. 
 All data is presented using terms $\mathcal{T}_X$ built from a fixed set of constructors $\mathcal{C}$ with known arities and variables
 from a given set $X$.
 We parameterize the terms with an alphabet of variables since in the semantic description we will need \emph{two} kinds of variables:
 \emph{syntactic} variables $\mathcal{X}$, used for bindings in the definitions, and \emph{logic} variables $\mathcal{A}$, which are
 introduced and unified during the evaluation.
 
-In this version of \mK there are five types of goals: unification of two terms, conjunction and disjunction of goals (the
+There are five types of goals: unification of two terms, conjunction and disjunction of goals (the
 ``\lstinline|conde|'' operator from the canonical versions of \mK, split in the two for simplicity), fresh logic variable introduction, and
 invocation of some relational definition. For the sake of brevity, in code snippets, we abbreviate immediately nested ``\lstinline|fresh|''
 constructs into the one, writing ``\lstinline|fresh $x$ $y$ $\dots$ . $g$|'' instead of
@@ -47,14 +47,13 @@ The \emph{specification} $\mathcal{S}$ consists of a set of relational definitio
 A top-level goal represents a search procedure that returns a stream of substitutions for the free variables of the goal.
 The language we consider is first-order, as goals can not be passed as parameters, returned, or constructed at runtime.
 
-During the evaluation of \mK program an environment, consisting of substitution for logic variables and a counter of allocated logic
+During the evaluation of \mK program an environment, consisting of a substitution for logic variables and a counter of allocated logic
 variables, is threaded through the computation and updated in every unification and fresh variable introduction.
-The substitution in the environment at a given point and a given branch of evaluation contains all the information about relations between
-the logical variables at this point. We will later refer to the substitution in the environment at a given point as a ``current substitution''
+The substitution in the environment at given point and given branch of evaluation contains all the information about relations between
+the logical variables at this point. Hereafter we refer to the substitution in the environment at given point as ``current substitution''
 in informal explanations.
-The different branches are combined via \emph{interleaving search} procedure~\cite{InterleavingSearch}.
-The answers for the given query are extracted from the final environments (they are the values of the queried variables in the substitution
-in the final environment).
+Different branches are combined via \emph{interleaving search} procedure~\cite{InterleavingSearch}.
+The answers for a given query are extracted from the final environments (they are the values of the queried variables in the final environment substitution).
 
 This search procedure is formally described by operational semantics in the form of a labeled transition system.
 This semantics corresponds to the canonical implementation of interleaving search. 
@@ -87,20 +86,20 @@ environment.
 \begin{figure*}[h]
   \renewcommand{\arraystretch}{1.6}
   \[
-  \begin{array}{cr}
-    \taskst{t_1 \equiv t_2}{(\sigma, n)} \xrightarrow{\circ} \Diamond , \, \, \nexists\; mgu\,(t_1 \sigma, t_2 \sigma) &\ruleno{UnifyFail} \\
-    \taskst{t_1 \equiv t_2}{(\sigma, n)} \xrightarrow{(mgu\,(t_1 \sigma, t_2 \sigma) \circ \sigma),\, n)} \Diamond & \ruleno{UnifySuccess} \\
-    \taskst{g_1 \lor g_2}{e} \xrightarrow{\circ} \taskst{g_1}{e} \oplus \taskst{g_2}{e} & \ruleno{Disj} \\
-    \taskst{g_1 \land g_2}{e} \xrightarrow{\circ} \taskst{g_1}{e} \otimes g_2 & \ruleno{Conj} \\
-    \taskst{\mbox{\lstinline|fresh|}\, x\, .\, g}{(\sigma, n)} \xrightarrow{\circ} \taskst{g\,[\bigslant{\alpha_{n + 1}}{x}]}{( \sigma, n + 1)} & \ruleno{Fresh} \\
-    \dfrac{R_i^{k_i}=\lambda\,x_1\dots x_{k_i}\,.\,g}{\taskst{R_i^{k_i}\,(t_1,\dots,t_{k_i})}{e} \xrightarrow{\circ} \taskst{g\,[\bigslant{t_1}{x_1}\dots\bigslant{t_{k_i}}{x_{k_i}}]}{e}} & \ruleno{Invoke}\\
-    \dfrac{s_1 \xrightarrow{\circ} \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} s_2} & \ruleno{DisjStop}\\
+  \begin{array}{crcr}
+    \multicolumn{3}{c}{\taskst{t_1 \equiv t_2}{(\sigma, n)} \xrightarrow{\circ} \Diamond , \, \, \nexists\; mgu\,(t_1 \sigma, t_2 \sigma)} &\ruleno{UnifyFail} \\
+    \multicolumn{3}{c}{\taskst{t_1 \equiv t_2}{(\sigma, n)} \xrightarrow{(mgu\,(t_1 \sigma, t_2 \sigma) \circ \sigma),\, n)} \Diamond} & \ruleno{UnifySuccess} \\
+    \multicolumn{3}{c}{\taskst{\mbox{\lstinline|fresh|}\, x\, .\, g}{(\sigma, n)} \xrightarrow{\circ} \taskst{g\,[\bigslant{\alpha_{n + 1}}{x}]}{( \sigma, n + 1)}} & \ruleno{Fresh} \\
+    \multicolumn{3}{c}{\dfrac{R_i^{k_i}=\lambda\,x_1\dots x_{k_i}\,.\,g}{\taskst{R_i^{k_i}\,(t_1,\dots,t_{k_i})}{e} \xrightarrow{\circ} \taskst{g\,[\bigslant{t_1}{x_1}\dots\bigslant{t_{k_i}}{x_{k_i}}]}{e}}} & \ruleno{Invoke}\\[3mm]
+    \taskst{g_1 \lor g_2}{e} \xrightarrow{\circ} \taskst{g_1}{e} \oplus \taskst{g_2}{e} & \ruleno{Disj} &
+    \taskst{g_1 \land g_2}{e} \xrightarrow{\circ} \taskst{g_1}{e} \otimes g_2 & \ruleno{Conj} \\    
+    \dfrac{s_1 \xrightarrow{\circ} \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} s_2} & \ruleno{DisjStop} &
     \dfrac{s_1 \xrightarrow{e} \Diamond}{(s_1 \oplus s_2) \xrightarrow{e} s_2} & \ruleno{DisjStopAns}\\
-    \dfrac{s \xrightarrow{\circ} \Diamond}{(s \otimes g) \xrightarrow{\circ} \Diamond} &\ruleno{ConjStop}\\
+    \dfrac{s \xrightarrow{\circ} \Diamond}{(s \otimes g) \xrightarrow{\circ} \Diamond} &\ruleno{ConjStop} &
     \dfrac{s \xrightarrow{e} \Diamond}{(s \otimes g) \xrightarrow{\circ} \taskst{g}{e}}  & \ruleno{ConjStopAns}\\
-    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s_2 \oplus s'_1)} &\ruleno{DisjStep}\\
+    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s_2 \oplus s'_1)} &\ruleno{DisjStep} &
     \dfrac{s_1 \xrightarrow{e} s'_1}{(s_1 \oplus s_2) \xrightarrow{e} (s_2 \oplus s'_1)} &\ruleno{DisjStepAns}\\
-    \dfrac{s \xrightarrow{\circ} s'}{(s \otimes g) \xrightarrow{\circ} (s' \otimes g)} &\ruleno{ConjStep}\\
+    \dfrac{s \xrightarrow{\circ} s'}{(s \otimes g) \xrightarrow{\circ} (s' \otimes g)} &\ruleno{ConjStep} &
     \dfrac{s \xrightarrow{e} s'}{(s \otimes g) \xrightarrow{\circ} (\taskst{g}{e} \oplus (s' \otimes g))} & \ruleno{ConjStepAns} 
   \end{array}
   \]
@@ -118,4 +117,15 @@ in the trace for initial state $s$. The sequence $\tra{s}$ corresponds to the st
 
 \colorbox{red!20}{\parbox{\textwidth}{Definition of well-foundness of states}}
 
+\begin{definition}
+  Well-formedness condition for extended states:
+  
+  \begin{itemize}
+  \item $\diamond$ is well-formed;
+  \item $\inbr{g, \sigma, n}$ is well-formed iff $\fv{g}\cup\Dom{\sigma}\cup\VRan{\sigma}\subseteq\{\alpha_1,\dots,\alpha_n\}$;
+  \item $s_1\oplus s_2$ is well-formed iff $s_1$ and $s_2$ are well-formed;
+  \item $s\otimes g$ is well-formed iff $s$ is well-formed and for all leaf triplets $\inbr{\_,\_,n}$ in $s$ it is true that $\fv{g}\subseteq\{\alpha_1,\dots,\alpha_n\}$.
+  \end{itemize}
+  
+\end{definition}
 \colorbox{red!20}{\parbox{\textwidth}{Denotatinal semantics and its equivalence to the operational one}}
