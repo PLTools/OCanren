@@ -1,17 +1,8 @@
 \section{Introduction}
 \label{sec:intro}
 
-\colorbox{red!20}{\textbf{Motivational example:}}
-\begin{lstlisting}[basicstyle=\small]
-   append$^o_{naive}$ = fun a b ab ->
-     ((a === Nil) /\ (ab === b)) \/
-     (fresh (h t tb)
-        (a === Cons(h, t)) /\
-        (append$^o_{naive}$ t b tb) /\
-        (ab === Cons(h, tb)) 
-     )
-\end{lstlisting}
-
+\begin{figure}[t]
+\begin{tabular}{p{6cm}p{6cm}}
 \begin{lstlisting}[basicstyle=\small]
    append$^o_{opt}$ = fun a b ab ->
      ((a === Nil) /\ (ab === b)) \/
@@ -20,35 +11,42 @@
         (ab === Cons(h, tb) /\
         (append$^o_{opt}$ t b tb)) 
      )
+\end{lstlisting} &
+\begin{lstlisting}[basicstyle=\small]
+   append$^o$ = fun a b ab ->
+     ((a === Nil) /\ (ab === b)) \/
+     (fresh (h t tb)
+        (a === Cons(h, t)) /\
+        (append$^o$ t b tb) /\
+        (ab === Cons(h, tb)) 
+     )
 \end{lstlisting}
+\end{tabular}
+\caption{Two implementations of list concatenation relation}
+\label{fig:length_implementations}
+\end{figure}
 
-\colorbox{red!20}{\parbox{\textwidth}{\textbf{State requirements for our method (informally)}}}
+A family of embedded languages for logic and, more specifically, relational programming \mK~\cite{TRS} has demonstrated an interesting potential is various fields of 
+program synthesis~\cite{SevenProblems,Twines,Matching} or declarative pogramming~\cite{?}. A distinctive feature of \mK is \emph{interleaving search}~\cite{Transformers} which,
+in particular, delivers such an important feature as completeness.
 
-We prove the theorem only for goals in DNF.
+However, being a different search strategy than conventional BFS/DFS/incremental deepening, etc., interleaving search makes the conventional ways of reasoning about the complexity
+of logical programs irrelevant. Moreover, some intrinsic properties of interleaving search can manifest themselves in a number of astounding and, at the first glance, unexplanable
+performance effects. 
 
-\[
-\begin{array}{lcl}
-B_{nf} & = &  \unigoal{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \; \mid \;
-                     \invokegoal{R^k}{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \\
-C_{nf} & = & B_{nf} \; \mid \; \conjgoal{C_{nf}}{B_{nf}} \\
-F_{nf} & = & C_{nf} \; \mid \; \freshgoal{X}{F_{nf} } \\
-D_{nf} & = & F_{nf} \; \mid \; \disjgoal{D_{nf}}{F_{nf}}
-\end{array}
-\]
+As an example, let's consider two implementations of list concatenation relation (\figureword~\ref{fig:length_implementations}). The only difference between the two is
+the position of the recursive call. The common wizdom of \mK programming prescribes putting a recursive call \emph{last} in a conjunction (if possible), since otherwise multiple
+negative effects (for example, divergence) can be encountered when running a relation in a backward direction. What is unexpected is that the right implementation
+works significantly slower being run is a \emph{forward} direction as well, although it performs exactly the same number of unifications. A careful analysis discovers that the difference
+is caused not by unifications, but by the process of \emph{scheduling} goals during the search. In \mK a lazy structure is build that decomposes the
+goals into unifications, performs these unifications in a certain order, and threads the results appropriately. For the \lstinline|append$^o$| this structure becomes linear in
+size, increasing the time of scheduling.
 
-We also have a requirement that all recursive calls performed during unification are \emph{grounding} and \emph{non-repetitive}.
-
-\begin{definition}
-  We call relational invocation
-  
-  \[\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}\]
-
-  \emph{grounding} and \emph{non-repetitive} if 
-
-  \[ \forall (\sigma^{a}, n^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, FV(t_i \sigma^{a}) = \emptyset \]
-
-  and
-  
-  \[ \forall (\sigma_1^{a},\, n_1^{a}),\, (\sigma_2^{a},\, n_2^{a}) \in \tra{\taskst{\invokegoal{R^k}{t_1}{t_k}}{e}} \,:\, (t_1 \sigma_1^{a}, \dots, t_k \sigma_1^{a}) \ne (t_1 \sigma_2^{a},\, \dots, t_k \sigma_2^{a}) \]
-\end{definition}
+In the paper we present a model to estimate scheduling complexity of interleaving search in \mK. We use a formal semantics which, in turn, reflects the
+behaviour of actual implementations~\cite{CertifiedSemantics}. The roadmap of our approach is as follows: we identify two complexity measures (\emph{scheduling factors}) and
+give exact and approximate recursive formulas to calculate the scheduling factors (\sectionword~\ref{sec:scheduling}); then we present an approach to
+automaticaly extract inequalities for the scheduling factors for a whole goal using symbolic execution (\sectionword~\ref{src:symbolic}). These inequalities have
+to be reformulated and solved in terms of a certain \emph{metatheory}, which, on success, provides an asymptotic bounds for the complexity of
+the goal evaluation. To be applicable, our approach puts a number of limitation on the goal being estimated as well as on the relational program as whole. We discuss
+these limitations in \sectionword~\ref{sec:discussion} as well as the contribution of scheduling in overall interleaving search complexity in \mK.
 

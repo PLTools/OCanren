@@ -1,7 +1,5 @@
-\section{Background: syntax and operational semantics}
+\section{\mK: Syntax and Semantics}
 \label{sec:background}
-
-%\colorbox{red!20}{\parbox{\textwidth}{General description of \mK as embedded language based on lazy streams}}
 
 In this section we recollect some known formal descriptions for \mK language that will be used as a basis for our development.
 Specifically, we restate the syntax of core language and the operational semantics for program evaluation.
@@ -107,25 +105,32 @@ environment.
   \label{fig:operanional_semantics_rules}
 \end{figure*}
 
-The transition rules are shown in Fig.~\ref{fig:operanional_semantics_rules}.
-The introduced transition system is completely deterministic.
+The transition rules are shown in Fig.~\ref{fig:operanional_semantics_rules}. The introduced transition system is completely deterministic.
 Therefore a derivation sequence for a state $s$ determines a certain \emph{trace}~--- a sequence of states and labeled transitions between
-them.
-It may be either finite (ending with the terminal state $\Diamond$) or infinite.
-We will denote by $\trs{s}$ the sequence of states in the trace for initial state $s$ and by $\tra{s}$ the sequence of answers
-in the trace for initial state $s$. The sequence $\tra{s}$ corresponds to the stream of answers in the reference \mK implementations.
+them. It may be either finite (ending with the terminal state $\Diamond$) or infinite. We will denote by $\trs{s}$ the sequence of states in
+the trace for initial state $s$ and by $\tra{s}$ the sequence of answers in the trace for initial state $s$. The sequence $\tra{s}$ corresponds
+to the stream of answers in the reference \mK implementations.
 
-\colorbox{red!20}{\parbox{\textwidth}{Definition of well-foundness of states}}
+In the following we essentially rely on the following property of leaf states:
 
 \begin{definition}
-  Well-formedness condition for extended states:
-  
-  \begin{itemize}
-  \item $\diamond$ is well-formed;
-  \item $\inbr{g, \sigma, n}$ is well-formed iff $\fv{g}\cup\Dom{\sigma}\cup\VRan{\sigma}\subseteq\{\alpha_1,\dots,\alpha_n\}$;
-  \item $s_1\oplus s_2$ is well-formed iff $s_1$ and $s_2$ are well-formed;
-  \item $s\otimes g$ is well-formed iff $s$ is well-formed and for all leaf triplets $\inbr{\_,\_,n}$ in $s$ it is true that $\fv{g}\subseteq\{\alpha_1,\dots,\alpha_n\}$.
-  \end{itemize}
-  
+  A leaf state $\inbr{g, \sigma, n}$ is well-formed iff $\fv{g}\cup\Dom{\sigma}\cup\VRan{\sigma}\subseteq\{\alpha_1,\dots,\alpha_n\}$.
 \end{definition}
-\colorbox{red!20}{\parbox{\textwidth}{Denotatinal semantics and its equivalence to the operational one}}
+
+This definition is in fact an instance of a more general definition of well-formedness for all states, introduced in~\cite{CertifiedSemantics}, where it is
+proven that the initial state is well-formed and any transition from a well-formed state results in a well-formed one.
+
+Besides operational semantics we will make use of a denotational one analoguous to the least Herbrand model. For a goal $g$ its denotational semantics $\sembr{g}$ is
+treated as a $n$-ary relation on the set of all ground terms, where each ``dimension'' corresponds to some free variable in $g$. For example,
+$\sembr{\lstinline|append$^o$ $\;\alpha\;\beta\;\gamma$|}$ is a set of all triplets of ground lists, in which the third component is a
+concatenation of the first two. The concrete description of the denotational semantics is given in~\cite{CertifiedSemantics} as well as the proof of
+the soundness and completeness of the operational semantics w.r.t. to the denotational one.
+
+Finally, we explicitly enumerate all the restrictions required by our method to work:
+
+\begin{itemize}
+\item All relations habe to be in DNF (disjunctions of conjunctions of equalities or invocations);
+\item We only consider goals which converge with a finite number of answers;
+\item All answers have to be ground (\emph{groundness} condition);
+\item All answers have to be unique (\emph{answer uniqueness} condition).
+\end{itemize}
