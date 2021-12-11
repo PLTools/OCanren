@@ -3,6 +3,7 @@
 % Version 2.20 of 2017/10/04
 %
 \documentclass[runningheadsm, envcountsect]{llncs}
+\pagestyle{headings}
 
 %
 % Used for displaying a sample figure. If possible, figure files should
@@ -30,6 +31,8 @@
 \usepackage[cmtip,all]{xy}
 \usepackage{units}
 \usepackage{placeins}
+\usepackage{lineno}
+\usepackage{cite}
 
 %\xymatrix@C-=0.5cm
 
@@ -220,6 +223,8 @@ language=minikanren
 %% end of the preamble, start of the body of the document source.
 \begin{document}
 
+%\linenumbers
+
 \makeatletter
 \let\origsection\section
 \renewcommand\section{\@ifstar{\starsection}{\nostarsection}}
@@ -289,6 +294,7 @@ language=minikanren
 \input{background}
 \input{scheduling}
 \input{symbolic}
+\input{discussion}
 % \input{uni-rei}
 % \input{symbolic_schemes}
 % \input{evaluation}
