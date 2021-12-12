@@ -1,17 +1,34 @@
+\setlength{\abovecaptionskip}{0pt plus 3pt minus 2pt}
+\setlength{\belowcaptionskip}{0pt plus 3pt minus 2pt}
+
+\abovedisplayskip1mm
+\belowdisplayskip1mm
+\abovedisplayshortskip1mm
+\belowdisplayshortskip1mm
+
+\setlength{\topsep}{5pt}
+\setlength{\partopsep}{5pt plus 0pt minus 0pt}
+\setlength{\parskip}{5pt}
+
+\clearpage
 \section{Proofs}
 \label{sec:proofs_appendix}
 
 \begin{lemma}
 \label{lem:theta_constant}
 Let $C_f$ and $C_g$ be real positive constants. If
-\[ h(x) = f(x) + C_f + \Theta(g(x) + C_g) \]
-and value $g(x)$ is always positive then
-\[ h(x) = f(x) + \Theta(g(x)) \]
+
+\[ h\,(x) = f\,(x) + C_f + \Theta\,(g\,(x) + C_g) \]
+
+and value $g\,(x)$ is positive for arbitrary $x$then
+
+\[ h\,(x) = f\,(x) + \Theta\,(g\,(x)) \]
+
 \end{lemma}
 \begin{proof}
 \begin{enumerate}
-\item For some real  postive $C_1$: $h(x) \ge f(x) + C_f + C_1 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + C_1 \cdot g(x)$
-\item For some real  postive $C_2$: $h(x) \le f(x) + C_f + C_2 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + (C_f + C_2 + C_2 \cdot C_g) \cdot g(x)$ $\qed$
+\item For some real  postive $C_1$: $h\,(x) \ge f\,(x) + C_f + C_1 \cdot (g\,(x) + C_g)$ then \\ $h(x) \ge f(x) + C_1 \cdot g(x)$
+\item For some real  postive $C_2$: $h\,(x) \le f\,(x) + C_f + C_2 \cdot (g\,(x) + C_g)$ then \\ $h(x) \ge f(x) + (C_f + C_2 + C_2 \cdot C_g) \cdot g(x)$\qed
 \end{enumerate}
 \end{proof}
 

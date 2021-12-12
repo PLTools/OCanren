@@ -105,8 +105,6 @@ augmented with subsets of grounded variables at the point of execution.\footnote
 with different branches representing mutually exclusive paths of evaluation, not the different parts within one evaluation.} Constrains for substituted
 grounded variables that determine whether the execution continues are presented as labels on the edges of a scheme.
 
-Each scheme is built as a composition of the five forms, shown in \figureword~\ref{fig:scheme_fragments} (all schemes are indexed by subsets of grounded variables with $\Upsilon = 2^{\mathcal{A}}$ denoting such subsets).
-
 \begin{wrapfigure}{r}{0.4\textwidth}
 \[\renewcommand{\arraystretch}{1}
 \begin{array}{ccc}
@@ -119,6 +117,9 @@ Each scheme is built as a composition of the five forms, shown in \figureword~\r
 \caption{Symbolic Scheme Fragments}
 \label{fig:scheme_fragments}
 \end{wrapfigure}
+
+
+Each scheme is built as a composition of the five forms, shown in \figureword~\ref{fig:scheme_fragments} (all schemes are indexed by subsets of grounded variables with $\Upsilon = 2^{\mathcal{A}}$ denoting such subsets).
 
 Note, the constrains after nodes of different types differ: unification puts a constraint in a form of a set of equations on substituted ground values that should be respected while
 relational call puts a constraint in a form of a tuple of ground terms that should belong to the denotational semantics of a relation.
