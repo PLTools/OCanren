@@ -1,9 +1,9 @@
 \section{Scheduling Complexity}
 \label{sec:scheduling}
 
-%In this section we define a specific value to estimate the scheduling time and derive some equations to calculate this value for a given \emph{semantic
-%state}. However, our ultimate goal is to provide a complexity estimation for a given goal. This problem will be addressed in Section~\ref{sec:symbolic},
-%in which we will make use of recurrent equations presented here.
+In this section we define a specific value to estimate the scheduling time and derive some equations to calculate this value for a given \emph{semantic
+state}. However, our ultimate goal is to provide a complexity estimation for a given goal (\emph{query}). This problem will be addressed in Section~\ref{sec:symbolic},
+in which we will make use of recurrent equations presented here.
 
 We may notice that operational semantics described in the previous section can be used to calculate the exact number of elementary scheduling steps.
 Our first idea is to take the number of states $d\,(s)$ in the finite trace for a given state $s$:
@@ -76,7 +76,9 @@ For any two states $s_1$ and $s_2$
 \end{array}
 \]
 
-where $\costdisj{s_1}{s_2} = \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\}$
+where
+
+\[ \costdisj{s_1}{s_2} = \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\} \] 
 \end{replemma}
 
 Informally, for a state in the form $s_1 \oplus s_2$ the substates are evaluated separately, one step at a time for
@@ -85,11 +87,11 @@ there is an extra summand $\costdisj{s_1}{s_2}$ since the ``leftmost heights'' o
 original substates due to the introduction of one additional $\oplus$-node on the top. This additional node persists in the trace until the evaluation
 of one of the substates comes to an end, so the scheduling factor is increased by the number of steps until that.
 
-The next lemma provides the equations for $\otimes$-states:
+The next lemma provides the equations for $\otimes$-states:\footnote{We assume $\Diamond\otimes g = \Diamond$}
 
 \begin{replemma}{lem:times_measure_equations}
-  For any state $s$ and any goal $g$
-  
+For any state $s$ and any goal $g$
+
 \[
 \begin{array}{rclr}
 d\,(s \otimes g)  &=&  d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i})& \qquad(\star) \\
@@ -99,6 +101,7 @@ d\,(s \otimes g)  &=&  d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}
 \]
 
 where 
+
 \[
 \begin{array}{rcl}
 \costdisj{s_1}{s_2} & = & \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\} \\
@@ -150,6 +153,7 @@ a \emph{pincipal environment}.
 \end{definition}
 
 In other words, $\alpha\,(g, E)$ is an element of $E$ which delivers the longest trace of $g$.
+\end{comment}
 
 \begin{definition}
 
@@ -164,7 +168,6 @@ For a set of natural numbers $S$
 \]
 
 \end{definition}
-\end{comment}
 
 % With principal environment being defined we can prove the following lemma\footnote{We assume the following definition for 
 % $h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}:
@@ -180,7 +183,6 @@ for $t\,(s \otimes g)$.
 \]
 \end{replemma}
 
-Hereafter we use the following notation: $\displaystyle{\maxd}\, S = \max\,(S\cup\{0\})$.
 We can see that the part under $\Theta$ is very similar to the $(\star)$ except that here we exclude $d$ value for one of the answers from the sum.
 This difference is essential and, as we will see later, it is in fact responsible for the difference in complexities for our motivation example.
  
