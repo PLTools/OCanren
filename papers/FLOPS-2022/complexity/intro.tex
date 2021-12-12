@@ -9,20 +9,18 @@
      (fresh (h t tb)
         (a === Cons(h, t)) /\
         (ab === Cons(h, tb) /\
-        (append$^o_{opt}$ t b tb)) 
-     )
-\end{lstlisting} &
+        (append$^o_{opt}$ t b tb)))
+\end{lstlisting} & \multirow{2}{*}[-3mm]{\includegraphics[width=6cm,height=5cm]{append_without_oc.png}} \\[-9mm]
 \begin{lstlisting}[basicstyle=\small]
    append$^o$ = fun a b ab ->
      ((a === Nil) /\ (ab === b)) \/
      (fresh (h t tb)
         (a === Cons(h, t)) /\
         (append$^o$ t b tb) /\
-        (ab === Cons(h, tb)) 
-     )
-\end{lstlisting}
+        (ab === Cons(h, tb)))
+\end{lstlisting} &
 \end{tabular}
-\caption{Two implementations of list concatenation relation}
+\caption{Two implementations of list concatenation relation and their performance}
 \label{fig:length_implementations}
 \end{figure}
 
@@ -34,13 +32,16 @@ However, being a different search strategy than conventional BFS/DFS/incremental
 of logical programs irrelevant. Moreover, some intrinsic properties of interleaving search can manifest themselves in a number of astounding and, at the first glance, unexplanable
 performance effects. 
 
-As an example, let's consider two implementations of list concatenation relation (\figureword~\ref{fig:length_implementations}). The only difference between the two is
-the position of the recursive call. The common wizdom of \mK programming prescribes putting a recursive call \emph{last} in a conjunction (if possible), since otherwise multiple
-negative effects (for example, divergence) can be encountered when running a relation in a backward direction. What is unexpected is that the right implementation
-works significantly slower being run is a \emph{forward} direction as well, although it performs exactly the same number of unifications. A careful analysis discovers that the difference
-is caused not by unifications, but by the process of \emph{scheduling} goals during the search. In \mK a lazy structure is build that decomposes the
-goals into unifications, performs these unifications in a certain order, and threads the results appropriately. For the \lstinline|append$^o$| this structure becomes linear in
-size, increasing the time of scheduling.
+As an example, let's consider two implementations of list concatenation relation (\figureword~\ref{fig:length_implementations}, left side). The only difference between the two is
+the position of the recursive call. A common wizdom of \mK programming prescribes putting recursive call \emph{last} in a conjunction (if possible), since otherwise multiple
+negative effects (for example, divergence) can be encountered when running a relation in a \emph{backward} direction (i.e. finding all the splits of a given list). What is unexpected
+is that the evaluation of these implementations on the same problem (\figureword~\ref{fig:length_implementations}, right side) shows that the second implementation works significantly
+slower being run is a \emph{forward} direction as well (i.e. as a regular concatenation), although it performs exactly the same number of unifications. As a matter of fact,
+these two implementations even have different \emph{asymptotic} complexity under the assumtion that occurs check is disabled.\footnote{The role of occurs check is discussed in
+\sectionword~\ref{src:evaluation}.}
+A careful analysis discovers that the difference is caused not by unifications, but by the process of \emph{scheduling} goals during the search. In \mK a
+lazy structure is maintained to decompose the goals into unifications, perform these unifications in a certain order, and thread the results appropriately. For the \lstinline|append$^o$|
+this structure becomes linear in size, reducing the performance.
 
 In the paper we present a model to estimate scheduling complexity of interleaving search in \mK. We use a formal semantics which, in turn, reflects the
 behaviour of actual implementations~\cite{CertifiedSemantics}. The roadmap of our approach is as follows: we identify two complexity measures (\emph{scheduling factors}) and
