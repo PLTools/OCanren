@@ -6,28 +6,6 @@
 %The descriptions here are taken from~\cite{CertifiedSemantics} (with a few non-essential adjustments for presentation purposes) to make
 %the paper self-contained, more details and explanations can be found there.
 
-\begin{figure}[t]
-\centering
-\[
-\begin{array}{ccll}
-  \mathcal{C} & = & \{C_i^{k_i}\} & \mbox{constructors} \\
-  \mathcal{T}_X & = & X \cup \{C_i^{k_i} (t_1, \dots, t_{k_i}) \mid t_j\in\mathcal{T}_X\} & \mbox{terms over the set of variables $X$} \\
-  \mathcal{D} & = & \mathcal{T}_\emptyset & \mbox{ground terms}\\
-  \mathcal{X} & = & \{ x, y, z, \dots \} & \mbox{syntactic variables} \\
-  \mathcal{A} & = & \{ x^?, y^?, z^? \dots \} & \mbox{logic variables} \\
-  \mathcal{R} & = & \{ R_i^{k_i}\} &\mbox{relational symbols with arities} \\[2mm]
-  \mathcal{G} & = & \mathcal{T_X}\equiv\mathcal{T_X}   &  \mbox{equality} \\
-              &   & \mathcal{G}\wedge\mathcal{G}     & \mbox{conjunction} \\
-              &   & \mathcal{G}\vee\mathcal{G}       &\mbox{disjunction} \\
-              &   & \mbox{\lstinline|fresh|}\;\mathcal{X}\;.\;\mathcal{G} & \mbox{fresh variable introduction} \\
-              &   & R_i^{k_i} (t_1,\dots,t_{k_i}),\;t_j\in\mathcal{T_X} & \mbox{relational symbol invocation} \\[2mm]
-  \mathcal{S} & = & \{R_i^{k_i} = \lambda\;x_1^i\dots x_{k_i}^i\,.\, g_i;\}\; g & \mbox{specification}
-\end{array}
-\]
-\caption{The syntax of \mK}
-\label{fig:syntax}
-\end{figure}
-
 The syntax of core \mK is shown in Fig.~\ref{fig:syntax}. 
 All data is presented using terms $\mathcal{T}_X$ built from a fixed set of constructors $\mathcal{C}$ with known arities and variables
 from a given set $X$.
@@ -43,32 +21,57 @@ immediately nested ``\lstinline|fresh|'' constructs into the one, writing ``\lst
 A top-level goal represents a search procedure that returns a stream of substitutions for the free variables of the goal.
 %The language we consider is first-order, as goals can not be passed as parameters, returned, or constructed at runtime.
 
-During the evaluation of \mK program an environment, consisting of a substitution for logic variables and a counter of allocated logic
-variables, is threaded through the computation and updated in every unification and fresh variable introduction.
-The substitution in the environment at given point and given branch of evaluation contains all the information about relations between
-the logical variables at this point. Hereafter we refer to the substitution in the environment at given point as ``current substitution''
-in informal explanations.
-Different branches are combined via \emph{interleaving search} procedure~\cite{InterleavingSearch}.
-The answers for a given query are extracted from the final environments (they are the values of the queried variables in the final environment substitution).
-
-This search procedure is formally described by operational semantics in the form of a labeled transition system.
-This semantics corresponds to the canonical implementation of interleaving search. 
 
 \begin{figure}[t]
 \centering
 \[
-\begin{array}{ccllcccll}
-  \Sigma & = & \mathcal{A} \to \mathcal{T}_\mathcal{A} & \mbox{substitutions} &\qquad\qquad&        S & = & \taskst{\mathcal{G}}{E} & \mbox{task} \\
-       E & = & \Sigma \times \mathbb{N}              & \mbox{environments}  &\qquad\qquad&          &   & S \oplus S              & \mbox{sum} \\
-         &   &                                       &                      &\qquad\qquad&          &   & S \otimes \mathcal{G}   & \mbox{product} \\
-%         &   &                                       &                      &\qquad\qquad&  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} \\
-       L & = & \circ \; \mid \; E      & \mbox{labels}        &\qquad\qquad&  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} \\
-%         &   &                                       &                      &\qquad\qquad&        L & = & \circ \; \mid \; E      & \mbox{labels} 
+\begin{array}{ccll}
+  \mathcal{C} & = & \{C_i^{k_i}\} & \mbox{constructors} \\
+  \mathcal{T}_X & = & X \cup \{C_i^{k_i} (t_1, \dots, t_{k_i}) \mid t_j\in\mathcal{T}_X\} & \mbox{terms over the set of variables $X$} \\
+  \mathcal{D} & = & \mathcal{T}_\emptyset & \mbox{ground terms}\\
+  \mathcal{X} & = & \{ \ttt{x}, \ttt{y}, \ttt{z}, \dots \} & \mbox{syntactic variables} \\
+  \mathcal{A} & = & \{ x, y, z \dots \} & \mbox{logic variables} \\
+  \mathcal{R} & = & \{ R_i^{k_i}\} &\mbox{relational symbols with arities} \\[2mm]
+  \mathcal{G} & = & \mathcal{T_X}\equiv\mathcal{T_X}   &  \mbox{equality} \\
+              &   & \mathcal{G}\wedge\mathcal{G}     & \mbox{conjunction} \\
+              &   & \mathcal{G}\vee\mathcal{G}       &\mbox{disjunction} \\
+              &   & \mbox{\lstinline|fresh|}\;\mathcal{X}\;.\;\mathcal{G} & \mbox{fresh variable introduction} \\
+              &   & R_i^{k_i} (t_1,\dots,t_{k_i}),\;t_j\in\mathcal{T_X} & \mbox{relational symbol invocation} \\[2mm]
+  \mathcal{S} & = & \{R_i^{k_i} = \lambda\;\ttt{x}_1^i\dots \ttt{x}_{k_i}^i\,.\, g_i;\}\; g & \mbox{specification}
+\end{array}
+\]
+\caption{The syntax of \mK}
+\label{fig:syntax}
+\end{figure}
+
+During the evaluation of \mK program an environment, consisting of a substitution for logic variables and a counter of allocated logic
+variables, is threaded through the computation and updated in every unification and fresh variable introduction.
+The substitution in the environment at given point and given branch of evaluation contains all the information about relations between
+the logical variables at this point.
+%Hereafter we refer to the substitution in the environment at given point as ``current substitution''
+%in informal explanations.
+Different branches are combined via \emph{interleaving search} procedure~\cite{InterleavingSearch}.
+The answers for a given goal are extracted from the final environments.
+
+\begin{wrapfigure}{r}{0.5\textwidth}
+\setlength{\abovecaptionskip}{0pt plus 3pt minus 2pt}
+\[
+\begin{array}{ccll}
+  \Sigma & = & \mathcal{A} \to \mathcal{T}_\mathcal{A} & \mbox{substitutions}\\ 
+  E & = & \Sigma \times \mathbb{N}              & \mbox{environments} \\
+  S & = & \taskst{\mathcal{G}}{E} & \mbox{task} \\
+    &   & S \oplus S              & \mbox{sum} \\
+    &   & S \otimes \mathcal{G}   & \mbox{product} \\
+  L & = & \circ \; \mid \; E      & \mbox{labels}\\
+  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} 
 \end{array}
 \]
 \caption{States and labels in the LTS for \mK}
 \label{fig:operanional_semantics_states_labels}
-\end{figure}
+\end{wrapfigure}
+
+This search procedure is formally described by operational semantics in the form of a labeled transition system.
+This semantics corresponds to the canonical implementation of interleaving search. 
 
 The form of states and labels in the transition system is defined in \figureword~\ref{fig:operanional_semantics_states_labels}.
 Non-terminal states $S$ have a tree-like structure with intermediate nodes corresponding to partially evaluated conjunctions
@@ -117,21 +120,23 @@ In the following we essentially rely on the following property of leaf states:
   a set of all free variables in its image respectively.
 \end{definition}
 
+Informally, in a well-formed leaf state all free variables in goals and substitution respect the counter of free logical variables.
 This definition is in fact an instance of a more general definition of well-formedness for all states, introduced in~\cite{CertifiedSemantics}, where it is
 proven that the initial state is well-formed and any transition from a well-formed state results in a well-formed one.
 
-Besides operational semantics we will make use of a denotational one analoguous to the least Herbrand model. For a goal $g$ its denotational semantics $\sembr{g}$ is
-treated as a $n$-ary relation on the set of all ground terms, where each ``dimension'' corresponds to some free variable in $g$. For example,
-$\sembr{\lstinline|append$^o$ $\;\alpha\;\beta\;\gamma$|}$ is a set of all triplets of ground lists, in which the third component is a
+Besides operational semantics we will make use of a denotational one analogous to the least Herbrand model. For a relation $R^k$ its denotational semantics $\sembr{R^k}$ is
+treated as a $k$-ary relation on the set of all ground terms, where each ``dimension'' corresponds to a certain argument of $R^k$. For example,
+$\sembr{\lstinline|append$^o$|}$ is a set of all triplets of ground lists, in which the third component is a
 concatenation of the first two. The concrete description of the denotational semantics is given in~\cite{CertifiedSemantics} as well as the proof of
 the soundness and completeness of the operational semantics w.r.t. to the denotational one.
 
 Finally, we explicitly enumerate all the restrictions required by our method to work:
 
 \begin{itemize}
-\item All relations habe to be in DNF (disjunctions of conjunctions of equalities or invocations);
+\item All relations have to be in DNF (disjunctions of freshes of conjunctions of equalities or invocations); 
 \item We only consider goals which converge with a finite number of answers;
-\item All answers have to be ground (\emph{groundness} condition);
+\item All answers have to be ground (\emph{groundness} condition) for all relation invocations encountered
+  during the evaluation.
 \item All answers have to be unique (\emph{answer uniqueness} condition) for all relation invocations encountered
   during the evaluation.
 \end{itemize}

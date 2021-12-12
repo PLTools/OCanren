@@ -33,6 +33,7 @@
 \usepackage{placeins}
 \usepackage{lineno}
 \usepackage{cite}
+\usepackage{wrapfig}
 
 %\xymatrix@C-=0.5cm
 
@@ -49,6 +50,7 @@
 \newcommand{\lowupbound}[2]{\;\; \overset{\makebox[0pt]{\mbox{\normalfont\tiny {C = $#2$}}}}{ \underset{\makebox[0pt]{\mbox{\normalfont\tiny {C = $#1$}}}}{\gtrless}} \;\;}
 \newcommand{\argmax}[1]{\underset{\makebox[0pt]{\mbox{\normalfont\tiny {$#1$}}}}{argmax} \;\;}
 \newcommand{\maxd}{\max^{\bullet}}
+\newcommand{\ttt}[1]{\mbox{\texttt{#1}}}
 \let\emptyset\varnothing
 
 \newcommand{\inbr}[1]{\left<{#1}\right>}
@@ -244,8 +246,8 @@ language=minikanren
 }
 \makeatother
 
-\setlength{\abovecaptionskip}{0pt plus 3pt minus 2pt}
-\setlength{\belowcaptionskip}{-10pt plus 3pt minus 2pt}
+\setlength{\abovecaptionskip}{-5pt plus 3pt minus 2pt}
+\setlength{\belowcaptionskip}{-20pt plus 3pt minus 2pt}
 
 \abovedisplayskip-1mm
 \belowdisplayskip0mm
@@ -283,9 +285,10 @@ language=minikanren
   a distinctive search strategy, called \emph{interleaving search}. However, with interleaving search conventional  
   ways of reasoning about the complexity and performance of logical programs become irrelevant. We identify an important
   key component~--- \emph{scheduling}~--- which makes the reasoning for \mK so different, and present a semi-automatic
-  technique to estimate the scheduling impact via symbolic execution for a reasonably wide class of programs. We evaluate the
-  proposed technique by analyzing time complexity for a number of programs from the literature and verify the results
-  experimentally.
+  technique to estimate the scheduling impact via symbolic execution for a reasonably wide class of programs.
+  %We evaluate the
+  %proposed technique by analyzing time complexity for a number of programs from the literature and verify the results
+  %experimentally.
 \keywords{miniKanren, interleaving search, time complexity, symbolic execution}
 \end{abstract}
 

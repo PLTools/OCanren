@@ -1,4 +1,4 @@
-\section{Discussion}
+\section{Discussion and Future Work}
 \label{sec:discussion}
 
 Our approach imposes three conditions on the analyzed programs: disjunctive normal form, uniqueness of answers and grounding of relational calls.
@@ -6,18 +6,20 @@ The first two are rather non-restrictive: DNF is equivalent to the description o
 and the majority of well-known examples in \mK are written in this or very similar form. Repetitive answers are usually an indication
 of mistake in a program~\cite{WillsThesis}. The groundness condition is more serious: it prohibits program execution from presenting infinitely
 many individual ground solutions in one answer using free variables, which is a useful pattern. At the same time, this requirement is
-not unique to our work (the framework for \textsc{CASLOG} system mentioned above imposes exactly the same condition) and the experience
+not unique for our work (the framework for \textsc{CASLOG} system mentioned above imposes exactly the same condition) and the experience
 shows that many important kinds of programs satisfy it (although it is hard to characterize the class of such programs precisely).
 Relaxing of any of these restriction will likely mess up the current relatively compact desrciption of symbolic execution (for
 the conditions on relational calls) or the form of the extracted inequalities (for the DNF condition).
 
-Also, for now we confine ourselves to the problem of estimating the time of the full search for a given query. Estimating the time before
+Also, for now we confine ourselves to the problem of estimating the time of the full search for a given goal. Estimating the time before
 the first (or some specific) answer is believed to be an important and probably more practical task. Unfortunately, the technique we describe
 can not be easily adjusted for this case. The reason for this is that the reasoning about time (scheduling time in particular) in our
-terms becomes non-compositional for the case of interrupted search: if the answer is found in some branch, the search is cut short in
-other branches too. And we still need to analyse every branch, since the height of states can be different in different branches, so
-the equal number of semantic steps in different branches can take different amounts of time to evaluate. This picture requires more
-complicated notions with non-trivial dependencies between them and the model becomes impractical. We still can use our technique
-to establish some rouugh lower and upper bounds (for example via relation between two complexity factors from \lemmaword~\ref{lem:lem:d_t_relation}),
-but in general this problem requires a separate thorough analysis,
+terms becomes non-compositional for the case of interrupted search: if an answer is found in some branch, the search is cut short in
+other branches, too. Dealing with such a non-compositionality is a subject of a future research.
+
+%And we still need to analyse every branch, since the height of states can be different in different branches, so
+%the equal number of semantic steps in different branches can take different amounts of time to evaluate. This picture requires more
+%complicated notions with non-trivial dependencies between them and the model becomes impractical. We still can use our technique
+%to establish some rouugh lower and upper bounds (for example via relation between two complexity factors from \lemmaword~\ref{lem:lem:d_t_relation}),
+%but in general this problem requires a separate thorough analysis,
 
