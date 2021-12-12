@@ -11,7 +11,7 @@ and value $g(x)$ is always positive then
 \begin{proof}
 \begin{enumerate}
 \item For some real  postive $C_1$: $h(x) \ge f(x) + C_f + C_1 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + C_1 \cdot g(x)$
-\item For some real  postive $C_2$: $h(x) \le f(x) + C_f + C_2 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + (C_f + C_2 + C_2 \cdot C_g) \cdot g(x)$ $\qed$
+\item For some real  postive $C_2$: $h(x) \le f(x) + C_f + C_2 \cdot (g(x) + C_g)$ then \\ $h(x) \ge f(x) + (C_f + C_2 + C_2 \cdot C_g) \cdot g(x)$\qed
 \end{enumerate}
 \end{proof}
 
@@ -25,7 +25,7 @@ then
 \[ (h_1(x) + h_2(x)) = (f_1(x) + f_2(x)) + \Theta(g_1(x) + g_2(x)) \]
 \end{lemma}
 \begin{proof}
-Both lower and apper constants are the sums of two corresponding constants for the given approximations. $\qed$
+Both lower and apper constants are the sums of two corresponding constants for the given approximations.\qed
 \end{proof}
 
 \begin{lemma}
@@ -39,10 +39,11 @@ then
 \begin{proof}
 \begin{enumerate}
 \item For some real  postive $C_1$: \[ h(x) \ge f(x) + C_1 \cdot (g_1(x) + g_2(x)) \ge f(x) + C_1 \cdot g_1(x) \]
-\item For some real  postive $C_2$: \[ h(x) \le f(x) + C_2 \cdot (g_1(x) + g_2(x)) \le f(x) + 2 C_2 \cdot g_1(x) \]
-$\qed$
+\item For some real  postive $C_2$: \[ h(x) \le f(x) + C_2 \cdot (g_1(x) + g_2(x)) \le f(x) + 2 C_2 \cdot g_1(x) \]\qed
 \end{enumerate}
 \end{proof}
+
+The following trivial lemma handles the basic (leaf state) case:
 
 \begin{lemma}
 \label{lem:task_measure_equations}
@@ -60,20 +61,20 @@ $\qed$
   \]
 \end{lemma}
 \begin{proof}
-    Follows immediately from the definitions of the estimated values. $\qed$
+    Follows immediately from the definitions of the estimated values.\qed
 \end{proof}
 
 
 \repeatlemma{lem:sum_measure_equations}
 \begin{proof}
 Induction on the sum of values $d(s_1) + d(s_2)$.
-Both equations easily hold for all the rules (\ruleno{DisjStop}, \ruleno{DisjStopAns}, \ruleno{DisjStep}, \ruleno{DisjStepAns}) if we apply indutive hypothesis for the next state. $\qed$
+Both equations easily hold for all the rules (\ruleno{DisjStop}, \ruleno{DisjStopAns}, \ruleno{DisjStep}, \ruleno{DisjStepAns}) if we apply indutive hypothesis for the next state.
 \end{proof}
 
 \repeatlemma{lem:times_measure_equations}
 \begin{proof}
 Induction on the value $d(s \times g)$. 
-Both equations easily hold for all the rules (\ruleno{ConjStop}, \ruleno{ConjStopAns}, \ruleno{ConjStep}, \ruleno{ConjStepAns}) if we apply indutive hypothesis for the next state. $\qed$
+Both equations easily hold for all the rules (\ruleno{ConjStop}, \ruleno{ConjStopAns}, \ruleno{ConjStep}, \ruleno{ConjStepAns}) if we apply indutive hypothesis for the next state.
 \end{proof}
 
 \repeatlemma{lem:otimes_t_approximation}
@@ -143,7 +144,7 @@ If $\tra{s}$ is not empty, $\maxd$ turns into simple $\max$. We establish lower 
   \le d\,(s) + 2 \cdot d\,(s'_m) + 2\cdot\smashoperator[lr]{\sum\limits_{a_i \in (\begin{array}{l} \tra{s} \setminus \\ \{a_1, \dots, a_m\}) \end{array}}} d\,(\taskst{g}{a_i}) + 2\cdot\smashoperator[lr]{\sum\limits_{a_i \in (\tra{s} \setminus \{a_m\})}} d\,(\taskst{g}{a_i}) \le \\
   \le d\,(s) + 2 \cdot d\,(s) + 2\cdot\smashoperator[lr]{\sum\limits_{a_i \in (\tra{s} \setminus \{a_m\})}} d\,(\taskst{g}{a_i}) + 2\cdot\smashoperator[lr]{\sum\limits_{a_i \in (\tra{s} \setminus \{a_m\})}} d\,(\taskst{g}{a_i}) \le \\
   \le 4 \cdot d\,(s) + 4\cdot\smashoperator[lr]{\sum\limits_{a_i \in (\tra{s} \setminus \{a_m\})}} d\,(\taskst{g}{a_i}) \\
-  \end{array} \] $\qed$
+  \end{array} \]
 
 \end{enumerate}
 
@@ -190,20 +191,6 @@ For $t(s \otimes g_{k+1})$ we have a sum of the following parts (first two from 
 
 We can see that the second part is subsumed by the last part (by \lemmaword~\ref{lem:theta_absorb}). The rest give exactly the equation we need. $\qed$
 \end{proof}
-
-Here is the general definition of well-formedness of states from~\cite{CertifiedSemantics}.
-
-\begin{definition}
-  Well-formedness condition for extended states:
-
-  \begin{itemize}
-  \item $\diamond$ is well-formed;
-  \item $\inbr{g, \sigma, n}$ is well-formed iff $\fv{g}\cup\Dom{\sigma}\cup\VRan{\sigma}\subseteq\{\alpha_1,\dots,\alpha_n\}$;
-  \item $s_1\oplus s_2$ is well-formed iff $s_1$ and $s_2$ are well-formed;
-  \item $s\otimes g$ is well-formed iff $s$ is well-formed and for all leaf triplets $\inbr{\_,\_,n}$ in $s$ it is true that $\fv{g}\subseteq\{\alpha_1,\dots,\alpha_n\}$.
-  \end{itemize}
-
-\end{definition}
 
 We will need the \lemmaword~\ref{lem:measures_changing_env} in the following generalized form.
 
@@ -319,45 +306,6 @@ After this application of rules all pairs from $T_U$ are decomposed and it is tu
 
 \end{enumerate}
 \end{proof}
-
-Here are the formal definitions of DNF and set of executed states for leafs $\mathcal{L}$ that we will use in the proof of the main theorem.
-
-\begin{definition}
-The subset of goals in DNF is defined as the following set $D_{nf}$.
-
-\[ \begin{array}{lcl}
-B_{nf} & = &  \unigoal{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \; \mid \;
-                     \invokegoal{R^k}{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \\
-C_{nf} & = & B_{nf} \; \mid \; \conjgoal{C_{nf}}{B_{nf}} \\
-F_{nf} & = & C_{nf} \; \mid \; \freshgoal{X}{F_{nf} } \\
-D_{nf} & = & F_{nf} \; \mid \; \disjgoal{D_{nf}}{F_{nf}}
-\end{array} \]
-\end{definition}
-
-\begin{definition}
-The set $\mathcal{L}$ is defined as follows.
-
-\[
-\begin{array}{rclcl}
- \mathcal{L}\,(&\parbox[m]{1.3cm}{\schemenode{$\unigoal{t_2}{t_2}$}}&)(\rho) &=& \{init\,(\unigoal{t_2}{t_2})\} \\
- \mathcal{L}\,(&\parbox[m]{2.5cm}{\schemenode{$\invokegoal{R^k}{t_1}{t_k}$}}&)(\rho) &=& \{init\,(\invokegoal{R^k}{t_1 \rho}{t_k \rho})\} \\
- \mathcal{L}\,(&\parbox[m]{2cm}{\schemesarrow{$\unigoal{t_1}{t_2}$}{$Cs$}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=&  \{init\,(\unigoal{t_2}{t_2})\} \cup
-      \smashoperator{\bigcup\limits_{\substack{ \rho' \colon V \to \grterms \\
-                                      \rho' \succ \rho \\
-                                      \forall (y, t) \in Cs\,:\, \rho'\,(y) = t\, \rho'  }}}
-           \mathcal{L}\,(\schemewithvset{\mathfrak{S}}{U})(\rho')  \\
- \mathcal{L}\,(& \parbox[m]{4cm}{\schemedarrow{$\invokegoal{R^k}{t_1}{t_k}$}{ $(t_1, \dots, t_k) \in \sembr{R^k}  $}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=&
-      \{init\,(\invokegoal{R^k}{t_1 \rho}{t_k \rho})\} \cup
-      \smashoperator{\bigcup\limits_{\substack{ \rho' \colon V \to \grterms \\
-                                      \rho' \succ \rho \\
-                                      (t_1 \rho', \dots, t_k \rho') \in \sembr{R^k}  }}}
-           \mathcal{L}\,(\schemewithvset{\mathfrak{S}}{U})(\rho')  \\
- \mathcal{L}\,(&\parbox[m]{2.5cm}{\schemefork{$\schemewithvset{\mathfrak{S}_1}{V}$}{$\schemewithvset{\mathfrak{S}_2}{V}$}}&)(\rho) &=&
- \mathcal{L}\,(\schemewithvset{\mathfrak{S}_1}{V})(\rho) \cup \mathcal{L}\,(\schemewithvset{\mathfrak{S}_2}{V})(\rho)
-\end{array}
-\]
-\end{definition}
-
 
 \repeattheorem{extracted_approximations}
 \begin{proof}
@@ -544,7 +492,7 @@ D(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') \stackrel{\text{\lemmawo
     
     There is a bijection between the set of answers under the sum on the lhs and a set of suitable $\rho'$ at the rhs: all ground values for the free variables that are consistent with the denotational semantics are present in some answer (because of completeness of the operational semantics wrt to the denotational one) and in exactly one (because the call is non-repetitive).
     
-    Now, we need to show that if we take any answer $(\sigma \rho \delta, n')$ and $\rho'$ that corresponds to it by the described bijection then the values for them under the sums are equal. First, we need to replace $D(\taskst{g'}{(\sigma \rho \delta, n')}, \Gamma')$ by $D(\taskst{g'}{(\sigma \rho \delta\restriction_U, n)}, \Gamma')$, we can do it because all variables from $\Dom(\delta) \setminus U$ have indices greater or equal than $n$ (by \lemmaword~\ref{lem:update_substitutions_FV}) and therefore these variables are not free variables of goals from $(g' : \Gamma')$, so the values of $d$ on this goals will be the same for the restricted substitution (it follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}). After this replacement we can directly apply the inductive hypothesis. $\qed$
+    Now, we need to show that if we take any answer $(\sigma \rho \delta, n')$ and $\rho'$ that corresponds to it by the described bijection then the values for them under the sums are equal. First, we need to replace $D(\taskst{g'}{(\sigma \rho \delta, n')}, \Gamma')$ by $D(\taskst{g'}{(\sigma \rho \delta\restriction_U, n)}, \Gamma')$, we can do it because all variables from $\Dom(\delta) \setminus U$ have indices greater or equal than $n$ (by \lemmaword~\ref{lem:update_substitutions_FV}) and therefore these variables are not free variables of goals from $(g' : \Gamma')$, so the values of $d$ on this goals will be the same for the restricted substitution (it follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}). After this replacement we can directly apply the inductive hypothesis.\qed
 	
 	\end{enumerate}
 
