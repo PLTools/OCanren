@@ -1,24 +1,6 @@
 \section{Discussion}
 \label{sec:discussion}
 
-\begin{comment}
-In this paper we analyse only complexity of the scheduling of unifications, ignoring complexity of performing these unifications.
-However, we argue that the scheduling factor we calculate can be used as an approximation for the whole program execution complexity
-in most practical cases. This is not unusual: it is common knowledge among users of \textsc{Prolog} that in practise almost always each
-unification takes constant time (depending on the input), some theoretical basis for this is given in~\cite{UnificationAverageCost}.
-Therefore it is conventional for complexity analyses of \textsc{Prolog} to use the number of unifications or the number of resolution
-steps (which are assymptotically equivalent) as the time measure.
-
-There are some specifics of unification implementation in \mK. First, for simple backtracking in a non-mutable fashion the triangular
-substitutions~\cite{UnificationTheory} are used instead of the usual indempotent ones. It brings additional overhead that is analysed
-in some detail in~\cite{WillsTheisis}, but experience shows that in most practical cases this overhead in insignificant (for this reason
-the simplest implementations with bad worst-time complexity are kept). Secondly, \mK allows programmer to chose whether to perform occurs
-checks in a specific unification, and by default they are performed, which this time adds significant overhead usually changing the
-resulting complexity. These checks are rarely violated (in the context of \textsc{Prolog} this is established in~\cite{OccursChecksRevisited}),
-so in other languages (like \textsc{Prolog}) the occurs checks are usually ommited by default. Sheduling factor we compute can be used as a
-measure for time in \mK only if occurs checks are ommited.
-\end{comment}
-
 Our approach imposes three conditions on the analyzed programs: disjunctive normal form, uniqueness of answers and grounding of relational calls.
 The first two are rather non-restrictive: DNF is equivalent to the description of relation as a set of Horn clauses in \textsc{Prolog},
 and the majority of well-known examples in \mK are written in this or very similar form. Repetitive answers are usually an indication
