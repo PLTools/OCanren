@@ -1,12 +1,11 @@
 \section{Complexity Analysis via Symbolic Execution Schemes}
 \label{sec:symbolic}
 
-%Our approach to complexity analysis is based on a semi-automatic procedure involving symbolic evaluation.
+Our approach to complexity analysis is based on a semi-automatic procedure involving symbolic evaluation.
 In the previous section we presented formulae to compositionally estimate the complexity factors for
 \emph{non-leaf states} of operational semantics under assumption that coresponding estimations for
-\emph{leaf states} are given.
-In order to obtain corresponding estimations for relations as whole we would need to take into account the effects
-of relational invocations, including the recursive ones.
+\emph{leaf states} are given. In order to obtain corresponding estimations for relations as whole we
+would need to take into account the effects of relational invocations, including the recursive ones.
 
 Another observation is that as a rule we are interested in complexity estimations in terms of some \emph{metatheory}. For
 example, dealing with relations on lists we would be interested in estimations in terms of list lengths,
@@ -14,14 +13,15 @@ with trees~--- in terms of depth or number of nodes, with numbers~--- in terms o
 unlikely that a generic term-based framework would provide such a specific information automatically. Thus,
 a viable approach would be to extract some inequalities involving the complexity factors of certain relational
 calls automatically and then let a human being solve these inequalities in terms of a relevant metatheory.
+In the section we present 
+
 For the sake of clarity we will provide a demonstration of complexity analysis for a specific example~---
 \lstinline|append$^o$| relation from the introduction~--- throughout the section.
 
-%The extraction procedure utilizes symbolic execution technique and is completely automatic.
-%It turns out that the semantics we have is already abstract enough to be used for symblolic
-%execution with minor adjustments.
-
-In symbolic execution we mark some of the logic variables as ``grounded'' and at certain
+The extraction procedure utilizes symbolic execution technique and is completely automatic.
+It turns out that the semantics we have is already abstract enough to be used for symblolic
+execution with minor adjustments.
+In this symbolic procedure we mark some of the logic variables as ``grounded'' and at certain
 moments substitute them with ground terms.
 Informally, for some goal with some free logic variables we consider the complexity of a search
 procedure which finds the bindings for all non-grounded variables based on the ground values
@@ -176,6 +176,66 @@ environment respectively, $V$ is a set of grounded variables at the moment.
  \end{array}
 \]
 \caption{Scheme Formation Rules}
+\label{fig:scheme_formation}
+\end{figure}
+
+
+
+\begin{figure}[t]  
+\color{blue}
+\renewcommand{\arraystretch}{2}
+  \[
+\begin{array}{cr}
+  \onepremrule
+		{  \schemetrans{g_1}{g_2 : \Gamma}{\sigma}{n}{V}{\mathcal{\nicefrac{D}{T}}}  } 
+		{  \schemetrans{\conjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{ \mathcal{\nicefrac{D}{T}} }  } & \ruleno{Conj$_\mathfrak S$}
+		\\
+                
+  % \multicolumn{3}{c}{
+  \twopremrule
+		{  \schemetrans{g_1}{\Gamma}{\sigma}{n}{V}{ \mathcal{\nicefrac{D_1}{T_1}} }  }
+		{  \schemetrans{g_2}{\Gamma}{\sigma}{n}{V}{ \mathcal{\nicefrac{D_2}{T_2}} }  }
+		{  \schemetrans{\disjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{ \lambda \rho. \; \mathcal{\nicefrac{D_1}{T_1}}\,(\rho) + \mathcal{\nicefrac{D_2}{T_2}}\,(\rho) }  } & \ruleno{Disj$_\mathfrak S$}\\ 
+		
+		
+ \onepremrule
+		{  \schemetrans{\substitute{g}{\alpha_n}{x}}{\Gamma}{\sigma}{n + 1}{V}{  \mathcal{\nicefrac{D}{T}}  } }
+		{  \schemetrans{\freshgoal{x}{g}}{\Gamma}{\sigma}{n}{V}{  \mathcal{\nicefrac{D}{T}}  }  }  & \ruleno{Fresh$_\mathfrak S$}\\
+
+ %\multicolumn{3}{c}{
+  \schemetrans{\unigoal{t_1}{t_2}}{\epsilon}{\sigma}{n}{V}{ \lambda \rho. \;  1 }& \ruleno{UnifyLeaf$_\mathfrak S$   }\\
+
+ %\multicolumn{3}{c}{
+ \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{\epsilon}{\sigma}{n}{V}{ \lambda \rho. \;  \nicefrac{d}{t}\,(init\,(\invokegoal{R^k}{t_1 \sigma \rho}{t_k \sigma \rho})) } & \ruleno{InvokeLeaf$_\mathfrak S$}\\ 
+		
+ %\multicolumn{3}{c}{
+  \onepremrule
+		{  \nexists mgu\,(t_1 \sigma, t_2 \sigma)  }
+		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{ \lambda \rho. \; 1  } }& \ruleno{UnifyFail$_\mathfrak S$}\\
+
+ %\multicolumn{3}{c}{
+  \threepremrule
+		{  mgu\,(t_1 \sigma, t_2 \sigma) = \delta  }
+		{  U = \upd{V}{\delta}  }
+		{  \schemetrans{g}{\Gamma}{\sigma \delta}{n}{U}{ \nicefrac{D}{T}  }  }
+		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{ \lambda \rho. \; 1 +
+      \smashoperator{\sum\limits_{\substack{ \rho' \colon V \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      \forall (y, t) \in Cs\,:\, \rho'\,(y) = t\, \rho'  }}}
+           \mathcal{\nicefrac{D}{T}}\,(\rho')  }   } & \ruleno{UnifySuccess$_\mathfrak S$}\\
+		
+ %\multicolumn{3}{c}{
+  \twopremrule
+		{  \mbox{\phantom{XXXXXX}} U =  V \cup \displaystyle\bigcup\limits_{i} FV\,(t_i \sigma) }
+		{  \schemetrans{g}{\Gamma}{\sigma}{n}{U}{  \nicefrac{D}{T}   } \mbox{\phantom{XXXXXX}} }
+		{  \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{g : \Gamma}{\sigma}{n}{V}{  \lambda \rho. \; \nicefrac{d}{t}\,(init\,(\invokegoal{R^k}{t_1 \sigma \rho}{t_k \sigma \rho})) +
+      \smashoperator{\sum\limits_{\substack{ \rho' \colon V \to \grterms \\
+                                      \rho' \succ \rho \\
+                                      (t_1 \rho', \dots, t_k \rho') \in \sembr{R^k}  }}}
+           \mathcal{\nicefrac{D}{T}}\,(\rho')   }   } & \ruleno{Invoke$_\mathfrak S$}
+ \end{array}
+\]
+\caption{Scheme Formation Rules New}
 \label{fig:scheme_formation}
 \end{figure}
 

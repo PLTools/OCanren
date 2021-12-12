@@ -1,10 +1,9 @@
 \section{Scheduling Complexity}
 \label{sec:scheduling}
 
-
-%In this section we define a specific value to estimate the scheduling time and derive some equations to calculate this value for a given \emph{semantic
-%state}. However, our ultimate goal is to provide a complexity estimation for a given goal (\emph{query}). This problem will be addressed in Section~\ref{sec:symbolic},
-%in which we will make use of recurrent equations presented here.
+In this section we define a specific value to estimate the scheduling time and derive some equations to calculate this value for a given \emph{semantic
+state}. However, our ultimate goal is to provide a complexity estimation for a given goal (\emph{query}). This problem will be addressed in Section~\ref{sec:symbolic},
+in which we will make use of recurrent equations presented here.
 
 We may notice that operational semantics described in the previous section can be used to calculate the exact number of elementary scheduling steps.
 Our first idea is to take the number of states $d\,(s)$ in the finite trace for a given state $s$:
@@ -16,7 +15,7 @@ elementary steps in the semantics are not elementary in existing implementations
 each semantic step involves a navigation to the leftmost leaf of the state which in implementations corresponds to multiple elementary actions,
 which number is proportional to the length of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$,
 which we call the \emph{scheduling factor}:
-
+{ \color{orange}
 \[
 t\,(s) \eqdef \sum\limits_{s_i \in \trs{s}} lh\,(s_i) 
 \]
@@ -30,16 +29,21 @@ where
  lh\,(s \otimes g)    &\eqdef& lh\,(s) + 1 \\
 \end{array}
 \]
-
+}
+In the rest of the section we state a number of lemmas providing estimations for these two values. The proofs for the lemmas (when omitted) can be
+found in Appendix~\ref{sec:appendix}.
+{ \color{orange}
 The first lemma provides a fundamental relation between these two~--- $d$ and $t$,~--- estimations for the scheduling complexity:
 
 \begin{lemma}
 \label{lem:d_t_relation}
  $d\,(s) \le t\,(s) \le d^2\,(s)$ for any state $s$.
-\end{lemma}
+\end{lemma} }
+{ \color{red}
 \begin{proof}
   Follows immediately from the definitions of the estimated values and the fact that the height of a state increases by at most $1$ at each step.\qed
 \end{proof}
+}
 
 Our next goal is to derive recurrent equations which would relate the scheduling complexity for states to the scheduling complexity for their
 (immediate) substates. It turns out that to come up with such equations both $t$ and $d$ values have to be estimated simultaneously.  
@@ -121,7 +125,7 @@ addition is exactly the number of steps for the left substate.
 Unfolding costs definitions in $(\dagger)$ gives us a cumbersome formula which 
 includes some intermediate states encountered during the evaluation. However, as ultimately
 we are interested in an asymptotic estimations, we can approximate these costs up to a multiplicative constant.
-
+{ \color{red}
 First, we rewrite the equation $(\dagger)$ in the following form:
 
 \[ t\,(s \otimes g)  =  t\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} t\,(\taskst{g}{a_i}) + C\,(s \otimes g) \]
@@ -129,7 +133,7 @@ First, we rewrite the equation $(\dagger)$ in the following form:
 where
 
 \[ C\,(s \otimes g) = \costconj{s}{g} + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} \costdisj{\taskst{g}{a_i}}{(s'_i \otimes g)} \]
-
+}
 Next, we need the following definition to handle corner cases.
 
 \begin{comment}
@@ -162,7 +166,7 @@ For a set of natural numbers $S$
 
 % With principal environment being defined we can prove the following lemma\footnote{We assume the following definition for 
 % $h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}:
-
+{ \color{red}
 Now we can state the following approximation\footnote{We assume the following definition for
 $h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}
 for $C\,(s \otimes g)$.
@@ -173,6 +177,8 @@ C\,(s \otimes g) =
 \Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \smashoperator{\maxd\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}))	
 \]
 \end{replemma}
+
+}
 
 We can see that this approximation is very similar to the $(\star)$ except that here we exclude $d$ value for one of the answers from the sum (the maximal one). This difference
 is essential and, as we will see later, it is in fact responsible for the difference in complexities for our motivation example.
