@@ -77,9 +77,9 @@ Induction on the value $d(s \times g)$.
 Both equations easily hold for all the rules (\ruleno{ConjStop}, \ruleno{ConjStopAns}, \ruleno{ConjStep}, \ruleno{ConjStepAns}) if we apply indutive hypothesis for the next state.
 \end{proof}
 
-\repeatlemma{lem:times_costs_approximation}
+\repeatlemma{lem:otimes_t_approximation}
 \begin{proof}
-After we unfold defintions we have the following statement:
+After we unfold defintions and throw out identical parts we have the following statement:
 \[ \begin{array}{l}
 d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} \min\,\{2\cdot d\,(\taskst{g}{a_i}) - 1, 2\cdot d\,(s'_i \otimes g)\}  = \\
 = \Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \smashoperator{\maxd\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i})) \\

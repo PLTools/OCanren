@@ -15,13 +15,14 @@ elementary steps in the semantics are not elementary in existing implementations
 each semantic step involves a navigation to the leftmost leaf of the state which in implementations corresponds to multiple elementary actions,
 which number is proportional to the length of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$,
 which we call the \emph{scheduling factor}:
-{ \color{orange}
+
 \[
 t\,(s) \eqdef \sum\limits_{s_i \in \trs{s}} lh\,(s_i) 
 \]
 
-where
+where $lh\,(s_i)$ is the height of the leftmost branch of the state. 
 
+\begin{comment}
 \[
 \begin{array}{rcl}
  lh\,(\taskst{g}{e})  &\eqdef& 1 \\
@@ -29,10 +30,13 @@ where
  lh\,(s \otimes g)    &\eqdef& lh\,(s) + 1 \\
 \end{array}
 \]
-}
+\end{comment}
+
+
+\begin{comment}
 In the rest of the section we state a number of lemmas providing estimations for these two values. The proofs for the lemmas (when omitted) can be
 found in Appendix~\ref{sec:appendix}.
-{ \color{orange}
+
 The first lemma provides a fundamental relation between these two~--- $d$ and $t$,~--- estimations for the scheduling complexity:
 
 \begin{lemma}
@@ -44,8 +48,9 @@ The first lemma provides a fundamental relation between these two~--- $d$ and $t
   Follows immediately from the definitions of the estimated values and the fact that the height of a state increases by at most $1$ at each step.\qed
 \end{proof}
 }
+\end{comment}
 
-Our next goal is to derive recurrent equations which would relate the scheduling complexity for states to the scheduling complexity for their
+In the rest of the section we derive recurrent equations which would relate the scheduling complexity for states to the scheduling complexity for their
 (immediate) substates. It turns out that to come up with such equations both $t$ and $d$ values have to be estimated simultaneously.  
 
 
@@ -124,8 +129,9 @@ addition is exactly the number of steps for the left substate.
 
 Unfolding costs definitions in $(\dagger)$ gives us a cumbersome formula which 
 includes some intermediate states encountered during the evaluation. However, as ultimately
-we are interested in an asymptotic estimations, we can approximate these costs up to a multiplicative constant.
-{ \color{red}
+we are interested in an asymptotic estimations, we can approximate these costs up to a multiplicative constant. We can notice that the value $d(s'_i \otimes g)$ occuring in the second argument of $cost_{\oplus}$ includes values $d(\taskst{g}{a_j})$ (like in the fist argument) for all answers $a_j$ after this intermediate state. So in the sum of all $cost_{\oplus}$ values $d(\taskst{g}{a_i})$ may be excluded for at most one answer, and in fact if we take the maximal one of these values we will get rather precise approximation. We need the following definition for it, to handle corner cases.
+
+\begin{comment}
 First, we rewrite the equation $(\dagger)$ in the following form:
 
 \[ t\,(s \otimes g)  =  t\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} t\,(\taskst{g}{a_i}) + C\,(s \otimes g) \]
@@ -133,8 +139,7 @@ First, we rewrite the equation $(\dagger)$ in the following form:
 where
 
 \[ C\,(s \otimes g) = \costconj{s}{g} + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} \costdisj{\taskst{g}{a_i}}{(s'_i \otimes g)} \]
-}
-Next, we need the following definition to handle corner cases.
+\end{comment}
 
 \begin{comment}
 \begin{definition}
@@ -166,167 +171,18 @@ For a set of natural numbers $S$
 
 % With principal environment being defined we can prove the following lemma\footnote{We assume the following definition for 
 % $h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}:
-{ \color{red}
+
 Now we can state the following approximation\footnote{We assume the following definition for
-$h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}
-for $C\,(s \otimes g)$.
+$f\,(x) = g\,(x) + \Theta\,(h\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : g\,(x) + C_1 \cdot h\,(x) \le f\,(x) \le g\,(x) + C_2 \cdot h\,(x) \]}
+for $t\,(s \otimes g)$.
 
-\begin{replemma}{lem:times_costs_approximation}
-\[
-C\,(s \otimes g) =
-\Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \smashoperator{\maxd\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}))	
-\]
-\end{replemma}
-
-}
-
-We can see that this approximation is very similar to the $(\star)$ except that here we exclude $d$ value for one of the answers from the sum (the maximal one). This difference
-is essential and, as we will see later, it is in fact responsible for the difference in complexities for our motivation example.
-
-Finally, as a result we have the following approximation for the scheduling factor of $\otimes$-states.
-
-\begin{corollary}
-\label{lem:otimes_t_approximation}
+\begin{replemma}{lem:otimes_t_approximation}
 \[
  t\,(s \otimes g)  =  t\,(s) + \left({\sum\limits_{a_i \in \tra{s}}} t\,(\taskst{g}{a_i})\right) +
  \Theta\,(d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}) - \smashoperator{\maxd\limits_{a_i \in \tra{s}}} d\,(\taskst{g}{a_i}))	
 \]
-\end{corollary}
+\end{replemma}
 
-
-
-
-
-
-
-
-
-\begin{comment}
-
-\textcolor{red}{\bf OR}
-
-\begin{definition}
-For two functions $f \colon X_1 \times \dots \times X_n \to \mathcal{R}$ and $g \colon X_1 \times \dots \times X_n \colon \mathcal{R} \to \mathcal{R}$ we say that $f(x_1,\, \dots,\, x_n) \sim_C g(x_1,\, \dots,\, x_n, C)$ if there exist two positive real constants $c^{low}$ and $c^{up}$ such that for all $(x_1,\, \dots,\, x_n) \in X_1 \times \dots \times X_n$, $g(x_1,\, \dots,\, x_n,\, c^{low}) \le f(x_1,\, \dots,\, x_n) \le g(x_1,\, \dots,\, x_n,\, c^{up})$.
-\end{definition}
-
-\begin{lemma}
-\label{lem:prod_approximation}
-For any state $s$ and any goal $g$
-\[ 
-\begin{array}{lcrl}
-
-t\,(s \otimes g) & \lowupbound{1}{2} & & t\,(s) + (\displaystyle\sum\limits_{a_i \in \tra{s}} t\,(\taskst{g}{a_i})) + \\ 
-& & C \cdot ( & d\,(s) + (\displaystyle\sum\limits_{a_i \in \tra{s}} d\,(\taskst{g}{a_i})) {\color{blue} - d\,(\taskst{g}{a_m})} ) 
-
-\end{array} \]
-
-where $a_m = \argmax{a_i \in \tra{s}} d(\taskst{g}{a_i})$
-\end{lemma}
-
-\textcolor{red}{\bf OR}
-
-\begin{lemma}
-\label{lem:prod_approximation}
-\[ 
-\begin{array}{lcrl}
-
-t\,(s \otimes g) & \sim_C & & t\,(s) + (\displaystyle\sum\limits_{a_i \in \tra{s}} t\,(\taskst{g}{a_i})) + \\ 
-& & C \cdot ( & d\,(s) + (\displaystyle\sum\limits_{a_i \in \tra{s}} d\,(\taskst{g}{a_i})) {\color{blue} - d\,(\taskst{g}{a_m})} ) 
-
-\end{array} \]
-
-where $a_m = \argmax{a_i \in \tra{s}} d(\taskst{g}{a_i})$
-\end{lemma}
-
-The blue addend is called ...
-
-\end{comment}
-
-\begin{comment}
-
-One option is to go with the first argument of ``$\min$'' in $\costdisj{\taskst{g}{a_i}}{s'_i}$.
-It should be a good approximation in the case when there are several answers passed to the second
-goal and for none of them the number of steps surpasses the \emph{overall} number of steps for all
-other answers (the second argument of ``$\min$'' will include the sum for the rest of the answers).
-
-\begin{corollary}
-\label{lem:prod_estimation_multiple_answers}
-For any state $s$ and any goal $g$
-\[ t\,(s \otimes g) \le t\,(s) + d\,(s) + \displaystyle\sum\limits_{a_i \in \tra{s}} (t\,(\taskst{g}{a_i}) + 2\cdot d\,(\taskst{g}{a_i}) \]
-\end{corollary}
-
-In the case when there is only one answer, however, we should rather go with the second argument of ``$\min$''. 
-
-In this case the number of steps $d\,(s'_1 \otimes g)$ is equal to the number of steps $d\,(s'_1)$
-since no more answers are produced, and we can approximate it by the length $d\,(s)$ of the whole
-trace for $s$. 
-
-\begin{corollary}
-\label{lem:prod_estimation_single_answer}
-  For any state $s$ and any goal $g$, if $\tra{s} = \{a\}$, then
-  
-\[ t\,(s \otimes g) \le t\,(s) + 3\cdot d\,(s) + t\,(\taskst{g}{a}) \]
-\end{corollary}
-
-Finally, since we estimate only up to a multiplicative constant (in particular, it does not matter by what constants we multiply the values of $d\,(\cdot)$ when calculating
-the scheduling factor) we can derive from these results two compact scheduling time approximations for goals in the form of sequences of disjuncts/conjuncts.
-These two approximations work regardless of the associativity/grouping of subformulas; thus a certain constant $c_k$, depending only on $k$, comes in.
-
-For conjunctions, we have the following one.
-
-\begin{lemma}
-\label{lem:conjunction_metrics_calc}
-
-Let $g = g_1 \land \dots \land g_k$ and let $A_i$ be a set of all answers that are passed to $g_i$ at some stage starting from some initial environment $e_0$
-
-\[
-\begin{array}{rcl}
-A_1 &=& \{ e_0 \} \\
-A_{i + 1} & = & \bigcup\limits_{a \in A_i} \tra{\taskst{g_i}{a}} 
-\end{array}
-\]
-
-Then
-
-\[
-\begin{array}{rcl}
-d\,(\taskst{g}{e}) &=& \displaystyle\sum\limits_{1 \le i \le k} \;\; \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}) \\
-t\,(\taskst{g}{e}) &\le& \displaystyle\sum\limits_{1 \le i \le k} \;\; \displaystyle\sum\limits_{a \in A_i} t\,(\taskst{g_i}{a}) + c_k \cdot \displaystyle\sum\limits_{1 \le i \le k} \;\; \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a}), \\
-\end{array}
-\]
-
-In the case when all $A_i$ contain only one answer
-
-\[
-t\,(\taskst{g}{e}) \le \displaystyle\sum\limits_{1 \le i \le k} \;\; \displaystyle\sum\limits_{a \in A_i} t\,(\taskst{g_i}{a}) + c_k \cdot \displaystyle \sum\limits_{1 \le i \le k - 1} \;\; \displaystyle\sum\limits_{a \in A_i} d\,(\taskst{g_i}{a})
-\]
-
-\end{lemma}
-
-When applying the estimation from corollary~\ref{lem:prod_estimation_multiple_answers} we have an extra summand in the form of the number of steps (multiplied by some constant) for all conjuncts.
-The only exception is the case when every conjunct produces no more than one answer, then we can use the corollary~\ref{lem:prod_estimation_single_answer} everywhere instead and drop out the
-additional number of steps for the last conjunct. Besides that, a constant number of steps is required to turn each conjunction into a $\otimes$-state, but we may integrate this extra constant into $c_k$.
-
-For disjunctions, the lemma is the following one.
-
-\begin{lemma}
-\label{lem:disjunction_metrics_calc}
-
-Let $g = g_1 \lor \dots \lor g_k$ and $1 \le l \le k$; then
-
-\[
-\renewcommand{\arraystretch}{1.5}
-\begin{array}{rcl}
-  d\,(\taskst{g}{e}) &\le& \displaystyle\sum\limits_{1 \le i \le k} d\,(\taskst{g_i}{e}) \\
-  t\,(\taskst{g}{e}) &\le& \displaystyle\sum\limits_{1 \le i \le k} t\,(\taskst{g_i}{e}) + c_k\cdot \displaystyle\sum\limits_{\renewcommand{\arraystretch}{1}\begin{array}{c}1 \le i \le k \\ i \ne l\end{array}} d\,(\taskst{g_i}{e}).
-\end{array}
-\]
-
-\end{lemma}
-
-Roughly speaking, if we have a disjunct $g_m$ with a number of steps larger than all the steps for other disjuncts combined, then when applying lemma~\ref{lem:sum_estimation} we again will have an
-extra summand in the form of the number of steps for all disjuncts except for the $g_m$ (it will always be the largest argument of ``$\min$''). But if we can drop out the \emph{largest}
-the number of steps among disjuncts, we can also drop out any other instead, that's where arbitrary $l$ comes from. The case when there is no such $g_m$ has to be considered separately; it is simpler
-since then all the numbers of steps are the same up to a multiplicative constant.
-
-\end{comment}
+We can see that the part under $\Theta$ is very similar to the $(\star)$ except that here we exclude $d$ value for one of the answers from the sum.
+This difference is essential and, as we will see later, it is in fact responsible for the difference in complexities for our motivation example.
+ 
