@@ -1,0 +1,30 @@
+\section{Related Work}
+\label{sec:related}
+
+To our knowledge, our work is the first attempt of comprehensive time complexity analysis for interleaving search in \mK.
+There is a number of separate observations on how certain patterns in relational programming affect performance and a number
+of ``rules of thumb'' based on these observations~\cite{WillsThesis}. Some paper~\cite{GuardedFresh, FloatArithmetics, UniversalQuantification} tackle
+specific problems with relational programming using quantitative time measuring for evaluation. These approaches to performance analysis, being sufficient
+for specific relational problems, do not provide the general understanding of interleaving search and its cost.
+
+At the same time complexity analysis was studied extensively in the broader context of logic programming (primarily, for \textsc{Prolog}).
+As one important motivation for complexity analysis is granularity control in parallel execution, the main focus was set on the automated approaches.
+
+Probably the best known among them is the framework~\cite{CostAnalysisLP} for cost analysis of logic programs (demonstrated on plain \textsc{Prolog}),
+implemented in the system \textsc{CASLOG}. It uses data dependecy information to estimate the sizes of the arguments and the number of solutions for
+executed atoms. These estimations are formulated as recursive inequalities (more precisely, as difference equations for upper bounds), which are then
+automatically solved with known methods. The time and space complexity are expressed using these estimations, the variations of these approach can
+provide both upper~\cite{CostAnalysisLP} and lower~\cite{CostAnalysisLPLower} bounds.
+
+An alternative approach is suggested in~\cite{SymbolicAnalysisLP} for symbolic analysis of logic programs (demonstrated in \textsc{Prolog} with cuts).
+It constructs symbolic evaluation graphs capturing grounding propagation and reduction of recursive calls to previous ones, in the process of construction
+some heuristic approximations are used. These graphs may look similar to the symbolic schemes described in the \sectionword~\ref{sec:symbolic} at first glance,
+but there is a principal difference: symbolic graphs capture the whole execution with all invoked calls (using inverse edges to represent cycles with recursive calls),
+while our schemes capture only the execution inside the body of a specific relation (representing the information about internal calls in terms of denotational semantics).
+The graphs are then transformed into term rewriting systems, for which the problem of the complexity analyisis is well-studied (specifically, \textsc{AProVE} tool is used).
+
+While these two approaches can be seen as partial bases for our technique, they are mainly focused on how the information about the arguments and results of
+the evaluated clauses can be derived automatially, since the calculation of time complexity of \textsc{SLD}-resolution is trivial when this information is available.
+In contrast, we are interested in the penalty of non-trivial scheduling of relational calls under interleaving seach, so we delegate handling the information
+about calls to the reasoning in terms of a specific metatheory.
+

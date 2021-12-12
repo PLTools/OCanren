@@ -72,7 +72,7 @@ are added to this set during the execution, the valuations need to be extended f
 The main objective of the symbolic execution in our case is to find constraints on valuations for every leaf goal in the body of a relation that determine
 whether the execution will continue and how a valuation changes after this goal. For internal relational calls we describe constraints in term of denotational
 semantics (to be given some meaning in terms of metatheory later). We can do it beacuse of a precise equivalence between the anwers found by operational semantics
-and values described by denotational semantics thanks to soundness and completness as well as our requirements of grounding and non-repetitiveness of calls.
+and values described by denotational semantics thanks to soundness and completness as well as our requirements of grounding and uniquence of answers.
 Our symbolic treatment of equalities relies on the fact that subtitutions of ground terms commute, in a certain sense, with unifications. More specifically,
 we can use the most general unifier for two terms to see how unification goes for two terms with some free variables substituted with ground terms.
 The most general unifier may contain bindings for both grounded and non-grounded variables. Potential most general unifier for terms after substitution
@@ -250,7 +250,7 @@ the \figureword~\ref{fig:scheduling_extraction_d_t} (both formulas are given in 
 corresponding value (for equality it always equals to $1$). When going through an equality we sum up the rest with an updated valuation (by \lemmaword~\ref{lem:symbolic_unification_soundness}
 this sum always has one or zero summands depending on whether the unification succeeds or not). When going through a relational call we take a sum of all valuations that satisfy the
 denotational semantics (these valuations will correspond exactly to the set of all answers produced by the call since operational semantics is sound and complete w.r.t. the denotational
-one and because we require all calls to be non-repetitive). For disjunctions we take the sum of both branches.
+one and because we require all answers to be unique). For disjunctions we take the sum of both branches.
 
 \begin{comment}
 \begin{figure}[t]
@@ -298,7 +298,7 @@ union, so we do not show it here.
 Now we can formulate the following main theorem that provides the principal recursive inequalities, extracted from the scheme for a given goal.
 
 \begin{reptheorem}{extracted_approximations}
-Let $g$ be a goal in DNF and all sub-calls encountered during its evaluation are grounding and non-repetitive, and let
+Let $g$ be a goal, and let
 
 \[  \schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{V}{\schemewithvset{\mathfrak{S}}{V}}  \]
 
