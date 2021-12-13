@@ -25,7 +25,7 @@
 \end{figure}
 
 A family of embedded languages for logic and, more specifically, relational programming \mK~\cite{TRS} has demonstrated an interesting potential in various fields of 
-program synthesis or declarative pogramming~\cite{SevenProblems,Twines,Matching}. A distinctive feature of \mK is \emph{interleaving search}~\cite{Transformers} which,
+program synthesis or declarative pogramming~\cite{SevenProblems,Quines,Matching}. A distinctive feature of \mK is \emph{interleaving search}~\cite{Transformers} which,
 in particular, delivers such an important feature as completeness.
 
 However, being a different search strategy than conventional BFS/DFS/incremental deepening, etc., interleaving search makes the conventional ways of reasoning about the complexity
@@ -43,12 +43,12 @@ slower,
 %being run is a \emph{forward} direction as well (i.e. as a regular concatenation),
 although it performs exactly the same number of unifications. As a matter of fact, these two implementations even have different \emph{asymptotic} complexity under the assumption
 that occurs check is disabled.\footnote{The role of occurs check is discussed in
-\sectionword~\ref{src:evaluation}.}
+\sectionword~\ref{sec:evaluation}.}
 A careful analysis discovers that the difference is caused not by unifications, but by the process of \emph{scheduling} goals during the search. In \mK a
 lazy structure is maintained to decompose the goals into unifications, perform these unifications in a certain order, and thread the results appropriately. For the \lstinline|append$^o$|
 this structure becomes linear in size, reducing the performance.
 
-In the paper we identify two complexity measures (\emph{scheduling factors}) and present a framework to derive their worst-case asymptotic estimations~--- \emph{scheduling complexity}~---
+In the paper we identify two complexity measures and present a framework to derive their worst-case asymptotic estimations~--- \emph{scheduling complexity}~---
 for a given goal. The goal has to fulfill a number of requirements (both syntactic and semantic), which we explicitly state in \sectionword~\ref{sec:background}. The estimations
 themselves are consructed using a manual metatheory-level reasoning over a set of inequalities, which are extracted automatically using symbolic execution.
 %In the paper we present a model to estimate scheduling complexity of interleaving search in \mK. We use a formal semantics which, in turn, reflects the
@@ -58,6 +58,6 @@ themselves are consructed using a manual metatheory-level reasoning over a set o
 %to be reformulated and solved in terms of a certain \emph{metatheory}, which, on success, provides an asymptotic bounds for the complexity of
 %the goal evaluation. To be applicable, our approach puts a number of limitation on the goal being estimated as well as on the relational program as whole. We discuss
 %these limitations in \sectionword~\ref{sec:discussion} as well as the contribution of scheduling in overall interleaving search complexity in \mK.
-Due to space considerations, the proofs of all lemmas and theorems can be found in Appendix~\ref{sec:appendix}.
+Due to space considerations, the proofs of all lemmas and theorems can be found in Appendix~\ref{sec:proofs_appendix}.
 
 
