@@ -4,20 +4,20 @@
 \begin{figure}[t]
 \begin{tabular}{p{6cm}p{6cm}}
 \begin{lstlisting}[basicstyle=\small]
-   append$^o_{opt}$ = fun a b ab .
-     ((a === Nil) /\ (ab === b)) \/
-     (fresh (h t tb)
-        (a === Cons(h, t)) /\
-        (ab === Cons(h, tb) /\
-        (append$^o_{opt}$ t b tb)))
-\end{lstlisting} & \multirow{2}{*}[-3mm]{\includegraphics[width=6cm,height=5cm]{append_without_oc.png}} \\[-9mm]
-\begin{lstlisting}[basicstyle=\small]
    append$^o$ = fun a b ab .
      ((a === Nil) /\ (ab === b)) \/
      (fresh (h t tb)
         (a === Cons(h, t)) /\
         (append$^o$ t b tb) /\
         (ab === Cons(h, tb)))
+\end{lstlisting} & \multirow{2}{*}[-3mm]{\includegraphics[width=6cm,height=5cm]{append_without_oc.png}} \\[-9mm]
+\begin{lstlisting}[basicstyle=\small]
+   append$^o_{opt}$ = fun a b ab .
+     ((a === Nil) /\ (ab === b)) \/
+     (fresh (h t tb)
+        (a === Cons(h, t)) /\
+        (ab === Cons(h, tb) /\
+        (append$^o_{opt}$ t b tb)))
 \end{lstlisting} &
 \end{tabular}
 \caption{Two implementations of list concatenation and their performance for $a = [1,\dots,n]$, $b = [1,\dots,100]$, and $ab$ left free.}
@@ -25,7 +25,7 @@
 \end{figure}
 
 A family of embedded languages for logic and, more specifically, relational programming \mK~\cite{TRS} has demonstrated an interesting potential in various fields of 
-program synthesis or declarative pogramming~\cite{SevenProblems,Quines,Matching}. A distinctive feature of \mK is \emph{interleaving search}~\cite{Transformers} which,
+program synthesis and declarative pogramming~\cite{SevenProblems,Quines,Matching}. A distinctive feature of \mK is \emph{interleaving search}~\cite{Transformers} which,
 in particular, delivers such an important feature as completeness.
 
 However, being a different search strategy than conventional BFS/DFS/incremental deepening, etc., interleaving search makes the conventional ways of reasoning about the complexity

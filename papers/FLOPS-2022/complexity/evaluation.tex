@@ -1,18 +1,18 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-The theory we've built was so far applied to only one relation~--- \lstinline|append$^o$|~--- which we used as a motivating example. With our framework, it turned out
+The theory we've built was so far applied to only one relation~--- \lstinline|append$^o$|~--- which we used as a motivation example. With our framework, it turned out
 to be possible to explain the difference in performance between two nearly identical implementations, and the difference~--- linear vs. quadratic asymptotic
 complexity~--- was just as expected from the experimental performance evaluation. In this section, we present some other results of complexity estimations and
 discuss the adequacy of these estimations w.r.t. the real \mK implementations.
 
 Derived complexity estimations for a few other relations are shown in \figureword~\ref{fig:examples_all_complexities}. Besides concatenation, we deal with
-list reversing and Peano numbers addition and multiplication. We show both $d-$ and $t-$ factors since the difference between the two indicates the
+naive list reversing and Peano numbers addition and multiplication. We show both $d-$ and $t-$ factors since the difference between the two indicates the
 cases when scheduling strikes in. We expect that for simple relations like those presented the procedure of deriving estimations should be easy; however,
 for more complex ones the dealing with extracted inequalities may involve a non-trivial metatheory reasoning.
 
 The justification of the adequacy of our complexity estimations w.r.t. the existing \mK implementations faces the following problem: it is
-not an easy task to separate the contribution of scheduling from other components of the search procedure: unification and occurs check. However, it is common
+not an easy task to separate the contribution of scheduling from other components of the search procedure~--- unification and occurs check. However, it is common
 knowledge among \textsc{Prolog} users that in practice unification takes a constant time almost always; some theoretical basis for this is given in~\cite{UnificationAverageCost}.
 There are some specifics of unification implementation in \mK. First, for the simplicity of backtracking in a non-mutable fashion triangular
 substitution~\cite{UnificationTheory} is used instead of the idempotent one. It brings in an additional overhead which is analyzed
@@ -32,7 +32,7 @@ using our framework. The details of implementation, evaluation, and results can 
     \lstinline|append$^o$ $\mathbf{a}$ $\mathbf{b}$ ${ab}$|      & $len\,(\mathbf{a})$ & $len^2\,(\mathbf{a})$   & \lstinline|plus$^o$ $\mathbf{n}$ $\mathbf{m}$ ${r}$| & $|\mathbf{n}|$ & $|\mathbf{n}|$ \\
     \lstinline|append$_{opt}^o$ $\mathbf{a}$ $\mathbf{b}$ ${ab}$| & $len\,(\mathbf{a})$ & $len\,(\mathbf{a})$     & \lstinline|plus$^o$ $\mathbf{n}$ ${m}$ $\mathbf{r}$| & $\min\,\{|\mathbf{n}|, |\mathbf{r}|\}$ & $\min\,\{|\mathbf{n}|, |\mathbf{r}|\}$ \\
     \lstinline|append$_{opt}^o$ ${a}$ ${b}$ $\mathbf{ab}$|        & $len\,(\mathbf{ab})$ & $len\,(\mathbf{ab})$   & \lstinline|plus$^o$ ${n}$ ${m}$ $\mathbf{r}$| & $|\mathbf{r}|$ & $|\mathbf{r}|$ \\
-    \lstinline|revers$^o$ $\mathbf{a}$ ${r}$|                    & $len^3\,(\mathbf{a})$ & $len^3\,(\mathbf{a})$ & \lstinline|mult$^o$ $\mathbf{n}$ $\mathbf{m}$ ${r}$| & $|\mathbf{n}|\cdot|\mathbf{m}|$ & $|\mathbf{n}|^2\cdot|\mathbf{m}|$ \\
+    \lstinline|revers$^o$ $\mathbf{a}$ ${r}$|                    & $len^2\,(\mathbf{a})$ & $len^3\,(\mathbf{a})$ & \lstinline|mult$^o$ $\mathbf{n}$ $\mathbf{m}$ ${r}$| & $|\mathbf{n}|\cdot|\mathbf{m}|$ & $|\mathbf{n}|^2\cdot|\mathbf{m}|$ \\
     \lstinline|revers$^o$ ${a}$ $\mathbf{r}$|                    & $len^2\,(\mathbf{r})$ & $len^2\,(\mathbf{r})$ & \lstinline|mult$^o$ (S ${n}$) (S ${m}$) $\mathbf{r}$| & $|\mathbf{r}|^2$ & $|\mathbf{r}|^2$ \\
     \hline
   \end{tabular} \]

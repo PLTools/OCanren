@@ -5,7 +5,7 @@
 %state}. However, our ultimate goal is to provide a complexity estimation for a given goal. This problem will be addressed in Section~\ref{sec:symbolic},
 %in which we will make use of recurrent equations presented here.
 
-We may notice that operational semantics described in the previous section can be used to calculate the exact number of elementary scheduling steps.
+We may notice that the operational semantics described in the previous section can be used to calculate the exact number of elementary scheduling steps.
 Our first idea is to take the number of states $d\,(s)$ in the finite trace for a given state $s$:
 
 \[ d\,(s) \; \eqdef \; | \trs{s} |  \]
@@ -13,7 +13,7 @@ Our first idea is to take the number of states $d\,(s)$ in the finite trace for 
 However, it turns out, that this value alone does not provide an accurate scheduling complexity estimation. The reason is that some
 elementary steps in the semantics are not elementary in existing implementations. Namely, a careful analysis discovers that
 each semantic step involves navigation to the leftmost leaf of the state which in implementations corresponds to multiple elementary actions,
-which number is proportional to the length of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$,
+which number is proportional to the height of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$,
 which we call the \emph{scheduling factor}:
 
 \[
@@ -114,7 +114,7 @@ In $\otimes$-state the left substate is evaluated until an answer is found, whic
 \emph{an environment} for the evaluation of the right subgoal.
 Thus, in the equations for $\otimes$-states the evaluation times of the second goal \emph{for all
 the answers} generated for the first substate are summed up. The evaluation of the right subgoal
-in different environments are added to the evaluation of the left substate via the creation of
+in different environments is added to the evaluation of the left substate via creation of
 an $\oplus$-state, so for scheduling factor there is
 an additional summand $\costdisj{\taskst{g}{a_i}}{s'_i}$ for each answer with $s'_i$ being the state
 after discovering the answer.
@@ -125,51 +125,8 @@ Note, $\otimes$-node is always placed immediately over the left substate so this
 addition is exactly the number of steps for the left substate.
 
 Unfolding costs definitions in $(\dagger)$ gives us a cumbersome formula that 
-includes some intermediate states encountered during the evaluation. However, as ultimately
-we are interested in asymptotic estimations, we can approximate these costs up to a multiplicative constant. We can notice that the value $d(s'_i \otimes g)$ occurring in the second argument of $cost_{\oplus}$ includes values $d(\taskst{g}{a_j})$ (like in the first argument) for all answers $a_j$ after this intermediate state. So in the sum of all $cost_{\oplus}$ values $d(\taskst{g}{a_i})$ may be excluded for at most one answer, and in fact, if we take the maximal one of these values we will get a rather precise approximation. We need the following definition for it, to handle corner cases.
-
-\begin{comment}
-First, we rewrite the equation $(\dagger)$ in the following form:
-
-\[ t\,(s \otimes g)  =  t\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} t\,(\taskst{g}{a_i}) + C\,(s \otimes g) \]
-
-where
-
-\[ C\,(s \otimes g) = \costconj{s}{g} + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}} \costdisj{\taskst{g}{a_i}}{(s'_i \otimes g)} \]
-\end{comment}
-
-\begin{comment}
-\begin{definition}
-Let $E$ be a set of environments, $g$~--- a goal. Then we call the value
-
-\[
-\alpha\,(g, E) = \argmax{e \in E} d\,(\taskst{g}{e})
-\]
-
-a \emph{pincipal environment}.
-\end{definition}
-
-In other words, $\alpha\,(g, E)$ is an element of $E$ which delivers the longest trace of $g$.
-
-\begin{definition}
-
-For a set of natural numbers $S$
-
-\[
-\maxd \, S \eqdef
-\begin{cases}
-\max S,  & S \ne \emptyset \\
-0, & S = \emptyset\\
-\end{cases}
-\]
-
-\end{definition}
-\end{comment}
-
-% With principal environment being defined we can prove the following lemma\footnote{We assume the following definition for 
-% $h\,(x) = \Theta\,(f\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : C_1 \cdot f\,(x) \le h\,(x) \le C_2 \cdot f\,(x) \]}:
-
-Now we can state the following approximation\footnote{We assume the following definition for
+includes some intermediate states $s'_i$ encountered during the evaluation. However, as ultimately
+we are interested in asymptotic estimations, we can approximate these costs up to a multiplicative constant. We can notice that the value $d\,(s'_i \otimes g)$ occurring in the second argument of $cost_{\oplus}$ includes values $d\,(\taskst{g}{a_j})$ (like in the first argument) for all answers $a_j$ after this intermediate state. So in the sum of all $cost_{\oplus}$ values $d\,(\taskst{g}{a_i})$ may be excluded for at most one answer, and in fact, if we take the maximal one of these values we will get a rather precise approximation. Specifically, we can state the following approximation\footnote{We assume the following definition for
 $f\,(x) = g\,(x) + \Theta\,(h\,(x))$: \[\exists C_1, C_2 \in \mathcal{R^{+}}, \, \forall x : g\,(x) + C_1 \cdot h\,(x) \le f\,(x) \le g\,(x) + C_2 \cdot h\,(x) \]}
 for $t\,(s \otimes g)$.
 

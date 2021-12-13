@@ -1,7 +1,7 @@
 \section{Complexity Analysis via Symbolic Execution}
 \label{sec:symbolic}
 
-Our approach to complexity analysis is based on a semi-automatic procedure involving symbolic evaluation.
+Our approach to complexity analysis is based on a semi-automatic procedure involving symbolic execution.
 In the previous section, we presented formulae to compositionally estimate the complexity factors for
 \emph{non-leaf states} of operational semantics under the assumption that corresponding estimations for
 \emph{leaf states} are given. In order to obtain corresponding estimations for relations as a whole, we
@@ -13,12 +13,11 @@ with trees~--- in terms of depth or number of nodes, with numbers~--- in terms o
 unlikely that a generic term-based framework would provide such specific information automatically. Thus,
 a viable approach would be to extract some inequalities involving the complexity factors of certain relational
 calls automatically and then let a human being solve these inequalities in terms of a relevant metatheory.
-In the section we present 
 
 For the sake of clarity we will provide a demonstration of complexity analysis for a specific example~---
 \lstinline|append$^o$| relation from the introduction~--- throughout the section.
 
-The extraction procedure utilizes symbolic execution technique and is completely automatic.
+The extraction procedure utilizes a symbolic execution technique and is completely automatic.
 It turns out that the semantics we have is already abstract enough to be used for symblolic
 execution with minor adjustments.
 In this symbolic procedure, we mark some of the logic variables as ``grounded'' and at certain
@@ -40,7 +39,7 @@ ground values and left the last argument free. Thus, we start with the goal \lst
 We can make an important observation that both complexity factors ($d$ and $t$) are stable w.r.t. the renaming of
 free variables; moreover, they are also stable w.r.t. the change of the fresh variables counter as long as it stays
 adequate, and change of current substitution, as long as it gives the same terms after application.
-Formally, the following lemma holds:
+Formally, the following lemma holds.
 
 \begin{replemma}{lem:measures_changing_env}
 Let $s = \taskst{g}{\mkenv{\sigma}{n}}$ and $s' = \taskst{g^\prime}{\mkenv{\sigma^\prime}{n^\prime}}$ be two well-formed states.
@@ -48,17 +47,17 @@ If  there exists a bijective substitution $\pi \colon FV\,(g \sigma) \to FV\,(g^
 $g \sigma \pi = g^\prime \sigma^\prime $, then $d\,(s) = d\,(s^\prime)$ and $t\,(s) = t\,(s^\prime)$.
 \end{replemma}
 
-The lemma shows that the set of states in which a call to relation has to be analyzed can
+The lemma shows that the set of states for which a call to relation has to be analyzed can
 be narrowed down to a certain family of states. 
 
 \begin{definition} Let $g$ be a goal. An initial state for $g$ is $init\,(g)=\taskst{g}{(\varepsilon, \ninit\,(g))} $
 with $ n_{init}\,(g) = \min\, \{ n \mid FV\,(g) \subseteq \{ \alpha_1\dots\alpha_n \} \} $
 \end{definition}
 
-Due to the Lemma~\ref{lem:measures_changing_env} it is sufficient to consider only the family of initial states since an arbitrary state
-encountered throughout the execution can be transformed into an initial one while preserving both the semantics and
+Due to the Lemma~\ref{lem:measures_changing_env} it is sufficient for analysis of a relational call to consider only the family of initial states since an arbitrary call state
+encountered throughout the execution can be transformed into an initial one while preserving both
 complexity factors. Thus, the analysis can be performed in a compositional manner where each call can be analyzed separately.
-For our example the family of initial states is $q^{appn}(\mathbf{a}, \mathbf{b}) = init\,(\lstinline|append$^o$ $\mathbf{a}$ $\mathbf{b}$ $ab$|)$ for arbitrary ground
+For our example the family of initial states is $q^{app}(\mathbf{a}, \mathbf{b}) = init\,(\lstinline|append$^o$ $\mathbf{a}$ $\mathbf{b}$ $ab$|)$ for arbitrary ground
 terms $\mathbf{a}$ and $\mathbf{b}$.
 
 As we are aiming at the complexity estimation depending on specific ground values substituted for grounded variables, in general case extracted
@@ -100,15 +99,17 @@ In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \del
 \end{replemma}
 
 \begin{wrapfigure}{r}{0.4\textwidth}
+\setlength{\belowcaptionskip}{-15pt plus 3pt minus 2pt}
+
 \[\renewcommand{\arraystretch}{1}
 \begin{array}{ccc}
-  \schemewithvset{\mathfrak{S}}{\Upsilon} & = &\schemenode{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} \\
-                                          &   &\schemenode{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} \\
-                                          &   &\schemefork{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$} \\
-                                          &   &\schemesarrow{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$\{\mathcal{A}=\mathcal{T}_\mathcal{A}\}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}\\
+  \schemewithvset{\mathfrak{S}}{\Upsilon} & = &\schemenode{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} \\ \cline{3-3}
+                                          &   &\schemenode{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} \\ \cline{3-3}
+                                          &   &\schemefork{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$} \\ \cline{3-3}
+                                          &   &\schemesarrow{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$\{\mathcal{A}=\mathcal{T}_\mathcal{A}\}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}\\  \cline{3-3}
                                           &   &\schemedarrow{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$(\mathcal{T}_\mathcal{A}, \dots, \mathcal{T}_\mathcal{A}) \in \sembr{R^k}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$} 
 \end{array}\]
-\caption{Symbolic Scheme Fragments}
+\caption{Symbolic Scheme Forms}
 \label{fig:scheme_fragments}
 \end{wrapfigure}
 
@@ -120,7 +121,7 @@ grounded variables that determine whether the execution continues are presented 
 
 
 
-Each scheme is built as a composition of the five forms, shown in \figureword~\ref{fig:scheme_fragments} (all schemes are indexed by subsets of grounded variables with $\Upsilon = 2^{\mathcal{A}}$ denoting such subsets).
+Each scheme is built as a composition of the five patterns, shown in \figureword~\ref{fig:scheme_fragments} (all schemes are indexed by subsets of grounded variables with $\Upsilon = 2^{\mathcal{A}}$ denoting such subsets).
 
 Note, the constraints after nodes of different types differ: unification puts a constraint in a form of a set of equations on substituted ground values that should be respected while
 relational call puts a constraint in a form of a tuple of ground terms that should belong to the denotational semantics of a relation.
@@ -128,7 +129,7 @@ relational call puts a constraint in a form of a tuple of ground terms that shou
 The construction of a scheme for a given goal (initially, the body of a relation) mimics a regular execution of a relational program. The derivation rules for scheme
 formation have the following form $\schemetrans{g}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}}$. Here $g$ is a goal, $\Gamma$ is a list of \emph{deferred}
 goals (these goals have to be executed after the execution of $g$ in every branch in the same order,
-initially this list is empty; this resembles continuations, but the analogy is not complete), $\sigma$ and $n$ are substitution and counter from current
+initially this list is empty; this resembles continuations, but the analogy is not complete), $\sigma$ and $n$ are substitution and counter from the current
 environment respectively, $V$ is a set of grounded variables at the moment.
 
 \begin{figure}[t]
@@ -188,7 +189,7 @@ variable (not grounded) and updates the counter of occupied variables. When the 
 no deferred goals, then this node is a leaf (rules \ruleno{UnifyLeaf$_\mathfrak S$} and \ruleno{InvokeLeaf$_\mathfrak S$}). Equality is also added as a leaf if there are some deferred goals,
 but the terms are non-unifiable and so the execution stops (rule \ruleno{UnifyFail$_\mathfrak S$}). If the terms in the equality are unifiable and there are deferred goals
 (rule \ruleno{UnifySuccess$_\mathfrak S$}), the equality is added as a node and the execution continues for the deferred goals, starting from the leftmost one; also the set of grounded variables
-is updated and constraint labels are added for the edge according to \lemmaword~\ref{lem:symbolic_unification_soundness}. The same true for relational calls: if there are some deferred goals
+is updated and constraint labels are added for the edge in accordance with \lemmaword~\ref{lem:symbolic_unification_soundness}. For relational calls the proccess is similar: if there are some deferred goals
 (rule \ruleno{Invoke$_\mathfrak S$}), all variables occurring in a call become grounded (due to the grounding condition we imposed) and should satisfy the denotational semantics
 of the invoked relation.
 
@@ -198,7 +199,7 @@ variables for each node, but instead overline grounded variables in-place. Note,
 Now, we can use schemes to see how the information for leaf goals in relation body is combined with conjunctions and disjunctions. Then we can apply formulae
 from \sectionword~\ref{sec:scheduling} to get recursive inequalities (providing lower and upper bounds simultaneously) for both complexity factors.
 
-In these inequalities we need to sum up the values of $d$- and $t$-factor for all leaf goals of a body and for all environments these goals are evaluated for.
+In these inequalities we need to sum up the values of $d$ and $t$-factor for all leaf goals of a body and for all environments these goals are evaluated for.
 The leaf goals are
 the nodes of the scheme and evaluated environments can be derived from the constraints attached to the edges. So, for this summation we introduce the following notions: $\mathcal{D}$
 is the sum of $d$-factor values and $\mathcal{T}$ is the sum of $t$-factor values for the execution of the body with specific valuation $\rho$.
@@ -260,7 +261,9 @@ one and because we require all answers to be unique). For disjunctions, we take 
 
 \begin{comment}
 \begin{figure}[t]
-\colorbox{yellow!20}{\parbox{\textwidth}{\textbf{Maybe move this to appendix and leave here the informal description only}}}
+\colorbox{yellow!20}{\parbox{\textwidth}{\textbf{Maybe move this to 
+
+ and leave here the informal description only}}}
 
 \[
 \begin{array}{rclcl}
@@ -298,7 +301,7 @@ environments for all the leaves of a scheme and exclude the $d$-factor value for
 for the leaf, and the formula for disjunction ensures that we make it for only one of the leaves). So, we will need additional notion $\mathcal{L}$,
 similar to $\mathcal{D}$ and $\mathcal{T}$ that will collect all the goals of the form $init\,(g_i \rho)$, where $g_i$ is a leaf goal and $\rho$ is a
 valuation corresponding to one of the environments this leaf is evaluated for. The ``shape'' of the definition for $\mathcal{L}$ precisely repeats that for
-$\nicefrac{D}{T}$, the complete formal definition can be found in the \appendixword~\ref{sec:proofs_appendix}.
+$\nicefrac{D}{T}$, the complete formal definition can be found in the \appendixword~\ref{sec:proofs_appendix} (\figureword~\ref{fig:l-def}).
 
 Now we can formulate the following main theorem that provides the principal recursive inequalities, extracted from the scheme for a given goal.
 
@@ -323,17 +326,17 @@ not show valuation in inequalities explicitly, but instead show the ground value
 We can do such a simplification for any concrete relation.
 
 \[
-d\,(q^{appn}\,(\mathbf{a}, \mathbf{b}))  = (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \smashoperator{\sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}}} (d\,(q^{appn}\,(\mathbf{t}, \mathbf{b})) + \smashoperator{\sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket}} 1)) + \Theta\,(1)
+d\,(q^{app}\,(\mathbf{a}, \mathbf{b}))  = (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \smashoperator{\sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}}} (d\,(q^{app}\,(\mathbf{t}, \mathbf{b})) + \smashoperator{\sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket}} 1)) + \Theta\,(1)
 \]\\[0.8mm]
 \[
 \begin{array}{lclc}
-t\,(q^{appn}\,(\mathbf{a}, \mathbf{b})) & = & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \smashoperator{\sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}}} (t\,(q^{appn}\,(\mathbf{t}, \mathbf{b})) + \smashoperator{\sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket}} 1)) & + \\
- & &\Theta((1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \smashoperator{\sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}}} (d\,(q^{appn}\,(\mathbf{t}, \mathbf{b})) + \smashoperator{\sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket}} 1)) & - \\
+t\,(q^{app}\,(\mathbf{a}, \mathbf{b})) & = & (1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \smashoperator{\sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}}} (t\,(q^{app}\,(\mathbf{t}, \mathbf{b})) + \smashoperator{\sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket}} 1)) & + \\
+ & &\Theta((1 + \sum\limits_{\mathbf{a} = \texttt{Nil}} 1) + (1 + \smashoperator{\sum\limits_{\mathbf{h}, \mathbf{t}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}}} (d\,(q^{app}\,(\mathbf{t}, \mathbf{b})) + \smashoperator{\sum\limits_{\mathbf{tb} : (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket}} 1)) & - \\
 & & \smashoperator{\maxd\limits_{\substack{
                                    \mathbf{h}, \mathbf{t}, \mathbf{tb}: \mathbf{a} = \texttt{Cons($\mathbf{h}$, $\mathbf{t}$)} \land \\
                                    (\mathbf{t}, \mathbf{b}, \mathbf{tb}) \in \llbracket \texttt{append$^o$} \rrbracket
                                  }
-                                }} \{ d\,(init\,(\unigoal{ab}{\mathbf{b}})), d\,(init\,(\unigoal{ab}{\texttt{Cons($\mathbf{h}$, $\mathbf{tb}$)}})) \} & + 1 
+                                }} \{ d\,(init\,(\unigoal{ab}{\mathbf{b}})), d\,(init\,(\unigoal{ab}{\texttt{Cons($\mathbf{h}$, $\mathbf{tb}$)}})) \} & + 1) 
 \end{array}
 \]
 
@@ -341,15 +344,15 @@ t\,(q^{appn}\,(\mathbf{a}, \mathbf{b})) & = & (1 + \sum\limits_{\mathbf{a} = \te
 Automatically extracted recursive inequalities, as a rule, are cumbersome, but they contain all the information on how scheduling affects the complexity.
 Often they can be drastically simplified by using metatheory-level reasoning.
 
-For our example, we are only interested in the case when substituted values represent some lists. We thus pefroms the usual for lists case analysis
+For our example, we are only interested in the case when substituted values represent some lists. We thus pefrom the usual for lists case analysis
 considering the first list empty or non-empty. We can also notice that the excluded summand equals one. So we can rewrite the inequalities in the following way:
 
 \[
 \begin{array}{lcl}
-d\,(q^{appn}\,(\texttt{Nil}, \mathbf{b})) & = & \Theta\,(1) \\
-d\,(q^{appn}\,(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & d\,(q^{appn}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(1) \\
-t\,(q^{appn}\,(\texttt{Nil}, \mathbf{b})) & = & \Theta\,(1) \\
-t\,(q^{appn}\,(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t\,(q^{appn}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(d\,(q^{appn}\,(\mathbf{t}, \mathbf{b}))) \\
+d\,(q^{app}\,(\texttt{Nil}, \mathbf{b})) & = & \Theta\,(1) \\
+d\,(q^{app}\,(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & d\,(q^{app}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(1) \\
+t\,(q^{app}\,(\texttt{Nil}, \mathbf{b})) & = & \Theta\,(1) \\
+t\,(q^{app}\,(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t\,(q^{app}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(d\,(q^{app}\,(\mathbf{t}, \mathbf{b}))) \\
 \end{array}
  \]
  
@@ -357,21 +360,21 @@ These trivial linear inequalities can be easily solved:
 
 \[
 \begin{array}{lcl}
-d\,(q^{appn}\,(\mathbf{a}, \mathbf{b})) & = & \Theta\,(len\,(\mathbf{a})) \\
-t\,(q^{appn}\,(\mathbf{a}, \mathbf{b})) & = & \Theta\,(len^2\,(\mathbf{a})) \\
+d\,(q^{app}\,(\mathbf{a}, \mathbf{b})) & = & \Theta\,(len\,(\mathbf{a})) \\
+t\,(q^{app}\,(\mathbf{a}, \mathbf{b})) & = & \Theta\,(len^2\,(\mathbf{a})) \\
 \end{array}
  \]
  
 In this case, scheduling makes a big difference and changes the asymptotics. Note, we expressed the result using notions from metatheory
 ($len$ for the length of the list represented by a term).
 
-In contrast, if we consider the conventional definition of \lstinline|append$^o$| the analysis of the call
-$q^{appo}\,(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$^o_{opt}$} \, \mathbf{a} \, \mathbf{b} \, ab)$ is analagous,
-but among the candidates for exclusion there is the value $d\,(q^{app}\,(\mathbf{t}, \mathbf{b}))$ since the recursive
+In contrast, if we consider the optimal definition \lstinline|append$_{opt}^o$| the analysis of the call
+$q^{app\text{-}opt}\,(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$_{opt}^o$} \, \mathbf{a} \, \mathbf{b} \, ab)$ is analagous,
+but among the candidates for exclusion there is the value $d\,(q^{app\text{-}opt}\,(\mathbf{t}, \mathbf{b}))$ since the recursive
 call is placed in a leaf. So the last simplified recursive apprioximation is the following (the rest is
 the same as in our main example):
 
-\[t\,(q^{appo}\,(\texttt{Cons\,($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) = t\,(q^{appo}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(1) \]
+\[t\,(q^{app\text{-}opt}\,(\texttt{Cons\,($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) = t\,(q^{app\text{-}opt}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(1) \]
 
 So in this case the complexity of both factors is linear on $len\,(\mathbf{a})$.
 
