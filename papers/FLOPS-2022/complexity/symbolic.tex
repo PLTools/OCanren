@@ -1,16 +1,16 @@
-\section{Complexity Analysis via Symbolic Execution Schemes}
+\section{Complexity Analysis via Symbolic Execution}
 \label{sec:symbolic}
 
 Our approach to complexity analysis is based on a semi-automatic procedure involving symbolic evaluation.
-In the previous section we presented formulae to compositionally estimate the complexity factors for
-\emph{non-leaf states} of operational semantics under assumption that coresponding estimations for
-\emph{leaf states} are given. In order to obtain corresponding estimations for relations as whole we
+In the previous section, we presented formulae to compositionally estimate the complexity factors for
+\emph{non-leaf states} of operational semantics under the assumption that corresponding estimations for
+\emph{leaf states} are given. In order to obtain corresponding estimations for relations as a whole, we
 would need to take into account the effects of relational invocations, including the recursive ones.
 
 Another observation is that as a rule we are interested in complexity estimations in terms of some \emph{metatheory}. For
 example, dealing with relations on lists we would be interested in estimations in terms of list lengths,
 with trees~--- in terms of depth or number of nodes, with numbers~--- in terms of their values, etc. It is
-unlikely that a generic term-based framework would provide such a specific information automatically. Thus,
+unlikely that a generic term-based framework would provide such specific information automatically. Thus,
 a viable approach would be to extract some inequalities involving the complexity factors of certain relational
 calls automatically and then let a human being solve these inequalities in terms of a relevant metatheory.
 In the section we present 
@@ -21,16 +21,16 @@ For the sake of clarity we will provide a demonstration of complexity analysis f
 The extraction procedure utilizes symbolic execution technique and is completely automatic.
 It turns out that the semantics we have is already abstract enough to be used for symblolic
 execution with minor adjustments.
-In this symbolic procedure we mark some of the logic variables as ``grounded'' and at certain
+In this symbolic procedure, we mark some of the logic variables as ``grounded'' and at certain
 moments substitute them with ground terms.
 Informally, for some goal with some free logic variables we consider the complexity of a search
 procedure which finds the bindings for all non-grounded variables based on the ground values
 substituted for the grounded ones.
-This seach procedure is defined precisely by the operational semantics; however, as the concrete
+This search procedure is defined precisely by the operational semantics; however, as the concrete
 values of grounded variables are unknown (only the fact of their \emph{groundness}), the whole
 procedure becomes symbolic.
 In particular, in unification the groundness can be propagated to some non-grounded free variables.
-Thus, the symbolic execution is determined by a set of grounded varibles (hereafter denoted
+Thus, the symbolic execution is determined by a set of grounded variables (hereafter denoted
 as $V\subset\mathcal A$). The initial choice of $V$ determines the problem we analyze.
 
 In our example the objective is to study the execution when we specialize the first two arguments with
@@ -62,7 +62,7 @@ For our example the family of initial states is $q^{appn}(\mathbf{a}, \mathbf{b}
 terms $\mathbf{a}$ and $\mathbf{b}$.
 
 As we are aiming at the complexity estimation depending on specific ground values substituted for grounded variables, in general case extracted
-inequalities have be parameterized by \emph{valuations}~--- mappings from the set of grounded variables to ground terms. As the new variables
+inequalities have to be parameterized by \emph{valuations}~--- mappings from the set of grounded variables to ground terms. As the new variables
 are added to this set during the execution, the valuations need to be extended for these new variables. The following definition introduces this notion.
 
 \begin{definition}
@@ -70,10 +70,10 @@ are added to this set during the execution, the valuations need to be extended f
 \end{definition}
 
 The main objective of the symbolic execution in our case is to find constraints on valuations for every leaf goal in the body of a relation that determine
-whether the execution will continue and how a valuation changes after this goal. For internal relational calls we describe constraints in term of denotational
-semantics (to be given some meaning in terms of metatheory later). We can do it beacuse of a precise equivalence between the anwers found by operational semantics
-and values described by denotational semantics thanks to soundness and completness as well as our requirements of grounding and uniquence of answers.
-Our symbolic treatment of equalities relies on the fact that subtitutions of ground terms commute, in a certain sense, with unifications. More specifically,
+whether the execution will continue and how a valuation changes after this goal. For internal relational calls, we describe constraints in terms of denotational
+semantics (to be given some meaning in terms of metatheory later). We can do it because of a precise equivalence between the answers found by operational semantics
+and values described by denotational semantics thanks to soundness and completeness as well as our requirements of grounding and uniqueness of answers.
+Our symbolic treatment of equalities relies on the fact that substitutions of ground terms commute, in a certain sense, with unifications. More specifically,
 we can use the most general unifier for two terms to see how unification goes for two terms with some free variables substituted with ground terms.
 The most general unifier may contain bindings for both grounded and non-grounded variables. Potential most general unifier for terms after substitution
 contains the same bindings for non-grounding terms (with valuation applied to their rhs), while bindings for grounding variables turn into equations that
@@ -112,8 +112,8 @@ In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \del
 \label{fig:scheme_fragments}
 \end{wrapfigure}
 
-In our description of the extraction process we use a visual representation of symbolic execution of relation body for a given set of grounded variables in a form of a \emph{symbolic scheme}.
-Symbolic scheme is a tree-like structure with different branches corresponding to execution of different disjuncts and nodes corresponding to equalities and relational calls in the body
+In our description of the extraction process, we use a visual representation of symbolic execution of relation body for a given set of grounded variables in a form of a \emph{symbolic scheme}.
+A symbolic scheme is a tree-like structure with different branches corresponding to execution of different disjuncts and nodes corresponding to equalities and relational calls in the body
 augmented with subsets of grounded variables at the point of execution.\footnote{Note the difference with conventional symbolic execution graphs
 with different branches representing mutually exclusive paths of evaluation, not the different parts within one evaluation.} Constrains for substituted
 grounded variables that determine whether the execution continues are presented as labels on the edges of a scheme.
@@ -122,7 +122,7 @@ grounded variables that determine whether the execution continues are presented 
 
 Each scheme is built as a composition of the five forms, shown in \figureword~\ref{fig:scheme_fragments} (all schemes are indexed by subsets of grounded variables with $\Upsilon = 2^{\mathcal{A}}$ denoting such subsets).
 
-Note, the constrains after nodes of different types differ: unification puts a constraint in a form of a set of equations on substituted ground values that should be respected while
+Note, the constraints after nodes of different types differ: unification puts a constraint in a form of a set of equations on substituted ground values that should be respected while
 relational call puts a constraint in a form of a tuple of ground terms that should belong to the denotational semantics of a relation.
 
 The construction of a scheme for a given goal (initially, the body of a relation) mimics a regular execution of a relational program. The derivation rules for scheme
@@ -184,7 +184,7 @@ environment respectively, $V$ is a set of grounded variables at the moment.
 
 The rules are shown in \figureword~\ref{fig:scheme_formation}. \ruleno{Conj$_\mathfrak S$} and \ruleno{Disj$_\mathfrak S$} are structural rules: when investigating conjunctions we defer
 the second conjunct by adding it to $\Gamma$ and continue with the first conjunct; disjunctions simply result in forks. \ruleno{Fresh$_\mathfrak S$} introduces a fresh logic
-variable (not grounded) and updates the counter of occupied variables. When investigated goal is equality or relational call it is added as a node to the scheme. If there are
+variable (not grounded) and updates the counter of occupied variables. When the investigated goal is equality or relational call it is added as a node to the scheme. If there are
 no deferred goals, then this node is a leaf (rules \ruleno{UnifyLeaf$_\mathfrak S$} and \ruleno{InvokeLeaf$_\mathfrak S$}). Equality is also added as a leaf if there are some deferred goals,
 but the terms are non-unifiable and so the execution stops (rule \ruleno{UnifyFail$_\mathfrak S$}). If the terms in the equality are unifiable and there are deferred goals
 (rule \ruleno{UnifySuccess$_\mathfrak S$}), the equality is added as a node and the execution continues for the deferred goals, starting from the leftmost one; also the set of grounded variables
@@ -192,16 +192,16 @@ is updated and constraint labels are added for the edge according to \lemmaword~
 (rule \ruleno{Invoke$_\mathfrak S$}), all variables occurring in a call become grounded (due to the grounding condition we imposed) and should satisfy the denotational semantics
 of the invoked relation.
 
-The scheme constructed by these rules for our \lstinline|append$^o$| example is shown in \figureword~\ref{fig:example_scheme}. For simplicity we do not show the set of grounded
+The scheme constructed by these rules for our \lstinline|append$^o$| example is shown in \figureword~\ref{fig:example_scheme}. For simplicity, we do not show the set of grounded
 variables for each node, but instead overline grounded variables in-place. Note, all variables that occur in constraints on the edges are grounded after parent node execution.
 
-Now, we can use schemes to see how the information for leaf goals in relation body are combined with conjunctions and disjuntions. Then we can apply formulae
-from \sectionword~\ref{sec:scheduling} to get recursive inequalities (providing lower and upper bounds simultaniously) for both complexity factors.
+Now, we can use schemes to see how the information for leaf goals in relation body is combined with conjunctions and disjunctions. Then we can apply formulae
+from \sectionword~\ref{sec:scheduling} to get recursive inequalities (providing lower and upper bounds simultaneously) for both complexity factors.
 
-In this inequalities we need to sum up the values of $d$- and $t$-factor for all leaf goals of a body and for all environments these goals are evaluated for.
+In these inequalities we need to sum up the values of $d$- and $t$-factor for all leaf goals of a body and for all environments these goals are evaluated for.
 The leaf goals are
 the nodes of the scheme and evaluated environments can be derived from the constraints attached to the edges. So, for this summation we introduce the following notions: $\mathcal{D}$
-is the sum of $d$-factor values and $\mathcal{T}$ is the sum of $t$-factor values for execution of the body with specific valuation $\rho$.
+is the sum of $d$-factor values and $\mathcal{T}$ is the sum of $t$-factor values for the execution of the body with specific valuation $\rho$.
 
 \begin{wrapfigure}{r}{0.5\textwidth}
 \begin{center}
@@ -222,12 +222,12 @@ is the sum of $d$-factor values and $\mathcal{T}$ is the sum of $t$-factor value
 \label{fig:example_scheme}
 \end{wrapfigure}
 
- Their defintions are shown in
-the \figureword~\ref{fig:scheduling_extraction_d_t} (both formulas are given in the same figure as the defintions coincide modulo factor denotations). For nodes we take
-corresponding value (for equality it always equals to $1$). When going through an equality we sum up the rest with an updated valuation (by \lemmaword~\ref{lem:symbolic_unification_soundness}
+ Their definitions are shown in
+the \figureword~\ref{fig:scheduling_extraction_d_t} (both formulas are given in the same figure as the definitions coincide modulo factor denotations). For nodes, we take
+the corresponding value (for equality it always equals $1$). When going through an equality we sum up the rest with an updated valuation (by \lemmaword~\ref{lem:symbolic_unification_soundness}
 this sum always has one or zero summands depending on whether the unification succeeds or not). When going through a relational call we take a sum of all valuations that satisfy the
 denotational semantics (these valuations will correspond exactly to the set of all answers produced by the call since operational semantics is sound and complete w.r.t. the denotational
-one and because we require all answers to be unique). For disjunctions we take the sum of both branches.
+one and because we require all answers to be unique). For disjunctions, we take the sum of both branches.
 
 \begin{figure}[t]
 \[
@@ -318,7 +318,7 @@ Let $g$ be a goal, and let $\schemetrans{g}{\epsilon}{\varepsilon}{n_{init}(g)}{
 
 The theorem allows us to extract two inequalities (upper and lower bounds) for both factors with a multiplicative constant that is the same for all valuations.
 
-For our example we can extract the following recursive inequalities from the scheme in \figureword~\ref{fig:example_scheme}. For presentation purposes we will
+For our example, we can extract the following recursive inequalities from the scheme in \figureword~\ref{fig:example_scheme}. For presentation purposes, we will
 not show valuation in inequalities explicitly, but instead show the ground values of grounded variables (using variables in bold font) that determine each valuation.
 We can do such a simplification for any concrete relation.
 
@@ -338,11 +338,11 @@ t\,(q^{appn}\,(\mathbf{a}, \mathbf{b})) & = & (1 + \sum\limits_{\mathbf{a} = \te
 \]
 
 
-Automatically extracted recursive inequalities as a rule are cumbersome, but they contain all the information on how scheduling affects the complexity.
-Often they can be drastically simlified by using a metatheory-level reasoning.
+Automatically extracted recursive inequalities, as a rule, are cumbersome, but they contain all the information on how scheduling affects the complexity.
+Often they can be drastically simplified by using metatheory-level reasoning.
 
 For our example, we are only interested in the case when substituted values represent some lists. We thus pefroms the usual for lists case analysis
-considering the first list empty or non-empty. We can also notice that the excluded summand equals to one. So we can rewrite the inequalities in the following way:
+considering the first list empty or non-empty. We can also notice that the excluded summand equals one. So we can rewrite the inequalities in the following way:
 
 \[
 \begin{array}{lcl}
@@ -362,7 +362,7 @@ t\,(q^{appn}\,(\mathbf{a}, \mathbf{b})) & = & \Theta\,(len^2\,(\mathbf{a})) \\
 \end{array}
  \]
  
-In this case scheduling makes a big difference and changes the asymptotics. Note, we expressed the result using notions from metatheory
+In this case, scheduling makes a big difference and changes the asymptotics. Note, we expressed the result using notions from metatheory
 ($len$ for the length of the list represented by a term).
 
 In contrast, if we consider the conventional definition of \lstinline|append$^o$| the analysis of the call
@@ -374,3 +374,4 @@ the same as in our main example):
 \[t\,(q^{appo}\,(\texttt{Cons\,($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) = t\,(q^{appo}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(1) \]
 
 So in this case the complexity of both factors is linear on $len\,(\mathbf{a})$.
+

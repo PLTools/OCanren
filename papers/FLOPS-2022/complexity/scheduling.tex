@@ -12,7 +12,7 @@ Our first idea is to take the number of states $d\,(s)$ in the finite trace for 
 
 However, it turns out, that this value alone does not provide an accurate scheduling complexity estimation. The reason is that some
 elementary steps in the semantics are not elementary in existing implementations. Namely, a careful analysis discovers that
-each semantic step involves a navigation to the leftmost leaf of the state which in implementations corresponds to multiple elementary actions,
+each semantic step involves navigation to the leftmost leaf of the state which in implementations corresponds to multiple elementary actions,
 which number is proportional to the length of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$,
 which we call the \emph{scheduling factor}:
 
@@ -34,7 +34,7 @@ where $lh\,(s_i)$ is the height of the leftmost branch of the state.
 
 
 \begin{comment}
-In the rest of the section we state a number of lemmas providing estimations for these two values. The proofs for the lemmas (when omitted) can be
+In the rest of the section, we state a number of lemmas providing estimations for these two values. The proofs for the lemmas (when omitted) can be
 found in Appendix~\ref{sec:appendix}.
 
 The first lemma provides a fundamental relation between these two~--- $d$ and $t$,~--- estimations for the scheduling complexity:
@@ -50,7 +50,7 @@ The first lemma provides a fundamental relation between these two~--- $d$ and $t
 }
 \end{comment}
 
-In the rest of the section we derive recurrent equations which would relate the scheduling complexity for states to the scheduling complexity for their
+In the rest of the section, we derive recurrent equations which would relate the scheduling complexity for states to the scheduling complexity for their
 (immediate) substates. It turns out that to come up with such equations both $t$ and $d$ values have to be estimated simultaneously.  
 
 
@@ -81,7 +81,7 @@ where $\costdisj{s_1}{s_2} = \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\}$
 
 Informally, for a state in the form $s_1 \oplus s_2$ the substates are evaluated separately, one step at a time for
 each substate, so the total number of semantic steps is the sum of those for the substates. However, for the scheduling factor, 
-there is an extra summand $\costdisj{s_1}{s_2}$ since the ``leftmost heights'' of the states in the trace are one node greater then those for the
+there is an extra summand $\costdisj{s_1}{s_2}$ since the ``leftmost heights'' of the states in the trace are one node greater than those for the
 original substates due to the introduction of one additional $\oplus$-node on the top. This additional node persists in the trace until the evaluation
 of one of the substates comes to an end, so the scheduling factor is increased by the number of steps until that.
 
@@ -124,9 +124,9 @@ $\oplus$-nodes.
 Note, $\otimes$-node is always placed immediately over the left substate so this
 addition is exactly the number of steps for the left substate.
 
-Unfolding costs definitions in $(\dagger)$ gives us a cumbersome formula which 
+Unfolding costs definitions in $(\dagger)$ gives us a cumbersome formula that 
 includes some intermediate states encountered during the evaluation. However, as ultimately
-we are interested in an asymptotic estimations, we can approximate these costs up to a multiplicative constant. We can notice that the value $d(s'_i \otimes g)$ occuring in the second argument of $cost_{\oplus}$ includes values $d(\taskst{g}{a_j})$ (like in the fist argument) for all answers $a_j$ after this intermediate state. So in the sum of all $cost_{\oplus}$ values $d(\taskst{g}{a_i})$ may be excluded for at most one answer, and in fact if we take the maximal one of these values we will get rather precise approximation. We need the following definition for it, to handle corner cases.
+we are interested in asymptotic estimations, we can approximate these costs up to a multiplicative constant. We can notice that the value $d(s'_i \otimes g)$ occurring in the second argument of $cost_{\oplus}$ includes values $d(\taskst{g}{a_j})$ (like in the first argument) for all answers $a_j$ after this intermediate state. So in the sum of all $cost_{\oplus}$ values $d(\taskst{g}{a_i})$ may be excluded for at most one answer, and in fact, if we take the maximal one of these values we will get a rather precise approximation. We need the following definition for it, to handle corner cases.
 
 \begin{comment}
 First, we rewrite the equation $(\dagger)$ in the following form:
@@ -184,3 +184,4 @@ Hereafter we use the following notation: $\displaystyle{\maxd}\, S = \max\,(S\cu
 We can see that the part under $\Theta$ is very similar to the $(\star)$ except that here we exclude $d$ value for one of the answers from the sum.
 This difference is essential and, as we will see later, it is in fact responsible for the difference in complexities for our motivation example.
  
+

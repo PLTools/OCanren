@@ -29,12 +29,12 @@ program synthesis or declarative pogramming~\cite{SevenProblems,Quines,Matching}
 in particular, delivers such an important feature as completeness.
 
 However, being a different search strategy than conventional BFS/DFS/incremental deepening, etc., interleaving search makes the conventional ways of reasoning about the complexity
-of logical programs irrelevant. Moreover, some intrinsic properties of interleaving search can manifest themselves in a number of astounding and, at the first glance, unexplanable
+of logical programs irrelevant. Moreover, some intrinsic properties of interleaving search can manifest themselves in a number of astounding and, at the first glance, unexplainable
 performance effects. 
 
 As an example, let's consider two implementations of list concatenation relation (\figureword~\ref{fig:length_implementations}, left side). The only difference between the two is
 the position of the recursive call.
-%A common wizdom of \mK programming prescribes putting recursive call \emph{last} in a conjunction (if possible), since otherwise multiple
+%A common wisdom of \mK programming prescribes putting recursive call \emph{last} in a conjunction (if possible), since otherwise multiple
 %negative effects (for example, divergence) can be encountered when running a relation in a \emph{backward} direction (i.e. finding all the splits of a given list).
 %What is unexpected
 %is that
@@ -50,13 +50,13 @@ this structure becomes linear in size, reducing the performance.
 
 In the paper we identify two complexity measures and present a framework to derive their worst-case asymptotic estimations~--- \emph{scheduling complexity}~---
 for a given goal. The goal has to fulfill a number of requirements (both syntactic and semantic), which we explicitly state in \sectionword~\ref{sec:background}. The estimations
-themselves are consructed using a manual metatheory-level reasoning over a set of inequalities, which are extracted automatically using symbolic execution.
-%In the paper we present a model to estimate scheduling complexity of interleaving search in \mK. We use a formal semantics which, in turn, reflects the
+themselves are constructed using manual metatheory-level reasoning over a set of inequalities, which are extracted automatically using symbolic execution.
+%In the paper we present a model to estimate scheduling complexity of interleaving search in \mK. We use formal semantics which, in turn, reflects the
 %behaviour of actual implementations~\cite{CertifiedSemantics}. The roadmap of our approach is as follows: we identify two complexity measures (\emph{scheduling factors}) and
 %give exact and approximate recursive formulas to calculate the scheduling factors (\sectionword~\ref{sec:scheduling}); then we present an approach to
 %automaticaly extract inequalities for the scheduling factors for a whole goal using symbolic execution (\sectionword~\ref{src:symbolic}). These inequalities have
-%to be reformulated and solved in terms of a certain \emph{metatheory}, which, on success, provides an asymptotic bounds for the complexity of
-%the goal evaluation. To be applicable, our approach puts a number of limitation on the goal being estimated as well as on the relational program as whole. We discuss
+%to be reformulated and solved in terms of a certain \emph{metatheory}, which, on success, provides asymptotic bounds for the complexity of
+%the goal evaluation. To be applicable, our approach puts a number of limitation on the goal being estimated as well as on the relational program as a whole. We discuss
 %these limitations in \sectionword~\ref{sec:discussion} as well as the contribution of scheduling in overall interleaving search complexity in \mK.
 Due to space considerations, the proofs of all lemmas and theorems can be found in Appendix~\ref{sec:proofs_appendix}.
 

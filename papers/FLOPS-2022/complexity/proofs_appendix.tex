@@ -265,7 +265,7 @@ and
 and there is a bijection $b$ between sets of answers $\tra{s}$ and $\tra{s'}$ such that for any answer $a = \mkenv{\sigma_r}{n_r} \in \tra{s}$ there is a corresponding answer $b(a) = \mkenv{\sigma'_r}{n'_r} \in \tra{s'}$, s.t. $\sigma_r = \sigma \delta$ for some $\sigma$ that is a subtitution in some leaf substate of $s$ and $\sigma'_r = \sigma' \delta'$ for $\sigma'$ that is the substitutution of the corresponding leaf substate of $s'$ and there is an injective function $\pi_r \colon \{ \alpha_1, \dots, \alpha_{n_r} \} \to \{ \alpha_1, \dots, \alpha_{n'_r} \}$ such that $\pi_r \succ \pi$ and $\pi \delta' = \delta \pi_r$.
 \end{lemma}
 \begin{proof}
-We prove it by induction on the length of the trace for $s$; simultaneously we prove that the next states in the traces for $s$ and $s'$ also satisfy the relation $R_{\pi_r}$ for some $\pi_r$ (s.t. $\pi_r \succ \pi$). The equalities $d\,(s) = d\,(s')$ and $t\,(s) = t\,(s')$ are obvious in this induction, because states in the relation $R_{\pi}$ always have the same form (and therefore the same left height). To prove the fact about the bijection between answers and the fact that the next states are also in the relation we conduct an internal induction on the relation of operational semantics step. When we move trough the introduction of the fresh variable we extend the injective fuction changing the variable by a binding between new fresh variables. In the base case of unification, when we extend the substitutions by the most general unifiers, we have the fact about the bijection between the sets of answers (singleton in this case) for the same injective renaming function by definition of the unification algorithm (we may change the names of variables before the unification and the result will be the same as if we do it after the unification):
+We prove it by induction on the length of the trace for $s$; simultaneously we prove that the next states in the traces for $s$ and $s'$ also satisfy the relation $R_{\pi_r}$ for some $\pi_r$ (s.t. $\pi_r \succ \pi$). The equalities $d\,(s) = d\,(s')$ and $t\,(s) = t\,(s')$ are obvious in this induction, because states in the relation $R_{\pi}$ always have the same form (and therefore the same left height). To prove the fact about the bijection between answers and the fact that the relation holds for the next states we conduct an internal induction on the relation of operational semantics step. When we move through the introduction of the fresh variable we extend the injective function changing the variable by a binding between new fresh variables. In the base case of unification, when we extend the substitutions by the most general unifiers, we have the fact about the bijection between the sets of answers (singleton in this case) for the same injective renaming function by definition of the unification algorithm (we may change the names of variables before the unification and the result will be the same as if we do it after the unification):
 
 \[ \pi \, mgu\,(t_1 \sigma \pi, t_2 \sigma \pi) = mgu\,(t_1 \sigma, t_2 \sigma) \, \pi  \]
 
@@ -318,12 +318,12 @@ Now we can generalize the statement but for one semantical step only: if $s \xri
 \item For any $\mkenv{\sigma'}{n'} \in ENV\,(s')$ there exists $\mkenv{\sigma}{n} \in ENV\,(s)$ and substitution $\delta$, such that $\sigma' = \sigma \delta$ and $n' \ge n$ and $\Dom\,(\delta) \cup \VRan\,(\delta) \subset \Delta\,(s)$
 \end{enumerate}
 
-We prove it by the induction on semantical step relation (we have to prove all three conditions simultantiously).
+We prove it by the induction on semantical step relation (we have to prove all three conditions simultaneously).
 
 \begin{enumerate}
-\item The first condition is simple for the steps from leaf goals: the counters of occupied variables can only increase and the sets of free variables of subgoals can only decrease (except for the case of fresh variable introduction, where a new free variable appears, but it is greater than the counter); in case of invocation we use the fact that the body of any relation is closed (there are no free variables except for the arguments). For the $\ruleno{ConjStopAns}$ rule we use the second condition: the next step has the environment that updates one of the environments in $s$, so it does not introduce new variables in $\Delta$ and the counter also may only inrease. For the $\ruleno{ConjStep}$ rule we use the third condition: all substitutions from environments of updated state after application to goal doe not introduce new variables in $\Delta$, the rest is handled by the inductive hypothesis. For the $\ruleno{ConjStepAns}$ rule we combine two previous arguments and for other cases the first condition is obvious from the inductive hypothesis.
+\item The first condition is simple for the steps from leaf goals: the counters of occupied variables can only increase and the sets of free variables of subgoals can only decrease (except for the case of fresh variable introduction, where a new free variable appears, but it is greater than the counter); in case of invocation we use the fact that the body of any relation is closed (there are no free variables except for the arguments). For the $\ruleno{ConjStopAns}$ rule we use the second condition: the next step has the environment that updates one of the environments in $s$, so it does not introduce new variables in $\Delta$ and the counter also may only increase. For the $\ruleno{ConjStep}$ rule we use the third condition: all substitutions from environments of updated state after application to a goal do not introduce new variables in $\Delta$, the rest is handled by the inductive hypothesis. For the $\ruleno{ConjStepAns}$ rule we combine two previous arguments and for other cases the first condition is obvious from the inductive hypothesis.
 
-\item The second condition needs to be proven only for the $\ruleno{UnifySuccess}$ rule (where it is follows from the properties of the unification algorithm) and for the rules $\ruleno{DisjStopAns}$ and $\ruleno{DisjStepAns}$ (where it is obvious from the inductive hypothesis).
+\item The second condition needs to be proven only for the $\ruleno{UnifySuccess}$ rule (where it follows from the properties of the unification algorithm) and for the rules $\ruleno{DisjStopAns}$ and $\ruleno{DisjStepAns}$ (where it is obvious from the inductive hypothesis).
 
 \item The third condition follows simply in all cases from the inductive hypothesis and from the second condition (for the rules $\ruleno{ConjStep}$ and $\ruleno{ConjStepAns}$ where the answer is incorporated in the next state).
 \end{enumerate}
@@ -360,7 +360,7 @@ After this application of rules all pairs from $T_U$ are decomposed and turned i
 \end{enumerate}
 \end{proof}
 
-Here are the formal definitions of DNF and set of executed states for leafs $\mathcal{L}$ that we will use in the proof of the main theorem.
+Here are the formal definitions of DNF and set of executed states for leaves $\mathcal{L}$ that we will use in the proof of the main theorem.
 
 \begin{definition}
 The subset of goals in DNF is defined as the following set $D_{nf}$.
@@ -518,7 +518,7 @@ T\,(\taskst{g}{\mkenv{\sigma \rho}{n}}, \Gamma) &=& \mathcal{T}(\schemewithvset{
 
 (to get from this generalization to the equations above we should take $\sigma = \varepsilon$ and apply \lemmaword~\ref{lem:measures_changing_env} to move $\rho$ from environment to the goal).
 
-We prove the generalized statement by the induction on $\Gamma$ and considering cases when $g$ is a unification or a relational call. The reasoning is exactly the same for all three notions $D\,(\cdot)$, $T\,(\cdot)$ and $L\,(\cdot)$, so we demostrate only the proof of the equalitity between $D\,(\cdot)$ and $\mathcal{D}(\cdot)(\cdot)$.
+We prove the generalized statement by the induction on $\Gamma$ and considering cases when $g$ is an equality or a relational call. The reasoning is exactly the same for all three notions $D\,(\cdot)$, $T\,(\cdot)$ and $L\,(\cdot)$, so we demonstrate only the proof of the equality between $D\,(\cdot)$ and $\mathcal{D}(\cdot)(\cdot)$.
 
 	\begin{enumerate}
 
@@ -538,7 +538,7 @@ We prove the generalized statement by the induction on $\Gamma$ and considering 
 	
 	    \item If the terms $t_1 \sigma$ and $t_2 \sigma$ are non-unifiable, we have \[ d\,(\taskst{\unigoal{t_1}{t_2}}{\mkenv{\sigma \rho}{n}}) + \smashoperator{\sum\limits_{mgu\,(t_1 \sigma \rho, t_2 \sigma \rho) = \delta'}} D\,(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') = 1 \]
 	    
-	    And it is obviously true, because the sum is empty since the more specific terms there are non-unifiable also.
+	    And it is obviously true because the sum is empty since the more specific terms there are non-unifiable also.
 	
 	    \item If they are unifiable, we have \[ d\,(\taskst{\unigoal{t_1}{t_2}}{\mkenv{\sigma \rho}{n}}) + \smashoperator{\sum\limits_{mgu\,(t_1 \sigma \rho, t_2 \sigma \rho) = \delta'}} D\,(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') = \]
 	
@@ -556,7 +556,7 @@ We prove the generalized statement by the induction on $\Gamma$ and considering 
     Cs & = & \constr{\delta}{U} \\
 	\end{array} \]
 	
-			The left summands are obiously equal. The rest is basically covered by \lemmaword~\ref{lem:symbolic_unification_soundness}. By this lemma there exists a most general unifier $\delta'$ iff the required $\rho'$ exists. So the both sums are non-empty under the same conditions and have at most one summand (since $\rho'$ is unique), and if it is the case this summands are equal by \lemmaword~\ref{lem:symbolic_unification_soundness}, the inductive hypothesis and the fact that the value $D$ is stable w.r.t. renaming of variables (it is a genentalization of \lemmaword~\ref{lem:measures_changing_env} that follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}):
+			The left summands are obviously equal. The rest is basically covered by \lemmaword~\ref{lem:symbolic_unification_soundness}. By this lemma there exists a most general unifier $\delta'$ iff the required $\rho'$ exists. So both sums are non-empty under the same conditions and have at most one summand (since $\rho'$ is unique), and if it is the case these summands are equal by \lemmaword~\ref{lem:symbolic_unification_soundness}, the inductive hypothesis and the fact that the value $D$ is stable w.r.t. renaming of variables (it is a generalization of \lemmaword~\ref{lem:measures_changing_env} that follows simply from \lemmaword~\ref{lem:gen_measures_changing_env}):
 	
 \[ \begin{array}{l}
 D\,(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') \stackrel{\text{\lemmaword~\ref{lem:symbolic_unification_soundness}}}{=} D\,(\taskst{g'}{\mkenv{\sigma \delta \rho' \tau}{n}}, \Gamma') = \\
@@ -595,3 +595,4 @@ D\,(\taskst{g'}{\mkenv{\sigma \rho \delta'}{n}}, \Gamma') \stackrel{\text{\lemma
 
 \end{enumerate}
 \end{proof}
+

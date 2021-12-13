@@ -1,7 +1,7 @@
-\section{\mK: Syntax and Semantics}
+\section{Background: Syntax and Semantics of \mK}
 \label{sec:background}
 
-In this section we recollect some known formal descriptions for \mK language that will be used as a basis for our development.
+In this section, we recollect some known formal descriptions for \mK language that will be used as a basis for our development.
 The descriptions here are taken from~\cite{CertifiedSemantics} (with a few non-essential adjustments for presentation purposes) to make
 the paper self-contained, more details and explanations can be found there.
 
@@ -13,7 +13,7 @@ We parameterize the terms with an alphabet of variables since in the semantic de
 introduced and unified during the evaluation. We assume the set $\mathcal{A}$ ordered and use the notation $\alpha_i$ 
 to specify a position of a logical variable w.r.t. this order.
 
-There are five types of goals: unification of two terms, conjunction and disjunction of goals
+There are five types of goals: unification of two terms, conjunction, and disjunction of goals
 %(the ``\lstinline|conde|'' operator from the canonical versions of \mK, split in the two for simplicity),
 fresh logic variable introduction, and invocation of some relational definition. For the sake of brevity, in code snippets, we abbreviate
 immediately nested ``\lstinline|fresh|'' constructs into the one, writing ``\lstinline|fresh x y $\dots$ . $g$|'' instead of
@@ -46,9 +46,9 @@ A top-level goal represents a search procedure that returns a stream of substitu
 
 During the evaluation of \mK program an environment, consisting of a substitution for logic variables and a counter of allocated logic
 variables, is threaded through the computation and updated in every unification and fresh variable introduction.
-The substitution in the environment at given point and given branch of evaluation contains all the information about relations between
+The substitution in the environment at a given point and given branch of evaluation contains all the information about relations between
 the logical variables at this point.
-%Hereafter we refer to the substitution in the environment at given point as ``current substitution''
+%Hereafter we refer to the substitution in the environment at a given point as ``current substitution''
 %in informal explanations.
 Different branches are combined via \emph{interleaving search} procedure~\cite{Transformers}.
 The answers for a given goal are extracted from the final environments.
@@ -124,7 +124,7 @@ Informally, in a well-formed leaf state all free variables in goals and substitu
 This definition is in fact an instance of a more general definition of well-formedness for all states, introduced in~\cite{CertifiedSemantics}, where it is
 proven that the initial state is well-formed and any transition from a well-formed state results in a well-formed one.
 
-Besides operational semantics we will make use of a denotational one analogous to the least Herbrand model. For a relation $R^k$ its denotational semantics $\sembr{R^k}$ is
+Besides operational semantics, we will make use of a denotational one analogous to the least Herbrand model. For a relation $R^k$, its denotational semantics $\sembr{R^k}$ is
 treated as a $k$-ary relation on the set of all ground terms, where each ``dimension'' corresponds to a certain argument of $R^k$. For example,
 $\sembr{\lstinline|append$^o$|}$ is a set of all triplets of ground lists, in which the third component is a
 concatenation of the first two. The concrete description of the denotational semantics is given in~\cite{CertifiedSemantics} as well as the proof of
@@ -140,3 +140,4 @@ Finally, we explicitly enumerate all the restrictions required by our method to 
 \item All answers have to be unique (\emph{answer uniqueness} condition) for all relation invocations encountered
   during the evaluation.
 \end{itemize}
+
