@@ -16,12 +16,12 @@ not an easy task to separate the contribution of scheduling from other component
 knowledge among \textsc{Prolog} users that in practice unification takes a constant time almost always; some theoretical basis for this is given in~\cite{UnificationAverageCost}.
 There are some specifics of unification implementation in \mK. First, for the simpilicity of backtracking in a non-mutable fashion triangular
 substitution~\cite{UnificationTheory} is used instead of the idempotent one. It brings in an additional overhead which is analysed
-in some detail in~\cite{WillsTheisis}, but the experience shows that in the majority of practical cases this overhead in insignificant. Second, \mK by default
+in some detail in~\cite{WillsThesis}, but the experience shows that in the majority of practical cases this overhead in insignificant. Second, \mK by default
 performs the ``occurs check'', which contributes a significant overhead and often subsumes the complexity of all other search components. Meanwhile it is known, that occurs checks are rarely
-violated~\cite{OccursChecksRevisited}. Having said this, we expect that in the majority of the cases the performance of \mK programs with the occurs check disabled are
+violated~\cite{OccursCheckNotAProblem}. Having said this, we expect that in the majority of the cases the performance of \mK programs with the occurs check disabled are
 described by scheduling complexity alone. In particular, this is true for all cases in \figureword~\ref{fig:examples_all_complexities}. To confirm the adequacy of
 our model we evaluated the running time of these and some other goals (under the conditions we've mentioned) and found that it confirms the estimations derived
-using our framework. The details of implementation, evaluation, and results can be found in an accompanying repository.~\footnote{Where?}
+using our framework. The details of implementation, evaluation, and results can be found in an accompanying repository.~\footnote{https://www.dropbox.com/sh/ciceovnogkeeibz/AAAoclpTSDeY3OMagOBJHNiSa?dl=0}
 
 \begin{figure}[t]
   \setlength{\belowcaptionskip}{-20pt plus 3pt minus 2pt}

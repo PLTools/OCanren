@@ -68,7 +68,7 @@
 \newcommand{\unigoal}[2]{#1 \equiv #2}
 \newcommand{\conjgoal}[2]{#1 \land #2}
 \newcommand{\disjgoal}[2]{#1 \lor #2}
-\newcommand{\freshgoal}[2]{\texttt{\underline {fresh}} \, #1\;.\; #2}
+\newcommand{\freshgoal}[2]{\mbox{\lstinline|fresh|} \, #1\;.\; #2}
 \newcommand{\invokegoal}[3]{#1\,(#2, \, \dots, \, #3)}
 \newcommand{\einit}{e_{init}}
 \newcommand{\ninit}{n_{init}}
@@ -151,6 +151,7 @@
 \renewcommand{\labelenumiii}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}}
 \renewcommand{\labelenumiv}{\arabic{enumi}.\arabic{enumii}.\arabic{enumiii}.\arabic{enumiv}}
 
+%\renewcommand\thelinenumber{\textcolor{red}{linenumber}}
 \let\lemma\relax
 \spnewtheorem{lemma}{Lemma}[section]{\bfseries}{\itshape}
 
@@ -225,7 +226,7 @@ language=minikanren
 %% end of the preamble, start of the body of the document source.
 \begin{document}
 
-%\linenumbers
+\linenumbers
 
 \makeatletter
 \let\origsection\section
