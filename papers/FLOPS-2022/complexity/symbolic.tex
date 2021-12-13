@@ -99,12 +99,6 @@ Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grte
 In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a bijective substitution $\pi : FV(t_1) \to FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
 \end{replemma}
 
-In our description of the extraction process we use a visual representation of symbolic execution of relation body for a given set of grounded variables in a form of a \emph{symbolic scheme}.
-Symbolic scheme is a tree-like structure with different branches corresponding to execution of different disjuncts and nodes corresponding to equalities and relational calls in the body
-augmented with subsets of grounded variables at the point of execution.\footnote{Note the difference with conventional symbolic execution graphs
-with different branches representing mutually exclusive paths of evaluation, not the different parts within one evaluation.} Constrains for substituted
-grounded variables that determine whether the execution continues are presented as labels on the edges of a scheme.
-
 \begin{wrapfigure}{r}{0.4\textwidth}
 \[\renewcommand{\arraystretch}{1}
 \begin{array}{ccc}
@@ -117,6 +111,13 @@ grounded variables that determine whether the execution continues are presented 
 \caption{Symbolic Scheme Fragments}
 \label{fig:scheme_fragments}
 \end{wrapfigure}
+
+In our description of the extraction process we use a visual representation of symbolic execution of relation body for a given set of grounded variables in a form of a \emph{symbolic scheme}.
+Symbolic scheme is a tree-like structure with different branches corresponding to execution of different disjuncts and nodes corresponding to equalities and relational calls in the body
+augmented with subsets of grounded variables at the point of execution.\footnote{Note the difference with conventional symbolic execution graphs
+with different branches representing mutually exclusive paths of evaluation, not the different parts within one evaluation.} Constrains for substituted
+grounded variables that determine whether the execution continues are presented as labels on the edges of a scheme.
+
 
 
 Each scheme is built as a composition of the five forms, shown in \figureword~\ref{fig:scheme_fragments} (all schemes are indexed by subsets of grounded variables with $\Upsilon = 2^{\mathcal{A}}$ denoting such subsets).
@@ -347,7 +348,6 @@ considering the first list empty or non-empty. We can also notice that the exclu
 \begin{array}{lcl}
 d\,(q^{appn}\,(\texttt{Nil}, \mathbf{b})) & = & \Theta\,(1) \\
 d\,(q^{appn}\,(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & d\,(q^{appn}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(1) \\
-\\
 t\,(q^{appn}\,(\texttt{Nil}, \mathbf{b})) & = & \Theta\,(1) \\
 t\,(q^{appn}\,(\texttt{Cons($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) & = & t\,(q^{appn}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(d\,(q^{appn}\,(\mathbf{t}, \mathbf{b}))) \\
 \end{array}
