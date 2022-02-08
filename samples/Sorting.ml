@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * Sort: relational sorting.
- * Copyright (C) 2016-2020
+ * Copyright (C) 2016-2022
  * Dmitri Boulytchev, Dmitrii Kosarev
  * St.Petersburg State University, JetBrains Research
  *
@@ -63,7 +64,7 @@ let rec sorto x y =
 let int_list = List.to_list Nat.to_int
 
 (* Making regular sorting from relational one *)
-let sort l = int_list @@ Stream.hd @@ run q (sorto @@ nat_list l) project
+let sort l = int_list @@ Stream.hd @@ run q (sorto @@ nat_list l) (fun r -> r#reify (Std.List.prj_exn Nat.prj_exn))
 
 (* A straightforward implementation of factorial *)
 let rec fact = function 0 -> 1 | n -> n * fact (n-1)
@@ -72,13 +73,13 @@ let rec fact = function 0 -> 1 | n -> n * fact (n-1)
 let perm l =
   L.map int_list @@
     Stream.take ~n:(fact @@ L.length l) @@
-      run q (fun q -> sorto q @@ nat_list (L.sort Stdlib.compare l)) project
+      run q (fun q -> sorto q @@ nat_list (L.sort Stdlib.compare l)) (fun r -> r#reify (Std.List.prj_exn Nat.prj_exn))
 
 (* More hardcore version: no standard sorting required *)
 let perm' l =
   L.map int_list @@
     Stream.take ~n:(fact @@ L.length l) @@
-      run q (fun q -> fresh (r) (sorto (nat_list l) r) (sorto q r)) project;;
+      run q (fun q -> fresh (r) (sorto (nat_list l) r) (sorto q r)) (fun r -> r#reify (Std.List.prj_exn Nat.prj_exn));;
 
 (* Some auxilliary type shortcuts *)
 @type il  = GT.int GT.list         with show
