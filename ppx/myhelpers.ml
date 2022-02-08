@@ -1,0 +1,61 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
+(*
+ * OCanren PPX
+ * Copyright (C) 2016-2022
+ *   Dmitrii Kosarev aka Kakadu
+ * St.Petersburg State University, JetBrains Research
+ *)
+
+open Base
+open Ppxlib
+
+let lident_of_list = function
+  | [] -> failwith "Bad argument: lident_of_list"
+  | s :: tl -> List.fold_left tl ~init:(Lident s) ~f:(fun acc x -> Ldot (acc, x))
+;;
+
+(* TODO: maybe use Ppxlib.name_type_params_in_td ? *)
+
+let extract_names =
+  List.map ~f:(fun (typ, _) ->
+      match typ.ptyp_desc with
+      | Ptyp_var s -> s
+      | _ ->
+        failwith
+          (Caml.Format.asprintf "Don't know what to do with %a" Pprintast.core_type typ))
+;;
+
+open Ppxlib.Ast_builder.Default
+open Ppxlib.Ast_helper
+
+module Located = struct
+  include Located
+
+  (* let mknoloc txt = { txt; loc = Location.none } *)
+  let map_loc ~f l = { l with txt = f l.txt }
+  let sprintf ~loc fmt = Caml.Format.kasprintf (mk ~loc) fmt
+end
+
+module Exp = struct
+  include Exp
+
+  let mytuple ~loc ?(attrs = []) = function
+    (* | [] -> Exp.construct (Located.mk ~loc (lident "()")) None *)
+    | [] -> failwith "Bad argument: mytuple"
+    | [ x ] -> x
+    | xs -> tuple ~loc ~attrs xs
+  ;;
+
+  let apply ~loc f = function
+    | [] -> f
+    | xs -> apply ~loc f (List.map ~f:(fun e -> Nolabel, e) xs)
+  ;;
+
+  let lident ~loc l = pexp_ident ~loc (Located.mk ~loc (lident l))
+  let ident ~loc lident = pexp_ident ~loc (Located.mk ~loc lident)
+end
+
+let lident_of_list = function
+  | [] -> failwith "Bad argument: lident_of_list"
+  | s :: tl -> List.fold_left tl ~init:(Lident s) ~f:(fun acc x -> Ldot (acc, x))
+;;
