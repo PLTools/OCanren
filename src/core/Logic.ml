@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -18,7 +19,9 @@
 
 open Printf
 
-(* to avoid clash with Std.List (i.e. logic list) *)
+(* to avoid clash with Std.List (i.e. logic list)
+  It may be fixed in next release of GT
+*)
 module List = Stdlib.List
 
 @type 'a logic =
@@ -50,12 +53,7 @@ let logic = {logic with
           ()
           x
     end
-};;
-
-@type ('a, 'b) injected = 'a with show, gmap, html, eq, compare, foldl, foldr
-
-external lift : 'a -> ('a, 'a) injected                      = "%identity"
-external inj  : ('a, 'b) injected -> ('a, 'b logic) injected = "%identity"
+}
 
 exception Not_a_value
 
@@ -63,28 +61,92 @@ let to_logic x = Value x
 
 let from_logic = function
 | Value x    -> x
-| Var (_, _) -> raise Not_a_value
+| Var (n, _) -> raise Not_a_value
 
-let (!!) x = inj (lift x)
+type 'a ilogic
 
-class type ['a,'b] reified = object
-  method is_open : bool
-  method prj     : 'a
-  method reify   : (Env.t -> ('a, 'b) injected -> 'b) -> 'b
-  method prjc    : (Env.t -> ('a, 'b) injected -> 'a) -> 'a
+external inji : 'a -> 'a ilogic = "%identity"
+let inj = inji
+
+let (!!) = inj
+
+module Reifier = struct
+  type ('a, 'b) t = ('a -> 'b) Env.Monad.t
+
+  let rec reify : ('a ilogic -> 'a logic) Env.Monad.t =
+    fun env t ->
+      match Term.var t with
+      | None -> Value (Obj.magic t)
+      | Some v ->
+        let i, cs = Term.Var.reify (reify env) v in
+        Var (i, cs)
+
+  (* can be implemented more efficiently,
+    * without allocation of `'a logic`,
+    * but for demonstration purposes this implementation is okay
+    *)
+  let prj_exn env t =
+    match reify env t with
+    | Value x -> x
+    | Var (v, _) -> raise Not_a_value
+
+  let prj onvar env t =
+    match reify env t with
+    | Value x -> x
+    | Var (v, _) -> onvar v
+
+  let apply r (env, a) = r env a
+
+  let compose r r' env a = r' env (r env a)
+
+  let fmap f r env a = f (r env a)
+
+  let fcomap f r env a = r env (f a)
+
+  let rec fix f = fun env eta -> f (fix f) env eta
+
+  let rework :
+      'a 'b.
+      fv:('a Env.m -> 'b Env.m)
+      -> ('a logic Env.m -> 'b logic Env.m)
+      -> 'a logic Env.m
+      -> 'b logic Env.m
+    =
+    fun ~fv fdeq x ->
+      let open Env.Monad in
+      let open Env.Monad.Syntax in
+      let* x = x in
+      match x with
+      | Var (v, xs) ->
+        let+ diseq = list_mapm ~f:fdeq xs in
+        Var (v, diseq)
+      | Value t ->
+        let+ inner = fv (return t) in
+        Value inner
+    ;;
+
+  let rec zed f x = f (zed f) x
 end
 
-let make_rr : Env.t -> ('a, 'b) injected -> ('a, 'b) reified  = fun env x ->
+let reify = Reifier.reify
+let prj_exn = Reifier.prj_exn
+let prj = Reifier.prj
+
+class type ['a] reified = object
+  method is_open : bool
+  method reify   : 'b . ('a ilogic, 'b) Reifier.t -> 'b
+end
+
+let make_rr : Env.t -> 'a ilogic -> 'a reified  = fun env x ->
   object (self)
     method is_open            = Env.is_open env x
-    method prj                = if self#is_open then raise Not_a_value else Obj.magic x
-    method reify reifier      = reifier env x
-    method prjc  onvar        = onvar   env x
+    method reify : 'b . ('a ilogic, 'b) Reifier.t -> 'b = fun reifier ->
+      Reifier.apply reifier (env, x)
   end
 
-let prj x = let rr = make_rr (Env.empty ()) x in rr#prj
+(* let prj x = let rr = make_rr (Env.empty ()) x in rr#prj *)
 
-let rec reify env x =
+(* let rec reify env x =
   match Env.var env x with
   | Some v -> let i, cs = Term.Var.reify (reify env) v in Var (i, cs)
   | None   -> Value (Obj.magic x)
@@ -93,131 +155,4 @@ let rec prjc of_int env x =
   match Env.var env x with
   | Some v -> let i, cs = Term.Var.reify (prjc of_int env) v in of_int i cs
   | None   -> Obj.magic x
-
-let project rr = rr#prj
-
-module type T1 =
-  sig
-    type 'a t
-    val fmap : ('a -> 'b) -> 'a t -> 'b t
-  end
-
-module type T2 =
-  sig
-   type ('a, 'b) t
-   val fmap : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) t -> ('c, 'd) t
-  end
-
-module type T3 =
-  sig
-    type ('a, 'b, 'c) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('a, 'b, 'c) t -> ('q, 'r, 's) t
-  end
-
-module type T4 =
-  sig
-    type ('a, 'b, 'c, 'd) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('a, 'b, 'c, 'd) t -> ('q, 'r, 's, 't) t
-  end
-
-module type T5 =
-  sig
-    type ('a, 'b, 'c, 'd, 'e) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('a, 'b, 'c, 'd, 'e) t -> ('q, 'r, 's, 't, 'u) t
-  end
-
-module type T6 =
-  sig
-    type ('a, 'b, 'c, 'd, 'e, 'f) t
-    val fmap : ('a -> 'q) -> ('b -> 'r) -> ('c -> 's) -> ('d -> 't) -> ('e -> 'u) -> ('f -> 'v) -> ('a, 'b, 'c, 'd, 'e, 'f) t -> ('q, 'r, 's, 't, 'u, 'v) t
-  end
-
-module Fmap (T : T1) =
-  struct
-    external distrib : ('a,'b) injected T.t -> ('a T.t, 'b T.t) injected = "%identity"
-
-    let rec reify r env x =
-      match Env.var env x with
-      | Some v -> let i, cs = Term.Var.reify (reify r env) v in Var (i, cs)
-      | None   -> Value (T.fmap (r env) x)
-
-    let rec prjc r of_int env x =
-      match Env.var env x with
-      | Some v -> let i, cs = Term.Var.reify (prjc r of_int env) v in of_int i cs
-      | None   -> T.fmap (r env) x
-  end
-
-module Fmap2 (T : T2) =
-  struct
-    external distrib : (('a, 'b) injected, ('c, 'd) injected) T.t -> (('a, 'c) T.t, ('b, 'd) T.t) injected = "%identity"
-
-    let rec reify r1 r2 env x =
-      match Env.var env x with
-      | Some v -> let i, cs = Term.Var.reify (reify r1 r2 env) v in Var (i, cs)
-      | None   -> Value (T.fmap (r1 env) (r2 env) x)
-
-    let rec prjc r1 r2 of_int env x =
-      match Env.var env x with
-      | Some v -> let i, cs = Term.Var.reify (prjc r1 r2 of_int env) v in of_int i cs
-      | None   -> T.fmap (r1 env) (r2 env) x
-  end
-
-module Fmap3 (T : T3) =
-  struct
-    external distrib : (('a, 'b) injected, ('c, 'd) injected, ('e, 'f) injected) T.t -> (('a, 'c, 'e) T.t, ('b, 'd, 'f) T.t) injected = "%identity"
-
-    let rec reify r1 r2 r3 env x =
-      match Env.var env x with
-      | Some v -> let i, cs = Term.Var.reify (reify r1 r2 r3 env) v in Var (i, cs)
-      | None   -> Value (T.fmap (r1 env) (r2 env) (r3 env) x)
-
-    let rec prjc r1 r2 r3 of_int env x =
-      match Env.var env x with
-      | Some v -> let i, cs = Term.Var.reify (prjc r1 r2 r3 of_int env) v in of_int i cs
-      | None   -> T.fmap (r1 env) (r2 env) (r3 env) x
-end
-
-module Fmap4 (T : T4) = struct
-  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected) T.t ->
-                     (('a, 'c, 'e, 'g) T.t, ('b, 'd, 'f, 'h) T.t) injected = "%identity"
-
-  let rec reify r1 r2 r3 r4 env x =
-    match Env.var env x with
-    | Some v -> let i, cs = Term.Var.reify (reify r1 r2 r3 r4 env) v in Var (i, cs)
-    | None   -> Value (T.fmap (r1 env) (r2 env) (r3 env) (r4 env) x)
-
-  let rec prjc r1 r2 r3 r4 of_int env x =
-    match Env.var env x with
-    | Some v -> let i, cs = Term.Var.reify (prjc r1 r2 r3 r4 of_int env) v in of_int i cs
-    | None   -> T.fmap (r1 env) (r2 env) (r3 env) (r4 env) x
-end
-
-module Fmap5 (T : T5) = struct
-  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected) T.t ->
-                     (('a, 'c, 'e, 'g, 'i) T.t, ('b, 'd, 'f, 'h, 'j) T.t) injected = "%identity"
-
-  let rec reify r1 r2 r3 r4 r5 env x =
-    match Env.var env x with
-    | Some v -> let i, cs = Term.Var.reify (reify r1 r2 r3 r4 r5 env) v in Var (i, cs)
-    | None   -> Value (T.fmap (r1 env) (r2 env) (r3 env) (r4 env) (r5 env) x)
-
-  let rec prjc r1 r2 r3 r4 r5 of_int env x =
-    match Env.var env x with
-    | Some v -> let i, cs = Term.Var.reify (prjc r1 r2 r3 r4 r5 of_int env) v in of_int i cs
-    | None   -> T.fmap (r1 env) (r2 env) (r3 env) (r4 env) (r5 env) x
-end
-
-module Fmap6 (T : T6) = struct
-  external distrib : (('a,'b) injected, ('c, 'd) injected, ('e, 'f) injected, ('g, 'h) injected, ('i, 'j) injected, ('k, 'l) injected) T.t ->
-                     (('a, 'c, 'e, 'g, 'i, 'k) T.t, ('b, 'd, 'f, 'h, 'j, 'l) T.t) injected = "%identity"
-
-  let rec reify r1 r2 r3 r4 r5 r6 env x =
-    match Env.var env x with
-    | Some v -> let i, cs = Term.Var.reify (reify r1 r2 r3 r4 r5 r6 env) v in Var (i, cs)
-    | None   -> Value (T.fmap (r1 env) (r2 env) (r3 env) (r4 env) (r5 env) (r6 env) x)
-
-  let rec prjc r1 r2 r3 r4 r5 r6 of_int env x =
-    match Env.var env x with
-    | Some v -> let i, cs = Term.Var.reify (prjc r1 r2 r3 r4 r5 r6 of_int env) v in of_int i cs
-    | None   -> T.fmap (r1 env) (r2 env) (r3 env) (r4 env) (r5 env) (r6 env) x
-end
+ *)

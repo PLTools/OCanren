@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2021
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -22,15 +23,12 @@ open Logic
 open Core
 
 (** Abstract nat type *)
-@type 'a nat =
+@type 'a t =
 | O
 | S of 'a with show, html, eq, compare, foldl, foldr, gmap, fmt
 
 (** Type synonym to prevent toplevel [logic] from being hidden *)
 @type 'a logic' = 'a logic with show, html, eq, compare, foldl, foldr, gmap, fmt
-
-(** Synonym for abstract nat type *)
-@type 'a t = 'a nat with show, html, eq, compare, foldl, foldr, gmap, fmt
 
 (** Ground nat are ismorphic for regular one *)
 @type ground = ground t with show, html, eq, compare, foldl, foldr, gmap, fmt
@@ -42,13 +40,15 @@ open Core
 val inj : ground -> logic
 
 (** A type synonym for injected nat *)
-type groundi = (ground, logic) injected
+type groundi = groundi t Logic.ilogic
+
+type injected = groundi
 
 (** Reifier *)
-val reify : Env.t -> groundi -> logic
+val reify : (groundi, logic) Reifier.t
 
 (* Shallow non-variable projection *)
-val prjc : (int -> ground GT.list -> ground) -> Env.t -> groundi -> ground
+val prj_exn : (groundi, ground) Reifier.t
 
 (** [of_int n] converts integer [n] into [ground]; negative integers become [O] *)
 val of_int : int -> ground
