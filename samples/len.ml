@@ -1,3 +1,4 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 open OCanren
 
 let rec mylen1 xs rez =
@@ -16,7 +17,7 @@ let rec mylen2 xs rez =
 
 
 
-let make_list n : (_,_) injected =
+let make_list n : _ ilogic =
   assert (n>0);
   let rec helper acc n =
     if n<= 0 then acc
@@ -27,7 +28,7 @@ let make_list n : (_,_) injected =
 let () =
   let xs700 = make_list 700 in
   let test rel () =
-    let s = run q (rel xs700) (fun rr -> rr#prjc (Std.Nat.prjc (fun _ _ -> assert false))) in
+    let s = run q (rel xs700) (fun rr -> rr#reify Std.Nat.prj_exn) in
     assert (not (Stream.is_empty s));
     let nat = Stream.hd s in
     assert (Std.Nat.to_int nat = 700);
