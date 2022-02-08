@@ -1,3 +1,10 @@
+(library
+ (name myhelpers)
+ (public_name OCanren-ppx.internals)
+ (libraries base ppxlib)
+ (wrapped false)
+ (modules myhelpers))
+
 (executable
  (public_name pp_fresh)
  (package OCanren-ppx)
@@ -17,6 +24,12 @@
  (modules pp_distrib))
 
 (executable
+ (public_name pp_deriving_reify)
+ (package OCanren-ppx)
+ (libraries ppx_deriving_reify)
+ (modules pp_deriving_reify))
+
+(executable
  (public_name pp_noinjected)
  (package OCanren-ppx)
  (libraries ppx_noinjected)
@@ -27,3 +40,21 @@
  (package OCanren-ppx)
  (libraries ppx_repr ppx_fresh ppx_distrib)
  (modules pp_ocanren_all))
+
+(executable
+ (name pp_distrib_gt)
+ (libraries ppx_distrib GT.ppx_all)
+ (modules pp_distrib_gt))
+
+(executable
+ (name pp_distrib_gt_reify)
+ (libraries ppx_distrib GT.ppx_all ppx_deriving_reify)
+ (modules pp_distrib_gt_reify))
+
+(executable
+ (name pp_gt)
+ (libraries GT.ppx_all)
+ (modules pp_gt))
+
+(cram
+ (deps ./pp_distrib.exe ./pp_deriving_reify.exe))
