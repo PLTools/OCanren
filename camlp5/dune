@@ -77,6 +77,36 @@
    %{targets})))
 
 (rule
+ (targets pp5+ocanren+o.exe)
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (:cmas pa_ocanren.cmxa))
+ (action
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o
+   %{read-lines:../config/package-doc.cfg}
+   %{cmas}
+   -o
+   %{targets})))
+
+(rule
+ (targets pp5+ocanren+dump.exe)
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (:cmas pa_ocanren.cmxa))
+ (action
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump
+   %{read-lines:../config/package-doc.cfg}
+   %{cmas}
+   -o
+   %{targets})))
+
+(rule
  (targets pp5+gt+plugins+ocanren+o.byte)
  (deps
   %{project_root}/config/package-doc.cfg

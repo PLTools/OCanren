@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2020
+ * Copyright (C) 2015-2021
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -41,16 +41,18 @@ open Core
 val inj : ('a -> 'b) -> 'a ground -> 'b logic
 
 (** A synonym for injected option *)
-type ('a, 'b) groundi = ('a ground, 'b logic) injected
+type 'a groundi = 'a ground ilogic
 
 (** Make injected [option] from ground one with injected value *)
-val option : ('a, 'b) injected ground -> ('a, 'b) groundi
+val option : 'a ilogic ground -> 'a ilogic groundi
 
 (** Reifier *)
-val reify : (Env.t -> ('a, 'b) injected -> 'b) -> Env.t -> ('a, 'b) groundi -> 'b logic
+val reify : ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
+
+(* Shallow non-variable projection *)
+val prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
 
 (** {3 Constructors} *)
+val some : 'a -> 'a groundi
 
-val some : ('a, 'b) injected -> ('a, 'b) groundi
-
-val none : unit -> ('a, 'b) groundi
+val none : unit -> 'a groundi

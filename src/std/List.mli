@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2020
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -24,8 +25,8 @@ open Core
 (** Abstract list type *)
 @type ('a, 'l) list =
 | Nil
-| Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
-
+| Cons of 'a * 'l
+with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** {2 GT-related API} *)
 
@@ -44,22 +45,22 @@ open Core
 (** {2 Relational API} *)
 
 (** A synonym for injected list *)
-type ('a,'b) groundi = ('a ground, 'b logic) injected
+type 'a groundi = ('a, 'a groundi) t Logic.ilogic
 
 (** {3 Constructors} *)
 
-val nil : unit -> ('a, 'b) groundi
+val nil : unit -> 'a groundi
 
-val cons : ('a, 'b) injected -> ('a, 'b) groundi -> ('a, 'b) groundi
+val cons : 'a  -> 'a groundi -> 'a groundi
 
 (** Infix synonym for [cons] *)
-val (%) : ('a, 'b) injected -> ('a,'b) groundi -> ('a,'b) groundi
+val (%) : 'a  -> 'a groundi -> 'a groundi
 
 (** [x %< y] is a synonym for [cons x (cons y (nil ()))] *)
-val (%<) : ('a, 'b) injected -> ('a, 'b) injected -> ('a, 'b) groundi
+val (%<) : 'a  -> 'a -> 'a groundi
 
 (** [!< x] is a synonym for [cons x (nil ())] *)
-val (!<) : ('a, 'b) injected -> ('a, 'b) groundi
+val (!<) : 'a  ->  'a groundi
 
 (** {3 Built-in relations} *)
 
@@ -73,58 +74,64 @@ val to_list : ('a -> 'b) -> 'a ground -> 'b GT.list
 val inj : ('a -> 'b) -> 'a ground -> 'b logic
 
 (** Make injected [list] from ground one of injected elements *)
-val list : ('a, 'b) injected GT.list -> ('a, 'b) groundi
+val list : 'a  GT.list -> 'a groundi
 
 (** Reifier *)
-val reify : (Env.t -> ('a, 'b) injected -> 'b) -> Env.t -> ('a ground, 'b logic) injected -> 'b logic
+val reify :  ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
 
-val prjc : (Env.t -> ('a, 'b) injected -> 'a) -> (int -> 'a ground GT.list -> 'a ground) ->
-  Env.t -> ('a ground, 'b logic) injected -> 'a ground
+val prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
+
+val prj : (int -> 'b ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
 
 (** Relational foldr *)
-val foldro : (('a, 'b) injected -> ('acc, _ logic' as 'acc2) injected -> ('acc, 'acc2) injected -> goal) -> ('acc, 'acc2) injected -> ('a, 'b) groundi -> ('acc, 'acc2) injected -> goal
+val foldro :
+  ('x ilogic as 'a -> 'acc ilogic -> 'acc ilogic -> goal) ->
+  'acc ilogic ->
+  'a groundi ->
+  'acc ilogic -> goal
 
 (** Relational map *)
-val mapo : (('a, 'b) injected -> ('q, 'w) injected -> goal) -> ('a, 'b) groundi -> ('q, 'w) groundi -> goal
+val mapo : ('x ilogic as 'a -> ('y ilogic as 'b) -> goal) -> 'a groundi -> 'b groundi -> goal
 
 (** Relational filter *)
-val filtero : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) groundi -> ('a, 'b) groundi -> goal
+val filtero : ('x ilogic as 'a -> Bool.groundi -> goal) -> 'a groundi -> 'a groundi -> goal
 
 (** Relational lookup *)
-val lookupo : (('a, 'b) injected -> Bool.groundi -> goal) -> ('a, 'b) groundi -> ('a option, 'b option logic') injected -> goal
+val lookupo : ('x ilogic as 'a -> Bool.groundi -> goal) -> 'a groundi -> 'a Option.groundi -> goal
 
 (** Relational association list lookup *)
-val assoco : ('a, 'b logic') injected -> (('a, 'c) Pair.ground, ('b logic', 'd logic') Pair.logic) groundi -> ('c, 'd logic') injected -> goal
+val assoco : 'a ilogic -> ('a ilogic, 'c ilogic ) Pair.groundi groundi -> 'c ilogic -> goal
 
 (** Boolean list disjunctions *)
-val anyo : (Bool.ground, Bool.logic) groundi -> Bool.groundi -> goal
+val anyo : Bool.groundi groundi -> Bool.groundi -> goal
 
 (** Boolean list conjunction *)
-val allo : (Bool.ground, Bool.logic) groundi -> Bool.groundi -> goal
+val allo : Bool.groundi groundi -> Bool.groundi -> goal
+
 
 (** Relational length *)
-val lengtho : (_, _) groundi -> Nat.groundi -> goal
+val lengtho : 'a ilogic groundi -> Nat.groundi -> goal
 
 (** Relational append *)
-val appendo : ('a, 'b) groundi -> ('a, 'b) groundi  -> ('a, 'b) groundi -> goal
+val appendo : (_ ilogic as 'a) groundi -> 'a groundi -> 'a groundi -> goal
 
 (** Relational reverse *)
-val reverso : ('a, 'b) groundi -> ('a, 'b) groundi -> goal
+val reverso : (_ ilogic as 'a)groundi -> 'a groundi -> goal
 
 (** Relational occurrence check (a shortcut) *)
-val membero : ('a, 'b logic') groundi  -> ('a, 'b logic') injected  -> goal
+val membero : 'a ilogic groundi  -> 'a ilogic  -> goal
 
 (** Relational check for empty list *)
 val nullo : _ groundi -> goal
 
 (** Relational head of the list *)
-val caro  : ('a, 'b) groundi -> ('a, 'b) injected -> goal
+val caro  : 'a groundi -> 'a -> goal
 
 (** Alias for [caro] *)
-val hdo   : ('a, 'b) groundi -> ('a, 'b) injected -> goal
+val hdo   : 'a groundi -> 'a -> goal
 
 (** Relational tail of the list *)
-val cdro  : ('a, 'b) groundi -> ('a, 'b) groundi -> goal
+val cdro  : 'a Logic.ilogic groundi -> 'a Logic.ilogic groundi -> goal
 
 (** Alias for [cdro] *)
-val tlo   : ('a, 'b) groundi -> ('a, 'b) groundi -> goal
+val tlo   : 'a Logic.ilogic groundi -> 'a Logic.ilogic groundi -> goal

@@ -9,4 +9,7 @@
 
 (alias
  (name default)
- (deps camlp5 src))
+ (deps
+  src/OCanren.cmxa
+  (alias samples/all)
+  (package OCanren)))
