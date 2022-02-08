@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2021
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -23,28 +23,13 @@ open Core
 module List = Stdlib.List
 
 @type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
-@type 'a logic'     = 'a logic              with show, gmap, html, eq, compare, foldl, foldr, fmt
-@type ('a, 'l) t    = ('a, 'l) list         with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a logic'     = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type ('a, 'l) t    = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr, fmt
 
-let logic' = logic
-
-module X =
-  struct
-    @type ('a,'b) t = ('a, 'b) list with show, gmap, html, eq, compare, foldl, foldr, fmt
-    let fmap f g x = GT.gmap list f g x
-  end
-
-module F = Fmap2 (X)
-
-let nil ()   = Logic.inj @@ F.distrib Nil
-let cons x y = Logic.inj @@ F.distrib (Cons (x, y));;
+let logic' = logic;;
 
 @type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr, fmt
-
-let rec reify r1 h = F.reify r1 (reify r1) h
-
-let rec prjc fa onvar env xs = F.prjc fa (prjc fa onvar) onvar env xs
 
 let ground = {
   ground with
@@ -105,6 +90,44 @@ let logic = {
     end
 }
 
+type 'a groundi = ('a, 'a groundi) t Logic.ilogic
+
+let reify : 'a 'b . ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t =
+  fun ra ->
+    let open Env.Monad.Syntax in
+    Reifier.fix (fun self ->
+    Reifier.compose Reifier.reify
+      ( let* fa = ra in
+        let* fr = self in
+        let rec foo = function
+          | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+          | Value x -> Value (GT.gmap t fa fr x)
+        in
+        Env.Monad.return foo
+      ))
+
+let rec prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
+  fun ra ->
+    let open Env.Monad.Syntax in
+    Reifier.fix (fun rself ->
+      Reifier.compose Reifier.prj_exn
+      (let* fa = ra in
+      let* fr = rself in
+      Env.Monad.return (fun x -> GT.gmap t fa fr x)))
+
+let rec prj : (int -> _ ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
+  fun onvar ra ->
+    let ( >>= ) = Env.Monad.bind in
+    Reifier.fix (fun self ->
+    Reifier.compose (Reifier.prj (fun _ -> assert false))
+    (ra >>= fun fa ->
+     self >>= fun fr ->
+     Env.Monad.return (fun x -> GT.gmap t fa fr x)))
+
+let nil () : 'a groundi = Logic.inj Nil
+let cons : 'a -> 'a groundi -> 'a groundi = fun x y ->
+  Logic.inj (Cons (x, y))
+
 let rec of_list f = function
 | []    -> Nil
 | x::xs -> Cons (f x, of_list f xs)
@@ -119,11 +142,11 @@ let rec list = function
 | []    -> nil ()
 | x::xs -> cons x (list xs);;
 
-type ('a,'b) groundi = ('a ground, 'b logic) injected
 
-let (%): ('a,'b) injected -> ('a,'b) groundi -> ('a,'b) groundi = cons
-let (%<): ('a,'b) injected -> ('a,'b) injected -> ('a,'b) groundi = fun x y -> cons x @@ cons y @@ nil ()
-let (!<) : ('a,'b) injected -> ('a,'b) groundi = fun x -> cons x @@ nil ()
+let (%) = cons
+let (%<) = fun x y -> cons x @@ cons y @@ nil ()
+let (!<) = fun x -> cons x @@ nil ()
+
 
 let rec foldro f a xs r =
   conde [
@@ -212,7 +235,7 @@ let rec reverso a b =
     )
   ]
 
-let rec membero (l: (_,_) groundi) a =
+let rec membero l a =
   Fresh.two (fun x xs ->
     (l === x % xs) &&&
     (conde [
@@ -223,7 +246,7 @@ let rec membero (l: (_,_) groundi) a =
 
 let nullo q : goal = (q === nil())
 
-let caro xs h  : goal = call_fresh (fun tl -> xs === (h % tl))
-let cdro xs tl : goal = call_fresh (fun h  -> xs === (h % tl))
+let caro : 'a groundi -> _ -> goal = fun xs h -> call_fresh (fun tl -> xs === (h % tl))
+let cdro : 'a Logic.ilogic groundi -> _ -> goal = fun xs tl -> call_fresh (fun h  -> xs === (h % tl))
 let hdo = caro
 let tlo = cdro

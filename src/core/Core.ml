@@ -18,6 +18,7 @@
 
 open Logic
 
+IFDEF STATS THEN
 type stat = {
   mutable unification_count : int;
   mutable unification_time  : Mtime.span;
@@ -34,7 +35,7 @@ let stat = {
   delay_counter     = 0
 }
 
-IFDEF STATS THEN
+
 let unification_counter () = stat.unification_count
 let unification_time    () = stat.unification_time
 let conj_counter        () = stat.conj_counter
@@ -148,7 +149,7 @@ module Answer :
 
 module Prunes : sig
   type rez = Violated | NonViolated
-  type ('a, 'b) reifier = Env.t -> ('a, 'b) Logic.injected -> 'b
+  type ('a, 'b) reifier = ('a,'b) Reifier.t
   type 'b cond = 'b -> bool
   type t
 
@@ -159,8 +160,8 @@ module Prunes : sig
   val extend  : t -> Term.VarTbl.key -> ('a, 'b) reifier -> 'b cond -> t
 end = struct
   type rez = Violated | NonViolated
-  type ('a, 'b) reifier = Env.t -> ('a, 'b) Logic.injected -> 'b
-  type reifier_untyped = Env.t -> Obj.t -> Obj.t
+  type ('a, 'b) reifier = ('a,'b) Reifier.t
+  type reifier_untyped = Obj.t
   type 'b cond = 'b -> bool
   type cond_untyped = Obj.t -> bool
 
@@ -175,15 +176,17 @@ end = struct
   let check_last map env subst =
     try
       let (term, (reifier, checker)) = List.hd map in
+      let reifier : (_,_) reifier = Obj.obj reifier in
       let reified = reifier env (Obj.magic @@ Subst.apply env subst term) in
       if not (checker reified) then raise Fail;
       NonViolated
     with Not_found -> NonViolated
        | Fail -> Violated
 
-  let recheck ps env s =
+  let recheck (ps: t) env s =
     try
        ps |> List.iter (fun (k, (reifier, checker)) ->
+          let reifier : (_,_) Reifier.t = Obj.obj reifier in
           let reified = reifier env (Obj.magic @@ Subst.apply env s k) in
           if not (checker reified) then raise Fail
        );
@@ -396,14 +399,16 @@ let debug_var v reifier call = fun st ->
   in
   call xs st
 
-
-
-let structural term rr k st =
+let structural : 'a  ->
+  ('a , 'b) Reifier.t ->
+  ('b -> bool) ->
+  goal = fun term rr k st ->
   let new_constraints = Prunes.extend (State.prunes st) (Obj.magic term) rr k in
   match Prunes.check_last new_constraints (State.env st) (State.subst st) with
   | Prunes.Violated -> failure st
   | NonViolated -> success { st with State.prunes = new_constraints }
 
+(*
 include (struct
   @type cost = CFixed of GT.int | CAtLeast of GT.int with show
   let show_cost x = GT.show cost x
@@ -450,11 +455,11 @@ end : sig
   type cost = CFixed of GT.int | CAtLeast of GT.int
 
   val minimize : ('b -> cost) ->
-    (Env.t -> 'logicvar -> 'b) ->
-    (('a, 'b) injected as 'logicvar) ->
+    (Env.t -> 'a ilogic -> 'a) ->
+    ('a ilogic) ->
     ('logicvar -> goal) -> goal
 end)
-
+*)
 
 let (&&&) = conj
 let (?&) gs = List.fold_right (&&&) gs success
@@ -537,7 +542,7 @@ module Uncurry =
 module LogicAdder :
   sig
     val zero : goal -> goal
-    val succ : ('a -> State.t -> 'd) -> (('e, 'f) injected -> 'a) -> State.t -> ('e, 'f) injected * 'd
+    val succ : ('a -> State.t -> 'd) -> ('e ilogic -> 'a) -> State.t -> 'e ilogic * 'd
   end = struct
     let zero f      = f
     let succ prev f = call_fresh (fun logic st -> (logic, prev (f logic) st))
@@ -548,18 +553,57 @@ module ReifyTuple = struct
   let succ prev (x, xs) env = (make_rr env x, prev xs env)
 end
 
+module NUMERAL_TYPS = struct
+  type ('a, 'c, 'e, 'f, 'g) one = unit ->
+           (('a ilogic -> goal) ->
+            State.t -> 'a ilogic * State.t Stream.t) *
+           ('c ilogic -> Env.t -> 'c reified) * ('e -> 'e) *
+           (('f -> 'g) -> 'f -> 'g)
+  type ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j) two = unit ->
+           (('a Logic.ilogic -> 'b Logic.ilogic -> goal) ->
+            State.t -> 'a Logic.ilogic * ('b Logic.ilogic * State.t Stream.t)) *
+           ('c Logic.ilogic * 'd Logic.ilogic ->
+            Env.t -> 'c Logic.reified * 'd Logic.reified) *
+           ('e * ('f * 'g) -> ('e * 'f) * 'g) *
+           (('h -> 'i -> 'j) -> 'h * 'i -> 'j)
+  type ('a,'c,'e,'g,'i,'k,'m,'n,'o,'p,'q,'r,'s,'t) three = unit ->
+           (('a ilogic -> 'c ilogic -> 'e ilogic -> goal) ->
+            State.t ->
+            'a ilogic *
+            ('c ilogic *
+             ('e ilogic * State.t Stream.t))) *
+           ('g ilogic * ('i ilogic * 'k ilogic) ->
+            Env.t ->
+            'g reified * ('i reified * 'k reified)) *
+           ('m * ('n * ('o * 'p)) -> ('m * ('n * 'o)) * 'p) *
+           (('q -> 'r -> 's -> 't) -> 'q * ('r * 's) -> 't)
+
+  type ('a,'b,'c,'d,'e,'f,'g,'h,'i,'j,'k,'l,'m,'n,'o,'p,'q,'r) four = unit ->
+         (('a ilogic -> 'b ilogic -> 'c ilogic -> 'd ilogic -> goal) ->
+          State.t ->
+          'a ilogic *
+          ('b ilogic * ('c ilogic * ('d ilogic * State.t Stream.t)))) *
+         ('e ilogic * ('f ilogic * ('g ilogic * 'h ilogic)) ->
+          Env.t -> 'e reified * ('f reified * ('g reified * 'h reified))) *
+         ('i * ('j * ('k * ('l * 'm))) -> ('i * ('j * ('k * 'l))) * 'm) *
+         (('n -> 'o -> 'p -> 'q -> 'r) -> 'n * ('o * ('p * 'q)) -> 'r)
+
+
+end
+
 let succ n () =
   let adder, app, ext, uncurr = n () in
   (LogicAdder.succ adder, ReifyTuple.succ app, ExtractDeepest.succ ext, Uncurry.succ uncurr)
 
-let one   () = (LogicAdder.(succ zero)), ReifyTuple.one, ExtractDeepest.ext2, Uncurry.one
-let two   () = succ one   ()
+let one : (_,_,_,_,_) NUMERAL_TYPS.one = fun () ->
+   (LogicAdder.(succ zero)), ReifyTuple.one, ExtractDeepest.ext2, Uncurry.one
+let two  : (_,_,_,_,_,_,_,_,_,_) NUMERAL_TYPS.two = fun () -> succ one   ()
 let three () = succ two   ()
-let four  () = succ three ()
-let five  () = succ four  ()
+let four () = succ three ()
+let five () = succ four  ()
 
 let q     = one
-let qr    = two
+let qr : (_,_,_,_,_,_,_,_,_,_) NUMERAL_TYPS.two = two
 let qrs   = three
 let qrst  = four
 let qrstu = five
@@ -704,10 +748,10 @@ module Tabling =
   struct
     let succ n () =
       let currier, uncurrier = n () in
-      let sc = (Curry.succ : (('a -> 'b) -> 'c) -> ((((_, _) injected as 'k) * 'a -> 'b) -> 'k -> 'c)) in
+      let sc = (Curry.succ : (('a -> 'b) -> 'c) -> ((((_) ilogic as 'k) * 'a -> 'b) -> 'k -> 'c)) in
       (sc currier, Uncurry.succ uncurrier)
 
-    let one () = ((Curry.(one) : ((_, _) injected -> _) as 'x -> 'x), Uncurry.one)
+    let one () = ((Curry.(one) : ((_) ilogic -> _) as 'x -> 'x), Uncurry.one)
 
     let two   () = succ one ()
     let three () = succ two ()
