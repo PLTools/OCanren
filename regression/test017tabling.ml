@@ -15,8 +15,6 @@ let patho_tabled arco = Tabling.(tabledrec two) (patho_norec arco)
 let show s = s
 let showl = GT.show(logic) (show)
 
-let runS n = runR (OCanren.reify) show showl n
-
 (* This relation defines a graph with cycle *)
 let arco1 x y = conde [
   (x === !!"a") &&& (y === !!"b");
@@ -24,27 +22,27 @@ let arco1 x y = conde [
   (x === !!"b") &&& (y === !!"d");
 ]
 
+let run_path n = run_r OCanren.reify showl n
 let _ =
   (* Check that query to tabled goal terminates and results are stored to the cache *)
   let patho_tabled = patho_tabled arco1 in
-  run_exn show 10 q qh (REPR(fun q -> patho arco1 !!"a" q));
-  run_exn show 10 q qh (REPR(fun q -> patho_tabled !!"a" q));
-  run_exn show 10 q qh (REPR(fun q -> patho_tabled !!"a" q))
+  run_path 10 q qh (REPR(fun q -> patho arco1 !!"a" q));
+  run_path 10 q qh (REPR(fun q -> patho_tabled !!"a" q));
+  run_path 10 q qh (REPR(fun q -> patho_tabled !!"a" q))
 
 let _ =
   (* Check that external disequalities are checked *)
   let patho_tabled = patho_tabled arco1 in
-  run_exn show 10 q qh (REPR(fun q -> (q =/= !!"b") &&& (patho arco1 !!"a" q)));
-  run_exn show 10 q qh (REPR(fun q -> (patho_tabled !!"a" q)));
-  run_exn show 10 q qh (REPR(fun q -> (q =/= !!"b") &&& (patho_tabled !!"a" q)))
-
+  run_path 10 q qh (REPR(fun q -> (q =/= !!"b") &&& (patho arco1 !!"a" q)));
+  run_path 10 q qh (REPR(fun q -> (patho_tabled !!"a" q)));
+  run_path 10 q qh (REPR(fun q -> (q =/= !!"b") &&& (patho_tabled !!"a" q)))
 
 let _ =
   (* Check that external disequalities do not affect the cache *)
   let patho_tabled = patho_tabled arco1 in
-  run_exn show 10 q qh (REPR(fun q -> (q =/= !!"b") &&& (patho arco1 !!"a" q)));
-  run_exn show 10 q qh (REPR(fun q -> (q =/= !!"b") &&& (patho_tabled !!"a" q)));
-  run_exn show 10 q qh (REPR(fun q -> (patho_tabled !!"a" q)))
+  run_path 10 q qh (REPR(fun q -> (q =/= !!"b") &&& (patho arco1 !!"a" q)));
+  run_path 10 q qh (REPR(fun q -> (q =/= !!"b") &&& (patho_tabled !!"a" q)));
+  run_path 10 q qh (REPR(fun q -> (patho_tabled !!"a" q)))
 
 (* This relation defines a graph with cycle where one of nodes is not ground *)
 let arco2 x y =
@@ -54,7 +52,8 @@ let arco2 x y =
       (x === z) &&& (y === !!"a");
     ])
 
-(* let _ = *)
+let runS n = run_r OCanren.reify showl n
+let _ =
   (* Check that tabling works with non-ground terms *)
   let patho_tabled = patho_tabled arco2 in
   runS 10 q qh (REPR(fun q -> patho arco2 !!"a" q));

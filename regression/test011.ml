@@ -9,10 +9,8 @@ let (!!) = List.list
 let show_int_list   = GT.(show List.ground @@ show int)
 let show_intl_List = GT.(show List.logic @@ show logic @@ show int)
 
-let runInt n = runR OCanren.reify GT.(show int) GT.(show logic @@ show int) n
-let runIList n = runR (List.reify OCanren.reify) show_int_list show_intl_List n
-
-let pair = Pair.pair
+let runInt n = run_r OCanren.reify GT.(show logic @@ show int) n
+let runIList n = run_r (List.reify OCanren.reify) show_intl_List n
 
 let _ =
   runInt       (-1) q qh (REPR (fun q -> (q =/= !1)       ));
@@ -50,7 +48,7 @@ let _ =
 let _ =
   runInt                (-1) q qh (REPR (fun q -> (!3 =/= !4) ));
   runInt                (-1) q qh (REPR (fun q -> (!3 =/= !3)                                              ));
-  run_exn GT.(show int) (-1) q qh (REPR (fun q -> ((!5 =/= q) &&& (!6 =/= q) &&& (q === !5))               ));
+  run_r prj_exn GT.(show int) (-1) q qh (REPR (fun q -> ((!5 =/= q) &&& (!6 =/= q) &&& (q === !5))               ));
   runIList              (-1) q qh (REPR (fun q -> (fresh (a d)(!![a; d] === q)(q =/= !![!5; !6])(a === !5))  ));
   runInt                (-1) q qh (REPR (fun q -> (fresh (a)(!3 === a)(a =/= !4))                          ));
   runInt                (-1) q qh (REPR (fun q -> ((!4 =/= q) &&& (!3 =/= q))                              ));
@@ -91,8 +89,8 @@ let () =
       ))
     ]
   in
-  runInt (-1) q qh (REPR (fun q -> distincto (!2 % (!3 %< q)) )); 
-  
+  runInt (-1) q qh (REPR (fun q -> distincto (!2 % (!3 %< q)) ));
+
   let rec remembero x ls out =
      conde [
        (ls === nil ()) &&& (out === nil ());
@@ -106,7 +104,7 @@ let () =
        )
      ]
   in
-  run_exn show_int_list (-1) q qh (REPR (fun q -> remembero !1 (!1 % (!2 % (!1 %< !3))) q          ));
+  run_r (List.prj_exn prj_exn) show_int_list (-1) q qh (REPR (fun q -> remembero !1 (!1 % (!2 % (!1 %< !3))) q          ));
   runInt                (-1) q qh (REPR (fun q -> remembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)) ));
 
    let rec rembero x ls out =
@@ -122,5 +120,5 @@ let () =
        )
      ]
    in
-   run_exn show_int_list (-1) q qh (REPR (fun q -> rembero !1 (!1 % (!2 % (!1 %< !3))) q          ));
+   run_r (List.prj_exn prj_exn) show_int_list (-1) q qh (REPR (fun q -> rembero !1 (!1 % (!2 % (!1 %< !3))) q          ));
    runInt                (-1) q qh (REPR (fun q -> rembero !1 (!1 % (!2 %< !3)) (!1 % (!2 %< !3)) ))

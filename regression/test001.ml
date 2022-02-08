@@ -29,11 +29,9 @@ let rec fives x =
     ; defer (fives x)
     ]
 
-  let show_int       = show(int)
-  let show_int_list  = (show(List.ground) (show int))
-  let show_intl_list = (show(List.logic ) (show(logic) (show int)))
-
-  (* let (===) = unitrace (fun h t -> show_intl_list @@ List.reify OCanren.reify h t) *)
+let show_int       = show(int)
+let show_int_list   = show(List.ground) (show int)
+let show_intl_list  = show(List.logic ) (show(logic) (show int))
 
 let rec appendo a b ab =
   conde
@@ -53,22 +51,23 @@ let rec reverso a b =
         (defer (reverso t a'))
     ]
 
-
-let runL n         = runR (List.reify OCanren.reify) show_int_list show_intl_list n
-
+let run_exn eta = run_r (Std.List.prj_exn OCanren.prj_exn) eta
 let _ =
-  (* run_exn show_int_list  1  q qh (REPR (fun q   -> q === !!1 % q)); *)
-
+  run_exn show_int_list  1  q qh (REPR (fun q   -> q === !!1 % q));
   run_exn show_int_list  1  q qh (REPR (fun q   -> appendo q (ilist [3; 4]) (ilist [1; 2; 3; 4])   ));
   run_exn show_int_list  1  q qh (REPR (fun q   -> reverso q (ilist [1; 2; 3; 4])                  ));
   run_exn show_int_list  1  q qh (REPR (fun q   -> reverso (ilist [1; 2; 3; 4]) q                  ));
   run_exn show_int_list  2  q qh (REPR (fun q   -> reverso q (ilist [1])                           ));
   run_exn show_int_list  1  q qh (REPR (fun q   -> reverso (ilist [1]) q                           ));
+  run_exn show_int_list  1  q qh (REPR (fun q   -> occurs q                                        ))
+
+let run_exn eta = run_r OCanren.prj_exn  eta
+let _ =
   run_exn show_int       1  q qh (REPR (fun q   -> a_and_b q                                       ));
   run_exn show_int       2  q qh (REPR (fun q   -> a_and_b' q                                      ));
-  run_exn show_int      10  q qh (REPR (fun q   -> fives q                                         ));
-  run_exn show_int_list  1  q qh (REPR (fun q   -> occurs q                                        ));
-  ()
+  run_exn show_int      10  q qh (REPR (fun q   -> fives q                                         ))
+
+let runL eta = run_r (Std.List.reify OCanren.reify) show_intl_list eta
 
 let _withFree =
   runL          1  q  qh (REPR (fun q   -> reverso (ilist []) (ilist [])                ));

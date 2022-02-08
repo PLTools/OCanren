@@ -42,18 +42,19 @@ let rec evalo m n =
     )
     (fun _ _ -> n === m)
 
+let run_lam eta = run_r GLam.prj_exn GLam.show_rlam eta
 let _ =
-  run_exn show_rlam 1    q   qh (REPR (fun q   -> substo (v varX) varX (v varY) q                   ));
-  run_exn show_rlam 2    q   qh (REPR (fun q   -> evalo (abs varX (v varX)) q                       ));
-  run_exn show_rlam 1    q   qh (REPR (fun q   -> evalo (abs varX (v varX)) q                       ));
-  run_exn show_rlam 1    q   qh (REPR (fun q   -> evalo (app (abs varX (v varX)) (v varY)) q        ));
-  run_exn show_rlam 1    q   qh (REPR (fun q   -> evalo (app (abs varX (v varX)) q)        (v varY) ));
-  run_exn show_rlam 1    q   qh (REPR (fun q   -> evalo (app (abs varX q)        (v varY)) (v varY) ));
-  run_exn show_rlam 1    q   qh (REPR (fun q   -> evalo (app (v varX)            (v varX)) q        ));
-  run_exn show_rlam 1    q   qh (REPR (fun q   -> evalo (v varX) q                                  ));
+  run_lam 1    q   qh (REPR (fun q   -> substo (v varX) varX (v varY) q                   ));
+  run_lam 2    q   qh (REPR (fun q   -> evalo (abs varX (v varX)) q                       ));
+  run_lam 1    q   qh (REPR (fun q   -> evalo (abs varX (v varX)) q                       ));
+  run_lam 1    q   qh (REPR (fun q   -> evalo (app (abs varX (v varX)) (v varY)) q        ));
+  run_lam 1    q   qh (REPR (fun q   -> evalo (app (abs varX (v varX)) q)        (v varY) ));
+  run_lam 1    q   qh (REPR (fun q   -> evalo (app (abs varX q)        (v varY)) (v varY) ));
+  run_lam 1    q   qh (REPR (fun q   -> evalo (app (v varX)            (v varX)) q        ));
+  run_lam 1    q   qh (REPR (fun q   -> evalo (v varX) q                                  ));
   ()
 
-let runL n = runR glam_reifier show_rlam show_llam n
+let runL n = run_r GLam.reify GLam.show_llam n
 
 let _ =
   runL 1   q   qh (REPR (fun q   -> evalo (app q (v varX)) (v varX)               ));

@@ -14,10 +14,11 @@ let rec ones out =
 
 
 let show_int_list   = GT.(show List.ground @@ show int)
-let show_intl_llist = GT.(show List.logic @@ show logic @@ show int)
+let show_intl = GT.(show logic @@ show int)
+let show_intl_llist = GT.(show List.logic show_intl)
 
-let reifier eta = List.reify OCanren.reify eta
-let runL n = runR reifier show_int_list show_intl_llist n
+let reifier = List.reify OCanren.reify
+let runL n = run_r reifier show_intl_llist n
 
 let even xs =
   (* returns false when constraint is violated *)
@@ -33,11 +34,11 @@ let list_of_ones_even_length q = (structural q reifier even) &&& (ones q)
 let _freeVars =
   runL  10  q  qh (REPR(list_of_ones_even_length))
 
+let run_int n = run_r OCanren.reify show_intl n
 let _noAnswers =
   let remove_answer_by_constraint q =
     fresh (dummy)
       (q === !!5)
       (structural q OCanren.reify (fun _ -> false))
   in
-  run_exn GT.(show int) (-1) q qh (REPR(remove_answer_by_constraint))
-
+  run_int (-1) q qh (REPR(remove_answer_by_constraint))
