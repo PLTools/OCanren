@@ -1,13 +1,13 @@
+(* reimplementing Nat module *)
 open OCanren
 open Tester
 open Printf
 open GT
 
-module Peano = 
-  struct
+(* module Peano = struct
 
-    module T = 
-      struct    
+    module T =
+      struct
         @type 'a t = O | S of 'a with show, gmap
 
         let fmap f x = gmap(t) f x
@@ -30,13 +30,13 @@ module Peano =
   let rec show_rn n = show(t) show_rn n
 
 end
+ *)
 
-let rec peano_reifier c x = Peano.reify peano_reifier c x
+open OCanren.Std
+let runN n = run_r Std.Nat.reify (GT.show Std.Nat.logic) n
 
-let runN n = runR peano_reifier Peano.show_rn Peano.show_ln n
-
-let o      = Peano.o ()
-let s prev = Peano.s prev
+let o      = Nat.zero
+let s prev = Nat.succ prev
 
 let rec addo x y z =
   conde [

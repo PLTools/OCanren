@@ -8,35 +8,46 @@ open OCanren.Std
 open Tester
 open Stlc
 
-module GTyp =
-  struct
+module GTyp = struct
+  @type ('a, 'b) t =
+  | P   of 'a      (* primitive *)
+  | Arr of 'b * 'b (* arrow *)
+  with gmap, show
 
-    module T =
-      struct
-        @type ('a, 'b) t =
-        | P   of 'a      (* primitive *)
-        | Arr of 'b * 'b (* arrow *)
-        with gmap, show
-
-       let fmap f g x = gmap(t) f g x
-     end
-
-  include T
-  include Fmap2 (T)
+  let fmap f g x = gmap(t) f g x
 
   type rtyp = (string, rtyp) t
   type ltyp = (string logic, ltyp) t logic
-  type ftyp = (rtyp, ltyp) injected
+  type injected = (string ilogic, injected) t ilogic
 
-  let p s     : ftyp = inj @@ distrib @@ P s
-  let arr x y : ftyp = inj @@ distrib @@ Arr (x,y)
+  let p s     : injected = inj @@ P s
+  let arr x y : injected = inj @@ Arr (x,y)
 
   let rec show_rtyp typ = show(t) (show string) show_rtyp typ
   let rec show_ltyp typ = show(logic) (show(t) (show(logic) @@ show string) show_ltyp) typ
 
-end
+  let reify : (injected, ltyp) Reifier.t =
+    let ( >>= ) = Env.Monad.bind in
+    Reifier.fix (fun fself ->
+      Reifier.compose Reifier.reify
+        (Reifier.reify >>= fun rstring ->
+        fself >>= fun fr ->
+        let rec foo = function
+          | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+          | Value x -> Value (GT.gmap t rstring fr x)
+        in
+        Env.Monad.return foo
+    ))
 
-let rec gtyp_reifier c x = GTyp.reify OCanren.reify gtyp_reifier c x
+  let prj_exn : (injected, rtyp) Reifier.t =
+    let ( >>= ) = Env.Monad.bind in
+    Reifier.fix (fun self ->
+      Reifier.compose Reifier.prj_exn
+      ( self >>= fun fr ->
+        Reifier.prj_exn >>= fun rstring ->
+        Env.Monad.return (fun x -> GT.gmap t rstring fr x))
+      )
+end
 
 open GLam
 open GTyp
@@ -74,29 +85,31 @@ let show_stringl = show(logic) (show(string))
 let inj_list_p xs = List.list @@ L.map (fun (x,y) -> pair x y) xs
 
 (* Without free variables *)
+let run_lam eta = run_r GLam.prj_exn GLam.show_rlam eta
+let run_string eta = run_r OCanren.prj_exn (GT.show GT.string) eta
+let run_typ eta = run_r GTyp.prj_exn GTyp.show_rtyp eta
+
 let () =
-  run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [])  q                                   ));
-  run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varX, v varX)]) q                    ));
-  run_exn GLam.show_rlam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varY, v varY); (varX, v varX)]) q    ));
+  run_lam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [])  q                                   ));
+  run_lam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varX, v varX)]) q                    ));
+  run_lam    1 q qh (REPR (fun q -> lookupo varX (inj_list_p [(varY, v varY); (varX, v varX)]) q    ));
 
-  run_exn (show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varX)  ));
-  run_exn (show string)  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varY)  ));
+  run_string  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varX)  ));
+  run_string  1 q qh (REPR (fun q -> lookupo    q (inj_list_p [(varY, v varY); (varX, v varX)]) (v varY)  ));
 
-  run_exn GTyp.show_rtyp    1 q qh (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q))
+  run_typ    1 q qh (REPR (fun q -> infero (abs varX (app (v varX) (v varX)))                q))
 
 let show_env_logic = show(List.logic) @@ show(Pair.logic) (show(logic) (fun s -> s)) show_llam
 
-let pair c p = Pair.reify OCanren.reify glam_reifier c p
-
-let env_reifier c xs = List.reify pair c xs
+let env_reifier = List.reify (Pair.reify OCanren.reify GLam.reify)
 
 let show_env  = show(List.ground) @@ show(Pair.ground) show_string  GLam.show_rlam
 let show_envl = show(List.logic ) @@ show(Pair.logic) show_stringl GLam.show_llam
 
-let runEnv n = runR env_reifier show_env show_envl n
+let runEnv n = run_r env_reifier show_envl n
 
-let runT n = runR gtyp_reifier GTyp.show_rtyp GTyp.show_ltyp n
-let runL n = runR glam_reifier GLam.show_rlam GLam.show_llam n
+let runT n = run_r GTyp.reify GTyp.show_ltyp n
+let runL n = run_r GLam.reify GLam.show_llam n
 
 let () =
   runEnv   1   q   qh (REPR (fun q -> lookupo varX q (v varY)                                       ));

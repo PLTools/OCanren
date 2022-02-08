@@ -8,33 +8,47 @@ open Tester
 
 let show_token = show(token)
 
-module GExpr =
-  struct
+module GExpr = struct
 
-    module T =
-      struct
-        @type 'self t  = I | A of 'self * 'self | M of 'self * 'self with show, gmap
 
-        let fmap f x = gmap(t) f x
-     end
+  @type 'self t  = I | A of 'self * 'self | M of 'self * 'self
+    with show, gmap
 
-  include T
-  include Fmap (T)
+  let fmap f x = gmap(t) f x
 
   type  expr = expr t
   type lexpr = lexpr t logic
-  type fexpr = (expr, lexpr) injected
+  type fexpr = fexpr t ilogic
 
-  let rec show_expr  e = show T.t show_expr e
-  let rec show_lexpr e = show(logic) (show T.t show_lexpr) e
+  let rec show_expr  e = show t show_expr e
+  let rec show_lexpr e = show(logic) (show t show_lexpr) e
 
+  let reify : (fexpr, lexpr) Reifier.t =
+    let ( >>= ) = Env.Monad.bind in
+    Reifier.fix (fun fself ->
+      Reifier.compose Reifier.reify
+        (fself >>= fun fr ->
+        let rec foo = function
+          | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+          | Value x -> Value (GT.gmap t fr x)
+        in
+        Env.Monad.return foo
+    ))
+
+  let prj_exn : (fexpr, expr) Reifier.t =
+    let ( >>= ) = Env.Monad.bind in
+    Reifier.fix (fun self ->
+      Reifier.compose Reifier.prj_exn
+      ( self >>= fun fr ->
+        Env.Monad.return (fun x -> GT.gmap t fr x))
+      )
 end
 
 open GExpr
 
-let i ()  : fexpr = inj @@ distrib  I
-let a a b : fexpr = inj @@ distrib @@ A (a,b)
-let m a b : fexpr = inj @@ distrib @@ M (a,b)
+let i ()  : fexpr = inj @@ I
+let a a b : fexpr = inj @@ A (a,b)
+let m a b : fexpr = inj @@ M (a,b)
 
 let sym t i i' =
   fresh (x xs)
@@ -73,8 +87,9 @@ and pTop i i' r = pAdd i i' r
 
 let pExpr i r = fresh (i') (pTop i i' r) (eof i')
 
-let runE_exn n = run_exn show_expr n
+let runE_exn n = run_r GExpr.prj_exn GExpr.show_expr n
 let show_stream xs = show(List.ground) show_token xs
+let run_stream n = run_r (List.prj_exn OCanren.prj_exn) show_stream n
 
 let _ =
   runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id]) q                  ));
@@ -83,5 +98,5 @@ let _ =
   runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id; Mul; Id; Add; Id]) q));
   runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id; Add; Id; Mul; Id]) q));
   runE_exn   1   q   qh (REPR (fun q -> pExpr (list (!!) [Id; Add; Id; Add; Id]) q));
-  run_exn show_stream 1   q   qh (REPR (fun q -> pExpr q (m (i ()) (i ()))        ));
+  run_stream 1   q   qh (REPR (fun q -> pExpr q (m (i ()) (i ()))        ));
   ()

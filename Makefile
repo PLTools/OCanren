@@ -22,26 +22,22 @@ syntax:
 regression:
 	dune build regression
 
-test: regression samples
-	./test.sh all
+test: regression #samples
+	dune test
 
 promote:
-	./test.sh --promote all
+	dune test --auto-promote
 
 discover-tests:
 	dune build @discover-tests
+	# You can generate cram test files too using
+	# dune exec config/discover.exe -- -tests -tests-dir regression -cram-files `realpath regression`
 
 samples:
 	dune build samples
 
-clean-test:
-	rm -f regression/*.log regression/*.diff
-
-clean-samples:
-	rm -f samples/*.log samples/*.diff
-
 celan: clean
-clean: clean-test clean-samples
+clean:
 	dune clean
 
 watch:

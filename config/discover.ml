@@ -138,16 +138,32 @@ let gen_tests_dune _ tests =
   let dune_fn = "dune.tests" in
   let tpl = read_file tpl_fn in
   let re = Str.regexp "%{tests}" in
-  let tests = String.concat "\n    " tests in
-  let dune = Str.global_replace re tests tpl in
+  let dune = Str.global_replace re (String.concat "\n    " tests) tpl in
   let outchn = open_out dune_fn in
-  output_string outchn dune
+  output_string outchn dune;
+  Printf.fprintf outchn "\n(cram (deps\n";
+  List.iter (Printf.fprintf outchn "  ./%s.exe\n") tests;
+  Printf.fprintf outchn "))\n";
+  close_out outchn
+
+let gen_cram_files tests path =
+  (* Printf.printf "%s %d \n%!" __FILE__ __LINE__; *)
+  tests |> List.iter (fun name ->
+    (* Printf.printf "%s %d \n%!" __FILE__ __LINE__; *)
+    Scanf.sscanf name "%[a-zA-Z]%d%[a-zA-Z]" (fun prefix n suffix ->
+      let ch = open_out (Printf.sprintf "%s/%s%03d.t" path prefix n) in
+      Printf.fprintf ch "  $ ./%s.exe" name;
+      close_out ch
+      )
+    )
+
 
 (*** command line arguments ***)
 
 let tests         = ref false
 let tests_dune    = ref false
 let tests_dir     = ref None
+let cram_dir      = ref None
 let camlp5_flags  = ref false
 let gt_flags      = ref false
 let logger_flags  = ref false
@@ -159,10 +175,12 @@ let all           = ref false
 
 let args =
   let set_tests_dir s = tests_dir := Some s in
+  let set_cram_dir s = cram_dir := Some s in
   Arg.align @@
     [ ("-tests-dir"   , Arg.String set_tests_dir, "DIR discover tests in this directory"      )
     ; ("-tests"       , Arg.Set tests           , " discover tests (tests.txt)"               )
     ; ("-tests-dune"  , Arg.Set tests_dune      , " generate dune build file for tests"       )
+    ; ("-cram-files"  , Arg.String set_cram_dir , " generate cram files for tests"            )
     ; ("-camlp5-flags", Arg.Set camlp5_flags    , " discover camlp5 flags (camlp5-flags.cfg)" )
     ; ("-gt-flags"    , Arg.Set gt_flags        , " discover GT flags (gt-flags.cfg)"         )
     ; ("-logger-flags", Arg.Set logger_flags    , " discover logger flags (logger-flags.cfg)" )
@@ -188,7 +206,12 @@ let () =
     if !doc_flags   || !all_flags then discover_docs ();
 
     if !tests || !all then
-      discover_tests cfg testnames ;
+      discover_tests cfg testnames;
+    let () =
+      match !cram_dir with
+      | Some dir -> gen_cram_files testnames dir
+      | None -> ()
+    in
     if !tests_dune || !all then
       gen_tests_dune cfg testnames ;
     if !camlp5_flags || !all_flags || !all then

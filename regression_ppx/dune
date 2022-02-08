@@ -1,0 +1,61 @@
+(executable
+ (name test001)
+ (modules test001)
+ (flags
+  (:standard
+   ;-dsource
+   ))
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_distrib
+   OCanren-ppx.ppx_deriving_reify
+   GT.ppx_all
+   --
+   -pretty))
+ (libraries OCanren OCanren.tester))
+
+(executable
+ (name test003sort)
+ (modules test003sort)
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_distrib
+   GT.ppx_all))
+ (libraries OCanren OCanren.tester))
+
+(executable
+ (name test004)
+ (modules test004)
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_distrib
+   GT.ppx_all))
+ (libraries OCanren OCanren.tester))
+
+(executable
+ (name test005)
+ (modules test005)
+ (preprocess
+  (pps OCanren-ppx.ppx_deriving_reify))
+ (libraries OCanren OCanren.tester))
+
+(cram
+ (deps ;
+  %{project_root}/ppx/pp_distrib.exe
+  %{project_root}/ppx/pp_repr.exe
+  %{project_root}/ppx/pp_deriving_reify.exe
+  ./test001.exe
+  test001.ml
+  test002repr.ml
+  test005.ml
+  ./test003sort.exe
+  ./test004.exe
+  ./test005.exe
+  ;
+  ))
