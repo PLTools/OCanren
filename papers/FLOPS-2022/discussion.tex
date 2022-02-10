@@ -1,7 +1,15 @@
 \section{Discussion and Future Work}
 \label{sec:discussion}
 
-Our approach imposes three conditions on the analyzed programs: disjunctive normal form, uniqueness of answers, and grounding of relational calls.
+\textcolor{blue}{
+The formal framework presented here analyzes the basic aspects of scheduling cost for interleaving search strategy from the theoretical viewpoint.
+As we have shown, it is sufficient to explain some surprising asymptotic behaviour for simple standard programs in \mK,
+but the applicability of this framework in practice for real implementations of \mK requires further investigation.
+Two key aspect that determine practical applicability are admissibility of the imposed reqiurements and correspodance of specific \mK implementations to the reference operational semantics, which should be studied individually for each application.
+We see our work as the ground for the future development of methods for analysing cost of interleaving search.
+}
+
+Our approach imposes three requirements on the analyzed programs: disjunctive normal form, uniqueness of answers, and grounding of relational calls.
 The first two are rather non-restrictive: DNF is equivalent to the description of relation as a set of Horn clauses in \textsc{Prolog},
 and the majority of well-known examples in \mK are written in this or very similar form. Repetition of answers is usually an indication
 of a mistake in a program~\cite{WillsThesis}. The groundness condition is more serious: it prohibits program execution from presenting infinitely

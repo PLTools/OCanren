@@ -18,7 +18,7 @@ For the sake of clarity we will provide a demonstration of complexity analysis f
 \lstinline|append$^o$| relation from the introduction~--- throughout the section.
 
 The extraction procedure utilizes a symbolic execution technique and is completely automatic.
-It turns out that the semantics we have is already abstract enough to be used for symblolic
+It turns out that the semantics we have is already abstract enough to be used for symbolic
 execution with minor adjustments.
 In this symbolic procedure, we mark some of the logic variables as ``grounded'' and at certain
 moments substitute them with ground terms.
@@ -33,7 +33,7 @@ Thus, the symbolic execution is determined by a set of grounded variables (herea
 as $V\subset\mathcal A$). The initial choice of $V$ determines the problem we analyze.
 
 In our example the objective is to study the execution when we specialize the first two arguments with
-ground values and left the last argument free. Thus, we start with the goal \lstinline|append$^o$ $a$ $b$ $ab$|
+ground values and leave the last argument free. Thus, we start with the goal \lstinline|append$^o$ $a$ $b$ $ab$|
 (where $a$, $b$ and $ab$ are distinct free logic variables) and set the initial $V = \{ a, b \}$.
 
 We can make an important observation that both complexity factors ($d$ and $t$) are stable w.r.t. the renaming of
@@ -74,7 +74,7 @@ semantics (to be given some meaning in terms of metatheory later). We can do it 
 and values described by denotational semantics thanks to soundness and completeness as well as our requirements of grounding and uniqueness of answers.
 Our symbolic treatment of equalities relies on the fact that substitutions of ground terms commute, in a certain sense, with unifications. More specifically,
 we can use the most general unifier for two terms to see how unification goes for two terms with some free variables substituted with ground terms.
-The most general unifier may contain bindings for both grounded and non-grounded variables. Potential most general unifier for terms after substitution
+The most general unifier may contain bindings for both grounded and non-grounded variables. A potential most general unifier for terms after substitution
 contains the same bindings for non-grounding terms (with valuation applied to their rhs), while bindings for grounding variables turn into equations that
 should be satisfied by the unifier with ground value on the left and bound term on the right. In particular, this means that all variables in bindings for
 grounded variables become grounded, too. We can use this observation to define an iterative process that determines the updated set of grounded
@@ -94,13 +94,14 @@ respected by the valuation.
 Using these definitions we can describe symbolic unification by the following lemma.
 
 \begin{replemma}{lem:symbolic_unification_soundness}
-Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$ be a valuation. If $mgu\,(t_1, t_2) = \delta$ and $U = \upd{V}{\delta} $  then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y = t) \in \constr{\delta}{U}\,:\, t_1 \rho = t_2 \rho'$.
+Let $t_1$, $t_2$ be terms,  $V \subset \mathcal{A}$ and $\rho \colon V \to \grterms$ be a valuation. If $mgu\,(t_1, t_2) = \delta$ and $U = \upd{V}{\delta} $  then $t_1 \rho$ and $t_2 \rho$ are unifiable iff there is some $\rho' \colon U \to \grterms$ such that $\rho' \succ \rho$ and $\forall (y = t) \in \constr{\delta}{U}\,:\, \rho'(y) = t \rho'$.
 In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta\circ\rho' $ up to alpha-equivalence (e.g. there exists a bijective substitution $\pi : FV(t_1) \to FV(t_2)$, s.t. $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \delta \circ\rho'\circ \pi$).
 \end{replemma}
 
-\begin{wrapfigure}{r}{0.4\textwidth}
-\setlength{\belowcaptionskip}{-15pt plus 3pt minus 2pt}
-
+%\begin{wrapfigure}{r}{0.4\textwidth}
+%\setlength{\belowcaptionskip}{-15pt plus 3pt minus 2pt}
+\begin{figure}[t]
+\centering
 \[\renewcommand{\arraystretch}{1}
 \begin{array}{ccc}
   \schemewithvset{\mathfrak{S}}{\Upsilon} & = &\schemenode{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} \\ \cline{3-3}
@@ -111,12 +112,15 @@ In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \del
 \end{array}\]
 \caption{Symbolic Scheme Forms}
 \label{fig:scheme_fragments}
-\end{wrapfigure}
+%\end{wrapfigure}
+\end{figure}
 
-In our description of the extraction process, we use a visual representation of symbolic execution of relation body for a given set of grounded variables in a form of a \emph{symbolic scheme}.
+\textcolor{red}{Reviewer about \figureword~\ref{fig:scheme_fragments} and \figureword~\ref{fig:scheme_formation}: typesetting makes the figure hard to read, missing explanations, comments and definitions do not help}
+
+In our description of the extraction process, we use a visual representation of symbolic execution of a relation body for a given set of grounded variables in a form of a \emph{symbolic scheme}.
 A symbolic scheme is a tree-like structure with different branches corresponding to execution of different disjuncts and nodes corresponding to equalities and relational calls in the body
 augmented with subsets of grounded variables at the point of execution.\footnote{Note the difference with conventional symbolic execution graphs
-with different branches representing mutually exclusive paths of evaluation, not the different parts within one evaluation.} Constrains for substituted
+with different branches representing mutually exclusive paths of evaluation, not the different parts within one evaluation.} Constraints for substituted
 grounded variables that determine whether the execution continues are presented as labels on the edges of a scheme.
 
 
@@ -224,7 +228,7 @@ is the sum of $d$-factor values and $\mathcal{T}$ is the sum of $t$-factor value
 \end{wrapfigure}
 
  Their definitions are shown in
-the \figureword~\ref{fig:scheduling_extraction_d_t} (both formulas are given in the same figure as the definitions coincide modulo factor denotations). For nodes, we take
+\figureword~\ref{fig:scheduling_extraction_d_t} (both formulas are given in the same figure as the definitions coincide modulo factor denotations). For nodes, we take
 the corresponding value (for equality it always equals $1$). When going through an equality we sum up the rest with an updated valuation (by \lemmaword~\ref{lem:symbolic_unification_soundness}
 this sum always has one or zero summands depending on whether the unification succeeds or not). When going through a relational call we take a sum of all valuations that satisfy the
 denotational semantics (these valuations will correspond exactly to the set of all answers produced by the call since operational semantics is sound and complete w.r.t. the denotational
@@ -258,32 +262,20 @@ one and because we require all answers to be unique). For disjunctions, we take 
 \label{fig:scheduling_extraction_d_t}
 \end{figure}
 
-
-\begin{comment}
 \begin{figure}[t]
-\colorbox{yellow!20}{\parbox{\textwidth}{\textbf{Maybe move this to 
-
- and leave here the informal description only}}}
-
 \[
 \begin{array}{rclcl}
  \mathcal{L}\,(&\parbox[m]{1.3cm}{\schemenode{$\unigoal{t_2}{t_2}$}}&)(\rho) &=& \{init\,(\unigoal{t_2}{t_2})\} \\
-
  \mathcal{L}\,(&\parbox[m]{2.5cm}{\schemenode{$\invokegoal{R^k}{t_1}{t_k}$}}&)(\rho) &=& \{init\,(\invokegoal{R^k}{t_1 \rho}{t_k \rho})\} \\
-
- \mathcal{L}\,(&\parbox[m]{2cm}{\schemesarrow{$\unigoal{t_1}{t_2}$}{$Cs$}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=&  \{init\,(\unigoal{t_2}{t_2})\} \cup
-      \smashoperator{\bigcup\limits_{\substack{ \rho' \colon V \to \grterms \\
+ \mathcal{L}\,(&\parbox[m]{2cm}{\schemesarrow{$\unigoal{t_1}{t_2}$}{$Cs$}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=&  \smashoperator{\bigcup\limits_{\substack{ \rho' \colon V \to \grterms \\
                                       \rho' \succ \rho \\
                                       \forall (y, t) \in Cs\,:\, \rho'\,(y) = t\, \rho'  }}}
            \mathcal{L}\,(\schemewithvset{\mathfrak{S}}{U})(\rho')  \\
-
  \mathcal{L}\,(& \parbox[m]{4cm}{\schemedarrow{$\invokegoal{R^k}{t_1}{t_k}$}{ $(t_1, \dots, t_k) \in \sembr{R^k}  $}{$\schemewithvset{\mathfrak{S}}{U}$}} &)(\rho) &=&
-      \{init\,(\invokegoal{R^k}{t_1 \rho}{t_k \rho})\} \cup
       \smashoperator{\bigcup\limits_{\substack{ \rho' \colon V \to \grterms \\
                                       \rho' \succ \rho \\
                                       (t_1 \rho', \dots, t_k \rho') \in \sembr{R^k}  }}}
            \mathcal{L}\,(\schemewithvset{\mathfrak{S}}{U})(\rho')  \\
-
  \mathcal{L}\,(&\parbox[m]{2.5cm}{\schemefork{$\schemewithvset{\mathfrak{S}_1}{V}$}{$\schemewithvset{\mathfrak{S}_2}{V}$}}&)(\rho) &=&
  \mathcal{L}\,(\schemewithvset{\mathfrak{S}_1}{V})(\rho) \cup \mathcal{L}\,(\schemewithvset{\mathfrak{S}_2}{V})(\rho)
 \end{array}
@@ -291,17 +283,13 @@ one and because we require all answers to be unique). For disjunctions, we take 
 \caption{Complexity Factors Extraction: $\mathcal L$}
 \label{fig:scheduling_extraction_l}
 \end{figure}
-\end{comment}
-
-% is shown in \figureword~\ref{fig:scheduling_extraction_l}.
 
 As we saw in \sectionword~\ref{sec:scheduling} when computing the scheduling factors we need to exclude from the additional cost the value of $d$-factor
 for one of the environments (the largest one). This is true for the generalized formula for a whole scheme, too. This time we need to take all executed
-environments for all the leaves of a scheme and exclude the $d$-factor value for a maximal one (formula for conjunction ensures that we make the exclusion
+environments for all the leaves of a scheme and exclude the $d$-factor value for a maximal one (the formula for conjunction ensures that we make the exclusion
 for the leaf, and the formula for disjunction ensures that we make it for only one of the leaves). So, we will need additional notion $\mathcal{L}$,
 similar to $\mathcal{D}$ and $\mathcal{T}$ that will collect all the goals of the form $init\,(g_i \rho)$, where $g_i$ is a leaf goal and $\rho$ is a
-valuation corresponding to one of the environments this leaf is evaluated for. The ``shape'' of the definition for $\mathcal{L}$ precisely repeats that for
-$\nicefrac{D}{T}$, the complete formal definition can be found in the \appendixword~\ref{sec:proofs_appendix} (\figureword~\ref{fig:l-def}).
+valuation corresponding to one of the environments this leaf is evaluated for. \textcolor{blue}{The definition of  $\mathcal{L}$ is shown in \figureword~\ref{fig:scheduling_extraction_l}}.
 
 Now we can formulate the following main theorem that provides the principal recursive inequalities, extracted from the scheme for a given goal.
 
@@ -344,7 +332,7 @@ t\,(q^{app}\,(\mathbf{a}, \mathbf{b})) & = & (1 + \sum\limits_{\mathbf{a} = \tex
 Automatically extracted recursive inequalities, as a rule, are cumbersome, but they contain all the information on how scheduling affects the complexity.
 Often they can be drastically simplified by using metatheory-level reasoning.
 
-For our example, we are only interested in the case when substituted values represent some lists. We thus pefrom the usual for lists case analysis
+For our example, we are only interested in the case when substituted values represent some lists. We thus perform the usual for lists case analysis
 considering the first list empty or non-empty. We can also notice that the excluded summand equals one. So we can rewrite the inequalities in the following way:
 
 \[
@@ -369,9 +357,9 @@ In this case, scheduling makes a big difference and changes the asymptotics. Not
 ($len$ for the length of the list represented by a term).
 
 In contrast, if we consider the optimal definition \lstinline|append$_{opt}^o$| the analysis of the call
-$q^{app\text{-}opt}\,(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$_{opt}^o$} \, \mathbf{a} \, \mathbf{b} \, ab)$ is analagous,
+$q^{app\text{-}opt}\,(\mathbf{a}, \mathbf{b}) = init\,(\texttt{append$_{opt}^o$} \, \mathbf{a} \, \mathbf{b} \, ab)$ is analogous,
 but among the candidates for exclusion there is the value $d\,(q^{app\text{-}opt}\,(\mathbf{t}, \mathbf{b}))$ since the recursive
-call is placed in a leaf. So the last simplified recursive apprioximation is the following (the rest is
+call is placed in a leaf. So the last simplified recursive approximation is the following (the rest is
 the same as in our main example):
 
 \[t\,(q^{app\text{-}opt}\,(\texttt{Cons\,($\mathbf{h}$, $\mathbf{t}$)}, \mathbf{b})) = t\,(q^{app\text{-}opt}\,(\mathbf{t}, \mathbf{b})) + \Theta\,(1) \]
