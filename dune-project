@@ -31,7 +31,7 @@
    ocamlfind
    camlp5
    logger-p5
-   (GT (>= 0.4))
+   (GT (>= 0.5))
    (benchmark :with-test)
    (ocamlformat (and :with-test (<= 0.20)))
    ppx_inline_test
@@ -86,4 +86,3 @@
   "JetBrains Research https://research.jetbrains.org")
  (bug_reports "https://github.com/JetBrains-Research/OCanren/issues")
  (maintainers "Dmitrii Kosarev Kakadu@pm.me"))
-
