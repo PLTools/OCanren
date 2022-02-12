@@ -1,8 +1,14 @@
 ## 0.3.0 (dev)
 
+## 0.3.0-alpha1 (12-02-2022)
+
 ### Changed
 
-- Make `ppx_distrib` usable
+- Rewrite everyting with Moiseenko-style reifiers
+  * Now we use `'a ilogic' type instead of `('a, 'b) injected`.
+  * Reification changes: we no longer need FMap1/2/3/etc
+	* New `ppx_distrib` to generate reification code
+- Requires GT >= 0.5, fresh ppxlib < 0.25
 
 
 ## 0.2.0 (2021-03-04)
