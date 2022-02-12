@@ -30,12 +30,6 @@
  (modules pp_deriving_reify))
 
 (executable
- (public_name pp_noinjected)
- (package OCanren-ppx)
- (libraries ppx_noinjected)
- (modules pp_noinjected))
-
-(executable
  (public_name pp_ocanren_all)
  (package OCanren-ppx)
  (libraries ppx_repr ppx_fresh ppx_distrib)
