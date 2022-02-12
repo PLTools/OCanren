@@ -7,6 +7,8 @@
    (:standard -rectypes -warn-error -A -w -K-9-27))
   (ocamlopt_flags -O3)))
 
+(dirs :standard \ test_eucpp)
+
 (alias
  (name default)
  (deps
