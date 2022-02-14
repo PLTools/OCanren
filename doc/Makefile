@@ -8,7 +8,7 @@ debs:
 	sudo apt install python3-sphinx-rtd-theme python3-sphinx-autobuild
 
 watch:
-	sphinx-autobuild . $(BUILD_DIR)
+	sphinx-autobuild . $(BUILD_DIR) -p 8008
 
 clean:
 	$(RM) -r $(BUILD_DIR)
