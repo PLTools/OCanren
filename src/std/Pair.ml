@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2021
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -51,12 +52,7 @@ let logic = {
 
 let inj f g p = to_logic (GT.gmap(ground) f g p)
 
-
 let pair x y = Logic.inj (x, y)
-
-
-
-(* let prjc fa fb onvar env xs = prjc fa fb onvar env xs *)
 
 let reify : 'a 'b 'c 'd . ('a, 'b) Reifier.t -> ('c, 'd) Reifier.t ->
   (('a,'c) groundi, ('b, 'd) logic) Reifier.t =
