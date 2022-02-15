@@ -77,17 +77,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./_build/default/_doc/_html
           destination_dir: api
-
-      #### RTFD documenetation
-      # - name: Install dependecies for RTFD documentation
-      #   run: sudo apt install python3-sphinx-rtd-theme python3-sphinx-autobuild --yes
-
-      # - name: Build RTFD documentation
-      #   run: make -C doc
-
-      # - name: Deploy RTFD documentation
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: doc/_build
-      #     destination_dir: rtfd
