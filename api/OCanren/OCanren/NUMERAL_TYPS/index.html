@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>NUMERAL_TYPS (OCanren.OCanren.NUMERAL_TYPS)</title><link rel="stylesheet" href="../../../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc 2.1.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">OCanren</a> &#x00BB; <a href="../index.html">OCanren</a> &#x00BB; NUMERAL_TYPS</nav><header class="odoc-preamble"><h1>Module <code><span>OCanren.NUMERAL_TYPS</span></code></h1></header><div class="odoc-content"><div class="odoc-spec"><div class="spec type" id="type-one" class="anchored"><a href="#type-one" class="anchor"></a><code><span><span class="keyword">type</span> <span>('a, 'c, 'e, 'f, 'g) one</span></span><span> =
+  <span>unit <span class="arrow">&#45;&gt;</span></span>
+  <span>( <span><span>( <span><span><span class="type-var">'a</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span> <a href="../index.html#type-goal">goal</a> )</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../State/index.html#type-t">State.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="type-var">'a</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> * <span><a href="../State/index.html#type-t">State.t</a> <a href="../Stream/index.html#type-t">Stream.t</a></span> )</span>
+  * <span>( <span><span><span class="type-var">'c</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="type-var">'c</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span> )</span>
+  * <span>( <span><span class="type-var">'e</span> <span class="arrow">&#45;&gt;</span></span>
+  <span class="type-var">'e</span> )</span>
+  * <span>( <span><span>( <span><span class="type-var">'f</span> <span class="arrow">&#45;&gt;</span></span> <span class="type-var">'g</span> )</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="type-var">'f</span> <span class="arrow">&#45;&gt;</span></span>
+  <span class="type-var">'g</span> )</span></span></code></div></div><div class="odoc-spec"><div class="spec type" id="type-two" class="anchored"><a href="#type-two" class="anchor"></a><code><span><span class="keyword">type</span> <span>('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j) two</span></span><span> =
+  <span>unit <span class="arrow">&#45;&gt;</span></span>
+  <span>( <span><span>( <span><span><span class="type-var">'a</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span> <span><span><span class="type-var">'b</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span> <a href="../index.html#type-goal">goal</a> )</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../State/index.html#type-t">State.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="type-var">'a</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> * <span>(<span><span class="type-var">'b</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> * <span><a href="../State/index.html#type-t">State.t</a> <a href="../Stream/index.html#type-t">Stream.t</a></span>)</span> )</span>
+  * <span>( <span><span>(<span><span class="type-var">'c</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> * <span><span class="type-var">'d</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="type-var">'c</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span> * <span><span class="type-var">'d</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span> )</span>
+  * <span>( <span><span>(<span class="type-var">'e</span> * <span>(<span class="type-var">'f</span> * <span class="type-var">'g</span>)</span>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span>(<span class="type-var">'e</span> * <span class="type-var">'f</span>)</span> * <span class="type-var">'g</span> )</span>
+  * <span>( <span><span>( <span><span class="type-var">'h</span> <span class="arrow">&#45;&gt;</span></span> <span><span class="type-var">'i</span> <span class="arrow">&#45;&gt;</span></span> <span class="type-var">'j</span> )</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>(<span class="type-var">'h</span> * <span class="type-var">'i</span>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span class="type-var">'j</span> )</span></span></code></div></div><div class="odoc-spec"><div class="spec type" id="type-three" class="anchored"><a href="#type-three" class="anchor"></a><code><span><span class="keyword">type</span> <span>('a, 'c, 'e, 'g, 'i, 'k, 'm, 'n, 'o, 'p, 'q, 'r, 's, 't) three</span></span><span> =
+  <span>unit <span class="arrow">&#45;&gt;</span></span>
+  <span>( <span><span>( <span><span><span class="type-var">'a</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span>
+      <span><span><span class="type-var">'c</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span>
+      <span><span><span class="type-var">'e</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span>
+      <a href="../index.html#type-goal">goal</a> )</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../State/index.html#type-t">State.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="type-var">'a</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>
+  * <span>(<span><span class="type-var">'c</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> * <span>(<span><span class="type-var">'e</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> * <span><a href="../State/index.html#type-t">State.t</a> <a href="../Stream/index.html#type-t">Stream.t</a></span>)</span>)</span> )</span>
+  * <span>( <span><span>(<span><span class="type-var">'g</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>
+       * <span>(<span><span class="type-var">'i</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> * <span><span class="type-var">'k</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>)</span>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="type-var">'g</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span>
+  * <span>(<span><span class="type-var">'i</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span> * <span><span class="type-var">'k</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span>)</span> )</span>
+  * <span>( <span><span>(<span class="type-var">'m</span> * <span>(<span class="type-var">'n</span> * <span>(<span class="type-var">'o</span> * <span class="type-var">'p</span>)</span>)</span>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span>(<span class="type-var">'m</span> * <span>(<span class="type-var">'n</span> * <span class="type-var">'o</span>)</span>)</span> * <span class="type-var">'p</span> )</span>
+  * <span>( <span><span>( <span><span class="type-var">'q</span> <span class="arrow">&#45;&gt;</span></span> <span><span class="type-var">'r</span> <span class="arrow">&#45;&gt;</span></span> <span><span class="type-var">'s</span> <span class="arrow">&#45;&gt;</span></span> <span class="type-var">'t</span> )</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>(<span class="type-var">'q</span> * <span>(<span class="type-var">'r</span> * <span class="type-var">'s</span>)</span>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span class="type-var">'t</span> )</span></span></code></div></div><div class="odoc-spec"><div class="spec type" id="type-four" class="anchored"><a href="#type-four" class="anchor"></a><code><span><span class="keyword">type</span> <span>('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k, 'l, 'm, 'n, 'o, 'p, 'q, 'r)
+  four</span></span><span> =
+  <span>unit <span class="arrow">&#45;&gt;</span></span>
+  <span>( <span><span>( <span><span><span class="type-var">'a</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span>
+      <span><span><span class="type-var">'b</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span>
+      <span><span><span class="type-var">'c</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span>
+      <span><span><span class="type-var">'d</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> <span class="arrow">&#45;&gt;</span></span>
+      <a href="../index.html#type-goal">goal</a> )</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../State/index.html#type-t">State.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="type-var">'a</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>
+  * <span>(<span><span class="type-var">'b</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>
+     * <span>(<span><span class="type-var">'c</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>
+        * <span>(<span><span class="type-var">'d</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> * <span><a href="../State/index.html#type-t">State.t</a> <a href="../Stream/index.html#type-t">Stream.t</a></span>)</span>)</span>)</span> )</span>
+  * <span>( <span><span>(<span><span class="type-var">'e</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>
+       * <span>(<span><span class="type-var">'f</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>
+          * <span>(<span><span class="type-var">'g</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span> * <span><span class="type-var">'h</span> <span class="xref-unresolved">OCanren__Logic.ilogic</span></span>)</span>)</span>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../Env/index.html#type-t">Env.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="type-var">'e</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span>
+  * <span>(<span><span class="type-var">'f</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span>
+     * <span>(<span><span class="type-var">'g</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span> * <span><span class="type-var">'h</span> <span class="xref-unresolved">OCanren__Logic.reified</span></span>)</span>)</span> )</span>
+  * <span>( <span><span>(<span class="type-var">'i</span> * <span>(<span class="type-var">'j</span> * <span>(<span class="type-var">'k</span> * <span>(<span class="type-var">'l</span> * <span class="type-var">'m</span>)</span>)</span>)</span>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span>(<span class="type-var">'i</span> * <span>(<span class="type-var">'j</span> * <span>(<span class="type-var">'k</span> * <span class="type-var">'l</span>)</span>)</span>)</span> * <span class="type-var">'m</span> )</span>
+  * <span>( <span><span>( <span><span class="type-var">'n</span> <span class="arrow">&#45;&gt;</span></span> <span><span class="type-var">'o</span> <span class="arrow">&#45;&gt;</span></span> <span><span class="type-var">'p</span> <span class="arrow">&#45;&gt;</span></span> <span><span class="type-var">'q</span> <span class="arrow">&#45;&gt;</span></span> <span class="type-var">'r</span> )</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>(<span class="type-var">'n</span> * <span>(<span class="type-var">'o</span> * <span>(<span class="type-var">'p</span> * <span class="type-var">'q</span>)</span>)</span>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span class="type-var">'r</span> )</span></span></code></div></div></div></body></html>
