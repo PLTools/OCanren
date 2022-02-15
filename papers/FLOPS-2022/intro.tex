@@ -1,0 +1,67 @@
+\section{Introduction}
+\label{sec:intro}
+
+\begin{figure}[t]
+\begin{tabular}{p{6cm}p{6cm}}
+\begin{lstlisting}[basicstyle=\small]
+   append$^o$ = fun a b ab .
+     ((a === Nil) /\ (ab === b)) \/
+     (fresh (h t tb)
+        (a === Cons(h, t)) /\
+        (append$^o$ t b tb) /\
+        (ab === Cons(h, tb)))
+\end{lstlisting} & \multirow{2}{*}[-3mm]{\includegraphics[width=6cm,height=5cm]{append_without_oc.png}} \\[-9mm]
+\begin{lstlisting}[basicstyle=\small]
+   append$^o_{opt}$ = fun a b ab .
+     ((a === Nil) /\ (ab === b)) \/
+     (fresh (h t tb)
+        (a === Cons(h, t)) /\
+        (ab === Cons(h, tb) /\
+        (append$^o_{opt}$ t b tb)))
+\end{lstlisting} &
+\end{tabular}
+\caption{Two implementations of list concatenation and their performance for $a = [1,\dots,n]$, $b = [1,\dots,100]$, and $ab$ left free.}
+\label{fig:length_implementations}
+\end{figure}
+
+A family of embedded languages for logic and, more specifically, relational programming \mK~\cite{TRS} has demonstrated an interesting potential in various fields of 
+program synthesis and declarative programming~\cite{SevenProblems,Quines,Matching}. A distinctive feature of \mK is \emph{interleaving search}~\cite{Transformers} which,
+in particular, delivers such an important feature as completeness.
+
+However, being a different search strategy than conventional BFS/DFS/iterative deepening, etc., interleaving search makes the conventional ways of reasoning about the complexity
+of logical programs \textcolor{blue}{not applicable}. Moreover, some intrinsic properties of interleaving search can manifest themselves in a number of astounding and, at the first glance, unexplainable
+performance effects. 
+
+As an example, let's consider two implementations of list concatenation relation (\figureword~\ref{fig:length_implementations}, left side). The only difference between the two is
+the position of the recursive call.
+%A common wisdom of \mK programming prescribes putting recursive call \emph{last} in a conjunction (if possible), since otherwise multiple
+%negative effects (for example, divergence) can be encountered when running a relation in a \emph{backward} direction (i.e. finding all the splits of a given list).
+%What is unexpected
+%is that
+The evaluation of these implementations on the same problem (\figureword~\ref{fig:length_implementations}, right side) shows that the first implementation works significantly
+slower,
+%being run is a \emph{forward} direction as well (i.e. as a regular concatenation),
+although it performs exactly the same number of unifications. As a matter of fact, these two implementations even have different \emph{asymptotic} complexity under the assumption
+that occurs check is disabled.\footnote{The role of occurs check is discussed in
+\sectionword~\ref{sec:evaluation}.} \textcolor{blue}{Although the better performance of the \lstinline|append$_{opt}^o$| relation is expected even under conventional strategies due to tail recursion, the asymptotic difference is striking.}
+
+A careful analysis discovers that the difference is caused not by unifications, but by the process of \emph{scheduling} goals during the search. In \mK a
+lazy structure is maintained to decompose the goals into unifications, perform these unifications in a certain order, and thread the results appropriately. \textcolor{blue}{For the \lstinline|append$_{opt}^o$| relation the size of this structure is constant, while for the \lstinline|append$^o$|
+this structure becomes linear in size, reducing the performance.}
+
+% In the paper we identify two complexity measures and present a framework to derive their worst-case asymptotic estimations~--- \emph{scheduling complexity}~---
+% for a given goal. The goal has to fulfill a number of requirements (both syntactic and semantic), which we explicitly state in \sectionword~\ref{sec:background}. The estimations
+% themselves are constructed using manual metatheory-level reasoning over a set of inequalities, which are extracted automatically using symbolic execution.
+
+\textcolor{blue}{
+This paper presents a formal framework for scheduling cost compleixty analysis for interleaving search in \mK.
+We use the reference operational semantics, reflecting the behaviour of actual implementations~\cite{CertifiedSemantics}, and prove the soundness of our approach w.r.t. this semantics.
+The roadmap of the approach is as follows: we identify two complexity measures (one of which captures \emph{scheduling complexity}) and give exact and approximate recursive formulae to calculate them (\sectionword~\ref{sec:scheduling}); then we present a procedure to automaticaly extract inequalities for the measures for a given goal using symbolic execution (\sectionword~\ref{sec:symbolic}). 
+These inequalities have to be reformulated and solved manually in terms of a certain \emph{metatheory}, which, on success, provides asymptotic bounds for the scheduling complexity of a goal evaluation.
+Our approach puts a number of restrictions on the goal being analyzed as well as on the relational program as a whole.
+We explicitly state these restrictions in \sectionword~\ref{sec:background} and discuss their impact in \sectionword~\ref{sec:discussion}.
+The proofs of all lemmas and theorems can be found in the extended version of this paper~\footnote{https://arxiv.org/???}.}
+
+\textcolor{red}{Reviewer: Discuss (shortly) relevance of our insights in the broader context of logic programming.}
+
+\textcolor{red}{Footnote: We respect here a conventional tradition for miniKanren programming to superscript all relational names with ``o''.}

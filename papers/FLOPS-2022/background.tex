@@ -37,7 +37,7 @@ A top-level goal represents a search procedure that returns a stream of substitu
               &   & \mathcal{G}\vee\mathcal{G}       &\mbox{disjunction} \\
               &   & \mbox{\lstinline|fresh|}\;\mathcal{X}\;.\;\mathcal{G} & \mbox{fresh variable introduction} \\
               &   & R_i^{k_i} (t_1,\dots,t_{k_i}),\;t_j\in\mathcal{T_X} & \mbox{relational symbol invocation} \\[2mm]
-  \mathcal{S} & = & \{R_i^{k_i} = \lambda\;\ttt{x}_1^i\dots \ttt{x}_{k_i}^i\,.\, g_i;\}\; g & \mbox{specification}
+  \mathcal{S} & = & \{R_i^{k_i} = \lambda\;\ttt{x}_1^i\dots \ttt{x}_{k_i}^i\,.\, g_i;\}\; g, \; \textcolor{blue}{g_i, g\in\mathcal{G}} & \mbox{specification}
 \end{array}
 \]
 \caption{The syntax of \mK}
@@ -53,22 +53,24 @@ the logical variables at this point.
 Different branches are combined via \emph{interleaving search} procedure~\cite{Transformers}.
 The answers for a given goal are extracted from the final environments.
 
-\begin{wrapfigure}{r}{0.5\textwidth}
-\setlength{\abovecaptionskip}{0pt plus 3pt minus 2pt}
+% \begin{wrapfigure}{r}{0.5\textwidth}
+% \setlength{\abovecaptionskip}{0pt plus 3pt minus 2pt}
+\begin{figure}[t]
+\centering
 \[
-\begin{array}{ccll}
-  \Sigma & = & \mathcal{A} \to \mathcal{T}_\mathcal{A} & \mbox{substitutions}\\ 
-  E & = & \Sigma \times \mathbb{N}              & \mbox{environments} \\
-  S & = & \taskst{\mathcal{G}}{E} & \mbox{task} \\
-    &   & S \oplus S              & \mbox{sum} \\
-    &   & S \otimes \mathcal{G}   & \mbox{product} \\
-  L & = & \circ \; \mid \; E      & \mbox{labels}\\
-  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} 
+\begin{array}{ccllcccll}
+  \Sigma & = & \mathcal{A} \to \mathcal{T}_\mathcal{A} & \mbox{substitutions} &\qquad\qquad&        S & = & \taskst{\mathcal{G}}{E} & \mbox{task} \\
+       E & = & \Sigma \times \mathbb{N}              & \mbox{environments}  &\qquad\qquad&          &   & S \oplus S              & \mbox{sum} \\
+         &   &                                       &                      &\qquad\qquad&          &   & S \otimes \mathcal{G}   & \mbox{product} \\
+%         &   &                                       &                      &\qquad\qquad&  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} \\
+       L & = & \circ \; \mid \; E      & \mbox{labels}        &\qquad\qquad&  \hat{S} & = & \diamond \; \mid \; S   & \mbox{states} \\
+%         &   &                                       &                      &\qquad\qquad&        L & = & \circ \; \mid \; E      & \mbox{labels} 
 \end{array}
 \]
 \caption{States and labels in the LTS for \mK}
 \label{fig:operanional_semantics_states_labels}
-\end{wrapfigure}
+%\end{wrapfigure}
+\end{figure}
 
 This search procedure is formally described by operational semantics in the form of a labeled transition system.
 This semantics corresponds to the canonical implementation of interleaving search. 
@@ -92,12 +94,10 @@ environment.
     \multicolumn{3}{c}{\dfrac{R_i^{k_i}=\lambda\,\ttt{x}_1\dots \ttt{x}_{k_i}\,.\,g}{\taskst{R_i^{k_i}\,(t_1,\dots,t_{k_i})}{e} \xrightarrow{\circ} \taskst{g\,[\bigslant{t_1}{\ttt{x}_1}\dots\bigslant{t_{k_i}}{\ttt{x}_{k_i}}]}{e}}} & \ruleno{Invoke}\\[3mm]
     \taskst{g_1 \lor g_2}{e} \xrightarrow{\circ} \taskst{g_1}{e} \oplus \taskst{g_2}{e} & \ruleno{Disj} &
     \taskst{g_1 \land g_2}{e} \xrightarrow{\circ} \taskst{g_1}{e} \otimes g_2 & \ruleno{Conj} \\    
-    \dfrac{s_1 \xrightarrow{\circ} \Diamond}{(s_1 \oplus s_2) \xrightarrow{\circ} s_2} & \ruleno{DisjStop} &
-    \dfrac{s_1 \xrightarrow{e} \Diamond}{(s_1 \oplus s_2) \xrightarrow{e} s_2} & \ruleno{DisjStopAns}\\
+    \dfrac{s_1 \xrightarrow{l} \Diamond}{(s_1 \oplus s_2) \xrightarrow{l} s_2} & \ruleno{DisjStop} &
+    \dfrac{s_1 \xrightarrow{l} s'_1}{(s_1 \oplus s_2) \xrightarrow{l} (s_2 \oplus s'_1)} &\ruleno{DisjStep} \\
     \dfrac{s \xrightarrow{\circ} \Diamond}{(s \otimes g) \xrightarrow{\circ} \Diamond} &\ruleno{ConjStop} &
     \dfrac{s \xrightarrow{e} \Diamond}{(s \otimes g) \xrightarrow{\circ} \taskst{g}{e}}  & \ruleno{ConjStopAns}\\
-    \dfrac{s_1 \xrightarrow{\circ} s'_1}{(s_1 \oplus s_2) \xrightarrow{\circ} (s_2 \oplus s'_1)} &\ruleno{DisjStep} &
-    \dfrac{s_1 \xrightarrow{e} s'_1}{(s_1 \oplus s_2) \xrightarrow{e} (s_2 \oplus s'_1)} &\ruleno{DisjStepAns}\\
     \dfrac{s \xrightarrow{\circ} s'}{(s \otimes g) \xrightarrow{\circ} (s' \otimes g)} &\ruleno{ConjStep} &
     \dfrac{s \xrightarrow{e} s'}{(s \otimes g) \xrightarrow{\circ} (\taskst{g}{e} \oplus (s' \otimes g))} & \ruleno{ConjStepAns} 
   \end{array}
@@ -106,7 +106,19 @@ environment.
   \label{fig:operanional_semantics_rules}
 \end{figure*}
 
-The transition rules are shown in Fig.~\ref{fig:operanional_semantics_rules}. The introduced transition system is completely deterministic,
+The transition rules are shown in Fig.~\ref{fig:operanional_semantics_rules}.
+\textcolor{blue}{
+The first six rules define evaluation of leaf states.
+For the disjunction and conjunction the corresponding node states are constructed.
+For other types of goals the environment and the evaluated goal are updated in accordance with the task given by the goal: for an equality the most general unifier of the terms is incorporated into the substitution (or execution halts if the terms are non-unifiable); for a fresh construction a new variable is introduced and the counter of allocated variables is incremented; for a relational call the body of the relation is taken as the next goal.
+The rest of the rules define composition of evaluation of substates for partial disjunctions and conjunctions.
+For a partial disjunction the first constituent is evaluated for one step, then the constituents are swapped (which constutes the \emph{interleaving}), and answer is propagated.
+When the evalution of the first constituent of partial disjunction halts, the evaluation proceedes with the second constituent.
+For a partial conjunction the first consituent is evaluated until the answer is obtained, then the evaluation of the second constituent with this answer as the environment is scheduled for evaluation together with the remaining partial conjunction (via partial disjunction node).
+When the evalution of the first constituent of partial conjunction halts, the evaluation of the conjunction halts too.
+}
+
+The introduced transition system is completely deterministic,
 therefore a derivation sequence for a state $s$ determines a certain \emph{trace}~--- a sequence of states and labeled transitions between
 them. It may be either finite (ending with the terminal state $\Diamond$) or infinite. We will denote by $\trs{s}$ the sequence of states in
 the trace for initial state $s$ and by $\tra{s}$ the sequence of answers in the trace for initial state $s$. The sequence $\tra{s}$ corresponds
@@ -115,7 +127,7 @@ to the stream of answers in the reference \mK implementations.
 In the following we rely on the following property of leaf states:
 
 \begin{definition}
-  A leaf state $\inbr{g, \sigma, n}$ is well-formed iff $\fv{g}\cup\Dom\,(\sigma)\cup\VRan\,(\sigma)\subseteq\{\alpha_1,\dots,\alpha_n\}$, where
+  A leaf state $\taskst{g}{\mkenv{\sigma}{n}}$ is well-formed iff $\fv{g}\cup\Dom\,(\sigma)\cup\VRan\,(\sigma)\subseteq\{\alpha_1,\dots,\alpha_n\}$, where
   $\fv{g}$ denotes the set of free variables in a goal $g$, $\Dom\,(\sigma)$ and $\VRan\,(\sigma)$~--- the domain of a substitution $\sigma$ and
   a set of all free variables in its image respectively.
 \end{definition}
@@ -130,11 +142,26 @@ $\sembr{\lstinline|append$^o$|}$ is a set of all triplets of ground lists, in wh
 concatenation of the first two. The concrete description of the denotational semantics is given in~\cite{CertifiedSemantics} as well as the proof of
 the soundness and completeness of the operational semantics w.r.t. to the denotational one.
 
+\begin{figure}[t]
+\centering
+\[
+\begin{array}{ccll}
+B_{nf} & = &  \unigoal{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \; \mid \;
+                     \invokegoal{R^k}{\mathcal{T}_\mathcal{X}}{\mathcal{T}_\mathcal{X}} \\
+C_{nf} & = & B_{nf} \; \mid \; \conjgoal{C_{nf}}{B_{nf}} \\
+F_{nf} & = & C_{nf} \; \mid \; \freshgoal{X}{F_{nf} } \\
+D_{nf} & = & F_{nf} \; \mid \; \disjgoal{D_{nf}}{F_{nf}}
+\end{array}
+\]
+\caption{Disjunctive Normal Form for goals}
+\label{fig:dnf}
+\end{figure}
+
 Finally, we explicitly enumerate all the restrictions required by our method to work:
 
 \begin{itemize}
-\item All relations have to be in DNF (disjunctions of freshes of conjunctions of equalities or invocations); 
-\item We only consider goals which converge with a finite number of answers;
+\item All relations have to be in DNF \textcolor{blue}{(set $D_{nf}$ in \figureword\ref{fig:dnf})}. 
+\item We only consider goals which converge with a finite number of answers.
 \item All answers have to be ground (\emph{groundness} condition) for all relation invocations encountered
   during the evaluation.
 \item All answers have to be unique (\emph{answer uniqueness} condition) for all relation invocations encountered

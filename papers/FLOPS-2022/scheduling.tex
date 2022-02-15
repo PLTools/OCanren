@@ -10,10 +10,10 @@ Our first idea is to take the number of states $d\,(s)$ in the finite trace for 
 
 \[ d\,(s) \; \eqdef \; | \trs{s} |  \]
 
-However, it turns out, that this value alone does not provide an accurate scheduling complexity estimation. The reason is that some
+However, it turns out that this value alone does not provide an accurate scheduling complexity estimation. The reason is that some
 elementary steps in the semantics are not elementary in existing implementations. Namely, a careful analysis discovers that
 each semantic step involves navigation to the leftmost leaf of the state which in implementations corresponds to multiple elementary actions,
-which number is proportional to the height of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$,
+whose number is proportional to the height of the leftmost branch of the state in question. Here we provide an \emph{ad-hoc} definition for this value, $t\,(s)$,
 which we call the \emph{scheduling factor}:
 
 \[
@@ -101,7 +101,6 @@ d\,(s \otimes g)  &=&  d\,(s) + \smashoperator[lr]{\sum\limits_{a_i \in \tra{s}}
 where 
 \[
 \begin{array}{rcl}
-\costdisj{s_1}{s_2} & = & \min\,\{2\cdot d\,(s_1) - 1, 2\cdot d\,(s_2)\} \\
 \costconj{s}{g} & = & d\,(s) \\
 s'_i & = & \mbox{the first state in the trace for $s$ after} \\
  & & \mbox{a transition delivering the answer $a_i$} \\
@@ -110,18 +109,18 @@ s'_i & = & \mbox{the first state in the trace for $s$ after} \\
 \end{replemma}
 
 For the states of the form $s \otimes g$ the reasoning is the same, but the resulting equations are more complicated.
-In $\otimes$-state the left substate is evaluated until an answer is found, which is then taken as
+In an $\otimes$-state the left substate is evaluated until an answer is found, which is then taken as
 \emph{an environment} for the evaluation of the right subgoal.
 Thus, in the equations for $\otimes$-states the evaluation times of the second goal \emph{for all
 the answers} generated for the first substate are summed up. The evaluation of the right subgoal
 in different environments is added to the evaluation of the left substate via creation of
-an $\oplus$-state, so for scheduling factor there is
+an $\oplus$-state, so for the scheduling factor there is
 an additional summand $\costdisj{\taskst{g}{a_i}}{s'_i}$ for each answer with $s'_i$ being the state
 after discovering the answer.
 There is also an extra summand $\costconj{s}{g}$ for the scheduling factor because of the
 $\otimes$-node that increases the height in the trace, analogous to the one caused by
 $\oplus$-nodes.
-Note, $\otimes$-node is always placed immediately over the left substate so this
+Note, a $\otimes$-node is always placed immediately over the left substate so this
 addition is exactly the number of steps for the left substate.
 
 Unfolding costs definitions in $(\dagger)$ gives us a cumbersome formula that 
@@ -139,6 +138,6 @@ for $t\,(s \otimes g)$.
 
 Hereafter we use the following notation: $\displaystyle{\maxd}\, S = \max\,(S\cup\{0\})$.
 We can see that the part under $\Theta$ is very similar to the $(\star)$ except that here we exclude $d$ value for one of the answers from the sum.
-This difference is essential and, as we will see later, it is in fact responsible for the difference in complexities for our motivation example.
+This difference is essential and, as we will see later, it is in fact responsible for the difference in complexities for our motivating example.
  
 
