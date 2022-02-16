@@ -32,7 +32,8 @@ However, being a different search strategy than conventional BFS/DFS/iterative d
 of logical programs \textcolor{blue}{not applicable}. Moreover, some intrinsic properties of interleaving search can manifest themselves in a number of astounding and, at the first glance, unexplainable
 performance effects. 
 
-As an example, let's consider two implementations of list concatenation relation (\figureword~\ref{fig:length_implementations}, left side). The only difference between the two is
+As an example, let's consider two implementations of list concatenation relation (\figureword~\ref{fig:length_implementations}, left side); we respect here a conventional tradition
+for \mK programming to superscript all relational names with ``o''. The only difference between the two is
 the position of the recursive call.
 %A common wisdom of \mK programming prescribes putting recursive call \emph{last} in a conjunction (if possible), since otherwise multiple
 %negative effects (for example, divergence) can be encountered when running a relation in a \emph{backward} direction (i.e. finding all the splits of a given list).
@@ -62,6 +63,5 @@ Our approach puts a number of restrictions on the goal being analyzed as well as
 We explicitly state these restrictions in \sectionword~\ref{sec:background} and discuss their impact in \sectionword~\ref{sec:discussion}.
 The proofs of all lemmas and theorems can be found in the extended version of this paper~\footnote{https://arxiv.org/???}.}
 
-\textcolor{red}{Reviewer: Discuss (shortly) relevance of our insights in the broader context of logic programming.}
+\textcolor{red}{Reviewer: Discuss (shortly) relevance of our insights in the broader context of logic programming. Can this go to the Discussion section?}
 
-\textcolor{red}{Footnote: We respect here a conventional tradition for miniKanren programming to superscript all relational names with ``o''.}

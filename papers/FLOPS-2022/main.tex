@@ -78,20 +78,20 @@
 
 \begin{comment}
 \newcommand{\schemenode}[1]{
-\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
-  \node[rectangle,draw]{#1};
-\end{tikzpicture}
+%\begin{tikzpicture}[anchor=base,baseline,sibling distance=3cm,edge from parent/.style={draw,-latex}]
+ \tikz[anchor=base,baseline,sibling distance=3cm,edge from parent/.style={draw,-latex}] \node[rectangle,draw]{#1};
+%\end{tikzpicture}
  }
 
 \newcommand{\schemesarrow}[3]{
-\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
-  \node[rectangle,draw]{#1}child {node[circle,draw]{#3}edge from parent node[right]{\tiny{#2}}};
-\end{tikzpicture}}
+%\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
+  \tikz[anchor=base,baseline,sibling distance=3cm,edge from parent/.style={draw,-latex}]\node[rectangle,draw]{#1}child {node[circle,draw]{#3}edge from parent node[right]{\tiny{#2}}};
+%\end{tikzpicture}}
 
 \newcommand{\schemedarrow}[3]{
-\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
-  \node[rectangle,draw]{#1}child {node[circle,draw]{#3}edge from parent node[right]{\tiny{#2}}};
-\end{tikzpicture}}
+%\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
+ \tikz[anchor=base,baseline,sibling distance=3cm,edge from parent/.style={draw,-latex}] \node[rectangle,draw]{#1}child {node[circle,draw]{#3}edge from parent node[right]{\tiny{#2}}};
+%\end{tikzpicture}}
 
 \newcommand{\schemefork}[2]{
   \begin{tikzpicture}[edge from parent/.style={draw,-latex}]
@@ -102,9 +102,9 @@
 \end{comment}
 
 \newcommand{\schemenode}[1]{
-\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
-  \node{#1};
-\end{tikzpicture}
+%\begin{tikzpicture}[sibling distance=3cm,edge from parent/.style={draw,-latex}]
+\tikz[anchor=base,baseline,sibling distance=3cm,edge from parent/.style={draw,-latex}]  \node{#1};
+%\end{tikzpicture}
  }
 
 \newcommand{\schemesarrow}[3]{

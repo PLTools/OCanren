@@ -103,12 +103,11 @@ In such case $\rho'$ is unique and $ \rho \circ mgu\,(t_1 \rho, t_2 \rho) = \del
 \begin{figure}[t]
 \centering
 \[\renewcommand{\arraystretch}{1}
-\begin{array}{ccc}
-  \schemewithvset{\mathfrak{S}}{\Upsilon} & = &\schemenode{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} \\ \cline{3-3}
-                                          &   &\schemenode{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} \\ \cline{3-3}
-                                          &   &\schemefork{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$} \\ \cline{3-3}
-                                          &   &\schemesarrow{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$\{\mathcal{A}=\mathcal{T}_\mathcal{A}\}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}\\  \cline{3-3}
-                                          &   &\schemedarrow{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$(\mathcal{T}_\mathcal{A}, \dots, \mathcal{T}_\mathcal{A}) \in \sembr{R^k}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$} 
+\begin{array}{cccp{1cm}c}
+  \schemewithvset{\mathfrak{S}}{\Upsilon} & = &\schemenode{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} & &\schemenode{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$} \\[6mm] 
+                                          &   &\schemefork{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$} &&
+                                               \schemesarrow{$\unigoal{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$\{\mathcal{A}=\mathcal{T}_\mathcal{A}\}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}\\[6mm]  
+                                          &   &\multicolumn{3}{c}{\schemedarrow{$\invokegoal{R^k}{\mathcal{T}_\mathcal{A}}{\mathcal{T}_\mathcal{A}}$}{$(\mathcal{T}_\mathcal{A}, \dots, \mathcal{T}_\mathcal{A}) \in \sembr{R^k}$}{$\schemewithvset{\mathfrak{S}}{\Upsilon}$}}
 \end{array}\]
 \caption{Symbolic Scheme Forms}
 \label{fig:scheme_fragments}
@@ -137,44 +136,43 @@ initially this list is empty; this resembles continuations, but the analogy is n
 environment respectively, $V$ is a set of grounded variables at the moment.
 
 \begin{figure}[t]
-\setlength{\belowcaptionskip}{-30pt plus 3pt minus 2pt}
-
+%\setlength{\belowcaptionskip}{-30pt plus 3pt minus 2pt}
 \renewcommand{\arraystretch}{2}
   \[
 \begin{array}{cr}
   \onepremrule
 		{  \schemetrans{g_1}{g_2 : \Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S}}{V}}  } 
 		{  \schemetrans{\conjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } & \ruleno{Conj$_\mathfrak S$}
-		\\
+		\\[5mm]
                 
   % \multicolumn{3}{c}{
   \twopremrule
 		{  \schemetrans{g_1}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S_1}}{V}}  }
 		{  \schemetrans{g_2}{\Gamma}{\sigma}{n}{V}{\schemewithvset{\mathfrak{S_2}}{V}}  }
-		{  \schemetrans{\disjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{ \schemefork{$\schemewithvset{\mathfrak{S_1}}{V}$}{$\schemewithvset{\mathfrak{S_2}}{V}$}} }  } & \ruleno{Disj$_\mathfrak S$}\\ 
+		{  \schemetrans{\disjgoal{g_1}{g_2}}{\Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{ \schemefork{$\schemewithvset{\mathfrak{S_1}}{V}$}{$\schemewithvset{\mathfrak{S_2}}{V}$}} }  } & \ruleno{Disj$_\mathfrak S$}\\[10mm] 
 		
 		
  \onepremrule
 		{  \schemetrans{\substitute{g}{\alpha_n}{\ttt{x}}}{\Gamma}{\sigma}{n + 1}{V}{\schemewithvset{\mathfrak{S}}{V}}  }
-		{  \schemetrans{\freshgoal{\ttt{x}}{g}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } & \ruleno{Fresh$_\mathfrak S$}\\
+		{  \schemetrans{\freshgoal{\ttt{x}}{g}}{\Gamma}{\sigma}{n}{V}{ \schemewithvset{\mathfrak{S}}{V} }  } & \ruleno{Fresh$_\mathfrak S$}\\[5mm]
 
  %\multicolumn{3}{c}{
-  \schemetrans{\unigoal{t_1}{t_2}}{\epsilon}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\unigoal{t_1 \sigma}{t_2 \sigma}$}}}& \ruleno{UnifyLeaf$_\mathfrak S$}\\
+  \schemetrans{\unigoal{t_1}{t_2}}{\epsilon}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\unigoal{t_1 \sigma}{t_2 \sigma}$}}}& \ruleno{UnifyLeaf$_\mathfrak S$}\\[5mm]
 
  %\multicolumn{3}{c}{
- \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{\epsilon}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\invokegoal{R^k}{t_1 \sigma}{t_k \sigma}$}}}& \ruleno{InvokeLeaf$_\mathfrak S$}\\ 
+ \schemetrans{\invokegoal{R^k}{t_1}{t_k}}{\epsilon}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\invokegoal{R^k}{t_1 \sigma}{t_k \sigma}$}}}& \ruleno{InvokeLeaf$_\mathfrak S$}\\[5mm] 
 		
  %\multicolumn{3}{c}{
   \onepremrule
 		{  \nexists mgu\,(t_1 \sigma, t_2 \sigma)  }
-		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\unigoal{t_1 \sigma}{t_2 \sigma}$}}} }& \ruleno{UnifyFail$_\mathfrak S$}\\
+		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemenode{$\unigoal{t_1 \sigma}{t_2 \sigma}$}}} }& \ruleno{UnifyFail$_\mathfrak S$}\\[5mm]
 
  %\multicolumn{3}{c}{
   \threepremrule
 		{  mgu\,(t_1 \sigma, t_2 \sigma) = \delta  }
 		{  U = \upd{V}{\delta}  }
 		{  \schemetrans{g}{\Gamma}{\sigma \delta}{n}{U}{\schemewithvset{\mathfrak{S}}{U}}  }
-		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemesarrow{$\unigoal{t_1 \sigma}{t_2 \sigma}$}{$\constr{\delta}{U}$}{$\schemewithvset{\mathfrak{S}}{U}$}} }   } & \ruleno{UnifySuccess$_\mathfrak S$}\\
+		{  \schemetrans{\unigoal{t_1}{t_2}}{g : \Gamma}{\sigma}{n}{V}{\parbox[m]{2cm}{\schemesarrow{$\unigoal{t_1 \sigma}{t_2 \sigma}$}{$\constr{\delta}{U}$}{$\schemewithvset{\mathfrak{S}}{U}$}} }   } & \ruleno{UnifySuccess$_\mathfrak S$}\\[15mm]
 		
  %\multicolumn{3}{c}{
   \twopremrule

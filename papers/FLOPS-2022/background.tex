@@ -13,7 +13,7 @@ We parameterize the terms with an alphabet of variables since in the semantic de
 introduced and unified during the evaluation. We assume the set $\mathcal{A}$ ordered and use the notation $\alpha_i$ 
 to specify a position of a logical variable w.r.t. this order.
 
-There are five types of goals: unification of two terms, conjunction, and disjunction of goals,
+There are five types of goals: unification of two terms, conjunction and disjunction of goals,
 %(the ``\lstinline|conde|'' operator from the canonical versions of \mK, split in the two for simplicity),
 fresh logic variable introduction, and invocation of some relational definition. For the sake of brevity, in code snippets, we abbreviate
 immediately nested ``\lstinline|fresh|'' constructs into the one, writing ``\lstinline|fresh x y $\dots$ . $g$|'' instead of
@@ -37,7 +37,7 @@ A top-level goal represents a search procedure that returns a stream of substitu
               &   & \mathcal{G}\vee\mathcal{G}       &\mbox{disjunction} \\
               &   & \mbox{\lstinline|fresh|}\;\mathcal{X}\;.\;\mathcal{G} & \mbox{fresh variable introduction} \\
               &   & R_i^{k_i} (t_1,\dots,t_{k_i}),\;t_j\in\mathcal{T_X} & \mbox{relational symbol invocation} \\[2mm]
-  \mathcal{S} & = & \{R_i^{k_i} = \lambda\;\ttt{x}_1^i\dots \ttt{x}_{k_i}^i\,.\, g_i;\}\; g, \; \textcolor{blue}{g_i, g\in\mathcal{G}} & \mbox{specification}
+  \mathcal{S} & = & \{R_i^{k_i} = \lambda\;\ttt{x}_1^i\dots \ttt{x}_{k_i}^i\,.\, g_i;\}\; g, \; \textcolor{blue}{g_i, g\in\mathcal{G}}\phantom{XXX} & \mbox{specification}
 \end{array}
 \]
 \caption{The syntax of \mK}
@@ -84,7 +84,7 @@ We also need a terminal state $\diamond$ to represent the end of the evaluation.
 The label ``$\circ$'' is used to mark those steps which do not provide an answer; otherwise, a transition is labeled by an updated
 environment.
 
-\begin{figure*}[h]
+\begin{figure*}[t]
   \renewcommand{\arraystretch}{1.6}
   \[
   \begin{array}{crcr}
@@ -112,10 +112,10 @@ The first six rules define evaluation of leaf states.
 For the disjunction and conjunction the corresponding node states are constructed.
 For other types of goals the environment and the evaluated goal are updated in accordance with the task given by the goal: for an equality the most general unifier of the terms is incorporated into the substitution (or execution halts if the terms are non-unifiable); for a fresh construction a new variable is introduced and the counter of allocated variables is incremented; for a relational call the body of the relation is taken as the next goal.
 The rest of the rules define composition of evaluation of substates for partial disjunctions and conjunctions.
-For a partial disjunction the first constituent is evaluated for one step, then the constituents are swapped (which constutes the \emph{interleaving}), and answer is propagated.
+For a partial disjunction the first constituent is evaluated for one step, then the constituents are swapped (which constutes the \emph{interleaving}), and the label is propagated.
 When the evalution of the first constituent of partial disjunction halts, the evaluation proceedes with the second constituent.
 For a partial conjunction the first consituent is evaluated until the answer is obtained, then the evaluation of the second constituent with this answer as the environment is scheduled for evaluation together with the remaining partial conjunction (via partial disjunction node).
-When the evalution of the first constituent of partial conjunction halts, the evaluation of the conjunction halts too.
+When the evalution of the first constituent of partial conjunction halts, the evaluation of the conjunction halts, too.
 }
 
 The introduced transition system is completely deterministic,
