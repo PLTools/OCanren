@@ -1,0 +1,26 @@
+(library
+ (name lib)
+ ; (public_name eucpp_demo_lib)
+ (modules lib)
+ (wrapped false)
+ (enabled_if
+  (>= %{ocaml_version} 4.12))
+ ; I get some compilation issues with explicit polymorphism on 4.10. So disabled
+ (inline_tests)
+ (libraries OCanren OCanren.tester)
+ (preprocess
+  (pps OCanren-ppx.ppx_fresh OCanren-ppx.ppx_repr ppx_inline_test GT.ppx_all)))
+
+(executable
+ (name main)
+ (modules main)
+ (enabled_if
+  (>= %{ocaml_version} 4.12))
+ (libraries OCanren OCanren.tester lib)
+ (preprocess
+  (pps OCanren-ppx.ppx_fresh OCanren-ppx.ppx_repr)))
+
+(cram
+ (deps ./main.exe)
+ (enabled_if
+  (>= %{ocaml_version} 4.12)))

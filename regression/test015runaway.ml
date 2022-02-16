@@ -6,7 +6,7 @@ open Printf
 
 let ilist xs = list (!!) xs
 
-let runaway_cell: (int List.ground, int logic List.logic) injected ref = Stdlib.ref (Obj.magic ())
+let runaway_cell: int ilogic List.groundi ref = Stdlib.ref (Obj.magic ())
 
 let demo1 q =
   call_fresh (fun r ->
@@ -22,14 +22,14 @@ let demo2 q =
           ]
     )
 
-let intlist_reifier c xs =
-  List.reify OCanren.reify c xs
+let intlist_reifier =
+  List.reify OCanren.reify
 
 let show_int = show(int)
 let show_int_list = show(List.ground) show_int
 let show2 xs = show(List.logic) (show(logic) show_int) xs
 
-let runT n = runR intlist_reifier show_int_list show2 n
+let runT n = run_r intlist_reifier show2 n
 let () =
   runT 1 q qh (REPR(demo1));
   let () =

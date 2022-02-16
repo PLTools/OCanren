@@ -1,9 +1,11 @@
 (library
-  (name ppx_distrib)
-  (public_name OCanren-ppx.ppx_distrib)
-  (kind ppx_rewriter)
-  (libraries base ppxlib)
-  (modules ppx_distrib ppx_distrib_expander)
-  (flags (:standard -linkall))
-  (preprocess (pps ppxlib.metaquot))
-)
+ (name ppx_distrib)
+ (public_name OCanren-ppx.ppx_distrib)
+ (kind ppx_rewriter)
+ (libraries base ppxlib OCanren-ppx.internals)
+ (modules ppx_distrib ppx_distrib_expander)
+ (flags
+  (:standard -linkall))
+ (inline_tests)
+ (preprocess
+  (pps ppxlib.metaquot ppx_inline_test ppx_expect)))

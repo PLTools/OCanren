@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2020
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -37,14 +38,18 @@ open Core
 
 (** {2 Relational API} *)
 
+
 (** Logic injection (for reification) *)
 val inj : ground -> logic
 
-(** A synonym for injected boolean; use [(!!)] operator to make a [groundi] from a regular [bool] *)
-type groundi = (ground, logic) injected
+(** A synonym for injected boolean; use [Logic.inji] operator to make a [groundi] from a regular [bool] *)
+type groundi = ground ilogic
 
 (** Reifier *)
-val reify : Env.t -> groundi -> logic
+val reify: (bool ilogic, bool Logic.logic) Reifier.t
+
+(** Shallow reifier *)
+val prj_exn: (bool ilogic, bool) Reifier.t
 
 (** Constants *)
 val falso : groundi

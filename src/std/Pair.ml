@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -26,10 +27,13 @@ module List = Stdlib.List
 
 let logic' = logic;;
 
+@type ('a, 'b) t = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr, fmt
+let fmap f g x = GT.gmap(t) f g x;;
+
 @type ('a, 'b) ground          = 'a * 'b                                    with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type ('a, 'b) logic           = ('a * 'b) logic'                           with show, gmap, html, eq, compare, foldl, foldr, fmt
 
-type ('a, 'b, 'c, 'd) groundi = (('a, 'c) ground, ('b, 'd) logic) injected
+type ('a, 'b) groundi = ('a * 'b) ilogic
 
 let logic = {
   logic with
@@ -48,15 +52,29 @@ let logic = {
 
 let inj f g p = to_logic (GT.gmap(ground) f g p)
 
-module T =
-  struct
-    @type ('a, 'b) t = 'a * 'b with show, gmap, html, eq, compare, foldl, foldr, fmt
-    let fmap f g x = GT.gmap(ground) f g x
-  end
+let pair x y = Logic.inj (x, y)
 
-include T
-include Fmap2 (T)
+let reify : 'a 'b 'c 'd . ('a, 'b) Reifier.t -> ('c, 'd) Reifier.t ->
+  (('a,'c) groundi, ('b, 'd) logic) Reifier.t =
+  fun ra rb ->
+    let ( >>= ) = Env.Monad.bind in
+    Reifier.fix (fun self ->
+      Reifier.compose Reifier.reify
+       ( ra >>= fun fa ->
+         rb >>= fun fb ->
+          let rec foo = function
+              | Var (v, xs) ->
+                Var (v, Stdlib.List.map foo xs)
+              | Value x -> Value (GT.gmap t fa fb x)
+          in
+          Env.Monad.return foo
+        ))
 
-let pair x y = Logic.inj @@ distrib (x, y)
-
-let prjc fa fb onvar env xs = prjc fa fb onvar env xs
+let prj_exn : 'a 'b 'c 'd . ('a, 'b) Reifier.t -> ('c, 'd) Reifier.t ->
+  (('a, 'c) groundi, ('b, 'd) ground) Reifier.t =
+  fun ra rb ->
+    let ( >>= ) = Env.Monad.bind in
+    Reifier.compose Reifier.prj_exn
+    (ra >>= fun fa ->
+     rb >>= fun fb ->
+     Env.Monad.return (fun x -> GT.gmap t fa fb x))

@@ -7,4 +7,5 @@ let _ =
       run q (fun n ->
           ocanren {fresh c     in Nat.(<=) 0 n
                                 & Nat.(<=) n 0
-                                & n == Nat.zero }) project
+                                & n == Nat.zero })
+        (fun rr -> rr#reify Nat.prj_exn)

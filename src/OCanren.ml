@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -26,7 +27,6 @@ module Env = Env
 
 module Std =
   struct
-
     module Pair    = Pair
     module Option  = Option
     module Bool    = Bool
@@ -68,4 +68,5 @@ module Std =
     let structural = Core.structural
     let debug_var = Core.debug_var
     let only_head = Core.only_head
+
   end

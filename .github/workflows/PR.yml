@@ -1,4 +1,4 @@
-name: Build PR
+name: Build_PR
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ jobs:
       matrix:
         os:
           - ubuntu-20.04
-        ocaml-version:
+        ocaml-compiler:
           - 4.10.1
 
     env:
@@ -24,6 +24,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.7.0
+        with:
+          access_token: ${{ github.token }}
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -41,12 +46,15 @@ jobs:
           key: ${{ steps.cache-key.outputs.date }}
 
       - name: Use OCaml ${{ matrix.ocaml-version }}
-        uses: avsm/setup-ocaml@v1
+        uses: avsm/setup-ocaml@v2
         with:
-          ocaml-version: ${{ matrix.ocaml-version }}
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
-      - run: opam pin add OCanren.dev . --no-action
-      - run: opam depext OCanren.dev --yes --with-test
+      #- run: opam pin add OCanren.dev . --no-action
+      #- run: opam depext OCanren.dev --yes --with-test
+
+      - name: Install dependencies for documentation
+        run: opam install odoc pa_ppx --yes
 
       - run: opam install . --deps-only --with-test
       - run: opam exec -- make #dune build

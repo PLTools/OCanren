@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -20,7 +21,7 @@ open Logic
 open Core
 
 (* to avoid clash with Std.List (i.e. logic list) *)
-module List = Stdlib.List
+(* module List = Stdlib.List *)
 
 @type 'a logic'        = 'a logic                       with show, gmap, html, eq, compare, foldl, foldr, fmt
 
@@ -28,8 +29,6 @@ let logic' = logic;;
 
 @type 'a ground        = 'a GT.option                   with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type 'a logic         = 'a GT.option logic'            with show, gmap, html, eq, compare, foldl, foldr, fmt
-
-type ('a, 'b) groundi = ('a ground, 'b logic) injected
 
 let logic = {
   logic with
@@ -44,20 +43,36 @@ let logic = {
       method fmt        = logic.GT.plugins#fmt
       method show    fa = GT.show(logic') (fun l -> GT.show(GT.option) fa l)
     end
-}
+};;
+
+@type 'a t = 'a ground with show, gmap, html, eq, compare, foldl, foldr, fmt;;
+let t = ground
 
 let inj f x = to_logic (GT.(gmap option) f x)
 
-module T =
-  struct
-    @type 'a t = 'a GT.option with show, gmap, html, eq, compare, foldl, foldr, fmt
-    let fmap f x = GT.(gmap option) f x
-  end
+type 'a groundi = 'a ground ilogic
 
-include T
-include Fmap (T)
+let rec reify : 'a 'b . ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t =
+  fun ra ->
+  let open Env.Monad.Syntax in
+  let* r = Reifier.reify in
+  let* fa = ra in
+  Reifier.compose Reifier.reify (
+    let rec foo = function
+    | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+    | Value t -> Value (GT.gmap ground fa t)
+    in
+    Env.Monad.return foo
+  )
 
-let some x  = Logic.inj @@ distrib (Some x)
-let none () = Logic.inj @@ distrib None
+let prj_exn : 'a 'b. ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
+  fun ra ->
+    let open Env.Monad.Syntax in
+    let* r = Reifier.prj_exn in
+    let* fa = ra in
+    Env.Monad.return (fun x -> GT.gmap ground fa (r x))
 
-let option = function None -> none () | Some x -> some x
+let some x  = Logic.inji (Some x)
+let none () = Logic.inji None
+
+let option = function None -> none () | Some x -> Logic.inji (Some (x))

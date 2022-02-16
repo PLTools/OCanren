@@ -3,9 +3,24 @@
 (library
  (name OCanren)
  (public_name OCanren)
+ (modules
+  Logic
+  Core
+  Stream
+  Subst
+  Term
+  Env
+  Runconf
+  Disequality
+  OCanren
+  Option
+  Bool
+  Nat
+  Pair
+  List)
  (libraries GT mtime.clock.os)
  (flags
-  (:standard -short-paths))
+  (:standard -rectypes -short-paths -w -49))
  (preprocess
   (action
    (run %{project_root}/camlp5/pp5+gt+plugins+dump.exe %{input-file}))))

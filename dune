@@ -1,7 +1,7 @@
 (env
  (dev
   (flags
-   (:standard -rectypes -warn-error -A -w -K-9-27)))
+   (:standard -rectypes -short-paths -warn-error -A -w -K-9-27)))
  (release
   (flags
    (:standard -rectypes -warn-error -A -w -K-9-27))
@@ -9,4 +9,7 @@
 
 (alias
  (name default)
- (deps camlp5 src))
+ (deps
+  src/OCanren.cmxa
+  (alias samples/all)
+  (package OCanren)))

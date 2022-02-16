@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -30,7 +31,7 @@ let logic' = logic;;
 @type t         = GT.bool                  with show, html, eq, compare, foldr, foldl, gmap, fmt
 @type logic     = GT.bool logic'           with show, html, eq, compare, foldr, foldl, gmap , fmt
 
-type groundi   = (ground, logic) injected
+type groundi   = ground ilogic
 
 let logic = {
   logic with
@@ -49,10 +50,11 @@ let logic = {
 
 let inj = to_logic
 
-let reify = Logic.reify
+let reify : (bool ilogic, bool Logic.logic) Reifier.t = Logic.reify
+let prj_exn : (bool ilogic, bool) Reifier.t = Logic.prj_exn
 
-let falso = Logic.inj @@ lift false
-let truo  = Logic.inj @@ lift true
+let falso = Logic.inj false
+let truo  = Logic.inj true
 
 let (|^) a b c =
   conde [

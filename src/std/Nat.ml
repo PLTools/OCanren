@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -22,25 +23,19 @@ open Core
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
 
-@type 'a nat = O | S of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a t = O | S of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
-let logic' = logic
+let logic' = logic;;
 
-module X =
-  struct
-    @type 'a t = 'a nat with show, gmap, html, eq, compare, foldl, foldr, fmt
-    let fmap f x = GT.gmap (t) f x
-  end
+@type ground  = ground t
+with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type logic   = logic t Logic.logic
+with show, gmap, html, eq, compare, foldl, foldr, fmt
 
-include X
+type groundi = groundi t Logic.ilogic
 
-module F = Fmap (X)
-
-@type ground  = ground t                 with show, gmap, html, eq, compare, foldl, foldr, fmt
-@type logic   = logic t logic'           with show, gmap, html, eq, compare, foldl, foldr, fmt
-
-type groundi = (ground, logic) injected
+type injected = groundi
 
 let logic = {
   logic with
@@ -60,15 +55,34 @@ let logic = {
 let rec of_int n = if n <= 0 then O else S (of_int (n-1))
 let rec to_int   = function O -> 0 | S n -> 1 + to_int n
 
-let rec inj n = to_logic (GT.(gmap nat) inj n)
+let rec inj n = to_logic (GT.(gmap t) inj n)
 
-let rec reify h n = F.reify reify h n
-let rec prjc onvar env n = F.prjc (prjc onvar) onvar env n
+let reify =
+  let open Env.Monad.Syntax in
+  Reifier.fix (fun self ->
+  Reifier.compose Reifier.reify
+      (
+        let* fr = self in
+        let rec foo = function
+          | Var (v, xs) ->
+            Var (v, Stdlib.List.map foo xs)
+          | Value x -> Value (GT.gmap t fr x)
+        in
+        Env.Monad.return foo
+    ))
 
-let o   = Logic.inj @@ F.distrib O
-let s x = Logic.inj @@ F.distrib (S x)
+let prj_exn : (groundi, ground) Reifier.t =
+  let ( >>= ) = Env.Monad.bind in
+  Reifier.fix (fun self ->
+    Reifier.compose Reifier.prj_exn
+    ( self >>= fun fr ->
+      Env.Monad.return (fun x -> GT.gmap t fr x))
+    )
 
-let rec nat n = Logic.inj @@ F.distrib @@ X.fmap nat n
+let o   = Logic.inj O
+let s x = Logic.inj (S x)
+
+let rec nat n = Logic.inj @@ (GT.gmap t) nat n
 
 let zero = o
 let one  = s o

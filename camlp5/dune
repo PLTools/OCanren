@@ -32,7 +32,7 @@
   (run
    mkcamlp5.opt
    -package
-   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT.syntax,GT.syntax.all
    %{read-lines:../config/package-doc.cfg}
    %{cmas}
    -o
@@ -45,7 +45,7 @@
   (run
    mkcamlp5
    -package
-   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT.syntax,GT.syntax.all
    %{read-lines:../config/package-doc.cfg}
    ;%{deps}
    -o
@@ -58,7 +58,7 @@
   (run
    mkcamlp5.opt
    -package
-   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT-p5,GT.syntax.all
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT.syntax,GT.syntax.all
    %{read-lines:../config/package-doc.cfg}
    ;s%{deps}
    -o
@@ -71,8 +71,38 @@
   (run
    mkcamlp5.opt
    -package
-   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT.syntax,GT.syntax.all
    %{read-lines:../config/package-doc.cfg}
+   -o
+   %{targets})))
+
+(rule
+ (targets pp5+ocanren+o.exe)
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (:cmas pa_ocanren.cmxa))
+ (action
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o
+   %{read-lines:../config/package-doc.cfg}
+   %{cmas}
+   -o
+   %{targets})))
+
+(rule
+ (targets pp5+ocanren+dump.exe)
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (:cmas pa_ocanren.cmxa))
+ (action
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump
+   %{read-lines:../config/package-doc.cfg}
+   %{cmas}
    -o
    %{targets})))
 
@@ -85,7 +115,7 @@
   (run
    mkcamlp5
    -package
-   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT-p5,GT.syntax.all
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o,GT.syntax,GT.syntax.all
    %{read-lines:../config/package-doc.cfg}
    %{cmas}
    -o
@@ -100,7 +130,7 @@
   (run
    mkcamlp5.opt
    -package
-   camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
+   camlp5,camlp5.pa_o,GT.syntax,GT.syntax.all,logger.syntax
    %{read-lines:../config/package-doc.cfg}
    %{cmas}
    pr_dump.cmx
@@ -117,7 +147,7 @@
   (run
    mkcamlp5.opt
    -package
-   camlp5,camlp5.pa_o,GT-p5,GT.syntax.all,logger.syntax
+   camlp5,camlp5.pa_o,GT.syntax,GT.syntax.all,logger.syntax
    %{read-lines:../config/package-doc.cfg}
    %{cmas}
    -o

@@ -1,4 +1,4 @@
-version = "0.1.1"
+version = "0.3.0"
 description = "Typed embedding of relational programmng language miniKanren to OCaml"
 requires = "GT mtime.clock.os"
 archive(byte) = "OCanren.cma"

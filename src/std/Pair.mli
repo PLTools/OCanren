@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2020
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -41,16 +42,15 @@ open Core
 val inj : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) ground -> ('c, 'd) logic
 
 (** A synonym for injected pair *)
-type ('a, 'b, 'c, 'd) groundi = (('a, 'c) ground, ('b, 'd) logic) injected
+type ('a, 'b) groundi = ('a * 'b) ilogic
 
 (** Make injected pair from ground one with injected components *)
-val pair : ('a, 'b) injected -> ('c, 'd) injected -> ('a, 'b, 'c, 'd) groundi
+val pair : 'a ilogic -> 'b ilogic -> ('a ilogic, 'b ilogic) groundi
 
 (** Reifier *)
-val reify : (Env.t -> ('a, 'b) injected -> 'b) -> (Env.t -> ('c, 'd) injected -> 'd) -> Env.t -> ('a, 'b, 'c, 'd) groundi -> ('b, 'd) logic
+val reify : ('a,'b) Reifier.t -> ('c,'d) Reifier.t ->
+  ( ('a, 'c) groundi, ('b, 'd) logic ) Reifier.t
 
-val prjc :
-  (Env.t -> ('a, 'b) injected -> 'a) ->
-  (Env.t -> ('c, 'd) injected -> 'c) ->
-  (int -> ('a,'c) ground GT.list -> ('a, 'c) ground) ->
-  Env.t -> ( ('a,'c) ground, ('b, 'd) logic) injected -> ('a, 'c) ground
+val prj_exn :
+  ('a, 'b) Reifier.t -> ('c,'d) Reifier.t ->
+  ( ('a, 'c) groundi, ('b, 'd) ground) Reifier.t

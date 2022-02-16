@@ -17,7 +17,6 @@
     test017tabling
     test018prjc
     test019tablingCache
-    test020
     test021structural
     test022newsyntax
   )
@@ -30,3 +29,24 @@
     (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe)
     (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.exe))
 )
+(cram (deps
+  ./test000.exe
+  ./test001.exe
+  ./test002sort.exe
+  ./test004.exe
+  ./test005.exe
+  ./test006.exe
+  ./test007.exe
+  ./test009.exe
+  ./test010.exe
+  ./test011.exe
+  ./test013.exe
+  ./test014.exe
+  ./test015runaway.exe
+  ./test016sorto.exe
+  ./test017tabling.exe
+  ./test018prjc.exe
+  ./test019tablingCache.exe
+  ./test021structural.exe
+  ./test022newsyntax.exe
+))
