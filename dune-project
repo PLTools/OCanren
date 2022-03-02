@@ -77,7 +77,7 @@
   (ppxlib
    (and
     (>= 0.22)
-    (<= 0.24)))
+    (< 0.25.0)))
   base
   ppx_inline_test
   ppx_expect)
