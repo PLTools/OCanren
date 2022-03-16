@@ -1,4 +1,4 @@
-  $ ../ppx/pp_distrib.exe test001.ml | ocamlformat --impl --enable-outside-detected-project --profile=janestreet -
+  $ ../ppx/pp_distrib.exe test001.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=janestreet -
   open OCanren
   open Tester
   
@@ -15,9 +15,9 @@
       type logic = logic t OCanren.logic [@@deriving gt ~options:{ gmap; show }]
       type injected = injected t OCanren.ilogic
   
-      let fmapt a subj__002_ =
+      let fmapt a__002_ subj__003_ =
         let open Env.Monad in
-        Env.Monad.return (GT.gmap t) <*> a <*> subj__002_
+        Env.Monad.return (GT.gmap t) <*> a__002_ <*> subj__003_
       ;;
   
       let (prj_exn : (_, ground t) Reifier.t) =
@@ -57,9 +57,9 @@
       type nonrec 'a logic = 'a t OCanren.logic [@@deriving gt ~options:{ gmap; show }]
       type nonrec 'a injected = 'a t OCanren.ilogic
   
-      let fmapt a subj__004_ =
+      let fmapt a__005_ subj__006_ =
         let open Env.Monad in
-        Env.Monad.return (GT.gmap t) <*> a <*> subj__004_
+        Env.Monad.return (GT.gmap t) <*> a__005_ <*> subj__006_
       ;;
   
       let prj_exn ra =
@@ -76,7 +76,7 @@
       ;;
   
       let none () = OCanren.inji None
-      let some _x__003_ = OCanren.inji (Some _x__003_)
+      let some _x__004_ = OCanren.inji (Some _x__004_)
     end
   
     let run_option n =
@@ -104,9 +104,9 @@
       type 'a logic = ('a, 'a logic) t OCanren.logic [@@deriving gt ~options:{ gmap; show }]
       type 'a injected = ('a, 'a injected) t OCanren.ilogic
   
-      let fmapt a b subj__007_ =
+      let fmapt a__009_ b__010_ subj__011_ =
         let open Env.Monad in
-        Env.Monad.return (GT.gmap t) <*> a <*> b <*> subj__007_
+        Env.Monad.return (GT.gmap t) <*> a__009_ <*> b__010_ <*> subj__011_
       ;;
   
       let prj_exn ra =
@@ -123,7 +123,7 @@
       ;;
   
       let nil () = OCanren.inji []
-      let cons _x__005_ _x__006_ = OCanren.inji (_x__005_ :: _x__006_)
+      let cons _x__007_ _x__008_ = OCanren.inji (_x__007_ :: _x__008_)
     end
   
     let __ : ('a -> string) -> ('a logic as 'b) -> string = GT.show logic
@@ -165,9 +165,9 @@
   
       type nonrec injected = GT.int OCanren.ilogic t OCanren.ilogic
   
-      let fmapt nat subj__012_ =
+      let fmapt nat__016_ subj__017_ =
         let open Env.Monad in
-        Env.Monad.return (GT.gmap t) <*> nat <*> subj__012_
+        Env.Monad.return (GT.gmap t) <*> nat__016_ <*> subj__017_
       ;;
   
       let (prj_exn : (_, GT.int t) Reifier.t) =
@@ -184,10 +184,10 @@
             <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt OCanren.reify))))
       ;;
   
-      let forward _x__008_ = OCanren.inji (Forward _x__008_)
-      let backward _x__009_ = OCanren.inji (Backward _x__009_)
-      let unload _x__010_ = OCanren.inji (Unload _x__010_)
-      let fill _x__011_ = OCanren.inji (Fill _x__011_)
+      let forward _x__012_ = OCanren.inji (Forward _x__012_)
+      let backward _x__013_ = OCanren.inji (Backward _x__013_)
+      let unload _x__014_ = OCanren.inji (Unload _x__014_)
+      let fill _x__015_ = OCanren.inji (Fill _x__015_)
     end
   end
   $ ./test001.exe

@@ -45,17 +45,28 @@
   (pps OCanren-ppx.ppx_deriving_reify))
  (libraries OCanren OCanren.tester))
 
+(executable
+ (name test006)
+ (modules test006)
+ (preprocess
+  (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
+ (libraries OCanren OCanren.tester))
+
 (cram
  (deps ;
   %{project_root}/ppx/pp_distrib.exe
   %{project_root}/ppx/pp_repr.exe
+  %{project_root}/ppx/pp_gt.exe
+  %{project_root}/ppx/pp_ocanren_all.exe
   %{project_root}/ppx/pp_deriving_reify.exe
   ./test001.exe
   test001.ml
   test002repr.ml
   test005.ml
+  test006.ml
   ./test003sort.exe
   ./test004.exe
   ./test005.exe
+  ./test006.exe
   ;
   ))

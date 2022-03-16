@@ -167,12 +167,16 @@ let injectify ~loc typ =
       ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ]
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, "ground") }, []) } ->
       ptyp_constr ~loc (Located.mk ~loc (Ldot (path, "injected"))) []
+    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, "ground") }, xs) } ->
+      ptyp_constr ~loc (Located.mk ~loc (Ldot (path, "injected")))
+      @@ List.map ~f:helper xs
     | { ptyp_desc = Ptyp_constr ({ txt = Lident "t" }, xs) } ->
       add_ilogic ~loc
       @@ ptyp_constr ~loc (Located.mk ~loc (Lident "t")) (List.map ~f:helper xs)
     | { ptyp_desc = Ptyp_constr ({ txt = Lident "ground" }, xs) } ->
       ptyp_constr ~loc (Located.mk ~loc (Lident "injected")) (List.map ~f:helper xs)
-    | _ -> t
+    | { ptyp_desc = Ptyp_var _ } -> t
+    | _ -> Location.raise_errorf ~loc "injectify: bad type `%a`" Pprintast.core_type t
   in
   helper typ
 ;;
