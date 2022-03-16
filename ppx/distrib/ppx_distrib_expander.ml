@@ -389,7 +389,10 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       tdecl
   in
   let make_fmapt tdecl =
-    let names = extract_names (name_type_params_in_td tdecl).ptype_params in
+    let names =
+      extract_names (name_type_params_in_td tdecl).ptype_params
+      |> List.map ~f:(fun prefix -> gen_symbol ~prefix ())
+    in
     let add_funs rhs =
       List.fold_right
         names
