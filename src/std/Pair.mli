@@ -44,6 +44,8 @@ val inj : ('a -> 'c) -> ('b -> 'd) -> ('a, 'b) ground -> ('c, 'd) logic
 (** A synonym for injected pair *)
 type ('a, 'b) groundi = ('a * 'b) ilogic
 
+type ('a, 'b) injected = ('a, 'b) groundi
+
 (** Make injected pair from ground one with injected components *)
 val pair : 'a ilogic -> 'b ilogic -> ('a ilogic, 'b ilogic) groundi
 

@@ -35,6 +35,8 @@ let fmap f g x = GT.gmap(t) f g x;;
 
 type ('a, 'b) groundi = ('a * 'b) ilogic
 
+type ('a, 'b) injected = ('a, 'b) groundi
+
 let logic = {
   logic with
   GT.plugins =

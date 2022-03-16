@@ -92,7 +92,7 @@ let logic = {
 }
 
 type 'a groundi = ('a, 'a groundi) t Logic.ilogic
-
+type 'a injected = 'a groundi
 let reify : 'a 'b . ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t =
   fun ra ->
     let open Env.Monad.Syntax in

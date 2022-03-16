@@ -47,6 +47,8 @@ with show, gmap, html, eq, compare, foldl, foldr, fmt
 (** A synonym for injected list *)
 type 'a groundi = ('a, 'a groundi) t Logic.ilogic
 
+type 'a injected = 'a groundi
+
 (** {3 Constructors} *)
 
 val nil : unit -> 'a groundi
