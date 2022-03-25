@@ -12,15 +12,21 @@
   Env
   Runconf
   Disequality
-  OCanren
   Option
   Bool
   Nat
   Pair
-  List)
- (libraries GT mtime.clock.os)
+  List
+  Timer
+  Peep
+  OCanren)
+ (libraries GT mtime mtime.clock.os)
  (flags
   (:standard -rectypes -short-paths -w -49))
  (preprocess
   (action
-   (run %{project_root}/camlp5/pp5+gt+plugins+dump.exe %{input-file}))))
+   (run
+    %{project_root}/camlp5/pp5+gt+plugins+dump.exe
+    ; -D
+    ; STATS
+    %{input-file}))))
