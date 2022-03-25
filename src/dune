@@ -8,4 +8,8 @@
   (:standard -short-paths))
  (preprocess
   (action
-   (run %{project_root}/camlp5/pp5+gt+plugins+dump.exe %{input-file}))))
+   (run
+    %{project_root}/camlp5/pp5+gt+plugins+dump.exe
+    ;-D
+    ;STATS
+    %{input-file}))))

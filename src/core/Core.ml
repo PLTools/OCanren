@@ -18,6 +18,7 @@
 
 open Logic
 
+IFDEF STATS THEN
 type stat = {
   mutable unification_count : int;
   mutable unification_time  : Mtime.span;
@@ -34,7 +35,7 @@ let stat = {
   delay_counter     = 0
 }
 
-IFDEF STATS THEN
+
 let unification_counter () = stat.unification_count
 let unification_time    () = stat.unification_time
 let conj_counter        () = stat.conj_counter

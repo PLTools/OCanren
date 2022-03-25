@@ -69,3 +69,8 @@ module Std =
     let debug_var = Core.debug_var
     let only_head = Core.only_head
   end
+IFDEF STATS THEN
+module Peep = Peep
+
+let _ = Peep.unification_counter
+END
