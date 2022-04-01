@@ -373,7 +373,7 @@ END
 
 See also: {!structural}.
 *)
-val debug_var : ('a, 'b) injected -> (('a,'b) injected -> Env.t -> 'b) -> ('b list -> goal) -> goal
+val debug_var : ?with_reif:bool -> ('a, 'b) injected -> (('a,'b) injected -> Env.t -> 'b) -> ('b list -> goal) -> goal
 
 (** The goal [only_head f] returns no answers when [f] returns:
   - empty stream when [f] returns empty stream;

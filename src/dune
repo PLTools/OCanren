@@ -10,6 +10,6 @@
   (action
    (run
     %{project_root}/camlp5/pp5+gt+plugins+dump.exe
-    ;-D
-    ;STATS
+    -D
+    STATS
     %{input-file}))))

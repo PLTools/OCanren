@@ -390,10 +390,10 @@ let conj f g st =
   let () = IFDEF STATS THEN conj_counter_incr () ELSE () END in
   Stream.bind (f st) g
 
-let debug_var v reifier call = fun st ->
+let debug_var ?(with_reif=true) v reifier call = fun st ->
   let xs = List.map (fun answ ->
     reifier (Obj.magic @@ Answer.ctr_term answ) (Answer.env answ)
-    ) (State.reify v st)
+    ) (if with_reif then (State.reify v st) else Obj.magic ([Answer.make (State.env st) (Obj.magic v)]))
   in
   call xs st
 
