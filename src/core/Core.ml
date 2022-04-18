@@ -458,7 +458,20 @@ end)
 
 
 let (&&&) = conj
-let (?&) gs = List.fold_right (&&&) gs success
+
+(* This is a strightforward implementation
+  but in Scheme it is implemented differently
+*)
+(* let (?&) gs = List.fold_right (&&&) gs success *)
+
+(* This is actual clone of Scheme implementation *)
+let (?&) gs st =
+  match gs with
+  | [h] -> h st
+  | h::tl ->
+    List.fold_left (fun acc x -> Stream.bind acc x) (h st) tl
+  | [] -> assert false
+  (* TODO: Maybe introduce a special multiconjunction without corner case?*)
 
 let disj_base f g st = Stream.mplus (f st) (Stream.from_fun (fun () -> g st))
 
