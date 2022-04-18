@@ -382,6 +382,8 @@ val debug_var : ?with_reif:bool -> ('a, 'b) injected -> (('a,'b) injected -> Env
 *)
 val only_head : goal -> goal
 
+val trace : string -> goal
+
 module PrunesControl : sig
   val reset : unit -> unit
   val enable_skips: on:bool -> unit

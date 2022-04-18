@@ -742,3 +742,8 @@ module Tabling =
       g := currier g_tabled;
       !g
   end
+
+
+let trace msg st =
+  Format.printf "%s\n" msg;
+  success st
