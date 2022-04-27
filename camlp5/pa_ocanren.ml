@@ -144,7 +144,9 @@ let op_from_list l =
   List.iter add l;
   Buffer.contents b
 
-let of_val (Ploc.VaVal x) = x
+let of_val = function
+  | Ploc.VaVal x -> x
+  | Ploc.VaAnt _ -> failwith "Should not happen in our setup of Camlp5"
 
 (* Decorate type expressions *)
 let rec decorate_type ctyp =
@@ -167,7 +169,8 @@ let rec decorate_type ctyp =
 EXTEND
   GLOBAL: expr ctyp str_item;
 
-  long_ident:
+  (* Kakadu: It looks like this function has become unneeded *)
+  (* long_ident:
     [ RIGHTA
       [ i = LIDENT -> <:expr< $lid:i$ >>
       | i = UIDENT -> <:expr< $uid:i$ >>
@@ -179,7 +182,7 @@ EXTEND
             | e                    -> <:expr< $m$ . ($e$) >>
           in
           loop <:expr< $uid:i$ >> j
-    ]];
+    ]]; *)
 
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
