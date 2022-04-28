@@ -20,6 +20,8 @@
     test021structural
     test022newsyntax
   )
+  (package OCanren)
+  (public_names - - - - - -  - - - - - -  - - - - - -  -)
   (libraries GT OCanren OCanren.tester)
   (preprocess (action
     (run %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe %{input-file})
@@ -29,7 +31,9 @@
     (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe)
     (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.exe))
 )
-(cram (deps
+(cram
+  (package OCanren)
+  (deps
   ./test000.exe
   ./test001.exe
   ./test002sort.exe

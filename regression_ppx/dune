@@ -1,6 +1,8 @@
-(executable
- (name test001)
+(executables
+ (names test001)
  (modules test001)
+ (package OCanren)
+ (public_names -)
  (flags
   (:standard
    ;-dsource
@@ -16,9 +18,11 @@
    -pretty))
  (libraries OCanren OCanren.tester))
 
-(executable
- (name test003sort)
- (modules test003sort)
+(executables
+ (names test003sort test004)
+ (modules test003sort test004)
+ (package OCanren)
+ (public_names - -)
  (preprocess
   (pps
    OCanren-ppx.ppx_repr
@@ -27,38 +31,29 @@
    GT.ppx_all))
  (libraries OCanren OCanren.tester))
 
-(executable
- (name test004)
- (modules test004)
- (preprocess
-  (pps
-   OCanren-ppx.ppx_repr
-   OCanren-ppx.ppx_fresh
-   OCanren-ppx.ppx_distrib
-   GT.ppx_all))
- (libraries OCanren OCanren.tester))
-
-(executable
- (name test005)
+(executables
+ (names test005)
  (modules test005)
+ (package OCanren)
+ (public_names -)
  (preprocess
   (pps OCanren-ppx.ppx_deriving_reify))
  (libraries OCanren OCanren.tester))
 
-(executable
- (name test006)
+(executables
+ (names test006)
+ (package OCanren)
+ (public_names -)
  (modules test006)
  (preprocess
   (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
  (libraries OCanren OCanren.tester))
 
 (cram
+ (package OCanren)
  (deps ;
-  %{project_root}/ppx/pp_distrib.exe
-  %{project_root}/ppx/pp_repr.exe
+  (package OCanren-ppx)
   %{project_root}/ppx/pp_gt.exe
-  %{project_root}/ppx/pp_ocanren_all.exe
-  %{project_root}/ppx/pp_deriving_reify.exe
   ./test001.exe
   test001.ml
   test002repr.ml

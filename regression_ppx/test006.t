@@ -1,4 +1,4 @@
-  $ ../ppx/pp_gt.exe -pp ../ppx/pp_ocanren_all.exe test006.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=janestreet -
+  $ ../ppx/pp_gt.exe -pp pp_ocanren_all test006.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=janestreet -
   open OCanren
   
   module Gterm = struct

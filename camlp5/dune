@@ -25,6 +25,7 @@
 
 (rule
  (targets pp5+gt+plugins+ocanren+dump.exe)
+ (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
   (:cmas pa_ocanren.cmxa))
@@ -40,6 +41,7 @@
 
 (rule
  (targets pp5+gt+plugins+dump.byte)
+ (package OCanren)
  (deps %{project_root}/config/package-doc.cfg)
  (action
   (run
@@ -93,6 +95,7 @@
 
 (rule
  (targets pp5+ocanren+dump.exe)
+ (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
   (:cmas pa_ocanren.cmxa))
@@ -108,6 +111,7 @@
 
 (rule
  (targets pp5+gt+plugins+ocanren+o.byte)
+ (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
   (:cmas pa_ocanren.cma))
@@ -123,6 +127,7 @@
 
 (rule
  (targets pp5+gt+plugins+ocanren+logger+dump.exe)
+ (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
   (:cmas pa_ocanren.cmxa))
@@ -140,6 +145,7 @@
 
 (rule
  (targets pp5+gt+plugins+ocanren+logger+o.exe)
+ (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
   (:cmas pa_ocanren.cmxa))
@@ -155,6 +161,7 @@
 
 (rule
  (targets pp5+dump.byte)
+ (package OCanren)
  (deps %{project_root}/config/package-doc.cfg)
  (action
   (run

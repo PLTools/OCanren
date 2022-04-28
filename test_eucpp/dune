@@ -1,6 +1,6 @@
 (library
  (name lib)
- ; (public_name eucpp_demo_lib)
+ (package OCanren)
  (modules lib)
  (wrapped false)
  (enabled_if
@@ -11,9 +11,11 @@
  (preprocess
   (pps OCanren-ppx.ppx_fresh OCanren-ppx.ppx_repr ppx_inline_test GT.ppx_all)))
 
-(executable
- (name main)
+(executables
+ (names main)
  (modules main)
+ (package OCanren)
+ (public_names -)
  (enabled_if
   (>= %{ocaml_version} 4.12))
  (libraries OCanren OCanren.tester lib)
@@ -21,6 +23,7 @@
   (pps OCanren-ppx.ppx_fresh OCanren-ppx.ppx_repr)))
 
 (cram
+ (package OCanren)
  (deps ./main.exe)
  (enabled_if
   (>= %{ocaml_version} 4.12)))

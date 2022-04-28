@@ -1,4 +1,4 @@
-  $ ../ppx/pp_deriving_reify.exe test005.ml | ocamlformat --impl --enable-outside-detected-project --profile=janestreet -
+  $ pp_deriving_reify test005.ml | ocamlformat --impl --enable-outside-detected-project --profile=janestreet -
   open OCanren
   
   module _ = struct

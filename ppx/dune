@@ -51,8 +51,10 @@
  (libraries ppx_distrib GT.ppx_all ppx_deriving_reify)
  (modules pp_distrib_gt_reify))
 
-(executable
- (name pp_gt)
+(executables
+ (names pp_gt)
+ (package OCanren)
+ (public_names -)
  (libraries GT.ppx_all)
  (modules pp_gt))
 

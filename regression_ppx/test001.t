@@ -1,4 +1,4 @@
-  $ ../ppx/pp_distrib.exe test001.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=janestreet -
+  $ pp_distrib test001.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=janestreet -
   open OCanren
   open Tester
   
