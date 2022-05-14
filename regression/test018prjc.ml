@@ -2,6 +2,8 @@ open GT
 open OCanren
 open Tester
 
+let () = Printexc.record_backtrace false
+
 module X = struct
   @type 'a t = A of 'a | Var1 of int with show,gmap
   type nonrec 'a logic = 'a t logic
@@ -64,4 +66,4 @@ let run_list n =
   run_r reifier (GT.show(Std.List.ground) @@ GT.show GT.int) n
 
 let _ =
-  run_list (-1) q qh (REPR(fun q -> Fresh.one (fun r -> q === q )));
+  run_list (-1) q qh (REPR(fun q -> Fresh.one (fun r -> q === q )))

@@ -1,6 +1,8 @@
 open OCanren
 open Tester
 
+let () = Printexc.record_backtrace false
+
 module _ = struct
   include struct
     type nonrec 'a t =
