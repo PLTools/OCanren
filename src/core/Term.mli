@@ -94,6 +94,13 @@ val iter : fvar:(Var.t -> unit) -> fval:(value -> unit) -> t -> unit
  *)
 val fold : fvar:('a -> Var.t -> 'a) -> fval:('a -> value -> 'a) -> init:'a -> t -> 'a
 
+val size : fvar:(Var.t -> int) ->
+           fval:(value -> int) ->
+           fbox:(t -> int) ->
+           aggr:(int -> int -> int) ->
+           zero:int ->
+           t -> int
+
 exception Different_shape of int * int
 
 type label = L | R

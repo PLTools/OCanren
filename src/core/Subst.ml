@@ -114,6 +114,15 @@ let fold ~fvar ~fval ~init env subst x =
   in
   Term.fold x ~init ~fval ~fvar:deepfvar
 
+let size ~fvar ~fval ~fbox ~aggr ~zero env subst x =
+  let rec deepfvar v =
+    Env.check_exn env v;
+    match walk env subst v with
+    | Var v   -> fvar v
+    | Value x -> Term.size ~fval ~fvar:deepfvar ~fbox ~aggr ~zero x
+  in
+  Term.size ~fval ~fvar:deepfvar ~fbox ~aggr ~zero x
+
 exception Occurs_check
 
 let rec occurs env subst var term =
@@ -186,6 +195,11 @@ let freevars env subst x =
   Env.freevars env @@ apply env subst x
 
 let is_bound = Term.VarMap.mem
+
+let bound_var_check e s t =
+  match walk e s t with
+  | Var _   -> false
+  | Value _ -> true
 
 let merge env subst1 subst2 = Term.VarMap.fold (fun var term -> function
   | Some s  -> begin

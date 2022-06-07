@@ -48,6 +48,8 @@ val apply : Env.t -> t -> 'a -> 'a
 (* [is_bound x subst] - checks whether [x] is bound by [subst] *)
 val is_bound : Term.Var.t -> t -> bool
 
+val bound_var_check : Env.t -> t -> Term.Var.t -> bool
+
 (* [freevars env subst x] - returns all free-variables of term [x] *)
 val freevars : Env.t -> t -> 'a -> Term.VarSet.t
 
@@ -73,6 +75,13 @@ val merge : Env.t -> t -> t -> t option
  *   Subsumption relation forms a partial order on the set of substitutions.
  *)
 val subsumed : Env.t -> t -> t -> bool
+
+val size : fvar:(Term.Var.t -> int) ->
+           fval:(Term.value -> int) ->
+           fbox:(Term.t     -> int) ->
+           aggr:(int -> int -> int) ->
+           zero:int ->
+            Env.t -> t -> Term.t -> int
 
 module Answer :
   sig

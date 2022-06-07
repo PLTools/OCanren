@@ -208,6 +208,26 @@ let rec fold ~fvar ~fval ~init x =
     fval init x
   end
 
+let rec size ~fvar ~fval ~fbox ~aggr ~zero x =
+  let tx = Obj.tag x in
+  if is_box tx then
+    let sx = Obj.size x in
+    if is_var tx sx x then
+      fvar (Obj.magic x)
+    else
+      let rec inner i acc =
+        if i < sx then
+          let acc = aggr acc (size ~fvar ~fval ~fbox ~aggr ~zero (Obj.field x i)) in
+          inner (i + 1) acc
+        else acc
+      in
+      inner 0 zero + fbox x
+  else begin
+    is_valid_tag_exn tx;
+    fval x
+  end
+
+
 exception Different_shape of int * int
 
 type label = L | R

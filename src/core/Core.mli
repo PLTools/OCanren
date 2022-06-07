@@ -19,9 +19,24 @@
 
 open Logic
 
+module Answer :
+  sig
+    type t
+    val env : t -> Env.t
+    val ctr_term : t -> Term.t
+  end
+
 module State :
   sig
     type t
+    val empty     : unit -> t
+    val unify     : 'a ilogic -> 'a ilogic -> t -> t option
+    val diseq     : 'a ilogic -> 'a ilogic -> t -> t option
+    val fresh     : t -> 'a
+    val new_scope : t -> t
+    val reify     : 'a -> t -> Answer.t list
+    val env       : t -> Env.t
+    val subst     : t -> Subst.t
   end
 
 (** Goal converts a state into a lazy stream of states *)
