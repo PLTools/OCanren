@@ -1,2 +1,2 @@
-  $ pp_repr test002repr.ml | ocamlformat --impl --enable-outside-detected-project --profile=compact -q -
+  $ pp_repr test002repr.ml | ocamlformat --impl --enable-outside-detected-project --profile=conventional -q -
   let _ = ("1 + 2", 1 + 2)

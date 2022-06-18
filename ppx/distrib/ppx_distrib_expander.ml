@@ -252,6 +252,9 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
   in
   let creators =
     let name cd = mangle_construct_name cd.pcd_name.txt in
+    let make_stri prim_pat add_args rhs =
+      [%stri let [%p prim_pat] = [%e add_args [%expr OCanren.inji [%e rhs]]]]
+    in
     match base_tdecl.ptype_kind with
     | Ptype_variant cds ->
       List.map cds ~f:(fun cd ->
@@ -260,6 +263,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
             | None -> name cd
             | Some name -> name
           in
+          let prim_pat = Pat.var ~loc (Located.mk ~loc name) in
           match cd.pcd_args with
           | Pcstr_tuple xs ->
             let args = List.map xs ~f:(fun _ -> Ppxlib.gen_symbol ()) in
@@ -270,30 +274,53 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
                 List.fold_right ~init:rhs args ~f:(fun x acc ->
                     Exp.fun_ nolabel None (Pat.var (Located.mk ~loc x)) acc)
             in
-            [%stri
-              let [%p Pat.var ~loc (Located.mk ~loc name)] =
-                [%e
-                  add_args
-                    [%expr
-                      OCanren.inji
-                        [%e
-                          Exp.construct
-                            (Located.map_lident cd.pcd_name)
-                            (if List.is_empty args
-                            then None
-                            else
-                              Some (Exp.mytuple ~loc (List.map args ~f:(Exp.lident ~loc))))]]]
-              ;;]
-          | _ ->
-            failwiths
-              ~loc:base_tdecl.ptype_loc
-              "constructors with records are not implemented")
-    | Ptype_record _ ->
-      failwiths
-        ~loc:base_tdecl.ptype_loc
-        "%s %d Record constructors are not implemented"
-        Caml.__FILE__
-        Caml.__LINE__
+            make_stri
+              prim_pat
+              add_args
+              (Exp.construct
+                 (Located.map_lident cd.pcd_name)
+                 (if List.is_empty args
+                 then None
+                 else Some (Exp.mytuple ~loc (List.map args ~f:(Exp.lident ~loc)))))
+          | Pcstr_record ls ->
+            let add_args rhs =
+              List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
+                  Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
+            in
+            make_stri
+              prim_pat
+              add_args
+              (Exp.construct
+                 (Located.map_lident cd.pcd_name)
+                 (Option.some
+                 @@ Exp.record
+                      ~loc
+                      (List.map
+                         ~f:(fun { pld_name } ->
+                           let ident = Lident pld_name.txt in
+                           let loc = pld_name.loc in
+                           Located.mk ~loc ident, Exp.ident ~loc ident)
+                         ls)
+                      None)))
+    | Ptype_record ls ->
+      let add_args rhs =
+        List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
+            Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
+      in
+      let prim_pat = Pat.var ~loc base_tdecl.ptype_name in
+      [ make_stri
+          prim_pat
+          add_args
+          (Exp.record
+             ~loc
+             (List.map
+                ~f:(fun { pld_name } ->
+                  let ident = Lident pld_name.txt in
+                  let loc = pld_name.loc in
+                  Located.mk ~loc ident, Exp.ident ~loc ident)
+                ls)
+             None)
+      ]
     | Ptype_open | Ptype_abstract ->
       failwiths
         ~loc:base_tdecl.ptype_loc
