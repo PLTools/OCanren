@@ -1,8 +1,6 @@
 open OCanren
 open Tester
 
-let rec zed f x = f (zed f) x
-
 module _ = struct
   [%%distrib
   type nonrec 'a t =

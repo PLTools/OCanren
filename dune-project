@@ -16,26 +16,23 @@
  (name OCanren)
  (synopsis "Implementation of miniKanren relational (logic) EDSL")
  (description
-"\| The family of miniKanren derivatives has many implementations. This
-"\| one is typed embedding to OCaml. The original implementation for
-"\| this is in scheme and can be found at https://github.com/michaelballantyne/faster-miniKanren .
-"\|
-"\| Features:
-"\| 1) disequality constraints
-"\| 2) relational standard library: lists, nats
-)
+  "The family of miniKanren derivatives has many implementations. This\none is typed embedding to OCaml. The original implementation for\nthis is in scheme and can be found at https://github.com/michaelballantyne/faster-miniKanren .\n\nFeatures:\n1) disequality constraints\n2) relational standard library: lists, nats\n")
  (depends
   (ocaml
    (>= 4.10))
-   dune-configurator
-   ocamlfind
-   camlp5
-   logger-p5
-   (GT (>= 0.5))
-   (benchmark :with-test)
-   (ocamlformat (and :with-test (<= 0.20)))
-   ppx_inline_test
-   mtime)
+  dune-configurator
+  ocamlfind
+  camlp5
+  logger-p5
+  (GT
+   (>= 0.5))
+  (benchmark :with-test)
+  (ocamlformat
+   (and
+    :with-test
+    (>= 0.22)))
+  ppx_inline_test
+  mtime)
  (authors
   "Dmitrii Boulytchev https://github.com/dboulytchev"
   "Dmitrii Kosarev https://github.com/Kakadu"
@@ -51,25 +48,7 @@
  (synopsis
   "Implementation of miniKanren relational (logic) EDSL: PPX extensions")
  (description
-"\| PPX rewriters for writing relational programs more conveniently.
-"\|
-"\| 1) `ppx_fresh` -- a clone of original miniKanren syntax
-"\|
-"\|   fresh (x...) goal
-"\|
-"\| expands into
-"\|
-"\|   Fresh.numeral (fun x ... -> goal)
-"\|
-"\| 2) `ppx_distrib` for easier generation of type-safe wrappers: distrib functor, etc...
-"\|
-"\|   [%%distrib
-"\|     type t = fully_abstract_typee
-"\|     type ground = ...
-"\|   ]
-"\|
-"\| 3) `ppx_repr` for test. Expands `REPR(expr)` to `(string_of_expr expr, expr)`
-)
+  "PPX rewriters for writing relational programs more conveniently.\n\n1) `ppx_fresh` -- a clone of original miniKanren syntax\n\n  fresh (x...) goal\n\nexpands into\n\n  Fresh.numeral (fun x ... -> goal)\n\n2) `ppx_distrib` for easier generation of type-safe wrappers: distrib functor, etc...\n\n  [%%distrib\n    type t = fully_abstract_typee\n    type ground = ...\n  ]\n\n3) `ppx_repr` for test. Expands `REPR(expr)` to `(string_of_expr expr, expr)`\n")
  (depends
   (ocaml
    (>= 4.10))
