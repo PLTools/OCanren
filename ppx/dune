@@ -1,7 +1,7 @@
 (library
  (name myhelpers)
  (public_name OCanren-ppx.internals)
- (libraries base ppxlib)
+ (libraries ppxlib ppxlib.stdppx)
  (wrapped false)
  (modules myhelpers))
 

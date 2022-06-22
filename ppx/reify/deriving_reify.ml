@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren. PPX syntax extensions.
- * Copyright (C) 2015-2021
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -17,8 +18,8 @@
  *)
 
 module Pprintast_ = Pprintast
-open Base
 open Ppxlib
+open Stdppx
 open Ppxlib.Ast_builder.Default
 module Format = Caml.Format
 open Myhelpers

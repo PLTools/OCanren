@@ -6,8 +6,8 @@
  * St.Petersburg State University, JetBrains Research
  *)
 
-open Base
 open Ppxlib
+open Stdppx
 
 let lident_of_list = function
   | [] -> failwith "Bad argument: lident_of_list"

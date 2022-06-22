@@ -2,7 +2,7 @@
  (name ppx_deriving_reify)
  (public_name OCanren-ppx.ppx_deriving_reify)
  (kind ppx_rewriter)
- (libraries base ppxlib OCanren-ppx.internals)
+ (libraries ppxlib ppxlib.stdppx OCanren-ppx.internals)
  (modules deriving_reify)
  (flags
   (:standard -warn-error -A -rectypes))

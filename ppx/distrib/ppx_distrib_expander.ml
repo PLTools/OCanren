@@ -7,8 +7,8 @@
  *)
 
 module Pprintast_ = Pprintast
-open Base
 open Ppxlib
+open Stdppx
 open Ppxlib.Ast_builder.Default
 open Ppxlib.Ast_helper
 open Printf
@@ -42,7 +42,7 @@ let mangle_construct_name name =
   let low =
     String.mapi
       ~f:(function
-        | 0 -> Char.lowercase
+        | 0 -> Char.lowercase_ascii
         | _ -> Fn.id)
       name
   in
@@ -237,8 +237,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     let ptype_manifest =
       match tdecl.ptype_manifest with
       | None -> failwiths ~loc:tdecl.ptype_loc "No manifest"
-      | Some ({ ptyp_desc = Ptyp_constr (id, args) } as typ) ->
-        Option.some (injectify ~loc typ)
+      | Some ({ ptyp_desc = Ptyp_constr (id, args) } as typ) -> Some (injectify ~loc typ)
       | t -> t
     in
     type_declaration
@@ -292,16 +291,16 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
               add_args
               (Exp.construct
                  (Located.map_lident cd.pcd_name)
-                 (Option.some
-                 @@ Exp.record
-                      ~loc
-                      (List.map
-                         ~f:(fun { pld_name } ->
-                           let ident = Lident pld_name.txt in
-                           let loc = pld_name.loc in
-                           Located.mk ~loc ident, Exp.ident ~loc ident)
-                         ls)
-                      None)))
+                 (Some
+                    (Exp.record
+                       ~loc
+                       (List.map
+                          ~f:(fun { pld_name } ->
+                            let ident = Lident pld_name.txt in
+                            let loc = pld_name.loc in
+                            Located.mk ~loc ident, Exp.ident ~loc ident)
+                          ls)
+                       None))))
     | Ptype_record ls ->
       let add_args rhs =
         List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
