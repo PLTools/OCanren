@@ -17,7 +17,9 @@
  * (enclosed in the file COPYING).
  *)
 
-(** Stream type *)
+(** Stream type to represent an infinite sequence of results for a relational query.
+    By convention it is called 'stream' but internally it is more like OCaml's {!Seq.t},
+    it doesn't do any memoization because in relational programming it is not needed. *)
 type 'a t
 
 (** {2 Constructors} *)

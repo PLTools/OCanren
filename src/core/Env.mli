@@ -17,6 +17,11 @@
  * (enclosed in the file COPYING).
  *)
 
+(**
+  A distinct environment is associated with each {!OCanren.run}. Every fresh variable is
+  associated with an emvironment. Using nested run's with reusing of fresh variables
+  from the previous run will lead to runtime error due to usage of alien environment. *)
+
 type t
 
 val empty         : unit -> t
@@ -39,8 +44,8 @@ val is_open       : t -> 'a -> bool
 
 val equal         : t -> t -> bool
 
+(** Essentially, a reader monad over Env.t. Useful for reification. *)
 module Monad : sig
-  (* `'a Env.t` --- essentially a reader monad *)
   type nonrec 'a t = t -> 'a
 
   val return : 'a -> 'a t
@@ -51,13 +56,16 @@ module Monad : sig
 
   val (<*>):  ('a -> 'b) t -> 'a t -> 'b t
 
+  (** Three functions {!chain}, {!(<..>)} and {!list_mapm} are used for constructing a reifier. *)
+
   val chain :  ('a t -> 'b t) -> ('a -> 'b) t
 
   val (<..>): ('a -> 'b) t -> ('b -> 'c) t -> ('a -> 'c) t
 
   val list_mapm : f:('a t -> 'b t) -> 'a list -> 'b list t
 
-  (* Do-notation is avaliable since OCaml 4.08 *)
+  (** Do-notation is avaliable since OCaml 4.08. See OCaml manual for details. *)
+
   module Syntax : sig
     val ( let* ) : 'a t -> ('a -> 'b t ) -> 'b t
     val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
