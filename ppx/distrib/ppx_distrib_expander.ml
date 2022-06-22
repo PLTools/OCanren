@@ -373,7 +373,6 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         in
         [%expr
           let open Env.Monad in
-          let open Env.Monad.Syntax in
           Reifier.fix (fun self ->
               [%e base_reifier]
               <..> chain

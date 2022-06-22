@@ -183,13 +183,11 @@
   
       let (prj_exn : (_, (GT.string, ground Std.List.ground) t) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self ->
             OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn (Std.List.prj_exn self)) )
   
       let (reify : (_, (GT.string OCanren.logic, logic Std.List.logic) t OCanren.logic) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self ->
             OCanren.reify
             <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt OCanren.reify (Std.List.reify self)))) )
@@ -487,7 +485,6 @@
             , (GT.string, Gterm.ground, (GT.string, ground) Std.Pair.ground Std.List.ground) t )
             Reifier.t ) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self ->
             OCanren.prj_exn
             <..> chain
@@ -503,7 +500,6 @@
               OCanren.logic )
             Reifier.t ) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self ->
             OCanren.reify
             <..> chain
@@ -638,12 +634,10 @@
   
       let (prj_exn : (_, t) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self -> OCanren.prj_exn <..> chain fmapt)
   
       let (reify : (_, t OCanren.logic) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self -> OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:fmapt)))
   
       let t x y = OCanren.inji (T {x; y})
@@ -767,12 +761,10 @@
   
       let (prj_exn : (_, t) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self -> OCanren.prj_exn <..> chain fmapt)
   
       let (reify : (_, t OCanren.logic) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self -> OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:fmapt)))
   
       let t x y = OCanren.inji {x; y}

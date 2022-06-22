@@ -18,12 +18,10 @@
   
       let (prj_exn : (_, ground t) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt self))
   
       let (reify : (_, logic t OCanren.logic) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self ->
             OCanren.reify
             <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt self))) )
@@ -59,12 +57,10 @@
   
       let prj_exn ra =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt ra))
   
       let reify ra =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self ->
             OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt ra))) )
   
@@ -104,12 +100,10 @@
   
       let prj_exn ra =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt ra self))
   
       let reify ra =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self ->
             OCanren.reify
             <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt ra self))) )
@@ -164,13 +158,11 @@
   
       let (prj_exn : (_, GT.int t) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self ->
             OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn) )
   
       let (reify : (_, GT.int OCanren.logic t OCanren.logic) Reifier.t) =
         let open Env.Monad in
-        let open Env.Monad.Syntax in
         Reifier.fix (fun self ->
             OCanren.reify
             <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt OCanren.reify))) )
