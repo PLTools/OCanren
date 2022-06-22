@@ -56,7 +56,7 @@ module Reifier : sig
   *)
   val prj_exn : ('a ilogic, 'a) t
 
-  (* val prj : (int -> 'a) -> ('a ilogic, 'a) t *)
+  val prj : (int -> 'a) -> ('a ilogic, 'a) t
 
 
   (* Interesting part --- we can apply a reifier to a value dipped into `State.t` comonad *)
