@@ -38,10 +38,17 @@ type ('step_info, 'history) updater   = state -> 'history -> 'history call -> 's
 type ('step_info, 'history) separator = state -> 'history conj list -> 'history conj list * 'history conj list * 'step_info
 
 type ('step_info, 'history) strategy  = {
-  init      : 'history init;
-  cleaner   : 'history cleaner;
-  updater   : ('step_info, 'history) updater;
-  separator : ('step_info, 'history) separator
+  blank_info : unit -> 'step_info;
+  init       : 'history init;
+  cleaner    : 'history cleaner;
+  updater    : ('step_info, 'history) updater;
+  separator  : ('step_info, 'history) separator
+}
+
+type fair_history = { 
+  hist       : int list M.t;
+  unfolded   : bool;
+  need_clean : bool
 }
 
 (*************************************************************************************************)
@@ -160,7 +167,7 @@ let call n name f = Call.create n name f
 
 (*************************************************************************************************)
 
-let unfold ((_, f, args) as call, history) { updater } info state =
+let unfold ((name, f, args) as call, history) { updater } info state =
   f args state (updater state history call info)
 
 let rec split_answers = function
@@ -179,13 +186,20 @@ let rec step strategy = function
   let is_empty = function
     | [] -> true
     | _  -> false in
-  match strategy.separator state conjs with
-  | _, [], _           -> step strategy (And (state, L.map (strategy.cleaner state) conjs))
-  | a, (conj::b), info ->
-    match unfold conj strategy info state with
-    | None                                      -> None, []
-    | Some stream when is_empty a && is_empty b -> split_answers stream
-    | Some stream                               -> Some (push stream a b), []
+  match conjs with
+  | [conj] -> 
+    begin match unfold conj strategy (strategy.blank_info ()) state with
+    | None        -> None, []
+    | Some stream -> split_answers stream
+  end
+  | _ ->
+    match strategy.separator state conjs with
+    | _, [], _           -> step strategy (And (state, L.map (strategy.cleaner state) conjs))
+    | a, (conj::b), info ->
+      match unfold conj strategy info state with
+      | None                                      -> None, []
+      | Some stream when is_empty a && is_empty b -> split_answers stream
+      | Some stream                               -> Some (push stream a b), []
 
 (*************************************************************************************************)
 
@@ -241,7 +255,7 @@ let run n m r strategy f =
   let rec run n stream acc =
     let stream, answers = step strategy stream in
     let amount = L.length answers in
-    if amount >= n then take n answers else
+    if amount >= n then take n answers @ acc else
       match stream with
       | None        -> answers @ acc
       | Some stream -> run (n - amount) stream (answers @ acc) in 
@@ -251,7 +265,7 @@ let run n m r strategy f =
                         | None -> None, []
                         | Some stream -> split_answers stream in
   let amount = L.length answers in
-  let answers = if amount > n then take n answers else
+  let answers = if amount >= n then take n answers else
                   match stream with
                   | None        -> answers
                   | Some stream -> run (n - amount) stream answers in
@@ -276,42 +290,51 @@ let term_height state t =
     ~aggr:max
     ~zero:0
 
-let rec separate_by_pred pred list =
-  match list with
-  | []      -> [], [], None
-  | x :: xs ->
-    let res, last = pred x in
-    if res then [], list, last else
-      let l1, l2, last = separate_by_pred pred xs in
-      x :: l1, l2, last
-
 (*************************************************************************************************)
 
-let print_stream stream hprinter =
+let print_stream stream term_height hprinter =
   let print_height s t = sprintf "%d" (term_height s t) in
   let rec print_stream = function
-  | Or (a, b)                        -> sprintf "(%s) \\/ (%s)" (print_stream a) (print_stream b)
+  | Or (a, b)                        -> sprintf "%s\n\\/\n     %s" (print_stream a) (print_stream b)
   | And (s, [])                      -> sprintf "success"
   | And (s, [(name, _, a), h])       -> sprintf "%s(%s) [%s]" name (String.concat ", " (L.map (print_height s) a)) (hprinter h)
-  | And (s, ((name, _, a), h) :: xs) -> sprintf "%s(%s) [%s] /\\ %s" name (String.concat ", " (L.map (print_height s) a)) (hprinter h)
+  | And (s, ((name, _, a), h) :: xs) -> sprintf "%s(%s) [%s] \n  /\\ %s" name (String.concat ", " (L.map (print_height s) a)) (hprinter h)
                                                                          (print_stream (And (s, xs))) in
   match stream with
   | None        -> "falure"
   | Some stream -> print_stream stream
 
-let fair_hprinter (h, b) = 
+let fair_hprinter h = 
   let print_args a = String.concat ", " (L.map (sprintf "%d") a) in
-  let th = String.concat "; " (L.map (fun (n, a) -> sprintf "%s(%s)" n (print_args a)) (L.of_seq (M.to_seq h))) in
-  sprintf "%s | %b" th b
+  let hist_list = L.of_seq (M.to_seq h.hist) in
+  sprintf "hist (%d) = %s |  unfolded = %b | need_clean = %b"
+   (M.cardinal h.hist) 
+   (String.concat "; " (L.map (fun (n, a) -> sprintf "%s(%s)" n (print_args a)) hist_list))
+   h.unfolded
+   h.need_clean
+
+let show_steps goal strategy term_height hprinter n =
+  let rec show_step stream m =
+    if m > 0 then
+      match stream with
+      | None -> ()
+      | Some stream ->
+        let next, ans = step strategy stream in
+        printf "step %2d:\n     %s\nanswers: %d\n\n" (n - m + 1) (print_stream next term_height hprinter) (L.length ans);
+        show_step next (m - 1) in
+  let stream = goal (State.empty ()) (strategy.init ()) in
+  printf "step  0:\n     %s\n\n" (print_stream stream term_height hprinter);
+  show_step stream n
 
 (*************************************************************************************************)
 
 let lb_strategy =
+  let blank_info _    = ()    in
   let init _          = ()    in
   let cleaner _ c     = c     in
   let updater _ _ _ _ = ()    in
   let separator _ l   = [], l, () in
-  { init; cleaner; updater; separator }
+  { blank_info; init; cleaner; updater; separator }
 
 (*************************************************************************************************)
 
@@ -331,71 +354,77 @@ let fair_strategy info height =
     | None   -> true
     | Some v -> Subst.bound_var_check env subst v in
 
-  let init _ = (M.empty, false) in
+  let blank_info _ = None in
+
+  let init _ = { hist       = M.empty;
+                 unfolded   = false;
+                 need_clean = false 
+               } in
   
-  let cleaner _ (c, _) = c, (M.empty, false) in
+  let cleaner h (c, _) = c, init h in
   
-  let updater s (h, _) (n, _, args) last =
+  let updater s h (n, _, args) last =
+    if h.need_clean then h else
     let args =
       match last with
-      | None   -> L.map (term_height s) (sublist args (M.find n info))
+      | None   -> L.map (height s) (sublist args (M.find n info))
       | Some i -> i in
-    M.add n args h, true in
+    { h with hist = M.add n args h.hist; unfolded = true } in
   
-  let predicate s ((n, _, args), (h, _)) =
-    let ess_args = sublist args (M.find n info) in
-    if L.exists (is_bound s) ess_args then
-      match M.find_opt n h with
-      | None -> true, None
+  let check_one s ((n, _, args), h) =
+    if h.need_clean then h, None, true else
+    let ess_args = 
+      try sublist args (M.find n info)
+      with Failure s -> failwith (sprintf "check_one (fun: %s), %s" n s) in
+    match ess_args with
+    | [] -> h, None, true
+    | _ ->
+    let has_bounded_arg = L.exists (is_bound s) ess_args in
+    if has_bounded_arg then
+      match M.find_opt n h.hist with
+      | None -> h, None, has_bounded_arg
       | Some prev_heights ->
-        let act_heights = L.map (term_height s) ess_args in
-        L.for_all2 (>=) prev_heights act_heights &&
-        L.exists2 (>) prev_heights act_heights, Some act_heights
-      else false, None in
+        let act_heights = L.map (height s) ess_args in
+        let need_clean =
+          L.exists2 (>) act_heights prev_heights ||
+          L.for_all2 (>=) act_heights prev_heights in
+          { h with need_clean }, Some act_heights, has_bounded_arg
+      else h, None, has_bounded_arg in
     
+  let separate_by_pred pred list =
+    let rec separate_by_pred pred list acc =
+      match list with
+      | []      -> acc, [], None
+      | ((c, _) as x) :: xs ->
+        let h, last, has_bounded_arg = pred x in
+        let x = (c, h) in
+        if has_bounded_arg && not h.need_clean then acc, x :: xs, last else
+          separate_by_pred pred xs (x :: acc) in
+    separate_by_pred pred list [] in
+
+  let rec first_not_unfolded l = 
+    match l with
+    | []      -> [], []
+    | x :: xs -> 
+      if (snd x).unfolded then
+        let l1, l2 = first_not_unfolded xs in x :: l1, l2
+      else [], l in
+
+
   let separator s l =
-    let l1, l2, last = separate_by_pred (predicate s) l in
+    let l1, l2, last = separate_by_pred (check_one s) l in
     match l2 with
     | _ :: _ -> l1, l2, last
-    | _ -> separate_by_pred (fun (_, (_, b)) -> not b, None) l in
+    | _ -> let l1, l2 = first_not_unfolded l in
+           l1, l2, None in
    
-  { init; cleaner; updater; separator }
+  { blank_info; init; cleaner; updater; separator }
 
-(*************************************************************************************************)
-
-open List
-
-let rec appendo_rel x y xy =
-((x === nil ()) &&& (y === xy)) |||
-call_fresh (fun e -> call_fresh (fun xs -> call_fresh (fun xys -> (?&)
-  [(x === e % xs);
-  (xy === e % xys);
-  (appendo xs y xys)]))) 
-and appendo x y xy = call Call.three "appendo" appendo_rel x y xy 
-
-
-let rec reverso_rel xy yx =
- ((xy === nil ()) &&& (yx === nil ())) |||
- call_fresh (fun e -> call_fresh (fun xys -> call_fresh (fun yxs ->
-   (xy === e % xys) &&& 
-   (reverso xys yxs) &&&
-   (appendo yxs (e % nil ()) yx)  
- )))
- and reverso xy yx = call Call.two "reverso" reverso_rel xy yx
-
-let reverso_info = M.of_seq (L.to_seq ["appendo", [true; false; true];
-                                       "reverso", [true; false]])
-
-(*************************************************************************************************)
-
-let rec llist = function
-| []      -> nil ()
-| x :: xs -> !!x % llist xs
 
 (*************************************************************************************************)
 
 open Benchmark
-let _ =
+(* let _ =
   let n : int64 = 100L in
 
   (* let strategy = fair_strategy reverso_info term_height in *)
@@ -407,36 +436,13 @@ let _ =
   let strategy = fair_strategy reverso_info term_height in
 
   let f = run 1 q (fun a -> a#reify (prj_exn Logic.prj_exn)) strategy in
-  latency1 n f (fun a -> reverso a (llist (L.init 50 (fun i -> i))))
-
-(* let _ =
-  let x = run 10 q (fun a -> a#reify (prj_exn Logic.prj_exn)) 
-                    lb_strategy 
-                    (fun a -> reverso (llist [1;2;3]) a) in 
-  L.iter (fun a -> printf "lb: %s\n" (show ground (show int) a)) x *)
+  latency1 n f (fun a -> reverso (llist (L.init 50 (fun i -> i))) a) *)
 
 (* let _ = 
   let x = run 1 q (fun a -> a#reify (prj_exn Logic.prj_exn)) 
                     lb_strategy 
                     (fun a -> reverso a (llist (L.init 0 (fun i -> i)))) in 
   L.iter (fun a -> printf "fair: %s\n" (show ground (show int) a)) x *)
-
-(*************************************************************************************************)
-
-
-
-let show_steps goal strategy hprinter n =
-  let rec show_step stream m =
-    if m > 0 then
-      match stream with
-      | None -> ()
-      | Some stream ->
-        let next, ans = step strategy stream in
-        printf "step %2d: %s\nanswers: %d\n\n" (n - m + 1) (print_stream next hprinter) (L.length ans);
-        show_step next (m - 1) in
-  let stream = goal (State.empty ()) (strategy.init ()) in
-  printf "step  0: %s\n\n" (print_stream stream hprinter);
-  show_step stream n
 
 (*************************************************************************************************)
 (*************************************************************************************************)
@@ -470,7 +476,18 @@ let show_steps goal strategy hprinter n =
   show_steps goal strategy fair_hprinter 100 *)
 
 (* f test: reverso [1;2;3] l *)
+
 (* let _ =
   let strategy = fair_strategy reverso_info term_height in
   let goal = call_fresh (fun l -> reverso l (llist [1;2;3;4;5;6;7])) in
   show_steps goal strategy fair_hprinter 100 *)
+
+
+(*************************************************************************************************)
+
+  (* let _ =
+  let strategy = fair_strategy sorto_info term_height in
+  (* let strategy = lb_strategy in *)
+  let goal = call_fresh (fun a -> sort a (int_list2lnat_llist [0; 1; 2])) in
+  show_steps goal strategy fair_hprinter 1000 *)
+  (* show_steps goal strategy (fun _ -> "") 1000 *)

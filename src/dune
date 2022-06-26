@@ -13,6 +13,11 @@
   Runconf
   Disequality
   FairOCanren
+  Reverse
+  Sort
+  Bottles
+  Bridge
+  Hanoi
   Option
   Bool
   Nat
