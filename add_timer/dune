@@ -1,0 +1,15 @@
+(library
+ (name install_timer)
+ (modules install_timer)
+ (libraries OCanren mtime.clock.os)
+ (flags
+  (:standard -linkall))
+ (public_name OCanren.install_timer))
+
+(executable
+ (name test_install_timer)
+ (modules test_install_timer)
+ (libraries OCanren install_timer OCanren.tester))
+
+(cram
+ (deps ./test_install_timer.exe))

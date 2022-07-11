@@ -20,13 +20,12 @@
   Timer
   Peep
   OCanren)
- (libraries GT mtime mtime.clock.os)
+ (libraries GT)
  (flags
   (:standard -rectypes -short-paths -w -49))
  (preprocess
   (action
    (run
     %{project_root}/camlp5/pp5+gt+plugins+dump.exe
-    ; -D
-    ; STATS
+    %{read-lines:../config/instrumentalization.cfg}
     %{input-file}))))

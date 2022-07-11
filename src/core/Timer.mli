@@ -16,7 +16,16 @@
  * (enclosed in the file COPYING).
  *)
 
-type t = unit -> Mtime.span
-   
-val make : unit -> t
-    
+type span = { ms: float; s: float }
+val empty_span : span
+val add_span : span -> span -> span
+
+module type T = sig
+  type t
+
+  val elapsed : unit -> t
+  val abs_diff : t -> t -> span
+end
+
+val install_timer : (module T) -> unit
+val make : unit -> unit -> span

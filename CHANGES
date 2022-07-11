@@ -1,5 +1,11 @@
 ## 0.3.0 (dev)
 
+### Changed
+
+- ppx_distrib: records support
+- remove `base` as a dependecy
+- remove linking dependency on mtime. Timer is put to separate ocamlfind package
+
 ## 0.3.0-alpha1 (12-02-2022)
 
 ### Changed

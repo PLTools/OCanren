@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2020
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -16,17 +16,28 @@
  * (enclosed in the file COPYING).
  *)
 
-type t = unit -> Mtime.span
-  
-let make () =
-  let origin = Mtime_clock.elapsed () in
-  fun () ->
-  Mtime.Span.abs_diff origin (Mtime_clock.elapsed ())
+type span = { ms: float; s: float }
 
-  (*
-  let open Unix in
-  let origin = (times ()).tms_utime in
-  (fun () ->
-    (times ()).tms_utime -. origin
-  ) *)
-    
+let empty_span = { ms=0.0; s=0.0 }
+
+let add_span {ms;s} {ms=ms2; s=s2} = { ms = ms +. ms2; s = s +. s2 }
+
+module type T = sig
+  type t
+
+  val elapsed : unit -> t
+  val abs_diff : t -> t -> span
+end
+
+let timer : (module T) option ref = ref None
+
+let install_timer t = timer := Some t
+
+let make () =
+  match !timer with
+  | None -> failwith "Timer is not installed. Add linkage with OCanren.install_timer"
+  | Some ((module Timer : T) ) ->
+    let origin = Timer.elapsed () in
+    fun () ->
+      let next = Timer.elapsed () in
+      Timer.abs_diff next origin

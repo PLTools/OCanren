@@ -22,7 +22,7 @@
 *)
 IFDEF STATS THEN
 val unification_counter      : unit -> int
-val unification_time         : unit -> Mtime.span
+val unification_time         : unit -> Timer.span
 val walk_counter             : unit -> int
 val conj_counter             : unit -> int
 val disj_counter             : unit -> int

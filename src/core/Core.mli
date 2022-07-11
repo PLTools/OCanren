@@ -281,7 +281,7 @@ module Tabling :
 
 IFDEF STATS THEN
 val unification_counter : unit -> int
-val unification_time    : unit -> Mtime.span
+val unification_time    : unit -> Timer.span
 val conj_counter        : unit -> int
 val disj_counter        : unit -> int
 val delay_counter       : unit -> int

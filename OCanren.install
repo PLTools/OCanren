@@ -35,6 +35,13 @@ lib: [
   "_build/install/default/lib/OCanren/Timer.ml"
   "_build/install/default/lib/OCanren/Timer.mli"
   "_build/install/default/lib/OCanren/dune-package"
+  "_build/install/default/lib/OCanren/install_timer/install_timer.a" {"install_timer/install_timer.a"}
+  "_build/install/default/lib/OCanren/install_timer/install_timer.cma" {"install_timer/install_timer.cma"}
+  "_build/install/default/lib/OCanren/install_timer/install_timer.cmi" {"install_timer/install_timer.cmi"}
+  "_build/install/default/lib/OCanren/install_timer/install_timer.cmt" {"install_timer/install_timer.cmt"}
+  "_build/install/default/lib/OCanren/install_timer/install_timer.cmx" {"install_timer/install_timer.cmx"}
+  "_build/install/default/lib/OCanren/install_timer/install_timer.cmxa" {"install_timer/install_timer.cmxa"}
+  "_build/install/default/lib/OCanren/install_timer/install_timer.ml" {"install_timer/install_timer.ml"}
   "_build/install/default/lib/OCanren/oCanren.cmi"
   "_build/install/default/lib/OCanren/oCanren.cmt"
   "_build/install/default/lib/OCanren/oCanren.cmx"
@@ -122,6 +129,7 @@ lib: [
 ]
 libexec: [
   "_build/install/default/lib/OCanren/OCanren.cmxs"
+  "_build/install/default/lib/OCanren/install_timer/install_timer.cmxs" {"install_timer/install_timer.cmxs"}
   "_build/install/default/lib/OCanren/syntax/pa_ocanren.cmxs" {"syntax/pa_ocanren.cmxs"}
   "_build/install/default/lib/OCanren/tester/tester.cmxs" {"tester/tester.cmxs"}
 ]

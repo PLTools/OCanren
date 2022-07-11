@@ -21,7 +21,7 @@ open Logic
 IFDEF STATS THEN
 type stat = {
   mutable unification_count : int;
-  mutable unification_time  : Mtime.span;
+  mutable unification_time  : Timer.span;
   mutable conj_counter      : int;
   mutable disj_counter      : int;
   mutable delay_counter     : int
@@ -29,7 +29,7 @@ type stat = {
 
 let stat = {
   unification_count = 0;
-  unification_time  = Mtime.Span.zero;
+  unification_time  = Timer.empty_span;
   conj_counter      = 0;
   disj_counter      = 0;
   delay_counter     = 0
@@ -48,7 +48,7 @@ let (unification_incr,unification_time_incr,conj_counter_incr,disj_counter_incr,
   | Some _ ->
     let unification_incr     () = stat.unification_count <- stat.unification_count + 1 in
     let unification_time_incr t =
-      stat.unification_time <- Mtime.Span.add stat.unification_time (t ()) in
+      stat.unification_time <- Timer.add_span stat.unification_time (t ()) in
     let conj_counter_incr  () = stat.conj_counter  <- stat.conj_counter + 1 in
     let disj_counter_incr  () = stat.disj_counter  <- stat.disj_counter + 1 in
     let delay_counter_incr () = stat.delay_counter <- stat.delay_counter + 1 in

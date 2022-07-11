@@ -1,10 +1,20 @@
 version = "0.3.0"
 description = "Typed embedding of relational programmng language miniKanren to OCaml"
-requires = "GT mtime.clock.os"
+requires = "GT"
 archive(byte) = "OCanren.cma"
 archive(native) = "OCanren.cmxa"
 plugin(byte) = "OCanren.cma"
 plugin(native) = "OCanren.cmxs"
+
+package "add_timer" (
+  directory = "add_timer"
+  description = "Installing a timer using Mtime for measurements"
+  requires = "mtime.clock.os"
+  archive(byte) = "add_timer.cma"
+  archive(native) = "add_timer.cmxa"
+  plugin(byte) = "add_timer.cma"
+  plugin(native) = "add_timer.cmxs"
+)
 
 package "syntax" (
   directory = "syntax"
