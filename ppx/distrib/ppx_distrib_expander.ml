@@ -41,9 +41,10 @@ let nolabel = Asttypes.Nolabel
 let mangle_construct_name name =
   let low =
     String.mapi
-      ~f:(function
-        | 0 -> Char.lowercase_ascii
-        | _ -> Fn.id)
+      ~f:
+        (function
+         | 0 -> Char.lowercase_ascii
+         | _ -> Fn.id)
       name
   in
   match low with
@@ -57,11 +58,11 @@ let has_name_attr (xs : attributes) =
   let exception Found of string in
   try
     List.iter xs ~f:(function
-        | { attr_loc; attr_name = { txt = "name" }; attr_payload = PStr [ si ] } ->
-          let open Ast_pattern in
-          let p = pstr_eval (pexp_constant (pconst_string __ __ none)) nil in
-          parse p attr_loc ~on_error:(fun _ -> ()) si (fun s -> raise (Found s))
-        | _ -> ());
+      | { attr_loc; attr_name = { txt = "name" }; attr_payload = PStr [ si ] } ->
+        let open Ast_pattern in
+        let p = pstr_eval (pexp_constant (pconst_string __ __ none)) nil in
+        parse p attr_loc ~on_error:(fun _ -> ()) si (fun s -> raise (Found s))
+      | _ -> ());
     None
   with
   | Found s -> Some s
@@ -75,30 +76,30 @@ include struct
       | [%type: int] as t -> oca_logic_ident ~loc:t.ptyp_loc t
       | t ->
         (match t.ptyp_desc with
-        | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) ->
-          oca_logic_ident ~loc:t.ptyp_loc t
-        | Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) ->
-          ptyp_constr
-            ~loc
-            (Located.mk
-               ~loc:t.ptyp_loc
-               (lident_of_list [ "OCanren"; "Std"; "List"; kind ]))
-            (List.map ~f:helper xs)
-        | Ptyp_constr ({ txt = Ldot (path, "ground") }, xs) ->
-          ptyp_constr ~loc (Located.mk ~loc (Ldot (path, kind))) (List.map ~f:helper xs)
-        | Ptyp_constr ({ txt = Lident "ground" }, xs) ->
-          ptyp_constr ~loc (Located.mk ~loc (Lident kind)) xs
-        | Ptyp_tuple [ l; r ] ->
-          ptyp_constr
-            ~loc
-            (Located.mk
-               ~loc:t.ptyp_loc
-               (lident_of_list [ "OCanren"; "Std"; "Pair"; kind ]))
-            [ helper l; helper r ]
-        | Ptyp_constr ({ txt = Lident s }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
-        | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
-          oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
-        | _ -> t)
+         | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) ->
+           oca_logic_ident ~loc:t.ptyp_loc t
+         | Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) ->
+           ptyp_constr
+             ~loc
+             (Located.mk
+                ~loc:t.ptyp_loc
+                (lident_of_list [ "OCanren"; "Std"; "List"; kind ]))
+             (List.map ~f:helper xs)
+         | Ptyp_constr ({ txt = Ldot (path, "ground") }, xs) ->
+           ptyp_constr ~loc (Located.mk ~loc (Ldot (path, kind))) (List.map ~f:helper xs)
+         | Ptyp_constr ({ txt = Lident "ground" }, xs) ->
+           ptyp_constr ~loc (Located.mk ~loc (Lident kind)) xs
+         | Ptyp_tuple [ l; r ] ->
+           ptyp_constr
+             ~loc
+             (Located.mk
+                ~loc:t.ptyp_loc
+                (lident_of_list [ "OCanren"; "Std"; "Pair"; kind ]))
+             [ helper l; helper r ]
+         | Ptyp_constr ({ txt = Lident s }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
+         | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
+           oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
+         | _ -> t)
     in
     match typ with
     | { ptyp_desc = Ptyp_constr (id, args) } ->
@@ -226,9 +227,9 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     in
     let ptype_attributes =
       List.filter tdecl.ptype_attributes ~f:(fun attr ->
-          match attr.attr_name.txt with
-          | "distrib" -> false
-          | _ -> true)
+        match attr.attr_name.txt with
+        | "distrib" -> false
+        | _ -> true)
     in
     { tdecl with ptype_name = Located.mk ~loc "logic"; ptype_manifest; ptype_attributes }
   in
@@ -257,56 +258,58 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     match base_tdecl.ptype_kind with
     | Ptype_variant cds ->
       List.map cds ~f:(fun cd ->
-          let name =
-            match has_name_attr cd.pcd_attributes with
-            | None -> name cd
-            | Some name -> name
+        let name =
+          match has_name_attr cd.pcd_attributes with
+          | None -> name cd
+          | Some name -> name
+        in
+        let prim_pat = Pat.var ~loc (Located.mk ~loc name) in
+        match cd.pcd_args with
+        | Pcstr_tuple xs ->
+          let args = List.map xs ~f:(fun _ -> Ppxlib.gen_symbol ()) in
+          let add_args rhs =
+            match args with
+            | [] -> [%expr fun () -> [%e rhs]]
+            | args ->
+              List.fold_right ~init:rhs args ~f:(fun x acc ->
+                Exp.fun_ nolabel None (Pat.var (Located.mk ~loc x)) acc)
           in
-          let prim_pat = Pat.var ~loc (Located.mk ~loc name) in
-          match cd.pcd_args with
-          | Pcstr_tuple xs ->
-            let args = List.map xs ~f:(fun _ -> Ppxlib.gen_symbol ()) in
-            let add_args rhs =
-              match args with
-              | [] -> [%expr fun () -> [%e rhs]]
-              | args ->
-                List.fold_right ~init:rhs args ~f:(fun x acc ->
-                    Exp.fun_ nolabel None (Pat.var (Located.mk ~loc x)) acc)
-            in
-            make_stri
-              prim_pat
-              add_args
-              (Exp.construct
-                 (Located.map_lident cd.pcd_name)
-                 (if List.is_empty args
-                 then None
-                 else Some (Exp.mytuple ~loc (List.map args ~f:(Exp.lident ~loc)))))
-          | Pcstr_record ls ->
-            let add_args rhs =
-              List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
-                  Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
-            in
-            make_stri
-              prim_pat
-              add_args
-              (Exp.construct
-                 (Located.map_lident cd.pcd_name)
-                 (Some
-                    (Exp.record
-                       ~loc
-                       (List.map
-                          ~f:(fun { pld_name } ->
-                            let ident = Lident pld_name.txt in
-                            let loc = pld_name.loc in
-                            Located.mk ~loc ident, Exp.ident ~loc ident)
-                          ls)
-                       None))))
+          make_stri
+            prim_pat
+            add_args
+            (Exp.construct
+               (Located.map_lident cd.pcd_name)
+               (if List.is_empty args
+               then None
+               else Some (Exp.mytuple ~loc (List.map args ~f:(Exp.lident ~loc)))))
+        | Pcstr_record ls ->
+          let add_args rhs =
+            List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
+              Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
+          in
+          make_stri
+            prim_pat
+            add_args
+            (Exp.construct
+               (Located.map_lident cd.pcd_name)
+               (Some
+                  (Exp.record
+                     ~loc
+                     (List.map
+                        ~f:(fun { pld_name } ->
+                          let ident = Lident pld_name.txt in
+                          let loc = pld_name.loc in
+                          Located.mk ~loc ident, Exp.ident ~loc ident)
+                        ls)
+                     None))))
     | Ptype_record ls ->
       let add_args rhs =
         List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
-            Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
+          Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
       in
-      let prim_pat = Pat.var ~loc base_tdecl.ptype_name in
+      let prim_pat =
+        Pat.var ~loc (Located.map_loc ~f:(fun s -> "make_" ^ s) base_tdecl.ptype_name)
+      in
       [ make_stri
           prim_pat
           add_args
@@ -339,7 +342,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       let loc = tdecl.ptype_loc in
       fun rhs ->
         List.fold_right names ~init:rhs ~f:(fun name acc ->
-            [%expr fun [%p Pat.var (Located.mk ~loc (mk_arg_reifier name))] -> [%e acc]])
+          [%expr fun [%p Pat.var (Located.mk ~loc (mk_arg_reifier name))] -> [%e acc]])
     in
     let rec helper typ : expression =
       let loc = typ.ptyp_loc in
@@ -361,7 +364,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, _) }, args) } ->
         let rhs = pexp_ident ~loc (Located.mk ~loc (Ldot (m, name))) in
         List.fold_left ~init:rhs args ~f:(fun acc x ->
-            pexp_apply ~loc acc [ nolabel, helper x ])
+          pexp_apply ~loc acc [ nolabel, helper x ])
       | _ -> failwiths ~loc:typ.ptyp_loc "not supported: %a" Pprintast.core_type typ
     in
     let body =
@@ -373,12 +376,12 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         [%expr
           let open Env.Monad in
           Reifier.fix (fun self ->
-              [%e base_reifier]
-              <..> chain
-                     [%e
-                       match kind with
-                       | Reify -> [%expr Reifier.zed (Reifier.rework ~fv:[%e fmapt])]
-                       | Prj_exn -> fmapt])]
+            [%e base_reifier]
+            <..> chain
+                   [%e
+                     match kind with
+                     | Reify -> [%expr Reifier.zed (Reifier.rework ~fv:[%e fmapt])]
+                     | Prj_exn -> fmapt])]
       | _ ->
         failwiths
           ~loc:manifest.ptyp_loc
@@ -461,23 +464,23 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
 
 let process_composable =
   List.map ~f:(fun tdecl ->
-      let loc = tdecl.pstr_loc in
-      match tdecl.pstr_desc with
-      | Pstr_type (flg, [ t ]) ->
-        (match t.ptype_manifest with
-        | Some m ->
-          pstr_type
-            ~loc
-            Nonrecursive
-            [ { t with
-                ptype_attributes =
-                  [ attribute
-                      ~loc
-                      ~name:(Located.mk ~loc "deriving")
-                      ~payload:(PStr [ [%stri reify] ])
-                  ]
-              }
-            ]
-        | None -> tdecl)
-      | _ -> tdecl)
+    let loc = tdecl.pstr_loc in
+    match tdecl.pstr_desc with
+    | Pstr_type (flg, [ t ]) ->
+      (match t.ptype_manifest with
+       | Some m ->
+         pstr_type
+           ~loc
+           Nonrecursive
+           [ { t with
+               ptype_attributes =
+                 [ attribute
+                     ~loc
+                     ~name:(Located.mk ~loc "deriving")
+                     ~payload:(PStr [ [%stri reify] ])
+                 ]
+             }
+           ]
+       | None -> tdecl)
+    | _ -> tdecl)
 ;;
