@@ -767,7 +767,7 @@
         let open Env.Monad in
         Reifier.fix (fun self -> OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:fmapt)))
   
-      let t x y = OCanren.inji {x; y}
+      let make_t x y = OCanren.inji {x; y}
     end
   end
   
