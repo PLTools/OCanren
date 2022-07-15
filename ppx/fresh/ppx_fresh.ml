@@ -52,9 +52,8 @@ let is_call_fresh = need_insert_fname ~name:"call_fresh"
 
 let is_unif =
   classify_name ~f:(function
-      | Lident s ->
-        String.length s >= 3 && String.equal (String.sub s ~pos:0 ~len:3) "==="
-      | _ -> false)
+    | Lident s -> String.length s >= 3 && String.equal (String.sub s ~pos:0 ~len:3) "==="
+    | _ -> false)
 ;;
 
 let is_conj = need_insert_fname ~name:"conj"
@@ -129,9 +128,9 @@ let reconstruct_args e =
     try
       Some
         (List.map xs ~f:(fun (_, e) ->
-             match e.pexp_desc with
-             | Pexp_ident { txt = Longident.Lident i; _ } -> i
-             | _ -> raise Not_an_ident))
+           match e.pexp_desc with
+           | Pexp_ident { txt = Longident.Lident i; _ } -> i
+           | _ -> raise Not_an_ident))
     with
     | Not_an_ident -> None
   in
@@ -209,21 +208,21 @@ let mapper =
             [%expr ?&[%e my_list ~loc xs]]
         in
         (match reconstruct_args args with
-        | Some (xs : string list) ->
-          let ans =
-            List.fold_right
-              xs
-              ~f:(fun ident acc ->
-                [%expr
-                  Fresh.one
-                    (fun [%p Pat.var ~loc (Ast_builder.Default.Located.mk ident ~loc)] ->
-                      [%e acc])])
-              ~init:[%expr delay (fun () -> [%e new_body])]
-          in
-          ans
-        | None ->
-          Caml.Format.eprintf "Can't reconstruct args of 'fresh'";
-          { e with pexp_desc = Pexp_apply (e1, [ Nolabel, new_body ]) })
+         | Some (xs : string list) ->
+           let ans =
+             List.fold_right
+               xs
+               ~f:(fun ident acc ->
+                 [%expr
+                   Fresh.one
+                     (fun [%p Pat.var ~loc (Ast_builder.Default.Located.mk ident ~loc)] ->
+                     [%e acc])])
+               ~init:[%expr delay (fun () -> [%e new_body])]
+           in
+           ans
+         | None ->
+           Caml.Format.eprintf "Can't reconstruct args of 'fresh'";
+           { e with pexp_desc = Pexp_apply (e1, [ Nolabel, new_body ]) })
       | Pexp_apply (d, [ (_, body) ]) when is_defer d ->
         let ans = [%expr delay (fun () -> [%e self#expression body])] in
         ans

@@ -17,38 +17,38 @@ module _ = struct
     let prj_exn =
       let open Env.Monad.Syntax in
       Reifier.fix (fun rself ->
-          Reifier.compose
-            OCanren.prj_exn
-            (let* self = rself in
-             Env.Monad.return (GT.gmap t self)))
+        Reifier.compose
+          OCanren.prj_exn
+          (let* self = rself in
+           Env.Monad.return (GT.gmap t self)))
     ;;
 
     (* good reifier *)
     let reify : (injected, logic) Reifier.t =
       let open Env.Monad.Syntax in
       Reifier.fix (fun rself ->
-          Reifier.compose
-            OCanren.reify
-            (let* self = rself in
-             let rec foo = function
-               | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
-               | Value x -> Value ((GT.gmap t self) x)
-             in
-             Env.Monad.return foo))
+        Reifier.compose
+          OCanren.reify
+          (let* self = rself in
+           let rec foo = function
+             | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+             | Value x -> Value ((GT.gmap t self) x)
+           in
+           Env.Monad.return foo))
     ;;
 
     (* trying to make bad  reifier *)
     let reify_bad : (injected, injected t OCanren.logic) Reifier.t =
       let open Env.Monad.Syntax in
       Reifier.fix (fun rself ->
-          Reifier.compose
-            OCanren.reify
-            (let* self = rself in
-             let rec foo = function
-               | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
-               | Value x -> Value ((GT.gmap t Fun.id) x)
-             in
-             Env.Monad.return foo))
+        Reifier.compose
+          OCanren.reify
+          (let* self = rself in
+           let rec foo = function
+             | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+             | Value x -> Value ((GT.gmap t Fun.id) x)
+           in
+           Env.Monad.return foo))
     ;;
 
     let z () = OCanren.inji Z

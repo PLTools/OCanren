@@ -58,38 +58,38 @@ let () =
           manifest2
           other_decls
         ->
-          let open Ppxlib.Ast_builder.Default in
-          let base_tdecl =
-            let td =
-              type_declaration
+        let open Ppxlib.Ast_builder.Default in
+        let base_tdecl =
+          let td =
+            type_declaration
+              ~loc
+              ~name:(Located.mk ~loc "t")
+              ~params:params1
+              ~cstrs:[]
+              ~private_:private1
+              ~kind:kind1
+              ~manifest:manifest1
+          in
+          { td with ptype_attributes = attributes1 }
+        in
+        let items =
+          List.concat
+            [ Ppx_distrib_expander.process_main
                 ~loc
-                ~name:(Located.mk ~loc "t")
-                ~params:params1
-                ~cstrs:[]
-                ~private_:private1
-                ~kind:kind1
-                ~manifest:manifest1
-            in
-            { td with ptype_attributes = attributes1 }
-          in
-          let items =
-            List.concat
-              [ Ppx_distrib_expander.process_main
-                  ~loc
-                  base_tdecl
-                  ( rec_2
-                  , type_declaration
-                      ~loc
-                      ~params:params2
-                      ~cstrs:[]
-                      ~name:(Located.mk ~loc "ground")
-                      ~kind:kind2
-                      ~private_:private2
-                      ~manifest:(Some manifest2) )
-              ; Ppx_distrib_expander.process_composable other_decls
-              ]
-          in
-          pstr_include ~loc (include_infos ~loc (pmod_structure ~loc items)))
+                base_tdecl
+                ( rec_2
+                , type_declaration
+                    ~loc
+                    ~params:params2
+                    ~cstrs:[]
+                    ~name:(Located.mk ~loc "ground")
+                    ~kind:kind2
+                    ~private_:private2
+                    ~manifest:(Some manifest2) )
+            ; Ppx_distrib_expander.process_composable other_decls
+            ]
+        in
+        pstr_include ~loc (include_infos ~loc (pmod_structure ~loc items)))
     ]
   in
   Ppxlib.Driver.register_transformation ~extensions name

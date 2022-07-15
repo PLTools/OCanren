@@ -18,27 +18,27 @@ module TestNat = struct
   let reify_with_compose : (groundi, Std.Nat.logic) Reifier.t =
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        Reifier.compose
-          Reifier.reify
-          (let* fr = self in
-           let rec foo = function
-             | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
-             | Value x -> Value (GT.gmap t fr x)
-           in
-           Env.Monad.return foo))
+      Reifier.compose
+        Reifier.reify
+        (let* fr = self in
+         let rec foo = function
+           | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+           | Value x -> Value (GT.gmap t fr x)
+         in
+         Env.Monad.return foo))
   ;;
 
   let reify : (groundi, Std.Nat.logic) Reifier.t =
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        let* rself = self in
-        let* r = OCanren.reify in
-        let rec foo x =
-          match r x with
-          | Value x -> Value (GT.gmap t rself x)
-          | Var (v, xs) -> Var (v, Stdlib.List.map (GT.gmap logic' (GT.gmap t foo)) xs)
-        in
-        Env.Monad.return foo)
+      let* rself = self in
+      let* r = OCanren.reify in
+      let rec foo x =
+        match r x with
+        | Value x -> Value (GT.gmap t rself x)
+        | Var (v, xs) -> Var (v, Stdlib.List.map (GT.gmap logic' (GT.gmap t foo)) xs)
+      in
+      Env.Monad.return foo)
   ;;
 
   let fmapt : 'a 'b. ('a, 'b) Reifier.t -> 'a t Env.m -> 'b t Env.m =
@@ -84,12 +84,12 @@ module TestNat = struct
       =
      fun onvar onvalue x ->
       Reifier.fix (fun self ->
-          let open Env.Monad.Syntax in
-          let* rsh = Reifier.reify in
-          Env.Monad.return
-            (match rsh x with
-            | Var (n, xs) -> onvar n xs
-            | Value _ as x -> onvalue x))
+        let open Env.Monad.Syntax in
+        let* rsh = Reifier.reify in
+        Env.Monad.return
+          (match rsh x with
+           | Var (n, xs) -> onvar n xs
+           | Value _ as x -> onvalue x))
    ;;
 
     let (_ : (injected t ilogic -> logic t) Env.m) =
@@ -163,10 +163,10 @@ module TestNat = struct
      fun fa ->
       let open Env.Monad.Syntax in
       Reifier.fix (fun self ->
-          Reifier.reify
-          <..>
-          let rec foo x = rework_logic2 ~fdeq:foo ~fv:(fmapt fa) x in
-          chain foo)
+        Reifier.reify
+        <..>
+        let rec foo x = rework_logic2 ~fdeq:foo ~fv:(fmapt fa) x in
+        chain foo)
    ;;
 
     let rework_logic3 :
@@ -192,10 +192,10 @@ module TestNat = struct
      fun fa ->
       let open Env.Monad.Syntax in
       Reifier.fix (fun self ->
-          Reifier.reify
-          <..>
-          let rec foo x = rework_logic2 ~fdeq:foo ~fv:(fmapt fa) x in
-          chain foo)
+        Reifier.reify
+        <..>
+        let rec foo x = rework_logic2 ~fdeq:foo ~fv:(fmapt fa) x in
+        chain foo)
    ;;
   end
 
@@ -203,17 +203,17 @@ module TestNat = struct
     let open Env.Monad in
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        Reifier.reify
-        <..> chain
-               (let rec foo x = rework_logic ~fv:(fmapt self) foo x in
-                foo))
+      Reifier.reify
+      <..> chain
+             (let rec foo x = rework_logic ~fv:(fmapt self) foo x in
+              foo))
   ;;
 
   let (reify : (injected, logic) Reifier.t) =
     let open Env.Monad in
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        Reifier.reify <..> chain (zed (rework_logic ~fv:(fmapt self))))
+      Reifier.reify <..> chain (zed (rework_logic ~fv:(fmapt self))))
   ;;
 
   let test_reify reify =
@@ -228,10 +228,10 @@ module TestNat = struct
   let prj_exn : (groundi, Std.Nat.ground) Reifier.t =
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        let* rself = self in
-        let* r = OCanren.prj_exn in
-        let foo x = GT.gmap t rself (r x) in
-        Env.Monad.return foo)
+      let* rself = self in
+      let* r = OCanren.prj_exn in
+      let foo x = GT.gmap t rself (r x) in
+      Env.Monad.return foo)
   ;;
 
   let test_prj_exn () =
@@ -336,29 +336,28 @@ module TestNestedOption = struct
   let reify_with_compose : (ilogic, logic) Reifier.t =
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        let* rself = self in
-        Reifier.compose
-          Reifier.reify
-          (let rec foo = function
-             | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
-             | Value t -> Value (Option.map rself t)
-           in
-           Env.Monad.return foo))
+      let* rself = self in
+      Reifier.compose
+        Reifier.reify
+        (let rec foo = function
+           | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+           | Value t -> Value (Option.map rself t)
+         in
+         Env.Monad.return foo))
   ;;
 
   let _reify_old : (ilogic, logic) Reifier.t =
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        let* rself = self in
-        let* r = Reifier.reify in
-        let rec foo x =
-          match r x with
-          | Var (v, xs) ->
-            Var
-              (v, Stdlib.List.map (GT.gmap OCanren.logic (GT.gmap Std.Option.t rself)) xs)
-          | Value t -> Value (Option.map rself t)
-        in
-        Env.Monad.return foo)
+      let* rself = self in
+      let* r = Reifier.reify in
+      let rec foo x =
+        match r x with
+        | Var (v, xs) ->
+          Var (v, Stdlib.List.map (GT.gmap OCanren.logic (GT.gmap Std.Option.t rself)) xs)
+        | Value t -> Value (Option.map rself t)
+      in
+      Env.Monad.return foo)
   ;;
 
   let fmapt : 'a 'b. ('a, 'b) Reifier.t -> 'a t Env.m -> 'b t Env.m =
@@ -369,7 +368,7 @@ module TestNestedOption = struct
     let open Env.Monad in
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        Reifier.reify <..> chain (zed (rework_logic ~fv:(fmapt self))))
+      Reifier.reify <..> chain (zed (rework_logic ~fv:(fmapt self))))
   ;;
 
   let test reifier =
@@ -400,15 +399,14 @@ module TestNat2 = struct
    fun fa ->
     let open Env.Monad.Syntax in
     Reifier.fix (fun _self ->
-        let* (ra : 'a -> 'b) = fa in
-        let* r = OCanren.reify in
-        let rec foo x =
-          match r x with
-          | Value x -> Value (GT.gmap t ra x)
-          | Var (v, xs) ->
-            Var (v, Stdlib.List.map (GT.gmap OCanren.logic (GT.gmap t ra)) xs)
-        in
-        Env.Monad.return foo)
+      let* (ra : 'a -> 'b) = fa in
+      let* r = OCanren.reify in
+      let rec foo x =
+        match r x with
+        | Value x -> Value (GT.gmap t ra x)
+        | Var (v, xs) -> Var (v, Stdlib.List.map (GT.gmap OCanren.logic (GT.gmap t ra)) xs)
+      in
+      Env.Monad.return foo)
  ;;
 
   let test reifier =
@@ -425,15 +423,15 @@ module TestNat2 = struct
   let reify_old_style : (('a injected as 'a), ('b logic as 'b)) Reifier.t =
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        let* r = OCanren.reify in
-        let* rself = self in
-        let rec foo x =
-          match r x with
-          | Value x -> Value (GT.gmap t rself x)
-          | Var (v, xs) ->
-            Var (v, Stdlib.List.map (GT.gmap OCanren.logic (GT.gmap t rself)) xs)
-        in
-        Env.Monad.return foo)
+      let* r = OCanren.reify in
+      let* rself = self in
+      let rec foo x =
+        match r x with
+        | Value x -> Value (GT.gmap t rself x)
+        | Var (v, xs) ->
+          Var (v, Stdlib.List.map (GT.gmap OCanren.logic (GT.gmap t rself)) xs)
+      in
+      Env.Monad.return foo)
   ;;
 
   let%test _ = test reify_old_style
@@ -466,7 +464,7 @@ module TestNat2 = struct
     let open Env.Monad in
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        Reifier.reify <..> chain (zed (rework_logic ~fv:(fmapt self))))
+      Reifier.reify <..> chain (zed (rework_logic ~fv:(fmapt self))))
   ;;
 
   let%test _ = test reifynew
@@ -486,31 +484,31 @@ module TestList = struct
    fun fa ->
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        let* (ra : 'a -> 'b) = fa in
-        let* rself = self in
-        let* r = OCanren.reify in
-        let rec foo x =
-          match r x with
-          | Value x -> Value (GT.gmap t ra rself x)
-          | Var (v, xs) ->
-            let (_ : ('a, 'a injected) t OCanren.logic list) = xs in
-            Var (v, Stdlib.List.map (GT.gmap OCanren.logic (GT.gmap t ra rself)) xs)
-        in
-        Env.Monad.return foo)
+      let* (ra : 'a -> 'b) = fa in
+      let* rself = self in
+      let* r = OCanren.reify in
+      let rec foo x =
+        match r x with
+        | Value x -> Value (GT.gmap t ra rself x)
+        | Var (v, xs) ->
+          let (_ : ('a, 'a injected) t OCanren.logic list) = xs in
+          Var (v, Stdlib.List.map (GT.gmap OCanren.logic (GT.gmap t ra rself)) xs)
+      in
+      Env.Monad.return foo)
  ;;
 
   let prj_exn_old : 'a 'b. ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t =
    fun fa ->
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        let* (ra : 'a -> 'b) = fa in
-        let* rself = self in
-        let* r = OCanren.prj_exn in
-        let rec foo x =
-          match r x with
-          | x -> GT.gmap t ra rself x
-        in
-        Env.Monad.return foo)
+      let* (ra : 'a -> 'b) = fa in
+      let* rself = self in
+      let* r = OCanren.prj_exn in
+      let rec foo x =
+        match r x with
+        | x -> GT.gmap t ra rself x
+      in
+      Env.Monad.return foo)
  ;;
 
   (* new *)
@@ -536,7 +534,7 @@ module TestList = struct
     let open Env.Monad in
     let open Env.Monad.Syntax in
     Reifier.fix (fun self ->
-        Reifier.reify <..> chain (zed (rework_logic ~fv:(fmapt fa self))))
+      Reifier.reify <..> chain (zed (rework_logic ~fv:(fmapt fa self))))
  ;;
 
   (* tests *)
@@ -576,20 +574,20 @@ module _ = struct
   let reify_old : (injected, logic) Reifier.t =
     let open Env.Monad.Syntax in
     Reifier.fix (fun _ ->
-        let* r = OCanren.reify in
-        let* roptionstring = Std.Option.reify OCanren.reify in
-        let* roptionint = Std.Option.reify OCanren.reify in
-        let rec foo x =
-          match r x with
-          | Value x -> Value (GT.gmap t roptionint roptionstring x)
-          | Var (v, xs) ->
-            Var
-              ( v
-              , Stdlib.List.map
-                  (GT.gmap OCanren.logic (GT.gmap t roptionint roptionstring))
-                  xs )
-        in
-        Env.Monad.return foo)
+      let* r = OCanren.reify in
+      let* roptionstring = Std.Option.reify OCanren.reify in
+      let* roptionint = Std.Option.reify OCanren.reify in
+      let rec foo x =
+        match r x with
+        | Value x -> Value (GT.gmap t roptionint roptionstring x)
+        | Var (v, xs) ->
+          Var
+            ( v
+            , Stdlib.List.map
+                (GT.gmap OCanren.logic (GT.gmap t roptionint roptionstring))
+                xs )
+      in
+      Env.Monad.return foo)
   ;;
 
   let fmapt :
@@ -603,11 +601,11 @@ module _ = struct
     let open Env.Monad in
     let open Env.Monad.Syntax in
     Reifier.fix (fun _ ->
-        OCanren.prj_exn
-        <..> chain
-               (fmapt
-                  (Std.Option.prj_exn OCanren.prj_exn)
-                  (Std.Option.prj_exn OCanren.prj_exn)))
+      OCanren.prj_exn
+      <..> chain
+             (fmapt
+                (Std.Option.prj_exn OCanren.prj_exn)
+                (Std.Option.prj_exn OCanren.prj_exn)))
   ;;
 
   (* test projection *)
@@ -626,14 +624,14 @@ module _ = struct
     let open Env.Monad in
     let open Env.Monad.Syntax in
     Reifier.fix (fun _ ->
-        Reifier.reify
-        <..> chain
-               (zed
-                  (rework_logic
-                     ~fv:
-                       (fmapt
-                          (Std.Option.reify OCanren.reify)
-                          (Std.Option.reify OCanren.reify)))))
+      Reifier.reify
+      <..> chain
+             (zed
+                (rework_logic
+                   ~fv:
+                     (fmapt
+                        (Std.Option.reify OCanren.reify)
+                        (Std.Option.reify OCanren.reify)))))
   ;;
 
   let test_reify rrr =
