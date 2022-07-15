@@ -23,7 +23,8 @@ jobs:
           - 4.10.1
 
     env:
-      OCANREN_STATS: yes
+      #OCANREN_STATS: yes
+      # enabling stats required extra link library
       OCANREN_DOCS: yes
 
 
