@@ -1,2 +1,1 @@
-let _ = REPR(1+2)
-
+let _ = REPR (1 + 2)

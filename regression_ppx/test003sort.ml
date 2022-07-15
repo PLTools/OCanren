@@ -67,7 +67,7 @@ let (_ : (Nat.groundi List.groundi, Nat.ground List.ground) Reifier.t) =
 ;;
 
 let project
-    : ((Nat.groundi as 'a), 'a List.groundi) List.t reified -> Nat.ground List.ground
+  : ((Nat.groundi as 'a), 'a List.groundi) List.t reified -> Nat.ground List.ground
   =
  fun rr -> rr#reify (List.prj_exn Nat.prj_exn)
 ;;

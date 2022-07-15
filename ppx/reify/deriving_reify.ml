@@ -32,30 +32,30 @@ include struct
       | [%type: int] as t -> oca_logic_ident ~loc:t.ptyp_loc t
       | t ->
         (match t.ptyp_desc with
-        | Ptyp_constr ({ txt = Ldot (Lident "GT", s) }, []) ->
-          oca_logic_ident ~loc:t.ptyp_loc t
-        | Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) ->
-          ptyp_constr
-            ~loc
-            (Located.mk
-               ~loc:t.ptyp_loc
-               (lident_of_list [ "OCanren"; "Std"; "List"; kind ]))
-            (List.map ~f:helper xs)
-        | Ptyp_constr ({ txt = Ldot (path, "ground") }, xs) ->
-          ptyp_constr ~loc (Located.mk ~loc (Ldot (path, kind))) (List.map ~f:helper xs)
-        | Ptyp_constr ({ txt = Lident "ground" }, xs) ->
-          ptyp_constr ~loc (Located.mk ~loc (Lident kind)) xs
-        | Ptyp_tuple [ l; r ] ->
-          ptyp_constr
-            ~loc
-            (Located.mk
-               ~loc:t.ptyp_loc
-               (lident_of_list [ "OCanren"; "Std"; "Pair"; kind ]))
-            [ helper l; helper r ]
-        | Ptyp_constr ({ txt = Lident s }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
-        | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
-          oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
-        | _ -> t)
+         | Ptyp_constr ({ txt = Ldot (Lident "GT", s) }, []) ->
+           oca_logic_ident ~loc:t.ptyp_loc t
+         | Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) ->
+           ptyp_constr
+             ~loc
+             (Located.mk
+                ~loc:t.ptyp_loc
+                (lident_of_list [ "OCanren"; "Std"; "List"; kind ]))
+             (List.map ~f:helper xs)
+         | Ptyp_constr ({ txt = Ldot (path, "ground") }, xs) ->
+           ptyp_constr ~loc (Located.mk ~loc (Ldot (path, kind))) (List.map ~f:helper xs)
+         | Ptyp_constr ({ txt = Lident "ground" }, xs) ->
+           ptyp_constr ~loc (Located.mk ~loc (Lident kind)) xs
+         | Ptyp_tuple [ l; r ] ->
+           ptyp_constr
+             ~loc
+             (Located.mk
+                ~loc:t.ptyp_loc
+                (lident_of_list [ "OCanren"; "Std"; "Pair"; kind ]))
+             [ helper l; helper r ]
+         | Ptyp_constr ({ txt = Lident s }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
+         | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
+           oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
+         | _ -> t)
     in
     match typ with
     | { ptyp_desc = Ptyp_constr (id, args) } ->
@@ -177,8 +177,7 @@ let make_reifier_composition ~pat ?(typ = None) kind tdecl =
     let loc = tdecl.ptype_loc in
     let args rhs =
       List.fold_right names ~init:rhs ~f:(fun name acc ->
-          [%expr
-            fun [%p ppat_var ~loc (Located.mk ~loc (mk_arg_reifier name))] -> [%e acc]])
+        [%expr fun [%p ppat_var ~loc (Located.mk ~loc (mk_arg_reifier name))] -> [%e acc]])
     in
     args
   in
@@ -247,17 +246,17 @@ let process1 tdecl =
 
 let str_type_decl : (_, _) Deriving.Generator.t =
   Deriving.Generator.make Deriving.Args.empty (fun ~loc ~path (_, info) ->
-      List.concat_map info ~f:process1)
+    List.concat_map info ~f:process1)
 ;;
 
 let () =
   Deriving.add "reify" ~str_type_decl ~extension:(fun ~loc ~path:_ ->
-      reifier_of_core_type ~loc Reify)
+    reifier_of_core_type ~loc Reify)
   |> Deriving.ignore
 ;;
 
 let () =
   Deriving.add "prj_exn" ~extension:(fun ~loc ~path:_ ->
-      reifier_of_core_type ~loc Prj_exn)
+    reifier_of_core_type ~loc Prj_exn)
   |> Deriving.ignore
 ;;
