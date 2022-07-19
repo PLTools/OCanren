@@ -49,6 +49,28 @@ type 'a groundi = ('a, 'a groundi) t Logic.ilogic
 
 type 'a injected = 'a groundi
 
+(** {3 Conversions between data types} *)
+
+(** The [of_list l] converts regular OCaml list [l] into isomorphic OCanren [ground] list.
+    See [to_list] for a reverse conversion. *)
+val of_list : ('a -> 'b) -> 'a GT.list -> 'b ground
+
+(** The [to_list g] converts OCanren list [g] into regular OCaml list. See [of_list]
+    for a reverse conversion. *)
+val to_list : ('a -> 'b) -> 'a ground -> 'b GT.list
+
+(** The [inj x] makes a logic list from a ground one. See [logic_to_ground_exn]
+    for a partial reverse conversion. *)
+val inj : ('a -> 'b) -> 'a ground -> 'b logic
+
+(** Converts a logic list to ground one.
+    @raise [Failure] when a logic variable occurs inside a list. *)
+val logic_to_ground_exn: ('a -> 'b) -> 'a logic -> 'b ground
+
+(** Make injected [list] from ground one of injected elements. The reverse conversion
+    is availble only through reifiers (see {!label-reifiers} for details). *)
+val list : 'a GT.list -> 'a groundi
+
 (** {3 Constructors} *)
 
 val nil : unit -> 'a groundi
@@ -64,19 +86,7 @@ val (%<) : 'a  -> 'a -> 'a groundi
 (** [!< x] is a synonym for [cons x (nil ())] *)
 val (!<) : 'a  ->  'a groundi
 
-(** {3 Built-in relations} *)
-
-(** [of_list l] converts regular OCaml list [l] into isomorphic OCanren [ground] list *)
-val of_list : ('a -> 'b) -> 'a GT.list -> 'b ground
-
-(** [to_list g] converts OCanren list [g] into regular OCaml list *)
-val to_list : ('a -> 'b) -> 'a ground -> 'b GT.list
-
-(** [inj x] makes a logic list from a ground one *)
-val inj : ('a -> 'b) -> 'a ground -> 'b logic
-
-(** Make injected [list] from ground one of injected elements *)
-val list : 'a  GT.list -> 'a groundi
+(** {3:reifiers Reifiers} *)
 
 (** Reifier *)
 val reify :  ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t

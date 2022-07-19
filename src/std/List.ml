@@ -143,6 +143,11 @@ let rec list = function
 | []    -> nil ()
 | x::xs -> cons x (list xs);;
 
+let rec logic_to_ground_exn f = function
+  | Var (_, _) -> failwith "List.logic_to_ground_exn: variables inside"
+  | Value Nil -> Nil
+  | Value (Cons (h, tl)) ->
+      Cons (f h, logic_to_ground_exn f tl)
 
 let (%) = cons
 let (%<) = fun x y -> cons x @@ cons y @@ nil ()
