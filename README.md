@@ -1,6 +1,8 @@
 [![OCanren][1]][2]
 [![License](https://img.shields.io/badge/license-LGPL-blue)](https://github.com/JetBrains-Research/spla/blob/master/LICENSE.md)
 [![JB Research](https://jb.gg/badges/research-flat-square.svg)](https://research.jetbrains.org/)
+[![API docs](https://img.shields.io/badge/API-documentation-yellowgreen)](https://jetbrains-research.github.io/OCanren/api/)
+
 
 [1]:  https://github.com/JetBrains-Research/OCanren/actions/workflows/master.yml/badge.svg
 [2]:  https://github.com/JetBrains-Research/OCanren/actions
