@@ -30,9 +30,6 @@ with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** {2 GT-related API} *)
 
-(** Type synonym to prevent toplevel [logic] from being hidden *)
-@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
-
 (** Synonym for abstract list type *)
 @type ('a, 'l) t = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr, fmt
 
@@ -40,7 +37,7 @@ with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Logic lists (with the tails as logic lists) *)
-@type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a logic  = ('a, 'a logic) t Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** {2 Relational API} *)
 
@@ -68,16 +65,18 @@ val inj : ('a -> 'b) -> 'a ground -> 'b logic
 val logic_to_ground_exn: ('a -> 'b) -> 'a logic -> 'b ground
 
 (** Make injected [list] from ground one of injected elements. The reverse conversion
-    is availble only through reifiers (see {!label-reifiers} for details). *)
+    is availble only through reifiers (see {!section-reifiers} for details). *)
 val list : 'a GT.list -> 'a groundi
 
 (** {3 Constructors} *)
 
+(** A logical empty list. Extra unit parameter prevents weak type variables. *)
 val nil : unit -> 'a groundi
 
+(** A dual for [cons] (a.k.a. [::]) constructor. *)
 val cons : 'a  -> 'a groundi -> 'a groundi
 
-(** Infix synonym for [cons] *)
+(** Infix synonym for {!cons} *)
 val (%) : 'a  -> 'a groundi -> 'a groundi
 
 (** [x %< y] is a synonym for [cons x (cons y (nil ()))] *)
@@ -94,6 +93,8 @@ val reify :  ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
 val prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
 
 val prj : (int -> 'b ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
+
+(** {3 Built-in relations} *)
 
 (** Relational foldr *)
 val foldro :

@@ -17,7 +17,7 @@
  * (enclosed in the file COPYING).
  *)
 
-(** {3 Relational numbers} *)
+(** {1 Relational numbers} *)
 
 open Logic
 open Core
@@ -27,22 +27,23 @@ open Core
 | O
 | S of 'a with show, html, eq, compare, foldl, foldr, gmap, fmt
 
-(** Type synonym to prevent toplevel [logic] from being hidden *)
-@type 'a logic' = 'a logic with show, html, eq, compare, foldl, foldr, gmap, fmt
-
 (** Ground nat are ismorphic for regular one *)
 @type ground = ground t with show, html, eq, compare, foldl, foldr, gmap, fmt
 
 (** Logic nat *)
-@type logic = logic t logic' with show, html, eq, compare, foldl, foldr, gmap, fmt
+@type logic = logic t Logic.logic with show, html, eq, compare, foldl, foldr, gmap, fmt
 
 (** Logic injection (for reification) *)
 val inj : ground -> logic
+
+(** {2 Relational API} *)
 
 (** A type synonym for injected nat *)
 type groundi = groundi t Logic.ilogic
 
 type injected = groundi
+
+(** {3:reifiers Reifiers} *)
 
 (** Reifier *)
 val reify : (groundi, logic) Reifier.t
@@ -59,23 +60,35 @@ val to_int : ground -> int
 (** Make injected [nat] from ground one *)
 val nat : ground -> groundi
 
+(** {3 Constructors} *)
+
+(** A zero. The name {!o} was selected because it looks similar to arabic digit 0. *)
 val o : groundi
+
+(** Constructs next number (a successor) after the provided one. *)
 val s : groundi -> groundi
 
+(** A synomym for {!o}. *)
 val zero : groundi
+
+(** An alias for [s zero]. *)
 val one  : groundi
+
+(** A synomym for {!s}. *)
 val succ : groundi -> groundi
 
-(** Relational addition *)
+(** {3 Built-in relations} *)
+
+(** Relational addition. *)
 val addo  : groundi -> groundi -> groundi -> goal
 
-(** Infix syninym for [addo] *)
+(** Infix synonym for [addo]. *)
 val ( + ) : groundi -> groundi -> groundi -> goal
 
-(** Relational multiplication *)
+(** Relational multiplication. *)
 val mulo  : groundi -> groundi -> groundi -> goal
 
-(** Infix syninym for [mulo] *)
+(** Infix synonym for [mulo]. *)
 val ( * ) : groundi -> groundi -> groundi -> goal
 
 (** Comparisons *)
@@ -85,6 +98,7 @@ val gto : groundi -> groundi -> Bool.groundi -> goal
 val lto : groundi -> groundi -> Bool.groundi -> goal
 
 (** Comparisons as goals *)
+
 val (<=) : groundi -> groundi -> goal
 val (>=) : groundi -> groundi -> goal
 val (>)  : groundi -> groundi -> goal

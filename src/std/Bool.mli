@@ -24,9 +24,6 @@ open Core
 
 (** {2 GT-related API} *)
 
-(** Type synonym to prevent toplevel [logic] from being hidden *)
-@type 'a logic' = 'a logic with show, html, eq, compare, foldr, foldl, gmap, fmt
-
 (** Synonym for boolean type *)
 @type t = GT.bool with show, html, eq, compare, foldr, foldl, gmap, fmt
 
@@ -34,10 +31,9 @@ open Core
 @type ground = GT.bool with show, html, eq, compare, foldr, foldl, gmap, fmt
 
 (** Logic boolean *)
-@type logic = GT.bool logic' with show, html, eq, compare, foldr, foldl, gmap, fmt
+@type logic = GT.bool Logic.logic with show, html, eq, compare, foldr, foldl, gmap, fmt
 
 (** {2 Relational API} *)
-
 
 (** Logic injection (for reification) *)
 val inj : ground -> logic

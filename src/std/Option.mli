@@ -24,9 +24,6 @@ open Core
 
 (** {2 GT-related API} *)
 
-(** Type synonym to prevent toplevel [logic] from being hidden *)
-@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
-
 (** Synonym for regular option type *)
 @type 'a t = 'a GT.option with show, gmap, html, eq, compare, foldl, foldr, fmt
 
@@ -34,7 +31,7 @@ open Core
 @type 'a ground = 'a GT.option with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Logic option *)
-@type 'a logic = 'a GT.option logic' with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a logic = 'a GT.option Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** {2 Relational API} *)
 
@@ -47,6 +44,8 @@ type 'a groundi = 'a ground ilogic
 (** Make injected [option] from ground one with injected value *)
 val option : 'a ilogic ground -> 'a ilogic groundi
 
+(** {3 Reifiers} *)
+
 (** Reifier *)
 val reify : ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
 
@@ -54,6 +53,12 @@ val reify : ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
 val prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
 
 (** {3 Constructors} *)
+
+(** Logic dual of constructor [Some] from {!Stdlib.Option}. *)
 val some : 'a -> 'a groundi
 
+(** Logic dual of constructor [None] from {!Stdlib.Option}.
+    It has an extra unit argument to workaround weak type variables.
+
+    {!Stdlib.Option.t} test *)
 val none : unit -> 'a groundi

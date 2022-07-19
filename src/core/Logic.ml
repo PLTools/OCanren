@@ -130,7 +130,7 @@ end
 
 let reify = Reifier.reify
 let prj_exn = Reifier.prj_exn
-let prj = Reifier.prj
+(* let prj = Reifier.prj *)
 
 class type ['a] reified = object
   method is_open : bool

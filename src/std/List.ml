@@ -24,13 +24,12 @@ open Core
 module List = Stdlib.List
 
 @type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
-@type 'a logic'     = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type ('a, 'l) t    = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let logic' = logic;;
 
 @type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr, fmt
-@type 'a logic  = ('a, 'a logic) t logic' with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a logic  = ('a, 'a logic) t Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let ground = {
   ground with

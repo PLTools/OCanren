@@ -24,9 +24,6 @@ open Core
 module List = Stdlib.List
 
 @type 'a t = O | S of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
-@type 'a logic' = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
-
-let logic' = logic;;
 
 @type ground  = ground t
 with show, gmap, html, eq, compare, foldl, foldr, fmt
@@ -48,7 +45,7 @@ let logic = {
       method foldr   = logic.GT.plugins#foldr
       method html    = logic.GT.plugins#html
       method fmt     = logic.GT.plugins#fmt
-      method show    = GT.show(logic') (fun l -> GT.show(t) this#show l)
+      method show    = GT.show(Logic.logic) (fun l -> GT.show(t) this#show l)
     end
 }
 

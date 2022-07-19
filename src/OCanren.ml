@@ -22,15 +22,24 @@ include Core
 
 module Stream  = Stream
 module Runconf = Runconf
+
+(** See also {!Install_timer} *)
 module Timer   = Timer
 module Env = Env
 
+(** A standard library for logic programs. *)
 module Std =
   struct
+    (** Logic pairs *)
     module Pair    = Pair
+    (** Logic optional values *)
     module Option  = Option
     module Bool    = Bool
+
+    (** Logic Peano natural numbers *)
     module Nat     = Nat
+
+    (** Logic lists *)
     module List    = List
 
     let eqo x y t =
@@ -47,9 +56,16 @@ module Std =
 
     let nat n = Nat.nat (Nat.of_int n)
 
+    (** An alias for {!OCanren.Std.List.cons}. *)
     let (%)  = List.cons
+
+    (** An alias for {!OCanren.Std.List.(%<)}. *)
     let (%<) = List.(%<)
+
+    (** An alias for {!OCanren.Std.List.(!<)}. *)
     let (!<) = List.(!<)
+
+    (** An alias for {!OCanren.Std.List.nil}. *)
     let nil  = List.nil
 
     let rec list f = function
@@ -60,8 +76,13 @@ module Std =
     | []    -> nil ()
     | x::xs -> nat x % nat_list xs
 
+    (** An alias for {!OCanren.Std.Option.some}. *)
     let some = Option.some
+
+    (** An alias for {!OCanren.Std.Option.none}. *)
     let none = Option.none
+
+    (** An alias for {!OCanren.Std.Pair.pair}. *)
     let pair = Pair.pair
 
 

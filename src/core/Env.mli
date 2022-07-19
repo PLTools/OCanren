@@ -24,10 +24,18 @@
 
 type t
 
+(** Creates a new environment. Environment has an internal state: a counter of
+    the variable index introduced last. That's why {!empty} has extra unit argument. *)
 val empty         : unit -> t
 
 val create        : anchor:Term.Var.env -> t
 
+(** Creating a fresh variable takes an extra argument [scope] to decide if
+    storing a substituted value inside a variable is OKay.
+
+    The idea was recommended by
+    {{: https://github.com/michaelballantyne/faster-minikanren#set-var-val }faster-miniKanren}
+    implementation. *)
 val fresh         : scope:Term.Var.scope -> t -> 'a
 
 val check         : t -> Term.Var.t -> bool
@@ -46,6 +54,8 @@ val equal         : t -> t -> bool
 
 (** Essentially, a reader monad over Env.t. Useful for reification. *)
 module Monad : sig
+
+  (** @canonical OCanren.Env.m *)
   type nonrec 'a t = t -> 'a
 
   val return : 'a -> 'a t
@@ -72,4 +82,5 @@ module Monad : sig
   end
 end
 
+(** An alias for a reader monad {!Monad.t}. *)
 type 'a m = 'a Monad.t

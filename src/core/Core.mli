@@ -21,11 +21,14 @@ open Logic
 
 module State :
   sig
+    (** @canonical OCanren.State.t *)
     type t
   end
 
-(** Goal converts a state into a lazy stream of states *)
+(** Goal is a function that converts a state into a lazy stream of states. *)
 type 'a goal'
+
+(** @canonical OCanren.goal *)
 type goal = State.t Stream.t goal'
 
 (** {3 miniKanren basic combinators} *)
@@ -123,10 +126,22 @@ module Fresh :
 
 (** {2 Top-level running primitives} *)
 
+(** The primitive [delay] helps to construct recursive goals, which depend on themselves. For example,
+    we can't write [let rec fives q = (q === !!5) ||| (fives q)] because the generation of this goal leads to
+    infinite recursion. The correct way to implement this is [let rec fives q = (q === !!5) ||| delay (fun () -> fives q)]
+
+    See also syntax extension [defer].
+*)
+val delay : (unit -> goal) -> goal
+
 (** [run n g h] runs a goal [g] with [n] logical parameters and passes reified results to the handler [h].
     The number of parameters is encoded using variadic machinery {i à la} Olivier Danvy and represented by
     a number of predefined numerals and successor function (see below). The reification replaces each variable,
     passed to [g], with the stream of values, associated with that variable as the goal succeeds.
+
+    See also original Olivier's Danvy
+    {{: https://www.brics.dk/RS/98/12/BRICS-RS-98-12.pdf}paper}
+    ``Functional Unparsing''.
 
     Examples:
 
@@ -139,14 +154,6 @@ val run : (unit ->
             ('b -> 'c * State.t Stream.t) * ('e -> 'd -> 'f)) ->
            'a -> 'e -> 'f Stream.t
 
-(** The primitive [delay] helps to construct recursive goals, which depend on themselves. For example,
-    we can't write [let rec fives q = (q === !!5) ||| (fives q)] because the generation of this goal leads to
-    infinite recursion. The correct way to implement this is [let rec fives q = (q === !!5) ||| delay (fun () -> fives q)]
-
-    See also syntax extension [defer].
-*)
-val delay : (unit -> goal) -> goal
-
 (** Successor function *)
 val succ : (unit ->
             ('a -> State.t -> 'b) * ('c -> Env.t -> 'd) * ('e -> 'f * 'g) *
@@ -156,6 +163,7 @@ val succ : (unit ->
            ('m ilogic * 'c -> Env.t -> 'm reified * 'd) *
            ('o * 'e -> ('o * 'f) * 'g) * (('p -> 'h) -> 'p * 'i -> 'j)
 
+(** A module with predefined type aliases for numerals [one], [succ one], etc. *)
 module NUMERAL_TYPS : sig
   type ('a, 'c, 'e, 'f, 'g) one = unit ->
            (('a ilogic -> goal) ->
