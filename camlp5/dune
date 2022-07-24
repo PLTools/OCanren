@@ -28,6 +28,7 @@
  (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
+  (package GT)
   (:cmas pa_ocanren.cmxa))
  (action
   (run
@@ -42,7 +43,9 @@
 (rule
  (targets pp5+gt+plugins+dump.byte)
  (package OCanren)
- (deps %{project_root}/config/package-doc.cfg)
+ (deps
+  (package GT)
+  %{project_root}/config/package-doc.cfg)
  (action
   (run
    mkcamlp5
@@ -55,7 +58,9 @@
 
 (rule
  (targets pp5+gt+plugins+dump.exe)
- (deps %{project_root}/config/package-doc.cfg)
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (package GT))
  (action
   (run
    mkcamlp5.opt
@@ -68,7 +73,9 @@
 
 (rule
  (targets pp5+gt+plugins+o.exe)
- (deps %{project_root}/config/package-doc.cfg)
+ (deps
+  %{project_root}/config/package-doc.cfg
+  (package GT))
  (action
   (run
    mkcamlp5.opt
@@ -98,6 +105,7 @@
  (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
+  (package GT)
   (:cmas pa_ocanren.cmxa))
  (action
   (run
@@ -114,6 +122,7 @@
  (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
+  (package GT)
   (:cmas pa_ocanren.cma))
  (action
   (run
