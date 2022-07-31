@@ -497,6 +497,12 @@ let (?|) gs st =
 
 let conde = (?|)
 
+let condo2 a b st =
+  let st = State.new_scope st in
+  match Stream.msplit @@ a st with
+  | Some (a, b) -> Stream.cons a b
+  | None -> b st
+
 let call_fresh f st =
   let x = State.fresh st in
   f x st
