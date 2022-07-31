@@ -38,6 +38,8 @@ val suspend : is_ready:(unit -> bool) -> (unit -> 'a t) -> 'a t
 
 val of_list : 'a list -> 'a t
 
+val msplit : 'a t -> ('a * 'a t) option
+
 (** Emptiness test *)
 val is_empty : 'a t -> bool
 
