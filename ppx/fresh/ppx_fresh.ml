@@ -1,6 +1,6 @@
 (*
  * OCanren. PPX suntax extensions.
- * Copyright (C) 2015-2019
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -46,7 +46,8 @@ let need_insert_fname ~name e = classify_name e ~f:(Stdlib.( = ) (Lident name))
   | _ -> false *)
 
 let is_defer = need_insert_fname ~name:"defer"
-let is_conde = need_insert_fname ~name:"conde"
+
+(* let is_conde = need_insert_fname ~name:"conde" *)
 let is_fresh = need_insert_fname ~name:"fresh"
 let is_call_fresh = need_insert_fname ~name:"call_fresh"
 
@@ -57,7 +58,6 @@ let is_unif =
 ;;
 
 let is_conj = need_insert_fname ~name:"conj"
-let is_conj_list = need_insert_fname ~name:"?&"
 let is_disj e = need_insert_fname ~name:"disj" e || need_insert_fname ~name:"|||" e
 
 (*
@@ -182,17 +182,6 @@ let mapper =
       let loc = e.pexp_loc in
       match e.pexp_desc with
       | Pexp_apply (_, []) -> e
-      | Pexp_apply (e1, (_, alist) :: args) when is_conj_list e1 ->
-        let clauses : expression list = parse_to_list alist in
-        let ans =
-          list_fold_right0
-            clauses
-            ~initer:(fun x -> x)
-            ~f:(fun x acc -> [%expr [%e x] &&& [%e acc]])
-        in
-        super#expression ans
-      | Pexp_apply (e1, (_, alist) :: otherargs) when is_conde e1 ->
-        [%expr conde [%e self#expression alist]]
       | Pexp_apply (e1, [ args ]) when is_fresh e1 ->
         (* bad syntax -- no body*)
         e
