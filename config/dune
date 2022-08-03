@@ -12,6 +12,8 @@
   stublibs-dir.cfg
   instrumentalization.cfg
   package-doc.cfg)
+ (deps
+  (package GT))
  (action
   (run ./discover.exe -all-flags)))
 
