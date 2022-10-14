@@ -38,7 +38,7 @@ module _ = struct
   let () =
     run_option 1 q qh (REPR (fun q -> q === none ()));
     run_option 1 q qh (REPR (fun q -> fresh x (q === some x)));
-    run_option 1 q qh (REPR (fun q -> fresh x (q === some !!42)))
+    run_option 1 q qh (REPR (fun q -> fresh () (q === some !!42)))
   ;;
 end
 

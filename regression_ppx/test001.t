@@ -57,11 +57,11 @@
   
       let prj_exn ra =
         let open Env.Monad in
-        Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt ra))
+        Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra))
   
       let reify ra =
         let open Env.Monad in
-        Reifier.fix (fun self ->
+        Reifier.fix (fun _ ->
             OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt ra))) )
   
       let none () = OCanren.inji None
@@ -77,7 +77,7 @@
     let () =
       run_option 1 q qh (REPR (fun q -> q === none ())) ;
       run_option 1 q qh (REPR (fun q -> fresh x (q === some x))) ;
-      run_option 1 q qh (REPR (fun q -> fresh x (q === some !!42)))
+      run_option 1 q qh (REPR (fun q -> fresh () (q === some !!42)))
   end
   
   module _ = struct
@@ -158,12 +158,11 @@
   
       let (prj_exn : (_, GT.int t) Reifier.t) =
         let open Env.Monad in
-        Reifier.fix (fun self ->
-            OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn) )
+        Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn))
   
       let (reify : (_, GT.int OCanren.logic t OCanren.logic) Reifier.t) =
         let open Env.Monad in
-        Reifier.fix (fun self ->
+        Reifier.fix (fun _ ->
             OCanren.reify
             <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt OCanren.reify))) )
   
@@ -189,7 +188,7 @@
   fun q -> fresh x (q === (some x)), 1 answer {
   q=Some (_.11);
   }
-  fun q -> fresh x (q === (some (!! 42))), 1 answer {
+  fun q -> fresh () (q === (some (!! 42))), 1 answer {
   q=Some (42);
   }
   fun q -> q === (nil ()), 1 answer {

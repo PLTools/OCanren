@@ -1,12 +1,11 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren PPX
- * Copyright (C) 2016-2021
+ * Copyright (C) 2016-2022
  *   Dmitrii Kosarev aka Kakadu, Petr Lozov
  * St.Petersburg State University, JetBrains Research
  *)
 
-module Pprintast_ = Pprintast
 open Ppxlib
 open Stdppx
 open Ppxlib.Ast_builder.Default
@@ -29,7 +28,7 @@ let nolabelize = List.map ~f:(fun e -> Nolabel, e)
 let notify fmt =
   Printf.ksprintf
     (fun s ->
-      let _cmd = Printf.sprintf "notify-send \"%s\"" s in
+      let _cmd = Printf.sprintf "notify-send %S" s in
       let (_ : int) = Caml.Sys.command _cmd in
       ())
     fmt
@@ -96,7 +95,7 @@ include struct
                 ~loc:t.ptyp_loc
                 (lident_of_list [ "OCanren"; "Std"; "Pair"; kind ]))
              [ helper l; helper r ]
-         | Ptyp_constr ({ txt = Lident s }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
+         | Ptyp_constr ({ txt = Lident _ }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
          | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
            oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
          | _ -> t)
@@ -127,7 +126,7 @@ include struct
   ;;
 
   let gtypify_exn ?(ccompositional = false) ~loc typ =
-    make_typ_exn ~ccompositional ~loc (fun ~loc t -> t) "ground" typ
+    make_typ_exn ~ccompositional ~loc (fun ~loc:_ t -> t) "ground" typ
   ;;
 
   let%expect_test _ =
@@ -221,8 +220,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     let ptype_manifest =
       match tdecl.ptype_manifest with
       | None -> failwith "no manifest"
-      | Some ({ ptyp_desc = Ptyp_constr (id, args) } as typ) ->
-        Some (ltypify_exn ~loc typ)
+      | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) -> Some (ltypify_exn ~loc typ)
       | t -> t
     in
     let ptype_attributes =
@@ -238,7 +236,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     let ptype_manifest =
       match tdecl.ptype_manifest with
       | None -> failwiths ~loc:tdecl.ptype_loc "No manifest"
-      | Some ({ ptyp_desc = Ptyp_constr (id, args) } as typ) -> Some (injectify ~loc typ)
+      | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) -> Some (injectify ~loc typ)
       | t -> t
     in
     type_declaration
@@ -331,7 +329,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         Caml.__LINE__
   in
   let mk_arg_reifier s = sprintf "r%s" s in
-  let make_reifier_gen ~kind ?(typ = None) is_rec tdecl =
+  let make_reifier_gen ~kind ?(typ = None) _is_rec tdecl =
     let pat, base_reifier, name =
       match kind with
       | Reify -> [%pat? reify], [%expr OCanren.reify], "reify"
@@ -373,9 +371,10 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         let fmapt =
           pexp_apply ~loc [%expr fmapt] (List.map args ~f:(fun t -> Nolabel, helper t))
         in
+        let self_pat = if is_rec then [%pat? self] else [%pat? _] in
         [%expr
           let open Env.Monad in
-          Reifier.fix (fun self ->
+          Reifier.fix (fun [%p self_pat] ->
             [%e base_reifier]
             <..> chain
                    [%e

@@ -43,7 +43,7 @@ module _ = struct
       Reifier.fix (fun rself ->
         Reifier.compose
           OCanren.reify
-          (let* self = rself in
+          (let* _self = rself in
            let rec foo = function
              | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
              | Value x -> Value ((GT.gmap t Fun.id) x)
@@ -72,6 +72,6 @@ module _ = struct
   ;;
 
   let v : injected t OCanren__Logic.logic =
-    run q (fun q -> fresh m (q === succ v)) (fun rr -> rr#reify reify_bad) |> Stream.hd
+    run q (fun q -> fresh () (q === succ v)) (fun rr -> rr#reify reify_bad) |> Stream.hd
   ;;
 end

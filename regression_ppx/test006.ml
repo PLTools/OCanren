@@ -31,7 +31,7 @@ module _ = struct
         }
   [@@deriving gt ~options:{ gmap }]
 
-  type ground = t]
+  type nonrec ground = t]
 end
 
 (* records *)
@@ -43,7 +43,7 @@ module _ = struct
     }
   [@@deriving gt ~options:{ gmap }]
 
-  type ground = t]
+  type nonrec ground = t]
 end
 
 let () = print_endline "test006"

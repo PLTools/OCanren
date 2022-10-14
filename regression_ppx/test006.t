@@ -555,7 +555,7 @@
         let gmap_t subj = gmap_t () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type ground = t [@@deriving gt ~options:{gmap}]
+      type nonrec ground = t [@@deriving gt ~options:{gmap}]
   
       include struct
         class virtual ['inh, 'extra, 'syn] ground_t =
@@ -589,7 +589,7 @@
         let gmap_ground subj = gmap_ground () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type logic = t OCanren.logic [@@deriving gt ~options:{gmap}]
+      type nonrec logic = t OCanren.logic [@@deriving gt ~options:{gmap}]
   
       include struct
         class virtual ['inh, 'extra, 'syn] logic_t =
@@ -626,7 +626,7 @@
         let gmap_logic subj = gmap_logic () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type injected = t OCanren.ilogic
+      type nonrec injected = t OCanren.ilogic
   
       let fmapt subj__014_ =
         let open Env.Monad in
@@ -634,11 +634,11 @@
   
       let (prj_exn : (_, t) Reifier.t) =
         let open Env.Monad in
-        Reifier.fix (fun self -> OCanren.prj_exn <..> chain fmapt)
+        Reifier.fix (fun _ -> OCanren.prj_exn <..> chain fmapt)
   
       let (reify : (_, t OCanren.logic) Reifier.t) =
         let open Env.Monad in
-        Reifier.fix (fun self -> OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:fmapt)))
+        Reifier.fix (fun _ -> OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:fmapt)))
   
       let t x y = OCanren.inji (T {x; y})
     end
@@ -682,7 +682,7 @@
         let gmap_t subj = gmap_t () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type ground = t [@@deriving gt ~options:{gmap}]
+      type nonrec ground = t [@@deriving gt ~options:{gmap}]
   
       include struct
         class virtual ['inh, 'extra, 'syn] ground_t =
@@ -716,7 +716,7 @@
         let gmap_ground subj = gmap_ground () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type logic = t OCanren.logic [@@deriving gt ~options:{gmap}]
+      type nonrec logic = t OCanren.logic [@@deriving gt ~options:{gmap}]
   
       include struct
         class virtual ['inh, 'extra, 'syn] logic_t =
@@ -753,7 +753,7 @@
         let gmap_logic subj = gmap_logic () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type injected = t OCanren.ilogic
+      type nonrec injected = t OCanren.ilogic
   
       let fmapt subj__015_ =
         let open Env.Monad in
@@ -761,11 +761,11 @@
   
       let (prj_exn : (_, t) Reifier.t) =
         let open Env.Monad in
-        Reifier.fix (fun self -> OCanren.prj_exn <..> chain fmapt)
+        Reifier.fix (fun _ -> OCanren.prj_exn <..> chain fmapt)
   
       let (reify : (_, t OCanren.logic) Reifier.t) =
         let open Env.Monad in
-        Reifier.fix (fun self -> OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:fmapt)))
+        Reifier.fix (fun _ -> OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:fmapt)))
   
       let make_t x y = OCanren.inji {x; y}
     end
