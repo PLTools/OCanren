@@ -163,7 +163,7 @@ let injectify ~loc typ =
     | [%type: GT.bool]
     | [%type: bool] -> [%type: [%t t] OCanren.ilogic]
     | [%type: [%t? arg] GT.list] -> [%type: [%t helper arg] OCanren.Std.List.groundi]
-    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident "GT", s) }, []) } ->
+    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) } ->
       ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ]
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, "ground") }, []) } ->
       ptyp_constr ~loc (Located.mk ~loc (Ldot (path, "injected"))) []
@@ -354,7 +354,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       | [%type: bool]
       | [%type: GT.string]
       | [%type: string] -> base_reifier
-      | [%type: [%t? arg] GT.list] ->
+      | [%type: [%t? _arg] GT.list] ->
         failwiths
           ~loc
           "There are some issues with GT.list. Please, use fully qualified \
@@ -367,7 +367,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     in
     let body =
       match manifest.ptyp_desc with
-      | Ptyp_constr ({ txt }, args) ->
+      | Ptyp_constr (_, args) ->
         let fmapt =
           pexp_apply ~loc [%expr fmapt] (List.map args ~f:(fun t -> Nolabel, helper t))
         in
@@ -465,9 +465,9 @@ let process_composable =
   List.map ~f:(fun tdecl ->
     let loc = tdecl.pstr_loc in
     match tdecl.pstr_desc with
-    | Pstr_type (flg, [ t ]) ->
+    | Pstr_type (_, [ t ]) ->
       (match t.ptype_manifest with
-       | Some m ->
+       | Some _ ->
          pstr_type
            ~loc
            Nonrecursive

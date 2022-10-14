@@ -17,7 +17,7 @@
  * (enclosed in the file COPYING).
  *)
 
-module Pprintast_ = Pprintast
+(* module Pprintast_ = Pprintast *)
 open Ppxlib
 open Stdppx
 open Ppxlib.Ast_builder.Default
@@ -32,7 +32,7 @@ include struct
       | [%type: int] as t -> oca_logic_ident ~loc:t.ptyp_loc t
       | t ->
         (match t.ptyp_desc with
-         | Ptyp_constr ({ txt = Ldot (Lident "GT", s) }, []) ->
+         | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) ->
            oca_logic_ident ~loc:t.ptyp_loc t
          | Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) ->
            ptyp_constr
@@ -52,7 +52,7 @@ include struct
                 ~loc:t.ptyp_loc
                 (lident_of_list [ "OCanren"; "Std"; "Pair"; kind ]))
              [ helper l; helper r ]
-         | Ptyp_constr ({ txt = Lident s }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
+         | Ptyp_constr ({ txt = Lident _ }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
          | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
            oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
          | _ -> t)
@@ -89,7 +89,7 @@ include struct
   ;;
 
   let gtypify_exn ?(ccompositional = false) ~loc typ =
-    make_typ_exn ~ccompositional ~loc (fun ~loc t -> t) "ground" typ
+    make_typ_exn ~ccompositional ~loc (fun ~loc:_ t -> t) "ground" typ
   ;;
 
   let%expect_test _ =
@@ -190,9 +190,9 @@ let make_reifier_composition ~pat ?(typ = None) kind tdecl =
   let body =
     let loc = manifest.ptyp_loc in
     match manifest.ptyp_desc with
-    | Ptyp_constr ({ txt }, args) -> helper ~loc manifest
+    | Ptyp_constr (_, _args) -> helper ~loc manifest
     | Ptyp_tuple [ l; r ] ->
-      let base_reifier, reifier_name = unwrap_kind ~loc kind in
+      let _, reifier_name = unwrap_kind ~loc kind in
       Exp.apply
         ~loc
         (Exp.ident ~loc @@ lident_of_list [ "OCanren"; "Std"; "Pair"; reifier_name ])
@@ -245,7 +245,7 @@ let process1 tdecl =
 ;;
 
 let str_type_decl : (_, _) Deriving.Generator.t =
-  Deriving.Generator.make Deriving.Args.empty (fun ~loc ~path (_, info) ->
+  Deriving.Generator.make Deriving.Args.empty (fun ~loc:_ ~path:_ (_, info) ->
     List.concat_map info ~f:process1)
 ;;
 

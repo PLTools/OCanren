@@ -29,7 +29,7 @@ module Move = struct
   | Fill     of 'nat
   [@@deriving gt ~options:{show; fmt; gmap}]
 
-  type ground = Std.Nat.ground t
+  type nonrec ground = Std.Nat.ground t
   ]
 end
 

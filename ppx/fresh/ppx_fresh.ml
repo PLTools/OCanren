@@ -169,7 +169,7 @@ let parse_to_list alist =
     | Pexp_construct ({ txt = Lident "[]" }, None) -> acc
     | Pexp_construct ({ txt = Lident "::" }, Some { pexp_desc = Pexp_tuple [ y1; y2 ]; _ })
       -> helper (y1 :: acc) y2
-    | x -> [ ele ]
+    | _ -> [ ele ]
   in
   List.rev @@ helper [] alist
 ;;
@@ -182,7 +182,7 @@ let mapper =
       let loc = e.pexp_loc in
       match e.pexp_desc with
       | Pexp_apply (_, []) -> e
-      | Pexp_apply (e1, [ args ]) when is_fresh e1 ->
+      | Pexp_apply (e1, [ _ ]) when is_fresh e1 ->
         (* bad syntax -- no body*)
         e
       | Pexp_apply (e1, (Nolabel, args) :: body) when is_fresh e1 ->

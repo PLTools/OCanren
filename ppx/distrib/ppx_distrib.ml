@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren PPX
- * Copyright (C) 2016-2021
+ * Copyright (C) 2016-2022
  *   Dmitrii Kosarev aka Kakadu
  * St.Petersburg State University, JetBrains Research
  *)
@@ -45,7 +45,7 @@ let () =
         pattern
         (fun
           ~loc
-          ~path
+          ~path:_
           attributes1
           params1
           kind1
