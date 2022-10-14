@@ -1,1 +1,6 @@
+(env
+ (dev
+  (flags
+   (:standard -w -27))))
+
 (include dune.tests)
