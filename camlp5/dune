@@ -8,25 +8,13 @@
  (public_name OCanren.syntax)
  (modules writer pa_ocanren)
  (libraries camlp5)
+ (preprocessor_deps ./pp5+dump.exe)
  (preprocess
   (action
-   (run %{project_root}/camlp5/pp5+dump.byte %{input-file}))))
+   (run %{project_root}/camlp5/pp5+dump.exe %{input-file}))))
 
-;(executable
-; (name pa_ocanren_test)
-; (modules pa_ocanren_test)
-; (libraries
-; camlp5
-;  pa_ocanren
-;  pa_ppx
-;  camlp5.pa_r.link
-;  camlp5.pr_r.link
-;  camlp5.parser_quotations.link)
-; (preprocess
-;  (action
-;   (run
-;    %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
-;    %{input-file}))))
+(cram
+ (deps ./pa_ocanren.cma))
 
 (rule
  (targets pp5+gt+plugins+ocanren+dump.exe)
@@ -181,7 +169,31 @@
   (run
    mkcamlp5
    -package
-   camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations
+   camlp5.pa_o,camlp5.pr_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations
+   %{read-lines:../config/package-doc.cfg}
+   -o
+   %{targets})))
+
+(rule
+ (targets pp5+dump.exe)
+ (deps %{project_root}/config/package-doc.cfg)
+ (action
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5.pa_o,camlp5.pr_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations
+   %{read-lines:../config/package-doc.cfg}
+   -o
+   %{targets})))
+
+(rule
+ (targets pp5+o.exe)
+ (deps %{project_root}/config/package-doc.cfg)
+ (action
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations
    %{read-lines:../config/package-doc.cfg}
    -o
    %{targets})))
