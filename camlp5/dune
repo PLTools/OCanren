@@ -6,7 +6,7 @@
 (library
  (name pa_ocanren)
  (public_name OCanren.syntax)
- (modules pa_ocanren)
+ (modules writer pa_ocanren)
  (libraries camlp5)
  (preprocess
   (action
