@@ -51,4 +51,13 @@
 
 (alias
  (name all)
- (deps tree.exe sorting.exe WGC.exe len.exe))
+ (deps tree.exe sorting.exe WGC.exe JeepProblem.exe len.exe))
+
+(cram
+ (deps
+  tree.exe
+  sorting.exe
+  WGC.exe
+  JeepProblem.exe
+  ;
+  ))
