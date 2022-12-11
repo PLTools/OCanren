@@ -1,6 +1,7 @@
+(* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * "Jeep Problem" (https://en.wikipedia.org/wiki/Jeep_problem)
- * Copyright (C) 2016-2020
+ * Copyright (C) 2016-2022
  * Dmitri Boulytchev, Peter Lozov
  * St.Petersburg State University, JetBrains Research
  *
@@ -16,38 +17,36 @@
  * (enclosed in the file COPYING).
  *)
 
-open GT
-
-module L = List
-
 open OCanren
 open OCanren.Std
 
-(* Types of moves *)
-@type 'nat move =
-  Forward  of 'nat
-| Backward of 'nat
-| Unload   of 'nat
-| Fill     of 'nat
-with show, gmap;;
+module Move = struct
+  [%%distrib
+  type nonrec 'nat t =
+    Forward  of 'nat
+  | Backward of 'nat
+  | Unload   of 'nat
+  | Fill     of 'nat
+  [@@deriving gt ~options:{show; fmt; gmap}]
 
-(* List of moves *)
-@type moves = int move GT.list with show;;
-(* ... logically *)
-@type lmoves = ocanren {int move GT.list} with show;;
-                                                                                                                                         
+  type nonrec ground = Std.Nat.ground t
+  ]
+end
+
+type hum_moves = GT.int Move.t GT.list [@@deriving gt ~options:{show; fmt}]
+
+(* TODO: add auto conversion from
+    int ~~> Nat.ground
+'a list ~~> 'a List.ground
+*)
 (* State: distance, amount of fuel, list of fuel dumps *)
-@type state = int * int * (int * int) GT.list with show;;
-(* ... logically *)                                                        
-@type lstate = ocanren {int * int * (int * int) GT.list} with show
-                                                                                                    
-(* Reification primitives *)
-module M = Fmap (struct type 'a t = 'a move let fmap f = gmap(move) f end)
+type state = Nat.ground * (Nat.ground * (Nat.ground * Nat.ground) Std.List.ground) [@@deriving reify, gt ~options:{fmt;show}]
+(* ... logically *)
+type lstate = ocanren {GT.int * GT.int * (GT.int * GT.int) GT.list} [@@deriving gt ~options:{fmt;show}]
 
-let forward  x = inj @@ M.distrib (Forward  x)
-let backward x = inj @@ M.distrib (Backward x)
-let unload   x = inj @@ M.distrib (Unload   x)
-let fill     x = inj @@ M.distrib (Fill     x)                                  
+type hum_state = GT.int * (GT.int * (GT.int * GT.int) GT.list) [@@deriving gt ~options:{fmt;show}]
+
+open Move
 
 (* Lookups a station:
      d       : a distance
@@ -62,7 +61,7 @@ let rec lookupo d stations q =
       stations == (d', q') :: ss &
       {d' == d & Some q' == q |
        d' <  d & lookupo d ss q |
-       d' >  d & q == None        
+       d' >  d & q == None
       }
   }
 
@@ -77,7 +76,7 @@ let positive n = ocanren {fresh x in n == Nat.succ x}
 *)
 let rec puto stations d q stations' =
   let open Nat in
-  ocanren {  
+  ocanren {
     stations == [] & {q == 0 & stations' == [] | positive q & stations' == [(d, q)]} |
     fresh d', q', ss, ss' in
       stations == (d', q') :: ss &
@@ -89,7 +88,7 @@ let rec puto stations d q stations' =
 
 let max_capacity = nat 5
 
-(* Performs a single step *)                 
+(* Performs a single step *)
 let step state m state' =
   let open Nat in
   ocanren {
@@ -102,14 +101,14 @@ let step state m state' =
           d      <= gas  &
           (+) pos d pos' &
           (+) gas' d gas
-        
+
       | fresh d, pos', gas' in
           m      == Backward d &
           state' == (pos', gas', stations) &
           d      <= gas &
           (+) pos' d pos &
           (+) gas' d gas
-        
+
       | fresh q, gas', stations' in
           m      == Unload q &
           q      <= max_capacity &
@@ -120,17 +119,17 @@ let step state m state' =
            fresh q', q'' in
              lookupo pos stations (Some q') & (+) q' q q'' & puto stations pos q'' stations'
           }
-       
+
        | fresh q, gas', q', q'', stations' in
           m == Fill (q) & q <= max_capacity &
           {pos    == 0 &
            state' == (pos, gas', stations) &
            (+) gas q gas' &
            gas' <= max_capacity |
-             
+
            positive pos &
            state' == (pos, gas', stations') &
-           lookupo pos stations (Some q') & 
+           lookupo pos stations (Some q') &
            q' <= q &
            (+) gas q gas' &
            gas' <= max_capacity &
@@ -138,7 +137,7 @@ let step state m state' =
            puto stations pos q'' stations'}
       }
     }
-            
+
 let kind m k =
   ocanren {
     fresh n in
@@ -156,38 +155,45 @@ let steps state moves state' =
         kind m k' &
         k' =/= k &
         step state m state'' &
-        steps k' state'' moves' state'      
+        steps k' state'' moves' state'
     })
   in
   steps !!2 state moves state'
 
-let prj_moves x = List.to_list (gmap(move) Nat.to_int) (project x)
-let prj_state x =
-  let x, (y, z) = project x in
-  (Nat.to_int x, Nat.to_int y, List.to_list (fun (x, y) -> Nat.to_int x, Nat.to_int y) z)
-                
+let prj_moves : _ reified -> hum_moves =
+  let re = Reifier.fmap (List.to_list (GT.gmap(Move.t) Nat.to_int)) [%prj_exn: Move.ground GT.list] in
+  fun rr -> rr#reify re
+
+let prj_state : _ reified -> hum_state  =
+  let flat_it : state -> hum_state =
+    fun ((x, (y, z)) : state) ->
+      (Nat.to_int x, (Nat.to_int y, Std.List.to_list (fun (x, y) -> Nat.to_int x, Nat.to_int y) z))
+    in
+  let reify : (_, hum_state) Reifier.t = Reifier.fmap flat_it prj_exn_state in
+  fun rr -> rr#reify reify
+
 let init = pair (nat 0) @@ pair max_capacity (nil ())
 
 let _ =
-  L.iter (fun q -> Printf.printf "Reaching 6: %s\n%!" @@ show(state) q) @@ Stream.take ~n:1 @@
+  let module L = Stdlib.List in
+  L.iter (fun q -> Printf.printf "Reaching 6: %s\n%!" @@ GT.show(hum_state) q) @@ Stream.take ~n:1 @@
   run q (fun q -> ocanren {steps init [Forward 2; Unload 1; Backward 2; Fill 5; Forward 2; Fill 1; Forward 4] q}) prj_state;
 
-  L.iter (fun q -> Printf.printf "Making stations: %s\n%!" @@ show(state) q) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Making stations: %s\n%!" @@ GT.show(hum_state) q) @@ Stream.take ~n:1 @@
   run q (fun q -> ocanren {steps init [Forward 1; Unload 2; Backward 1; Fill 3; Forward 2] q}) prj_state;
 
-  L.iter (fun q -> Printf.printf "Searching for making stations: %s\n%!" @@ show(moves) q) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Searching for making stations: %s\n%!" @@ GT.show(hum_moves) q) @@ Stream.take ~n:1 @@
   run q (fun q -> ocanren {steps init q (2, 2, [(1, 2)])}) prj_moves;
 
-  L.iter (fun q -> Printf.printf "Searching for reaching 6: %s\n%!" @@ show(moves) q) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Searching for reaching 6: %s\n%!" @@ GT.show(hum_moves) q) @@ Stream.take ~n:1 @@
     run q (fun q -> ocanren {steps init q (6, 0, [])}) prj_moves;
 
-  L.iter (fun q -> Printf.printf "Reaching 8: %s\n%!" @@ show(state) q) @@ Stream.take ~n:1 @@
-  run q (fun q -> ocanren {steps init [Forward 2; Unload 1; Backward 2; Fill 3; Forward 1; Unload 1; Backward 1; 
-                                       Fill 5; Forward 2; Unload 1; Backward 2; Fill 5; Forward 1; 
-                                       Fill 1; Forward 1; Fill 1; Forward 1; Unload 2; Backward 1; Fill 1; Backward 2; 
-                                       Fill 3; Forward 1; Unload 1; Backward 1; Fill 5; Forward 1; Fill 1; 
+  L.iter (fun q -> Printf.printf "Reaching 8: %s\n%!" @@ GT.show(hum_state) q) @@ Stream.take ~n:1 @@
+  run q (fun q -> ocanren {steps init [Forward 2; Unload 1; Backward 2; Fill 3; Forward 1; Unload 1; Backward 1;
+                                       Fill 5; Forward 2; Unload 1; Backward 2; Fill 5; Forward 1;
+                                       Fill 1; Forward 1; Fill 1; Forward 1; Unload 2; Backward 1; Fill 1; Backward 2;
+                                       Fill 3; Forward 1; Unload 1; Backward 1; Fill 5; Forward 1; Fill 1;
                                        Forward 2; Fill 2; Forward 5] q}) prj_state;
 
-  L.iter (fun q -> Printf.printf "Searching for reaching 8: %s\n%!" @@ show(moves) q) @@ Stream.take ~n:1 @@
+  L.iter (fun q -> Printf.printf "Searching for reaching 8: %s\n%!" @@ GT.show(hum_moves) q) @@ Stream.take ~n:1 @@
   run q (fun q -> ocanren {fresh r, s in steps init q (8, r, s)}) prj_moves;
-

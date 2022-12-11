@@ -36,17 +36,17 @@ let rec fold_right1 f = function
 | []   -> failwith "fold_right1"
 
 let rec fold_left1 f xs = List.fold_left f (List.hd xs) (List.tl xs)
-
+                        
 let decapitalize =
   String.mapi (function 0 -> Char.lowercase_ascii | _ -> Fun.id)
-
+                        
 let rec ctor e =
   let loc = MLast.loc_of_expr e in
   match e with
-  | <:expr< $uid:u$ >>   -> Some (<:expr< $lid:decapitalize u$ >>)
+  | <:expr< $uid:u$ >>            -> Some e 
   | <:expr< $longid:m$ . ($e$) >> -> (match ctor e with Some e -> Some (<:expr< $longid:m$ . ($e$) >>) | _ -> None)
-  | <:expr< $m$ . ($e$) >> -> (match ctor e with Some e -> Some (<:expr< $m$ . ($e$) >>) | _ -> None)
-  | _                    -> None
+  | <:expr< $m$ . ($e$) >>        -> (match ctor e with Some e -> Some (<:expr< $m$ . ($e$) >>) | _ -> None)
+  | _                             -> None
 
 let list_of_list es =
   let loc      = MLast.loc_of_expr (List.hd es) in
@@ -68,11 +68,15 @@ let rec fix_term e =
   | <:expr< $e1$ $e2$ >> ->
      (match ctor e1 with
       | Some e1' ->
-         (match e2 with
-          | <:expr< ( $list:ts$ ) >> ->
-             List.fold_left (fun acc e -> <:expr< $acc$ $fix_term e$ >> ) e1' ts
-          | _  -> <:expr< $e1'$ $fix_term e2$ >>
-         )
+         let fixed =
+           match e2 with
+           | <:expr< ( $list:ts$ ) >> ->
+              List.fold_left (fun acc e -> <:expr< $acc$ $fix_term e$ >> ) e1' ts            
+           | _  ->
+              <:expr< $e1'$ $fix_term e2$ >>           
+         in
+         <:expr< OCanren.inji $fixed$ >>
+           
       | _ ->
          (match e with
           | <:expr< OCanren.Std.nil () >> -> e
@@ -88,7 +92,7 @@ let rec fix_term e =
   | _ ->
     (* everything else *)
     (match ctor e with
-     | Some e -> <:expr<$e$ () >>
+     | Some e -> <:expr< OCanren.inji $e$ >>
      | _ -> e
     )
 
@@ -301,8 +305,8 @@ EXTEND
               List.fold_right (fun e acc -> return (fun a b -> <:expr< OCanren.Std.List.cons $a$ $b$ >>) <*> e <*> acc) ts
                (return <:expr< OCanren.Std.nil() >>)
             )
-        | "("; op=operator_rparen                  -> return <:expr< $lid:op$ >>
-        | "("; ts=LIST0 SELF SEP ","; ")" ->
+        | "("; op=operator_rparen         -> return <:expr< $lid:op$ >>
+        | "("; ts=LIST1 SELF SEP ","; ")" ->
             (match ts with
             | [e] -> e
             | _ ->

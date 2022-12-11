@@ -1,6 +1,6 @@
 (executables
- (names tree sorting WGC)
- (modules tree sorting WGC)
+ (names tree sorting WGC add)
+ (modules tree sorting WGC add)
  (preprocess
   (action
    (run
@@ -33,8 +33,8 @@
  (libraries GT OCanren benchmark))
 
 (executable
- (name JeepPPX)
- (modules JeepPPX)
+ (name JeepProblem)
+ (modules JeepProblem)
  (preprocess
   (action
    (run
