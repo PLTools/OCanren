@@ -309,11 +309,8 @@ EXTEND
         | "("; ts=LIST1 SELF SEP ","; ")" ->
             (match ts with
             | [e] -> e
-            | _   -> (*return (fun ts -> <:expr< ( $list:ts$ ) >>) <*> (fold_left1 (fun e acc -> return (fun a b -> a :: b) <*> e <*> acc) ts) *)
-(*
-               return  (fun ts -> <:expr< ( $list:ts$ ) >> ) *)
-                                                                      
-                         fold_right1 (fun e acc -> return (fun a b -> <:expr< OCanren.Std.pair $a$ $b$ >>) <*> e <*> acc) ts 
+            | _   -> return (fun ts -> <:expr< ( $list:ts$ ) >>) <*>  
+                     List.fold_right (fun x acc -> return (fun x acc -> x :: acc) <*> x <*> acc) ts (return [])
             )
         ]
     | [ e = expr LEVEL "simple" -> return e ]
