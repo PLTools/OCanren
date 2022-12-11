@@ -1,7 +1,7 @@
 (*
  * pa_ocanren: a camlp5 extension to implement syntax-level
  * miniKanren constructs.
- * Copyright (C) 2015-2020
+ * Copyright (C) 2015-2022
  * Dmitri Boulytchev, St.Petersburg State University
  *
  * This software is free software; you can redistribute it and/or
@@ -37,8 +37,8 @@ let rec fold_right1 f = function
 
 let rec fold_left1 f xs = List.fold_left f (List.hd xs) (List.tl xs)
 
-let decapitalize s =
-  String.init (String.length s) (function 0 -> Char.lowercase_ascii s.[0] | i -> s.[i])
+let decapitalize =
+  String.mapi (function 0 -> Char.lowercase_ascii | _ -> Fun.id)
 
 let rec ctor e =
   let loc = MLast.loc_of_expr e in
@@ -52,6 +52,15 @@ let list_of_list es =
   let loc      = MLast.loc_of_expr (List.hd es) in
   let cons a b = <:expr< [ $a$ :: $b$ ]  >> in
   List.fold_right (fun e lst -> cons e lst) es <:expr< [] >>
+
+let gensym =
+  let ans = ref 0 in
+  fun ?(prefix="") () ->
+    incr ans;
+    Format.asprintf "_%s_%d" prefix !ans
+
+let pp_ast ppf x =
+  Format.fprintf ppf "%s" (Eprinter.apply pr_expr Pprintf.empty_pc x)
 
 let rec fix_term e =
   let loc = MLast.loc_of_expr e in
@@ -164,7 +173,26 @@ let rec decorate_type ctyp =
   | _                        -> ctyp
 
 
+let add_freshes ~loc vars body =
+  let rec loop = function
+  | a::b::c::tl ->
+      let pa = <:patt< $lid:a$ >> in
+      let pb = <:patt< $lid:b$ >> in
+      let pc = <:patt< $lid:c$ >> in
+      <:expr< OCanren.Fresh.three (fun $pa$ $pb$ $pc$ -> $loop tl$) >>
+  | a::b::tl ->
+      let rez = loop tl in
+      let pa = <:patt< $lid:a$ >> in
+      let pb = <:patt< $lid:b$ >> in
+      <:expr< OCanren.Fresh.two (fun $pa$ $pb$ -> $rez$) >>
+  | a::[] ->
+      let pa = <:patt< $lid:a$ >> in
+      <:expr< OCanren.Fresh.one (fun $pa$ -> $body$) >>
+  | []    -> body
+  in
+  loop vars
 
+open Writer
 
 EXTEND
   GLOBAL: expr ctyp str_item;
@@ -194,26 +222,7 @@ EXTEND
         in
         <:expr< delay (fun () -> $conjunctions$) >>
       in
-      let ans =
-        let rec loop = function
-        | a::b::c::tl ->
-            let pa = <:patt< $lid:a$ >> in
-            let pb = <:patt< $lid:b$ >> in
-            let pc = <:patt< $lid:c$ >> in
-            <:expr< OCanren.Fresh.three (fun $pa$ $pb$ $pc$ -> $loop tl$) >>
-        | a::b::tl ->
-            let rez = loop tl in
-            let pa = <:patt< $lid:a$ >> in
-            let pb = <:patt< $lid:b$ >> in
-            <:expr< OCanren.Fresh.two (fun $pa$ $pb$ -> $rez$) >>
-        | a::[] ->
-            let pa = <:patt< $lid:a$ >> in
-            <:expr< OCanren.Fresh.one (fun $pa$ -> $body$) >>
-        | []    -> body
-        in
-        loop vars
-      in
-      ans
+      add_freshes ~loc vars body
     ] |
     [ "defer"; subj=expr LEVEL "." ->
       <:expr< delay (fun () -> $subj$) >>
@@ -229,64 +238,78 @@ EXTEND
     "top" RIGHTA [ l=SELF; "|"; r=SELF -> <:expr< OCanren.disj $l$ $r$ >> ] |
           RIGHTA [ l=SELF; "&"; r=SELF -> <:expr< OCanren.conj $l$ $r$ >> ] |
     [ "fresh"; vars=LIST1 LIDENT SEP ","; "in"; b=ocanren_expr LEVEL "top" ->
-       List.fold_right
-         (fun x b ->
-            let p = <:patt< $lid:x$ >> in
-            <:expr< OCanren.call_fresh ( fun $p$ -> $b$ ) >>
-         )
-         vars
-         b
+        add_freshes ~loc vars b
     ] |
     "primary" [
-        p=prefix; t=ocanren_term                      -> let p = <:expr< $lid:p$ >> in <:expr< $p$ $t$ >>
-      | l=ocanren_term; "==" ; r=ocanren_term         -> <:expr< OCanren.unify $l$ $r$ >>
-      | l=ocanren_term; "=/="; r=ocanren_term         -> <:expr< OCanren.diseq $l$ $r$ >>
-      | l=ocanren_term; op=operator; r=ocanren_term   -> let p = <:expr< $lid:op$ >> in
-                                                         let a = <:expr< $p$ $l$ >> in
-                                                         <:expr< $a$ $r$ >>
-      | x=ocanren_term                                -> x
+        p=prefix; t=ocanren_term ->
+          let p = <:expr< $lid:p$ >> in
+          <:expr< $p$ $snd t$ >>
+      | l=ocanren_term; "==" ; r=ocanren_term ->
+          let (vars1, l) = l in
+          let (vars2, r) = r in
+          add_freshes ~loc (vars1@vars2) <:expr< OCanren.unify $l$ $r$ >>
+      | l=ocanren_term; "=/="; r=ocanren_term         -> <:expr< OCanren.diseq $snd l$ $snd r$ >>
+      | l=ocanren_term; op=operator; r=ocanren_term   ->
+          let p = <:expr< $lid:op$ >> in
+          let a = <:expr< $p$ $snd l$ >> in
+          <:expr< $a$ $snd r$ >>
+      | x=ocanren_term                                -> snd x
       | "{"; e=ocanren_expr; "}"                      -> e
       | "||"; "("; es=LIST1 ocanren_expr SEP ";"; ")" -> <:expr< OCanren.conde $list_of_list es$ >>
       | "&&"; "("; es=LIST1 ocanren_expr SEP ";"; ")" ->
-         let op = <:expr< $lid:"?&"$ >> in
-         let id = <:expr< OCanren . ($op$) >> in
-         <:expr< $id$ $list_of_list es$ >>
+          let op = <:expr< $lid:"?&"$ >> in
+          let id = <:expr< OCanren . ($op$) >> in
+          <:expr< $id$ $list_of_list es$ >>
     ]
   ];
 
-  ocanren_term: [[
-    t=ocanren_term' -> fix_term t
-  ]];
+  ocanren_term: [[ t=ocanren_term_m -> run (t >>| fix_term) ]];
 
-  ocanren_term':
-    [ "app"  LEFTA  [ l=SELF; r=SELF -> <:expr< $l$ $r$ >>]
-    | "list" RIGHTA [ l=SELF; "::"; r=SELF -> <:expr< OCanren.Std.List.cons $l$ $r$ >> ]
-    | "primary" [ "!"; "("; e=expr; ")" -> e
+  ocanren_term_m:
+    [ "app"  LEFTA  [ l=SELF; r=SELF -> return (fun l r -> <:expr< $l$ $r$ >>) <*> l <*> r ]
+    | "list" RIGHTA [ l=SELF; "::"; r=SELF ->
+        return (fun l r -> <:expr< OCanren.Std.List.cons $l$ $r$ >>) <*> l <*> r
+      ]
+    | "primary"
+        [ "!"; "("; e=expr; ")" -> return e
         | c=INT ->
-          let n = <:expr< $int:c$ >> in
-          <:expr< OCanren.Std.nat $n$ >>
+            let n = <:expr< $int:c$ >> in
+            return <:expr< OCanren.Std.nat $n$ >>
         | c=CHAR ->
-          let s = <:expr< $chr:c$ >> in
-          <:expr< OCanren.inj (OCanren.lift $s$) >>
+            let s = <:expr< $chr:c$ >> in
+            return <:expr< OCanren.inj (OCanren.lift $s$) >>
         | s=STRING ->
-          let s = <:expr< $str:s$ >> in
-          <:expr< OCanren.inj (OCanren.lift $s$) >>
-        | "true"   -> <:expr< OCanren.Std.Bool.truo >>
-        | "false"  -> <:expr< OCanren.Std.Bool.falso >>
-        | "["; ts=LIST0 ocanren_term' SEP ";"; "]" ->
-          (match ts with
-          | [] -> <:expr< OCanren.Std.nil () >>
-          | _  -> List.fold_right (fun x l -> <:expr< OCanren.Std.List.cons $x$ $l$ >> ) ts <:expr< OCanren.Std.nil () >>
-          )
-        | "("; op=operator_rparen                  -> <:expr< $lid:op$ >>
-        | "("; ts=LIST0 ocanren_term' SEP ","; ")" ->
-          (match ts with
-          | []  -> <:expr< OCanren.inj (OCanren.lift ()) >>
-          | [t] -> t
-          | _   -> <:expr< ( $list:ts$ ) >>
-          )
-    ]
-    | [ e = expr LEVEL "simple" -> e ]
+            let s = <:expr< $str:s$ >> in
+            return <:expr< OCanren.inj (OCanren.lift $s$) >>
+        | "true"   -> return <:expr< OCanren.Std.Bool.truo >>
+        | "false"  -> return <:expr< OCanren.Std.Bool.falso >>
+        | "_" ->
+              let next = gensym () in
+              write (return <:expr< $lid:next$ >>) next
+        (* Double wildcard is completely optional *)
+        (* | x=LIDENT -> (
+            match x with
+            | "__" ->
+              let next = gensym () in
+              write (return <:expr< $lid:next$ >>) next
+            | _ -> return <:expr< $lid:x$ >>
+        ) *)
+        | "["; ts=LIST0 SELF SEP ";"; "]" ->
+            (match ts with
+            | [] -> return <:expr< OCanren.Std.nil () >>
+            | _ ->
+              List.fold_right (fun e acc -> return (fun a b -> <:expr< OCanren.Std.List.cons $a$ $b$ >>) <*> e <*> acc) ts
+               (return <:expr< OCanren.Std.nil() >>)
+            )
+        | "("; op=operator_rparen                  -> return <:expr< $lid:op$ >>
+        | "("; ts=LIST0 SELF SEP ","; ")" ->
+            (match ts with
+            | [e] -> e
+            | _ ->
+              fold_right1 (fun e acc -> return (fun a b -> <:expr< OCanren.Std.pair $a$ $b$ >>) <*> e <*> acc) ts
+            )
+        ]
+    | [ e = expr LEVEL "simple" -> return e ]
   ];
 
   ctyp: [
