@@ -14,56 +14,33 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-20.04
-        ocaml-compiler:
-          - 4.10.1
-
     env:
       #OCANREN_STATS: yes
       # enabling stats required extra link library
       OCANREN_DOCS: yes
+      OPAMROOT: /home/user/.opam
 
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
+    container:
+      image: kakadu18/ocaml:pltlab
+      options: --user user
 
     steps:
+      - run: opam --version
+      - run: opam exec -- ocamlopt --version
+
       - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.9.1
+        uses: styfle/cancel-workflow-action@0.11.0
         with:
           access_token: ${{ github.token }}
 
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Retrieve date for cache key
-        id: cache-key
-        run: echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
-        shell: bash
-
-      - name: Restore opam cache
-        id: opam-cache
-        uses: actions/cache@v2
-        with:
-          path: "~/.opam"
-          # invalidate cache daily, gets built daily using a scheduled job
-          key: ${{ steps.cache-key.outputs.date }}
-
-      - name: Use OCaml ${{ matrix.ocaml-version }}
-        uses: avsm/setup-ocaml@v2
-        with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
-
-      #- run: opam pin add OCanren.dev . --no-action
-      #- run: opam depext OCanren.dev --yes --with-test
-
       - name: Install dependencies for documentation
         run: opam install odoc pa_ppx --yes
 
-      - run: opam install . --deps-only --with-test
+      - run: opam install . --yes --deps-only --with-test --with-doc
       - run: opam exec -- make #dune build
       - run: opam exec -- make test # dune runtest
 
@@ -73,6 +50,8 @@ jobs:
         run: opam exec -- dune build @doc
 
       - name: Deploy API documentation
+        if: ${{ github.event.pull_request.head.repo.full_name == 'PLTools/OCanren' }}
+        # We do not deploy in forks
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
