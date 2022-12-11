@@ -32,7 +32,8 @@
     :with-test
     (>= 0.22)))
   ppx_inline_test
-  mtime)
+  (mtime
+   (< 2.0.0)))
  (authors
   "Dmitrii Boulytchev https://github.com/dboulytchev"
   "Dmitrii Kosarev https://github.com/Kakadu"
