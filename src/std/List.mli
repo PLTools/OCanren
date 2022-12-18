@@ -92,6 +92,8 @@ val reify :  ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
 
 val prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
 
+val prj_to_list_exn :  ('a, 'b) Reifier.t -> ('a groundi, 'b GT.list) Reifier.t
+
 val prj : (int -> 'b ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
 
 (** {3 Built-in relations} *)
