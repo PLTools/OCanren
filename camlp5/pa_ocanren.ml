@@ -306,8 +306,9 @@ EXTEND
                (return <:expr< OCanren.Std.nil() >>)
             )
         | "("; op=operator_rparen         -> return <:expr< $lid:op$ >>
-        | "("; ts=LIST1 SELF SEP ","; ")" ->
+        | "("; ts=LIST0 SELF SEP ","; ")" ->
             (match ts with
+            | []  -> return <:expr< () >>
             | [e] -> e
             | _   -> return (fun ts -> <:expr< ( $list:ts$ ) >>) <*>  
                      List.fold_right (fun x acc -> return (fun x acc -> x :: acc) <*> x <*> acc) ts (return [])

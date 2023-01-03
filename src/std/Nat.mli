@@ -98,8 +98,11 @@ val gto : groundi -> groundi -> Bool.groundi -> goal
 val lto : groundi -> groundi -> Bool.groundi -> goal
 
 (** Comparisons as goals *)
-
 val (<=) : groundi -> groundi -> goal
 val (>=) : groundi -> groundi -> goal
 val (>)  : groundi -> groundi -> goal
 val (<)  : groundi -> groundi -> goal
+
+(** Minimum/maximum *)
+val maxo : groundi -> groundi -> groundi -> goal
+val mino : groundi -> groundi -> groundi -> goal                                   

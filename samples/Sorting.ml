@@ -29,8 +29,12 @@ open OCanren.Std
 let minmaxo a b min max =
   let open Nat in
   ocanren {
+      (*
+    mino a b min &
+    maxo a b max
+       *)
     min == a & max == b & a <= b |
-    min == b & max == a & a >  b
+    min == b & max == a & a >  b 
   }
 
 (* [l] is a (non-empty) list, [s] is its smallest element,

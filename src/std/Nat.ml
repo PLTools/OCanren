@@ -135,3 +135,13 @@ let lto x y b = gto y x b
 
 let (>) x y = gto x y Bool.truo
 let (<) x y = lto x y Bool.truo
+
+let maxo x y z = conde [
+  (z === x) &&& (x >= y);
+  (z === y) &&& (x <  y)
+]
+               
+let mino x y z = conde [
+  (z === x) &&& (x <= y);
+  (z === y) &&& (x >  y)
+]
