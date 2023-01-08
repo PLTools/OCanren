@@ -162,7 +162,7 @@ let of_val = function
   | Ploc.VaAnt _ -> failwith "Should not happen in our setup of Camlp5"
 
 (* Decorate type expressions *)
-let rec decorate_type ctyp =
+let rec decorate_type ctyp =  
   let loc = MLast.loc_of_ctyp ctyp in
   match ctyp with
   | <:ctyp< int >>           -> <:ctyp< OCanren.Std.Nat.logic >>
@@ -175,7 +175,6 @@ let rec decorate_type ctyp =
   | <:ctyp< $longid:p$ . $lid:t$ >>  -> <:ctyp< OCanren.logic $ctyp$ >>
   | <:ctyp< ( $list:ts$ ) >> -> fold_right1 (fun t1 t2 -> <:ctyp< OCanren.Std.Pair.logic $t1$ $t2$ >> ) @@ List.map decorate_type ts
   | _                        -> ctyp
-
 
 let add_freshes ~loc vars body =
   let rec loop = function
@@ -195,12 +194,46 @@ let add_freshes ~loc vars body =
   | []    -> body
   in
   loop vars
-
+         
 open Writer
 
+let stream_peek_nth n (strm : (string * string) Stream.t) =
+ let rec loop n =
+    function
+      []     -> None
+    | [x]    -> if n = 1 then Some (x : (string * string)) else None
+    | _ :: l -> loop (n - 1) l 
+ in
+ loop n (Stream.npeek n strm)
+
+let check_type_decl strm =
+  match stream_peek_nth 1 strm with 
+    None -> assert false
+  | Some (_, "type") -> true
+  | _ -> false
+       
+let is_type_decl_f strm =
+  if check_type_decl strm then ()
+  else raise Stream.Failure
+
+let is_type_decl = Grammar.Entry.of_parser gram "is_type_decl" is_type_decl_f
+
+let decorate_type_decl t =
+  match t with
+    <:str_item< type $list:ltd$ >> ->
+      let loc = MLast.loc_of_str_item t in
+      let ltd = List.map 
+                  (fun <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >> ->                     
+                     <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ [@@deriving gt ~{options = {gmap=gmap; show=show}};] >>
+                  )
+                  ltd
+      in
+      <:str_item< [%%distrib type $list:ltd$ ; ] >>
+  | _ -> raise (Stream.Error "INTERNAL ERROR: type_decl expected" )
+  
 EXTEND
   GLOBAL: expr ctyp str_item;
-
+                      
   (* Kakadu: It looks like this function has become unneeded *)
   (* long_ident:
     [ RIGHTA
@@ -215,10 +248,15 @@ EXTEND
           in
           loop <:expr< $uid:i$ >> j
     ]]; *)
-
+                   
+  str_item: [
+      ["ocanren"; is_type_decl; s=str_item -> decorate_type_decl s]
+  ];
+  
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
-    [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
+      [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
+      let _ = <:str_item< [%%distrib type t = int [@@deriving gt ~{options = {gmap=gmap; show=show}};] ; ] >> in                                                        
       let body =
         let conjunctions = fold_left1
           (fun acc x -> <:expr< conj ($acc$) ($x$) >>)
@@ -320,6 +358,6 @@ EXTEND
   ctyp: [
              [ "ocanren"; "{"; t=ctyp; "}" -> decorate_type t ] |
     "simple" [ "!"; "("; t=ctyp; ")" -> <:ctyp< ocanren $t$ >> ]
-  ];
-
+  ];  
+  
 END;
