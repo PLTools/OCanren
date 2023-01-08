@@ -461,6 +461,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     ]
 ;;
 
+(* TODO(Kakadu): remember why this is really needed *)
 let process_composable =
   List.map ~f:(fun tdecl ->
     let loc = tdecl.pstr_loc in

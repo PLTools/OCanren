@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren PPX
- * Copyright (C) 2016-2022
+ * Copyright (C) 2016-2023
  *   Dmitrii Kosarev aka Kakadu
  * St.Petersburg State University, JetBrains Research
  *)
@@ -58,4 +58,8 @@ end
 let lident_of_list = function
   | [] -> failwith "Bad argument: lident_of_list"
   | s :: tl -> List.fold_left tl ~init:(Lident s) ~f:(fun acc x -> Ldot (acc, x))
+;;
+
+let fail_loc loc fmt =
+  Format.kasprintf (fun s -> failwith (Format.asprintf "%s. %a" s Location.print loc)) fmt
 ;;

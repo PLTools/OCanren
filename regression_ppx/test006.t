@@ -772,6 +772,203 @@
   end
   
   let () = print_endline "test006"
+  
+  module _ = struct
+    include struct
+      type nonrec ('a1, 'a0) t = Symb of 'a1 | Seq of 'a0 [@@deriving gt ~options:{gmap}]
+  
+      include struct
+        class virtual ['ia1, 'a1, 'sa1, 'ia0, 'a0, 'sa0, 'inh, 'extra, 'syn] t_t =
+          object
+            method virtual c_Symb : 'inh -> 'extra -> 'a1 -> 'syn
+  
+            method virtual c_Seq : 'inh -> 'extra -> 'a0 -> 'syn
+          end
+  
+        let gcata_t
+            (tr : (_, 'typ0__024_, _, _, 'typ1__025_, _, _, ('typ0__024_, 'typ1__025_) t, _) #t_t) inh
+            subj =
+          match subj with
+          | Symb _x__022_ ->
+              tr#c_Symb inh subj _x__022_
+          | Seq _x__023_ ->
+              tr#c_Seq inh subj _x__023_
+  
+        class ['a1, 'a1_2, 'a0, 'a0_2, 'extra_t, 'syn_t] gmap_t_t fa1 fa0 =
+          let _ = fa1 in
+          fun _fself_t ->
+            object
+              inherit [unit, 'a1, 'a1_2, unit, 'a0, 'a0_2, unit, 'extra_t, ('a1_2, 'a0_2) t] t_t
+  
+              constraint 'extra_t = ('a1, 'a0) t
+  
+              constraint 'syn_t = ('a1_2, 'a0_2) t
+  
+              method c_Symb () _ _x__026_ = Symb (fa1 () _x__026_)
+  
+              method c_Seq () _ _x__027_ = Seq (fa0 () _x__027_)
+            end
+  
+        let gmap_t fa1 fa0 =
+          let _ = fa1 in
+          fun inh0 subj -> GT.transform_gc gcata_t (new gmap_t_t fa1 fa0) inh0 subj
+  
+        let t =
+          { GT.gcata= gcata_t
+          ; GT.fix= (fun eta -> GT.transform_gc gcata_t eta)
+          ; GT.plugins=
+              object
+                method gmap fa1 fa0 subj = gmap_t (GT.lift fa1) (GT.lift fa0) () subj
+              end }
+  
+        let gmap_t fa1 fa0 subj = gmap_t (GT.lift fa1) (GT.lift fa0) () subj
+      end [@@ocaml.doc "@inline"] [@@merlin.hide]
+  
+      type ground = (GT.string, ground Std.List.ground) t [@@deriving gt ~options:{gmap}]
+  
+      include struct
+        class virtual ['inh, 'extra, 'syn] ground_t =
+          object
+            inherit
+              [ GT.string
+              , GT.string
+              , GT.string
+              , ground Std.List.ground
+              , ground Std.List.ground
+              , ground Std.List.ground
+              , 'inh
+              , 'extra
+              , 'syn ]
+              t_t
+          end
+  
+        let gcata_ground = gcata_t
+  
+        class ['extra_ground, 'syn_ground] gmap_ground_t _fself_ground =
+          object
+            inherit [unit, 'extra_ground, ground] ground_t
+  
+            constraint 'extra_ground = ground
+  
+            constraint 'syn_ground = ground
+  
+            inherit
+              [ GT.string
+              , GT.string
+              , ground Std.List.ground
+              , ground Std.List.ground
+              , 'extra_ground
+              , 'syn_ground ]
+              gmap_t_t
+                (fun () subj -> GT.gmap GT.string subj)
+                (fun () subj -> GT.gmap Std.List.ground (_fself_ground ()) subj)
+                _fself_ground
+          end
+  
+        let rec gmap_ground () subj =
+          GT.gmap t
+            ((fun () subj -> GT.gmap GT.string subj) ())
+            ((fun () subj -> GT.gmap Std.List.ground (gmap_ground ()) subj) ())
+            subj
+  
+        let ground =
+          { GT.gcata= gcata_ground
+          ; GT.fix= (fun eta -> GT.transform_gc gcata_ground eta)
+          ; GT.plugins=
+              object
+                method gmap subj = gmap_ground () subj
+              end }
+  
+        let gmap_ground subj = gmap_ground () subj
+      end [@@ocaml.doc "@inline"] [@@merlin.hide]
+  
+      type logic = (GT.string OCanren.logic, logic Std.List.logic) t OCanren.logic
+      [@@deriving gt ~options:{gmap}]
+  
+      include struct
+        class virtual ['inh, 'extra, 'syn] logic_t =
+          object
+            inherit
+              [ (GT.string OCanren.logic, logic Std.List.logic) t
+              , (GT.string OCanren.logic, logic Std.List.logic) t
+              , (GT.string OCanren.logic, logic Std.List.logic) t
+              , 'inh
+              , 'extra
+              , 'syn ]
+              OCanren.logic_t
+          end
+  
+        let gcata_logic = OCanren.gcata_logic
+  
+        class ['extra_logic, 'syn_logic] gmap_logic_t _fself_logic =
+          object
+            inherit [unit, 'extra_logic, logic] logic_t
+  
+            constraint 'extra_logic = logic
+  
+            constraint 'syn_logic = logic
+  
+            inherit
+              [ (GT.string OCanren.logic, logic Std.List.logic) t
+              , (GT.string OCanren.logic, logic Std.List.logic) t
+              , 'extra_logic
+              , 'syn_logic ]
+              OCanren.gmap_logic_t
+                (fun () subj ->
+                  GT.gmap t
+                    ((fun () subj ->
+                       GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
+                       () )
+                    ((fun () subj -> GT.gmap Std.List.logic (_fself_logic ()) subj) ())
+                    subj )
+                _fself_logic
+          end
+  
+        let rec gmap_logic () subj =
+          GT.gmap OCanren.logic
+            ((fun () subj ->
+               GT.gmap t
+                 ((fun () subj ->
+                    GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
+                    () )
+                 ((fun () subj -> GT.gmap Std.List.logic (gmap_logic ()) subj) ())
+                 subj )
+               () )
+            subj
+  
+        let logic =
+          { GT.gcata= gcata_logic
+          ; GT.fix= (fun eta -> GT.transform_gc gcata_logic eta)
+          ; GT.plugins=
+              object
+                method gmap subj = gmap_logic () subj
+              end }
+  
+        let gmap_logic subj = gmap_logic () subj
+      end [@@ocaml.doc "@inline"] [@@merlin.hide]
+  
+      type injected = (GT.string OCanren.ilogic, injected Std.List.injected) t OCanren.ilogic
+  
+      let fmapt a1__018_ a0__019_ subj__020_ =
+        let open Env.Monad in
+        Env.Monad.return (GT.gmap t) <*> a1__018_ <*> a0__019_ <*> subj__020_
+  
+      let (prj_exn : (_, (GT.string, ground Std.List.ground) t) Reifier.t) =
+        let open Env.Monad in
+        Reifier.fix (fun self ->
+            OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn (Std.List.prj_exn self)) )
+  
+      let (reify : (_, (GT.string OCanren.logic, logic Std.List.logic) t OCanren.logic) Reifier.t) =
+        let open Env.Monad in
+        Reifier.fix (fun self ->
+            OCanren.reify
+            <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt OCanren.reify (Std.List.reify self)))) )
+  
+      let symb _x__016_ = OCanren.inji (Symb _x__016_)
+  
+      let seq _x__017_ = OCanren.inji (Seq _x__017_)
+    end
+  end
 
   $ ./test006.exe
   test006
