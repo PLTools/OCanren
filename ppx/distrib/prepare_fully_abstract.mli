@@ -8,5 +8,5 @@
 
 val run
   :  Warnings.loc
-  -> Parsetree.type_declaration
-  -> Parsetree.type_declaration * Parsetree.type_declaration
+  -> Ppxlib.type_declaration
+  -> Ppxlib.type_declaration * Ppxlib.type_declaration

@@ -16,7 +16,8 @@ type ground_input =
   * ((core_type * (variance * injectivity)) list * type_kind * private_flag * core_type)
 
 type ground_input2 =
-  rec_flag * ((core_type * (variance * injectivity)) list * type_kind * private_flag)
+  rec_flag
+  * (string * (core_type * (variance * injectivity)) list * type_kind * private_flag)
 
 type input =
   | Explicit of
@@ -74,13 +75,13 @@ let () =
           __
           ((type_declaration_attributes __
            @@ (type_declaration
-                 ~name:(string "ground")
+                 ~name:__
                  ~params:__
                  ~cstrs:nil
                  ~kind:__
                  ~private_:__
                  ~manifest:none
-              |> map3 ~f:(fun a b c -> a, b, c)))
+              |> map4 ~f:(fun a b c d -> a, b, c, d)))
           ^:: nil)
         |> map3 ~f:(fun frec attrs b -> attrs, (frec, b))
       in
@@ -101,12 +102,12 @@ let () =
     in
     [ Extension.declare name Extension.Context.Structure_item pattern (fun ~loc ~path:_ ->
         function
-        | Only_ground (attributes1, (is_rec, (params, kind, private1))) ->
+        | Only_ground (attributes1, (is_rec, (name, params, kind, private1))) ->
           let open Ppxlib.Ast_builder.Default in
           let td =
             type_declaration
               ~loc
-              ~name:(Located.mk ~loc "ground")
+              ~name:(Located.mk ~loc name)
               ~params
               ~cstrs:[]
               ~private_:private1
@@ -115,7 +116,6 @@ let () =
           in
           let td = { td with ptype_attributes = attributes1 } in
           let full_t, normal_t = Prepare_fully_abstract.run loc td in
-          assert (String.equal normal_t.ptype_name.txt "ground");
           generate ~loc full_t is_rec normal_t []
         | Explicit
             ( (attributes1, (params1, kind1, private1, manifest1))

@@ -63,3 +63,5 @@ let lident_of_list = function
 let fail_loc loc fmt =
   Format.kasprintf (fun s -> failwith (Format.asprintf "%s. %a" s Location.print loc)) fmt
 ;;
+
+let failwiths ?(loc = Location.none) fmt = Location.raise_errorf ~loc fmt

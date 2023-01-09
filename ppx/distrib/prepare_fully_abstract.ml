@@ -54,30 +54,11 @@ end
 
 let str_type_ = Ast_helper.Str.type_
 
-(*
-module Old_OCanren = struct
-  let extract_name typ =
-    match typ.ptyp_desc with
-    | Ptyp_var s -> s
-    | _ ->
-      Buffer.clear Format.stdbuf;
-      Pprintast.core_type Format.str_formatter typ;
-      failwith (sprintf "Don't know what to do with %s" (Format.flush_str_formatter ()))
-  ;;
-
-  let extract_names = List.map extract_name
-
-  let get_param_names pcd_args =
-    match pcd_args with
-    | Pcstr_tuple pcd_args -> extract_names pcd_args
-    | _ -> failwith "not implemented"
-  ;;
-
-  let nolabel = Asttypes.Nolabel
-end *)
+open Myhelpers
 
 let run loc tdecl =
   let open Ppxlib.Ast_builder.Default in
+  if String.equal tdecl.ptype_name.txt "t" then failwiths ~loc:tdecl.ptype_loc "Don't use type name 't'. We are going to generate fully abstract type, and the names will clash.";
   let tdecl =
     { tdecl with
       ptype_attributes =
@@ -154,7 +135,17 @@ let run loc tdecl =
   let abbrev_typ =
     let result_type =
       if FoldInfo.is_empty mapa
-      then full_t (* TODO *)
+      then (
+        let default_params = tdecl.ptype_params |> List.map fst in
+        { tdecl with
+          ptype_manifest =
+            Some
+              (ptyp_constr
+                 ~loc
+                 (Located.mk ~loc @@ Lident full_t.ptype_name.txt)
+                 default_params)
+        ; ptype_kind = Ptype_abstract
+        })
       else (
         let default_params = tdecl.ptype_params |> List.map fst in
         let extra_params = FoldInfo.map mapa ~f:(fun fi -> fi.FoldInfo.rtyp) in
@@ -191,8 +182,9 @@ let%expect_test " " =
     | _ -> assert false
   in
   let full_t, normal_t =
-    let module Migr = Ppxlib_ast.Selected_ast.Of_ocaml in
-    run loc (Migr.copy_type_declaration td)
+    (* let module Migr = Ppxlib_ast.Selected_ast.Of_ocaml in *)
+    (* run loc (Migr.copy_type_declaration td) *)
+    run loc td
   in
   Pprintast.structure
     Format.std_formatter
@@ -208,11 +200,11 @@ let%expect_test " " =
 
 let%expect_test " " =
   let loc = Location.none in
-  let stru =
+  let stru : Ppxlib.structure_item =
     [%stri
-      type ground =
+      type xxx =
         | Symb of GT.string
-        | Seq of ground Std.List.ground]
+        | Seq of xxx Std.List.ground]
   in
   let td =
     match stru.pstr_desc with
@@ -220,8 +212,37 @@ let%expect_test " " =
     | _ -> assert false
   in
   let full_t, normal_t =
-    let module Migr = Ppxlib_ast.Selected_ast.Of_ocaml in
-    run loc (Migr.copy_type_declaration td)
+    (* let module Migr = Ppxlib_ast.Selected_ast.Of_ocaml in *)
+    run loc td
+  in
+  Pprintast.structure
+    Format.std_formatter
+    [ str_type_ ~loc Nonrecursive [ full_t ]; str_type_ ~loc Recursive [ normal_t ] ];
+  [%expect
+    {|
+    type nonrec ('a1, 'a0) t =
+      | Symb of 'a1
+      | Seq of 'a0
+    type ground = (GT.string, ground Std.List.ground) t |}]
+;;
+
+let%expect_test " " =
+  let loc = Location.none in
+  let stru : Ppxlib.structure_item =
+    [%stri
+      type t =
+        | A
+        | B
+        | C]
+  in
+  let td =
+    match stru.pstr_desc with
+    | Pstr_type (_, [ t ]) -> t
+    | _ -> assert false
+  in
+  let full_t, normal_t =
+    (* let module Migr = Ppxlib_ast.Selected_ast.Of_ocaml in *)
+    run loc td
   in
   Pprintast.structure
     Format.std_formatter

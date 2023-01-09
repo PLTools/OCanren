@@ -22,7 +22,6 @@ let log fmt =
   else Format.ifprintf Format.std_formatter fmt
 ;;
 
-let failwiths ?(loc = Location.none) fmt = Location.raise_errorf ~loc fmt
 let nolabelize = List.map ~f:(fun e -> Nolabel, e)
 
 let notify fmt =
@@ -147,7 +146,7 @@ include struct
   ;;
 end
 
-let injectify ~loc typ =
+let injectify ~loc selfname typ =
   let oca_logic_ident ~loc = Located.mk ~loc (Ldot (Lident "OCanren", "ilogic")) in
   let add_ilogic ~loc t = ptyp_constr ~loc (oca_logic_ident ~loc) [ t ] in
   let rec helper t =
@@ -165,18 +164,26 @@ let injectify ~loc typ =
     | [%type: [%t? arg] GT.list] -> [%type: [%t helper arg] OCanren.Std.List.groundi]
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) } ->
       ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ]
-    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, "ground") }, []) } ->
+    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, ground) }, []) }
+      when String.equal selfname ground ->
       ptyp_constr ~loc (Located.mk ~loc (Ldot (path, "injected"))) []
-    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, "ground") }, xs) } ->
+    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, ground) }, xs) }
+      when String.equal selfname ground ->
       ptyp_constr ~loc (Located.mk ~loc (Ldot (path, "injected")))
       @@ List.map ~f:helper xs
     | { ptyp_desc = Ptyp_constr ({ txt = Lident "t" }, xs) } ->
       add_ilogic ~loc
       @@ ptyp_constr ~loc (Located.mk ~loc (Lident "t")) (List.map ~f:helper xs)
-    | { ptyp_desc = Ptyp_constr ({ txt = Lident "ground" }, xs) } ->
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident ground }, xs) }
+      when String.equal selfname ground ->
       ptyp_constr ~loc (Located.mk ~loc (Lident "injected")) (List.map ~f:helper xs)
     | { ptyp_desc = Ptyp_var _ } -> t
-    | _ -> Location.raise_errorf ~loc "injectify: bad type `%a`" Pprintast.core_type t
+    | _ ->
+      Location.raise_errorf
+        ~loc
+        "injectify: non supported case `%a`"
+        Pprintast.core_type
+        t
   in
   helper typ
 ;;
@@ -186,7 +193,7 @@ let%expect_test "injectify" =
   let test i =
     let t2 =
       match i.pstr_desc with
-      | Pstr_type (_, [ { ptype_manifest = Some t } ]) -> injectify ~loc t
+      | Pstr_type (_, [ { ptype_manifest = Some t } ]) -> injectify ~loc "ground" t
       | _ -> assert false
     in
     Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
@@ -219,7 +226,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
   let ltyp =
     let ptype_manifest =
       match tdecl.ptype_manifest with
-      | None -> failwith "no manifest"
+      | None -> failwiths ~loc:tdecl.ptype_loc "no manifest %s %d" __FILE__ __LINE__
       | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) -> Some (ltypify_exn ~loc typ)
       | t -> t
     in
@@ -236,7 +243,8 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     let ptype_manifest =
       match tdecl.ptype_manifest with
       | None -> failwiths ~loc:tdecl.ptype_loc "No manifest"
-      | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) -> Some (injectify ~loc typ)
+      | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) ->
+        Some (injectify ~loc tdecl.ptype_name.txt typ)
       | t -> t
     in
     type_declaration
@@ -345,7 +353,8 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     let rec helper typ : expression =
       let loc = typ.ptyp_loc in
       match typ with
-      | { ptyp_desc = Ptyp_constr ({ txt = Lident "ground" }, _) } -> [%expr self]
+      | { ptyp_desc = Ptyp_constr ({ txt = Lident ground }, _) }
+        when String.equal ground tdecl.ptype_name.txt -> [%expr self]
       | { ptyp_desc = Ptyp_var s } ->
         pexp_ident ~loc (Located.mk ~loc (lident (mk_arg_reifier s)))
       | [%type: GT.int]
@@ -373,13 +382,14 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         in
         let self_pat = if is_rec then [%pat? self] else [%pat? _] in
         [%expr
-          let open Env.Monad in
-          Reifier.fix (fun [%p self_pat] ->
+          let open OCanren.Env.Monad in
+          OCanren.Reifier.fix (fun [%p self_pat] ->
             [%e base_reifier]
             <..> chain
                    [%e
                      match kind with
-                     | Reify -> [%expr Reifier.zed (Reifier.rework ~fv:[%e fmapt])]
+                     | Reify ->
+                       [%expr OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:[%e fmapt])]
                      | Prj_exn -> fmapt])]
       | _ ->
         failwiths
@@ -402,7 +412,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       ~kind:Reify
       ~typ:
         (if List.is_empty tdecl.ptype_params
-        then Some [%type: (_, [%t logic_typ]) Reifier.t]
+        then Some [%type: (_, [%t logic_typ]) OCanren.Reifier.t]
         else None)
       is_rec
       tdecl
@@ -414,7 +424,9 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       ~typ:
         (if List.is_empty tdecl.ptype_params
         then
-          Some [%type: (_, [%t gtypify_exn ~ccompositional:true ~loc manifest]) Reifier.t]
+          Some
+            [%type:
+              (_, [%t gtypify_exn ~ccompositional:true ~loc manifest]) OCanren.Reifier.t]
         else None)
       is_rec
       tdecl
@@ -436,10 +448,10 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       add_funs
         [%expr
           fun [%p ppat_var ~loc (Located.mk ~loc subj)] ->
-            let open Env.Monad in
+            let open OCanren.Env.Monad in
             [%e
               List.fold_left
-                ~init:[%expr Env.Monad.return (GT.gmap t)]
+                ~init:[%expr OCanren.Env.Monad.return (GT.gmap t)]
                 names
                 ~f:(fun acc name ->
                   [%expr
