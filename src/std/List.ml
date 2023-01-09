@@ -115,6 +115,17 @@ let rec prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
       let* fr = rself in
       Env.Monad.return (fun x -> GT.gmap t fa fr x)))
 
+let prj_to_list_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b GT.list) Reifier.t =
+  let gmap fa fb = function
+    | Nil -> Stdlib.List.([])
+    | Cons (h, tl) -> Stdlib.List.cons (fa h) (fb tl)
+  in
+  let open Env.Monad in
+  let fmapt fa fb subj = return gmap <*> fa <*> fb <*> subj in
+  fun ra ->
+    let open Env.Monad.Syntax in
+    Reifier.fix (fun self -> Logic.Reifier.prj_exn <..> chain (fmapt ra self))
+
 let rec prj : (int -> _ ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
   fun onvar ra ->
     let ( >>= ) = Env.Monad.bind in
