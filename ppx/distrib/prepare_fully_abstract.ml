@@ -58,7 +58,12 @@ open Myhelpers
 
 let run loc tdecl =
   let open Ppxlib.Ast_builder.Default in
-  if String.equal tdecl.ptype_name.txt "t" then failwiths ~loc:tdecl.ptype_loc "Don't use type name 't'. We are going to generate fully abstract type, and the names will clash.";
+  if String.equal tdecl.ptype_name.txt "t"
+  then
+    failwiths
+      ~loc:tdecl.ptype_loc
+      "Don't use type name 't'. We are going to generate fully abstract type, and the \
+       names will clash.";
   let tdecl =
     { tdecl with
       ptype_attributes =
@@ -202,9 +207,9 @@ let%expect_test " " =
   let loc = Location.none in
   let stru : Ppxlib.structure_item =
     [%stri
-      type xxx =
+      type xyz =
         | Symb of GT.string
-        | Seq of xxx Std.List.ground]
+        | Seq of xyz Std.List.ground]
   in
   let td =
     match stru.pstr_desc with
@@ -223,14 +228,14 @@ let%expect_test " " =
     type nonrec ('a1, 'a0) t =
       | Symb of 'a1
       | Seq of 'a0
-    type ground = (GT.string, ground Std.List.ground) t |}]
+    type xyz = (GT.string, xyz Std.List.ground) t |}]
 ;;
 
 let%expect_test " " =
   let loc = Location.none in
   let stru : Ppxlib.structure_item =
     [%stri
-      type t =
+      type tt =
         | A
         | B
         | C]
@@ -249,8 +254,9 @@ let%expect_test " " =
     [ str_type_ ~loc Nonrecursive [ full_t ]; str_type_ ~loc Recursive [ normal_t ] ];
   [%expect
     {|
-    type nonrec ('a1, 'a0) t =
-      | Symb of 'a1
-      | Seq of 'a0
-    type ground = (GT.string, ground Std.List.ground) t |}]
+    type nonrec t =
+      | A
+      | B
+      | C
+    type tt = t |}]
 ;;
