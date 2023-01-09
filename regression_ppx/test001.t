@@ -13,18 +13,20 @@
       type injected = injected t OCanren.ilogic
   
       let fmapt a__002_ subj__003_ =
-        let open Env.Monad in
-        Env.Monad.return (GT.gmap t) <*> a__002_ <*> subj__003_
+        let open OCanren.Env.Monad in
+        OCanren.Env.Monad.return (GT.gmap t) <*> a__002_ <*> subj__003_
   
-      let (prj_exn : (_, ground t) Reifier.t) =
-        let open Env.Monad in
-        Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt self))
+      let (prj_exn : (_, ground t) OCanren.Reifier.t) =
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt self))
   
-      let (reify : (_, logic t OCanren.logic) Reifier.t) =
-        let open Env.Monad in
-        Reifier.fix (fun self ->
+      let (reify : (_, logic t OCanren.logic) OCanren.Reifier.t) =
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun self ->
             OCanren.reify
-            <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt self))) )
+            <..> chain
+                   (OCanren.Reifier.zed
+                      (OCanren.Reifier.rework ~fv:(fmapt self)) ) )
   
       let z () = OCanren.inji Z
   
@@ -52,17 +54,19 @@
       type nonrec 'a injected = 'a t OCanren.ilogic
   
       let fmapt a__005_ subj__006_ =
-        let open Env.Monad in
-        Env.Monad.return (GT.gmap t) <*> a__005_ <*> subj__006_
+        let open OCanren.Env.Monad in
+        OCanren.Env.Monad.return (GT.gmap t) <*> a__005_ <*> subj__006_
   
       let prj_exn ra =
-        let open Env.Monad in
-        Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra))
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra))
   
       let reify ra =
-        let open Env.Monad in
-        Reifier.fix (fun _ ->
-            OCanren.reify <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt ra))) )
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun _ ->
+            OCanren.reify
+            <..> chain
+                   (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt ra))) )
   
       let none () = OCanren.inji None
   
@@ -95,18 +99,22 @@
       type 'a injected = ('a, 'a injected) t OCanren.ilogic
   
       let fmapt a__009_ b__010_ subj__011_ =
-        let open Env.Monad in
-        Env.Monad.return (GT.gmap t) <*> a__009_ <*> b__010_ <*> subj__011_
+        let open OCanren.Env.Monad in
+        OCanren.Env.Monad.return (GT.gmap t)
+        <*> a__009_ <*> b__010_ <*> subj__011_
   
       let prj_exn ra =
-        let open Env.Monad in
-        Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt ra self))
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun self ->
+            OCanren.prj_exn <..> chain (fmapt ra self) )
   
       let reify ra =
-        let open Env.Monad in
-        Reifier.fix (fun self ->
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun self ->
             OCanren.reify
-            <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt ra self))) )
+            <..> chain
+                   (OCanren.Reifier.zed
+                      (OCanren.Reifier.rework ~fv:(fmapt ra self)) ) )
   
       let nil () = OCanren.inji []
   
@@ -153,18 +161,21 @@
       type nonrec injected = GT.int OCanren.ilogic t OCanren.ilogic
   
       let fmapt nat__016_ subj__017_ =
-        let open Env.Monad in
-        Env.Monad.return (GT.gmap t) <*> nat__016_ <*> subj__017_
+        let open OCanren.Env.Monad in
+        OCanren.Env.Monad.return (GT.gmap t) <*> nat__016_ <*> subj__017_
   
-      let (prj_exn : (_, GT.int t) Reifier.t) =
-        let open Env.Monad in
-        Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn))
+      let (prj_exn : (_, GT.int t) OCanren.Reifier.t) =
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun _ ->
+            OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn) )
   
-      let (reify : (_, GT.int OCanren.logic t OCanren.logic) Reifier.t) =
-        let open Env.Monad in
-        Reifier.fix (fun _ ->
+      let (reify : (_, GT.int OCanren.logic t OCanren.logic) OCanren.Reifier.t) =
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun _ ->
             OCanren.reify
-            <..> chain (Reifier.zed (Reifier.rework ~fv:(fmapt OCanren.reify))) )
+            <..> chain
+                   (OCanren.Reifier.zed
+                      (OCanren.Reifier.rework ~fv:(fmapt OCanren.reify)) ) )
   
       let forward _x__012_ = OCanren.inji (Forward _x__012_)
   

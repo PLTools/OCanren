@@ -1,0 +1,46 @@
+$ which pp_ocanren_all
+$ ls 
+  $ ./pp5+gt+plugins+ocanren+logger+o.exe test007.ml # | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat --margin=100 -
+  module _ =
+    struct
+      [%%distrib type abc =
+        A | B | C[@@deriving gt ~options:{gmap = gmap; show = show}]
+      ;;]
+    end
+  
+  module _ =
+    struct
+      [%%distrib type 'a maybe =
+          Nothing
+        | Just of 'a[@@deriving gt ~options:{gmap = gmap; show = show}]
+      ;;]
+    end
+  
+  module _ =
+    struct
+      [%%distrib type 'a lst =
+          Nil
+        | Cons of 'a * 'a lst[@@deriving gt ~options:{gmap = gmap; show = show}]
+      ;;]
+      let rec appendo x y xy =
+        let open OCanren in
+        conde
+          [(x === inj Nil) &&& (xy === y);
+           OCanren.Fresh.three
+             (fun tmp h tmp2 ->
+                delay
+                  (fun () ->
+                     conj (conj (x === cons h tmp) (xy === cons h tmp2))
+                       (appendo tmp y tmp2)))]
+      let () =
+        OCanren.
+        (run q (fun xy -> appendo (inj Nil) (cons !!1 (cons !!2 (inj Nil))) xy))
+          (fun rr -> rr#reify (prj_exn OCanren.prj_exn)) |>
+          OCanren.Stream.iter
+            (fun xs -> Format.printf "%s\n" (GT.show lst (GT.show GT.int) xs))
+    end
+  
+  let () = print_endline "test007"
+  $ ./test007.exe
+  test007
+  Cons (1, Cons (2, Nil))

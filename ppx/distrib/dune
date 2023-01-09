@@ -2,10 +2,23 @@
  (name ppx_distrib)
  (public_name OCanren-ppx.ppx_distrib)
  (kind ppx_rewriter)
- (libraries ppxlib.stdppx ppxlib OCanren-ppx.internals)
+ (libraries
+  ppxlib.stdppx
+  ppxlib
+  OCanren-ppx.internals
+  prepare_fully_abstract)
  (modules ppx_distrib ppx_distrib_expander)
  (flags
   (:standard -linkall))
  (inline_tests)
  (preprocess
   (pps ppxlib.metaquot ppx_inline_test ppx_expect)))
+
+(library
+ (name prepare_fully_abstract)
+ (public_name OCanren-ppx.prepare_fully_abstract)
+ (modules prepare_fully_abstract)
+ (libraries ppxlib myhelpers)
+ (inline_tests)
+ (preprocess
+  (pps ppxlib.metaquot ppx_expect)))

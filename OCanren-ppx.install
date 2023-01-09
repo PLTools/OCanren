@@ -42,13 +42,6 @@ lib: [
   "_build/install/default/lib/OCanren-ppx/ppx_fresh/ppx_fresh.cmx" {"ppx_fresh/ppx_fresh.cmx"}
   "_build/install/default/lib/OCanren-ppx/ppx_fresh/ppx_fresh.cmxa" {"ppx_fresh/ppx_fresh.cmxa"}
   "_build/install/default/lib/OCanren-ppx/ppx_fresh/ppx_fresh.ml" {"ppx_fresh/ppx_fresh.ml"}
-  "_build/install/default/lib/OCanren-ppx/ppx_noinjected/ppx_noinjected.a" {"ppx_noinjected/ppx_noinjected.a"}
-  "_build/install/default/lib/OCanren-ppx/ppx_noinjected/ppx_noinjected.cma" {"ppx_noinjected/ppx_noinjected.cma"}
-  "_build/install/default/lib/OCanren-ppx/ppx_noinjected/ppx_noinjected.cmi" {"ppx_noinjected/ppx_noinjected.cmi"}
-  "_build/install/default/lib/OCanren-ppx/ppx_noinjected/ppx_noinjected.cmt" {"ppx_noinjected/ppx_noinjected.cmt"}
-  "_build/install/default/lib/OCanren-ppx/ppx_noinjected/ppx_noinjected.cmx" {"ppx_noinjected/ppx_noinjected.cmx"}
-  "_build/install/default/lib/OCanren-ppx/ppx_noinjected/ppx_noinjected.cmxa" {"ppx_noinjected/ppx_noinjected.cmxa"}
-  "_build/install/default/lib/OCanren-ppx/ppx_noinjected/ppx_noinjected.ml" {"ppx_noinjected/ppx_noinjected.ml"}
   "_build/install/default/lib/OCanren-ppx/ppx_repr/ppx_repr.a" {"ppx_repr/ppx_repr.a"}
   "_build/install/default/lib/OCanren-ppx/ppx_repr/ppx_repr.cma" {"ppx_repr/ppx_repr.cma"}
   "_build/install/default/lib/OCanren-ppx/ppx_repr/ppx_repr.cmi" {"ppx_repr/ppx_repr.cmi"}
@@ -56,6 +49,15 @@ lib: [
   "_build/install/default/lib/OCanren-ppx/ppx_repr/ppx_repr.cmx" {"ppx_repr/ppx_repr.cmx"}
   "_build/install/default/lib/OCanren-ppx/ppx_repr/ppx_repr.cmxa" {"ppx_repr/ppx_repr.cmxa"}
   "_build/install/default/lib/OCanren-ppx/ppx_repr/ppx_repr.ml" {"ppx_repr/ppx_repr.ml"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.a" {"prepare_fully_abstract/prepare_fully_abstract.a"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.cma" {"prepare_fully_abstract/prepare_fully_abstract.cma"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.cmi" {"prepare_fully_abstract/prepare_fully_abstract.cmi"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.cmt" {"prepare_fully_abstract/prepare_fully_abstract.cmt"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.cmti" {"prepare_fully_abstract/prepare_fully_abstract.cmti"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.cmx" {"prepare_fully_abstract/prepare_fully_abstract.cmx"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.cmxa" {"prepare_fully_abstract/prepare_fully_abstract.cmxa"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.ml" {"prepare_fully_abstract/prepare_fully_abstract.ml"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.mli" {"prepare_fully_abstract/prepare_fully_abstract.mli"}
 ]
 libexec: [
   "_build/install/default/lib/OCanren-ppx/internals/myhelpers.cmxs" {"internals/myhelpers.cmxs"}
@@ -65,16 +67,14 @@ libexec: [
   "_build/install/default/lib/OCanren-ppx/ppx_distrib/ppx_distrib.cmxs" {"ppx_distrib/ppx_distrib.cmxs"}
   "_build/install/default/lib/OCanren-ppx/ppx_fresh/ppx.exe" {"ppx_fresh/ppx.exe"}
   "_build/install/default/lib/OCanren-ppx/ppx_fresh/ppx_fresh.cmxs" {"ppx_fresh/ppx_fresh.cmxs"}
-  "_build/install/default/lib/OCanren-ppx/ppx_noinjected/ppx.exe" {"ppx_noinjected/ppx.exe"}
-  "_build/install/default/lib/OCanren-ppx/ppx_noinjected/ppx_noinjected.cmxs" {"ppx_noinjected/ppx_noinjected.cmxs"}
   "_build/install/default/lib/OCanren-ppx/ppx_repr/ppx.exe" {"ppx_repr/ppx.exe"}
   "_build/install/default/lib/OCanren-ppx/ppx_repr/ppx_repr.cmxs" {"ppx_repr/ppx_repr.cmxs"}
+  "_build/install/default/lib/OCanren-ppx/prepare_fully_abstract/prepare_fully_abstract.cmxs" {"prepare_fully_abstract/prepare_fully_abstract.cmxs"}
 ]
 bin: [
   "_build/install/default/bin/pp_deriving_reify"
   "_build/install/default/bin/pp_distrib"
   "_build/install/default/bin/pp_fresh"
-  "_build/install/default/bin/pp_noinjected"
   "_build/install/default/bin/pp_ocanren_all"
   "_build/install/default/bin/pp_repr"
 ]

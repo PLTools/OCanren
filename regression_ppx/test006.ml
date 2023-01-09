@@ -47,3 +47,11 @@ module _ = struct
 end
 
 let () = print_endline "test006"
+
+module _ = struct
+  [%%distrib
+  type ground =
+    | Symb of GT.string
+    | Seq of ground Std.List.ground
+  [@@deriving gt ~options:{ gmap }]]
+end
