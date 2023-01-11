@@ -9,7 +9,6 @@ end
 module _ = struct
   ocanren type 'a lst = Nil | Cons of 'a * 'a lst
 
-  
   let rec appendo x y xy =
     let open OCanren in
     conde
@@ -30,13 +29,17 @@ module _ = struct
 end
 
 module _ = struct
-  ocanren type state = (bool * bool) * bool
+  ocanren type state = GT.bool * GT.bool * GT.bool
 
   let () =
     let open OCanren in
-    run q (fun q -> q === Std.pair (Std.pair !!true !!true) !!false)
+    run q (fun q -> q === inj (!!true, !!true, !!false))
     (fun rr -> rr#reify prj_exn_state)
-    |> Stream.iter (fun ((a,b),c) -> Format.printf "%b %b %b\n" a b c)
+    |> Stream.iter (fun (a,b,c) -> Format.printf "%b %b %b\n" a b c)
+end
+
+module _ = struct
+  ocanren type state = (GT.bool * GT.bool * GT.bool * GT.bool) * (GT.bool * GT.bool * GT.bool * GT.bool)
 end
 
 let () = print_endline "test007"

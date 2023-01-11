@@ -51,6 +51,14 @@ module Exp = struct
     | xs -> apply ~loc f (List.map ~f:(fun e -> Nolabel, e) xs)
   ;;
 
+  let funs ~loc body xs =
+    match xs with
+    | [] -> failwith "bad argument"
+    | xs ->
+      List.fold_right xs ~init:body ~f:(fun n acc ->
+        pexp_fun ~loc Nolabel None (ppat_var ~loc (Located.mk ~loc n)) acc)
+  ;;
+
   let lident ~loc l = pexp_ident ~loc (Located.mk ~loc (lident l))
   let ident ~loc lident = pexp_ident ~loc (Located.mk ~loc lident)
 end

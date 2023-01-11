@@ -51,6 +51,8 @@ include struct
                 ~loc:t.ptyp_loc
                 (lident_of_list [ "OCanren"; "Std"; "Pair"; kind ]))
              [ helper l; helper r ]
+         | Ptyp_tuple xs ->
+           oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_tuple ~loc (List.map ~f:helper xs)
          | Ptyp_constr ({ txt = Lident _ }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
          | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
            oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
@@ -68,6 +70,8 @@ include struct
         ~loc
         (Located.mk ~loc @@ lident_of_list [ "OCanren"; "Std"; "Pair"; kind ])
         (List.map ~f:helper [ l; r ])
+    | { ptyp_desc = Ptyp_tuple ps } ->
+      oca_logic_ident ~loc (ptyp_tuple ~loc (List.map ~f:helper ps))
     | _ ->
       Location.raise_errorf
         ~loc
@@ -118,6 +122,35 @@ let unwrap_kind ~loc = function
   | Prj_exn -> [%expr OCanren.prj_exn], "prj_exn"
 ;;
 
+(* TODO(Kakadu): merge to ppx_distrib_expander *)
+let make_fmapt_body ~loc gmap_expr count =
+  let names : string list =
+    List.init ~len:count ~f:(fun _ -> gen_symbol ~prefix:"f" ())
+  in
+  let add_funs rhs =
+    List.fold_right
+      names
+      ~f:(fun name acc ->
+        [%expr fun [%p ppat_var ~loc (Located.mk ~loc name)] -> [%e acc]])
+      ~init:rhs
+  in
+  let subj = gen_symbol ~prefix:"subj" () in
+  let expr =
+    add_funs
+      [%expr
+        fun [%p ppat_var ~loc (Located.mk ~loc subj)] ->
+          let open OCanren.Env.Monad in
+          [%e
+            List.fold_left
+              ~init:[%expr OCanren.Env.Monad.return [%e gmap_expr]]
+              names
+              ~f:(fun acc name ->
+                [%expr [%e acc] <*> [%e pexp_ident ~loc (Located.mk ~loc (Lident name))]])]
+          <*> [%e pexp_ident ~loc (Located.mk ~loc (lident subj))]]
+  in
+  expr
+;;
+
 let reifier_of_core_type ~loc kind =
   let base_reifier, reifier_name = unwrap_kind ~loc kind in
   let rec helper typ =
@@ -166,7 +199,66 @@ let reifier_of_core_type ~loc kind =
               ~loc
               (Ldot (Ldot (Ldot (Lident "OCanren", "Std"), "Pair"), reifier_name))))
         [ helper l; helper r ]
-    | _ -> failwiths ~loc "Generation of compositional reifier is not supported yet"
+    | { ptyp_desc = Ptyp_tuple ps } ->
+      let gmap_expr =
+        let fnames = List.mapi ps ~f:(fun i _ -> Printf.sprintf "f%d" i) in
+        let subj_pat =
+          ppat_tuple
+            ~loc
+            (List.map fnames ~f:(fun name ->
+               ppat_var ~loc (Located.sprintf ~loc "%ss" name)))
+        in
+        List.fold_right
+          fnames
+          ~f:(fun name acc ->
+            [%expr fun [%p ppat_var ~loc (Located.sprintf ~loc "%s" name)] -> [%e acc]])
+          ~init:
+            [%expr
+              fun [%p subj_pat] ->
+                [%e
+                  pexp_tuple
+                    ~loc
+                    (List.map fnames ~f:(fun name ->
+                       pexp_apply
+                         ~loc
+                         (pexp_ident ~loc (Located.mk ~loc @@ Lident name))
+                         [ ( Asttypes.Nolabel
+                           , pexp_ident ~loc (Located.mk ~loc @@ Lident (name ^ "s")) )
+                         ]))]]
+      in
+      let rnames = List.map ~f:(fun _ -> gen_symbol ~prefix:"r" ()) ps in
+      let body =
+        [%expr
+          let gmap_tuple = [%e gmap_expr] in
+          let fmapt = [%e make_fmapt_body ~loc [%expr gmap_tuple] (List.length ps)] in
+          OCanren.Reifier.fix (fun _ ->
+            let open OCanren.Env.Monad in
+            [%e
+              let call_to_fmapt =
+                Myhelpers.Exp.apply
+                  ~loc
+                  [%expr fmapt]
+                  (List.map rnames ~f:(Exp.lident ~loc))
+              in
+              match kind with
+              | Prj_exn -> [%expr OCanren.prj_exn <..> chain [%e call_to_fmapt]]
+              | Reify ->
+                [%expr
+                  OCanren.reify
+                  <..> chain
+                         (OCanren.Reifier.zed
+                            (OCanren.Reifier.rework ~fv:[%e call_to_fmapt]))]])]
+      in
+      Myhelpers.Exp.apply
+        ~loc
+        (Myhelpers.Exp.funs ~loc body rnames)
+        (List.map ~f:helper ps)
+    | _ ->
+      failwiths
+        ~loc
+        "Generation of compositional reifier is not yet supported for '%a'"
+        Pprintast.core_type
+        typ
   in
   helper
 ;;
@@ -198,6 +290,7 @@ let make_reifier_composition ~pat ?(typ = None) kind tdecl =
         ~loc
         (Exp.ident ~loc @@ lident_of_list [ "OCanren"; "Std"; "Pair"; reifier_name ])
         [ helper ~loc l; helper ~loc r ]
+    | Ptyp_tuple _ -> helper ~loc manifest
     | _ ->
       failwiths
         ~loc
@@ -246,7 +339,7 @@ let process1 tdecl =
   let loc = tdecl.ptype_loc in
   match tdecl.ptype_manifest with
   | Some m ->
-    (* TODO: find a way not to pass both manifest and type declration *)
+    (* TODO(Kakadu): find a way not to pass both manifest and type declration *)
     [ make_reifier ~loc m tdecl; make_prj ~loc m tdecl ]
   | None -> failwiths ~loc "no manifest"
 ;;

@@ -57,5 +57,15 @@ module _ = struct
 end
 
 module _ = struct
-  [%%distrib type ground = bool * bool]
+  [%%distrib type ground = bool * int * string]
+
+  let () =
+    let open OCanren in
+    run q (fun q -> q === inj (!!true, !!5, !!"x")) (fun rr -> rr#reify prj_exn_ground)
+    |> Stream.iter (fun (b, n, s) -> Printf.printf "%b %d %S\n" b n s)
+  ;;
+end
+
+module _ = struct
+  [%%distrib type ground = (bool * int * string) * (bool * int * string)]
 end

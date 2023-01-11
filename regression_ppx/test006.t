@@ -980,14 +980,110 @@
   
   module _ = struct
     include struct
-      let (reify_ground :
-            (_, (bool OCanren.logic, bool OCanren.logic) OCanren.Std.Pair.logic) OCanren.Reifier.t ) =
-        OCanren.Std.Pair.reify OCanren.reify OCanren.reify
+      type ground = bool * int * string
   
-      let (prj_exn_ground : (_, (bool, bool) OCanren.Std.Pair.ground) OCanren.Reifier.t) =
-        OCanren.Std.Pair.prj_exn OCanren.prj_exn OCanren.prj_exn
+      let (reify_ground :
+            ( _
+            , (bool OCanren.logic * int OCanren.logic * string OCanren.logic) OCanren.logic )
+            OCanren.Reifier.t ) =
+        (fun r__028_ r__029_ r__030_ ->
+          let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
+          let fmapt f__031_ f__032_ f__033_ subj__034_ =
+            let open OCanren.Env.Monad in
+            OCanren.Env.Monad.return gmap_tuple <*> f__031_ <*> f__032_ <*> f__033_ <*> subj__034_
+          in
+          OCanren.Reifier.fix (fun _ ->
+              let open OCanren.Env.Monad in
+              OCanren.reify
+              <..> chain
+                     (OCanren.Reifier.zed
+                        (OCanren.Reifier.rework ~fv:(fmapt r__028_ r__029_ r__030_)) ) ) )
+          OCanren.reify OCanren.reify OCanren.reify
+  
+      let (prj_exn_ground : (_, bool * int * string) OCanren.Reifier.t) =
+        (fun r__021_ r__022_ r__023_ ->
+          let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
+          let fmapt f__024_ f__025_ f__026_ subj__027_ =
+            let open OCanren.Env.Monad in
+            OCanren.Env.Monad.return gmap_tuple <*> f__024_ <*> f__025_ <*> f__026_ <*> subj__027_
+          in
+          OCanren.Reifier.fix (fun _ ->
+              let open OCanren.Env.Monad in
+              OCanren.prj_exn <..> chain (fmapt r__021_ r__022_ r__023_) ) )
+          OCanren.prj_exn OCanren.prj_exn OCanren.prj_exn
+    end
+  
+    let () =
+      let open OCanren in
+      run q (fun q -> q === inj (!!true, !!5, !!"x")) (fun rr -> rr#reify prj_exn_ground)
+      |> Stream.iter (fun (b, n, s) -> Printf.printf "%b %d %S\n" b n s)
+  end
+  
+  module _ = struct
+    include struct
+      type ground = (bool * int * string) * (bool * int * string)
+  
+      let (reify_ground :
+            ( _
+            , ( (bool OCanren.logic * int OCanren.logic * string OCanren.logic) OCanren.logic
+              , (bool OCanren.logic * int OCanren.logic * string OCanren.logic) OCanren.logic )
+              OCanren.Std.Pair.logic )
+            OCanren.Reifier.t ) =
+        OCanren.Std.Pair.reify
+          ((fun r__056_ r__057_ r__058_ ->
+             let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
+             let fmapt f__059_ f__060_ f__061_ subj__062_ =
+               let open OCanren.Env.Monad in
+               OCanren.Env.Monad.return gmap_tuple <*> f__059_ <*> f__060_ <*> f__061_ <*> subj__062_
+             in
+             OCanren.Reifier.fix (fun _ ->
+                 let open OCanren.Env.Monad in
+                 OCanren.reify
+                 <..> chain
+                        (OCanren.Reifier.zed
+                           (OCanren.Reifier.rework ~fv:(fmapt r__056_ r__057_ r__058_)) ) ) )
+             OCanren.reify OCanren.reify OCanren.reify )
+          ((fun r__049_ r__050_ r__051_ ->
+             let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
+             let fmapt f__052_ f__053_ f__054_ subj__055_ =
+               let open OCanren.Env.Monad in
+               OCanren.Env.Monad.return gmap_tuple <*> f__052_ <*> f__053_ <*> f__054_ <*> subj__055_
+             in
+             OCanren.Reifier.fix (fun _ ->
+                 let open OCanren.Env.Monad in
+                 OCanren.reify
+                 <..> chain
+                        (OCanren.Reifier.zed
+                           (OCanren.Reifier.rework ~fv:(fmapt r__049_ r__050_ r__051_)) ) ) )
+             OCanren.reify OCanren.reify OCanren.reify )
+  
+      let (prj_exn_ground :
+            (_, (bool * int * string, bool * int * string) OCanren.Std.Pair.ground) OCanren.Reifier.t
+            ) =
+        OCanren.Std.Pair.prj_exn
+          ((fun r__042_ r__043_ r__044_ ->
+             let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
+             let fmapt f__045_ f__046_ f__047_ subj__048_ =
+               let open OCanren.Env.Monad in
+               OCanren.Env.Monad.return gmap_tuple <*> f__045_ <*> f__046_ <*> f__047_ <*> subj__048_
+             in
+             OCanren.Reifier.fix (fun _ ->
+                 let open OCanren.Env.Monad in
+                 OCanren.prj_exn <..> chain (fmapt r__042_ r__043_ r__044_) ) )
+             OCanren.prj_exn OCanren.prj_exn OCanren.prj_exn )
+          ((fun r__035_ r__036_ r__037_ ->
+             let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
+             let fmapt f__038_ f__039_ f__040_ subj__041_ =
+               let open OCanren.Env.Monad in
+               OCanren.Env.Monad.return gmap_tuple <*> f__038_ <*> f__039_ <*> f__040_ <*> subj__041_
+             in
+             OCanren.Reifier.fix (fun _ ->
+                 let open OCanren.Env.Monad in
+                 OCanren.prj_exn <..> chain (fmapt r__035_ r__036_ r__037_) ) )
+             OCanren.prj_exn OCanren.prj_exn OCanren.prj_exn )
     end
   end
 
   $ ./test006.exe
   test006
+  true 5 "x"

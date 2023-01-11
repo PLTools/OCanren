@@ -214,8 +214,8 @@
  (package OCanren)
  (public_names -)
  (modules test007)
- (flags
-  (:standard -dsource))
+ ;(flags
+ ; (:standard -dsource))
  (preprocessor_deps
   %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
   (package OCanren-ppx))

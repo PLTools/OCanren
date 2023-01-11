@@ -45,6 +45,10 @@
  (package OCanren)
  (public_names -)
  (modules test006)
+ (flags
+  (:standard
+   ;-dsource
+   ))
  (preprocess
   (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
  (libraries OCanren OCanren.tester))

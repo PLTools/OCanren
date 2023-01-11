@@ -43,13 +43,21 @@ $ ls
   module _ =
     struct
       [%%distrib type state =
-        (bool * bool) * bool[@@deriving gt ~options:{gmap = gmap; show = show}]
+        GT.bool * GT.bool * GT.bool[@@deriving gt ~options:{gmap = gmap; show = show}]
       ;;]
       let () =
         let open OCanren in
-        run q (fun q -> q === Std.pair (Std.pair !!(true) !!(true)) !!(false))
+        run q (fun q -> q === inj (!!(true), !!(true), !!(false)))
           (fun rr -> rr#reify prj_exn_state) |>
-          Stream.iter (fun ((a, b), c) -> Format.printf "%b %b %b\n" a b c)
+          Stream.iter (fun (a, b, c) -> Format.printf "%b %b %b\n" a b c)
+    end
+  
+  module _ =
+    struct
+      [%%distrib type state =
+        (GT.bool * GT.bool * GT.bool * GT.bool) *
+          (GT.bool * GT.bool * GT.bool * GT.bool)[@@deriving gt ~options:{gmap = gmap; show = show}]
+      ;;]
     end
   
   let () = print_endline "test007"

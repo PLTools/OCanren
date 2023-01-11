@@ -10,7 +10,7 @@ open OCanren.Std
 
 let (!) = inj
 
-let qua x y z t = pair (pair x y) (pair z t)
+let qua x y z t = OCanren.inj (x, y, z, t)
 
 let [[isGoat; isWolf; isCabbage; isMan] as are; [noGoat; noWolf; noCabbage; noMan] as no] =
   L.map (fun f -> L.map (fun p s -> p f s) [(fun f s -> fresh (x y z) (s === qua !f x y z));
@@ -69,27 +69,22 @@ let rec eval state moves state' =
     )
     ]
 
-
-let reify_state =
-  let reify_qua = [%reify: (GT.bool * GT.bool) * (GT.bool * GT.bool) ] in
-  Pair.reify reify_qua reify_qua
-;;
-
-@type state    = ocanren {((bool * bool) * (bool * bool)) * ((bool * bool) * (bool * bool))} with show;;
-@type solution = ocanren {move list} with show;;
+ocanren type state    = (bool * bool * bool * bool) * (bool * bool * bool * bool);;
+type solution = move logic Std.List.logic [@@deriving gt ~options:{show}]
 
 let _ =
   Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (nil ()) q) (fun s -> s#reify reify_state);
+  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (nil ()) q)
+    (fun s -> s#reify prj_exn_state);
 
   Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Empty) q) (fun s -> s#reify reify_state);
+  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Empty) q) (fun s -> s#reify prj_exn_state);
 
   Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Goat) q) (fun s -> s#reify reify_state);
+  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Goat) q) (fun s -> s#reify prj_exn_state);
 
   Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q) (fun s -> s#reify reify_state);
+  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q) (fun s -> s#reify prj_exn_state);
 
   L.iter (fun s -> Printf.printf "%s\n" @@ show(solution) s) @@ Stream.take ~n:100 @@
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) q (pair (qua !false !false !false !false) (qua !true !true !true !true))) (fun s -> s#reify (List.reify reify));

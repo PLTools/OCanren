@@ -138,12 +138,11 @@ let () =
     in
     [ Extension.declare name Extension.Context.Structure_item pattern (fun ~loc ~path:_ ->
         function
-        | Alias (_is_rec, ptype_attributes, tdecl) ->
+        | Alias (is_rec, ptype_attributes, tdecl) ->
           let tdecl = { tdecl with ptype_attributes } in
           let open Ppxlib.Ast_builder.Default in
-          pstr_include
-            ~loc
-            (include_infos ~loc (pmod_structure ~loc (Reify_impl.process1 tdecl)))
+          let stru = pstr_type ~loc is_rec [ tdecl ] :: Reify_impl.process1 tdecl in
+          pstr_include ~loc (include_infos ~loc (pmod_structure ~loc stru))
         | Only_ground (attributes1, (is_rec, (name, params, kind, private1))) ->
           let open Ppxlib.Ast_builder.Default in
           let td =

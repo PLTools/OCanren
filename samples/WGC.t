@@ -1,7 +1,7 @@
   $ ./WGC.exe
-  (((true, true), (true, true)), ((false, false), (false, false)))
-  (((true, true), (true, false)), ((false, false), (false, true)))
-  (((false, true), (true, false)), ((true, false), (false, true)))
+  ((true, true, true, true), (false, false, false, false))
+  ((true, true, true, false), (false, false, false, true))
+  ((false, true, true, false), (true, false, false, true))
   [Goat; Empty; Wolf; Goat; Cabbage; Empty; Goat]
   [Goat; Empty; Cabbage; Goat; Wolf; Empty; Goat]
   [Empty; Empty; Goat; Empty; Wolf; Goat; Cabbage; Empty; Goat]
