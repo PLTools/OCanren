@@ -977,6 +977,17 @@
       let seq _x__017_ = OCanren.inji (Seq _x__017_)
     end
   end
+  
+  module _ = struct
+    include struct
+      let (reify_ground :
+            (_, (bool OCanren.logic, bool OCanren.logic) OCanren.Std.Pair.logic) OCanren.Reifier.t ) =
+        OCanren.Std.Pair.reify OCanren.reify OCanren.reify
+  
+      let (prj_exn_ground : (_, (bool, bool) OCanren.Std.Pair.ground) OCanren.Reifier.t) =
+        OCanren.Std.Pair.prj_exn OCanren.prj_exn OCanren.prj_exn
+    end
+  end
 
   $ ./test006.exe
   test006

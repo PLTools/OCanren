@@ -2,10 +2,19 @@
  (name ppx_deriving_reify)
  (public_name OCanren-ppx.ppx_deriving_reify)
  (kind ppx_rewriter)
- (libraries ppxlib ppxlib.stdppx OCanren-ppx.internals)
+ (libraries ppxlib ppxlib.stdppx OCanren-ppx.internals reify_impl)
  (modules deriving_reify)
  (flags
   (:standard -warn-error -A -rectypes))
+ (inline_tests)
+ (preprocess
+  (pps ppxlib.metaquot ppx_inline_test ppx_expect)))
+
+(library
+ (name reify_impl)
+ (public_name OCanren-ppx.reify_impl)
+ (modules reify_impl)
+ (libraries ppxlib ppxlib.stdppx OCanren-ppx.internals)
  (inline_tests)
  (preprocess
   (pps ppxlib.metaquot ppx_inline_test ppx_expect)))

@@ -6,6 +6,7 @@
   ppxlib.stdppx
   ppxlib
   OCanren-ppx.internals
+  reify_impl
   prepare_fully_abstract)
  (modules ppx_distrib ppx_distrib_expander)
  (flags

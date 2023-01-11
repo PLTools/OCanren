@@ -40,7 +40,20 @@ $ ls
             (fun xs -> Format.printf "%s\n" (GT.show lst (GT.show GT.int) xs))
     end
   
+  module _ =
+    struct
+      [%%distrib type state =
+        (bool * bool) * bool[@@deriving gt ~options:{gmap = gmap; show = show}]
+      ;;]
+      let () =
+        let open OCanren in
+        run q (fun q -> q === Std.pair (Std.pair !!(true) !!(true)) !!(false))
+          (fun rr -> rr#reify prj_exn_state) |>
+          Stream.iter (fun ((a, b), c) -> Format.printf "%b %b %b\n" a b c)
+    end
+  
   let () = print_endline "test007"
   $ ./test007.exe
   test007
   Cons (1, Cons (2, Nil))
+  true true false

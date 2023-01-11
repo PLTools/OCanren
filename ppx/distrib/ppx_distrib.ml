@@ -29,6 +29,7 @@ type input =
       * ground_input
       * structure_item list
   | Only_ground of Ppxlib__Import.attributes * ground_input2
+  | Alias of (Asttypes.rec_flag * Ppxlib__Import.attributes * type_declaration)
 
 let () =
   let extensions =
@@ -37,8 +38,18 @@ let () =
       let map3 ~f p =
         p |> map2 ~f:(fun a b -> a, b) |> map2 ~f:(fun (a, b) c -> f a b c)
       in
+      let map3' ~f p =
+        p
+        |> map2' ~f:(fun loc a b -> loc, a, b)
+        |> map2 ~f:(fun (loc, a, b) c -> f loc a b c)
+      in
       let map4 ~f p =
         p |> map3 ~f:(fun a b c -> a, b, c) |> map2 ~f:(fun (a, b, c) d -> f a b c d)
+      in
+      let map4' ~f p =
+        p
+        |> map3' ~f:(fun loc a b c -> loc, a, b, c)
+        |> map2 ~f:(fun (loc, a, b, c) d -> f loc a b c d)
       in
       let p_fully () =
         pstr_type
@@ -78,17 +89,42 @@ let () =
                  ~name:__
                  ~params:__
                  ~cstrs:nil
-                 ~kind:__
+                 ~kind:(as__ (ptype_variant drop))
                  ~private_:__
                  ~manifest:none
               |> map4 ~f:(fun a b c d -> a, b, c, d)))
           ^:: nil)
-        |> map3 ~f:(fun frec attrs b -> attrs, (frec, b))
+        |> map3 ~f:(fun is_rec attrs b -> attrs, (is_rec, b))
+      in
+      let p_ground_alias () =
+        pstr_type
+          __
+          ((type_declaration_attributes __
+           @@ (type_declaration
+                 ~name:__
+                 ~params:__
+                 ~cstrs:nil
+                 ~kind:ptype_abstract
+                 ~private_:__
+                 ~manifest:(some __)
+              |> map4' ~f:(fun loc name params private_ manf ->
+                   let open Ppxlib.Ast_builder.Default in
+                   type_declaration
+                     ~loc
+                     ~name:(Located.mk ~loc name)
+                     ~params
+                     ~cstrs:[]
+                     ~private_
+                     ~kind:Ptype_abstract
+                     ~manifest:(Some manf))))
+          ^:: nil)
+        |> map3 ~f:(fun is_rec attrs tdecl -> is_rec, attrs, tdecl)
       in
       pstr (p_fully () ^:: p_ground () ^:: __)
       |> map3 ~f:(fun a b c -> Explicit (a, b, c))
       ||| (pstr (p_ground2 () ^:: nil)
           |> map1 ~f:(fun (attrs, x) -> Only_ground (attrs, x)))
+      ||| (pstr (p_ground_alias () ^:: nil) |> map1 ~f:(fun x -> Alias x))
     in
     let generate ~loc base_tdecl is_rec spec_td other_decls =
       let open Ppxlib.Ast_builder.Default in
@@ -102,6 +138,12 @@ let () =
     in
     [ Extension.declare name Extension.Context.Structure_item pattern (fun ~loc ~path:_ ->
         function
+        | Alias (_is_rec, ptype_attributes, tdecl) ->
+          let tdecl = { tdecl with ptype_attributes } in
+          let open Ppxlib.Ast_builder.Default in
+          pstr_include
+            ~loc
+            (include_infos ~loc (pmod_structure ~loc (Reify_impl.process1 tdecl)))
         | Only_ground (attributes1, (is_rec, (name, params, kind, private1))) ->
           let open Ppxlib.Ast_builder.Default in
           let td =

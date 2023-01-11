@@ -55,3 +55,7 @@ module _ = struct
     | Seq of ground Std.List.ground
   [@@deriving gt ~options:{ gmap }]]
 end
+
+module _ = struct
+  [%%distrib type ground = bool * bool]
+end

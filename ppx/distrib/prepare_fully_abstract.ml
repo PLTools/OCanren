@@ -86,7 +86,8 @@ let run loc tdecl =
   in
   let mapa, full_t =
     match tdecl.ptype_kind with
-    | Ptype_abstract | Ptype_open -> fail_loc loc "Not supported"
+    | Ptype_abstract | Ptype_open ->
+      failwiths ~loc "Abstract and open types are not supported"
     | Ptype_variant ctors ->
       List.fold_right
         (fun cd (n, acc_map, cs) ->
@@ -252,8 +253,7 @@ let%expect_test " " =
   Pprintast.structure
     Format.std_formatter
     [ str_type_ ~loc Nonrecursive [ full_t ]; str_type_ ~loc Recursive [ normal_t ] ];
-  [%expect
-    {|
+  [%expect {|
     type nonrec t =
       | A
       | B

@@ -29,4 +29,14 @@ module _ = struct
            Format.printf "%s\n" (GT.show lst (GT.show GT.int) xs))
 end
 
+module _ = struct
+  ocanren type state = (bool * bool) * bool
+
+  let () =
+    let open OCanren in
+    run q (fun q -> q === Std.pair (Std.pair !!true !!true) !!false)
+    (fun rr -> rr#reify prj_exn_state)
+    |> Stream.iter (fun ((a,b),c) -> Format.printf "%b %b %b\n" a b c)
+end
+
 let () = print_endline "test007"

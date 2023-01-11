@@ -60,8 +60,4 @@ let lident_of_list = function
   | s :: tl -> List.fold_left tl ~init:(Lident s) ~f:(fun acc x -> Ldot (acc, x))
 ;;
 
-let fail_loc loc fmt =
-  Format.kasprintf (fun s -> failwith (Format.asprintf "%s. %a" s Location.print loc)) fmt
-;;
-
 let failwiths ?(loc = Location.none) fmt = Location.raise_errorf ~loc fmt
