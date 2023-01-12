@@ -203,9 +203,12 @@
  (deps ;
   (package OCanren-ppx)
   ;%{project_root}/ppx/pp_gt.exe
+  %{project_root}/ppx/pp_distrib.exe
   %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.exe
   test007.ml
   test007.exe
+  test008.ml
+  test008.exe
   ;
   ))
 
@@ -224,6 +227,26 @@
    OCanren-ppx.ppx_distrib
    GT.ppx_all
    --
+   -pp
+   camlp5/pp5+gt+plugins+ocanren+logger+dump.exe))
+ (libraries OCanren OCanren.tester))
+
+(executables
+ (names test008)
+ (package OCanren)
+ (public_names -)
+ (modules test008)
+ (flags
+  (:standard -dsource))
+ (preprocessor_deps
+  %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
+  (package OCanren-ppx))
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_distrib
+   GT.ppx_all
+   --
+   -new-typenames
    -pp
    camlp5/pp5+gt+plugins+ocanren+logger+dump.exe))
  (libraries OCanren OCanren.tester))

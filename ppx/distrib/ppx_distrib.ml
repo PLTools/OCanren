@@ -120,11 +120,11 @@ let () =
           ^:: nil)
         |> map3 ~f:(fun is_rec attrs tdecl -> is_rec, attrs, tdecl)
       in
-      pstr (p_fully () ^:: p_ground () ^:: __)
-      |> map3 ~f:(fun a b c -> Explicit (a, b, c))
-      ||| (pstr (p_ground2 () ^:: nil)
-          |> map1 ~f:(fun (attrs, x) -> Only_ground (attrs, x)))
-      ||| (pstr (p_ground_alias () ^:: nil) |> map1 ~f:(fun x -> Alias x))
+      pstr
+        (p_fully () ^:: p_ground () ^:: __
+        |> map3 ~f:(fun a b c -> Explicit (a, b, c))
+        ||| (p_ground2 () ^:: nil |> map1 ~f:(fun (attrs, x) -> Only_ground (attrs, x)))
+        ||| (p_ground_alias () ^:: nil |> map1 ~f:(fun x -> Alias x)))
     in
     let generate ~loc base_tdecl is_rec spec_td other_decls =
       let open Ppxlib.Ast_builder.Default in
@@ -190,4 +190,11 @@ let () =
     ]
   in
   Ppxlib.Driver.register_transformation ~extensions name
+;;
+
+let () =
+  Ppxlib.Driver.add_arg
+    "-new-typenames"
+    (Stdlib.Arg.Unit (fun () -> Reify_impl.config.naming_style <- New_naming))
+    ~doc:" Doc here"
 ;;

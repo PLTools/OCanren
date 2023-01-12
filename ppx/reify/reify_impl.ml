@@ -23,7 +23,19 @@ open Ppxlib.Ast_builder.Default
 module Format = Caml.Format
 open Myhelpers
 
-let failwiths ?(loc = Location.none) fmt = Location.raise_errorf ~loc fmt
+type naming =
+  | Old_naming
+  | New_naming
+
+type config = { mutable naming_style : naming }
+
+let config = { naming_style = Old_naming }
+
+let is_old () =
+  match config.naming_style with
+  | Old_naming -> true
+  | New_naming -> false
+;;
 
 include struct
   let make_typ_exn ?(ccompositional = false) ~loc oca_logic_ident kind typ =
@@ -169,6 +181,7 @@ let reifier_of_core_type ~loc kind =
     | [%type: bool]
     | [%type: GT.int]
     | [%type: int] -> base_reifier
+    | { ptyp_desc = Ptyp_var s } -> pexp_ident ~loc (Located.mk ~loc (lident s))
     | { ptyp_desc = Ptyp_constr ({ txt = Lident "ground" }, xs) } ->
       Exp.apply
         ~loc
@@ -179,13 +192,17 @@ let reifier_of_core_type ~loc kind =
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (Ldot (m, reifier_name))))
         (List.map xs ~f:helper)
-    | { ptyp_desc = Ptyp_var s } -> pexp_ident ~loc (Located.mk ~loc (lident s))
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident m, _) }, args) } ->
       pexp_apply
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (Ldot (lident m, reifier_name))))
         (List.map args ~f:(fun t -> Nolabel, helper t))
     | { ptyp_desc = Ptyp_constr ({ txt = Lident "t" }, args) } ->
+      pexp_apply
+        ~loc
+        (pexp_ident ~loc (Located.mk ~loc (Lident reifier_name)))
+        (List.map args ~f:(fun t -> Nolabel, helper t))
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident tname }, args) } ->
       pexp_apply
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (Lident reifier_name)))

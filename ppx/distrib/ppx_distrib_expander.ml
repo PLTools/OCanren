@@ -171,6 +171,11 @@ let injectify ~loc selfname typ =
       when String.equal selfname ground ->
       ptyp_constr ~loc (Located.mk ~loc (Ldot (path, "injected")))
       @@ List.map ~f:helper xs
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident name }, xs) }
+      when String.ends_with name ~suffix:"_fuly" ->
+      (* New stuff *)
+      add_ilogic ~loc
+      @@ ptyp_constr ~loc (Located.mk ~loc (Lident name)) (List.map ~f:helper xs)
     | { ptyp_desc = Ptyp_constr ({ txt = Lident "t" }, xs) } ->
       add_ilogic ~loc
       @@ ptyp_constr ~loc (Located.mk ~loc (Lident "t")) (List.map ~f:helper xs)
@@ -444,6 +449,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         ~init:rhs
     in
     let subj = gen_symbol ~prefix:"subj" () in
+    let gt_fuly_expr = if Reify_impl.is_old () then [%expr t] else [%expr t] in
     let expr =
       add_funs
         [%expr

@@ -58,12 +58,6 @@ open Myhelpers
 
 let run loc tdecl =
   let open Ppxlib.Ast_builder.Default in
-  if String.equal tdecl.ptype_name.txt "t"
-  then
-    failwiths
-      ~loc:tdecl.ptype_loc
-      "Don't use type name 't'. We are going to generate fully abstract type, and the \
-       names will clash.";
   let tdecl =
     { tdecl with
       ptype_attributes =
@@ -128,9 +122,21 @@ let run loc tdecl =
       |> fun (_, mapa, fields) -> mapa, { tdecl with ptype_kind = Ptype_record fields }
   in
   let make_simple_arg x = x, (Asttypes.NoVariance, Asttypes.NoInjectivity) in
+  let full_t_name, ground_name =
+    match Reify_impl.(config.naming_style) with
+    | Reify_impl.New_naming -> tdecl.ptype_name.txt ^ "_fuly", tdecl.ptype_name.txt
+    | Old_naming ->
+      if String.equal tdecl.ptype_name.txt "t"
+      then
+        failwiths
+          ~loc:tdecl.ptype_loc
+          "Don't use type name 't'. We are going to generate fully abstract type, and \
+           the names will clash.";
+      "t", tdecl.ptype_name.txt
+  in
   let full_t =
     { full_t with
-      ptype_name = { full_t.ptype_name with txt = "t" }
+      ptype_name = { full_t.ptype_name with txt = full_t_name }
     ; ptype_params =
         full_t.ptype_params
         @ FoldInfo.map mapa ~f:(fun { FoldInfo.param_name } ->
@@ -157,7 +163,7 @@ let run loc tdecl =
         let extra_params = FoldInfo.map mapa ~f:(fun fi -> fi.FoldInfo.rtyp) in
         { full_t with
           ptype_params = tdecl.ptype_params
-        ; ptype_name = tdecl.ptype_name
+        ; ptype_name = { tdecl.ptype_name with txt = ground_name }
         ; ptype_kind = Ptype_abstract
         ; ptype_manifest =
             Some
