@@ -224,7 +224,7 @@ let decorate_type_decl t =
       let loc = MLast.loc_of_str_item t in
       let ltd = List.map 
                   (fun <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >> ->                     
-                     <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ [@@deriving gt ~{options = {gmap=gmap; show=show}};] >>
+                     <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ [@@deriving gt ~{options = {gmap=gmap}};] >>
                   )
                   ltd
       in

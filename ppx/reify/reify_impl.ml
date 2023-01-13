@@ -37,7 +37,19 @@ let is_old () =
   | New_naming -> false
 ;;
 
+let is_new () = not (is_old ())
+
+type kind =
+  | Reify
+  | Prj_exn
+
+let unwrap_kind ~loc = function
+  | Reify -> [%expr OCanren.reify], "reify"
+  | Prj_exn -> [%expr OCanren.prj_exn], "prj_exn"
+;;
+
 include struct
+  (* TODO(Kakadu): make 'kind' algebraic *)
   let make_typ_exn ?(ccompositional = false) ~loc oca_logic_ident kind typ =
     let rec helper = function
       | [%type: int] as t -> oca_logic_ident ~loc:t.ptyp_loc t
@@ -56,6 +68,27 @@ include struct
            ptyp_constr ~loc (Located.mk ~loc (Ldot (path, kind))) (List.map ~f:helper xs)
          | Ptyp_constr ({ txt = Lident "ground" }, xs) ->
            ptyp_constr ~loc (Located.mk ~loc (Lident kind)) xs
+         | Ptyp_constr (({ txt = Lident "t" } as id), xs) when is_old () ->
+           oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
+         | Ptyp_constr ({ txt = Lident cname }, ps) ->
+           if is_old ()
+           then
+             oca_logic_ident ~loc:t.ptyp_loc
+             @@ ptyp_constr
+                  ~loc
+                  (Located.mk ~loc:t.ptyp_loc (Lident cname))
+                  (List.map ~f:helper ps)
+           else if String.equal kind "logic"
+           then
+             ptyp_constr
+               ~loc
+               (Located.mk ~loc:t.ptyp_loc (Lident (Printf.sprintf "%s_%s" cname kind)))
+               (List.map ~f:helper ps)
+           else
+             ptyp_constr
+               ~loc
+               (Located.mk ~loc:t.ptyp_loc (Lident cname))
+               (List.map ~f:helper ps)
          | Ptyp_tuple [ l; r ] ->
            ptyp_constr
              ~loc
@@ -65,9 +98,6 @@ include struct
              [ helper l; helper r ]
          | Ptyp_tuple xs ->
            oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_tuple ~loc (List.map ~f:helper xs)
-         | Ptyp_constr ({ txt = Lident _ }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
-         | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
-           oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
          | _ -> t)
     in
     match typ with
@@ -124,15 +154,6 @@ include struct
     ()
   ;;
 end
-
-type kind =
-  | Reify
-  | Prj_exn
-
-let unwrap_kind ~loc = function
-  | Reify -> [%expr OCanren.reify], "reify"
-  | Prj_exn -> [%expr OCanren.prj_exn], "prj_exn"
-;;
 
 (* TODO(Kakadu): merge to ppx_distrib_expander *)
 let make_fmapt_body ~loc gmap_expr count =
@@ -202,7 +223,8 @@ let reifier_of_core_type ~loc kind =
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (Lident reifier_name)))
         (List.map args ~f:(fun t -> Nolabel, helper t))
-    | { ptyp_desc = Ptyp_constr ({ txt = Lident tname }, args) } ->
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident tname }, args) } when is_new () ->
+      let reifier_name = Printf.sprintf "%s_%s" tname reifier_name in
       pexp_apply
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (Lident reifier_name)))

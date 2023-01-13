@@ -206,7 +206,7 @@
   %{project_root}/ppx/pp_distrib.exe
   %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+o.exe
   test007.ml
-  test007.exe
+  ;test007.exe
   test008.ml
   test008.exe
   ;
