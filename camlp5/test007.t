@@ -1,6 +1,6 @@
 $ which pp_ocanren_all
-$ ls 
-  $ ./pp5+gt+plugins+ocanren+logger+o.exe test007.ml # | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat --margin=100 -
+$ ls
+  $ ./pp5+ocanren+o.exe test007.ml # | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat --margin=100 -
   module _ =
     struct
       [%%distrib type abc =
@@ -22,6 +22,7 @@ $ ls
           Nil
         | Cons of 'a * 'a lst[@@deriving gt ~options:{gmap = gmap; show = show}]
       ;;]
+      let cons x xs = OCanren.inj (Cons (x, xs))
       let rec appendo x y xy =
         let open OCanren in
         conde
@@ -35,10 +36,12 @@ $ ls
       let () =
         OCanren.
         (run q (fun xy -> appendo (inj Nil) (cons !!1 (cons !!2 (inj Nil))) xy))
-          (fun rr -> rr#reify (prj_exn OCanren.prj_exn)) |>
+          (fun rr -> rr#reify (lst_prj_exn OCanren.prj_exn)) |>
           OCanren.Stream.iter
             (fun xs -> Format.printf "%s\n" (GT.show lst (GT.show GT.int) xs))
     end
+  
+  
   
   module _ =
     struct

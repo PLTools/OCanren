@@ -36,14 +36,14 @@ let rec fold_right1 f = function
 | []   -> failwith "fold_right1"
 
 let rec fold_left1 f xs = List.fold_left f (List.hd xs) (List.tl xs)
-                        
+
 let decapitalize =
   String.mapi (function 0 -> Char.lowercase_ascii | _ -> Fun.id)
-                        
+
 let rec ctor e =
   let loc = MLast.loc_of_expr e in
   match e with
-  | <:expr< $uid:u$ >>            -> Some e 
+  | <:expr< $uid:u$ >>            -> Some e
   | <:expr< $longid:m$ . ($e$) >> -> (match ctor e with Some e -> Some (<:expr< $longid:m$ . ($e$) >>) | _ -> None)
   | <:expr< $m$ . ($e$) >>        -> (match ctor e with Some e -> Some (<:expr< $m$ . ($e$) >>) | _ -> None)
   | _                             -> None
@@ -71,12 +71,12 @@ let rec fix_term e =
          let fixed =
            match e2 with
            | <:expr< ( $list:ts$ ) >> ->
-              List.fold_left (fun acc e -> <:expr< $acc$ $fix_term e$ >> ) e1' ts            
+              List.fold_left (fun acc e -> <:expr< $acc$ $fix_term e$ >> ) e1' ts
            | _  ->
-              <:expr< $e1'$ $fix_term e2$ >>           
+              <:expr< $e1'$ $fix_term e2$ >>
          in
          <:expr< OCanren.inji $fixed$ >>
-           
+
       | _ ->
          (match e with
           | <:expr< OCanren.Std.nil () >> -> e
@@ -162,7 +162,7 @@ let of_val = function
   | Ploc.VaAnt _ -> failwith "Should not happen in our setup of Camlp5"
 
 (* Decorate type expressions *)
-let rec decorate_type ctyp =  
+let rec decorate_type ctyp =
   let loc = MLast.loc_of_ctyp ctyp in
   match ctyp with
   | <:ctyp< int >>           -> <:ctyp< OCanren.Std.Nat.logic >>
@@ -194,7 +194,7 @@ let add_freshes ~loc vars body =
   | []    -> body
   in
   loop vars
-         
+
 open Writer
 
 let stream_peek_nth n (strm : (string * string) Stream.t) =
@@ -202,16 +202,16 @@ let stream_peek_nth n (strm : (string * string) Stream.t) =
     function
       []     -> None
     | [x]    -> if n = 1 then Some (x : (string * string)) else None
-    | _ :: l -> loop (n - 1) l 
+    | _ :: l -> loop (n - 1) l
  in
  loop n (Stream.npeek n strm)
 
 let check_type_decl strm =
-  match stream_peek_nth 1 strm with 
+  match stream_peek_nth 1 strm with
     None -> assert false
   | Some (_, "type") -> true
   | _ -> false
-       
+
 let is_type_decl_f strm =
   if check_type_decl strm then ()
   else raise Stream.Failure
@@ -222,18 +222,18 @@ let decorate_type_decl t =
   match t with
     <:str_item< type $list:ltd$ >> ->
       let loc = MLast.loc_of_str_item t in
-      let ltd = List.map 
-                  (fun <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >> ->                     
-                     <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ [@@deriving gt ~{options = {gmap=gmap}};] >>
+      let ltd = List.map
+                  (fun <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >> ->
+                     <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ [@@deriving gt ~{options = {gmap=gmap; show=show}};] >>
                   )
                   ltd
       in
       <:str_item< [%%distrib type $list:ltd$ ; ] >>
   | _ -> raise (Stream.Error "INTERNAL ERROR: type_decl expected" )
-  
+
 EXTEND
   GLOBAL: expr ctyp str_item;
-                      
+
   (* Kakadu: It looks like this function has become unneeded *)
   (* long_ident:
     [ RIGHTA
@@ -248,15 +248,15 @@ EXTEND
           in
           loop <:expr< $uid:i$ >> j
     ]]; *)
-                   
+
   str_item: [
       ["ocanren"; is_type_decl; s=str_item -> decorate_type_decl s]
   ];
-  
+
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
       [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
-      let _ = <:str_item< [%%distrib type t = int [@@deriving gt ~{options = {gmap=gmap; show=show}};] ; ] >> in                                                        
+      let _ = <:str_item< [%%distrib type t = int [@@deriving gt ~{options = {gmap=gmap; show=show}};] ; ] >> in
       let body =
         let conjunctions = fold_left1
           (fun acc x -> <:expr< conj ($acc$) ($x$) >>)
@@ -348,7 +348,7 @@ EXTEND
             (match ts with
             | []  -> return <:expr< () >>
             | [e] -> e
-            | _   -> return (fun ts -> <:expr< ( $list:ts$ ) >>) <*>  
+            | _   -> return (fun ts -> <:expr< ( $list:ts$ ) >>) <*>
                      List.fold_right (fun x acc -> return (fun x acc -> x :: acc) <*> x <*> acc) ts (return [])
             )
         ]
@@ -358,6 +358,6 @@ EXTEND
   ctyp: [
              [ "ocanren"; "{"; t=ctyp; "}" -> decorate_type t ] |
     "simple" [ "!"; "("; t=ctyp; ")" -> <:ctyp< ocanren $t$ >> ]
-  ];  
-  
+  ];
+
 END;

@@ -187,6 +187,7 @@ let make_fmapt_body ~loc gmap_expr count =
 let reifier_of_core_type ~loc kind =
   let base_reifier, reifier_name = unwrap_kind ~loc kind in
   let rec helper typ =
+    (* Format.printf "reifier_of_core_type '%a'\n" Pprintast.core_type typ; *)
     let loc = typ.ptyp_loc in
     match typ with
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) } ->
@@ -213,6 +214,19 @@ let reifier_of_core_type ~loc kind =
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (Ldot (m, reifier_name))))
         (List.map xs ~f:helper)
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident tname }, args) } when is_new () ->
+      let reifier = Printf.sprintf "%s_%s" tname reifier_name in
+      pexp_apply
+        ~loc
+        (pexp_ident ~loc (Located.mk ~loc (lident reifier)))
+        (List.map args ~f:(fun t -> Nolabel, helper t))
+    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident m, tname) }, args) } when is_new ()
+      ->
+      let reifier = Printf.sprintf "%s_%s" tname reifier_name in
+      pexp_apply
+        ~loc
+        (pexp_ident ~loc (Located.mk ~loc (Ldot (lident m, reifier))))
+        (List.map args ~f:(fun t -> Nolabel, helper t))
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident m, _) }, args) } ->
       pexp_apply
         ~loc
@@ -229,6 +243,11 @@ let reifier_of_core_type ~loc kind =
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (Lident reifier_name)))
         (List.map args ~f:(fun t -> Nolabel, helper t))
+      |> fun e ->
+      { e with
+        pexp_attributes =
+          [ attribute ~loc ~name:(Located.mk ~loc "xxx") ~payload:(PStr []) ]
+      }
     | { ptyp_desc = Ptyp_tuple [ l; r ] } ->
       Exp.apply
         ~loc
