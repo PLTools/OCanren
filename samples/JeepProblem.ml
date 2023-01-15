@@ -21,30 +21,26 @@ open OCanren
 open OCanren.Std
 
 module Move = struct
-  [%%distrib
-  type nonrec 'nat t =
-    Forward  of 'nat
-  | Backward of 'nat
-  | Unload   of 'nat
-  | Fill     of 'nat
-  [@@deriving gt ~options:{show; fmt; gmap}]
-
-  type nonrec ground = Std.Nat.ground t
-  ]
+  ocanren type 'a move =
+    | Forward  of 'a
+    | Backward  of 'a
+    | Unload  of 'a
+    | Fill  of 'a
 end
 
-type hum_moves = GT.int Move.t GT.list [@@deriving gt ~options:{show; fmt}]
+ocanren type hum_moves = GT.int Move.move GT.list
 
 (* TODO: add auto conversion from
     int ~~> Nat.ground
 'a list ~~> 'a List.ground
 *)
 (* State: distance, amount of fuel, list of fuel dumps *)
-type state = Nat.ground * (Nat.ground * (Nat.ground * Nat.ground) Std.List.ground) [@@deriving reify, gt ~options:{fmt;show}]
-(* ... logically *)
-type lstate = ocanren {GT.int * GT.int * (GT.int * GT.int) GT.list} [@@deriving gt ~options:{fmt;show}]
+ocanren type state = Std.Nat.ground * (Std.Nat.ground * (Std.Nat.ground * Std.Nat.ground) Std.List.ground)
 
-type hum_state = GT.int * (GT.int * (GT.int * GT.int) GT.list) [@@deriving gt ~options:{fmt;show}]
+(* ... logically *)
+ocanren type lstate = GT.int * (GT.int * (GT.int * GT.int) GT.list)
+
+ocanren type hum_state = GT.int * (GT.int * (GT.int * GT.int) GT.list)
 
 open Move
 
@@ -161,7 +157,10 @@ let steps state moves state' =
   steps !!2 state moves state'
 
 let prj_moves : _ reified -> hum_moves =
-  let re = Reifier.fmap (List.to_list (GT.gmap(Move.t) Nat.to_int)) [%prj_exn: Move.ground GT.list] in
+  let re =
+    Reifier.fmap (List.to_list (GT.gmap(Move.move_fuly) Nat.to_int))
+      (Std.List.prj_exn (Move.move_prj_exn Std.Nat.prj_exn))
+  in
   fun rr -> rr#reify re
 
 let prj_state : _ reified -> hum_state  =
@@ -172,7 +171,7 @@ let prj_state : _ reified -> hum_state  =
   let reify : (_, hum_state) Reifier.t = Reifier.fmap flat_it prj_exn_state in
   fun rr -> rr#reify reify
 
-let init = pair (nat 0) @@ pair max_capacity (nil ())
+let init  = OCanren.inj (nat 0, OCanren.inj (max_capacity, nil ()))
 
 let _ =
   let module L = Stdlib.List in

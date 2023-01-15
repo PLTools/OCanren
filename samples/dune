@@ -1,6 +1,10 @@
 (executables
  (names tree sorting WGC add)
  (modules tree sorting WGC add)
+ (flags
+  (:standard
+   ;-dsource
+   ))
  (preprocess
   (action
    (run
@@ -36,12 +40,18 @@
 (executable
  (name JeepProblem)
  (modules JeepProblem)
+ (flags
+  (:standard
+   -dsource
+   ;
+   ))
  (preprocess
   (action
    (run
     %{project_root}/ppx/pp_distrib_gt_reify.exe
     -pp
     %{project_root}/camlp5/pp5+ocanren+dump.exe
+    -new-typenames
     --as-pp
     %{input-file})))
  (preprocessor_deps

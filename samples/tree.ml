@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * Tree: binary search tree.
- * Copyright (C) 2022
+ * Copyright (C) 2022-2023
  * Dmitri Boulytchev, Dmitrii Kosarev
  * St.Petersburg State University, JetBrains Research
  *
@@ -23,39 +23,31 @@ open OCanren
 open OCanren.Std
 
 module Tree = struct
+  ocanren type 'a tree = Leaf | Node of 'a * 'a tree * 'a tree
 
-  [%%distrib
-    (* Abstracted type for the tree *)
-    type nonrec ('a, 'self) t = Leaf | Node of 'a * 'self * 'self [@@deriving gt ~options:{show; gmap}];;
-    type 'a ground = ('a, 'a ground) t
-  ]
-
-  type inttree = (int, inttree) t [@@deriving gt ~options:{show}]
+  type inttree = int tree [@@deriving gt ~options:{show}]
   (* A shortcut for "ground" tree we're going to work with in "functional" code *)
-  type rtree = (Nat.ground, rtree) t [@@deriving gt ~options:{show}]
+  type rtree = Nat.ground tree [@@deriving gt ~options:{show}]
 
   (* Logic counterpart *)
-  type ltree = (Nat.logic, ltree) t OCanren.logic [@@deriving gt ~options:{show}]
+  type ltree = Nat.logic tree_logic [@@deriving gt ~options:{show}]
 
-  type injected = (Nat.injected, injected) t OCanren.ilogic
-
-  let leaf    () : injected = inj Leaf
-  let node a b c : injected = inj @@ Node (a,b,c)
+  let leaf    () : Nat.injected tree_injected = inj Leaf
+  let node a b c : Nat.injected tree_injected = inj @@ Node (a,b,c)
 
   (* Injection *)
-  let rec inj_tree : inttree -> injected = fun tree ->
-     inj @@ GT.(gmap t nat inj_tree tree)
+  let rec inj_tree : inttree -> Nat.injected tree_injected = fun tree ->
+     inj @@ GT.(gmap tree_fuly nat inj_tree tree)
 
   (* Projection *)
   let rec prj_tree : rtree -> inttree =
-    fun x -> GT.(gmap t) Nat.to_int prj_tree x
+    fun x -> GT.(gmap tree_fuly) Nat.to_int prj_tree x
 
-  let reify_tree : (injected, ltree) Reifier.t = reify Nat.reify
-  (* let rec prjc_tree env t = M.prjc Nat.prjc prjc_tree env t *)
+  let reify_tree : (Nat.injected tree_injected, ltree) Reifier.t = tree_reify Nat.reify
 
-  let prj_tree : (injected, inttree) Reifier.t =
-    let rec tree_to_int x = GT.gmap t Nat.to_int ( tree_to_int) x in
-    Reifier.fmap tree_to_int (prj_exn Std.Nat.prj_exn)
+  let prj_tree : (Nat.injected tree_injected, inttree) Reifier.t =
+    let rec tree_to_int x = GT.gmap tree_fuly Nat.to_int ( tree_to_int) x in
+    Reifier.fmap tree_to_int (tree_prj_exn Std.Nat.prj_exn)
 end
 
 open Tree

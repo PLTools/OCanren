@@ -968,11 +968,12 @@
   
   module _ = struct
     include struct
-      type ground = bool * int * string
+      type ground = GT.bool * GT.int * GT.string
   
       let (reify_ground :
             ( _
-            , (bool OCanren.logic * int OCanren.logic * string OCanren.logic) OCanren.logic )
+            , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+            )
             OCanren.Reifier.t ) =
         (fun r__035_ r__036_ r__037_ ->
           let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
@@ -988,7 +989,7 @@
                         (OCanren.Reifier.rework ~fv:(fmapt r__035_ r__036_ r__037_)) ) ) )
           OCanren.reify OCanren.reify OCanren.reify
   
-      let (prj_exn_ground : (_, bool * int * string) OCanren.Reifier.t) =
+      let (prj_exn_ground : (_, GT.bool * GT.int * GT.string) OCanren.Reifier.t) =
         (fun r__028_ r__029_ r__030_ ->
           let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
           let fmapt f__031_ f__032_ f__033_ subj__034_ =
@@ -1009,13 +1010,14 @@
   
   module _ = struct
     include struct
-      type ground = (bool * int * string) * (bool * int * string)
+      type ground = (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)
   
       let (reify_ground :
             ( _
-            , ( (bool OCanren.logic * int OCanren.logic * string OCanren.logic) OCanren.logic
-              , (bool OCanren.logic * int OCanren.logic * string OCanren.logic) OCanren.logic )
-              OCanren.Std.Pair.logic )
+            , ( (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              * (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              )
+              OCanren.logic )
             OCanren.Reifier.t ) =
         OCanren.Std.Pair.reify
           ((fun r__063_ r__064_ r__065_ ->
@@ -1046,8 +1048,7 @@
              OCanren.reify OCanren.reify OCanren.reify )
   
       let (prj_exn_ground :
-            (_, (bool * int * string, bool * int * string) OCanren.Std.Pair.ground) OCanren.Reifier.t
-            ) =
+            (_, (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)) OCanren.Reifier.t ) =
         OCanren.Std.Pair.prj_exn
           ((fun r__049_ r__050_ r__051_ ->
              let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
