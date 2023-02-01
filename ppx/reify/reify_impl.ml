@@ -269,7 +269,7 @@ include struct
     in
     test [%stri type t1 = (int * int) Std.List.ground];
     [%expect
-      {| (int OCanren.logic, int OCanren.logic) OCanren.Std.Pair.logic Std.List.logic |}];
+      {| (int OCanren.logic * int OCanren.logic) OCanren.logic Std.List.logic |}];
     ()
   ;;
 end

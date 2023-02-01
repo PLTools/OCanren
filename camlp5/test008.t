@@ -28,8 +28,12 @@
           type nonrec 'a0 u_fuly =
             | U of 'a0 [@@deriving gt ~options:{ gmap; show }]
           type u = state u_fuly[@@deriving gt ~options:{ gmap; show }]
-          type u_logic = ((state_logic)[@asdf "asdf"]) u_fuly OCanren.logic
-          [@@deriving gt ~options:{ gmap; show }]
+          type u_logic = state_logic u_fuly OCanren.logic[@@deriving
+                                                           gt
+                                                             ~options:{
+                                                                      gmap;
+                                                                      show
+                                                                      }]
           type u_injected = state_injected u_fuly OCanren.ilogic
           let fmapt f__003_ subj__004_ =
             let open OCanren.Env.Monad in
