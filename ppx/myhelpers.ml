@@ -53,7 +53,7 @@ module Exp = struct
 
   let funs ~loc body xs =
     match xs with
-    | [] -> failwith "bad argument"
+    | [] -> body
     | xs ->
       List.fold_right xs ~init:body ~f:(fun n acc ->
         pexp_fun ~loc Nolabel None (ppat_var ~loc (Located.mk ~loc n)) acc)

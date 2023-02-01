@@ -5,7 +5,8 @@
  (public_names -)
  (flags
   (:standard
-   ;-dsource
+   -dsource
+   ;
    ))
  (preprocess
   (pps
@@ -41,16 +42,31 @@
  (libraries OCanren OCanren.tester))
 
 (executables
- (names test006)
+ (names test006 test007)
  (package OCanren)
- (public_names -)
- (modules test006)
+ (public_names - -)
+ (modules test006 test007)
  (flags
   (:standard
-   ;-dsource
+   -dsource
+   ;
    ))
  (preprocess
   (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
+ (libraries OCanren OCanren.tester))
+
+(executables
+ (names test008)
+ (package OCanren)
+ (public_names -)
+ (modules test008)
+ (flags
+  (:standard
+   -dsource
+   ;
+   ))
+ (preprocess
+  (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -new-typenames -pretty))
  (libraries OCanren OCanren.tester))
 
 (cram
@@ -58,6 +74,7 @@
  (deps ;
   (package OCanren-ppx)
   %{project_root}/ppx/pp_gt.exe
+  %{project_root}/ppx/pp_ocanren_all.exe
   ./test001.exe
   test001.ml
   test002repr.ml
@@ -67,5 +84,9 @@
   ./test004.exe
   ./test005.exe
   ./test006.exe
+  test007.ml
+  test007.exe
+  test008.ml
+  test008.exe
   ;
   ))
