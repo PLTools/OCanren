@@ -42,10 +42,10 @@
  (libraries OCanren OCanren.tester))
 
 (executables
- (names test006 test007)
+ (names test006 test007 test009)
  (package OCanren)
- (public_names - -)
- (modules test006 test007)
+ (public_names - - -)
+ (modules test006 test007 test009)
  (flags
   (:standard
    ;-dsource
@@ -94,5 +94,7 @@
   test007.exe
   test008.ml
   test008.exe
+  test009.ml
+  test009.exe
   ;
   ))

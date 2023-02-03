@@ -9,8 +9,6 @@
 open Ppxlib
 open Stdppx
 
-let name = "distrib"
-
 type ground_input =
   rec_flag
   * ((core_type * (variance * injectivity)) list * type_kind * private_flag * core_type)
@@ -136,7 +134,8 @@ let () =
       in
       pstr_include ~loc (include_infos ~loc (pmod_structure ~loc items))
     in
-    [ Extension.declare name Extension.Context.Structure_item pattern (fun ~loc ~path:_ ->
+    let make_extension name =
+      Extension.declare name Extension.Context.Structure_item pattern (fun ~loc ~path:_ ->
         function
         | Alias (is_rec, ptype_attributes, tdecl) ->
           let tdecl = { tdecl with ptype_attributes } in
@@ -187,9 +186,10 @@ let () =
               ~manifest:(Some manifest2)
           in
           generate ~loc base_tdecl rec_2 spec_td other_decls)
-    ]
+    in
+    [ make_extension "distrib"; make_extension "ocanren" ]
   in
-  Ppxlib.Driver.register_transformation ~extensions name
+  Ppxlib.Driver.register_transformation ~extensions "distrib"
 ;;
 
 let () =

@@ -75,6 +75,7 @@ module type STRAT = sig
   val injected_typ_name : type_declaration -> label with_loc
 end
 
+(* TODO(Kakadu): Merge two strategies  *)
 module type STRAT2 = sig
   val kind : Reify_impl.kind
   val self_typ_name : string
@@ -87,18 +88,12 @@ include struct
   let make_typ_exn ?(ccompositional = false) ~loc oca_logic_ident st typ =
     let (module S : STRAT2) = st in
     let open S in
-    let fix_tname s =
-      match kind with
-      | Reify_impl.Reify -> s ^ "_logic"
-      | Prj_exn -> s
-    in
     let typ_for_kind =
       match kind with
       | Reify -> "logic"
       | Prj_exn -> "ground"
     in
     (* Format.eprintf "make_typ_exn.%s of '%a'\n%!" typ_for_kind Pprintast.core_type typ; *)
-    (*  *)
     let rec helper = function
       | [%type: int] as t -> oca_logic_ident ~loc:t.ptyp_loc t
       | t ->
@@ -211,18 +206,14 @@ include struct
         typ
   ;;
 
-  let ltypify_exn ?(ccompositional = false) ~loc st typ =
+  let ltypify_exn ?(ccompositional = false) ~loc =
     let oca_logic_ident ~loc = Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]) in
-    make_typ_exn
-      ~ccompositional
-      ~loc
-      (fun ~loc t -> ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
-      st
-      typ
+    make_typ_exn ~ccompositional ~loc (fun ~loc t ->
+      ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
   ;;
 
-  let gtypify_exn ?(ccompositional = false) ~loc st typ =
-    make_typ_exn ~ccompositional ~loc (fun ~loc:_ t -> t) st typ
+  let gtypify_exn ?(ccompositional = false) ~loc =
+    make_typ_exn ~ccompositional ~loc (fun ~loc:_ t -> t)
   ;;
 
   let%expect_test _ =
@@ -586,11 +577,9 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
              (Printf.sprintf "%s_%s" tdecl.ptype_name.txt (string_of_kind kind)))
     in
     let manifest = manifest_of_tdecl_exn tdecl in
-    let add_args =
+    let add_args rhs =
       let loc = tdecl.ptype_loc in
-      fun rhs -> Exp.funs ~loc rhs (List.map ~f:mk_arg_reifier names)
-      (* List.fold_right names ~init:rhs ~f:(fun name acc ->
-          [%expr fun [%p Pat.var (Located.mk ~loc (mk_arg_reifier name))] -> [%e acc]]) *)
+      Exp.funs ~loc rhs (List.map ~f:mk_arg_reifier names)
     in
     let rec helper typ : expression =
       let loc = typ.ptyp_loc in
@@ -664,15 +653,9 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       | None -> pat
       | Some t -> ppat_constraint ~loc pat t
     in
-    pstr_value
-      ~loc
-      Nonrecursive
-      [ value_binding ~loc ~pat ~expr:(add_args (body ()))
-        (* (Reify_impl.reifier_of_core_type ~loc kind manifest) *)
-      ]
+    pstr_value ~loc Nonrecursive [ value_binding ~loc ~pat ~expr:(add_args (body ())) ]
   in
   let make_reifier is_rec tdecl =
-    (* let manifest = manifest_of_tdecl_exn tdecl in *)
     let logic_typ =
       ptyp_constr
         ~loc
@@ -692,7 +675,6 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       tdecl
   in
   let make_prj_exn is_rec tdecl =
-    (* let manifest = manifest_of_tdecl_exn tdecl in *)
     let ground_typ =
       ptyp_constr
         ~loc
