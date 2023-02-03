@@ -84,15 +84,7 @@ module type STRAT2 = sig
 end
 
 include struct
-  let make_typ_exn
-    ?(ccompositional = false)
-    ~loc
-    oca_logic_ident
-    (* (kind : Reify_impl.kind) *)
-    (* is_selfrec_name *)
-      st
-    typ
-    =
+  let make_typ_exn ?(ccompositional = false) ~loc oca_logic_ident st typ =
     let (module S : STRAT2) = st in
     let open S in
     let fix_tname s =
@@ -123,14 +115,9 @@ include struct
          | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) ->
            oca_logic_ident ~loc:t.ptyp_loc t
          | Ptyp_constr ({ txt = Lident s }, xs) when is_selfrec_name s ->
-           let fixed_name =
-             match kind with
-             | Reify_impl.Reify -> logic_typ_name
-             | Prj_exn -> ground_typ_name
-           in
            ptyp_constr
              ~loc
-             (Located.mk ~loc:t.ptyp_loc (Lident fixed_name))
+             (Located.mk ~loc:t.ptyp_loc (Lident self_typ_name))
              (List.map ~f:helper xs)
          (* | Ptyp_constr ({ txt = Lident s }, xs)
            when String.ends_with s ~suffix:"_fuly" && Reify_impl.is_new () ->
@@ -156,24 +143,24 @@ include struct
              ~loc
              (Located.mk ~loc (Ldot (path, typ_for_kind)))
              (List.map ~f:helper xs)
-         | Ptyp_constr ({ txt = Lident tname }, xs) when Reify_impl.is_new () ->
-           let fixed_name = fix_tname tname in
+         | Ptyp_constr ({ txt = Lident tname }, xs) (* when Reify_impl.is_new ()  *) ->
+           (* let fixed_name = fix_tname tname in *)
            ptyp_constr
              ~loc
-             (Located.mk ~loc:t.ptyp_loc (Lident fixed_name))
+             (Located.mk ~loc:t.ptyp_loc (Lident self_typ_name))
              (List.map ~f:helper xs)
-           (* |> fun t ->
+         (* |> fun t ->
            let attr =
              attribute ~loc ~name:(Located.mk ~loc "asdf") ~payload:(PStr [%str "asdf"])
            in
            { t with ptyp_attributes = [ attr ] } *)
-         | Ptyp_constr ({ txt = Lident "ground" }, xs) ->
+         (* | Ptyp_constr ({ txt = Lident "ground" }, xs) ->
            let kind =
              match kind with
              | Reify -> "logic"
              | Prj_exn -> "ground"
            in
-           ptyp_constr ~loc (Located.mk ~loc (Lident kind)) xs
+           ptyp_constr ~loc (Located.mk ~loc (Lident kind)) xs *)
          (* |> fun t ->
            let attr =
              attribute ~loc ~name:(Located.mk ~loc "asdf") ~payload:(PStr [%str "asdf"])
@@ -191,8 +178,8 @@ include struct
                 (Located.mk ~loc:t.ptyp_loc (Lident tname))
                 (List.map ~f:helper xs) *)
          (* | Ptyp_constr ({ txt = Lident _ }, []) -> oca_logic_ident ~loc:t.ptyp_loc t *)
-         | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
-           oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs)
+         (* | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
+           oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs) *)
          | Ptyp_var _ -> t
          | _ ->
            failwiths
@@ -231,27 +218,11 @@ include struct
       ~loc
       (fun ~loc t -> ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
       st
-      (* (module struct
-        let kind = Reify_impl.Reify
-        let self_typ_name = self_typ_name
-        let is_selfrec_name = String.equal self_typ_name
-        let ground_typ_name = 
-      end) *)
       typ
   ;;
 
   let gtypify_exn ?(ccompositional = false) ~loc st typ =
-    make_typ_exn
-      ~ccompositional
-      ~loc
-      (fun ~loc:_ t -> t)
-      st
-      (* (module struct
-        let kind = Reify_impl.Prj_exn
-        let self_typ_name = self_typ_name
-        let is_selfrec_name = String.equal self_typ_name
-      end) *)
-      typ
+    make_typ_exn ~ccompositional ~loc (fun ~loc:_ t -> t) st typ
   ;;
 
   let%expect_test _ =
