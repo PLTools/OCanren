@@ -48,11 +48,17 @@
  (modules test006 test007)
  (flags
   (:standard
-   -dsource
+   ;-dsource
    ;
    ))
  (preprocess
-  (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
+  (pps
+   OCanren-ppx.ppx_distrib
+   GT.ppx_all
+   --
+   -pretty
+   ;
+   ))
  (libraries OCanren OCanren.tester))
 
 (executables
@@ -62,7 +68,7 @@
  (modules test008)
  (flags
   (:standard
-   -dsource
+   ;-dsource
    ;
    ))
  (preprocess

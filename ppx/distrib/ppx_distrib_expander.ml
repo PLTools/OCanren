@@ -68,14 +68,33 @@ let has_name_attr (xs : attributes) =
 
 let decorate_with_attributes tdecl ptype_attributes = { tdecl with ptype_attributes }
 
+module type STRAT = sig
+  (*  *)
+
+  val logic_typ_name : type_declaration -> label with_loc
+  val injected_typ_name : type_declaration -> label with_loc
+end
+
+module type STRAT2 = sig
+  val kind : Reify_impl.kind
+  val self_typ_name : string
+  val is_selfrec_name : string -> bool
+  val ground_typ_name : string
+  val logic_typ_name : string
+end
+
 include struct
   let make_typ_exn
     ?(ccompositional = false)
     ~loc
     oca_logic_ident
-    (kind : Reify_impl.kind)
+    (* (kind : Reify_impl.kind) *)
+    (* is_selfrec_name *)
+      st
     typ
     =
+    let (module S : STRAT2) = st in
+    let open S in
     let fix_tname s =
       match kind with
       | Reify_impl.Reify -> s ^ "_logic"
@@ -86,7 +105,7 @@ include struct
       | Reify -> "logic"
       | Prj_exn -> "ground"
     in
-    (* Format.printf "make_typ_exn.%s of '%a'\n%!" typ_for_kind Pprintast.core_type typ; *)
+    (* Format.eprintf "make_typ_exn.%s of '%a'\n%!" typ_for_kind Pprintast.core_type typ; *)
     (*  *)
     let rec helper = function
       | [%type: int] as t -> oca_logic_ident ~loc:t.ptyp_loc t
@@ -103,7 +122,17 @@ include struct
            failwiths ~loc "Tuples of big arity are forgotten to be implemented "
          | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) ->
            oca_logic_ident ~loc:t.ptyp_loc t
-         | Ptyp_constr ({ txt = Lident s }, xs)
+         | Ptyp_constr ({ txt = Lident s }, xs) when is_selfrec_name s ->
+           let fixed_name =
+             match kind with
+             | Reify_impl.Reify -> logic_typ_name
+             | Prj_exn -> ground_typ_name
+           in
+           ptyp_constr
+             ~loc
+             (Located.mk ~loc:t.ptyp_loc (Lident fixed_name))
+             (List.map ~f:helper xs)
+         (* | Ptyp_constr ({ txt = Lident s }, xs)
            when String.ends_with s ~suffix:"_fuly" && Reify_impl.is_new () ->
            let tname = String.drop_suffix s (String.length "_fuly") in
            let fixed_name =
@@ -111,12 +140,6 @@ include struct
              | Reify_impl.Reify -> tname ^ "_logic"
              | Prj_exn -> tname
            in
-           ptyp_constr
-             ~loc
-             (Located.mk ~loc:t.ptyp_loc (Lident fixed_name))
-             (List.map ~f:helper xs)
-         (*          | Ptyp_constr ({ txt = Lident tname }, xs) when Reify_impl.is_new () ->
-           let fixed_name = Printf.sprintf "%s_logic" tname in
            ptyp_constr
              ~loc
              (Located.mk ~loc:t.ptyp_loc (Lident fixed_name))
@@ -201,18 +224,34 @@ include struct
         typ
   ;;
 
-  let ltypify_exn ?(ccompositional = false) ~loc typ =
+  let ltypify_exn ?(ccompositional = false) ~loc st typ =
     let oca_logic_ident ~loc = Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]) in
     make_typ_exn
       ~ccompositional
       ~loc
       (fun ~loc t -> ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
-      Reify_impl.Reify
+      st
+      (* (module struct
+        let kind = Reify_impl.Reify
+        let self_typ_name = self_typ_name
+        let is_selfrec_name = String.equal self_typ_name
+        let ground_typ_name = 
+      end) *)
       typ
   ;;
 
-  let gtypify_exn ?(ccompositional = false) ~loc typ =
-    make_typ_exn ~ccompositional ~loc (fun ~loc:_ t -> t) Reify_impl.Prj_exn typ
+  let gtypify_exn ?(ccompositional = false) ~loc st typ =
+    make_typ_exn
+      ~ccompositional
+      ~loc
+      (fun ~loc:_ t -> t)
+      st
+      (* (module struct
+        let kind = Reify_impl.Prj_exn
+        let self_typ_name = self_typ_name
+        let is_selfrec_name = String.equal self_typ_name
+      end) *)
+      typ
   ;;
 
   let%expect_test _ =
@@ -221,7 +260,16 @@ include struct
       let t2 =
         match i.pstr_desc with
         | Pstr_type (_, [ { ptype_manifest = Some t } ]) ->
-          ltypify_exn ~ccompositional:true ~loc t
+          let st =
+            (module struct
+              let kind = Reify_impl.Reify
+              let self_typ_name = ""
+              let is_selfrec_name _ = false
+              let ground_typ_name = ""
+              let logic_typ_name = ""
+            end : STRAT2)
+          in
+          ltypify_exn ~ccompositional:true ~loc st t
         | _ -> assert false
       in
       Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
@@ -247,7 +295,7 @@ let injectify ~loc ~self_typ selfname typ =
     | [%type: GT.string]
     | [%type: string]
     | [%type: GT.bool]
-    | [%type: bool] -> [%type: [%t t] OCanren.ilogic]
+    | [%type: bool] -> add_ilogic ~loc:t.ptyp_loc t
     | [%type: [%t? arg] GT.list] -> [%type: [%t helper arg] OCanren.Std.List.groundi]
     | { ptyp_desc = Ptyp_tuple ts } ->
       add_ilogic ~loc @@ ptyp_tuple ~loc (List.map ~f:helper ts)
@@ -331,12 +379,6 @@ let manifest_of_tdecl_exn tdecl =
   | Some m -> m
 ;;
 
-module type STRAT = sig
-  (*  *)
-  val logic_typ_name : type_declaration -> label with_loc
-  val injected_typ_name : type_declaration -> label with_loc
-end
-
 let make_strat () =
   (* Format.printf "Reify_impl.is_old () = %b\n%!" (Reify_impl.is_old ()); *)
   let module M = struct
@@ -365,6 +407,35 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     | Recursive -> true
     | Nonrecursive -> false
   in
+  let tdecl =
+    if Reify_impl.is_new ()
+    then tdecl
+    else if not is_rec
+    then { tdecl with ptype_name = Located.mk ~loc:tdecl.ptype_name.loc "ground" }
+    else (
+      let is_selfrec name = String.equal name tdecl.ptype_name.txt in
+      let rec helper t =
+        match t.ptyp_desc with
+        | Ptyp_constr ({ txt = Lident name; loc }, ps) when is_selfrec name ->
+          ptyp_constr
+            ~loc:t.ptyp_loc
+            (Located.mk ~loc (Lident "ground"))
+            (List.map ~f:helper ps)
+        | Ptyp_constr (lident, ps) ->
+          ptyp_constr ~loc:t.ptyp_loc lident (List.map ~f:helper ps)
+        | Ptyp_tuple ps -> ptyp_tuple ~loc:t.ptyp_loc (List.map ~f:helper ps)
+        | Ptyp_any | Ptyp_var _ -> t
+        | Ptyp_arrow _ | Ptyp_alias _ | Ptyp_class _ | Ptyp_object _
+        | Ptyp_variant (_, _, _)
+        | Ptyp_poly (_, _)
+        | Ptyp_package _ | Ptyp_extension _ ->
+          failwiths ~loc:t.ptyp_loc "Not supported. %s %d" __FILE__ __LINE__
+      in
+      { tdecl with
+        ptype_name = Located.mk ~loc:tdecl.ptype_name.loc "ground"
+      ; ptype_manifest = Option.map tdecl.ptype_manifest ~f:helper
+      })
+  in
   let ltyp =
     let ptype_attributes =
       List.filter tdecl.ptype_attributes ~f:(fun attr ->
@@ -376,7 +447,30 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     let ptype_manifest =
       match tdecl.ptype_manifest with
       | None -> failwiths ~loc:tdecl.ptype_loc "no manifest %s %d" __FILE__ __LINE__
-      | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) -> Some (ltypify_exn ~loc typ)
+      | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) ->
+        Some
+          (ltypify_exn
+             ~loc
+             (module struct
+               let kind = Reify_impl.Reify
+
+               let self_typ_name =
+                 if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_logic" else "logic"
+               ;;
+
+               let ground_typ_name =
+                 if Reify_impl.is_new ()
+                 then tdecl.ptype_name.txt ^ "_ground"
+                 else "ground"
+               ;;
+
+               let logic_typ_name =
+                 if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_logic" else "logic"
+               ;;
+
+               let is_selfrec_name s = String.equal s logic_typ_name
+             end : STRAT2)
+             typ)
       | t -> t
     in
     { tdecl with ptype_name; ptype_manifest; ptype_attributes }
