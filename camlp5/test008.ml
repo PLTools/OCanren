@@ -1,4 +1,4 @@
- ocanren type state    = S ;;
+ocanren type state    = S ;;
 
 module _ = struct
   ocanren type u = U of state
