@@ -78,20 +78,29 @@ end
 (* TODO(Kakadu): Merge two strategies  *)
 module type STRAT2 = sig
   val kind : Reify_impl.kind
+
+  (** The name of self-recursive type which should be produced *)
   val self_typ_name : string
+
+  (** Checks if this type name should be replaced by self-recursive type *)
   val is_selfrec_name : string -> bool
-  val ground_typ_name : string
-  val logic_typ_name : string
-  val injected_typ_name : string
+
+  (** Rewrite all other type names *)
   val mangle : string -> string
 end
 
 include struct
   let make_typ_exn ?(ccompositional = false) ~loc oca_logic_ident st typ =
     let (module S : STRAT2) = st in
-    let open S in
-    let rec helper = function
-      | [%type: int] as t -> oca_logic_ident ~loc:t.ptyp_loc t
+    let rec helper t =
+      match t with
+      | [%type: GT.int]
+      | [%type: int]
+      | [%type: GT.string]
+      | [%type: string]
+      | [%type: GT.bool]
+      | [%type: bool] -> oca_logic_ident ~loc:t.ptyp_loc t
+      | { ptyp_desc = Ptyp_var _ } -> t
       | t ->
         (match t.ptyp_desc with
          | Ptyp_var _ -> t
@@ -101,85 +110,42 @@ include struct
              (Located.mk
                 ~loc:t.ptyp_loc
                 (lident_of_list
-                   [ "OCanren"; "Std"; "Pair"; Reify_impl.typ_for_kind kind ]))
+                   [ "OCanren"; "Std"; "Pair"; Reify_impl.typ_for_kind S.kind ]))
              [ helper l; helper r ]
          | Ptyp_tuple _ ->
-           failwiths ~loc "Tuples of big arity are forgotten to be implemented "
+           failwiths ~loc "Tuples of big arity are forgotten to be implemented"
          | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) ->
            oca_logic_ident ~loc:t.ptyp_loc t
-         | Ptyp_constr ({ txt = Lident s }, xs) when is_selfrec_name s ->
+         | Ptyp_constr ({ txt = Lident s }, xs) when S.is_selfrec_name s ->
            ptyp_constr
              ~loc
-             (Located.mk ~loc:t.ptyp_loc (Lident self_typ_name))
+             (Located.mk ~loc:t.ptyp_loc (Lident S.self_typ_name))
              (List.map ~f:helper xs)
-         (* | Ptyp_constr ({ txt = Lident s }, xs)
-           when String.ends_with s ~suffix:"_fuly" && Reify_impl.is_new () ->
-           let tname = String.drop_suffix s (String.length "_fuly") in
-           let fixed_name =
-             match kind with
-             | Reify_impl.Reify -> tname ^ "_logic"
-             | Prj_exn -> tname
-           in
-           ptyp_constr
-             ~loc
-             (Located.mk ~loc:t.ptyp_loc (Lident fixed_name))
-             (List.map ~f:helper xs) *)
          | Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) ->
            ptyp_constr
              ~loc
              (Located.mk
                 ~loc:t.ptyp_loc
                 (lident_of_list
-                   [ "OCanren"; "Std"; "List"; Reify_impl.typ_for_kind kind ]))
+                   [ "OCanren"; "Std"; "List"; Reify_impl.typ_for_kind S.kind ]))
              (List.map ~f:helper xs)
          | Ptyp_constr ({ txt = Ldot (path, "ground") }, xs) ->
            ptyp_constr
              ~loc
-             (Located.mk ~loc (Ldot (path, Reify_impl.typ_for_kind kind)))
+             (Located.mk ~loc (Ldot (path, Reify_impl.typ_for_kind S.kind)))
              (List.map ~f:helper xs)
          | Ptyp_constr ({ txt = Lident tname }, xs) ->
            ptyp_constr
              ~loc
-             (Located.mk ~loc:t.ptyp_loc (Lident (mangle tname)))
+             (Located.mk ~loc:t.ptyp_loc (Lident (S.mangle tname)))
              (List.map ~f:helper xs)
-         (* |> fun t ->
-           let attr =
-             attribute ~loc ~name:(Located.mk ~loc "asdf") ~payload:(PStr [%str "asdf"])
-           in
-           { t with ptyp_attributes = [ attr ] } *)
-         (* | Ptyp_constr ({ txt = Lident "ground" }, xs) ->
-           let kind =
-             match kind with
-             | Reify -> "logic"
-             | Prj_exn -> "ground"
-           in
-           ptyp_constr ~loc (Located.mk ~loc (Lident kind)) xs *)
-         (* |> fun t ->
-           let attr =
-             attribute ~loc ~name:(Located.mk ~loc "asdf") ~payload:(PStr [%str "asdf"])
-           in
-           { t with ptyp_attributes = [ attr ] } *)
-         (*          | Ptyp_constr ({ txt = Lident lid }, xs) when Reify_impl.is_new () ->
-           let tname =
-             match kind with
-             | Reify_impl.Reify -> lid ^ "_logic"
-             | Reify_impl.Prj_exn -> lid
-           in
-           oca_logic_ident ~loc:t.ptyp_loc
-           @@ ptyp_constr
-                ~loc
-                (Located.mk ~loc:t.ptyp_loc (Lident tname))
-                (List.map ~f:helper xs) *)
-         (* | Ptyp_constr ({ txt = Lident _ }, []) -> oca_logic_ident ~loc:t.ptyp_loc t *)
-         (* | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
-           oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs) *)
          | _ ->
            failwiths
              ~loc
              "Fallthough case with '%a'. Kind = %s. %s %d"
              Pprintast.core_type
              t
-             (Reify_impl.typ_for_kind kind)
+             (Reify_impl.typ_for_kind S.kind)
              __FILE__
              __LINE__)
     in
@@ -194,12 +160,12 @@ include struct
       ptyp_constr
         ~loc
         (Located.mk ~loc
-        @@ lident_of_list [ "OCanren"; "Std"; "Pair"; Reify_impl.typ_for_kind kind ])
+        @@ lident_of_list [ "OCanren"; "Std"; "Pair"; Reify_impl.typ_for_kind S.kind ])
         (List.map ~f:helper [ l; r ])
     | _ ->
       failwiths
         "can't generate %s type: %a"
-        (Reify_impl.string_of_kind kind)
+        (Reify_impl.string_of_kind S.kind)
         Ppxlib.Pprintast.core_type
         typ
   ;;
@@ -272,14 +238,9 @@ end
 
 let injectify ~loc ~self_typ:_ s typ =
   let (module S : STRAT2) = s in
-  let open S in
   let oca_logic_ident ~loc = Located.mk ~loc (Ldot (Lident "OCanren", "ilogic")) in
   let add_ilogic ~loc t = ptyp_constr ~loc (oca_logic_ident ~loc) [ t ] in
   let rec helper t =
-    (* Format.printf "HERR %a\n%!" PPP.core_type t; *)
-    (* .... ground ~~~> injected ...
-       .... t      ~~~> .... t ilogic
-    *)
     match t with
     | [%type: GT.int]
     | [%type: int]
@@ -287,8 +248,10 @@ let injectify ~loc ~self_typ:_ s typ =
     | [%type: string]
     | [%type: GT.bool]
     | [%type: bool] -> add_ilogic ~loc:t.ptyp_loc t
+    | { ptyp_desc = Ptyp_var _ } -> t
     | [%type: [%t? arg] Std.List.ground] | [%type: [%t? arg] GT.list] ->
       [%type: [%t helper arg] OCanren.Std.List.injected]
+      (* TODO(Kakadu): standart ending should be passed somehow *)
     | [%type: ([%t? arg1], [%t? arg2]) Std.Pair.ground] ->
       [%type: ([%t helper arg1], [%t helper arg2]) Std.Pair.injected]
     | { ptyp_desc = Ptyp_tuple ts } ->
@@ -301,29 +264,16 @@ let injectify ~loc ~self_typ:_ s typ =
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) } ->
       ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ]
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, ground) }, []) } ->
-      ptyp_constr ~loc (Located.mk ~loc (Ldot (path, mangle ground))) []
-    (* | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, ground) }, xs) }
-      when String.equal selfname ground ->
-      ptyp_constr ~loc (Located.mk ~loc (Ldot (path, "injected")))
-      @@ List.map ~f:helper xs *)
-    | { ptyp_desc = Ptyp_constr ({ txt = Lident name }, xs) } when is_selfrec_name name ->
-      ptyp_constr ~loc (Located.mk ~loc (Lident self_typ_name)) (List.map ~f:helper xs)
-      (* let attr =
-        attribute ~loc ~name:(Located.mk ~loc "asdf") ~payload:(PStr [%str "asdf"])
-      in
-      { self_typ with ptyp_attributes = [ attr ] } *)
-      (* ptyp_constr ~loc (Located.mk ~loc (Lident injected_name)) (List.map ~f:helper xs) *)
-    | { ptyp_desc = Ptyp_constr ({ txt = Lident "t" }, xs) } ->
+      ptyp_constr ~loc (Located.mk ~loc (Ldot (path, S.mangle ground))) []
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident name }, xs) } when S.is_selfrec_name name
+      ->
+      ptyp_constr ~loc (Located.mk ~loc (Lident S.self_typ_name)) (List.map ~f:helper xs)
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident "t" }, xs) } when Reify_impl.is_old () ->
       add_ilogic ~loc
       @@ ptyp_constr ~loc (Located.mk ~loc (Lident "t")) (List.map ~f:helper xs)
-    (* | { ptyp_desc = Ptyp_constr ({ txt = Lident ground }, xs) }
-      when String.equal selfname ground ->
-      ptyp_constr ~loc (Located.mk ~loc (Lident "injected")) (List.map ~f:helper xs) *)
-    | { ptyp_desc = Ptyp_constr ({ txt = Lident ground }, xs) } when Reify_impl.is_new ()
-      ->
-      let tname = Printf.sprintf "%s_injected" ground in
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident ground }, xs) } ->
+      let tname = S.mangle ground in
       ptyp_constr ~loc (Located.mk ~loc (Lident tname)) (List.map ~f:helper xs)
-    | { ptyp_desc = Ptyp_var _ } -> t
     | _ ->
       Location.raise_errorf
         ~loc
@@ -350,7 +300,10 @@ let%expect_test "injectify" =
             let ground_typ_name = ""
             let logic_typ_name = ""
             let injected_typ_name = "injected"
-            let mangle _ = assert false
+
+            let mangle = function
+              | s -> s
+            ;;
           end)
           t
       | _ -> assert false
@@ -457,23 +410,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
                  if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_logic" else "logic"
                ;;
 
-               let ground_typ_name =
-                 if Reify_impl.is_new ()
-                 then tdecl.ptype_name.txt ^ "_ground"
-                 else "ground"
-               ;;
-
-               let logic_typ_name =
-                 if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_logic" else "logic"
-               ;;
-
-               let injected_typ_name =
-                 if Reify_impl.is_new ()
-                 then tdecl.ptype_name.txt ^ "_injected"
-                 else "injceted"
-               ;;
-
-               let is_selfrec_name s = String.equal s logic_typ_name
+               let is_selfrec_name = String.equal self_typ_name
 
                let mangle =
                  if Reify_impl.is_new ()
@@ -517,27 +454,18 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
             else String.equal (self_typ_name ^ "_fuly")
           ;;
 
-          let ground_typ_name = ""
-          let logic_typ_name = ""
-
-          let injected_typ_name =
-            if Reify_impl.is_old ()
-            then "injected"
-            else Printf.sprintf "%s_injected" tdecl.ptype_name.txt
-          ;;
-
           let mangle =
             if Reify_impl.is_old ()
             then
               function
               | "ground" -> "injected"
-              | _ -> assert false
+              | "t" -> "t"
+              | s -> s
             else
               function
               | s -> s ^ "_injected"
           ;;
         end)
-      (* TODO: a bug in names? *)
     in
     let ptype_manifest =
       match tdecl.ptype_manifest with
