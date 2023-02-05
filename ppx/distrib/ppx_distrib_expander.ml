@@ -82,6 +82,7 @@ module type STRAT2 = sig
   val is_selfrec_name : string -> bool
   val ground_typ_name : string
   val logic_typ_name : string
+  val mangle : string -> string
 end
 
 include struct
@@ -93,11 +94,11 @@ include struct
       | Reify -> "logic"
       | Prj_exn -> "ground"
     in
-    (* Format.eprintf "make_typ_exn.%s of '%a'\n%!" typ_for_kind Pprintast.core_type typ; *)
     let rec helper = function
       | [%type: int] as t -> oca_logic_ident ~loc:t.ptyp_loc t
       | t ->
         (match t.ptyp_desc with
+         | Ptyp_var _ -> t
          | Ptyp_tuple [ l; r ] ->
            ptyp_constr
              ~loc
@@ -138,11 +139,10 @@ include struct
              ~loc
              (Located.mk ~loc (Ldot (path, typ_for_kind)))
              (List.map ~f:helper xs)
-         | Ptyp_constr ({ txt = Lident tname }, xs) (* when Reify_impl.is_new ()  *) ->
-           (* let fixed_name = fix_tname tname in *)
+         | Ptyp_constr ({ txt = Lident tname }, xs) ->
            ptyp_constr
              ~loc
-             (Located.mk ~loc:t.ptyp_loc (Lident self_typ_name))
+             (Located.mk ~loc:t.ptyp_loc (Lident (mangle tname)))
              (List.map ~f:helper xs)
          (* |> fun t ->
            let attr =
@@ -175,7 +175,6 @@ include struct
          (* | Ptyp_constr ({ txt = Lident _ }, []) -> oca_logic_ident ~loc:t.ptyp_loc t *)
          (* | Ptyp_constr (({ txt = Lident "t" } as id), xs) ->
            oca_logic_ident ~loc:t.ptyp_loc @@ ptyp_constr ~loc id (List.map ~f:helper xs) *)
-         | Ptyp_var _ -> t
          | _ ->
            failwiths
              ~loc
@@ -229,6 +228,7 @@ include struct
               let is_selfrec_name _ = false
               let ground_typ_name = ""
               let logic_typ_name = ""
+              let mangle _ = assert false
             end : STRAT2)
           in
           ltypify_exn ~ccompositional:true ~loc st t
@@ -239,6 +239,32 @@ include struct
     test [%stri type t1 = (int * int) Std.List.ground];
     [%expect
       {| (int OCanren.logic, int OCanren.logic) OCanren.Std.Pair.logic Std.List.logic |}];
+    ()
+  ;;
+
+  let%expect_test _ =
+    let loc = Location.none in
+    let test i =
+      let t2 =
+        match i.pstr_desc with
+        | Pstr_type (_, [ { ptype_manifest = Some t } ]) ->
+          let st =
+            (module struct
+              let kind = Reify_impl.Reify
+              let self_typ_name = "u_logic"
+              let is_selfrec_name x = String.equal x "u_fuly"
+              let ground_typ_name = "u"
+              let logic_typ_name = "u_logic"
+              let mangle s = s ^ "_logic"
+            end : STRAT2)
+          in
+          ltypify_exn ~ccompositional:true ~loc st t
+        | _ -> assert false
+      in
+      Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
+    in
+    test [%stri type nonrec u = state u_fuly];
+    [%expect {| state_logic u_logic |}];
     ()
   ;;
 end
@@ -431,6 +457,17 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
                ;;
 
                let is_selfrec_name s = String.equal s logic_typ_name
+
+               let mangle =
+                 if Reify_impl.is_new ()
+                 then
+                   function
+                   | s -> s ^ "_logic"
+                 else
+                   function
+                   | "ground" -> "logic"
+                   | s -> s
+               ;;
              end : STRAT2)
              typ)
       | t -> t
