@@ -43,6 +43,11 @@ type kind =
   | Reify
   | Prj_exn
 
+let typ_for_kind = function
+  | Reify -> "logic"
+  | Prj_exn -> "ground"
+;;
+
 let string_of_kind = function
   | Reify -> "reify"
   | Prj_exn -> "prj_exn"

@@ -259,7 +259,7 @@
         let show_logic subj = show_logic () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type injected = (GT.string OCanren.ilogic, injected Std.List.injected) t OCanren.ilogic
+      type injected = (GT.string OCanren.ilogic, injected OCanren.Std.List.injected) t OCanren.ilogic
   
       let fmapt f__005_ f__006_ subj__007_ =
         let open OCanren.Env.Monad in
@@ -642,7 +642,7 @@
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
       type nonrec injected =
-        ( (GT.string OCanren.ilogic * Scheme.injected) OCanren.ilogic Std.List.injected
+        ( (GT.string OCanren.ilogic * Scheme.injected) OCanren.ilogic OCanren.Std.List.injected
         , Scheme.injected )
         t
         OCanren.ilogic

@@ -175,7 +175,7 @@
         let gmap_logic subj = gmap_logic () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type injected = (GT.string OCanren.ilogic, injected Std.List.injected) t OCanren.ilogic
+      type injected = (GT.string OCanren.ilogic, injected OCanren.Std.List.injected) t OCanren.ilogic
   
       let fmapt f__005_ f__006_ subj__007_ =
         let open OCanren.Env.Monad in
@@ -474,7 +474,7 @@
       type injected =
         ( GT.string OCanren.ilogic
         , Gterm.injected
-        , (GT.string OCanren.ilogic, injected) Std.Pair.injected Std.List.injected )
+        , (GT.string OCanren.ilogic, injected) Std.Pair.injected OCanren.Std.List.injected )
         t
         OCanren.ilogic
   
@@ -941,7 +941,7 @@
         let gmap_logic subj = gmap_logic () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type injected = (GT.string OCanren.ilogic, injected Std.List.injected) t OCanren.ilogic
+      type injected = (GT.string OCanren.ilogic, injected OCanren.Std.List.injected) t OCanren.ilogic
   
       let fmapt f__025_ f__026_ subj__027_ =
         let open OCanren.Env.Monad in
