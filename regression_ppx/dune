@@ -48,7 +48,7 @@
  (modules test006 test007 test009)
  (flags
   (:standard
-   ;-dsource
+   -dsource
    ;
    ))
  (preprocess
@@ -68,7 +68,7 @@
  (modules test008 test010)
  (flags
   (:standard
-   -dsource
+   ;-dsource
    ;
    ))
  (preprocess

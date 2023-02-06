@@ -110,16 +110,16 @@
         let gmap_ground subj = gmap_ground () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type logic = (GT.string OCanren.logic, logic Std.List.logic) t OCanren.logic
+      type logic = (GT.string OCanren.logic, logic OCanren.Std.List.logic) t OCanren.logic
       [@@deriving gt ~options:{gmap}]
   
       include struct
         class virtual ['inh, 'extra, 'syn] logic_t =
           object
             inherit
-              [ (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
+              [ (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
               , 'inh
               , 'extra
               , 'syn ]
@@ -137,8 +137,8 @@
             constraint 'syn_logic = logic
   
             inherit
-              [ (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
+              [ (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
               , 'extra_logic
               , 'syn_logic ]
               OCanren.gmap_logic_t
@@ -147,7 +147,7 @@
                     ((fun () subj ->
                        GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
                        () )
-                    ((fun () subj -> GT.gmap Std.List.logic (_fself_logic ()) subj) ())
+                    ((fun () subj -> GT.gmap OCanren.Std.List.logic (_fself_logic ()) subj) ())
                     subj )
                 _fself_logic
           end
@@ -159,7 +159,7 @@
                  ((fun () subj ->
                     GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
                     () )
-                 ((fun () subj -> GT.gmap Std.List.logic (gmap_logic ()) subj) ())
+                 ((fun () subj -> GT.gmap OCanren.Std.List.logic (gmap_logic ()) subj) ())
                  subj )
                () )
             subj
@@ -364,7 +364,7 @@
       type logic =
         ( GT.string OCanren.logic
         , Gterm.logic
-        , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+        , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
         t
         OCanren.logic
       [@@deriving gt ~options:{gmap}]
@@ -375,15 +375,15 @@
             inherit
               [ ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , 'inh
               , 'extra
@@ -404,11 +404,11 @@
             inherit
               [ ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , 'extra_logic
               , 'syn_logic ]
@@ -420,7 +420,7 @@
                        () )
                     ((fun () subj -> GT.gmap Gterm.logic subj) ())
                     ((fun () subj ->
-                       GT.gmap Std.List.logic
+                       GT.gmap OCanren.Std.List.logic
                          ((fun () subj ->
                             GT.gmap Std.Pair.logic
                               ((fun () subj ->
@@ -445,7 +445,7 @@
                     () )
                  ((fun () subj -> GT.gmap Gterm.logic subj) ())
                  ((fun () subj ->
-                    GT.gmap Std.List.logic
+                    GT.gmap OCanren.Std.List.logic
                       ((fun () subj ->
                          GT.gmap Std.Pair.logic
                            ((fun () subj ->
@@ -876,16 +876,16 @@
         let gmap_ground subj = gmap_ground () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type logic = (GT.string OCanren.logic, logic Std.List.logic) t OCanren.logic
+      type logic = (GT.string OCanren.logic, logic OCanren.Std.List.logic) t OCanren.logic
       [@@deriving gt ~options:{gmap}]
   
       include struct
         class virtual ['inh, 'extra, 'syn] logic_t =
           object
             inherit
-              [ (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
+              [ (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
               , 'inh
               , 'extra
               , 'syn ]
@@ -903,8 +903,8 @@
             constraint 'syn_logic = logic
   
             inherit
-              [ (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
+              [ (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
               , 'extra_logic
               , 'syn_logic ]
               OCanren.gmap_logic_t
@@ -913,7 +913,7 @@
                     ((fun () subj ->
                        GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
                        () )
-                    ((fun () subj -> GT.gmap Std.List.logic (_fself_logic ()) subj) ())
+                    ((fun () subj -> GT.gmap OCanren.Std.List.logic (_fself_logic ()) subj) ())
                     subj )
                 _fself_logic
           end
@@ -925,7 +925,7 @@
                  ((fun () subj ->
                     GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
                     () )
-                 ((fun () subj -> GT.gmap Std.List.logic (gmap_logic ()) subj) ())
+                 ((fun () subj -> GT.gmap OCanren.Std.List.logic (gmap_logic ()) subj) ())
                  subj )
                () )
             subj
