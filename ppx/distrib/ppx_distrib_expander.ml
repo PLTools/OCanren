@@ -135,7 +135,9 @@ let make_logic_strat_2 tdecl =
             | Ldot _ | Lapply _ -> failwiths ~loc "not supported"
         else
           fun ~loc args -> function
-            | Ldot (Lident "GT", "list") | Ldot (Ldot (Lident "Std", "List"), "ground") ->
+            | Ldot (Lident "GT", "list")
+            | Ldot (Ldot (Lident "Std", "List"), "ground")
+            | Ldot (Ldot (Ldot (Lident "OCanren", "Std"), "List"), "ground") ->
               let l = lident_of_list [ "OCanren"; "Std"; "List"; "logic" ] in
               ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
             | (Lident "int" as l) | (Ldot (Lident "GT", _) as l) ->
