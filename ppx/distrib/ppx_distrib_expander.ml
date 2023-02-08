@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren PPX
- * Copyright (C) 2016-2022
+ * Copyright (C) 2016-2023
  *   Dmitrii Kosarev aka Kakadu, Petr Lozov
  * St.Petersburg State University, JetBrains Research
  *)
@@ -75,9 +75,21 @@ module type STRAT = sig
   val injected_typ_name : type_declaration -> label with_loc
 end
 
+type sort =
+  [ `Injected
+  | `Prj_exn
+  | `Reify
+  ]
+
+let stdname_of_sort = function
+  | `Injected -> "injected"
+  | `Prj_exn -> "ground"
+  | `Reify -> "logic"
+;;
+
 (* TODO(Kakadu): Merge two strategies  *)
 module type STRAT2 = sig
-  val kind : Reify_impl.kind
+  val sort : sort
 
   (** The name of self-recursive type which should be produced *)
   val self_typ_name : string
@@ -85,22 +97,107 @@ module type STRAT2 = sig
   (** Checks if this type name should be replaced by self-recursive type *)
   val is_selfrec_name : string -> bool
 
-  (** Rewrite all other type names *)
-  val mangle : string -> string
+  val is_fully_name : string -> bool
 
-  val mangle_lident
-    : (loc:Location.t -> core_type list lazy_t -> Longident.t -> core_type) option
+  (** Rewrite all other type names *)
+  val mangle_lident : loc:Location.t -> core_type list lazy_t -> Longident.t -> core_type
+
+  (* ... ground ~~> .. t OCanren.logic
+      instead of
+     ... ground ~~> .. logic
+  *)
+  val define_as_fuly_abstract : loc:Location.t -> core_type list lazy_t -> core_type
 end
+
+let create_lident_mangler sort
+  : loc:Location.t -> core_type list Lazy.t -> Longident.t -> core_type
+  =
+  let prim_typ, add_suffix, std_suffix =
+    match sort with
+    | `Injected -> "ilogic", sprintf "%s_injected", "injected"
+    | `Prj_exn -> "ground", Fun.id, "ground"
+    | `Reify -> "logic", sprintf "%s_logic", "logic"
+  in
+  if Reify_impl.is_new ()
+  then
+    fun ~loc args -> function
+      | Ldot (Lident "GT", "list") | Ldot (Ldot (Lident "Std", "List"), "ground") ->
+        let l = lident_of_list [ "OCanren"; "Std"; "List"; std_suffix ] in
+        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
+      | (Lident "int" as l)
+      | (Lident "string" as l)
+      | (Lident "bool" as l)
+      | (Ldot (Lident "GT", _) as l) ->
+        ptyp_constr
+          ~loc
+          (Located.mk ~loc (lident_of_list [ "OCanren"; prim_typ ]))
+          [ ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args) ]
+        (* Above is a copy-paste between two implementations *)
+      | Lident s ->
+        let l = Lident (add_suffix s) in
+        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
+      | Ldot _ | Lapply _ -> failwiths ~loc "not supported"
+  else
+    fun ~loc args -> function
+      | Ldot (Lident "GT", "list")
+      | Ldot (Ldot (Lident "Std", "List"), "ground")
+      | Ldot (Ldot (Ldot (Lident "OCanren", "Std"), "List"), "ground") ->
+        let l = lident_of_list [ "OCanren"; "Std"; "List"; std_suffix ] in
+        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
+      | (Lident "int" as l) | (Ldot (Lident "GT", _) as l) ->
+        ptyp_constr
+          ~loc
+          (Located.mk ~loc (lident_of_list [ "OCanren"; prim_typ ]))
+          [ ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args) ]
+      | Lident "ground" ->
+        let l = Lident std_suffix in
+        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
+      | Ldot (prefix, "ground") ->
+        let l = Ldot (prefix, std_suffix) in
+        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
+      | Lident id ->
+        let msg =
+          sprintf
+            "In old naming only 'ground' and 'logic' typenames are allowed. What to do \
+             with ident '%s' to produce '%s'?"
+            id
+            (add_suffix id)
+        in
+        ptyp_extension
+          ~loc
+          ( Located.mk ~loc "ocaml.error"
+          , PStr
+              [ pstr_eval ~loc (pexp_constant ~loc (Pconst_string (msg, loc, None))) [] ]
+          )
+      | Ldot _ | Lapply _ -> failwiths ~loc "not supported"
+;;
 
 let make_logic_strat_2 tdecl =
   let module I = struct
-    let kind = Reify_impl.Reify
+    let sort = `Reify
 
     let self_typ_name =
       if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_logic" else "logic"
     ;;
 
     let is_selfrec_name = String.equal self_typ_name
+
+    let is_fully_name =
+      if Reify_impl.is_new ()
+      then String.equal (tdecl.ptype_name.txt ^ "_fuly")
+      else String.equal "t"
+    ;;
+
+    let define_as_fuly_abstract ~loc args =
+      ptyp_constr
+        ~loc
+        (Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]))
+        [ (let ful_lident =
+             if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_fuly" else "t"
+           in
+           ptyp_constr ~loc (Located.mk ~loc (Lident ful_lident)) (Lazy.force args))
+        ]
+    ;;
 
     let mangle =
       if Reify_impl.is_new ()
@@ -113,62 +210,7 @@ let make_logic_strat_2 tdecl =
         | s -> s
     ;;
 
-    let mangle_lident
-      : (loc:Location.t -> core_type list Lazy.t -> Longident.t -> core_type) option
-      =
-      Some
-        (if Reify_impl.is_new ()
-        then
-          fun ~loc args -> function
-            | Ldot (Lident "GT", "list") | Ldot (Ldot (Lident "Std", "List"), "ground") ->
-              let l = lident_of_list [ "OCanren"; "Std"; "List"; "logic" ] in
-              ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-            | (Lident "int" as l) | (Ldot (Lident "GT", _) as l) ->
-              ptyp_constr
-                ~loc
-                (Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]))
-                [ ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args) ]
-              (* Above is a copy-paste between two implementations *)
-            | Lident s ->
-              let l = Lident (s ^ "_logic") in
-              ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-            | Ldot _ | Lapply _ -> failwiths ~loc "not supported"
-        else
-          fun ~loc args -> function
-            | Ldot (Lident "GT", "list")
-            | Ldot (Ldot (Lident "Std", "List"), "ground")
-            | Ldot (Ldot (Ldot (Lident "OCanren", "Std"), "List"), "ground") ->
-              let l = lident_of_list [ "OCanren"; "Std"; "List"; "logic" ] in
-              ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-            | (Lident "int" as l) | (Ldot (Lident "GT", _) as l) ->
-              ptyp_constr
-                ~loc
-                (Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]))
-                [ ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args) ]
-            | Lident "ground" ->
-              let l = Lident "logic" in
-              ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-            | Ldot (prefix, "ground") ->
-              let l = Ldot (prefix, "logic") in
-              ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-            | Lident id ->
-              let msg =
-                sprintf
-                  "In old naming only 'ground' and 'logic' typenames are allowed. What \
-                   to do with ident '%s'"
-                  id
-              in
-              ptyp_extension
-                ~loc
-                ( Located.mk ~loc "ocaml.error"
-                , PStr
-                    [ pstr_eval
-                        ~loc
-                        (pexp_constant ~loc (Pconst_string (msg, loc, None)))
-                        []
-                    ] )
-            | Ldot _ | Lapply _ -> failwiths ~loc "not supported")
-    ;;
+    let mangle_lident = create_lident_mangler `Reify
   end
   in
   (module I : STRAT2)
@@ -176,7 +218,7 @@ let make_logic_strat_2 tdecl =
 
 let make_injected_strat_2 tdecl =
   let module I = struct
-    let kind = Reify_impl.Reify (* TODO(Kakadu): Wrong*)
+    let sort = `Injected
 
     let self_typ_name =
       if Reify_impl.is_old () then "injected" else tdecl.ptype_name.txt ^ "_injected"
@@ -184,8 +226,25 @@ let make_injected_strat_2 tdecl =
 
     let is_selfrec_name =
       if Reify_impl.is_old ()
-      then String.equal "ground"
+      then fun s -> String.equal "ground" s || String.equal s "t"
       else String.equal (self_typ_name ^ "_fuly")
+    ;;
+
+    let is_fully_name =
+      if Reify_impl.is_new ()
+      then String.equal (tdecl.ptype_name.txt ^ "_fuly")
+      else String.equal "t"
+    ;;
+
+    let define_as_fuly_abstract ~loc args =
+      ptyp_constr
+        ~loc
+        (Located.mk ~loc (lident_of_list [ "OCanren"; "ilogic" ]))
+        [ (let ful_lident =
+             if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_fuly" else "t"
+           in
+           ptyp_constr ~loc (Located.mk ~loc (Lident ful_lident)) (Lazy.force args))
+        ]
     ;;
 
     let mangle =
@@ -200,14 +259,14 @@ let make_injected_strat_2 tdecl =
         | s -> s ^ "_injected"
     ;;
 
-    let mangle_lident = None
+    let mangle_lident = create_lident_mangler `Injected
   end
   in
   (module I : STRAT2)
 ;;
 
 include struct
-  let make_typ_exn ?(ccompositional = false) ~loc oca_logic_ident st typ =
+  let make_typ_exn ~loc oca_logic_ident st typ =
     let (module S : STRAT2) = st in
     let rec helper t =
       match t with
@@ -217,92 +276,75 @@ include struct
           ~loc
           (Located.mk ~loc:t.ptyp_loc (Lident S.self_typ_name))
           (List.map ~f:helper xs)
-      | { ptyp_desc = Ptyp_constr ({ txt; loc }, xs) } when Option.is_some S.mangle_lident
-        -> Stdlib.Option.get S.mangle_lident ~loc (lazy (List.map ~f:helper xs)) txt
+      | { ptyp_desc = Ptyp_constr ({ txt; loc }, xs) } ->
+        S.mangle_lident ~loc (lazy (List.map ~f:helper xs)) txt
       | t ->
         (match t.ptyp_desc with
-         | Ptyp_var _ -> t
+         (* Inprinciple, special treating of Pairs is not required,
+            but it is easier to study the generated code with this specialization *)
          | Ptyp_tuple [ l; r ] ->
            ptyp_constr
              ~loc
              (Located.mk
                 ~loc:t.ptyp_loc
-                (lident_of_list
-                   [ "OCanren"; "Std"; "Pair"; Reify_impl.typ_for_kind S.kind ]))
+                (lident_of_list [ "OCanren"; "Std"; "Pair"; stdname_of_sort S.sort ]))
              [ helper l; helper r ]
          | Ptyp_tuple ps ->
            let loc = t.ptyp_loc in
            ptyp_constr
              ~loc
-             (Located.mk
-                ~loc
-                (lident_of_list [ "OCanren"; Reify_impl.typ_for_kind S.kind ]))
+             (Located.mk ~loc (lident_of_list [ "OCanren"; stdname_of_sort S.sort ]))
              [ ptyp_tuple ~loc (List.map ~f:helper ps) ]
          | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) ->
            oca_logic_ident ~loc:t.ptyp_loc t
-         (* | Ptyp_constr ({ txt = Lident s }, xs) when S.is_selfrec_name s ->
-           ptyp_constr
-             ~loc
-             (Located.mk ~loc:t.ptyp_loc (Lident S.self_typ_name))
-             (List.map ~f:helper xs) *)
-         | Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) ->
-           ptyp_constr
-             ~loc
-             (Located.mk
-                ~loc:t.ptyp_loc
-                (lident_of_list
-                   [ "OCanren"; "Std"; "List"; Reify_impl.typ_for_kind S.kind ]))
-             (List.map ~f:helper xs)
-         | Ptyp_constr ({ txt = Ldot (path, "ground") }, xs) ->
-           ptyp_constr
-             ~loc
-             (Located.mk ~loc (Ldot (path, Reify_impl.typ_for_kind S.kind)))
-             (List.map ~f:helper xs)
-         | Ptyp_constr ({ txt = Lident tname }, xs) ->
-           ptyp_constr
-             ~loc
-             (Located.mk ~loc:t.ptyp_loc (Lident (S.mangle tname)))
-             (List.map ~f:helper xs)
          | _ ->
            failwiths
              ~loc
              "Fallthough case with '%a'. Kind = %s. %s %d"
              Pprintast.core_type
              t
-             (Reify_impl.typ_for_kind S.kind)
+             (stdname_of_sort S.sort)
              __FILE__
              __LINE__)
     in
     match typ with
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident id }, args) } when S.is_fully_name id ->
+      S.define_as_fuly_abstract ~loc (lazy (List.map ~f:helper args))
     | { ptyp_desc = Ptyp_constr (id, args) } ->
-      if ccompositional
+      if true
       then helper typ
       else (
         let ttt = ptyp_constr ~loc id (List.map ~f:helper args) in
         oca_logic_ident ~loc ttt)
     | { ptyp_desc = Ptyp_tuple [ l; r ] } ->
+      (* TODO(Kakadu): Eliminate copypaste *)
       ptyp_constr
         ~loc
         (Located.mk ~loc
-        @@ lident_of_list [ "OCanren"; "Std"; "Pair"; Reify_impl.typ_for_kind S.kind ])
+        @@ lident_of_list [ "OCanren"; "Std"; "Pair"; stdname_of_sort S.sort ])
         (List.map ~f:helper [ l; r ])
+    | { ptyp_desc = Ptyp_var _ } -> helper typ
     | _ ->
       failwiths
         "can't generate %s type: %a"
-        (Reify_impl.string_of_kind S.kind)
+        (stdname_of_sort S.sort)
         Ppxlib.Pprintast.core_type
         typ
   ;;
 
-  let ltypify_exn ?(ccompositional = false) ~loc =
+  let ltypify_exn ~loc =
     let oca_logic_ident ~loc = Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]) in
-    make_typ_exn ~ccompositional ~loc (fun ~loc t ->
+    make_typ_exn ~loc (fun ~loc t ->
       ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
   ;;
 
-  let gtypify_exn ?(ccompositional = false) ~loc =
-    make_typ_exn ~ccompositional ~loc (fun ~loc:_ t -> t)
+  let injectify ~loc =
+    let oca_logic_ident ~loc = Located.mk ~loc (lident_of_list [ "OCanren"; "ilogic" ]) in
+    make_typ_exn ~loc (fun ~loc t ->
+      ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
   ;;
+
+  let gtypify_exn ~loc = make_typ_exn ~loc (fun ~loc:_ t -> t)
 
   let%expect_test _ =
     let loc = Location.none in
@@ -311,7 +353,7 @@ include struct
         match i.pstr_desc with
         | Pstr_type (_, [ ({ ptype_manifest = Some t } as td) ]) ->
           let st = make_logic_strat_2 td in
-          ltypify_exn ~ccompositional:true ~loc st t
+          ltypify_exn ~loc st t
         | _ -> assert false
       in
       Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
@@ -337,76 +379,43 @@ include struct
         | Pstr_type (_, [ { ptype_manifest = Some t } ]) ->
           let st =
             (module struct
-              let kind = Reify_impl.Reify
+              let sort = `Reify
               let self_typ_name = "u_logic"
-              let is_selfrec_name x = String.equal x "u_fuly"
+              let fully_abstract_name = "u_fuly"
+              let is_selfrec_name = String.equal fully_abstract_name
+              let is_fully_name = is_selfrec_name
               let ground_typ_name = "u"
               let logic_typ_name = "u_logic"
-              let mangle s = s ^ "_logic"
               let injected_typ_name = ""
-              let mangle_lident = None
+
+              let define_as_fuly_abstract ~loc args =
+                ptyp_constr
+                  ~loc
+                  (Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]))
+                  [ ptyp_constr
+                      ~loc
+                      (Located.mk ~loc (Lident fully_abstract_name))
+                      (Lazy.force args)
+                  ]
+              ;;
+
+              let mangle_lident = create_lident_mangler sort
             end : STRAT2)
           in
-          ltypify_exn ~ccompositional:true ~loc st t
+          ltypify_exn ~loc st t
         | _ -> assert false
       in
       Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
     in
+    Reify_impl.(config.naming_style <- New_naming);
     test [%stri type nonrec u = state u_fuly];
-    [%expect {| state_logic u_logic |}];
+    [%expect {| state_logic u_fuly OCanren.logic |}];
     ()
   ;;
 end
 
-let injectify ~loc ~self_typ:_ s typ =
-  let (module S : STRAT2) = s in
-  let oca_logic_ident ~loc = Located.mk ~loc (Ldot (Lident "OCanren", "ilogic")) in
-  let add_ilogic ~loc t = ptyp_constr ~loc (oca_logic_ident ~loc) [ t ] in
-  let rec helper t =
-    match t with
-    | [%type: GT.int]
-    | [%type: int]
-    | [%type: GT.string]
-    | [%type: string]
-    | [%type: GT.bool]
-    | [%type: bool] -> add_ilogic ~loc:t.ptyp_loc t
-    | { ptyp_desc = Ptyp_var _ } -> t
-    | [%type: [%t? arg] Std.List.ground] | [%type: [%t? arg] GT.list] ->
-      [%type: [%t helper arg] OCanren.Std.List.injected]
-      (* TODO(Kakadu): standart ending should be passed somehow *)
-    | [%type: ([%t? arg1], [%t? arg2]) Std.Pair.ground] ->
-      [%type: ([%t helper arg1], [%t helper arg2]) Std.Pair.injected]
-    | { ptyp_desc = Ptyp_tuple ts } ->
-      add_ilogic ~loc @@ ptyp_tuple ~loc (List.map ~f:helper ts)
-    | { ptyp_desc =
-          Ptyp_constr ({ txt = Ldot (Ldot (Lident "Std", std_mod), "ground") }, [])
-      } ->
-      let lident = Ldot (Ldot (Lident "Std", std_mod), "injected") in
-      ptyp_constr ~loc (Located.mk ~loc lident) []
-    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) } ->
-      ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ]
-    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (path, ground) }, []) } ->
-      ptyp_constr ~loc (Located.mk ~loc (Ldot (path, S.mangle ground))) []
-    | { ptyp_desc = Ptyp_constr ({ txt = Lident name }, xs) } when S.is_selfrec_name name
-      ->
-      ptyp_constr ~loc (Located.mk ~loc (Lident S.self_typ_name)) (List.map ~f:helper xs)
-    | { ptyp_desc = Ptyp_constr ({ txt = Lident "t" }, xs) } when Reify_impl.is_old () ->
-      add_ilogic ~loc
-      @@ ptyp_constr ~loc (Located.mk ~loc (Lident "t")) (List.map ~f:helper xs)
-    | { ptyp_desc = Ptyp_constr ({ txt = Lident ground }, xs) } ->
-      let tname = S.mangle ground in
-      ptyp_constr ~loc (Located.mk ~loc (Lident tname)) (List.map ~f:helper xs)
-    | _ ->
-      Location.raise_errorf
-        ~loc
-        "injectify: non supported case `%a`"
-        Pprintast.core_type
-        t
-  in
-  helper typ
-;;
-
 let%expect_test "injectify" =
+  (* let use_new_names = ref false in *)
   let loc = Location.none in
   let test i =
     let t2 =
@@ -414,20 +423,28 @@ let%expect_test "injectify" =
       | Pstr_type (_, [ { ptype_manifest = Some t } ]) ->
         injectify
           ~loc
-          ~self_typ:[%type: injected]
           (module struct
-            let kind = Reify_impl.Reify
+            let sort = `Injected
             let self_typ_name = "injected"
             let is_selfrec_name s = String.equal s "ground"
+            let is_fully_name = String.equal "t"
             let ground_typ_name = ""
             let logic_typ_name = ""
             let injected_typ_name = "injected"
+            let fully_abstract_name = "t"
 
-            let mangle = function
-              | s -> s
+            let define_as_fuly_abstract ~loc args =
+              ptyp_constr
+                ~loc
+                (Located.mk ~loc (lident_of_list [ "OCanren"; "ilogic" ]))
+                [ ptyp_constr
+                    ~loc
+                    (Located.mk ~loc (Lident fully_abstract_name))
+                    (Lazy.force args)
+                ]
             ;;
 
-            let mangle_lident = None
+            let mangle_lident = create_lident_mangler sort
           end)
           t
       | _ -> assert false
@@ -441,13 +458,17 @@ let%expect_test "injectify" =
   test [%stri type nonrec ground = int GT.list];
   [%expect {|    int OCanren.ilogic OCanren.Std.List.injected |}];
   test [%stri type nonrec ground = GT.int * GT.int];
-  [%expect {|    (GT.int OCanren.ilogic * GT.int OCanren.ilogic) OCanren.ilogic |}];
+  [%expect
+    {|    (GT.int OCanren.ilogic, GT.int OCanren.ilogic) OCanren.Std.Pair.injected |}];
+  test [%stri type nonrec ground = (GT.int * GT.string) Std.List.ground];
+  [%expect
+    {|
+    (GT.int OCanren.ilogic, GT.string OCanren.ilogic) OCanren.Std.Pair.injected
+      OCanren.Std.List.injected |}];
+  test [%stri type nonrec ground = GT.int t];
+  [%expect {| GT.int OCanren.ilogic t OCanren.ilogic |}];
   ()
 ;;
-
-type kind = Reify_impl.kind =
-  | Reify
-  | Prj_exn
 
 let manifest_of_tdecl_exn tdecl =
   match tdecl.ptype_manifest with
@@ -456,7 +477,6 @@ let manifest_of_tdecl_exn tdecl =
 ;;
 
 let make_strat () =
-  (* Format.printf "Reify_impl.is_old () = %b\n%!" (Reify_impl.is_old ()); *)
   let module M = struct
     let logic_typ_name tdecl =
       let loc = tdecl.ptype_loc in
@@ -533,10 +553,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
   let injected_typ =
     let name = S.injected_typ_name tdecl in
     let param_type_vars = List.map names ~f:Typ.var in
-    let self_typ =
-      ptyp_constr ~loc (Located.mk ~loc (Lident tdecl.ptype_name.txt)) param_type_vars
-    in
-    let helper = injectify ~loc ~self_typ (make_injected_strat_2 tdecl) in
+    let helper = injectify ~loc (make_injected_strat_2 tdecl) in
     let ptype_manifest =
       match tdecl.ptype_manifest with
       | None -> failwiths ~loc:tdecl.ptype_loc "No manifest"
@@ -647,7 +664,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
   let make_reifier_gen ~kind ?(typ = None) _is_rec tdecl =
     let pat, base_reifier, name =
       match kind with
-      | Reify -> [%pat? reify], [%expr OCanren.reify], "reify"
+      | Reify_impl.Reify -> [%pat? reify], [%expr OCanren.reify], "reify"
       | Prj_exn -> [%pat? prj_exn], [%expr OCanren.prj_exn], "prj_exn"
     in
     let pat =
@@ -681,7 +698,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         failwiths
           ~loc
           "There are some issues with GT.list. Please, use fully qualified \
-           OCanren.Std.List.ground for now "
+           OCanren.Std.List.ground for now"
       | { ptyp_desc = Ptyp_tuple [ l; r ] } ->
         let reifier =
           Exp.ident ~loc (lident_of_list [ "OCanren"; "Std"; "Pair"; name ])

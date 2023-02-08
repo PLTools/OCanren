@@ -90,13 +90,25 @@
   ./test004.exe
   ./test005.exe
   ./test006.exe
-  test007.ml
-  test007.exe
-  test008.ml
-  test008.exe
   test009.ml
   test009.exe
   test010.ml
   test010.exe
   ;
   ))
+
+(cram
+ (package OCanren)
+ (applies_to test008)
+ (deps ;
+  (package OCanren-ppx)
+  test008.ml
+  test008.exe))
+
+(cram
+ (package OCanren)
+ (applies_to test007)
+ (deps ;
+  (package OCanren-ppx)
+  test007.ml
+  test007.exe))

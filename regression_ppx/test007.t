@@ -643,7 +643,8 @@
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
       type nonrec injected =
-        ( (GT.string OCanren.ilogic * Scheme.injected) OCanren.ilogic OCanren.Std.List.injected
+        ( (GT.string OCanren.ilogic, Scheme.injected) OCanren.Std.Pair.injected
+          OCanren.Std.List.injected
         , Scheme.injected )
         t
         OCanren.ilogic
