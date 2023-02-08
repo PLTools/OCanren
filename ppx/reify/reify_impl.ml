@@ -266,7 +266,6 @@ let make_reifier_for_tuple ~loc kind = function
 let reifier_of_core_type ~loc kind =
   let base_reifier, reifier_name = unwrap_kind ~loc kind in
   let rec helper typ =
-    (* Format.printf "reifier_of_core_type '%a'\n" Pprintast.core_type typ; *)
     let loc = typ.ptyp_loc in
     match typ with
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) } ->

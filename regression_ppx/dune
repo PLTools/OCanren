@@ -100,7 +100,7 @@
 (cram
  (package OCanren)
  (applies_to test008)
- (deps ;
+ (deps
   (package OCanren-ppx)
   test008.ml
   test008.exe))
@@ -108,7 +108,7 @@
 (cram
  (package OCanren)
  (applies_to test007)
- (deps ;
+ (deps
   (package OCanren-ppx)
   test007.ml
   test007.exe))

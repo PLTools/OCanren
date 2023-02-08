@@ -18,7 +18,7 @@ let use_logging = false
 
 let log fmt =
   if use_logging
-  then Format.kasprintf (fun s -> Format.printf "%s\n%!" s) fmt
+  then Format.kasprintf (Format.printf "%s\n%!") fmt
   else Format.ifprintf Format.std_formatter fmt
 ;;
 

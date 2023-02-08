@@ -218,7 +218,9 @@
  (public_names -)
  (modules test007)
  (flags
-  (:standard -dsource))
+  (:standard
+   ;-dsource
+   ))
  (preprocessor_deps
   %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
   (package OCanren-ppx))
@@ -227,7 +229,7 @@
    OCanren-ppx.ppx_distrib
    GT.ppx_all
    --
-   -new-typenames
+   -new-typenames ; With new type names
    -pp
    camlp5/pp5+gt+plugins+ocanren+logger+dump.exe))
  (libraries OCanren OCanren.tester))
@@ -238,7 +240,9 @@
  (public_names -)
  (modules test008)
  (flags
-  (:standard -dsource))
+  (:standard
+   ; -dsource
+   ))
  (preprocessor_deps
   %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
   (package OCanren-ppx))
