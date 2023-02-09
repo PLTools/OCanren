@@ -6,7 +6,7 @@ module L = List
 open OCanren
 open OCanren.Std
 
-@type move = Empty | Goat | Wolf | Cabbage with show
+ocanren type move = Empty | Goat | Wolf | Cabbage
 
 let (!) = inj
 
@@ -69,8 +69,22 @@ let rec eval state moves state' =
     )
     ]
 
-ocanren type state    = (bool * bool * bool * bool) * (bool * bool * bool * bool);;
-type solution = move logic Std.List.logic [@@deriving gt ~options:{show}]
+
+(* module T1 = struct
+  [%% distrib
+    type nonrec t = A [@@deriving gt ~options:{gmap}]
+    type ground = t]
+end
+
+module T2 = struct
+  [%%distrib
+  type nonrec 'a t = B of 'a [@@deriving gt ~options:{gmap}]
+  type ground =  T1.ground t ]
+end *)
+
+ocanren type state    = (GT.bool * GT.bool * GT.bool * GT.bool) * (GT.bool * GT.bool * GT.bool * GT.bool);;
+(* type solution = move logic Std.List.logic [@@deriving gt ~options:{show}] *)
+ocanren type solution = move Std.List.ground
 
 let _ =
   Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
@@ -84,7 +98,8 @@ let _ =
   run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Goat) q) (fun s -> s#reify prj_exn_state);
 
   Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q) (fun s -> s#reify prj_exn_state);
+  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q) (fun s -> s#reify prj_exn_state)
 
+let () =
   L.iter (fun s -> Printf.printf "%s\n" @@ show(solution) s) @@ Stream.take ~n:100 @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) q (pair (qua !false !false !false !false) (qua !true !true !true !true))) (fun s -> s#reify (List.reify reify));
+  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) q (pair (qua !false !false !false !false) (qua !true !true !true !true))) (fun s -> s#reify prj_exn_solution)

@@ -57,7 +57,7 @@ module _ = struct
 end
 
 module _ = struct
-  [%%distrib type ground = bool * int * string]
+  [%%distrib type ground = GT.bool * GT.int * GT.string]
 
   let () =
     let open OCanren in
@@ -67,5 +67,6 @@ module _ = struct
 end
 
 module _ = struct
-  [%%distrib type ground = (bool * int * string) * (bool * int * string)]
+  [%%distrib
+  type ground = (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)]
 end

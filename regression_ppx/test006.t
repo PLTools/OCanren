@@ -110,16 +110,16 @@
         let gmap_ground subj = gmap_ground () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type logic = (GT.string OCanren.logic, logic Std.List.logic) t OCanren.logic
+      type logic = (GT.string OCanren.logic, logic OCanren.Std.List.logic) t OCanren.logic
       [@@deriving gt ~options:{gmap}]
   
       include struct
         class virtual ['inh, 'extra, 'syn] logic_t =
           object
             inherit
-              [ (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
+              [ (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
               , 'inh
               , 'extra
               , 'syn ]
@@ -137,8 +137,8 @@
             constraint 'syn_logic = logic
   
             inherit
-              [ (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
+              [ (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
               , 'extra_logic
               , 'syn_logic ]
               OCanren.gmap_logic_t
@@ -147,7 +147,7 @@
                     ((fun () subj ->
                        GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
                        () )
-                    ((fun () subj -> GT.gmap Std.List.logic (_fself_logic ()) subj) ())
+                    ((fun () subj -> GT.gmap OCanren.Std.List.logic (_fself_logic ()) subj) ())
                     subj )
                 _fself_logic
           end
@@ -159,7 +159,7 @@
                  ((fun () subj ->
                     GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
                     () )
-                 ((fun () subj -> GT.gmap Std.List.logic (gmap_logic ()) subj) ())
+                 ((fun () subj -> GT.gmap OCanren.Std.List.logic (gmap_logic ()) subj) ())
                  subj )
                () )
             subj
@@ -175,19 +175,18 @@
         let gmap_logic subj = gmap_logic () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type injected = (GT.string OCanren.ilogic, injected Std.List.injected) t OCanren.ilogic
+      type injected = (GT.string OCanren.ilogic, injected OCanren.Std.List.injected) t OCanren.ilogic
   
-      let fmapt s__003_ xs__004_ subj__005_ =
+      let fmapt f__005_ f__006_ subj__007_ =
         let open OCanren.Env.Monad in
-        OCanren.Env.Monad.return (GT.gmap t) <*> s__003_ <*> xs__004_ <*> subj__005_
+        OCanren.Env.Monad.return (GT.gmap t) <*> f__005_ <*> f__006_ <*> subj__007_
   
-      let (prj_exn : (_, (GT.string, ground Std.List.ground) t) OCanren.Reifier.t) =
+      let (prj_exn : (_, ground) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn (Std.List.prj_exn self)) )
   
-      let (reify :
-            (_, (GT.string OCanren.logic, logic Std.List.logic) t OCanren.logic) OCanren.Reifier.t ) =
+      let (reify : (_, logic) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.reify
@@ -365,7 +364,7 @@
       type logic =
         ( GT.string OCanren.logic
         , Gterm.logic
-        , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+        , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
         t
         OCanren.logic
       [@@deriving gt ~options:{gmap}]
@@ -376,15 +375,15 @@
             inherit
               [ ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , 'inh
               , 'extra
@@ -405,11 +404,11 @@
             inherit
               [ ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , ( GT.string OCanren.logic
                 , Gterm.logic
-                , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
+                , (GT.string OCanren.logic, logic) Std.Pair.logic OCanren.Std.List.logic )
                 t
               , 'extra_logic
               , 'syn_logic ]
@@ -421,7 +420,7 @@
                        () )
                     ((fun () subj -> GT.gmap Gterm.logic subj) ())
                     ((fun () subj ->
-                       GT.gmap Std.List.logic
+                       GT.gmap OCanren.Std.List.logic
                          ((fun () subj ->
                             GT.gmap Std.Pair.logic
                               ((fun () subj ->
@@ -446,7 +445,7 @@
                     () )
                  ((fun () subj -> GT.gmap Gterm.logic subj) ())
                  ((fun () subj ->
-                    GT.gmap Std.List.logic
+                    GT.gmap OCanren.Std.List.logic
                       ((fun () subj ->
                          GT.gmap Std.Pair.logic
                            ((fun () subj ->
@@ -475,18 +474,15 @@
       type injected =
         ( GT.string OCanren.ilogic
         , Gterm.injected
-        , (GT.string OCanren.ilogic, injected) Std.Pair.injected Std.List.injected )
+        , (GT.string OCanren.ilogic, injected) Std.Pair.injected OCanren.Std.List.injected )
         t
         OCanren.ilogic
   
-      let fmapt s__010_ t__011_ xs__012_ subj__013_ =
+      let fmapt f__015_ f__016_ f__017_ subj__018_ =
         let open OCanren.Env.Monad in
-        OCanren.Env.Monad.return (GT.gmap t) <*> s__010_ <*> t__011_ <*> xs__012_ <*> subj__013_
+        OCanren.Env.Monad.return (GT.gmap t) <*> f__015_ <*> f__016_ <*> f__017_ <*> subj__018_
   
-      let (prj_exn :
-            ( _
-            , (GT.string, Gterm.ground, (GT.string, ground) Std.Pair.ground Std.List.ground) t )
-            OCanren.Reifier.t ) =
+      let (prj_exn : (_, ground) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.prj_exn
@@ -494,14 +490,7 @@
                    (fmapt OCanren.prj_exn Gterm.prj_exn
                       (Std.List.prj_exn (Std.Pair.prj_exn OCanren.prj_exn self)) ) )
   
-      let (reify :
-            ( _
-            , ( GT.string OCanren.logic
-              , Gterm.logic
-              , (GT.string OCanren.logic, logic) Std.Pair.logic Std.List.logic )
-              t
-              OCanren.logic )
-            OCanren.Reifier.t ) =
+      let (reify : (_, logic) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.reify
@@ -512,9 +501,9 @@
                            (fmapt OCanren.reify Gterm.reify
                               (Std.List.reify (Std.Pair.reify OCanren.reify self)) ) ) ) )
   
-      let closure _x__006_ _x__007_ _x__008_ = OCanren.inji (Closure (_x__006_, _x__007_, _x__008_))
+      let closure _x__008_ _x__009_ _x__010_ = OCanren.inji (Closure (_x__008_, _x__009_, _x__010_))
   
-      let val_ _x__009_ = OCanren.inji (Val _x__009_)
+      let val_ _x__011_ = OCanren.inji (Val _x__011_)
     end
   end
   
@@ -631,15 +620,15 @@
   
       type nonrec injected = t OCanren.ilogic
   
-      let fmapt subj__014_ =
+      let fmapt subj__019_ =
         let open OCanren.Env.Monad in
-        OCanren.Env.Monad.return (GT.gmap t) <*> subj__014_
+        OCanren.Env.Monad.return (GT.gmap t) <*> subj__019_
   
-      let (prj_exn : (_, t) OCanren.Reifier.t) =
+      let (prj_exn : (_, ground) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain fmapt)
   
-      let (reify : (_, t OCanren.logic) OCanren.Reifier.t) =
+      let (reify : (_, logic) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ ->
             OCanren.reify <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:fmapt)) )
@@ -759,15 +748,15 @@
   
       type nonrec injected = t OCanren.ilogic
   
-      let fmapt subj__015_ =
+      let fmapt subj__020_ =
         let open OCanren.Env.Monad in
-        OCanren.Env.Monad.return (GT.gmap t) <*> subj__015_
+        OCanren.Env.Monad.return (GT.gmap t) <*> subj__020_
   
-      let (prj_exn : (_, t) OCanren.Reifier.t) =
+      let (prj_exn : (_, ground) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain fmapt)
   
-      let (reify : (_, t OCanren.logic) OCanren.Reifier.t) =
+      let (reify : (_, logic) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ ->
             OCanren.reify <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:fmapt)) )
@@ -887,16 +876,16 @@
         let gmap_ground subj = gmap_ground () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type logic = (GT.string OCanren.logic, logic Std.List.logic) t OCanren.logic
+      type logic = (GT.string OCanren.logic, logic OCanren.Std.List.logic) t OCanren.logic
       [@@deriving gt ~options:{gmap}]
   
       include struct
         class virtual ['inh, 'extra, 'syn] logic_t =
           object
             inherit
-              [ (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
+              [ (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
               , 'inh
               , 'extra
               , 'syn ]
@@ -914,8 +903,8 @@
             constraint 'syn_logic = logic
   
             inherit
-              [ (GT.string OCanren.logic, logic Std.List.logic) t
-              , (GT.string OCanren.logic, logic Std.List.logic) t
+              [ (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
+              , (GT.string OCanren.logic, logic OCanren.Std.List.logic) t
               , 'extra_logic
               , 'syn_logic ]
               OCanren.gmap_logic_t
@@ -924,7 +913,7 @@
                     ((fun () subj ->
                        GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
                        () )
-                    ((fun () subj -> GT.gmap Std.List.logic (_fself_logic ()) subj) ())
+                    ((fun () subj -> GT.gmap OCanren.Std.List.logic (_fself_logic ()) subj) ())
                     subj )
                 _fself_logic
           end
@@ -936,7 +925,7 @@
                  ((fun () subj ->
                     GT.gmap OCanren.logic ((fun () subj -> GT.gmap GT.string subj) ()) subj )
                     () )
-                 ((fun () subj -> GT.gmap Std.List.logic (gmap_logic ()) subj) ())
+                 ((fun () subj -> GT.gmap OCanren.Std.List.logic (gmap_logic ()) subj) ())
                  subj )
                () )
             subj
@@ -952,19 +941,18 @@
         let gmap_logic subj = gmap_logic () subj
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      type injected = (GT.string OCanren.ilogic, injected Std.List.injected) t OCanren.ilogic
+      type injected = (GT.string OCanren.ilogic, injected OCanren.Std.List.injected) t OCanren.ilogic
   
-      let fmapt a1__018_ a0__019_ subj__020_ =
+      let fmapt f__025_ f__026_ subj__027_ =
         let open OCanren.Env.Monad in
-        OCanren.Env.Monad.return (GT.gmap t) <*> a1__018_ <*> a0__019_ <*> subj__020_
+        OCanren.Env.Monad.return (GT.gmap t) <*> f__025_ <*> f__026_ <*> subj__027_
   
-      let (prj_exn : (_, (GT.string, ground Std.List.ground) t) OCanren.Reifier.t) =
+      let (prj_exn : (_, ground) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn (Std.List.prj_exn self)) )
   
-      let (reify :
-            (_, (GT.string OCanren.logic, logic Std.List.logic) t OCanren.logic) OCanren.Reifier.t ) =
+      let (reify : (_, logic) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.reify
@@ -972,20 +960,36 @@
                    (OCanren.Reifier.zed
                       (OCanren.Reifier.rework ~fv:(fmapt OCanren.reify (Std.List.reify self))) ) )
   
-      let symb _x__016_ = OCanren.inji (Symb _x__016_)
+      let symb _x__021_ = OCanren.inji (Symb _x__021_)
   
-      let seq _x__017_ = OCanren.inji (Seq _x__017_)
+      let seq _x__022_ = OCanren.inji (Seq _x__022_)
     end
   end
   
   module _ = struct
     include struct
-      type ground = bool * int * string
+      type ground = GT.bool * GT.int * GT.string
   
       let (reify_ground :
             ( _
-            , (bool OCanren.logic * int OCanren.logic * string OCanren.logic) OCanren.logic )
+            , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+            )
             OCanren.Reifier.t ) =
+        (fun r__035_ r__036_ r__037_ ->
+          let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
+          let fmapt f__038_ f__039_ f__040_ subj__041_ =
+            let open OCanren.Env.Monad in
+            OCanren.Env.Monad.return gmap_tuple <*> f__038_ <*> f__039_ <*> f__040_ <*> subj__041_
+          in
+          OCanren.Reifier.fix (fun _ ->
+              let open OCanren.Env.Monad in
+              OCanren.reify
+              <..> chain
+                     (OCanren.Reifier.zed
+                        (OCanren.Reifier.rework ~fv:(fmapt r__035_ r__036_ r__037_)) ) ) )
+          OCanren.reify OCanren.reify OCanren.reify
+  
+      let (prj_exn_ground : (_, GT.bool * GT.int * GT.string) OCanren.Reifier.t) =
         (fun r__028_ r__029_ r__030_ ->
           let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
           let fmapt f__031_ f__032_ f__033_ subj__034_ =
@@ -994,22 +998,7 @@
           in
           OCanren.Reifier.fix (fun _ ->
               let open OCanren.Env.Monad in
-              OCanren.reify
-              <..> chain
-                     (OCanren.Reifier.zed
-                        (OCanren.Reifier.rework ~fv:(fmapt r__028_ r__029_ r__030_)) ) ) )
-          OCanren.reify OCanren.reify OCanren.reify
-  
-      let (prj_exn_ground : (_, bool * int * string) OCanren.Reifier.t) =
-        (fun r__021_ r__022_ r__023_ ->
-          let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
-          let fmapt f__024_ f__025_ f__026_ subj__027_ =
-            let open OCanren.Env.Monad in
-            OCanren.Env.Monad.return gmap_tuple <*> f__024_ <*> f__025_ <*> f__026_ <*> subj__027_
-          in
-          OCanren.Reifier.fix (fun _ ->
-              let open OCanren.Env.Monad in
-              OCanren.prj_exn <..> chain (fmapt r__021_ r__022_ r__023_) ) )
+              OCanren.prj_exn <..> chain (fmapt r__028_ r__029_ r__030_) ) )
           OCanren.prj_exn OCanren.prj_exn OCanren.prj_exn
     end
   
@@ -1021,15 +1010,29 @@
   
   module _ = struct
     include struct
-      type ground = (bool * int * string) * (bool * int * string)
+      type ground = (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)
   
       let (reify_ground :
             ( _
-            , ( (bool OCanren.logic * int OCanren.logic * string OCanren.logic) OCanren.logic
-              , (bool OCanren.logic * int OCanren.logic * string OCanren.logic) OCanren.logic )
-              OCanren.Std.Pair.logic )
+            , ( (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              * (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              )
+              OCanren.logic )
             OCanren.Reifier.t ) =
         OCanren.Std.Pair.reify
+          ((fun r__063_ r__064_ r__065_ ->
+             let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
+             let fmapt f__066_ f__067_ f__068_ subj__069_ =
+               let open OCanren.Env.Monad in
+               OCanren.Env.Monad.return gmap_tuple <*> f__066_ <*> f__067_ <*> f__068_ <*> subj__069_
+             in
+             OCanren.Reifier.fix (fun _ ->
+                 let open OCanren.Env.Monad in
+                 OCanren.reify
+                 <..> chain
+                        (OCanren.Reifier.zed
+                           (OCanren.Reifier.rework ~fv:(fmapt r__063_ r__064_ r__065_)) ) ) )
+             OCanren.reify OCanren.reify OCanren.reify )
           ((fun r__056_ r__057_ r__058_ ->
              let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
              let fmapt f__059_ f__060_ f__061_ subj__062_ =
@@ -1043,6 +1046,10 @@
                         (OCanren.Reifier.zed
                            (OCanren.Reifier.rework ~fv:(fmapt r__056_ r__057_ r__058_)) ) ) )
              OCanren.reify OCanren.reify OCanren.reify )
+  
+      let (prj_exn_ground :
+            (_, (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)) OCanren.Reifier.t ) =
+        OCanren.Std.Pair.prj_exn
           ((fun r__049_ r__050_ r__051_ ->
              let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
              let fmapt f__052_ f__053_ f__054_ subj__055_ =
@@ -1051,16 +1058,8 @@
              in
              OCanren.Reifier.fix (fun _ ->
                  let open OCanren.Env.Monad in
-                 OCanren.reify
-                 <..> chain
-                        (OCanren.Reifier.zed
-                           (OCanren.Reifier.rework ~fv:(fmapt r__049_ r__050_ r__051_)) ) ) )
-             OCanren.reify OCanren.reify OCanren.reify )
-  
-      let (prj_exn_ground :
-            (_, (bool * int * string, bool * int * string) OCanren.Std.Pair.ground) OCanren.Reifier.t
-            ) =
-        OCanren.Std.Pair.prj_exn
+                 OCanren.prj_exn <..> chain (fmapt r__049_ r__050_ r__051_) ) )
+             OCanren.prj_exn OCanren.prj_exn OCanren.prj_exn )
           ((fun r__042_ r__043_ r__044_ ->
              let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
              let fmapt f__045_ f__046_ f__047_ subj__048_ =
@@ -1070,16 +1069,6 @@
              OCanren.Reifier.fix (fun _ ->
                  let open OCanren.Env.Monad in
                  OCanren.prj_exn <..> chain (fmapt r__042_ r__043_ r__044_) ) )
-             OCanren.prj_exn OCanren.prj_exn OCanren.prj_exn )
-          ((fun r__035_ r__036_ r__037_ ->
-             let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
-             let fmapt f__038_ f__039_ f__040_ subj__041_ =
-               let open OCanren.Env.Monad in
-               OCanren.Env.Monad.return gmap_tuple <*> f__038_ <*> f__039_ <*> f__040_ <*> subj__041_
-             in
-             OCanren.Reifier.fix (fun _ ->
-                 let open OCanren.Env.Monad in
-                 OCanren.prj_exn <..> chain (fmapt r__035_ r__036_ r__037_) ) )
              OCanren.prj_exn OCanren.prj_exn OCanren.prj_exn )
     end
   end

@@ -19,7 +19,7 @@
  (name prepare_fully_abstract)
  (public_name OCanren-ppx.prepare_fully_abstract)
  (modules prepare_fully_abstract)
- (libraries ppxlib myhelpers)
+ (libraries ppxlib myhelpers reify_impl)
  (inline_tests)
  (preprocess
   (pps ppxlib.metaquot ppx_expect)))

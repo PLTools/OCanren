@@ -9,6 +9,7 @@ end
 module _ = struct
   ocanren type 'a lst = Nil | Cons of 'a * 'a lst
 
+  let cons x xs = OCanren.inj (Cons (x,xs))
   let rec appendo x y xy =
     let open OCanren in
     conde
@@ -20,13 +21,16 @@ module _ = struct
           (appendo tmp y tmp2);
       ]
 
+
   let () =
     OCanren.(
       run q (fun xy -> appendo (inj Nil) (cons !!1 (cons !!2 (inj Nil))) xy))
-      (fun rr -> rr#reify (prj_exn OCanren.prj_exn))
+      (fun rr -> rr#reify (lst_prj_exn OCanren.prj_exn))
     |> OCanren.Stream.iter (fun xs ->
            Format.printf "%s\n" (GT.show lst (GT.show GT.int) xs))
 end
+
+
 
 module _ = struct
   ocanren type state = GT.bool * GT.bool * GT.bool
