@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2023
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -39,26 +39,28 @@ open Core
 val inj : ('a -> 'b) -> 'a ground -> 'b logic
 
 (** A synonym for injected option *)
-type 'a groundi = 'a ground ilogic
+type 'a injected = 'a ground ilogic
+
+type 'a groundi = 'a injected
 
 (** Make injected [option] from ground one with injected value *)
-val option : 'a ilogic ground -> 'a ilogic groundi
+val option : 'a ilogic ground -> 'a ilogic injected
 
 (** {3 Reifiers} *)
 
 (** Reifier *)
-val reify : ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
+val reify : ('a, 'b) Reifier.t -> ('a injected, 'b logic) Reifier.t
 
 (* Shallow non-variable projection *)
-val prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
+val prj_exn : ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t
 
 (** {3 Constructors} *)
 
 (** Logic dual of constructor [Some] from {!Stdlib.Option}. *)
-val some : 'a -> 'a groundi
+val some : 'a -> 'a injected
 
 (** Logic dual of constructor [None] from {!Stdlib.Option}.
     It has an extra unit argument to workaround weak type variables.
 
     {!Stdlib.Option.t} test *)
-val none : unit -> 'a groundi
+val none : unit -> 'a injected
