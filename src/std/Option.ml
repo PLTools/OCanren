@@ -50,7 +50,8 @@ let t = ground
 
 let inj f x = to_logic (GT.(gmap option) f x)
 
-type 'a groundi = 'a ground ilogic
+type 'a injected = 'a ground ilogic
+type 'a groundi = 'a injected
 
 let rec reify : 'a 'b . ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t =
   fun ra ->
