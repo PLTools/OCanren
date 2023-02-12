@@ -412,5 +412,5 @@ let process1 tdecl =
   | Some m ->
     (* TODO(Kakadu): find a way not to pass both manifest and type declration *)
     [ make_reifier ~loc m tdecl; make_prj ~loc m tdecl ]
-  | None -> failwiths ~loc "no manifest"
+  | _ -> failwiths ~loc "no manifest"
 ;;
