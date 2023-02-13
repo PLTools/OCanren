@@ -223,6 +223,7 @@
    ))
  (preprocessor_deps
   %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
+  %{project_root}/config/delta-path.cfg
   (package OCanren-ppx))
  (preprocess
   (pps
@@ -231,7 +232,7 @@
    --
    -new-typenames ; With new type names
    -pp
-   camlp5/pp5+gt+plugins+ocanren+logger+dump.exe))
+   %{read:../config/delta-path.cfg}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe))
  (libraries OCanren OCanren.tester))
 
 (executables
@@ -245,6 +246,7 @@
    ))
  (preprocessor_deps
   %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe
+  %{project_root}/config/delta-path.cfg
   (package OCanren-ppx))
  (preprocess
   (pps
@@ -253,5 +255,5 @@
    --
    -new-typenames
    -pp
-   camlp5/pp5+gt+plugins+ocanren+logger+dump.exe))
+   %{read:../config/delta-path.cfg}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe))
  (libraries OCanren OCanren.tester))

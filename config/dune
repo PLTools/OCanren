@@ -3,6 +3,16 @@
  (modules Discover)
  (libraries str dune-configurator))
 
+(executable
+ (name disc_delta_root)
+ (modules disc_delta_root)
+ (libraries str dune-configurator))
+
+(rule
+ (targets delta-path.cfg)
+ (action
+  (run ./disc_delta_root.exe %{project_root} %{workspace_root})))
+
 (rule
  (targets
   camlp5-flags.cfg
