@@ -6,7 +6,7 @@ module L = List
 open OCanren
 open OCanren.Std
 
-ocanren type move = Empty | Goat | Wolf | Cabbage
+ocanren type nonrec move = Empty | Goat | Wolf | Cabbage
 
 let (!) = inj
 

@@ -1,7 +1,7 @@
 (*
  * pa_ocanren: a camlp5 extension to implement syntax-level
  * miniKanren constructs.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2023
  * Dmitri Boulytchev, St.Petersburg State University
  *
  * This software is free software; you can redistribute it and/or
@@ -220,7 +220,8 @@ let is_type_decl = Grammar.Entry.of_parser gram "is_type_decl" is_type_decl_f
 
 let decorate_type_decl t =
   match t with
-    <:str_item< type $list:ltd$ >> ->
+  | <:str_item< type nonrec $list:ltd$ >>
+  | <:str_item< type $list:ltd$ >> ->
       let loc = MLast.loc_of_str_item t in
       let ltd = List.map
                   (fun <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >> ->
