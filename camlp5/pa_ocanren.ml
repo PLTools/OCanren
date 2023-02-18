@@ -224,9 +224,16 @@ let decorate_type_decl t =
     List.map
       (function
       | <:type_decl< $tp:ls$ $list:ltv$ = 'abstract >> ->
-            raise (Stream.Error "INTERNAL ERROR: abstract type declarations will not be implemented")
-      | <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >> ->
-          <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ [@@deriving gt ~{options = {gmap=gmap; show=show}};] >>
+          raise (Stream.Error "INTERNAL ERROR: abstract type declarations will not be implemented")
+      | <:type_decl:< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ $itemattrs:attrs$ >> ->
+          let a =
+            let loc, _ = ls in
+            let gt = <:expr< gt ~{options = {gmap=gmap; show=show}} >> in
+            <:attribute_body< deriving $exp:gt$; >>
+          in
+          let attrs = <:vala< a >> :: attrs in
+          <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ $itemattrs:attrs$ >>
+      | _ -> raise (Stream.Error "INTERNAL ERROR: unsupported case, probably antiquotation")
       )
       ltd
   in
@@ -237,7 +244,7 @@ let decorate_type_decl t =
   | <:str_item< type $list:ltd$ >> ->
       let ltd = wrap ltd in
       <:str_item< [%%distrib type $list:ltd$; ] >>
-  | _ -> raise (Stream.Error "INTERNAL ERROR: type_decl expected" )
+  | _ -> raise (Stream.Error "INTERNAL ERROR: type_decl expected")
 
 EXTEND
   GLOBAL: expr ctyp str_item;
