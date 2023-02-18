@@ -219,17 +219,24 @@ let is_type_decl_f strm =
 let is_type_decl = Grammar.Entry.of_parser gram "is_type_decl" is_type_decl_f
 
 let decorate_type_decl t =
+  let loc = MLast.loc_of_str_item t in
+  let wrap ltd =
+    List.map
+      (function
+      | <:type_decl< $tp:ls$ $list:ltv$ = 'abstract >> ->
+            raise (Stream.Error "INTERNAL ERROR: abstract type declarations will not be implemented")
+      | <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >> ->
+          <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ [@@deriving gt ~{options = {gmap=gmap; show=show}};] >>
+      )
+      ltd
+  in
   match t with
-  | <:str_item< type nonrec $list:ltd$ >>
+  | <:str_item< type nonrec $list:ltd$ >> ->
+      let ltd = wrap ltd in
+      <:str_item< [%%distrib type nonrec $list:ltd$; ] >>
   | <:str_item< type $list:ltd$ >> ->
-      let loc = MLast.loc_of_str_item t in
-      let ltd = List.map
-                  (fun <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >> ->
-                     <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ [@@deriving gt ~{options = {gmap=gmap; show=show}};] >>
-                  )
-                  ltd
-      in
-      <:str_item< [%%distrib type $list:ltd$ ; ] >>
+      let ltd = wrap ltd in
+      <:str_item< [%%distrib type $list:ltd$; ] >>
   | _ -> raise (Stream.Error "INTERNAL ERROR: type_decl expected" )
 
 EXTEND
