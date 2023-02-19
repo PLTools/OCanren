@@ -56,9 +56,9 @@
   dune-configurator
   (ppxlib
    (and
-    (>= 0.22)
+    (>= 0.26.0)
     (<= 0.26.0)))
-  base
+  base ; TODO: get rid of 'base'
   ppx_inline_test
   ppx_expect)
  (authors
