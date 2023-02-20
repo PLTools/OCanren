@@ -1,4 +1,4 @@
-(** A package {!Install_timer} after its loading adds timer object to all OCanren modules.
+(** This package after its loading adds timer object to all OCanren modules.
     It's split to separate package to avoid hard dependency on [Mtime] package. *)
 
 open OCanren.Timer

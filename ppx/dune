@@ -54,3 +54,7 @@
 
 (cram
  (deps ./pp_distrib.exe ./pp_deriving_reify.exe))
+
+(documentation
+ (package OCanren-ppx)
+ (mld_files index))

@@ -1,0 +1,15 @@
+{0 OCanren-ppx {%html: <span class="version">%%VERSION%%</span>%}}
+
+There you can find various PPX syntax extensions for relational programing with [OCanren].
+Camlp5 syntax extensions are avialable {{:../../OCanren/Pa_ocanren/index.html}here}.
+The {{:https://ocanren.readthedocs.io/en/latest/tuto_main/tuto_main.html}Yue Lee's tutorial} could be useful too.
+
+The selected list of PPX syntax extensions are:
+
+{ul
+{- {!modules:Ppx_distrib} to simplify writing of data types and reifiers for them. }
+{- {!modules:Ppx_fresh} provides syntax exntension for [ fresh ] construction.
+   It should look similar to the original miniKanren syntax in Scheme/Racket. }
+{- {!modules:Ppx_repr} TODO }
+{- {!modules:Ppx_reify} TODO }
+}

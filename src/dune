@@ -34,3 +34,7 @@
     %{project_root}/camlp5/pp5+gt+plugins+dump.exe
     %{read-lines:../config/instrumentalization.cfg}
     %{input-file}))))
+
+(documentation
+ (package OCanren)
+ (mld_files index))

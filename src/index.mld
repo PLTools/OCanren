@@ -1,0 +1,90 @@
+{0 OCanren {%html: <span class="version">%%VERSION%%</span>%}}
+
+[OCanren] is a typed emebedding of relational programming languae into OCaml.
+
+{1 Note on types}
+
+[OCanren] uses many types comparately to Scheme implementation. We are going to describe them shortly here.
+
+Let's look at example of user-defined type: {[ type 'a list = Nil | Cons of 'a * 'a list ]}
+It doesn't allow placing of logic variables instead of tail, we need to refactor it to allow that.
+ {[
+ (** So called fully abstract type for list *)
+ type ('a,'b) glist = Nil | Cons of 'a * 'b
+ ]}
+With representation we can define (in presence of `-rectypes` compiler switch)
+the type isomorphic to original one, and the type with possibility to represent logic variables indide. The second one would be the result of our realtional queries.
+
+{[
+type 'a list = ('a, 'a list) glist
+type 'a list_logic = ('a, 'a list_logic) glist OCanren.logic
+]}
+
+In relational search we are using untyped representation of logic values with {!OCanren.ilogic} type. We can construct this "ilogic" values using {!OCanren.inj} function
+{[
+let nil : unit ->  ('a, 'b) glist illogic as 'b =
+  fun () -> OCanren.inj Nil
+let cons : 'a ilogic -> 'b -> (('a ilogic, 'b) glist illogic as 'b) =
+  fun h tl -> OCanren.inj (Cons (h, tl))
+]}
+With this representation, empowered by relational constructions for conjunction ({!OCanren.(&&&)}),
+disjunction ({!OCanren.conde}), unification ({!OCanren.(===)}) and for creating fresh variables ({!OCanren.Fresh}) we
+can define a realtion to append relational lists.
+(In practice, relational lists are part of OCanren standard library: {!OCanren.Std.List}).
+
+{[
+let rec appendo a b ab =
+  conde
+    [ ((a === nil ()) &&& (b === ab))
+    ; Fresh.three (fun h t ab' ->
+        (a === cons h t) &&&
+        (ab === cons h ab') &&&
+        (appendo t b ab'))
+    ]
+]}
+
+The usage of {!Fresh} module could be replaced by syntax extension {!ppx_fresh}.
+
+After running a realtion, the inner representation (with many {!ilogic} types) of values could be converted ({i reified}) to user-friendly values. We can convert either to 'ground' represenation using family of functions called 'prj_exn', or to logic representation (in our case, of type `'a list_logic`) using family of functions 'reify'.
+
+Writing 'reify' and 'prj_exn' by hand is tedious. We could recommend using PPX syntax extension {!ppx_distrib} to to that.
+
+We are going to use {!Tester} module to run and print our relation. We ask OCanren to find all possible lists in a variable q, such that concatenation of them with a list [ [3;4] ] would give a list [ [1;2;3;4] ].
+
+{[
+open Tester
+let%expect_test " " =
+  run_r (list_prj_exn arg_prj_exn) (string_of_list string_of_arg) 1
+        q qh ("description", (fun q ->
+          appendo
+            q
+            (cons !!3 (cons !!4 (nil ()))
+            (cons !!1 (cons !!2 (cons !!3 (cons !!4 (nil ()))))
+          ));
+  [%expect {|
+  description, 1 answer {
+  q=[1; 2];
+  }
+  |}]
+]}
+
+
+{1:manuals Resources}
+
+{ul
+{- The {{:https://pltools.github.io/OCanren/api}API documentation},
+  which you are reading now. }
+{- The {{:https://OCanren.readthedocs.io/}Handwritten documentation},
+  on Read The Docs webside. }
+{- The {{:https://github.com/Kakadu/OCanren-basic-template}OCanren project template} which is
+   recommended to use for quick start.}
+
+{1:api API}
+
+{!modules:OCanren}
+
+{!modules:Install_timer}
+
+{!modules:Pa_ocanren}
+
+{!modules:Tester}

@@ -34,7 +34,7 @@ type goal = State.t Stream.t goal'
 (** {3 miniKanren basic combinators} *)
 
 (** [call_fresh f] creates a fresh logical variable and passes it to the
-    parameter *)
+    parameter. See also {!module-Fresh} to create variables in numbers. *)
 val call_fresh : ('a ilogic -> goal) -> goal
 
 (** [x === y] creates a goal, which performs a unification of [x] and [y] *)
