@@ -17,10 +17,10 @@ Check our [template repository for OCanren projects](https://github.com/Kakadu/O
 
 ### Installation
 
-`OCanren` is available in main OPAM repository
+To try out developer version of `OCanren` and `OCanren-ppx` both, use
 
-      opam install OCanren --yes
+      opam pin add https://github.com/PLTools/OCanren.git --yes
 
-To try out developer version use
+`OCanren` [is available](https://ocaml.org/packages/search?q=OCanren) in the main OPAM repository, but it's version may be lagging behind.
 
-      opam pin add OCanren --dev-repo --yes
+      opam install OCanren-ppx OCanren --yes
