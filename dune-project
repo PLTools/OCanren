@@ -57,7 +57,7 @@
   (ppxlib
    (and
     (>= 0.26.0)
-    (<= 0.26.0)))
+    (<= 0.28.0)))
   base ; TODO: get rid of 'base'
   ppx_inline_test
   ppx_expect)
