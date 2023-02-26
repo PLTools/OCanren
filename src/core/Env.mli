@@ -40,12 +40,18 @@ val fresh : scope:Term.Var.scope -> t -> 'a
 
 val check : t -> Term.Var.t -> bool
 
+val wc : scope:Term.Var.scope -> t -> 'a
+
 val check_exn : t -> Term.Var.t -> unit
 
 (* See [Term.var] *)
 val var : t -> 'a -> Term.Var.t option
 
 val freevars : t -> 'a -> Term.VarSet.t
+
+val is_wc        : t -> 'a -> bool
+
+(* val var           : t -> 'a -> Term.Var.t option *)
 
 val is_open : t -> 'a -> bool
 

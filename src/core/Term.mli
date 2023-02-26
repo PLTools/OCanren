@@ -53,6 +53,10 @@ module Var :
     val hash : t -> int
 
     val describe : Format.formatter -> t -> unit
+
+    val is_wildcard : t -> bool
+
+    val make_wc : env:env -> scope:scope -> t
   end
 
 module VarSet : Set.S with type elt = Var.t

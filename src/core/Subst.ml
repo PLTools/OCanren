@@ -71,17 +71,18 @@ let pp ppf s =
   Term.VarMap.iter (fun x t -> fprintf ppf "%a |- %a; " Term.pp (Term.repr x) Term.pp t) s ;
   fprintf ppf "|subst}"
 
-type lterm = Var of Term.Var.t | Value of Term.t
+type lterm = Var of Term.Var.t | Value of Term.t | WC of Term.Var.t
 
 let walk env subst =
 
   (* walk var *)
   let rec walkv v =
     let () = IFDEF STATS THEN walk_incr () ELSE () END in
-    Env.check_exn env v ;
-
-    match v.Term.Var.subst with
-    | Some term -> walkt term
+    Env.check_exn env v;
+    if Term.Var.is_wildcard v
+    then WC v
+    else match v.Term.Var.subst with
+    | Some term -> walkt (Obj.magic term)
     | None ->
         try walkt (Term.VarMap.find v subst)
         with Not_found -> Var v
@@ -91,6 +92,7 @@ let walk env subst =
     let () = IFDEF STATS THEN walk_incr () ELSE () END in
 
     match Env.var env t with
+    | Some v when Term.Var.is_wildcard v -> WC v
     | Some v -> walkv v
     | None   -> Value t
   in
@@ -102,6 +104,7 @@ let map ~fvar ~fval env subst x =
   let rec deepfvar v =
     Env.check_exn env v;
     match walk env subst v with
+    | WC v
     | Var v   -> fvar v
     | Value x -> Term.map x ~fval ~fvar:deepfvar
   in
@@ -112,10 +115,22 @@ let iter ~fvar ~fval env subst x =
   let rec deepfvar v =
     Env.check_exn env v;
     match walk env subst v with
+    | WC v
     | Var v   -> fvar v
     | Value x -> Term.iter x ~fval ~fvar:deepfvar
   in
   Term.iter x ~fval ~fvar:deepfvar
+
+(* same as [Term.fold] but performs [walk] on the road *)
+let fold ~fvar ~fval ~init env subst x =
+  let rec deepfvar acc v =
+    Env.check_exn env v;
+    match walk env subst v with
+    | WC v
+    | Var v   -> fvar acc v
+    | Value x -> Term.fold x ~fval ~fvar:deepfvar ~init:acc
+  in
+  Term.fold x ~init ~fval ~fvar:deepfvar
 
 exception Occurs_check
 
@@ -151,6 +166,11 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
   let rec helper x y acc = Term.fold2 x y ~init:acc
     ~fvar:begin fun ((_, subst) as acc) x y ->
       match walk env subst x, walk env subst y with
+      | WC _, WC _ ->
+        (* TODO(Kakadu): explain why we return substitution as is *)
+        acc
+      | Var z, WC v | WC v, Var z -> extend (Obj.magic v) (Obj.repr z) acc
+      | Value z, WC v | WC v, Value z -> extend (Obj.magic v) (Obj.repr z) acc
       | Var x, Var y ->
         if Term.Var.equal x y then acc
         else extend x (Term.repr y) acc
@@ -163,11 +183,14 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
       else raise Unification_failed
     end
     ~fk:begin fun ((_, subst) as acc) l v y ->
-      if subsume && l = Term.R
+      if Term.Var.is_wildcard v
+      then acc
+      else if subsume && l = Term.R
       then raise Unification_failed
       else match walk env subst v with
       | Var v   -> extend v y acc
       | Value x -> helper x y acc
+      | WC _ -> failwith "Wildcards should not appear in unifications"
     end
   in
 
