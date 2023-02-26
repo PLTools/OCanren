@@ -206,6 +206,7 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
           else match walk env subst v with
           | Var v    -> extend v y acc
           | Value x  -> helper x y acc
+          | WC _ -> failwith "Wildcards should not appear in unifications"
       )
   in
   try
