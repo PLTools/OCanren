@@ -21,6 +21,7 @@
   Bool
   Nat
   Pair
+  Triple
   List
   Timer
   Peep
@@ -28,12 +29,28 @@
  (libraries GT)
  (flags
   (:standard -rectypes -short-paths -w -49))
+ ; Below we use PPX rewriter to preprocess module Triple and old school camlp5 for everything else.
+ ; Later we are going to use PPX everywhere.
  (preprocess
-  (action
-   (run
-    %{project_root}/camlp5/pp5+gt+plugins+dump.exe
-    %{read-lines:../config/instrumentalization.cfg}
-    %{input-file}))))
+  (per_module
+   ((pps GT.ppx_all)
+    Triple)
+   ((action
+     (run
+      %{project_root}/camlp5/pp5+gt+plugins+dump.exe
+      %{read-lines:../config/instrumentalization.cfg}
+      %{input-file}))
+    Core
+    Stream
+    Subst
+    Option
+    Bool
+    Nat
+    Pair
+    List
+    Logic
+    Peep
+    OCanren))))
 
 (documentation
  (package OCanren)
