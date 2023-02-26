@@ -58,6 +58,10 @@ module Var =
       scope;
     }
 
+    let is_wildcard { index } = index = -42
+
+    let make_wc ~env ~scope = make ~env ~scope (-42)
+
     let dummy =
       let env   = 0 in
       let scope = 0 in

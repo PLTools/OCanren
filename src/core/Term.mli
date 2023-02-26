@@ -56,6 +56,10 @@ module Var :
     val compare : t -> t -> int
 
     val hash : t -> int
+
+    val is_wildcard : t -> bool
+
+    val make_wc : env:env -> scope:scope -> t
   end
 
 module VarSet : Set.S with type elt = Var.t

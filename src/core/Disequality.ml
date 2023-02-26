@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2023
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -15,9 +15,6 @@
  * See the GNU Library General Public License version 2 for more details
  * (enclosed in the file COPYING).
  *)
-
-(* to avoid clash with Std.List (i.e. logic list) *)
-module List = Stdlib.List
 
 module Answer =
   struct
@@ -118,9 +115,9 @@ module Disjunct :
   struct
     type t = Term.t Term.VarMap.t
 
-    let update t =
-      ListLabels.fold_left ~init:t
-        ~f:(let open Subst.Binding in fun acc {var; term} ->
+    let update :t -> _ -> _ = fun init ->
+      ListLabels.fold_left ~init
+        ~f:(fun acc {Subst.Binding.var; term} ->
           if Term.VarMap.mem var acc then
             (* in this case we have subformula of the form (x =/= t1) \/ (x =/= t2) which is always SAT *)
             raise Disequality_fulfilled
@@ -140,8 +137,14 @@ module Disjunct :
     let refine env subst x y =
       match Subst.unify env subst x y with
       | None              -> Fulfiled
-      | Some ([], _)      -> Violated
-      | Some (prefix, _)  -> Refined prefix
+      | Some (prefix, _)  ->
+        let cond = fun {Subst.Binding.var; term} ->
+          if Term.Var.is_wildcard var || (Env.is_wc env term)
+            then false else true
+        in
+        match Stdlib.List.filter cond prefix with
+        | [] -> Violated
+        | prefix -> Refined prefix
 
     let make env subst x y =
       match refine env subst x y with
@@ -149,7 +152,7 @@ module Disjunct :
       | Fulfiled      -> raise Disequality_fulfilled
       | Violated      -> raise Disequality_violated
 
-    let rec recheck env subst t =
+    let rec recheck : Env.t -> Subst.t ->  t -> t = fun env subst t ->
       let var, term = Term.VarMap.max_binding t in
       let unchecked = Term.VarMap.remove var t in
       match refine env subst (Obj.magic var) term with
@@ -161,7 +164,7 @@ module Disjunct :
         else
           recheck env subst unchecked
 
-    let simplify env subst ds =
+    let simplify env subst : t -> t option = fun ds ->
       try
         let result = Term.VarMap.fold (fun var term acc ->
           match refine env subst (Obj.magic var) term with
@@ -243,17 +246,23 @@ module Conjunct :
     let make env subst x y =
       let id = !next_id in
       next_id := !next_id + 1;
-      M.singleton id @@ Disjunct.make env subst x y
+      M.singleton id (Disjunct.make env subst x y)
 
-    let split t =
-      M.fold (fun id disj acc ->
-        let var = Disjunct.samplevar disj in
-        let upd = function
-        | Some conj -> Some (M.add id disj conj)
-        | None      -> Some (M.singleton id disj)
-        in
-        Term.VarMap.update var upd acc
-      ) t Term.VarMap.empty
+    let split : t -> t Term.VarMap.t =
+      (* TODO(Kakadu): rewriter *)
+      let group_by : ('a -> Term.Var.t) -> 'a M.t -> 'a M.t Term.VarMap.t
+        = fun (* *) extract mapa ->
+          M.fold (fun k v acc ->
+            let new_key = extract v in
+            let upd = function
+              | Some old -> Some (M.add k v old)
+              | None      -> Some (M.singleton k v)
+            in
+            Term.VarMap.update new_key upd acc
+            ) mapa Term.VarMap.empty
+      in
+      group_by Disjunct.samplevar
+
 
     let recheck env subst t =
       M.fold (fun id disj acc ->
@@ -338,11 +347,11 @@ module Conjunct :
              * then extended answers are [(x =/= 1) /\ (y =/= 2)] and [(x =/= 1) /\ (y =/= 2) /\ (z =/= 3)],
              * but the second one is subsumed by the first one and can be thrown away
              *)
-            if List.exists (fun {var; term} -> Answer.mem env answ var term) bs then
+            if Stdlib.List.exists (fun {var; term} -> Answer.mem env answ var term) bs then
               [answ]
             else
-              List.map (fun {var; term} -> Answer.add env answ var term) bs
-          ) |> List.concat
+              Stdlib.List.map (fun {var; term} -> Answer.add env answ var term) bs
+          ) |> Stdlib.List.concat
       ) t [Answer.empty]
 
   end
@@ -367,7 +376,7 @@ let add env subst cstore x y =
     Some (update env subst (Conjunct.make env subst x y) cstore)
   with
     | Disequality_fulfilled -> Some cstore
-    | Disequality_violated  -> None
+    | Disequality_violated -> None
 
 let recheck env subst cstore bs =
   let helper var cstore =

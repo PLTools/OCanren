@@ -37,6 +37,8 @@ type goal = State.t Stream.t goal'
     parameter. See also {!module-Fresh} to create variables in numbers. *)
 val call_fresh : ('a ilogic -> goal) -> goal
 
+val wc : ('a ilogic -> goal) -> goal
+
 (** [x === y] creates a goal, which performs a unification of [x] and [y] *)
 val (===) : 'a ilogic -> 'a ilogic -> goal
 

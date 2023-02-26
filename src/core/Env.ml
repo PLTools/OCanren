@@ -34,6 +34,8 @@ let fresh ~scope e =
   e.next <- 1 + e.next;
   Obj.magic v
 
+let wc ~scope e = Obj.magic (Term.Var.make_wc ~env:e.anchor ~scope)
+
 let check env v = (v.Term.Var.env = env.anchor)
 
 let check_exn env v =
@@ -45,6 +47,12 @@ let var env x =
   | None            -> None
 
 let is_var env x = (var env x) <> None
+
+let is_wc env x =
+  match Term.var x with
+  | None -> false
+  | Some v -> check_exn env v; Term.Var.is_wildcard v
+
 
 let freevars env x =
   Term.fold (Term.repr x) ~init:Term.VarSet.empty
