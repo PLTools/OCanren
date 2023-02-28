@@ -46,11 +46,20 @@ module Binding =
       if res <> 0 then res else Term.compare t p
 
     let hash {var; term} = Hashtbl.hash (Term.Var.hash var, Term.hash term)
+
+    let pp ppf { var ; term } =
+      Format.fprintf ppf "%a -> %a" Term.pp (Obj.repr var) Term.pp term
   end
 
 type t = Term.t Term.VarMap.t
 
 let empty = Term.VarMap.empty
+
+let pp ppf (s: t) =
+  Format.fprintf ppf "{subst| ";
+  Term.VarMap.iter (fun var term -> Format.fprintf ppf "%a |- %a; " Term.pp (Obj.repr var) Term.pp term) s;
+  Format.fprintf ppf "|subst}"
+
 
 let of_list =
   ListLabels.fold_left ~init:empty ~f:(let open Binding in fun subst {var; term} ->
