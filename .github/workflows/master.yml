@@ -13,30 +13,27 @@ on:
   #  - cron: "0 13 * * 1"
     # https://jasonet.co/posts/scheduled-actions/
 
+env:
+  #OCANREN_STATS: yes
+  OCANREN_DOCS: yes
+  OPAMROOT: /home/user/.opam
+
 jobs:
   build:
-    env:
-      #OCANREN_STATS: yes
-      # enabling stats required extra link library
-      OCANREN_DOCS: yes
-      OPAMROOT: /home/user/.opam
-
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     container:
-      image: kakadu18/ocaml:pltlab
+      image: kakadu18/ocaml:pltools
       options: --user user
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - run: opam --version
       - run: opam exec -- ocamlopt --version
 
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - run: opam update
       - name: Install dev version of GT
