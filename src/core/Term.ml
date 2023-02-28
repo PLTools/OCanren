@@ -101,17 +101,25 @@ let var_tag, var_size =
   let dummy = Obj.repr Var.dummy in
   Obj.tag dummy, Obj.size dummy
 
-let is_var tx sx x =
-  if (tx = var_tag) && (sx = var_size) then
-     let anchor = (Obj.obj x : Var.t).Var.anchor in
-     (Obj.is_block @@ Obj.repr anchor) && (Var.valid_anchor anchor)
+let has_var_structure tx sx x =
+  if tx = var_tag && sx = var_size
+  then (
+    let anchor = (Obj.obj x : Var.t).Var.anchor in
+    (Obj.is_block @@ Obj.repr anchor) && Var.valid_anchor anchor)
   else false
+;;
 
 let is_box t =
   if (t <= Obj.last_non_constant_constructor_tag) &&
      (t >= Obj.first_non_constant_constructor_tag)
   then true
   else false
+
+let is_var x =
+  let x = Obj.repr x in
+  let tx = Obj.tag x in
+  is_box tx && has_var_structure tx (Obj.size x) x
+;;
 
 let is_int = (=) Obj.int_tag
 let is_str = (=) Obj.string_tag
@@ -127,14 +135,14 @@ let var x =
   let tx = Obj.tag x in
   if is_box tx then
     let sx = Obj.size x in
-    if is_var tx sx x then Some (Obj.magic x) else None
+    if has_var_structure tx sx x then Some (Obj.magic x) else None
   else None
 
 let rec map ~fvar ~fval x =
   let tx = Obj.tag x in
   if (is_box tx) then
     let sx = Obj.size x in
-    if is_var tx sx x then
+    if has_var_structure tx sx x then
       fvar @@ Obj.magic x
     else
       let y = Obj.dup x in
@@ -151,7 +159,7 @@ let rec iter ~fvar ~fval x =
   let tx = Obj.tag x in
   if (is_box tx) then
     let sx = Obj.size x in
-    if is_var tx sx x then
+    if has_var_structure tx sx x then
       fvar @@ Obj.magic x
     else
       for i = 0 to sx - 1 do
@@ -166,7 +174,7 @@ let rec show x =
   let tx = Obj.tag x in
   if (is_box tx) then
     let sx = Obj.size x in
-    if is_var tx sx x then
+    if has_var_structure tx sx x then
       let v = Obj.magic x in
       match v.Var.constraints with
       | [] -> Printf.sprintf "_.%d" v.Var.index
@@ -193,7 +201,7 @@ let rec fold ~fvar ~fval ~init x =
   let tx = Obj.tag x in
   if (is_box tx) then
     let sx = Obj.size x in
-    if is_var tx sx x then
+    if has_var_structure tx sx x then
       fvar init @@ Obj.magic x
     else
       let rec inner i acc =
@@ -217,7 +225,7 @@ let rec fold2 ~fvar ~fval ~fk ~init x y =
   match is_box tx, is_box ty with
   | true, true -> begin
     let sx, sy = Obj.size x, Obj.size y in
-    match is_var tx sx x, is_var ty sy y with
+    match has_var_structure tx sx x, has_var_structure ty sy y with
     | true, true    -> fvar init (Obj.magic x) (Obj.magic y)
     | true, false   -> fk init L (Obj.magic x) y
     | false, true   -> fk init R (Obj.magic y) x
@@ -236,11 +244,11 @@ let rec fold2 ~fvar ~fval ~fk ~init x y =
   | true, false ->
     is_valid_tag_exn ty;
     let sx = Obj.size x in
-    if is_var tx sx x then fk init L (Obj.magic x) y else raise (Different_shape (tx, ty))
+    if has_var_structure tx sx x then fk init L (Obj.magic x) y else raise (Different_shape (tx, ty))
   | false, true ->
     is_valid_tag_exn tx;
     let sy = Obj.size y in
-    if is_var ty sy y then fk init R (Obj.magic y) x else raise (Different_shape (tx, ty))
+    if has_var_structure ty sy y then fk init R (Obj.magic y) x else raise (Different_shape (tx, ty))
   | false, false ->
     is_valid_tag_exn tx;
     is_valid_tag_exn ty;
@@ -280,3 +288,51 @@ let rec compare x y =
 let rec hash x = fold x ~init:1
   ~fvar:(fun acc v -> Hashtbl.hash (Var.hash v, List.fold_left (fun acc x -> Hashtbl.hash (acc, hash x)) acc v.Var.constraints))
   ~fval:(fun acc x -> Hashtbl.hash (acc, Hashtbl.hash x))
+
+let describe_var ppf Var.{ index } = Format.fprintf ppf "_.%d" index
+
+let pp =
+  let open Format in
+  let rec helper ppf x =
+    let tx = Obj.tag x in
+    if is_box tx
+    then (
+      let sx = Obj.size x in
+      if has_var_structure tx sx x
+      then (
+        let v = Obj.magic x in
+        match v.Var.constraints with
+        | [] -> describe_var ppf v
+        | cs ->
+          fprintf
+            ppf
+            "%a{=/= %a}"
+            describe_var
+            v
+            (pp_print_list ~pp_sep:(fun ppf () -> fprintf ppf "; ") helper)
+            cs)
+      else (
+        let rec inner i : unit =
+          if i < sx
+          then (
+            if i > 0 then fprintf ppf ", ";
+            helper ppf (Obj.field x i);
+            inner (i + 1))
+        in
+        fprintf ppf "boxed %d <" tx;
+        inner 0;
+        fprintf ppf ">"))
+    else (
+      is_valid_tag_exn tx;
+      if tx = Obj.int_tag
+      then fprintf ppf "int<%d>" @@ Obj.magic x
+      else if tx = Obj.string_tag
+      then fprintf ppf "string<%s>" @@ Obj.magic x
+      else if tx = Obj.double_tag
+      then fprintf ppf "double<%e>" @@ Obj.magic x
+      else failwith "Dynamic pretty printing of some special tags is not supported")
+  in
+  fun ppf x -> helper ppf (Obj.repr x)
+;;
+
+let show x = Format.asprintf "%a" pp x

@@ -110,8 +110,10 @@ val fold2 :
   fk:('a -> label -> Var.t -> t -> 'a) ->
   init:'a -> t -> t -> 'a
 
-val show : t -> string
-
 val equal   : t -> t -> bool
 val compare : t -> t -> int
 val hash    : t -> int
+
+val show : t -> string
+val describe_var : Format.formatter -> Var.t -> unit
+val pp : Format.formatter -> 'a -> unit
