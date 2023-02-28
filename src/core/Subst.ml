@@ -141,6 +141,7 @@ let extend ~scope env subst var term  =
    * 2) If we do unification after a fresh, then in case of failure it doesn't matter if
    *    the variable is be distructively substituted: we will not look on it in future.
    *)
+  IFDEF SET_VAR_VAL THEN
   if (scope = var.Term.Var.scope) && (scope <> Term.Var.non_local_scope)
   then begin
     var.subst <- Some (Obj.repr term);
@@ -148,6 +149,9 @@ let extend ~scope env subst var term  =
   end
     else
       Term.VarMap.add var (Term.repr term) subst
+  ELSE
+    Term.VarMap.add var (Term.repr term) subst
+  END
 
 exception Unification_failed
 
