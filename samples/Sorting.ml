@@ -30,7 +30,7 @@ let minmaxo a b min max =
   let open Nat in
   ocanren {
     min == a & max == b & a <= b |
-    min == b & max == a & a >  b  
+    min == b & max == a & a >  b
   }
 
 (* [l] is a (non-empty) list, [s] is its smallest element,
@@ -61,7 +61,7 @@ let rec sorto x y =
   }
 
 (* Some shortcuts to make regular lists from relational ones *)
-let int_list = List.to_list Nat.to_int
+let int_list = Stdlib.List.map Nat.to_int
 
 (* Making regular sorting from relational one *)
 let sort l = int_list @@ Stream.hd @@ run q (sorto @@ nat_list l) (fun r -> r#reify (Std.List.prj_exn Nat.prj_exn))
@@ -107,4 +107,3 @@ let _ =
   Printf.printf "%s\n\n%!" (show(ill) @@ perm' [1]);
   Printf.printf "%s\n\n%!" (show(ill) @@ perm' [1; 2]);
   Printf.printf "%s\n\n%!" (show(ill) @@ perm' [1; 2; 3])
-   

@@ -158,7 +158,7 @@ let steps state moves state' =
 
 let prj_moves : _ reified -> hum_moves =
   let re =
-    Reifier.fmap (List.to_list (GT.gmap(Move.move_fuly) Nat.to_int))
+    Reifier.fmap (Stdlib.List.map (GT.gmap(Move.move_fuly) Nat.to_int))
       (Std.List.prj_exn (Move.move_prj_exn Std.Nat.prj_exn))
   in
   fun rr -> rr#reify re
@@ -166,7 +166,7 @@ let prj_moves : _ reified -> hum_moves =
 let prj_state : _ reified -> hum_state  =
   let flat_it : state -> hum_state =
     fun ((x, (y, z)) : state) ->
-      (Nat.to_int x, (Nat.to_int y, Std.List.to_list (fun (x, y) -> Nat.to_int x, Nat.to_int y) z))
+      (Nat.to_int x, (Nat.to_int y, Stdlib.List.map (fun (x, y) -> Nat.to_int x, Nat.to_int y) z))
     in
   let reify : (_, hum_state) Reifier.t = Reifier.fmap flat_it prj_exn_state in
   fun rr -> rr#reify reify
