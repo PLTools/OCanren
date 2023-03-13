@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2023
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -23,52 +23,24 @@ open Core
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
 
-@type ('a, 'l) list = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
-@type ('a, 'l) t    = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type ('a, 'l) t = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
+(* @type ('a, 'l) t    = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr, fmt *)
 
 let logic' = logic;;
 
-@type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a ground = 'a GT.list with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type 'a logic  = ('a, 'a logic) t Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
-
-let ground = {
-  ground with
-  GT.plugins =
-    object(this)
-      method html    fa l = GT.html   (list) fa (this#html    fa) l
-      method eq      fa l = GT.eq     (list) fa (this#eq      fa) l
-      method compare fa l = GT.compare(list) fa (this#compare fa) l
-      method foldr   fa l = GT.foldr  (list) fa (this#foldr   fa) l
-      method foldl   fa l = GT.foldl  (list) fa (this#foldl   fa) l
-      method gmap    fa l = GT.gmap   (list) fa (this#gmap    fa) l
-      method fmt     fa fmt (xs : _ ground) =
-        Format.fprintf fmt "@[[";
-        GT.foldl ground (fun () -> Format.fprintf fmt "%a;@ " fa) () xs;
-        Format.fprintf fmt "]@]"
-      method show    fa l = "[" ^
-        let rec inner l =
-          (GT.transform(list)
-             (fun fself -> object inherit ['a,'a ground,_]  @list[show] (GT.lift fa) (GT.lift inner) fself
-                method! c_Nil   _ _      = ""
-                method! c_Cons  i s x xs = (fa x) ^ (match xs with Nil -> "" | _ -> "; " ^ (inner xs) )
-              end)
-             ()
-             l
-          )
-        in inner l ^ "]"
-    end
-}
 
 let logic = {
   logic with
   GT.plugins =
     object(this)
-      method compare fa l = GT.compare (logic') (GT.compare (list) fa (this#compare fa)) l
-      method gmap    fa l = GT.gmap    (logic') (GT.gmap    (list) fa (this#gmap    fa)) l
-      method eq      fa l = GT.eq      (logic') (GT.eq      (list) fa (this#eq      fa)) l
-      method foldl   fa l = GT.foldl   (logic') (GT.foldl   (list) fa (this#foldl   fa)) l
-      method foldr   fa l = GT.foldr   (logic') (GT.foldr   (list) fa (this#foldr   fa)) l
-      method html    fa l = GT.html    (logic') (GT.html    (list) fa (this#html    fa)) l
+      method compare fa l = GT.compare (logic') (GT.compare (t) fa (this#compare fa)) l
+      method gmap    fa l = GT.gmap    (logic') (GT.gmap    (t) fa (this#gmap    fa)) l
+      method eq      fa l = GT.eq      (logic') (GT.eq      (t) fa (this#eq      fa)) l
+      method foldl   fa l = GT.foldl   (logic') (GT.foldl   (t) fa (this#foldl   fa)) l
+      method foldr   fa l = GT.foldr   (logic') (GT.foldr   (t) fa (this#foldr   fa)) l
+      method html    fa l = GT.html    (logic') (GT.html    (t) fa (this#html    fa)) l
       method fmt fa fmt l = Format.fprintf fmt "%s" (this#show (Format.asprintf "%a" fa) l)
       method show fa l =
         GT.show(logic')
@@ -106,58 +78,50 @@ let reify : 'a 'b . ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t =
         Env.Monad.return foo
       ))
 
-let rec prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
+let rec prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b GT.list) Reifier.t =
+  let map fa fb = function
+  | Nil -> []
+  | Cons (h, tl) -> fa h :: fb tl
+  in
+
   fun ra ->
     let open Env.Monad.Syntax in
     Reifier.fix (fun rself ->
       Reifier.compose Reifier.prj_exn
       (let* fa = ra in
       let* fr = rself in
-      Env.Monad.return (fun x -> GT.gmap t fa fr x)))
+      Env.Monad.return (fun x -> map fa fr x)))
 
-let prj_to_list_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b GT.list) Reifier.t =
-  let gmap fa fb = function
-    | Nil -> Stdlib.List.([])
-    | Cons (h, tl) -> Stdlib.List.cons (fa h) (fb tl)
-  in
-  let open Env.Monad in
-  let fmapt fa fb subj = return gmap <*> fa <*> fb <*> subj in
-  fun ra ->
-    let open Env.Monad.Syntax in
-    Reifier.fix (fun self -> Logic.Reifier.prj_exn <..> chain (fmapt ra self))
-
-let rec prj : (int -> _ ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
+(* let rec prj : (int -> _ ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
   fun onvar ra ->
     let ( >>= ) = Env.Monad.bind in
     Reifier.fix (fun self ->
     Reifier.compose (Reifier.prj (fun _ -> assert false))
     (ra >>= fun fa ->
      self >>= fun fr ->
-     Env.Monad.return (fun x -> GT.gmap t fa fr x)))
+     Env.Monad.return (fun x -> GT.gmap t fa fr x))) *)
 
 let nil () : 'a groundi = Logic.inj Nil
 let cons : 'a -> 'a groundi -> 'a groundi = fun x y ->
   Logic.inj (Cons (x, y))
 
-let rec of_list f = function
-| []    -> Nil
-| x::xs -> Cons (f x, of_list f xs)
+let of_list = List.map
 
-let rec to_list f = function
-| Nil -> []
-| Cons (x,xs) -> f x :: to_list f xs
+let to_list = List.map
 
-let rec inj f xs = to_logic (GT.gmap list f (inj f) xs)
+let rec inj f = function
+| []    -> Value Nil
+| x::xs -> Value (Cons (f x, inj f xs))
 
 let rec list = function
 | []    -> nil ()
-| x::xs -> cons x (list xs);;
+| x::xs -> cons x (list xs)
 
 let rec logic_to_ground_exn f = function
   | Var (_, _) -> failwith "List.logic_to_ground_exn: variables inside"
-  | Value Nil -> Nil
+  | Value Nil -> []
   | Value (Cons (h, tl)) ->
-      Cons (f h, logic_to_ground_exn f tl)
+      f h :: logic_to_ground_exn f tl
 
 let (%) = cons
 let (%<) = fun x y -> cons x @@ cons y @@ nil ()

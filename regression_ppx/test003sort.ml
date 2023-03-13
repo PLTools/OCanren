@@ -1,6 +1,6 @@
 (*
  * Sort: relational sorting.
- * Copyright (C) 2016-2021
+ * Copyright (C) 2016-2023
  * Dmitri Boulytchev, Dmitrii Kosarev
  * St.Petersburg State University, JetBrains Research
  *
@@ -19,7 +19,6 @@
 (* This is reimplementation of samples/sorting.ml with camlp5 but with PPX *)
 
 open GT
-module L = List
 open OCanren
 open OCanren.Std
 
@@ -60,7 +59,7 @@ let rec sorto x y =
 ;;
 
 (* Some shortcuts to make regular lists from relational ones *)
-let int_list = List.to_list Nat.to_int
+let int_list = Stdlib.List.map Nat.to_int
 
 let (_ : (Nat.groundi List.groundi, Nat.ground List.ground) Reifier.t) =
   Std.List.prj_exn Nat.prj_exn
@@ -83,15 +82,15 @@ let rec fact = function
 
 (* Making permutations from relational sorting *)
 let perm l =
-  L.map int_list
-  @@ Stream.take ~n:(fact @@ L.length l)
-  @@ run q (fun q -> sorto q @@ nat_list (L.sort Stdlib.compare l)) project
+  Stdlib.List.map int_list
+  @@ Stream.take ~n:(fact @@ Stdlib.List.length l)
+  @@ run q (fun q -> sorto q @@ nat_list (Stdlib.List.sort Stdlib.compare l)) project
 ;;
 
 (* More hardcore version: no standard sorting required *)
 let perm' l =
-  L.map int_list
-  @@ Stream.take ~n:(fact @@ L.length l)
+  Stdlib.List.map int_list
+  @@ Stream.take ~n:(fact @@ Stdlib.List.length l)
   @@ run q (fun q -> fresh r (sorto (nat_list l) r) (sorto q r)) project
 ;;
 
