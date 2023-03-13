@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2023
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -23,18 +23,15 @@ open Logic
 open Core
 
 (** Abstract list type *)
-@type ('a, 'l) list =
+@type ('a, 'l) t =
 | Nil
 | Cons of 'a * 'l
 with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** {2 GT-related API} *)
 
-(** Synonym for abstract list type *)
-@type ('a, 'l) t = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr, fmt
-
 (** Ground lists (isomorphic to regular ones) *)
-@type 'a ground = ('a, 'a ground) t with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a ground = 'a GT.list with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** Logic lists (with the tails as logic lists) *)
 @type 'a logic  = ('a, 'a logic) t Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
@@ -51,10 +48,12 @@ type 'a injected = 'a groundi
 (** The [of_list l] converts regular OCaml list [l] into isomorphic OCanren [ground] list.
     See [to_list] for a reverse conversion. *)
 val of_list : ('a -> 'b) -> 'a GT.list -> 'b ground
+[@@deprecated "Use Stdlib.List.map instead"]
 
 (** The [to_list g] converts OCanren list [g] into regular OCaml list. See [of_list]
     for a reverse conversion. *)
 val to_list : ('a -> 'b) -> 'a ground -> 'b GT.list
+[@@deprecated "Use Stdlib.List.map instead"]
 
 (** The [inj x] makes a logic list from a ground one. See [logic_to_ground_exn]
     for a partial reverse conversion. *)
@@ -66,7 +65,7 @@ val logic_to_ground_exn: ('a -> 'b) -> 'a logic -> 'b ground
 
 (** Make injected [list] from ground one of injected elements. The reverse conversion
     is availble only through reifiers (see {!section-reifiers} for details). *)
-val list : 'a GT.list -> 'a groundi
+val list : 'a GT.list -> 'a injected
 
 (** {3 Constructors} *)
 
@@ -90,11 +89,8 @@ val (!<) : 'a  ->  'a groundi
 (** Reifier *)
 val reify :  ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
 
+(* Reification/projection to non-logic domain *)
 val prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
-
-val prj_to_list_exn :  ('a, 'b) Reifier.t -> ('a groundi, 'b GT.list) Reifier.t
-
-val prj : (int -> 'b ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
 
 (** {3 Built-in relations} *)
 

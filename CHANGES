@@ -1,4 +1,10 @@
-## 0.3.0 (dev)
+## 0.4.0 (dev)
+
+### Changed
+
+- Make type 'OCanren.Std.List.ground' to be 'Stdlib.List.t'. It simplifies some injections.
+
+## 0.3.0 (28-04-2022)
 
 ### Changed
 
