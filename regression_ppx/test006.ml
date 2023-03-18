@@ -68,5 +68,6 @@ end
 
 module _ = struct
   [%%distrib
-  type ground = (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)]
+  type ground = (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)
+  [@@deriving gt]]
 end

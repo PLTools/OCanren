@@ -57,26 +57,26 @@
     struct
       include
         struct
-          type nonrec 'a move_fuly =
+          type nonrec 'a ground_fuly =
             | Forward of 'a 
             | Backward of 'a [@@deriving gt ~options:{ gmap; show }]
-          type 'a move = 'a move_fuly[@@deriving gt ~options:{ gmap; show }]
-          type 'a move_logic = 'a move_fuly OCanren.logic[@@deriving
-                                                           gt
-                                                             ~options:{
-                                                                      gmap;
-                                                                      show
-                                                                      }]
-          type 'a move_injected = 'a move_fuly OCanren.ilogic
+          type 'a ground = 'a ground_fuly[@@deriving
+                                           gt ~options:{ gmap; show }]
+          type 'a ground_logic = 'a ground_fuly OCanren.logic[@@deriving
+                                                               gt
+                                                                 ~options:
+                                                                 { gmap; show
+                                                                 }]
+          type 'a ground_injected = 'a ground_fuly OCanren.ilogic
           let fmapt f__006_ subj__007_ =
             let open OCanren.Env.Monad in
-              ((OCanren.Env.Monad.return (GT.gmap move_fuly)) <*> f__006_) <*>
-                subj__007_
-          let move_prj_exn ra =
+              ((OCanren.Env.Monad.return (GT.gmap ground_fuly)) <*> f__006_)
+                <*> subj__007_
+          let ground_prj_exn ra =
             let open OCanren.Env.Monad in
               OCanren.Reifier.fix
                 (fun self -> OCanren.prj_exn <..> (chain (fmapt ra)))
-          let move_reify ra =
+          let ground_reify ra =
             let open OCanren.Env.Monad in
               OCanren.Reifier.fix
                 (fun self ->
@@ -88,10 +88,18 @@
     end
   include
     struct
-      type hum_moves = GT.int Move.move[@@deriving gt ~options:{ gmap; show }]
+      type hum_moves = GT.int Move.ground[@@deriving
+                                           gt ~options:{ gmap; show }]
+      type hum_moves_logic = GT.int OCanren.logic Move.ground_logic[@@deriving
+                                                                     gt
+                                                                      ~options:
+                                                                      {
+                                                                      gmap;
+                                                                      show
+                                                                      }]
       let (reify_hum_moves :
-        (_, GT.int OCanren.logic Move.move_logic) OCanren.Reifier.t) =
-        Move.move_reify OCanren.reify
-      let (prj_exn_hum_moves : (_, GT.int Move.move) OCanren.Reifier.t) =
-        Move.move_prj_exn OCanren.prj_exn
+        (_, GT.int OCanren.logic Move.ground_logic) OCanren.Reifier.t) =
+        Move.ground_reify OCanren.reify
+      let (prj_exn_hum_moves : (_, GT.int Move.ground) OCanren.Reifier.t) =
+        Move.ground_prj_exn OCanren.prj_exn
     end

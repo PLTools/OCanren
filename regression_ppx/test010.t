@@ -54,6 +54,43 @@
             <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt state_reify))) )
     end
   end
+  
+  module Move = struct
+    include struct
+      type nonrec 'a move_fuly = Forward of 'a | Backward of 'a [@@deriving gt ~options:{gmap}]
+  
+      type nonrec 'a move = 'a move_fuly [@@deriving gt ~options:{gmap}]
+  
+      type nonrec 'a move_logic = 'a move_fuly OCanren.logic [@@deriving gt ~options:{gmap}]
+  
+      type nonrec 'a move_injected = 'a move_fuly OCanren.ilogic
+  
+      let fmapt f__006_ subj__007_ =
+        let open OCanren.Env.Monad in
+        OCanren.Env.Monad.return (GT.gmap move_fuly) <*> f__006_ <*> subj__007_
+  
+      let move_prj_exn ra =
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra))
+  
+      let move_reify ra =
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun _ ->
+            OCanren.reify <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt ra))) )
+    end
+  end
+  
+  include struct
+    type hum_moves = GT.int Move.move [@@deriving gt ~options:{gmap}]
+  
+    type hum_moves_logic = GT.int OCanren.logic Move.move_logic [@@deriving gt ~options:{gmap}]
+  
+    let (reify_hum_moves : (_, GT.int OCanren.logic Move.move_logic) OCanren.Reifier.t) =
+      Move.move_reify OCanren.reify
+  
+    let (prj_exn_hum_moves : (_, GT.int Move.move) OCanren.Reifier.t) =
+      Move.move_prj_exn OCanren.prj_exn
+  end
 
   $ ./test010.exe
   test010

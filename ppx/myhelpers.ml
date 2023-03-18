@@ -69,3 +69,12 @@ let lident_of_list = function
 ;;
 
 let failwiths ?(loc = Location.none) fmt = Location.raise_errorf ~loc fmt
+
+let notify fmt =
+  Format.kasprintf
+    (fun s -> ignore (Sys.command (Printf.sprintf "notify-send %S" s)))
+      (* (fun s ->
+      assert (
+        0 = Sys.command (Printf.sprintf "dunstify --action='replyAction,reply' %S" s))) *)
+    fmt
+;;

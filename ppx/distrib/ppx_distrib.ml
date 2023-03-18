@@ -45,42 +45,48 @@ let () =
       let map4 ~f p =
         p |> map3 ~f:(fun a b c -> a, b, c) |> map2 ~f:(fun (a, b, c) d -> f a b c d)
       in
+      let map5 ~f p =
+        p |> map3 ~f:(fun a b c -> a, b, c) |> map3 ~f:(fun (a, b, c) d e -> f a b c d e)
+      in
       let map4' ~f p =
         p
         |> map3' ~f:(fun loc a b c -> loc, a, b, c)
         |> map2 ~f:(fun (loc, a, b, c) d -> f loc a b c d)
       in
       let p_fully () =
-        pstr_type
-          nonrecursive
-          ((type_declaration_attributes __
-           @@ (type_declaration
-                 ~name:(string "t")
+        as__
+        @@ pstr_type
+             nonrecursive
+             ((type_declaration_attributes __
+              @@ (type_declaration
+                    ~name:(string "t")
+                    ~params:__
+                    ~cstrs:nil
+                    ~kind:__
+                    ~private_:__
+                    ~manifest:__
+                 |> map4 ~f:(fun a b c d -> a, b, c, d)))
+             ^:: nil)
+        |> map3 ~f:(fun _ a b -> a, b)
+      in
+      let p_ground () =
+        as__
+        @@ pstr_type
+             __
+             ((type_declaration
+                 ~name:(string "ground")
                  ~params:__
                  ~cstrs:nil
                  ~kind:__
                  ~private_:__
-                 ~manifest:__
-              |> map4 ~f:(fun a b c d -> a, b, c, d)))
-          ^:: nil)
-        |> map2 ~f:(fun a b -> a, b)
-      in
-      let p_ground () =
-        pstr_type
-          __
-          ((type_declaration
-              ~name:(string "ground")
-              ~params:__
-              ~cstrs:nil
-              ~kind:__
-              ~private_:__
-              ~manifest:(some __)
-           |> map4 ~f:(fun a b c d -> a, b, c, d))
-          ^:: nil)
-        |> map2 ~f:(fun a b -> a, b)
+                 ~manifest:(some __)
+              |> map4 ~f:(fun a b c d -> a, b, c, d))
+             ^:: nil)
+        |> map3 ~f:(fun _ a b -> a, b)
       in
       let p_ground2 () =
-        (* with attributes *)
+        as__
+        @@ (* with attributes *)
         pstr_type
           __
           ((type_declaration_attributes __
@@ -102,7 +108,7 @@ let () =
                      ~kind
                      ~manifest:None)))
           ^:: nil)
-        |> map3 ~f:(fun is_rec attrs b -> attrs, (is_rec, b))
+        |> map4 ~f:(fun __ is_rec attrs b -> attrs, (is_rec, b))
       in
       let p_ground_alias () =
         as__ (* Extra hack to delay application in case of no any holes *)
@@ -116,9 +122,12 @@ let () =
                    ~cstrs:nil
                    ~kind:ptype_abstract
                    ~private_:drop
-                   ~manifest:(some drop))
+                   ~manifest:(some __))
              ^:: nil)
-        |> map4 ~f:(fun _ is_rec attrs tdecl -> is_rec, attrs, tdecl)
+        |> map5 ~f:(fun _ is_rec attrs tdecl _manifest ->
+             (* let _ = Sys.command (Printf.sprintf "notify-send %s %d" __FILE__ __LINE__) in *)
+             (* Format.printf "\t\t\t\t@[%a@]" Pprintast.structure_item sitem; *)
+             is_rec, attrs, tdecl)
       in
       let p_ground_record () =
         pstr_type
@@ -175,7 +184,25 @@ let () =
         | Alias (is_rec, ptype_attributes, tdecl) ->
           let tdecl = { tdecl with ptype_attributes } in
           let open Ppxlib.Ast_builder.Default in
-          let stru = pstr_type ~loc is_rec [ tdecl ] :: Reify_impl.process1 tdecl in
+          let ltyp_decl =
+            let open Ppx_distrib_expander in
+            let abbrev =
+              ltypify_exn
+                ~loc
+                (make_logic_strat_2 tdecl)
+                (Stdlib.Option.get tdecl.ptype_manifest)
+            in
+            let (module S : STRAT) = make_strat () in
+            { tdecl with
+              ptype_name = S.logic_typ_name tdecl
+            ; ptype_manifest = Some abbrev
+            }
+          in
+          let stru =
+            pstr_type ~loc is_rec [ tdecl ]
+            :: pstr_type ~loc is_rec [ ltyp_decl ]
+            :: Reify_impl.process1 tdecl
+          in
           pstr_include ~loc (include_infos ~loc (pmod_structure ~loc stru))
         | Only_ground (is_rec, attributes1, tdecl) ->
           let tdecl = { tdecl with ptype_attributes = attributes1 } in

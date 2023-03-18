@@ -268,12 +268,23 @@ let reifier_of_core_type ~loc kind =
   let rec helper typ =
     let loc = typ.ptyp_loc in
     match typ with
+    | { ptyp_desc =
+          Ptyp_constr ({ txt = Ldot (Ldot (Lident "Std", "List"), "ground") }, xs)
+      }
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident "GT", "list") }, xs) } ->
       Exp.apply
         ~loc
         (pexp_ident
            ~loc
            (Located.mk ~loc (lident_of_list [ "OCanren"; "Std"; "List"; reifier_name ])))
+        (List.map xs ~f:helper)
+    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Ldot (Lident "Std", "Nat"), "ground") }, xs)
+      } ->
+      Exp.apply
+        ~loc
+        (pexp_ident
+           ~loc
+           (Located.mk ~loc (lident_of_list [ "OCanren"; "Std"; "Nat"; reifier_name ])))
         (List.map xs ~f:helper)
     | [%type: GT.string]
     | [%type: string]
@@ -282,12 +293,23 @@ let reifier_of_core_type ~loc kind =
     | [%type: GT.int]
     | [%type: int] -> base_reifier
     | { ptyp_desc = Ptyp_var s } -> pexp_ident ~loc (Located.mk ~loc (lident s))
+    | { ptyp_desc = Ptyp_constr ({ txt = Lident "ground" }, xs) } when is_new () ->
+      let reifier_name = Printf.sprintf "ground_%s" reifier_name in
+      Exp.apply
+        ~loc
+        (pexp_ident ~loc (Located.mk ~loc (lident reifier_name)))
+        (List.map ~f:helper xs)
     | { ptyp_desc = Ptyp_constr ({ txt = Lident "ground" }, xs) } ->
       Exp.apply
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (lident reifier_name)))
         (List.map ~f:helper xs)
-      |> fun e -> pexp_constraint ~loc e [%type: 'asdf]
+    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, "ground") }, xs) } when is_new () ->
+      let reifier_name = Printf.sprintf "ground_%s" reifier_name in
+      Exp.apply
+        ~loc
+        (pexp_ident ~loc (Located.mk ~loc (Ldot (m, reifier_name))))
+        (List.map xs ~f:helper)
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, "ground") }, xs) } ->
       Exp.apply
         ~loc
@@ -311,6 +333,16 @@ let reifier_of_core_type ~loc kind =
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (Ldot (lident m, reifier_name))))
         (List.map args ~f:(fun t -> Nolabel, helper t))
+      (* |> fun e ->
+      (* Useful for debug *)
+      { e with
+        pexp_attributes =
+          [ attribute
+              ~loc
+              ~name:(Located.sprintf ~loc "x%d" __LINE__)
+              ~payload:(PStr [ pstr_eval ~loc [%expr 1] [] ])
+          ]
+      } *)
     | { ptyp_desc = Ptyp_constr ({ txt = Lident "t" }, args) } ->
       pexp_apply
         ~loc
@@ -335,7 +367,7 @@ let reifier_of_core_type ~loc kind =
 ;;
 
 let make_reifier_composition ~pat ?(typ = None) kind tdecl =
-  let names = extract_names @@ (name_type_params_in_td tdecl).ptype_params in
+  let names = extract_names (name_type_params_in_td tdecl).ptype_params in
   let mk_arg_reifier = Fn.id in
   let add_args =
     let loc = tdecl.ptype_loc in

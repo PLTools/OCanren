@@ -242,7 +242,8 @@
  (modules test008)
  (flags
   (:standard
-   ; -dsource
+   ;-dsource
+   ;
    ))
  (preprocessor_deps
   %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe

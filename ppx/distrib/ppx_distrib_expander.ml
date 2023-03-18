@@ -124,6 +124,9 @@ let create_lident_mangler sort
       | Ldot (Lident "GT", "list") | Ldot (Ldot (Lident "Std", "List"), "ground") ->
         let l = lident_of_list [ "OCanren"; "Std"; "List"; std_suffix ] in
         ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
+      | Ldot (Ldot (Lident "Std", "Nat"), "ground") ->
+        let l = lident_of_list [ "OCanren"; "Std"; "Nat"; std_suffix ] in
+        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
       | (Lident "int" as l)
       | (Lident "string" as l)
       | (Lident "bool" as l)
@@ -136,7 +139,10 @@ let create_lident_mangler sort
       | Lident s ->
         let l = Lident (add_suffix s) in
         ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-      | Ldot _ | Lapply _ -> failwiths ~loc "not supported"
+      | Ldot (lprefix, tname) ->
+        let l = Ldot (lprefix, add_suffix tname) in
+        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
+      | Lapply _ -> failwiths ~loc "not supported %s %d" __FILE__ __LINE__
   else
     fun ~loc args -> function
       | Ldot (Lident "GT", "list")
@@ -323,7 +329,7 @@ include struct
         (Located.mk ~loc
         @@ lident_of_list [ "OCanren"; "Std"; "Pair"; stdname_of_sort S.sort ])
         (List.map ~f:helper [ l; r ])
-    | { ptyp_desc = Ptyp_var _ } -> helper typ
+    | { ptyp_desc = Ptyp_tuple _ } | { ptyp_desc = Ptyp_var _ } -> helper typ
     | _ ->
       failwiths
         "can't generate %s type: %a"
@@ -368,6 +374,12 @@ include struct
       {|
         (int OCanren.logic * int OCanren.logic * int OCanren.logic) OCanren.logic
           OCanren.Std.List.logic |}];
+    test [%stri type t2 = GT.bool * GT.int * GT.string];
+    [%expect
+      {|
+      (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic)
+        OCanren.logic
+       |}];
     ()
   ;;
 
@@ -415,7 +427,6 @@ include struct
 end
 
 let%expect_test "injectify" =
-  (* let use_new_names = ref false in *)
   let loc = Location.none in
   let test i =
     let t2 =
@@ -694,6 +705,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       | [%type: bool]
       | [%type: GT.string]
       | [%type: string] -> base_reifier
+      | [%type: GT.int Move.ground] -> assert false
       | [%type: [%t? _arg] GT.list] ->
         failwiths
           ~loc
@@ -705,6 +717,13 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
         in
         [%expr [%e reifier] [%e helper l] [%e helper r]]
       | { ptyp_desc = Ptyp_tuple _ } -> failwiths ~loc "Not implemented"
+      | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, name) }, args) }
+        when Reify_impl.is_new () ->
+        Myhelpers.notify "%s %d" __FILE__ __LINE__;
+        let tname = Format.sprintf "%s_%s" name (Reify_impl.string_of_kind kind) in
+        let rhs = pexp_ident ~loc (Located.mk ~loc (Ldot (m, tname))) in
+        List.fold_left ~init:rhs args ~f:(fun acc x ->
+          pexp_apply ~loc acc [ nolabel, helper x ])
       | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, _) }, args) } ->
         let rhs = pexp_ident ~loc (Located.mk ~loc (Ldot (m, name))) in
         List.fold_left ~init:rhs args ~f:(fun acc x ->
@@ -742,11 +761,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
                        [%expr OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:[%e fmapt])]
                      | Prj_exn -> fmapt])]
       | _ ->
-        failwiths
-          ~loc:manifest.ptyp_loc
-          "should not happen %s %d"
-          Caml.__FILE__
-          Caml.__LINE__
+        failwiths ~loc:manifest.ptyp_loc "Not supported %s %d" Caml.__FILE__ Caml.__LINE__
     in
     let pat =
       match typ with

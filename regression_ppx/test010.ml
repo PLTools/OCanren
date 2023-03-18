@@ -9,3 +9,13 @@ let () = print_endline "test010"
 module _ = struct
   [%%ocanren_inject type nonrec u = U of state [@@deriving gt ~options:{ gmap }]]
 end
+
+module Move = struct
+  [%%ocanren_inject
+  type nonrec 'a move =
+    | Forward of 'a
+    | Backward of 'a
+  [@@deriving gt ~options:{ gmap }]]
+end
+
+[%%ocanren_inject type hum_moves = GT.int Move.move [@@deriving gt ~options:{ gmap }]]

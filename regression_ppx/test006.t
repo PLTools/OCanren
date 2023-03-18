@@ -970,6 +970,9 @@
     include struct
       type ground = GT.bool * GT.int * GT.string
   
+      type logic =
+        (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+  
       let (reify_ground :
             ( _
             , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
@@ -1010,7 +1013,51 @@
   
   module _ = struct
     include struct
-      type ground = (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)
+      type ground = (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string) [@@deriving gt]
+  
+      include struct
+        class virtual ['inh, 'extra, 'syn] ground_t =
+          object
+            method virtual c_GROUND : 'inh -> 'extra -> 'syn
+          end
+  
+        let gcata_ground (tr : (_, ground, _) #ground_t) inh subj = tr#c_GROUND inh subj
+  
+        let ground =
+          { GT.gcata= gcata_ground
+          ; GT.fix= (fun eta -> GT.transform_gc gcata_ground eta)
+          ; GT.plugins= object end }
+      end [@@ocaml.doc "@inline"] [@@merlin.hide]
+  
+      type logic =
+        ( (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+        , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic )
+        OCanren.Std.Pair.logic
+      [@@deriving gt]
+  
+      include struct
+        class virtual ['inh, 'extra, 'syn] logic_t =
+          object
+            inherit
+              [ (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
+              , 'inh
+              , 'extra
+              , 'syn ]
+              OCanren.Std.Pair.logic_t
+          end
+  
+        let gcata_logic = OCanren.Std.Pair.gcata_logic
+  
+        let logic =
+          { GT.gcata= gcata_logic
+          ; GT.fix= (fun eta -> GT.transform_gc gcata_logic eta)
+          ; GT.plugins= object end }
+      end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
       let (reify_ground :
             ( _

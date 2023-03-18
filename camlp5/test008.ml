@@ -5,9 +5,9 @@ module _ = struct
 end
 
 module Move = struct
-  ocanren type 'a move =
+  ocanren type 'a ground =
     | Forward  of 'a
     | Backward  of 'a
 end
 
-ocanren type hum_moves = GT.int Move.move
+ocanren type hum_moves = GT.int Move.ground

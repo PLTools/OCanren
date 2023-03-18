@@ -42,10 +42,10 @@
  (libraries OCanren OCanren.tester))
 
 (executables
- (names test006 test007 test009)
+ (names test006)
  (package OCanren)
- (public_names - - -)
- (modules test006 test007 test009)
+ (public_names -)
+ (modules test006)
  (flags
   (:standard
    ;-dsource
@@ -59,6 +59,24 @@
    -pretty
    ;
    ))
+ (libraries OCanren OCanren.tester))
+
+(executables
+ (names test007)
+ (modules test007)
+ (package OCanren)
+ (public_names -)
+ (preprocess
+  (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
+ (libraries OCanren OCanren.tester))
+
+(executables
+ (names test009)
+ (modules test009)
+ (package OCanren)
+ (public_names -)
+ (preprocess
+  (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
  (libraries OCanren OCanren.tester))
 
 (executables
