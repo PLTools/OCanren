@@ -161,6 +161,14 @@ let of_val = function
   | Ploc.VaVal x -> x
   | Ploc.VaAnt _ -> failwith "Should not happen in our setup of Camlp5"
 
+(* Convert to a logic type *)
+let logic_type ctyp =
+  let loc = MLast.loc_of_ctyp ctyp in
+  match ctyp with
+  | <:ctyp< $lid:id$ >>             -> <:ctyp< $lid:(id ^ "_logic")$ >>
+  | <:ctyp< $longid:p$ . $lid:t$ >> -> <:ctyp< $longid:p$ . $lid:(t ^ "_logic")$ >>
+  | _                               -> raise (Stream.Error "INTERNAL ERROR: \"^\" expects a (qualified) type name")
+     
 (* Decorate type expressions *)
 let rec decorate_type ctyp =
   let loc = MLast.loc_of_ctyp ctyp in
@@ -224,7 +232,7 @@ let decorate_type_decl t =
     List.map
       (function
       | <:type_decl< $tp:ls$ $list:ltv$ = 'abstract >> ->
-          raise (Stream.Error "INTERNAL ERROR: abstract type declarations will not be implemented")
+          raise (Stream.Error "INTERNAL ERROR: abstract type declarations not implemented")
       | <:type_decl:< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ $itemattrs:attrs$ >> ->
           let a =
             let loc, _ = ls in
@@ -240,10 +248,10 @@ let decorate_type_decl t =
   match t with
   | <:str_item< type nonrec $list:ltd$ >> ->
       let ltd = wrap ltd in
-      <:str_item< [%%distrib type nonrec $list:ltd$; ] >>
+      <:str_item< [%%ocanren type nonrec $list:ltd$; ] >>
   | <:str_item< type $list:ltd$ >> ->
       let ltd = wrap ltd in
-      <:str_item< [%%distrib type $list:ltd$; ] >>
+      <:str_item< [%%ocanren type $list:ltd$; ] >>
   | _ -> raise (Stream.Error "INTERNAL ERROR: type_decl expected")
 
 EXTEND
@@ -271,7 +279,7 @@ EXTEND
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
       [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
-      let _ = <:str_item< [%%distrib type t = int [@@deriving gt ~{options = {gmap=gmap; show=show}};] ; ] >> in
+      let _ = <:str_item< [%%ocanren type t = int [@@deriving gt ~{options = {gmap=gmap; show=show}};] ; ] >> in
       let body =
         let conjunctions = fold_left1
           (fun acc x -> <:expr< conj ($acc$) ($x$) >>)
@@ -371,8 +379,9 @@ EXTEND
   ];
 
   ctyp: [
-             [ "ocanren"; "{"; t=ctyp; "}" -> decorate_type t ] |
-    "simple" [ "!"; "("; t=ctyp; ")" -> <:ctyp< ocanren $t$ >> ]
+            [ "^"; t=ctyp                 -> logic_type t           ] | 
+            [ "ocanren"; "{"; t=ctyp; "}" -> decorate_type t        ] | 
+   "simple" [ "!"; "("; t=ctyp; ")"       -> <:ctyp< ocanren $t$ >> ] 
   ];
 
 END;
