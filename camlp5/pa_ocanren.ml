@@ -162,11 +162,16 @@ let of_val = function
   | Ploc.VaAnt _ -> failwith "Should not happen in our setup of Camlp5"
 
 (* Convert to a logic type *)
-let logic_type ctyp =
+let type_reifier mode ctyp =
   let loc = MLast.loc_of_ctyp ctyp in
+  let m   =
+    match mode with
+    | `Project -> (fun name -> "prj_exn_" ^ name)
+    | `Reify   -> (fun name -> "reify_" ^ name)
+  in
   match ctyp with
-  | <:ctyp< $lid:id$ >>             -> <:ctyp< $lid:(id ^ "_logic")$ >>
-  | <:ctyp< $longid:p$ . $lid:t$ >> -> <:ctyp< $longid:p$ . $lid:(t ^ "_logic")$ >>
+  | <:ctyp< $lid:id$ >>             -> <:expr< $lid:(m id)$ >>
+  | <:ctyp< $longid:p$ . $lid:t$ >> -> <:expr< $longid:p$ . $lid:(m t)$ >>
   | _                               -> raise (Stream.Error "INTERNAL ERROR: \"^\" expects a (qualified) type name")
      
 (* Decorate type expressions *)
@@ -278,8 +283,7 @@ EXTEND
 
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
-      [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
-      let _ = <:str_item< [%%ocanren_inject type t = int [@@deriving gt ~{options = {gmap=gmap; show=show}};] ; ] >> in
+    [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
       let body =
         let conjunctions = fold_left1
           (fun acc x -> <:expr< conj ($acc$) ($x$) >>)
@@ -292,9 +296,49 @@ EXTEND
     [ "defer"; subj=expr LEVEL "." ->
       <:expr< delay (fun () -> $subj$) >>
     ] |
-    [ e=ocanren_embedding -> e ]
+    [ e=ocanren_embedding -> e ] |
+    [ "ocanrun"; "("; args=ocanrun_args; ")"; "{"; goal=ocanren_expr; "}"; "->"; sema=expr ->
+       let rec gen_numeral = function
+         1 -> <:expr< OCanren.q   >>
+       | 2 -> <:expr< OCanren.qr  >>
+       | 3 -> <:expr< OCanren.qrs >>
+       | 4 -> <:expr< OCanren.qrt >>
+       | n -> <:expr< OCanren.succ $gen_numeral (n-1)$ >>
+       in
+       let fun_args, let_bnd =
+         List.fold_left
+           (fun (fun_args, let_bnd) (name, rei) ->
+              let p = <:patt< $lid:name$  >> in
+              let n = <:expr< $lid:name$  >> in
+              let r = <:expr< $n$ # reify >> in
+              ((match fun_args with <:patt< () >> -> p | _ -> <:patt< $fun_args$ $p$ >>),
+               (p, <:expr< $r$ $rei$ >>, Ploc.VaVal []) :: let_bnd
+              )
+           )
+           (<:patt< () >>, [])
+           args
+       in
+       let fun_goal = <:expr< fun [ $list:[fun_args, VaVal None, goal]$ ] >> in
+       let let_body = <:expr< let $flag:false$ $list:let_bnd$ in $sema$ >> in
+       let fun_sema = <:expr< fun [ $list:[fun_args, VaVal None, let_body]$ ] >> in
+       <:expr< OCanren.run $gen_numeral (List.length args)$ $fun_goal$ $fun_sema$ >>
+    ]
   ];
 
+  ocanrun_args: [[
+     args=LIST1 ocanrun_arg SEP "," -> List.concat args 
+  ]];
+
+  ocanrun_arg: [[
+    names=LIST1 LIDENT SEP ","; ":"; reiflag=OPT "^"; typ=ctyp ->
+      let rei =
+        match reiflag with
+        | None -> type_reifier `Project typ
+        | _    -> type_reifier `Reify   typ
+      in
+      List.map (fun name -> (name, rei)) names                                                     
+  ]];
+  
   ocanren_embedding: [
     [ "ocanren"; "{"; e=ocanren_expr; "}" -> e ]
   ];
@@ -377,11 +421,10 @@ EXTEND
         ]
     | [ e = expr LEVEL "simple" -> return e ]
   ];
-
+  
   ctyp: [
-            [ "^"; t=ctyp                 -> logic_type t           ] | 
             [ "ocanren"; "{"; t=ctyp; "}" -> decorate_type t        ] | 
    "simple" [ "!"; "("; t=ctyp; ")"       -> <:ctyp< ocanren $t$ >> ] 
-  ];
+  ]; 
 
 END;
