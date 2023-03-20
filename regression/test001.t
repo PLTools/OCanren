@@ -37,6 +37,12 @@
   q=5;
   q=5;
   }
+  fun q -> success, 1 answer {
+  q=_.10;
+  }
+  fun q -> OCanren.Fresh.one (fun n -> delay (fun () -> q === n % Std.nil ())), 1 answer {
+  q=[_.11];
+  }
   fun q -> reverso (ilist []) (ilist []), 1 answer {
   q=_.10;
   }

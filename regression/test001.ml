@@ -70,6 +70,8 @@ let _ =
 let runL eta = run_r (Std.List.reify OCanren.reify) show_intl_list eta
 
 let _withFree =
+  runL          1  q  qh (REPR (fun q   -> success                                      ));
+  runL          1  q  qh (REPR (fun q   -> fresh (n) (q === n % Std.nil())              ));
   runL          1  q  qh (REPR (fun q   -> reverso (ilist []) (ilist [])                ));
   runL          2  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL          4 qr qrh (REPR (fun q r -> appendo q (ilist []) r                       ));

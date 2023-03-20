@@ -24,9 +24,6 @@ open Core
 module List = Stdlib.List
 
 @type ('a, 'l) t = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
-(* @type ('a, 'l) t    = ('a, 'l) list with show, gmap, html, eq, compare, foldl, foldr, fmt *)
-
-let logic' = logic;;
 
 @type 'a ground = 'a GT.list with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type 'a logic  = ('a, 'a logic) t Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
@@ -35,35 +32,63 @@ let logic = {
   logic with
   GT.plugins =
     object(this)
-      method compare fa l = GT.compare (logic') (GT.compare (t) fa (this#compare fa)) l
-      method gmap    fa l = GT.gmap    (logic') (GT.gmap    (t) fa (this#gmap    fa)) l
-      method eq      fa l = GT.eq      (logic') (GT.eq      (t) fa (this#eq      fa)) l
-      method foldl   fa l = GT.foldl   (logic') (GT.foldl   (t) fa (this#foldl   fa)) l
-      method foldr   fa l = GT.foldr   (logic') (GT.foldr   (t) fa (this#foldr   fa)) l
-      method html    fa l = GT.html    (logic') (GT.html    (t) fa (this#html    fa)) l
+      method compare fa l = GT.compare (Logic.logic) (GT.compare (t) fa (this#compare fa)) l
+      method gmap    fa l = GT.gmap    (Logic.logic) (GT.gmap    (t) fa (this#gmap    fa)) l
+      method eq      fa l = GT.eq      (Logic.logic) (GT.eq      (t) fa (this#eq      fa)) l
+      method foldl   fa l = GT.foldl   (Logic.logic) (GT.foldl   (t) fa (this#foldl   fa)) l
+      method foldr   fa l = GT.foldr   (Logic.logic) (GT.foldr   (t) fa (this#foldr   fa)) l
+      method html    fa l = GT.html    (Logic.logic) (GT.html    (t) fa (this#html    fa)) l
       method fmt fa fmt l = Format.fprintf fmt "%s" (this#show (Format.asprintf "%a" fa) l)
       method show fa l =
-        GT.show(logic')
-          (fun l -> "[" ^
-              let rec inner l =
-                GT.transform(t)
-                  (fun fself ->
-                      object
-                         inherit ['a,'a logic, _] @t[show] (GT.lift fa) (GT.lift (GT.show(logic') inner)) fself
-                         method! c_Nil   _ _      = ""
-                         method! c_Cons  i s x xs =
-                           (fa x) ^ (match xs with Value Nil -> "" | _ -> "; " ^ (GT.show(logic') inner xs))
-                      end)
-                  ()
-                  l
-               in inner l ^ "]"
-          )
-          l
+        (* We can print like [...; ...; ...] when tail is Nil *)
+        let rec can_print_with_sugar = function
+          | Value Nil -> true
+          | Value (Cons (_, tl)) -> can_print_with_sugar tl
+          | Var _ -> false
+        in
+        let inner_show ?(brackets=false) sep l =
+          (* TODO(Kakadu): Rewrite using Buffer.t too. Need to change show to foldl though. *)
+          let rec inner l =
+            GT.transform(t)
+              (fun fself ->
+                  object
+                      inherit ['a,'a logic, _] @t[show] (GT.lift fa) (GT.lift (GT.show(Logic.logic) inner)) fself
+                      method! c_Nil   _ _      = ""
+                      method! c_Cons  i s x xs =
+                        (fa x) ^ (match xs with Value Nil -> "" | _ -> sep ^ (GT.show(Logic.logic) inner xs))
+                  end)
+              ()
+              l
+          in
+          if brackets then "[" ^ inner l ^ "]"
+          else inner l
+        in
+        if can_print_with_sugar l
+        then "[" ^ GT.show(Logic.logic) (inner_show "; ") l ^ "]"
+        else match l with
+          | Value Nil -> "[]"
+          | Var _ -> GT.show Logic.logic (inner_show ~brackets:true " :: ") l
+          | Value (Cons (h, tl)) ->
+            let rec loop b = function
+              | Value (Cons (h, tl)) ->
+                  Buffer.add_string b " :: ";
+                  Buffer.add_string b (fa h);
+                  loop b tl
+              | Value Nil -> Buffer.add_string b " :: []"
+              | (Var _) as v ->
+                  Buffer.add_string b " :: ";
+                  Buffer.add_string b (GT.show Logic.logic (inner_show " :: ") v)
+            in
+            let b = Buffer.create 10 in (* TODO(Kakadu): We can preallocate buffer depending on length of list *)
+            Buffer.add_string b (fa h);
+            loop b tl;
+            Buffer.contents b
     end
 }
 
 type 'a groundi = ('a, 'a groundi) t Logic.ilogic
 type 'a injected = 'a groundi
+
 let reify : 'a 'b . ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t =
   fun ra ->
     let open Env.Monad.Syntax in
