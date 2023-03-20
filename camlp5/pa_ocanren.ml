@@ -248,10 +248,10 @@ let decorate_type_decl t =
   match t with
   | <:str_item< type nonrec $list:ltd$ >> ->
       let ltd = wrap ltd in
-      <:str_item< [%%ocanren type nonrec $list:ltd$; ] >>
+      <:str_item< [%%ocanren_inject type nonrec $list:ltd$; ] >>
   | <:str_item< type $list:ltd$ >> ->
       let ltd = wrap ltd in
-      <:str_item< [%%ocanren type $list:ltd$; ] >>
+      <:str_item< [%%ocanren_inject type $list:ltd$; ] >>
   | _ -> raise (Stream.Error "INTERNAL ERROR: type_decl expected")
 
 EXTEND
@@ -279,7 +279,7 @@ EXTEND
   (* TODO: support conde expansion here *)
   expr: LEVEL "expr1" [
       [ "fresh"; "("; vars=LIST0 LIDENT; ")"; clauses=LIST1 expr LEVEL "." ->
-      let _ = <:str_item< [%%ocanren type t = int [@@deriving gt ~{options = {gmap=gmap; show=show}};] ; ] >> in
+      let _ = <:str_item< [%%ocanren_inject type t = int [@@deriving gt ~{options = {gmap=gmap; show=show}};] ; ] >> in
       let body =
         let conjunctions = fold_left1
           (fun acc x -> <:expr< conj ($acc$) ($x$) >>)

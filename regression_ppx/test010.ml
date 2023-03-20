@@ -4,8 +4,8 @@
 
 let () = print_endline "test010"
 
-[%%distrib type nonrec state = S [@@deriving gt ~options:{ gmap }]]
+[%%ocanren_inject type nonrec state = S [@@deriving gt ~options:{ gmap }]]
 
 module _ = struct
-  [%%ocanren type nonrec u = U of state [@@deriving gt ~options:{ gmap }]]
+  [%%ocanren_inject type nonrec u = U of state [@@deriving gt ~options:{ gmap }]]
 end

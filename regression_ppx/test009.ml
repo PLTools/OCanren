@@ -5,7 +5,7 @@
 let () = print_endline "test009"
 
 module _ = struct
-  [%%ocanren
+  [%%ocanren_inject
   type nonrec ('a1, 'a0) t =
     | LInt of 'a1
     | LBool of 'a0

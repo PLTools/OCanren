@@ -211,7 +211,7 @@ let () =
           in
           generate ~loc base_tdecl rec_2 spec_td other_decls)
     in
-    [ make_extension "distrib"; make_extension "ocanren" ]
+    [ make_extension "distrib"; make_extension "ocanren_inject"; ]
   in
   Ppxlib.Driver.register_transformation ~extensions "distrib"
 ;;

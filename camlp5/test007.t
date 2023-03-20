@@ -3,14 +3,14 @@ $ ls
   $ ./pp5+ocanren+o.exe test007.ml # | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat --margin=100 -
   module _ =
     struct
-      [%%ocanren type abc =
+      [%%ocanren_inject type abc =
         A | B | C[@@deriving gt ~options:{gmap = gmap; show = show}]
       ;;]
     end
   
   module _ =
     struct
-      [%%ocanren type 'a maybe =
+      [%%ocanren_inject type 'a maybe =
           Nothing
         | Just of 'a[@@deriving gt ~options:{gmap = gmap; show = show}]
       ;;]
@@ -18,7 +18,7 @@ $ ls
   
   module _ =
     struct
-      [%%ocanren type 'a lst =
+      [%%ocanren_inject type 'a lst =
           Nil
         | Cons of 'a * 'a lst[@@deriving gt ~options:{gmap = gmap; show = show}]
       ;;]
@@ -45,7 +45,7 @@ $ ls
   
   module _ =
     struct
-      [%%ocanren type state =
+      [%%ocanren_inject type state =
         GT.bool * GT.bool * GT.bool[@@deriving gt ~options:{gmap = gmap; show = show}]
       ;;]
       let () =
@@ -57,7 +57,7 @@ $ ls
   
   module _ =
     struct
-      [%%ocanren type state =
+      [%%ocanren_inject type state =
         (GT.bool * GT.bool * GT.bool * GT.bool) *
           (GT.bool * GT.bool * GT.bool * GT.bool)[@@deriving gt ~options:{gmap = gmap; show = show}]
       ;;]
