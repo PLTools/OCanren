@@ -311,22 +311,23 @@ EXTEND
               let p = <:patt< $lid:name$  >> in
               let n = <:expr< $lid:name$  >> in
               let r = <:expr< $n$ # reify >> in
-              ((match fun_args with <:patt< () >> -> p | _ -> <:patt< $fun_args$ $p$ >>),
-               (p, <:expr< $r$ $rei$ >>, Ploc.VaVal []) :: let_bnd
-              )
+              (p :: fun_args, (p, <:expr< $r$ $rei$ >>, Ploc.VaVal []) :: let_bnd)
            )
-           (<:patt< () >>, [])
+           ([], [])
            args
        in
-       let fun_goal = <:expr< fun [ $list:[fun_args, VaVal None, goal]$ ] >> in
+       let make_fun b =
+         List.fold_left (fun expr arg -> <:expr< fun $arg$ -> $expr$ >> ) b fun_args
+       in
+       let fun_goal = make_fun goal in
        let let_body = <:expr< let $flag:false$ $list:let_bnd$ in $sema$ >> in
-       let fun_sema = <:expr< fun [ $list:[fun_args, VaVal None, let_body]$ ] >> in
+       let fun_sema = make_fun let_body in
        <:expr< OCanren.run $gen_numeral (List.length args)$ $fun_goal$ $fun_sema$ >>
     ]
   ];
 
   ocanrun_args: [[
-     args=LIST1 ocanrun_arg SEP "," -> List.concat args 
+    args=LIST1 ocanrun_arg SEP "," -> List.concat args 
   ]];
 
   ocanrun_arg: [[
