@@ -25,8 +25,10 @@ module List = Stdlib.List
 
 @type ('a, 'l) t = Nil | Cons of 'a * 'l with show, gmap, html, eq, compare, foldl, foldr, fmt
 
-@type 'a ground = 'a GT.list with show, gmap, html, eq, compare, foldl, foldr, fmt
-@type 'a logic  = ('a, 'a logic) t Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a ground     = 'a GT.list with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a logic      = ('a, 'a logic) t Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a list       = 'a ground with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a list_logic = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let logic = {
   logic with
@@ -108,7 +110,6 @@ let rec prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b GT.list) Reifier.t =
   | Nil -> []
   | Cons (h, tl) -> fa h :: fb tl
   in
-
   fun ra ->
     let open Env.Monad.Syntax in
     Reifier.fix (fun rself ->
@@ -117,6 +118,9 @@ let rec prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b GT.list) Reifier.t =
       let* fr = rself in
       Env.Monad.return (fun x -> map fa fr x)))
 
+let reify_list   = reify
+let prj_exn_list = prj_exn
+                 
 (* let rec prj : (int -> _ ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
   fun onvar ra ->
     let ( >>= ) = Env.Monad.bind in

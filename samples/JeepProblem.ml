@@ -23,9 +23,9 @@ open OCanren.Std
 module Move = struct
   ocanren type 'a move =
     | Forward  of 'a
-    | Backward  of 'a
-    | Unload  of 'a
-    | Fill  of 'a
+    | Backward of 'a
+    | Unload   of 'a
+    | Fill     of 'a
 end
 
 ocanren type hum_moves = GT.int Move.move GT.list

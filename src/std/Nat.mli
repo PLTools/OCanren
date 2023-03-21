@@ -33,6 +33,10 @@ open Core
 (** Logic nat *)
 @type logic = logic t Logic.logic with show, html, eq, compare, foldl, foldr, gmap, fmt
 
+(** Type synonyms to comply with the generic naming scheme *)
+@type nat       = ground with show, html, eq, compare, foldl, foldr, gmap, fmt
+@type nat_logic = logic  with show, html, eq, compare, foldl, foldr, gmap, fmt
+                      
 (** Logic injection (for reification) *)
 val inj : ground -> logic
 
@@ -48,9 +52,13 @@ type injected = groundi
 (** Reifier *)
 val reify : (groundi, logic) Reifier.t
 
-(* Shallow non-variable projection *)
+(** Shallow non-variable projection *)
 val prj_exn : (groundi, ground) Reifier.t
 
+(** Synonyms to comply with the generic naming scheme *)
+val reify_nat   : (groundi, logic) Reifier.t
+val prj_exn_nat : (groundi, ground) Reifier.t
+  
 (** [of_int n] converts integer [n] into [ground]; negative integers become [O] *)
 val of_int : int -> ground
 

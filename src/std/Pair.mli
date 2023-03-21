@@ -31,6 +31,10 @@ open Core
 (** Logic option *)
 @type ('a, 'b) logic = ('a * 'b) Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
+(** Type synonyms to comply with the generic naming scheme *)
+@type ('a, 'b) pair       = ('a, 'b) ground with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type ('a, 'b) pair_logic = ('a, 'b) logic  with show, gmap, html, eq, compare, foldl, foldr, fmt
+                                                                                                                                          
 (** {2 Relational API} *)
 
 (** Logic injection (for reification) *)
@@ -45,10 +49,18 @@ type ('a, 'b) injected = ('a, 'b) groundi
 val pair : 'a ilogic -> 'b ilogic -> ('a ilogic, 'b ilogic) groundi
 
 (** {3:reifiers Reifiers} *)
-
 val reify : ('a,'b) Reifier.t -> ('c,'d) Reifier.t ->
   ( ('a, 'c) groundi, ('b, 'd) logic ) Reifier.t
 
 val prj_exn :
   ('a, 'b) Reifier.t -> ('c,'d) Reifier.t ->
   ( ('a, 'c) groundi, ('b, 'd) ground) Reifier.t
+
+(** Synonyms to comply with the generic naming scheme *)
+val reify_pair : ('a,'b) Reifier.t -> ('c,'d) Reifier.t ->
+  ( ('a, 'c) groundi, ('b, 'd) logic ) Reifier.t
+
+val prj_exn_pair :
+  ('a, 'b) Reifier.t -> ('c,'d) Reifier.t ->
+  ( ('a, 'c) groundi, ('b, 'd) ground) Reifier.t
+    

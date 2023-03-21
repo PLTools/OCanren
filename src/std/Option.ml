@@ -29,6 +29,8 @@ let logic' = logic;;
 
 @type 'a ground        = 'a GT.option                   with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type 'a logic         = 'a GT.option logic'            with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a option        = 'a ground                      with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a option_logic  = 'a logic                       with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let logic = {
   logic with
@@ -73,6 +75,9 @@ let prj_exn : 'a 'b. ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
     let* fa = ra in
     Env.Monad.return (fun x -> GT.gmap ground fa (r x))
 
+let reify_option = reify
+let prj_exn_option = prj_exn
+                   
 let some x  = Logic.inji (Some x)
 let none () = Logic.inji None
 

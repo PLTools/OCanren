@@ -32,6 +32,8 @@ let fmap f g x = GT.gmap(t) f g x;;
 
 @type ('a, 'b) ground          = 'a * 'b                                    with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type ('a, 'b) logic           = ('a * 'b) logic'                           with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type ('a, 'b) pair            = ('a, 'b) ground                            with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type ('a, 'b) pair_logic      = ('a, 'b) logic                             with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 type ('a, 'b) groundi = ('a * 'b) ilogic
 
@@ -80,3 +82,6 @@ let prj_exn : 'a 'b 'c 'd . ('a, 'b) Reifier.t -> ('c, 'd) Reifier.t ->
     (ra >>= fun fa ->
      rb >>= fun fb ->
      Env.Monad.return (fun x -> GT.gmap t fa fb x))
+
+let reify_pair = reify
+let prj_exn_pair = prj_exn

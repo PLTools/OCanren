@@ -33,6 +33,10 @@ open Core
 (** Logic option *)
 @type 'a logic = 'a GT.option Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
+(** Type synonyms to comply with the generic naming scheme *)                                             
+@type 'a option       = 'a ground with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a option_logic = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
+                                             
 (** {2 Relational API} *)
 
 (** Logic injection (for reification) *)
@@ -54,6 +58,10 @@ val reify : ('a, 'b) Reifier.t -> ('a injected, 'b logic) Reifier.t
 (* Shallow non-variable projection *)
 val prj_exn : ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t
 
+(** Synonyms to comply with the generic naming scheme *)                                             
+val reify_option   : ('a, 'b) Reifier.t -> ('a injected, 'b logic) Reifier.t
+val prj_exn_option : ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t
+  
 (** {3 Constructors} *)
 
 (** Logic dual of constructor [Some] from {!Stdlib.Option}. *)

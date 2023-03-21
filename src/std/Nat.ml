@@ -29,6 +29,10 @@ module List = Stdlib.List
 with show, gmap, html, eq, compare, foldl, foldr, fmt
 @type logic   = logic t Logic.logic
 with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type nat  = ground
+with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type nat_logic   = logic
+with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 type groundi = groundi t Logic.ilogic
 
@@ -76,6 +80,9 @@ let prj_exn : (groundi, ground) Reifier.t =
       Env.Monad.return (fun x -> GT.gmap t fr x))
     )
 
+let reify_nat = reify
+let prj_exn_nat = prj_exn
+                
 let o   = Logic.inj O
 let s x = Logic.inj (S x)
 

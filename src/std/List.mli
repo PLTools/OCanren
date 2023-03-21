@@ -36,6 +36,10 @@ with show, gmap, html, eq, compare, foldl, foldr, fmt
 (** Logic lists (with the tails as logic lists) *)
 @type 'a logic  = ('a, 'a logic) t Logic.logic with show, gmap, html, eq, compare, foldl, foldr, fmt
 
+(** Type synonyms to comply with the generic naming scheme *)
+@type 'a list       = 'a ground with show, gmap, html, eq, compare, foldl, foldr, fmt
+@type 'a list_logic = 'a logic with show, gmap, html, eq, compare, foldl, foldr, fmt
+
 (** {2 Relational API} *)
 
 (** A synonym for injected list *)
@@ -92,6 +96,10 @@ val reify :  ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
 (* Reification/projection to non-logic domain *)
 val prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
 
+(** Synonyms to comply with the generic naming scheme *)
+val reify_list   : ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
+val prj_exn_list : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
+  
 (** {3 Built-in relations} *)
 
 (** Relational foldr *)

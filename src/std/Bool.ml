@@ -23,9 +23,12 @@ open Core
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
 
-@type ground    = GT.bool                  with show, html, eq, compare, foldr, foldl, gmap, fmt
-@type t         = GT.bool                  with show, html, eq, compare, foldr, foldl, gmap, fmt
-@type logic     = GT.bool Logic.logic           with show, html, eq, compare, foldr, foldl, gmap , fmt
+@type ground     = GT.bool              with show, html, eq, compare, foldr, foldl, gmap, fmt
+@type t          = GT.bool              with show, html, eq, compare, foldr, foldl, gmap, fmt
+@type logic      = GT.bool Logic.logic  with show, html, eq, compare, foldr, foldl, gmap, fmt
+                                                                                                                                     
+@type bool       = ground               with show, html, eq, compare, foldr, foldl, gmap, fmt
+@type bool_logic = logic                with show, html, eq, compare, foldr, foldl, gmap, fmt
 
 type groundi   = ground ilogic
 
@@ -49,6 +52,9 @@ let inj = to_logic
 let reify : (bool ilogic, bool Logic.logic) Reifier.t = Logic.reify
 let prj_exn : (bool ilogic, bool) Reifier.t = Logic.prj_exn
 
+let reify_bool = reify
+let prj_exn_bool = prj_exn
+                 
 let falso = Logic.inj false
 let truo  = Logic.inj true
 
