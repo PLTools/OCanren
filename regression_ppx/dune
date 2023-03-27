@@ -93,6 +93,20 @@
   (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -new-typenames -pretty))
  (libraries OCanren OCanren.tester))
 
+(executables
+ (names test011)
+ (modules test011)
+ (package OCanren)
+ (public_names -)
+ (flags
+  (:standard
+   ;-dsource
+   ;
+   ))
+ (preprocess
+  (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
+ (libraries OCanren OCanren.tester))
+
 (cram
  (package OCanren)
  (deps ;
@@ -130,3 +144,11 @@
   (package OCanren-ppx)
   test007.ml
   test007.exe))
+
+(cram
+ (package OCanren)
+ (applies_to test011)
+ (deps
+  (package OCanren-ppx)
+  test011.ml
+  test011.exe))

@@ -561,7 +561,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     { tdecl with ptype_name; ptype_manifest; ptype_attributes }
   in
   let names = extract_names tdecl.ptype_params in
-  let injected_typ =
+  let ityp =
     let name = S.injected_typ_name tdecl in
     let param_type_vars = List.map names ~f:Typ.var in
     let helper = injectify ~loc (make_injected_strat_2 tdecl) in
@@ -770,40 +770,35 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
     in
     pstr_value ~loc Nonrecursive [ value_binding ~loc ~pat ~expr:(add_args (body ())) ]
   in
+  let typ_of_decl decl =
+    ptyp_constr
+      ~loc
+      (Located.mk ~loc (Lident decl.ptype_name.txt))
+      (List.map decl.ptype_params ~f:(fun (t, _) ->
+         match t.ptyp_desc with
+         | Ptyp_var _v -> t
+         | _ -> assert false))
+  in
   let make_reifier is_rec tdecl =
-    let logic_typ =
-      ptyp_constr
-        ~loc
-        (Located.mk ~loc (Lident ltyp.ptype_name.txt))
-        (List.map ltyp.ptype_params ~f:(fun (t, _) ->
-           match t.ptyp_desc with
-           | Ptyp_var _v -> t
-           | _ -> assert false))
-    in
+    let logic_typ = typ_of_decl ltyp in
+    let injected_typ = typ_of_decl ityp in
     make_reifier_gen
       ~kind:Reify
       ~typ:
         (if List.is_empty tdecl.ptype_params
-        then Some [%type: (_, [%t logic_typ]) OCanren.Reifier.t]
+        then Some [%type: ([%t injected_typ], [%t logic_typ]) OCanren.Reifier.t]
         else None)
       is_rec
       tdecl
   in
   let make_prj_exn is_rec tdecl =
-    let ground_typ =
-      ptyp_constr
-        ~loc
-        (Located.mk ~loc (Lident tdecl.ptype_name.txt))
-        (List.map tdecl.ptype_params ~f:(fun (t, _) ->
-           match t.ptyp_desc with
-           | Ptyp_var _ -> t
-           | _ -> assert false))
-    in
+    let ground_typ = typ_of_decl tdecl in
+    let injected_typ = typ_of_decl ityp in
     make_reifier_gen
       ~kind:Prj_exn
       ~typ:
         (if List.is_empty tdecl.ptype_params
-        then Some [%type: (_, [%t ground_typ]) OCanren.Reifier.t]
+        then Some [%type: ([%t injected_typ], [%t ground_typ]) OCanren.Reifier.t]
         else None)
       is_rec
       tdecl
@@ -830,7 +825,7 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       ]
     ; [ pstr_type ~loc rec_ [ decorate_with_attributes ltyp base_tdecl.ptype_attributes ]
       ]
-    ; [ pstr_type ~loc rec_ [ injected_typ ] ]
+    ; [ pstr_type ~loc rec_ [ ityp ] ]
     ; [ make_fmapt base_tdecl ]
     ; [ make_prj_exn is_rec tdecl; make_reifier is_rec tdecl ]
     ; creators
