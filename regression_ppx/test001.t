@@ -16,11 +16,11 @@
         let open OCanren.Env.Monad in
         OCanren.Env.Monad.return (GT.gmap t) <*> f__003_ <*> subj__004_
   
-      let (prj_exn : (_, ground) OCanren.Reifier.t) =
+      let (prj_exn : (injected, ground) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt self))
   
-      let (reify : (_, logic) OCanren.Reifier.t) =
+      let (reify : (injected, logic) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.reify
@@ -164,12 +164,12 @@
         let open OCanren.Env.Monad in
         OCanren.Env.Monad.return (GT.gmap t) <*> f__021_ <*> subj__022_
   
-      let (prj_exn : (_, ground) OCanren.Reifier.t) =
+      let (prj_exn : (injected, ground) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ ->
             OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn) )
   
-      let (reify : (_, logic) OCanren.Reifier.t) =
+      let (reify : (injected, logic) OCanren.Reifier.t) =
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ ->
             OCanren.reify
