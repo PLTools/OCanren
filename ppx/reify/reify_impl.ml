@@ -321,12 +321,11 @@ let reifier_of_core_type ~loc kind =
         ~loc
         (pexp_ident ~loc (Located.mk ~loc (lident reifier)))
         (List.map args ~f:(fun t -> Nolabel, helper t))
-    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident m, tname) }, args) } when is_new ()
-      ->
+    | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, tname) }, args) } when is_new () ->
       let reifier = Printf.sprintf "%s_%s" tname reifier_name in
       pexp_apply
         ~loc
-        (pexp_ident ~loc (Located.mk ~loc (Ldot (lident m, reifier))))
+        (pexp_ident ~loc (Located.mk ~loc (Ldot (m, reifier))))
         (List.map args ~f:(fun t -> Nolabel, helper t))
     | { ptyp_desc = Ptyp_constr ({ txt = Ldot (Lident m, _) }, args) } ->
       pexp_apply
@@ -415,9 +414,9 @@ let make_reifier ~loc m tdecl =
     Reify
     ~typ:
       (if List.is_empty tdecl.ptype_params
-      then
-        Some [%type: (_, [%t ltypify_exn ~loc tdecl.ptype_name.txt m]) OCanren.Reifier.t]
-      else None)
+       then
+         Some [%type: (_, [%t ltypify_exn ~loc tdecl.ptype_name.txt m]) OCanren.Reifier.t]
+       else None)
     ~pat:
       (ppat_var ~loc (Located.mk ~loc @@ Format.sprintf "reify_%s" tdecl.ptype_name.txt))
     tdecl
@@ -428,9 +427,9 @@ let make_prj ~loc m tdecl =
     Prj_exn
     ~typ:
       (if List.is_empty tdecl.ptype_params
-      then
-        Some [%type: (_, [%t gtypify_exn tdecl.ptype_name.txt ~loc m]) OCanren.Reifier.t]
-      else None)
+       then
+         Some [%type: (_, [%t gtypify_exn tdecl.ptype_name.txt ~loc m]) OCanren.Reifier.t]
+       else None)
     ~pat:
       (ppat_var
          ~loc
