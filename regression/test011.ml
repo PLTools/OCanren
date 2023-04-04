@@ -4,7 +4,7 @@ open OCanren.Std
 open Tester
 
 let (!) = (!!)
-let (!!) = List.list
+let (!!) = Std.list Fun.id
 
 let show_int_list   = GT.(show List.ground @@ show int)
 let show_intl_List = GT.(show List.logic @@ show logic @@ show int)

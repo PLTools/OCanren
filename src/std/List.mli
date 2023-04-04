@@ -42,10 +42,10 @@ with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 (** {2 Relational API} *)
 
-(** A synonym for injected list *)
-type 'a groundi = ('a, 'a groundi) t Logic.ilogic
+type 'a injected = ('a, 'a injected) t Logic.ilogic
 
-type 'a injected = 'a groundi
+(** A synonym for injected list *)
+type 'a groundi = 'a injected
 
 (** {3 Conversions between data types} *)
 
@@ -69,7 +69,7 @@ val logic_to_ground_exn: ('a -> 'b) -> 'a logic -> 'b ground
 
 (** Make injected [list] from ground one of injected elements. The reverse conversion
     is availble only through reifiers (see {!section-reifiers} for details). *)
-val list : 'a GT.list -> 'a injected
+(* val list : 'a GT.list -> 'a injected *)
 
 (** {3 Constructors} *)
 
@@ -91,15 +91,23 @@ val (!<) : 'a  ->  'a groundi
 (** {3:reifiers Reifiers} *)
 
 (** Reifier *)
-val reify :  ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
+val reify :  ('a, 'b) Reifier.t -> ('a injected, 'b logic) Reifier.t
+
+(** [list_reify] is a synonym for [reify] *)
+val list_reify :  ('a, 'b) Reifier.t -> ('a injected, 'b logic) Reifier.t
 
 (* Reification/projection to non-logic domain *)
-val prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
+val prj_exn : ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t
+
+(** [list_prj_exn] is a synonym for [prj_exn] *)
+val list_prj_exn : ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t
 
 (** Synonyms to comply with the generic naming scheme *)
-val reify_list   : ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t
-val prj_exn_list : ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t
-  
+val reify_list   : ('a, 'b) Reifier.t -> ('a injected, 'b logic) Reifier.t
+
+(** [prj_exn_list] is a synonym for [prj_exn] *)
+val prj_exn_list : ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t
+
 (** {3 Built-in relations} *)
 
 (** Relational foldr *)

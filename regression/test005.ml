@@ -82,7 +82,7 @@ let infero expr typ =
 let show_string  = show(string)
 let show_stringl = show(logic) (show(string))
 
-let inj_list_p xs = List.list @@ L.map (fun (x,y) -> pair x y) xs
+let inj_list_p xs = Std.list (fun (x,y) -> pair x y) xs
 
 (* Without free variables *)
 let run_lam eta = run_r GLam.prj_exn GLam.show_rlam eta

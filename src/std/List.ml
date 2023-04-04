@@ -88,8 +88,8 @@ let logic = {
     end
 }
 
-type 'a groundi = ('a, 'a groundi) t Logic.ilogic
-type 'a injected = 'a groundi
+type 'a injected = ('a, 'a injected) t Logic.ilogic
+type 'a groundi = 'a injected
 
 let reify : 'a 'b . ('a, 'b) Reifier.t -> ('a groundi, 'b logic) Reifier.t =
   fun ra ->
@@ -119,7 +119,9 @@ let rec prj_exn : ('a, 'b) Reifier.t -> ('a groundi, 'b GT.list) Reifier.t =
       Env.Monad.return (fun x -> map fa fr x)))
 
 let reify_list   = reify
+let list_reify = reify
 let prj_exn_list = prj_exn
+let list_prj_exn = prj_exn
                  
 (* let rec prj : (int -> _ ground) -> ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
   fun onvar ra ->
@@ -142,9 +144,9 @@ let rec inj f = function
 | []    -> Value Nil
 | x::xs -> Value (Cons (f x, inj f xs))
 
-let rec list = function
+(* let rec list = function
 | []    -> nil ()
-| x::xs -> cons x (list xs)
+| x::xs -> cons x (list xs) *)
 
 let rec logic_to_ground_exn f = function
   | Var (_, _) -> failwith "List.logic_to_ground_exn: variables inside"
