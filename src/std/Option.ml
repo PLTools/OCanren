@@ -77,7 +77,7 @@ let prj_exn : 'a 'b. ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
 
 let reify_option = reify
 let prj_exn_option = prj_exn
-                   
+
 let some x  = Logic.inji (Some x)
 let none () = Logic.inji None
 
