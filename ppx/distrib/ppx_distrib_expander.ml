@@ -39,10 +39,9 @@ let nolabel = Asttypes.Nolabel
 let mangle_construct_name name =
   let low =
     String.mapi
-      ~f:
-        (function
-         | 0 -> Char.lowercase_ascii
-         | _ -> Fn.id)
+      ~f:(function
+        | 0 -> Char.lowercase_ascii
+        | _ -> Fn.id)
       name
   in
   match low with
@@ -56,21 +55,17 @@ let has_name_attr (xs : attributes) =
   let exception Found of string in
   try
     List.iter xs ~f:(function
-      | { attr_loc; attr_name = { txt = "name" }; attr_payload = PStr [ si ] } ->
-        let open Ast_pattern in
-        let p = pstr_eval (pexp_constant (pconst_string __ __ none)) nil in
-        parse p attr_loc ~on_error:(fun _ -> ()) si (fun s -> raise (Found s))
-      | _ -> ());
+        | { attr_loc; attr_name = { txt = "name" }; attr_payload = PStr [ si ] } ->
+            let open Ast_pattern in
+            let p = pstr_eval (pexp_constant (pconst_string __ __ none)) nil in
+            parse p attr_loc ~on_error:(fun _ -> ()) si (fun s -> raise (Found s))
+        | _ -> ());
     None
   with
   | Found s -> Some s
 ;;
 
-let decorate_with_attributes tdecl ptype_attributes = { tdecl with ptype_attributes }
-
 module type STRAT = sig
-  (*  *)
-
   val logic_typ_name : type_declaration -> label with_loc
   val injected_typ_name : type_declaration -> label with_loc
 end
@@ -109,83 +104,10 @@ module type STRAT2 = sig
   val define_as_fuly_abstract : loc:Location.t -> core_type list lazy_t -> core_type
 end
 
-let create_lident_mangler sort
-  : loc:Location.t -> core_type list Lazy.t -> Longident.t -> core_type
-  =
-  let prim_typ, add_suffix, std_suffix =
-    match sort with
-    | `Injected -> "ilogic", sprintf "%s_injected", "injected"
-    | `Prj_exn -> "ground", Fun.id, "ground"
-    | `Reify -> "logic", sprintf "%s_logic", "logic"
-  in
-  if Reify_impl.is_new ()
-  then
-    fun ~loc args -> function
-      | Ldot (Lident "GT", "list") | Ldot (Ldot (Lident "Std", "List"), "ground") ->
-        let l = lident_of_list [ "OCanren"; "Std"; "List"; std_suffix ] in
-        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-      | Ldot (Ldot (Lident "Std", "Nat"), "ground") ->
-        let l = lident_of_list [ "OCanren"; "Std"; "Nat"; std_suffix ] in
-        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-      | (Lident "int" as l)
-      | (Lident "string" as l)
-      | (Lident "bool" as l)
-      | (Ldot (Lident "GT", _) as l) ->
-        ptyp_constr
-          ~loc
-          (Located.mk ~loc (lident_of_list [ "OCanren"; prim_typ ]))
-          [ ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args) ]
-        (* Above is a copy-paste between two implementations *)
-      | Lident s ->
-        let l = Lident (add_suffix s) in
-        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-      | Ldot (lprefix, tname) ->
-        let l = Ldot (lprefix, add_suffix tname) in
-        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-      | Lapply _ -> failwiths ~loc "not supported %s %d" __FILE__ __LINE__
-  else
-    fun ~loc args -> function
-      | Ldot (Lident "GT", "list")
-      | Ldot (Ldot (Lident "Std", "List"), "ground")
-      | Ldot (Ldot (Ldot (Lident "OCanren", "Std"), "List"), "ground") ->
-        let l = lident_of_list [ "OCanren"; "Std"; "List"; std_suffix ] in
-        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-      | (Lident "int" as l) | (Ldot (Lident "GT", _) as l) ->
-        ptyp_constr
-          ~loc
-          (Located.mk ~loc (lident_of_list [ "OCanren"; prim_typ ]))
-          [ ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args) ]
-      | Lident "ground" ->
-        let l = Lident std_suffix in
-        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-      | Ldot (prefix, "ground") ->
-        let l = Ldot (prefix, std_suffix) in
-        ptyp_constr ~loc (Located.mk ~loc l) (Lazy.force args)
-      | Lident id ->
-        let msg =
-          sprintf
-            "In old naming only 'ground' and 'logic' typenames are allowed. What to do \
-             with ident '%s' to produce '%s'?"
-            id
-            (add_suffix id)
-        in
-        ptyp_extension
-          ~loc
-          ( Located.mk ~loc "ocaml.error"
-          , PStr
-              [ pstr_eval ~loc (pexp_constant ~loc (Pconst_string (msg, loc, None))) [] ]
-          )
-      | Ldot _ | Lapply _ -> failwiths ~loc "not supported"
-;;
-
 let make_logic_strat_2 tdecl =
   let module I = struct
     let sort = `Reify
-
-    let self_typ_name =
-      if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_logic" else "logic"
-    ;;
-
+    let self_typ_name = if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_logic" else "logic"
     let is_selfrec_name = String.equal self_typ_name
 
     let is_fully_name =
@@ -198,9 +120,7 @@ let make_logic_strat_2 tdecl =
       ptyp_constr
         ~loc
         (Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]))
-        [ (let ful_lident =
-             if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_fuly" else "t"
-           in
+        [ (let ful_lident = if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_fuly" else "t" in
            ptyp_constr ~loc (Located.mk ~loc (Lident ful_lident)) (Lazy.force args))
         ]
     ;;
@@ -216,7 +136,7 @@ let make_logic_strat_2 tdecl =
         | s -> s
     ;;
 
-    let mangle_lident = create_lident_mangler `Reify
+    let mangle_lident = Reify_impl.create_lident_mangler `Reify
   end
   in
   (module I : STRAT2)
@@ -246,9 +166,7 @@ let make_injected_strat_2 tdecl =
       ptyp_constr
         ~loc
         (Located.mk ~loc (lident_of_list [ "OCanren"; "ilogic" ]))
-        [ (let ful_lident =
-             if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_fuly" else "t"
-           in
+        [ (let ful_lident = if Reify_impl.is_new () then tdecl.ptype_name.txt ^ "_fuly" else "t" in
            ptyp_constr ~loc (Located.mk ~loc (Lident ful_lident)) (Lazy.force args))
         ]
     ;;
@@ -265,7 +183,7 @@ let make_injected_strat_2 tdecl =
         | s -> s ^ "_injected"
     ;;
 
-    let mangle_lident = create_lident_mangler `Injected
+    let mangle_lident = Reify_impl.create_lident_mangler `Injected
   end
   in
   (module I : STRAT2)
@@ -278,76 +196,72 @@ include struct
       match t with
       | { ptyp_desc = Ptyp_var _ } -> t
       | { ptyp_desc = Ptyp_constr ({ txt = Lident s }, xs) } when S.is_selfrec_name s ->
-        ptyp_constr
-          ~loc
-          (Located.mk ~loc:t.ptyp_loc (Lident S.self_typ_name))
-          (List.map ~f:helper xs)
+          ptyp_constr
+            ~loc
+            (Located.mk ~loc:t.ptyp_loc (Lident S.self_typ_name))
+            (List.map ~f:helper xs)
       | { ptyp_desc = Ptyp_constr ({ txt; loc }, xs) } ->
-        S.mangle_lident ~loc (lazy (List.map ~f:helper xs)) txt
+          S.mangle_lident ~loc (lazy (List.map ~f:helper xs)) txt
       | t ->
-        (match t.ptyp_desc with
-         (* Inprinciple, special treating of Pairs is not required,
+          (match t.ptyp_desc with
+          (* Inprinciple, special treating of Pairs is not required,
             but it is easier to study the generated code with this specialization *)
-         | Ptyp_tuple [ l; r ] ->
-           ptyp_constr
-             ~loc
-             (Located.mk
-                ~loc:t.ptyp_loc
-                (lident_of_list [ "OCanren"; "Std"; "Pair"; stdname_of_sort S.sort ]))
-             [ helper l; helper r ]
-         | Ptyp_tuple ps ->
-           let loc = t.ptyp_loc in
-           ptyp_constr
-             ~loc
-             (Located.mk ~loc (lident_of_list [ "OCanren"; stdname_of_sort S.sort ]))
-             [ ptyp_tuple ~loc (List.map ~f:helper ps) ]
-         | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) ->
-           oca_logic_ident ~loc:t.ptyp_loc t
-         | _ ->
-           failwiths
-             ~loc
-             "Fallthough case with '%a'. Kind = %s. %s %d"
-             Pprintast.core_type
-             t
-             (stdname_of_sort S.sort)
-             __FILE__
-             __LINE__)
+          | Ptyp_tuple [ l; r ] ->
+              ptyp_constr
+                ~loc
+                (Located.mk
+                   ~loc:t.ptyp_loc
+                   (lident_of_list [ "OCanren"; "Std"; "Pair"; stdname_of_sort S.sort ]))
+                [ helper l; helper r ]
+          | Ptyp_tuple ps ->
+              let loc = t.ptyp_loc in
+              ptyp_constr
+                ~loc
+                (Located.mk ~loc (lident_of_list [ "OCanren"; stdname_of_sort S.sort ]))
+                [ ptyp_tuple ~loc (List.map ~f:helper ps) ]
+          | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
+          | _ ->
+              failwiths
+                ~loc
+                "Fallthough case with '%a'. Kind = %s. %s %d"
+                Pprintast.core_type
+                t
+                (stdname_of_sort S.sort)
+                __FILE__
+                __LINE__)
     in
     match typ with
     | { ptyp_desc = Ptyp_constr ({ txt = Lident id }, args) } when S.is_fully_name id ->
-      S.define_as_fuly_abstract ~loc (lazy (List.map ~f:helper args))
+        S.define_as_fuly_abstract ~loc (lazy (List.map ~f:helper args))
     | { ptyp_desc = Ptyp_constr (id, args) } ->
-      if true
-      then helper typ
-      else (
-        let ttt = ptyp_constr ~loc id (List.map ~f:helper args) in
-        oca_logic_ident ~loc ttt)
+        if true
+        then helper typ
+        else (
+          let ttt = ptyp_constr ~loc id (List.map ~f:helper args) in
+          oca_logic_ident ~loc ttt)
     | { ptyp_desc = Ptyp_tuple [ l; r ] } ->
-      (* TODO(Kakadu): Eliminate copypaste *)
-      ptyp_constr
-        ~loc
-        (Located.mk ~loc
-        @@ lident_of_list [ "OCanren"; "Std"; "Pair"; stdname_of_sort S.sort ])
-        (List.map ~f:helper [ l; r ])
+        (* TODO(Kakadu): Eliminate copypaste *)
+        ptyp_constr
+          ~loc
+          (Located.mk ~loc @@ lident_of_list [ "OCanren"; "Std"; "Pair"; stdname_of_sort S.sort ])
+          (List.map ~f:helper [ l; r ])
     | { ptyp_desc = Ptyp_tuple _ } | { ptyp_desc = Ptyp_var _ } -> helper typ
     | _ ->
-      failwiths
-        "can't generate %s type: %a"
-        (stdname_of_sort S.sort)
-        Ppxlib.Pprintast.core_type
-        typ
+        failwiths
+          "can't generate %s type: %a"
+          (stdname_of_sort S.sort)
+          Ppxlib.Pprintast.core_type
+          typ
   ;;
 
   let ltypify_exn ~loc =
     let oca_logic_ident ~loc = Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]) in
-    make_typ_exn ~loc (fun ~loc t ->
-      ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
+    make_typ_exn ~loc (fun ~loc t -> ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
   ;;
 
   let injectify ~loc =
     let oca_logic_ident ~loc = Located.mk ~loc (lident_of_list [ "OCanren"; "ilogic" ]) in
-    make_typ_exn ~loc (fun ~loc t ->
-      ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
+    make_typ_exn ~loc (fun ~loc t -> ptyp_constr ~loc (oca_logic_ident ~loc:t.ptyp_loc) [ t ])
   ;;
 
   let gtypify_exn ~loc = make_typ_exn ~loc (fun ~loc:_ t -> t)
@@ -358,8 +272,8 @@ include struct
       let t2 =
         match i.pstr_desc with
         | Pstr_type (_, [ ({ ptype_manifest = Some t } as td) ]) ->
-          let st = make_logic_strat_2 td in
-          ltypify_exn ~loc st t
+            let st = make_logic_strat_2 td in
+            ltypify_exn ~loc st t
         | _ -> assert false
       in
       Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
@@ -389,32 +303,32 @@ include struct
       let t2 =
         match i.pstr_desc with
         | Pstr_type (_, [ { ptype_manifest = Some t } ]) ->
-          let st =
-            (module struct
-              let sort = `Reify
-              let self_typ_name = "u_logic"
-              let fully_abstract_name = "u_fuly"
-              let is_selfrec_name = String.equal fully_abstract_name
-              let is_fully_name = is_selfrec_name
-              let ground_typ_name = "u"
-              let logic_typ_name = "u_logic"
-              let injected_typ_name = ""
+            let st =
+              (module struct
+                let sort = `Reify
+                let self_typ_name = "u_logic"
+                let fully_abstract_name = "u_fuly"
+                let is_selfrec_name = String.equal fully_abstract_name
+                let is_fully_name = is_selfrec_name
+                let ground_typ_name = "u"
+                let logic_typ_name = "u_logic"
+                let injected_typ_name = ""
 
-              let define_as_fuly_abstract ~loc args =
-                ptyp_constr
-                  ~loc
-                  (Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]))
-                  [ ptyp_constr
-                      ~loc
-                      (Located.mk ~loc (Lident fully_abstract_name))
-                      (Lazy.force args)
-                  ]
-              ;;
+                let define_as_fuly_abstract ~loc args =
+                  ptyp_constr
+                    ~loc
+                    (Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]))
+                    [ ptyp_constr
+                        ~loc
+                        (Located.mk ~loc (Lident fully_abstract_name))
+                        (Lazy.force args)
+                    ]
+                ;;
 
-              let mangle_lident = create_lident_mangler sort
-            end : STRAT2)
-          in
-          ltypify_exn ~loc st t
+                let mangle_lident = Reify_impl.create_lident_mangler sort
+              end : STRAT2)
+            in
+            ltypify_exn ~loc st t
         | _ -> assert false
       in
       Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
@@ -422,6 +336,7 @@ include struct
     Reify_impl.(config.naming_style <- New_naming);
     test [%stri type nonrec u = state u_fuly];
     [%expect {| state_logic u_fuly OCanren.logic |}];
+    Reify_impl.(config.naming_style <- Old_naming);
     ()
   ;;
 end
@@ -432,32 +347,32 @@ let%expect_test "injectify" =
     let t2 =
       match i.pstr_desc with
       | Pstr_type (_, [ { ptype_manifest = Some t } ]) ->
-        injectify
-          ~loc
-          (module struct
-            let sort = `Injected
-            let self_typ_name = "injected"
-            let is_selfrec_name s = String.equal s "ground"
-            let is_fully_name = String.equal "t"
-            let ground_typ_name = ""
-            let logic_typ_name = ""
-            let injected_typ_name = "injected"
-            let fully_abstract_name = "t"
+          injectify
+            ~loc
+            (module struct
+              let sort = `Injected
+              let self_typ_name = "injected"
+              let is_selfrec_name s = String.equal s "ground"
+              let is_fully_name = String.equal "t"
+              let ground_typ_name = ""
+              let logic_typ_name = ""
+              let injected_typ_name = "injected"
+              let fully_abstract_name = "t"
 
-            let define_as_fuly_abstract ~loc args =
-              ptyp_constr
-                ~loc
-                (Located.mk ~loc (lident_of_list [ "OCanren"; "ilogic" ]))
-                [ ptyp_constr
-                    ~loc
-                    (Located.mk ~loc (Lident fully_abstract_name))
-                    (Lazy.force args)
-                ]
-            ;;
+              let define_as_fuly_abstract ~loc args =
+                ptyp_constr
+                  ~loc
+                  (Located.mk ~loc (lident_of_list [ "OCanren"; "ilogic" ]))
+                  [ ptyp_constr
+                      ~loc
+                      (Located.mk ~loc (Lident fully_abstract_name))
+                      (Lazy.force args)
+                  ]
+              ;;
 
-            let mangle_lident = create_lident_mangler sort
-          end)
-          t
+              let mangle_lident = Reify_impl.create_lident_mangler sort
+            end)
+            t
       | _ -> assert false
     in
     Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
@@ -469,8 +384,7 @@ let%expect_test "injectify" =
   test [%stri type nonrec ground = int GT.list];
   [%expect {|    int OCanren.ilogic OCanren.Std.List.injected |}];
   test [%stri type nonrec ground = GT.int * GT.int];
-  [%expect
-    {|    (GT.int OCanren.ilogic, GT.int OCanren.ilogic) OCanren.Std.Pair.injected |}];
+  [%expect {|    (GT.int OCanren.ilogic, GT.int OCanren.ilogic) OCanren.Std.Pair.injected |}];
   test [%stri type nonrec ground = (GT.int * GT.string) Std.List.ground];
   [%expect
     {|
@@ -507,7 +421,285 @@ let make_strat () =
   (module M : STRAT)
 ;;
 
-let process_main ~loc base_tdecl (rec_, tdecl) =
+type ('a, 'b, 'ri) the_result =
+  { t : 'a
+  ; ground : 'a
+  ; logic : 'a
+  ; injected : 'a
+  ; fmapt : 'b
+  ; prj_exn : 'ri
+  ; reify : 'ri
+  ; other : structure_item list
+  }
+
+let cons_results { t; ground; logic; other; injected; fmapt; prj_exn; reify } next =
+  { t = t :: next.t
+  ; ground = ground :: next.ground
+  ; logic = logic :: next.logic
+  ; injected = injected :: next.injected
+  ; fmapt = fmapt :: next.fmapt
+  ; prj_exn = prj_exn :: next.prj_exn
+  ; reify = reify :: next.reify
+  ; other = other @ next.other
+  }
+;;
+
+let empty_rez va vb ri =
+  { t = va
+  ; ground = va
+  ; logic = va
+  ; injected = va
+  ; fmapt = vb
+  ; reify = ri
+  ; prj_exn = ri
+  ; other = []
+  }
+;;
+
+module Reifier_info = struct
+  type t =
+    { typ : Ppxlib.core_type option
+    ; body : expression
+    ; name : string
+    ; decl : type_declaration
+    }
+end
+
+let remove_deriving_gmap attr =
+  let helper stri =
+    match stri with
+    | [%expr gt ~options:[%e? opts]] ->
+        (match opts.pexp_desc with
+        | Pexp_record (labs, other) ->
+            let labs =
+              List.filter labs ~f:(fun (lab, _) ->
+                  match lab.txt with
+                  | Lident "gmap" -> false
+                  | _ -> true)
+            in
+            let loc = opts.pexp_loc in
+            (match labs with
+            | [] -> [%expr gt]
+            | _ -> [%expr gt ~options:[%e pexp_record ~loc:opts.pexp_loc labs other]])
+        | _ -> stri)
+    | _ -> stri
+  in
+  match attr.attr_payload with
+  | PStr [%str [%e? e]] ->
+      (* notify "%s %d" __FILE__ __LINE__; *)
+      Some { attr with attr_payload = PStr [ pstr_eval ~loc:attr.attr_loc (helper e) [] ] }
+  | _ -> None
+;;
+
+let filter_out_gmap_attr attrs =
+  List.concat_map attrs ~f:(fun attr ->
+      match attr.attr_name.txt with
+      | "distrib" -> []
+      | "deriving" ->
+          remove_deriving_gmap attr
+          |> (function
+          | Some x -> [ x ]
+          | None -> [])
+      | _ -> [ attr ])
+;;
+
+let decorate_with_attributes tdecl attrs = { tdecl with ptype_attributes = attrs }
+
+let%expect_test _ =
+  let loc = Location.none in
+  let tdecl =
+    match [%stri type a = A [@@deriving gt ~options:{ gmap; show }]].pstr_desc with
+    | Pstr_type (_, [ h ]) -> h
+    | _ -> assert false
+  in
+  let new_attrs = List.filter_map tdecl.ptype_attributes ~f:remove_deriving_gmap in
+  (* Format.printf "%a\n%!" Pprintast.type_declaration tdecl; *)
+  let new_decl = { tdecl with ptype_attributes = new_attrs } in
+  let new_s = pstr_type ~loc Nonrecursive [ new_decl ] in
+  Format.printf "%a\n%!" Pprintast.structure_item new_s;
+  [%expect {|
+    type nonrec a =
+      | A [@@deriving gt ~options:{ show }]|}]
+;;
+
+let mk_arg_reifier s = sprintf "r%s" s
+
+let make_reifier_gen ~kind is_rec tdecl : Reifier_info.t =
+  (* let names = extract_names tdecl.ptype_params in *)
+  let loc = tdecl.ptype_loc in
+  let _pat, base_reifier, name =
+    match kind with
+    | Reify_impl.Reify -> [%pat? reify], [%expr OCanren.reify], "reify"
+    | Prj_exn -> [%pat? prj_exn], [%expr OCanren.prj_exn], "prj_exn"
+  in
+  let pat_name =
+    if Reify_impl.is_old ()
+    then Reify_impl.string_of_kind kind
+    else Printf.sprintf "%s_%s" tdecl.ptype_name.txt (Reify_impl.string_of_kind kind)
+  in
+  (* let pat =
+    if Reify_impl.is_old ()
+    then pat
+    else (
+      let name = Printf.sprintf "%s_%s" tdecl.ptype_name.txt (Reify_impl.string_of_kind kind) in
+      ppat_var ~loc (Located.mk ~loc name))
+  in *)
+  match tdecl.ptype_manifest with
+  | Some manifest ->
+      let rec helper typ : expression =
+        let loc = typ.ptyp_loc in
+        match typ with
+        | { ptyp_desc = Ptyp_constr ({ txt = Lident ground }, _) }
+          when String.equal ground tdecl.ptype_name.txt -> [%expr self]
+        | { ptyp_desc = Ptyp_var s } ->
+            pexp_ident ~loc (Located.mk ~loc (lident (mk_arg_reifier s)))
+        | [%type: GT.int]
+        | [%type: int]
+        | [%type: GT.bool]
+        | [%type: bool]
+        | [%type: GT.string]
+        | [%type: string] -> base_reifier
+        | [%type: GT.int Move.ground] -> assert false
+        | [%type: [%t? _arg] GT.list] ->
+            failwiths
+              ~loc
+              "There are some issues with GT.list. Please, use fully qualified \
+               OCanren.Std.List.ground for now"
+        | { ptyp_desc = Ptyp_tuple [ l; r ] } ->
+            let reifier = Exp.ident ~loc (lident_of_list [ "OCanren"; "Std"; "Pair"; name ]) in
+            [%expr [%e reifier] [%e helper l] [%e helper r]]
+        | { ptyp_desc = Ptyp_tuple _ } -> failwiths ~loc "Not implemented"
+        | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, name) }, args) } when Reify_impl.is_new () ->
+            (* Myhelpers.notify "%s %d" __FILE__ __LINE__; *)
+            let tname = Format.sprintf "%s_%s" name (Reify_impl.string_of_kind kind) in
+            let rhs = pexp_ident ~loc (Located.mk ~loc (Ldot (m, tname))) in
+            List.fold_left ~init:rhs args ~f:(fun acc x ->
+                pexp_apply ~loc acc [ nolabel, helper x ])
+        | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, _) }, args) } ->
+            let rhs = pexp_ident ~loc (Located.mk ~loc (Ldot (m, name))) in
+            List.fold_left ~init:rhs args ~f:(fun acc x ->
+                pexp_apply ~loc acc [ nolabel, helper x ])
+        | { ptyp_desc = Ptyp_constr ({ txt = Lident name }, args) } when Reify_impl.is_new () ->
+            let tname = Format.sprintf "%s_%s" name (Reify_impl.string_of_kind kind) in
+            let rhs = pexp_ident ~loc (Located.mk ~loc (Lident tname)) in
+            List.fold_left ~init:rhs args ~f:(fun acc x ->
+                pexp_apply ~loc acc [ nolabel, helper x ])
+        | _ ->
+            failwiths
+              ~loc:typ.ptyp_loc
+              "not supported: %a. %s %d"
+              Pprintast.core_type
+              typ
+              __FILE__
+              __LINE__
+      in
+      let body () =
+        match manifest.ptyp_desc with
+        | Ptyp_constr (_, args) ->
+            let fmapt =
+              let f =
+                if Reify_impl.is_new ()
+                then Exp.lident ~loc (sprintf "%s_fmapt" tdecl.ptype_name.txt)
+                else [%expr fmapt]
+              in
+              pexp_apply ~loc f (List.map args ~f:(fun t -> Nolabel, helper t))
+            in
+            let self_pat = if is_rec then [%pat? self] else [%pat? _] in
+            [%expr
+              let open OCanren.Env.Monad in
+              OCanren.Reifier.fix (fun [%p self_pat] ->
+                  [%e base_reifier]
+                  <..> chain
+                         [%e
+                           match kind with
+                             | Reify ->
+                                 [%expr OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:[%e fmapt])]
+                             | Prj_exn -> fmapt])]
+        | _ -> failwiths ~loc:manifest.ptyp_loc "Not supported %s %d" Caml.__FILE__ Caml.__LINE__
+      in
+      { Reifier_info.typ = None; body = body (); name = pat_name; decl = tdecl }
+  | None -> assert false
+;;
+
+let reifier_for_fully_abstract ~kind tdecl =
+  let loc = tdecl.ptype_loc in
+  let _, base_reifier, _ =
+    match kind with
+    | Reify_impl.Reify -> [%pat? reify], [%expr OCanren.reify], "reify"
+    | Prj_exn -> [%pat? prj_exn], [%expr OCanren.prj_exn], "prj_exn"
+  in
+  let fmapt =
+    if Reify_impl.is_new ()
+    then pexp_ident ~loc (Located.mk ~loc (Lident (sprintf "%s_fmapt" tdecl.ptype_name.txt)))
+    else [%expr fmapt]
+  in
+  let pat_name =
+    if Reify_impl.is_old ()
+    then Reify_impl.string_of_kind kind
+    else Printf.sprintf "%s_%s" tdecl.ptype_name.txt (Reify_impl.string_of_kind kind)
+  in
+  let body () =
+    let fmapt =
+      pexp_apply
+        ~loc
+        fmapt
+        (List.map tdecl.ptype_params ~f:(fun (t, _) ->
+             match t.ptyp_desc with
+             | Ptyp_var v -> Nolabel, pexp_ident ~loc (Located.mk ~loc (Lident (sprintf "f%s" v)))
+             | _ -> assert false))
+    in
+    let self_pat = [%pat? _] in
+    [%expr
+      let open OCanren.Env.Monad in
+      OCanren.Reifier.fix (fun [%p self_pat] ->
+          [%e base_reifier]
+          <..> chain
+                 [%e
+                   match kind with
+                     | Reify -> [%expr OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:[%e fmapt])]
+                     | Prj_exn -> fmapt])]
+  in
+  { Reifier_info.typ = None; body = body (); name = pat_name; decl = tdecl }
+;;
+
+let%expect_test _ =
+  let loc = Location.none in
+  let tdecl =
+    match
+      [%stri
+        type ('a, 'b) either =
+          | A of 'a
+          | B of 'b]
+        .pstr_desc
+    with
+    | Pstr_type (_, [ h ]) -> h
+    | _ -> assert false
+  in
+  let e = reifier_for_fully_abstract ~kind:Prj_exn tdecl in
+  Format.printf "%a\n%!" Pprintast.expression e.Reifier_info.body;
+  [%expect
+    {|
+    let open OCanren.Env.Monad in
+      OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> (chain (fmapt fa fb)))|}];
+  let e = reifier_for_fully_abstract ~kind:Reify tdecl in
+  Format.printf "%a\n%!" Pprintast.expression e.Reifier_info.body;
+  [%expect
+    {|
+    let open OCanren.Env.Monad in
+      OCanren.Reifier.fix
+        (fun _ ->
+           OCanren.reify <..>
+             (chain
+                (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt fa fb)))))|}]
+;;
+
+let pp_attributes ppf attrs =
+  List.iteri attrs ~f:(fun i -> function
+    | { attr_payload = PStr stru } -> Format.fprintf ppf "%d: %a\n%!" i Pprintast.structure stru
+    | _ -> Format.fprintf ppf "pprinting is not implemented")
+;;
+
+let process_main ~loc rec_ (base_tdecl, tdecl) =
   let (module S) = make_strat () in
   let is_rec =
     match rec_ with
@@ -524,41 +716,43 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       let rec helper t =
         match t.ptyp_desc with
         | Ptyp_constr ({ txt = Lident name; loc }, ps) when is_selfrec name ->
-          ptyp_constr
-            ~loc:t.ptyp_loc
-            (Located.mk ~loc (Lident "ground"))
-            (List.map ~f:helper ps)
-        | Ptyp_constr (lident, ps) ->
-          ptyp_constr ~loc:t.ptyp_loc lident (List.map ~f:helper ps)
+            ptyp_constr ~loc:t.ptyp_loc (Located.mk ~loc (Lident "ground")) (List.map ~f:helper ps)
+        | Ptyp_constr (lident, ps) -> ptyp_constr ~loc:t.ptyp_loc lident (List.map ~f:helper ps)
         | Ptyp_tuple ps -> ptyp_tuple ~loc:t.ptyp_loc (List.map ~f:helper ps)
         | Ptyp_any | Ptyp_var _ -> t
         | Ptyp_arrow _ | Ptyp_alias _ | Ptyp_class _ | Ptyp_object _
         | Ptyp_variant (_, _, _)
         | Ptyp_poly (_, _)
         | Ptyp_package _ | Ptyp_extension _ ->
-          failwiths ~loc:t.ptyp_loc "Not supported. %s %d" __FILE__ __LINE__
+            failwiths ~loc:t.ptyp_loc "Not supported. %s %d" __FILE__ __LINE__
       in
       { tdecl with
         ptype_name = Located.mk ~loc:tdecl.ptype_name.loc "ground"
       ; ptype_manifest = Option.map tdecl.ptype_manifest ~f:helper
+      ; ptype_attributes = base_tdecl.ptype_attributes
       })
   in
   let ltyp =
-    let ptype_attributes =
-      List.filter tdecl.ptype_attributes ~f:(fun attr ->
+    (*     let ptype_attributes =
+      List.concat_map tdecl.ptype_attributes ~f:(fun attr ->
         match attr.attr_name.txt with
-        | "distrib" -> false
-        | _ -> true)
-    in
+        | "distrib" -> []
+        | "deriving" ->
+          remove_deriving_gmap attr
+          |> (function
+          | Some x -> [ x ]
+          | None -> [])
+        | _ -> [ attr ])
+    in *)
     let ptype_name = S.logic_typ_name tdecl in
     let ptype_manifest =
       match tdecl.ptype_manifest with
       | None -> failwiths ~loc:tdecl.ptype_loc "no manifest %s %d" __FILE__ __LINE__
       | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) ->
-        Some (ltypify_exn ~loc (make_logic_strat_2 tdecl) typ)
+          Some (ltypify_exn ~loc (make_logic_strat_2 tdecl) typ)
       | t -> t
     in
-    { tdecl with ptype_name; ptype_manifest; ptype_attributes }
+    { tdecl with ptype_name; ptype_manifest; ptype_attributes = base_tdecl.ptype_attributes }
   in
   let names = extract_names tdecl.ptype_params in
   let ityp =
@@ -570,23 +764,25 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       | None -> failwiths ~loc:tdecl.ptype_loc "No manifest"
       | Some { ptyp_desc = Ptyp_constr (({ txt = Lident name } as cname), args) }
         when Reify_impl.is_new () && String.equal name (tdecl.ptype_name.txt ^ "_fuly") ->
-        let oca_logic_ident ~loc = Located.mk ~loc (Ldot (Lident "OCanren", "ilogic")) in
-        let add_ilogic ~loc t = ptyp_constr ~loc (oca_logic_ident ~loc) [ t ] in
-        add_ilogic ~loc @@ ptyp_constr ~loc cname (List.map ~f:helper args)
-        |> Base.Option.some
+          let oca_logic_ident ~loc = Located.mk ~loc (Ldot (Lident "OCanren", "ilogic")) in
+          let add_ilogic ~loc t = ptyp_constr ~loc (oca_logic_ident ~loc) [ t ] in
+          add_ilogic ~loc @@ ptyp_constr ~loc cname (List.map ~f:helper args) |> Base.Option.some
       | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) -> Some (helper typ)
       | t ->
-        (* Format.printf "HERR %s %d\n%!" __FILE__ __LINE__; *)
-        t
+          (* Format.printf "HERR %s %d\n%!" __FILE__ __LINE__; *)
+          t
     in
-    type_declaration
-      ~loc
-      ~name
-      ~private_:Public
-      ~kind:Ptype_abstract
-      ~cstrs:[]
-      ~params:(List.map param_type_vars ~f:(fun x -> x, (NoVariance, NoInjectivity)))
-      ~manifest:ptype_manifest
+    let td =
+      type_declaration
+        ~loc
+        ~name
+        ~private_:Public
+        ~kind:Ptype_abstract
+        ~cstrs:[]
+        ~params:(List.map param_type_vars ~f:(fun x -> x, (NoVariance, NoInjectivity)))
+        ~manifest:ptype_manifest
+    in
+    td
   in
   let creators =
     if Reify_impl.is_new ()
@@ -598,214 +794,92 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
       in
       match base_tdecl.ptype_kind with
       | Ptype_variant cds ->
-        List.map cds ~f:(fun cd ->
-          let name =
-            match has_name_attr cd.pcd_attributes with
-            | None -> name cd
-            | Some name -> name
-          in
-          let prim_pat = Pat.var ~loc (Located.mk ~loc name) in
-          match cd.pcd_args with
-          | Pcstr_tuple xs ->
-            let args = List.map xs ~f:(fun _ -> Ppxlib.gen_symbol ()) in
-            let add_args rhs =
-              match args with
-              | [] -> [%expr fun () -> [%e rhs]]
-              | args ->
-                List.fold_right ~init:rhs args ~f:(fun x acc ->
-                  Exp.fun_ nolabel None (Pat.var (Located.mk ~loc x)) acc)
-            in
-            make_stri
-              prim_pat
-              add_args
-              (Exp.construct
-                 (Located.map_lident cd.pcd_name)
-                 (if List.is_empty args
-                 then None
-                 else Some (Exp.mytuple ~loc (List.map args ~f:(Exp.lident ~loc)))))
-          | Pcstr_record ls ->
-            let add_args rhs =
-              List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
-                Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
-            in
-            make_stri
-              prim_pat
-              add_args
-              (Exp.construct
-                 (Located.map_lident cd.pcd_name)
-                 (Some
-                    (Exp.record
-                       ~loc
-                       (List.map
-                          ~f:(fun { pld_name } ->
-                            let ident = Lident pld_name.txt in
-                            let loc = pld_name.loc in
-                            Located.mk ~loc ident, Exp.ident ~loc ident)
-                          ls)
-                       None))))
+          List.map cds ~f:(fun cd ->
+              let name =
+                match has_name_attr cd.pcd_attributes with
+                | None -> name cd
+                | Some name -> name
+              in
+              let prim_pat = Pat.var ~loc (Located.mk ~loc name) in
+              match cd.pcd_args with
+              | Pcstr_tuple xs ->
+                  let args = List.map xs ~f:(fun _ -> Ppxlib.gen_symbol ()) in
+                  let add_args rhs =
+                    match args with
+                    | [] -> [%expr fun () -> [%e rhs]]
+                    | args ->
+                        List.fold_right ~init:rhs args ~f:(fun x acc ->
+                            Exp.fun_ nolabel None (Pat.var (Located.mk ~loc x)) acc)
+                  in
+                  make_stri
+                    prim_pat
+                    add_args
+                    (Exp.construct
+                       (Located.map_lident cd.pcd_name)
+                       (if List.is_empty args
+                       then None
+                       else Some (Exp.mytuple ~loc (List.map args ~f:(Exp.lident ~loc)))))
+              | Pcstr_record ls ->
+                  let add_args rhs =
+                    List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
+                        Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
+                  in
+                  make_stri
+                    prim_pat
+                    add_args
+                    (Exp.construct
+                       (Located.map_lident cd.pcd_name)
+                       (Some
+                          (Exp.record
+                             ~loc
+                             (List.map
+                                ~f:(fun { pld_name } ->
+                                  let ident = Lident pld_name.txt in
+                                  let loc = pld_name.loc in
+                                  Located.mk ~loc ident, Exp.ident ~loc ident)
+                                ls)
+                             None))))
       | Ptype_record ls ->
-        let add_args rhs =
-          List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
-            Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
-        in
-        let prim_pat =
-          Pat.var ~loc (Located.map_loc ~f:(fun s -> "make_" ^ s) base_tdecl.ptype_name)
-        in
-        [ make_stri
-            prim_pat
-            add_args
-            (Exp.record
-               ~loc
-               (List.map
-                  ~f:(fun { pld_name } ->
-                    let ident = Lident pld_name.txt in
-                    let loc = pld_name.loc in
-                    Located.mk ~loc ident, Exp.ident ~loc ident)
-                  ls)
-               None)
-        ]
-      | Ptype_open | Ptype_abstract ->
-        failwiths
-          ~loc:base_tdecl.ptype_loc
-          "%s %d Open and abstract types are not supported"
-          Caml.__FILE__
-          Caml.__LINE__)
+          let add_args rhs =
+            List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
+                Exp.fun_ nolabel None (Pat.var (Located.mk ~loc txt)) acc)
+          in
+          let prim_pat =
+            Pat.var ~loc (Located.map_loc ~f:(fun s -> "make_" ^ s) base_tdecl.ptype_name)
+          in
+          [ make_stri
+              prim_pat
+              add_args
+              (Exp.record
+                 ~loc
+                 (List.map
+                    ~f:(fun { pld_name } ->
+                      let ident = Lident pld_name.txt in
+                      let loc = pld_name.loc in
+                      Located.mk ~loc ident, Exp.ident ~loc ident)
+                    ls)
+                 None)
+          ]
+      | Ptype_abstract -> []
+      | Ptype_open ->
+          failwiths
+            ~loc:base_tdecl.ptype_loc
+            "%s %d Open and abstract types are not supported"
+            Caml.__FILE__
+            Caml.__LINE__)
   in
-  let mk_arg_reifier s = sprintf "r%s" s in
-  let make_reifier_gen ~kind ?(typ = None) _is_rec tdecl =
-    let pat, base_reifier, name =
-      match kind with
-      | Reify_impl.Reify -> [%pat? reify], [%expr OCanren.reify], "reify"
-      | Prj_exn -> [%pat? prj_exn], [%expr OCanren.prj_exn], "prj_exn"
-    in
-    let pat =
-      if Reify_impl.is_old ()
-      then pat
-      else (
-        let name =
-          Printf.sprintf "%s_%s" tdecl.ptype_name.txt (Reify_impl.string_of_kind kind)
-        in
-        ppat_var ~loc (Located.mk ~loc name))
-    in
-    let manifest = manifest_of_tdecl_exn tdecl in
-    let add_args rhs =
-      let loc = tdecl.ptype_loc in
-      Exp.funs ~loc rhs (List.map ~f:mk_arg_reifier names)
-    in
-    let rec helper typ : expression =
-      let loc = typ.ptyp_loc in
-      match typ with
-      | { ptyp_desc = Ptyp_constr ({ txt = Lident ground }, _) }
-        when String.equal ground tdecl.ptype_name.txt -> [%expr self]
-      | { ptyp_desc = Ptyp_var s } ->
-        pexp_ident ~loc (Located.mk ~loc (lident (mk_arg_reifier s)))
-      | [%type: GT.int]
-      | [%type: int]
-      | [%type: GT.bool]
-      | [%type: bool]
-      | [%type: GT.string]
-      | [%type: string] -> base_reifier
-      | [%type: GT.int Move.ground] -> assert false
-      | [%type: [%t? _arg] GT.list] ->
-        failwiths
-          ~loc
-          "There are some issues with GT.list. Please, use fully qualified \
-           OCanren.Std.List.ground for now"
-      | { ptyp_desc = Ptyp_tuple [ l; r ] } ->
-        let reifier =
-          Exp.ident ~loc (lident_of_list [ "OCanren"; "Std"; "Pair"; name ])
-        in
-        [%expr [%e reifier] [%e helper l] [%e helper r]]
-      | { ptyp_desc = Ptyp_tuple _ } -> failwiths ~loc "Not implemented"
-      | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, name) }, args) }
-        when Reify_impl.is_new () ->
-        Myhelpers.notify "%s %d" __FILE__ __LINE__;
-        let tname = Format.sprintf "%s_%s" name (Reify_impl.string_of_kind kind) in
-        let rhs = pexp_ident ~loc (Located.mk ~loc (Ldot (m, tname))) in
-        List.fold_left ~init:rhs args ~f:(fun acc x ->
-          pexp_apply ~loc acc [ nolabel, helper x ])
-      | { ptyp_desc = Ptyp_constr ({ txt = Ldot (m, _) }, args) } ->
-        let rhs = pexp_ident ~loc (Located.mk ~loc (Ldot (m, name))) in
-        List.fold_left ~init:rhs args ~f:(fun acc x ->
-          pexp_apply ~loc acc [ nolabel, helper x ])
-      | { ptyp_desc = Ptyp_constr ({ txt = Lident name }, args) }
-        when Reify_impl.is_new () ->
-        let tname = Format.sprintf "%s_%s" name (Reify_impl.string_of_kind kind) in
-        let rhs = pexp_ident ~loc (Located.mk ~loc (Lident tname)) in
-        List.fold_left ~init:rhs args ~f:(fun acc x ->
-          pexp_apply ~loc acc [ nolabel, helper x ])
-      | _ ->
-        failwiths
-          ~loc:typ.ptyp_loc
-          "not supported: %a. %s %d"
-          Pprintast.core_type
-          typ
-          __FILE__
-          __LINE__
-    in
-    let body () =
-      match manifest.ptyp_desc with
-      | Ptyp_constr (_, args) ->
-        let fmapt =
-          pexp_apply ~loc [%expr fmapt] (List.map args ~f:(fun t -> Nolabel, helper t))
-        in
-        let self_pat = if is_rec then [%pat? self] else [%pat? _] in
-        [%expr
-          let open OCanren.Env.Monad in
-          OCanren.Reifier.fix (fun [%p self_pat] ->
-            [%e base_reifier]
-            <..> chain
-                   [%e
-                     match kind with
-                     | Reify ->
-                       [%expr OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:[%e fmapt])]
-                     | Prj_exn -> fmapt])]
-      | _ ->
-        failwiths ~loc:manifest.ptyp_loc "Not supported %s %d" Caml.__FILE__ Caml.__LINE__
-    in
-    let pat =
-      match typ with
-      | None -> pat
-      | Some t -> ppat_constraint ~loc pat t
-    in
-    pstr_value ~loc Nonrecursive [ value_binding ~loc ~pat ~expr:(add_args (body ())) ]
-  in
-  let typ_of_decl decl =
+  (*   let typ_of_decl decl =
     ptyp_constr
       ~loc
       (Located.mk ~loc (Lident decl.ptype_name.txt))
       (List.map decl.ptype_params ~f:(fun (t, _) ->
-         match t.ptyp_desc with
-         | Ptyp_var _v -> t
-         | _ -> assert false))
-  in
-  let make_reifier is_rec tdecl =
-    let logic_typ = typ_of_decl ltyp in
-    let injected_typ = typ_of_decl ityp in
-    make_reifier_gen
-      ~kind:Reify
-      ~typ:
-        (if List.is_empty tdecl.ptype_params
-        then Some [%type: ([%t injected_typ], [%t logic_typ]) OCanren.Reifier.t]
-        else None)
-      is_rec
-      tdecl
-  in
-  let make_prj_exn is_rec tdecl =
-    let ground_typ = typ_of_decl tdecl in
-    let injected_typ = typ_of_decl ityp in
-    make_reifier_gen
-      ~kind:Prj_exn
-      ~typ:
-        (if List.is_empty tdecl.ptype_params
-        then Some [%type: ([%t injected_typ], [%t ground_typ]) OCanren.Reifier.t]
-        else None)
-      is_rec
-      tdecl
-  in
-  let make_fmapt tdecl =
+           match t.ptyp_desc with
+           | Ptyp_var _v -> t
+           | _ -> assert false))
+  in *)
+  let make_fmapt decl =
     let names =
-      extract_names (name_type_params_in_td tdecl).ptype_params
+      extract_names (name_type_params_in_td decl).ptype_params
       |> List.map ~f:(fun prefix -> gen_symbol ~prefix ())
     in
     let gt_fuly_expr =
@@ -817,41 +891,107 @@ let process_main ~loc base_tdecl (rec_, tdecl) =
             else pexp_ident ~loc (Located.mk ~loc (Lident base_tdecl.ptype_name.txt))]]
     in
     let expr = Reify_impl.make_fmapt_body ~loc gt_fuly_expr (List.length names) in
-    pstr_value ~loc Nonrecursive [ value_binding ~loc ~pat:[%pat? fmapt] ~expr ]
+    let pat =
+      ppat_var
+        ~loc
+        (if Reify_impl.is_new ()
+        then Located.sprintf ~loc "%s_fmapt" tdecl.ptype_name.txt
+        else Located.sprintf ~loc "fmapt")
+    in
+    value_binding ~loc ~pat ~expr
   in
-  List.concat
-    [ [ pstr_type ~loc Nonrecursive [ base_tdecl ] ]
-    ; [ pstr_type ~loc rec_ [ decorate_with_attributes tdecl base_tdecl.ptype_attributes ]
-      ]
-    ; [ pstr_type ~loc rec_ [ decorate_with_attributes ltyp base_tdecl.ptype_attributes ]
-      ]
-    ; [ pstr_type ~loc rec_ [ ityp ] ]
-    ; [ make_fmapt base_tdecl ]
-    ; [ make_prj_exn is_rec tdecl; make_reifier is_rec tdecl ]
-    ; creators
-    ]
+  let add_typ ~kind ri =
+    let g =
+      match kind with
+      | Reify_impl.Reify -> ltyp
+      | Prj_exn -> tdecl
+    in
+    let injected_typ =
+      let lident = Located.mk ~loc (Lident ityp.ptype_name.txt) in
+      let lident_g = Located.mk ~loc (Lident g.ptype_name.txt) in
+      let names = extract_names tdecl.ptype_params in
+      let mangle = sprintf "%s_2" in
+      let names_2 = List.map names ~f:mangle in
+      let rez =
+        [%type:
+          ( [%t ptyp_constr ~loc lident (List.map names ~f:(fun s -> ptyp_var ~loc s))]
+          , [%t ptyp_constr ~loc lident_g (List.map names_2 ~f:(fun s -> ptyp_var ~loc s))] )
+          OCanren.Reifier.t]
+      in
+      List.fold_right names ~init:rez ~f:(fun name acc ->
+          [%type:
+            ([%t ptyp_var ~loc name], [%t ptyp_var ~loc (mangle name)]) OCanren.Reifier.t
+            -> [%t acc]])
+    in
+    { ri with Reifier_info.typ = Some injected_typ }
+  in
+  { t = base_tdecl
+  ; ground = decorate_with_attributes tdecl base_tdecl.ptype_attributes
+  ; logic = ltyp
+  ; injected = ityp
+  ; fmapt = make_fmapt base_tdecl
+  ; prj_exn = add_typ ~kind:Prj_exn (make_reifier_gen ~kind:Prj_exn is_rec tdecl)
+  ; reify = add_typ ~kind:Reify (make_reifier_gen ~kind:Reify is_rec tdecl)
+  ; other = creators
+  }
 ;;
 
 (* TODO(Kakadu): remember why this is really needed *)
+(*
 let process_composable =
   List.map ~f:(fun tdecl ->
-    let loc = tdecl.pstr_loc in
-    match tdecl.pstr_desc with
-    | Pstr_type (_, [ t ]) ->
-      (match t.ptype_manifest with
-       | Some _ ->
-         pstr_type
-           ~loc
-           Nonrecursive
-           [ { t with
-               ptype_attributes =
-                 [ attribute
-                     ~loc
-                     ~name:(Located.mk ~loc "deriving")
-                     ~payload:(PStr [ [%stri reify] ])
-                 ]
-             }
-           ]
-       | None -> tdecl)
-    | _ -> tdecl)
+      let loc = tdecl.pstr_loc in
+      match tdecl.pstr_desc with
+      | Pstr_type (_, [ t ]) ->
+          (match t.ptype_manifest with
+          | Some _ ->
+              pstr_type
+                ~loc
+                Nonrecursive
+                [ { t with
+                    ptype_attributes =
+                      [ attribute
+                          ~loc
+                          ~name:(Located.mk ~loc "deriving")
+                          ~payload:(PStr [ [%stri reify] ])
+                      ]
+                  }
+                ]
+          | None -> tdecl)
+      | _ -> tdecl)
 ;;
+ *)
+(* let prepare_reifiers (rs : Reifier_info.t list) =
+  let names = [] (* type params of original decl *) in
+  let mk_arg_reifier s = sprintf "r%s" s in
+  let add_args tdecl rhs =
+    let loc = tdecl.ptype_loc in
+    Exp.funs ~loc rhs (List.map ~f:mk_arg_reifier names)
+  in
+  match rs with
+  | [] -> []
+  | [ h ] ->
+      let loc = h.Reifier_info.decl.ptype_loc in
+      let pat = ppat_var ~loc (Located.mk ~loc h.Reifier_info.name) in
+      [ value_binding ~loc ~pat ~expr:(add_args h.Reifier_info.decl h.Reifier_info.body) ]
+  | rs ->
+      let mutual_names = List.map rs ~f:(fun { Reifier_info.decl } -> decl.ptype_name.txt) in
+      let mutual_args ~loc e =
+        pexp_fun
+          ~loc
+          nolabel
+          None
+          (ppat_tuple
+             ~loc
+             (List.map mutual_names ~f:(fun name -> ppat_var ~loc (Located.mk ~loc name))))
+          e
+      in
+      List.concat
+        [ List.map rs ~f:(fun { Reifier_info.name; decl; body } ->
+              let loc = decl.ptype_loc in
+              let pat = ppat_var ~loc (Located.mk ~loc name) in
+              value_binding ~loc ~pat ~expr:(mutual_args ~loc @@ add_args decl body))
+        ; List.concat_map rs ~f:(fun _ -> [])
+        ]
+;;
+ *)
