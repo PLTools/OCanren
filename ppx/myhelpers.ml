@@ -18,11 +18,9 @@ let lident_of_list = function
 
 let extract_names =
   List.map ~f:(fun (typ, _) ->
-    match typ.ptyp_desc with
-    | Ptyp_var s -> s
-    | _ ->
-      failwith
-        (Caml.Format.asprintf "Don't know what to do with %a" Pprintast.core_type typ))
+      match typ.ptyp_desc with
+      | Ptyp_var s -> s
+      | _ -> failwith (Caml.Format.asprintf "Don't know what to do with %a" Pprintast.core_type typ))
 ;;
 
 open Ppxlib.Ast_builder.Default
@@ -46,6 +44,7 @@ module Exp = struct
     | xs -> tuple ~loc ~attrs xs
   ;;
 
+  (** Same as [pexp_apply] but all arguments are unlabelled   *)
   let apply ~loc f = function
     | [] -> f
     | xs -> apply ~loc f (List.map ~f:(fun e -> Nolabel, e) xs)
@@ -55,8 +54,8 @@ module Exp = struct
     match xs with
     | [] -> body
     | xs ->
-      List.fold_right xs ~init:body ~f:(fun n acc ->
-        pexp_fun ~loc Nolabel None (ppat_var ~loc (Located.mk ~loc n)) acc)
+        List.fold_right xs ~init:body ~f:(fun n acc ->
+            pexp_fun ~loc Nolabel None (ppat_var ~loc (Located.mk ~loc n)) acc)
   ;;
 
   let lident ~loc l = pexp_ident ~loc (Located.mk ~loc (lident l))
