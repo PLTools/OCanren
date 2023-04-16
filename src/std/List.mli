@@ -102,6 +102,8 @@ val prj_exn : ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t
 (** [list_prj_exn] is a synonym for [prj_exn] *)
 val list_prj_exn : ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t
 
+val ground_prj_exn : ('a, 'b) Reifier.t -> ('a injected, 'b ground) Reifier.t
+
 (** Synonyms to comply with the generic naming scheme *)
 val reify_list   : ('a, 'b) Reifier.t -> ('a injected, 'b logic) Reifier.t
 
