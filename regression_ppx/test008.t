@@ -15,11 +15,13 @@
         let open OCanren.Env.Monad in
         OCanren.Env.Monad.return (GT.gmap t) <*> f__005_ <*> f__006_ <*> subj__007_
   
-      let prj_exn ra =
+      let (prj_exn : ('a, 'a_2) OCanren.Reifier.t -> ('a injected, 'a_2 ground) OCanren.Reifier.t) =
+       fun ra ->
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt ra self))
   
-      let reify ra =
+      let (reify : ('a, 'a_2) OCanren.Reifier.t -> ('a injected, 'a_2 logic) OCanren.Reifier.t) =
+       fun ra ->
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.reify
@@ -44,11 +46,13 @@
         let open OCanren.Env.Monad in
         OCanren.Env.Monad.return (GT.gmap t) <*> f__010_ <*> f__011_ <*> subj__012_
   
-      let prj_exn ra =
+      let (prj_exn : ('a, 'a_2) OCanren.Reifier.t -> ('a injected, 'a_2 ground) OCanren.Reifier.t) =
+       fun ra ->
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra OCanren.prj_exn))
   
-      let reify ra =
+      let (reify : ('a, 'a_2) OCanren.Reifier.t -> ('a injected, 'a_2 logic) OCanren.Reifier.t) =
+       fun ra ->
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ ->
             OCanren.reify
@@ -56,6 +60,16 @@
   
       let make_t name v = OCanren.inji {name; v}
     end
+  
+    let () =
+      let open OCanren in
+      run q
+        (fun r -> r === !!{name= !!5; v= !!"asdf"})
+        (fun r -> r#reify (key_value_prj_exn OCanren.prj_exn))
+      |> OCanren.Stream.hd
+      |> GT.show key_value (GT.show GT.string)
+      |> print_endline
   end
   $ ./test008.exe
   test008
+  { name=5; v="asdf"; }
