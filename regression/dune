@@ -1,6 +1,9 @@
 (env
  (dev
   (flags
-   (:standard -w -27))))
+   (:standard -rectypes -w -27)))
+ (release
+  (flags
+   (:standard -rectypes))))
 
 (include dune.tests)

@@ -1,3 +1,8 @@
+(env
+ (_
+  (flags
+   (:standard -rectypes))))
+
 (library
  (name install_timer)
  (modules install_timer)

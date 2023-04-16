@@ -1,10 +1,10 @@
 (env
  (dev
   (flags
-   (:standard -rectypes -short-paths -warn-error -A -w -K-9)))
+   (:standard -short-paths -warn-error -A -w -K-9)))
  (release
   (flags
-   (:standard -rectypes -warn-error -A -w -K-9))
+   (:standard -warn-error -A -w -K-9))
   (ocamlopt_flags -O3)))
 
 (alias

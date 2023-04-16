@@ -1,3 +1,8 @@
+(env
+ (_
+  (flags
+   (:standard -rectypes))))
+
 (library
  (name tester)
  (modules tester)

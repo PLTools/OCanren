@@ -219,6 +219,7 @@
  (modules test007)
  (flags
   (:standard
+   -rectypes
    ;-dsource
    ))
  (preprocessor_deps
@@ -242,6 +243,7 @@
  (modules test008)
  (flags
   (:standard
+   -rectypes
    ;-dsource
    ;
    ))
