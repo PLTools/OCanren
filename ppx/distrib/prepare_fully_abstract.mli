@@ -8,5 +8,5 @@
 
 val run
   :  Warnings.loc
-  -> Ppxlib.type_declaration
-  -> Ppxlib.type_declaration * Ppxlib.type_declaration
+  -> Ppxlib.type_declaration list
+  -> (Ppxlib.type_declaration * Ppxlib.type_declaration) list
