@@ -17,4 +17,16 @@
  (libraries ppxlib ppxlib.stdppx OCanren-ppx.internals)
  (inline_tests)
  (preprocess
+  (pps ppxlib.metaquot ppx_inline_test ppx_expect ppx_meta_lident)))
+
+(library
+ (name ppx_meta_lident)
+ ; (public_name -)
+ (kind ppx_rewriter)
+ (libraries ppxlib ppxlib.stdppx)
+ (modules ppx_meta_lident)
+ (flags
+  (:standard -warn-error -A))
+ (inline_tests)
+ (preprocess
   (pps ppxlib.metaquot ppx_inline_test ppx_expect)))
