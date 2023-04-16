@@ -14,4 +14,15 @@ module _ = struct
     ; v : 'a
     }
   [@@deriving gt ~options:{ show; gmap }]]
+
+  let () =
+    let open OCanren in
+    run
+      q
+      (fun r -> r === !!{ name = !!5; v = !!"asdf" })
+      (fun r -> r#reify (key_value_prj_exn OCanren.prj_exn))
+    |> OCanren.Stream.hd
+    |> GT.show key_value (GT.show GT.string)
+    |> print_endline
+  ;;
 end

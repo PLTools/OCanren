@@ -49,7 +49,7 @@ end
 let () = print_endline "test006"
 
 module _ = struct
-  [%%distrib
+  [%%ocanren_inject
   type ground =
     | Symb of GT.string
     | Seq of ground Std.List.ground
@@ -57,7 +57,7 @@ module _ = struct
 end
 
 module _ = struct
-  [%%distrib type ground = GT.bool * GT.int * GT.string]
+  [%%ocanren_inject type ground = GT.bool * GT.int * GT.string]
 
   let () =
     let open OCanren in
@@ -67,7 +67,7 @@ module _ = struct
 end
 
 module _ = struct
-  [%%distrib
+  [%%ocanren_inject
   type ground = (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)
   [@@deriving gt]]
 end

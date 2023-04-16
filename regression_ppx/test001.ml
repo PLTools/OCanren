@@ -29,10 +29,7 @@ module _ = struct
   type nonrec 'a ground = 'a t]
 
   let run_option n =
-    run_r
-      [%reify: GT.int ground]
-      (GT.show logic (GT.show OCanren.logic (GT.show GT.int)))
-      n
+    run_r [%reify: GT.int ground] (GT.show logic (GT.show OCanren.logic (GT.show GT.int))) n
   ;;
 
   let () =
@@ -57,8 +54,7 @@ module _ = struct
     GT.show logic (GT.show OCanren.logic (GT.show GT.int))
   ;;
 
-  let __ : ((('b ilogic, 'a) t ilogic as 'a), (('b, 'c) t as 'c)) OCanren__Logic.Reifier.t
-    =
+  let __ : ((('b ilogic, 'a) t ilogic as 'a), (('b, 'c) t as 'c)) OCanren__Logic.Reifier.t =
     prj_exn OCanren.prj_exn
   ;;
 
@@ -87,25 +83,7 @@ module Moves = struct
 end
 
 module _ = struct
+  [%%distrib
   type nonrec ('a, 'b, 'c) t = 'a * 'b * 'c [@@deriving gt ~options:{ gmap; show }]
-  type ('a, 'b, 'c) ground = ('a, 'b, 'c) t [@@deriving gt ~options:{ gmap; show }]
-  (* type logic = logic t OCanren.logic [@@deriving gt ~options:{ gmap; show }] *)
-  (* type injected = injected t OCanren.ilogic *)
-
-  let fmapt fa fb fc subj__003_ =
-    let open OCanren.Env.Monad in
-    OCanren.Env.Monad.return (GT.gmap t) <*> fa <*> fb <*> fc <*> subj__003_
-  ;;
-
-  let prj_exn ra rb rc : (_, ('a, 'b, 'c) ground) OCanren.Reifier.t =
-    let open OCanren.Env.Monad in
-    OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra rb rc))
-  ;;
-
-  let reify ra rb rc : (_, ('a, 'b, 'c) ground OCanren.logic) OCanren.Reifier.t =
-    let open OCanren.Env.Monad in
-    OCanren.Reifier.fix (fun _ ->
-      OCanren.reify
-      <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt ra rb rc))))
-  ;;
+  type nonrec ('a, 'b, 'c) ground = ('a, 'b, 'c) t]
 end

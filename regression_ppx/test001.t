@@ -1,4 +1,4 @@
-  $ pp_distrib test001.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat -
+  $ ../ppx/pp_distrib.exe test001.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat -
   open OCanren
   open Tester
   
@@ -57,11 +57,17 @@
         let open OCanren.Env.Monad in
         OCanren.Env.Monad.return (GT.gmap t) <*> f__007_ <*> subj__008_
   
-      let prj_exn ra =
+      let (prj_exn :
+               ('a, 'a_2) OCanren.Reifier.t
+            -> ('a injected, 'a_2 ground) OCanren.Reifier.t ) =
+       fun ra ->
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra))
   
-      let reify ra =
+      let (reify :
+               ('a, 'a_2) OCanren.Reifier.t
+            -> ('a injected, 'a_2 logic) OCanren.Reifier.t ) =
+       fun ra ->
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun _ ->
             OCanren.reify
@@ -103,12 +109,18 @@
         OCanren.Env.Monad.return (GT.gmap t)
         <*> f__013_ <*> f__014_ <*> subj__015_
   
-      let prj_exn ra =
+      let (prj_exn :
+               ('a, 'a_2) OCanren.Reifier.t
+            -> ('a injected, 'a_2 ground) OCanren.Reifier.t ) =
+       fun ra ->
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.prj_exn <..> chain (fmapt ra self) )
   
-      let reify ra =
+      let (reify :
+               ('a, 'a_2) OCanren.Reifier.t
+            -> ('a injected, 'a_2 logic) OCanren.Reifier.t ) =
+       fun ra ->
         let open OCanren.Env.Monad in
         OCanren.Reifier.fix (fun self ->
             OCanren.reify
@@ -188,28 +200,48 @@
   end
   
   module _ = struct
-    type nonrec ('a, 'b, 'c) t = 'a * 'b * 'c
-    [@@deriving gt ~options:{gmap; show}]
+    include struct
+      type nonrec ('a, 'b, 'c) t = 'a * 'b * 'c
+      [@@deriving gt ~options:{gmap; show}]
   
-    type ('a, 'b, 'c) ground = ('a, 'b, 'c) t
-    [@@deriving gt ~options:{gmap; show}]
+      type nonrec ('a, 'b, 'c) ground = ('a, 'b, 'c) t
+      [@@deriving gt ~options:{gmap; show}]
   
-    let fmapt fa fb fc subj__003_ =
-      let open OCanren.Env.Monad in
-      OCanren.Env.Monad.return (GT.gmap t) <*> fa <*> fb <*> fc <*> subj__003_
+      type nonrec ('a, 'b, 'c) logic = ('a, 'b, 'c) t OCanren.logic
+      [@@deriving gt ~options:{gmap; show}]
   
-    let prj_exn ra rb rc : (_, ('a, 'b, 'c) ground) OCanren.Reifier.t =
-      let open OCanren.Env.Monad in
-      OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra rb rc))
+      type nonrec ('a, 'b, 'c) injected = ('a, 'b, 'c) t OCanren.ilogic
   
-    let reify ra rb rc : (_, ('a, 'b, 'c) ground OCanren.logic) OCanren.Reifier.t
-        =
-      let open OCanren.Env.Monad in
-      OCanren.Reifier.fix (fun _ ->
-          OCanren.reify
-          <..> chain
-                 (OCanren.Reifier.zed
-                    (OCanren.Reifier.rework ~fv:(fmapt ra rb rc)) ) )
+      let fmapt f__026_ f__027_ f__028_ subj__029_ =
+        let open OCanren.Env.Monad in
+        OCanren.Env.Monad.return (GT.gmap t)
+        <*> f__026_ <*> f__027_ <*> f__028_ <*> subj__029_
+  
+      let (prj_exn :
+               ('a, 'a_2) OCanren.Reifier.t
+            -> ('b, 'b_2) OCanren.Reifier.t
+            -> ('c, 'c_2) OCanren.Reifier.t
+            -> ( ('a, 'b, 'c) injected
+               , ('a_2, 'b_2, 'c_2) ground )
+               OCanren.Reifier.t ) =
+       fun ra rb rc ->
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra rb rc))
+  
+      let (reify :
+               ('a, 'a_2) OCanren.Reifier.t
+            -> ('b, 'b_2) OCanren.Reifier.t
+            -> ('c, 'c_2) OCanren.Reifier.t
+            -> (('a, 'b, 'c) injected, ('a_2, 'b_2, 'c_2) logic) OCanren.Reifier.t
+            ) =
+       fun ra rb rc ->
+        let open OCanren.Env.Monad in
+        OCanren.Reifier.fix (fun _ ->
+            OCanren.reify
+            <..> chain
+                   (OCanren.Reifier.zed
+                      (OCanren.Reifier.rework ~fv:(fmapt ra rb rc)) ) )
+    end
   end
   $ ./test001.exe
   fun q -> q === (z ()), 1 answer {
