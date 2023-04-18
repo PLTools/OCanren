@@ -41,50 +41,22 @@ let logic = {
       method foldr   fa l = GT.foldr   (Logic.logic) (GT.foldr   (t) fa (this#foldr   fa)) l
       method html    fa l = GT.html    (Logic.logic) (GT.html    (t) fa (this#html    fa)) l
       method fmt fa fmt l = Format.fprintf fmt "%s" (this#show (Format.asprintf "%a" fa) l)
-      method show fa l =
-        (* We can print like [...; ...; ...] when tail is Nil *)
-        let rec can_print_with_sugar = function
-          | Value Nil -> true
-          | Value (Cons (_, tl)) -> can_print_with_sugar tl
-          | Var _ -> false
+      method show fa : _ logic -> _ =
+        let rec loop ?(is_head=false): ('a, 'a logic) t -> string = function
+          | Cons (h, (Var _ as tl)) ->
+              String.concat "" [if is_head then "" else "; "; fa h; " | "; loop_logic tl]
+          | Cons (h, Value tl) ->
+              String.concat "" [if is_head then "" else "; "; fa h; loop tl]
+          | Nil -> ""
+        and loop_whole x = "[" ^ loop ~is_head:true x ^ "]"
+        and loop_logic = function
+            | Value v -> loop v
+            | Var _ as l -> GT.show(Logic.logic) loop_whole l
+        and toplevel fa = function
+          | Var _ as l -> GT.show(Logic.logic) loop_whole l
+          | Value v -> loop_whole v
         in
-        let inner_show ?(brackets=false) sep l =
-          (* TODO(Kakadu): Rewrite using Buffer.t too. Need to change show to foldl though. *)
-          let rec inner l =
-            GT.transform(t)
-              (fun fself ->
-                  object
-                      inherit ['a,'a logic, _] @t[show] (GT.lift fa) (GT.lift (GT.show(Logic.logic) inner)) fself
-                      method! c_Nil   _ _      = ""
-                      method! c_Cons  i s x xs =
-                        (fa x) ^ (match xs with Value Nil -> "" | _ -> sep ^ (GT.show(Logic.logic) inner xs))
-                  end)
-              ()
-              l
-          in
-          if brackets then "[" ^ inner l ^ "]"
-          else inner l
-        in
-        if can_print_with_sugar l
-        then "[" ^ GT.show(Logic.logic) (inner_show "; ") l ^ "]"
-        else match l with
-          | Value Nil -> "[]"
-          | Var _ -> GT.show Logic.logic (inner_show ~brackets:true " :: ") l
-          | Value (Cons (h, tl)) ->
-            let rec loop b = function
-              | Value (Cons (h, tl)) ->
-                  Buffer.add_string b " :: ";
-                  Buffer.add_string b (fa h);
-                  loop b tl
-              | Value Nil -> Buffer.add_string b " :: []"
-              | (Var _) as v ->
-                  Buffer.add_string b " :: ";
-                  Buffer.add_string b (GT.show Logic.logic (inner_show " :: ") v)
-            in
-            let b = Buffer.create 10 in (* TODO(Kakadu): We can preallocate buffer depending on length of list *)
-            Buffer.add_string b (fa h);
-            loop b tl;
-            Buffer.contents b
+        toplevel fa
     end
 }
 
