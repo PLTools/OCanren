@@ -16,7 +16,7 @@
   fun q -> infero (abs varX (app (v varX) (v varX))) q, 1 answer {
   }
   fun q -> lookupo varX q (v varY), 1 answer {
-  q=("x", V ("y")) :: _.13;
+  q=[("x", V ("y")) | _.13];
   }
   fun q -> infero (abs varX (v varX)) q, 1 answer {
   q=Arr (_.18, _.18);
