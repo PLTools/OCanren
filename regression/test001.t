@@ -43,6 +43,9 @@
   fun q -> OCanren.Fresh.one (fun n -> delay (fun () -> q === n % Std.nil ())), 1 answer {
   q=[_.11];
   }
+  fun q -> OCanren.Fresh.three (fun a b c -> delay (fun () -> q === a % b % c)), 1 answer {
+  q=[[_.11 | _.12] | _.13];
+  }
   fun q -> reverso (ilist []) (ilist []), 1 answer {
   q=_.10;
   }

@@ -68,10 +68,12 @@ let _ =
   run_exn show_int      10  q qh (REPR (fun q   -> fives q                                         ))
 
 let runL eta = run_r (Std.List.reify OCanren.reify) show_intl_list eta
+let runLL eta = run_r (Std.List.reify @@ Std.List.reify OCanren.reify) (GT.show Std.List.logic show_intl_list) eta
 
 let _withFree =
   runL          1  q  qh (REPR (fun q   -> success                                      ));
   runL          1  q  qh (REPR (fun q   -> fresh (n) (q === n % Std.nil())              ));
+  runLL         1  q  qh (REPR (fun q   -> fresh (a b c) (q === (a % b) % c)            ));
   runL          1  q  qh (REPR (fun q   -> reverso (ilist []) (ilist [])                ));
   runL          2  q  qh (REPR (fun q   -> reverso q q                                  ));
   runL          4 qr qrh (REPR (fun q r -> appendo q (ilist []) r                       ));
