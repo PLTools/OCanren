@@ -44,7 +44,8 @@
  (public_names -)
  (flags
   (:standard
-   -dsource ;
+   ;-dsource
+   ;
    ))
  (preprocess
   (pps OCanren-ppx.ppx_deriving_reify OCanren-ppx.ppx_distrib -- -pretty))
@@ -194,6 +195,7 @@
   (package OCanren-ppx)
   %{project_root}/ppx/pp_ocanren_all.exe
   %{project_root}/ppx/pp_deriving_reify.exe
+  %{project_root}/ppx/pp_distrib.exe
   test005.ml
   test005.exe))
 

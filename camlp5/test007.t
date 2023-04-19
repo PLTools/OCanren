@@ -51,7 +51,7 @@ $ ls
       let () =
         let open OCanren in
         run q (fun q -> q === inj (!!(true), !!(true), !!(false)))
-          (fun rr -> rr#reify prj_exn_state) |>
+          (fun rr -> rr#reify state_prj_exn) |>
           Stream.iter (fun (a, b, c) -> Format.printf "%b %b %b\n" a b c)
     end
   

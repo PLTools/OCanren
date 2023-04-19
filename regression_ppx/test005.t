@@ -1,4 +1,4 @@
-  $ ../ppx/pp_deriving_reify.exe -pp pp_distrib test005.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat -
+  $ ../ppx/pp_deriving_reify.exe -pp ../ppx/pp_distrib.exe test005.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat -
   open OCanren
   
   module _ = struct
