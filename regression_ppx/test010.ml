@@ -19,6 +19,4 @@ module Move = struct
 end
 
 [%%ocanren_inject type hum_moves = GT.int Move.move [@@deriving gt ~options:{ gmap }]]
-
-[%%ocanren_inject
-type asdf = GT.int OCanren.Std.List.list [@@deriving gt ~options:{ gmap }]]
+[%%ocanren_inject type asdf = GT.int GT.list [@@deriving gt ~options:{ gmap }]]

@@ -90,23 +90,27 @@
   
     type hum_moves_logic = GT.int OCanren.logic Move.move_logic [@@deriving gt ~options:{gmap}]
   
-    let (reify_hum_moves : (_, GT.int OCanren.logic Move.move_logic) OCanren.Reifier.t) =
+    type hum_moves_injected = GT.int OCanren.ilogic Move.move_injected
+  
+    let (hum_moves_reify : (_, GT.int OCanren.logic Move.move_logic) OCanren.Reifier.t) =
       Move.move_reify OCanren.reify
   
-    let (prj_exn_hum_moves : (_, GT.int Move.move) OCanren.Reifier.t) =
+    let (hum_moves_prj_exn : (_, GT.int Move.move) OCanren.Reifier.t) =
       Move.move_prj_exn OCanren.prj_exn
   end
   
   include struct
-    type asdf = GT.int OCanren.Std.List.list [@@deriving gt ~options:{gmap}]
+    type asdf = GT.int GT.list [@@deriving gt ~options:{gmap}]
   
-    type asdf_logic = GT.int OCanren.logic OCanren.Std.List.list_logic [@@deriving gt ~options:{gmap}]
+    type asdf_logic = GT.int OCanren.logic OCanren.Std.List.logic [@@deriving gt ~options:{gmap}]
   
-    let (reify_asdf : (_, GT.int OCanren.logic OCanren.Std.List.list_logic) OCanren.Reifier.t) =
-      OCanren.Std.List.list_reify OCanren.reify
+    type asdf_injected = GT.int OCanren.ilogic OCanren.Std.List.injected
   
-    let (prj_exn_asdf : (_, GT.int OCanren.Std.List.list) OCanren.Reifier.t) =
-      OCanren.Std.List.list_prj_exn OCanren.prj_exn
+    let (asdf_reify : (_, GT.int OCanren.logic OCanren.Std.List.logic) OCanren.Reifier.t) =
+      OCanren.Std.List.reify OCanren.reify
+  
+    let (asdf_prj_exn : (_, GT.int OCanren.Std.List.ground) OCanren.Reifier.t) =
+      OCanren.Std.List.prj_exn OCanren.prj_exn
   end
 
   $ ./test010.exe
