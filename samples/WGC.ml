@@ -12,12 +12,16 @@ let (!) = inj
 
 let qua x y z t = OCanren.inj (x, y, z, t)
 
+[@@@ocaml.warning "-8"]
+
 let [[isGoat; isWolf; isCabbage; isMan] as are; [noGoat; noWolf; noCabbage; noMan] as no] =
   L.map (fun f -> L.map (fun p s -> p f s) [(fun f s -> fresh (x y z) (s === qua !f x y z));
                                             (fun f s -> fresh (x y z) (s === qua x !f y z));
                                             (fun f s -> fresh (x y z) (s === qua x y !f z));
                                             (fun f s -> fresh (x y z) (s === qua x y z !f))]
            ) [true; false]
+
+[@@@ocaml.warning "+8"]
 
 let safe state = fresh (left right) (
                    (state === pair left right) &&&
