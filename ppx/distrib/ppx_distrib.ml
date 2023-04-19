@@ -91,100 +91,99 @@ let knot_reifiers ~loc ?(kind = Reify_impl.Prj_exn) reifiers base_decls =
         List.map joined ~f:(function { Ppx_distrib_expander.Reifier_info.decl }, _ ->
             mangle1name decl.ptype_name.txt nameR)
       in
-      List.concat
-        [ (List.map joined ~f:(fun ({ Reifier_info.decl }, tdecl) ->
-               let info =
-                 reifier_for_fully_abstract
-                   ~kind:Prj_exn
-                   { tdecl with ptype_name = decl.ptype_name }
-               in
-               let pat =
-                 ppat_var ~loc (Located.mk ~loc (Printf.sprintf "__%s" decl.ptype_name.txt))
+      [ (List.map joined ~f:(fun ({ Reifier_info.decl }, tdecl) ->
+             let info =
+               reifier_for_fully_abstract ~kind { tdecl with ptype_name = decl.ptype_name }
+             in
+             let pat =
+               ppat_var ~loc (Located.mk ~loc (Printf.sprintf "__%s" decl.ptype_name.txt))
+             in
+             let expr =
+               Myhelpers.Exp.funs
+                 ~loc
+                 info.body
+                 (List.map ~f:(Printf.sprintf "f%s") (Myhelpers.extract_names tdecl.ptype_params))
+             in
+             value_binding ~loc ~pat ~expr)
+        |> fun xs -> [ pstr_value ~loc Recursive xs ])
+      ; (let vbs =
+           List.map2
+             joined
+             knotted_names
+             ~f:(fun ({ Ppx_distrib_expander.Reifier_info.decl }, _) pat_name ->
+               let pat = ppat_var ~loc (Located.mk ~loc pat_name) in
+               let expr =
+                 let manifest = decl.ptype_manifest |> Stdlib.Option.get in
+                 match manifest.ptyp_desc with
+                 | Ptyp_constr ({ txt = Lident s }, args) when String.ends_with ~suffix:"_fuly" s ->
+                     let tname =
+                       "__" ^ String.sub s ~pos:0 ~len:(String.length s - String.length "_fuly")
+                     in
+                     let args_reifiers =
+                       List.map
+                         args
+                         ~f:
+                           (Reify_impl.reifier_of_core_type
+                              ~loc
+                              ~reifier_for_var:(Printf.sprintf "f%s")
+                              kind)
+                     in
+                     [%expr
+                       [%e
+                         pexp_apply
+                           ~loc
+                           (Myhelpers.Exp.lident ~loc tname)
+                           (nolabelize args_reifiers)]
+                         eta]
+                 | _ -> assert false
                in
                let expr =
                  Myhelpers.Exp.funs
                    ~loc
-                   info.body
-                   (List.map ~f:(Printf.sprintf "f%s") (Myhelpers.extract_names tdecl.ptype_params))
+                   [%expr fun eta -> [%e expr]]
+                   (List.map ~f:(Printf.sprintf "f%s") (Myhelpers.extract_names decl.ptype_params))
                in
                value_binding ~loc ~pat ~expr)
-          |> fun xs -> [ pstr_value ~loc Recursive xs ])
-        ; (let vbs =
-             List.map2
-               joined
-               knotted_names
-               ~f:(fun ({ Ppx_distrib_expander.Reifier_info.decl }, _) pat_name ->
-                 let pat = ppat_var ~loc (Located.mk ~loc pat_name) in
-                 let expr =
-                   let manifest = decl.ptype_manifest |> Stdlib.Option.get in
-                   match manifest.ptyp_desc with
-                   | Ptyp_constr ({ txt = Lident s }, args) when String.ends_with ~suffix:"_fuly" s
-                     ->
-                       let tname =
-                         "__" ^ String.sub s ~pos:0 ~len:(String.length s - String.length "_fuly")
-                       in
-                       let args_reifiers =
-                         List.map
-                           args
-                           ~f:
-                             (Reify_impl.reifier_of_core_type
-                                ~loc
-                                ~reifier_for_var:(Printf.sprintf "f%s")
-                                Reify_impl.Prj_exn)
-                       in
-                       [%expr
-                         [%e
-                           pexp_apply
-                             ~loc
-                             (Myhelpers.Exp.lident ~loc tname)
-                             (nolabelize args_reifiers)]
-                           eta]
-                   | _ -> assert false
-                 in
-                 let expr =
-                   Myhelpers.Exp.funs
-                     ~loc
-                     [%expr fun eta -> [%e expr]]
-                     (List.map
-                        ~f:(Printf.sprintf "f%s")
-                        (Myhelpers.extract_names decl.ptype_params))
-                 in
-                 value_binding ~loc ~pat ~expr)
-           in
-           pexp_let
-             ~loc
-             Recursive
-             vbs
-             (pexp_tuple
-                ~loc
-                (List.map knotted_names ~f:(fun name ->
-                     pexp_ident ~loc (Located.mk ~loc @@ Lident name))))
-           |> fun e ->
-           [ pstr_value ~loc Nonrecursive [ value_binding ~loc ~pat:[%pat? fix] ~expr:e ] ])
-        ; List.map knotted_names ~f:(fun knotted ->
-              let expr =
-                let pat =
-                  ppat_tuple
-                    ~loc
-                    (List.map knotted_names ~f:(fun n ->
-                         if String.equal knotted n
-                         then ppat_var ~loc (Located.mk ~loc "f")
-                         else ppat_any ~loc))
-                in
-                [%expr
-                  fun eta ->
-                    [%e
-                      pexp_let
-                        ~loc
-                        Nonrecursive
-                        [ value_binding ~loc ~pat ~expr:[%expr fix] ]
-                        [%expr f eta]]]
+         in
+         pexp_let
+           ~loc
+           Recursive
+           vbs
+           (pexp_tuple
+              ~loc
+              (List.map knotted_names ~f:(fun name ->
+                   pexp_ident ~loc (Located.mk ~loc @@ Lident name))))
+         |> fun e ->
+         [ pstr_value ~loc Nonrecursive [ value_binding ~loc ~pat:[%pat? fix] ~expr:e ] ])
+      ; List.map knotted_names ~f:(fun knotted ->
+            let expr =
+              let pat =
+                ppat_tuple
+                  ~loc
+                  (List.map knotted_names ~f:(fun n ->
+                       if String.equal knotted n
+                       then ppat_var ~loc (Located.mk ~loc "f")
+                       else ppat_any ~loc))
               in
-              pstr_value
-                ~loc
-                Nonrecursive
-                [ value_binding ~loc ~pat:(ppat_var ~loc (Located.mk ~loc knotted)) ~expr ])
-        ]
+              [%expr
+                fun eta ->
+                  [%e
+                    pexp_let
+                      ~loc
+                      Nonrecursive
+                      [ value_binding ~loc ~pat ~expr:[%expr fix] ]
+                      [%expr f eta]]]
+            in
+            pstr_value
+              ~loc
+              Nonrecursive
+              [ value_binding ~loc ~pat:(ppat_var ~loc (Located.mk ~loc knotted)) ~expr ])
+      ]
+      |> List.concat
+      |> pmod_structure ~loc
+      |> include_infos ~loc
+      |> pstr_include ~loc
+      |> fun x -> [ x ]
 ;;
 
 let classify_tdecl () =
@@ -444,13 +443,15 @@ let () =
             (* Format.eprintf "%s%d\n%!" __FILE__ __LINE__; *)
             let open Ppxlib.Ast_builder.Default in
             let items =
+              let fully_abstract_types = List.map full_and_ground_list ~f:fst in
               List.concat
                 [ [ pstr_type ~loc is_rec rez.t ]
                 ; [ pstr_type ~loc is_rec (filter_out_gt_attributes rez.ground) ]
                 ; [ pstr_type ~loc is_rec (filter_out_gt_attributes rez.logic) ]
                 ; [ pstr_type ~loc is_rec rez.injected ]
                 ; List.map rez.fmapt ~f:(fun vb -> pstr_value ~loc Nonrecursive [ vb ])
-                ; knot_reifiers ~loc rez.prj_exn (List.map full_and_ground_list ~f:fst)
+                ; knot_reifiers ~loc ~kind:Prj_exn rez.prj_exn fully_abstract_types
+                ; knot_reifiers ~loc ~kind:Reify rez.reify fully_abstract_types
                 ; rez.other
                 ]
             in
