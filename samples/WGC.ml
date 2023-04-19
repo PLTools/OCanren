@@ -91,19 +91,18 @@ ocanren type state    = (GT.bool * GT.bool * GT.bool * GT.bool) * (GT.bool * GT.
 ocanren type solution = move Std.List.ground
 
 let _ =
-  Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (nil ()) q)
-    (fun s -> s#reify prj_exn_state);
+  let wrap1 rel =
+    OCanren.(run q) rel (fun s -> s#reify state_prj_exn)
+    |> Stream.iter (fun s -> print_endline @@ show(state) s)
+  in
+  wrap1 (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (nil ()) q);
 
-  Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Empty) q) (fun s -> s#reify prj_exn_state);
+  wrap1 (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Empty) q);
 
-  Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Goat) q) (fun s -> s#reify prj_exn_state);
+  wrap1 (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Goat) q);
 
-  Stream.iter (fun s -> Printf.printf "%s\n" @@ show(state) s) @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q) (fun s -> s#reify prj_exn_state)
+  wrap1 (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) (!< !Wolf) q)
 
 let () =
   L.iter (fun s -> Printf.printf "%s\n" @@ show(solution) s) @@ Stream.take ~n:100 @@
-  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) q (pair (qua !false !false !false !false) (qua !true !true !true !true))) (fun s -> s#reify prj_exn_solution)
+  run q (fun q -> eval (pair (qua !true !true !true !true) (qua !false !false !false !false)) q (pair (qua !false !false !false !false) (qua !true !true !true !true))) (fun s -> s#reify solution_prj_exn)

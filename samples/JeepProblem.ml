@@ -42,6 +42,8 @@ ocanren type lstate = GT.int * (GT.int * (GT.int * GT.int) GT.list)
 
 ocanren type hum_state = GT.int * (GT.int * (GT.int * GT.int) GT.list)
 
+(* TODO: get rid of nested pairs *)
+
 open Move
 
 (* Lookups a station:
@@ -168,7 +170,7 @@ let prj_state : _ reified -> hum_state  =
     fun ((x, (y, z)) : state) ->
       (Nat.to_int x, (Nat.to_int y, Stdlib.List.map (fun (x, y) -> Nat.to_int x, Nat.to_int y) z))
     in
-  let reify : (_, hum_state) Reifier.t = Reifier.fmap flat_it prj_exn_state in
+  let reify : (_, hum_state) Reifier.t = Reifier.fmap flat_it state_prj_exn in
   fun rr -> rr#reify reify
 
 let init  = OCanren.inj (nat 0, OCanren.inj (max_capacity, nil ()))
