@@ -1,13 +1,11 @@
-  $ ../ppx/pp_deriving_reify.exe -pp pp_distrib test005.ml | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat -
+  $ ../ppx/pp_deriving_reify.exe -pp pp_distrib test005.ml -pretty | ocamlformat --impl --enable-outside-detected-project --profile=ocamlformat -
   open OCanren
   
   module _ = struct
     type state = (int * int) * (int * int) GT.list [@@deriving reify]
   
     include struct
-      let _ = fun (_ : state) -> ()
-  
-      let (reify_state :
+      let (reify :
             ( _
             , ( (int OCanren.logic * int OCanren.logic) OCanren.logic
               * (int OCanren.logic * int OCanren.logic) OCanren.logic
@@ -19,9 +17,7 @@
           (OCanren.Std.List.reify
              (OCanren.Std.Pair.reify OCanren.reify OCanren.reify) )
   
-      let _ = reify_state
-  
-      let (prj_exn_state :
+      let (prj_exn :
             ( _
             , (int * int) * (int * int) OCanren.Std.List.ground )
             OCanren.Reifier.t ) =
@@ -29,9 +25,15 @@
           (OCanren.Std.Pair.prj_exn OCanren.prj_exn OCanren.prj_exn)
           (OCanren.Std.List.prj_exn
              (OCanren.Std.Pair.prj_exn OCanren.prj_exn OCanren.prj_exn) )
-  
-      let _ = prj_exn_state
     end [@@ocaml.doc "@inline"] [@@merlin.hide]
+  
+    let () =
+      (let open OCanren in
+      run q )
+        (fun q -> q === Std.pair (Std.pair !!1 !!2) (Std.nil ()))
+        (fun rr -> rr#reify prj_exn)
+      |> OCanren.Stream.hd
+      |> function (1, 2), [] -> () | _ -> assert false
   end
   
   module _ = struct
@@ -42,7 +44,12 @@
         (int OCanren.logic * int OCanren.logic * int OCanren.logic) OCanren.logic
         OCanren.Std.List.logic
   
-      let (reify_state :
+      type injected =
+        (int OCanren.ilogic * int OCanren.ilogic * int OCanren.ilogic)
+        OCanren.ilogic
+        OCanren.Std.List.injected
+  
+      let (reify :
             ( _
             , (int OCanren.logic * int OCanren.logic * int OCanren.logic)
               OCanren.logic
@@ -65,7 +72,7 @@
                               ~fv:(fmapt r__008_ r__009_ r__010_) ) ) ) )
              OCanren.reify OCanren.reify OCanren.reify )
   
-      let (prj_exn_state :
+      let (prj_exn :
             (_, (int * int * int) OCanren.Std.List.ground) OCanren.Reifier.t ) =
         OCanren.Std.List.prj_exn
           ((fun r__001_ r__002_ r__003_ ->
@@ -80,6 +87,14 @@
                  OCanren.prj_exn <..> chain (fmapt r__001_ r__002_ r__003_) ) )
              OCanren.prj_exn OCanren.prj_exn OCanren.prj_exn )
     end
+  
+    let () =
+      (let open OCanren in
+      run q )
+        (fun q -> q === Std.List.cons !!(!!1, !!2, !!3) (Std.nil ()))
+        (fun rr -> rr#reify prj_exn)
+      |> OCanren.Stream.hd
+      |> function (1, 2, 3) :: [] -> () | _ -> assert false
   end
   
   let () = print_endline "test005"

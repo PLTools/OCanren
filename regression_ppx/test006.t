@@ -973,7 +973,10 @@
       type logic =
         (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
   
-      let (reify_ground :
+      type injected =
+        (GT.bool OCanren.ilogic * GT.int OCanren.ilogic * GT.string OCanren.ilogic) OCanren.ilogic
+  
+      let (reify :
             ( _
             , (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
             )
@@ -992,7 +995,7 @@
                         (OCanren.Reifier.rework ~fv:(fmapt r__035_ r__036_ r__037_)) ) ) )
           OCanren.reify OCanren.reify OCanren.reify
   
-      let (prj_exn_ground : (_, GT.bool * GT.int * GT.string) OCanren.Reifier.t) =
+      let (prj_exn : (_, GT.bool * GT.int * GT.string) OCanren.Reifier.t) =
         (fun r__028_ r__029_ r__030_ ->
           let gmap_tuple f0 f1 f2 (f0s, f1s, f2s) = (f0 f0s, f1 f1s, f2 f2s) in
           let fmapt f__031_ f__032_ f__033_ subj__034_ =
@@ -1006,8 +1009,10 @@
     end
   
     let () =
-      let open OCanren in
-      run q (fun q -> q === inj (!!true, !!5, !!"x")) (fun rr -> rr#reify prj_exn_ground)
+      (let open OCanren in
+      run q )
+        (fun q -> q === inj (!!true, !!5, !!"x"))
+        (fun rr -> rr#reify prj_exn)
       |> Stream.iter (fun (b, n, s) -> Printf.printf "%b %d %S\n" b n s)
   end
   
@@ -1059,7 +1064,13 @@
           ; GT.plugins= object end }
       end [@@ocaml.doc "@inline"] [@@merlin.hide]
   
-      let (reify_ground :
+      type injected =
+        ( (GT.bool OCanren.ilogic * GT.int OCanren.ilogic * GT.string OCanren.ilogic) OCanren.ilogic
+        , (GT.bool OCanren.ilogic * GT.int OCanren.ilogic * GT.string OCanren.ilogic) OCanren.ilogic
+        )
+        OCanren.Std.Pair.injected
+  
+      let (reify :
             ( _
             , ( (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
               * (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic) OCanren.logic
@@ -1094,7 +1105,7 @@
                            (OCanren.Reifier.rework ~fv:(fmapt r__056_ r__057_ r__058_)) ) ) )
              OCanren.reify OCanren.reify OCanren.reify )
   
-      let (prj_exn_ground :
+      let (prj_exn :
             (_, (GT.bool * GT.int * GT.string) * (GT.bool * GT.int * GT.string)) OCanren.Reifier.t ) =
         OCanren.Std.Pair.prj_exn
           ((fun r__049_ r__050_ r__051_ ->

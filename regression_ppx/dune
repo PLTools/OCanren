@@ -44,10 +44,10 @@
  (public_names -)
  (flags
   (:standard
-   ;-dsource ;
+   -dsource ;
    ))
  (preprocess
-  (pps OCanren-ppx.ppx_deriving_reify OCanren-ppx.ppx_distrib))
+  (pps OCanren-ppx.ppx_deriving_reify OCanren-ppx.ppx_distrib -- -pretty))
  (libraries OCanren OCanren.tester))
 
 (executables
@@ -153,22 +153,6 @@
 
 (cram
  (package OCanren)
- (applies_to test003 test004 test010)
- (deps ;
-  (package OCanren-ppx)
-  %{project_root}/ppx/pp_gt.exe
-  %{project_root}/ppx/pp_ocanren_all.exe
-  ; test005.ml
-  ; ./test003sort.exe
-  ./test004.exe
-  ; ./test005.exe
-  test010.ml
-  test010.exe
-  ;
-  ))
-
-(cram
- (package OCanren)
  (applies_to test001)
  (deps
   (package OCanren-ppx)
@@ -194,6 +178,14 @@
   %{project_root}/ppx/pp_ocanren_all.exe
   test003sort.ml
   test003sort.exe))
+
+(cram
+ (package OCanren)
+ (applies_to test004)
+ (deps
+  (package OCanren-ppx)
+  test004.ml
+  test004.exe))
 
 (cram
  (package OCanren)
