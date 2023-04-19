@@ -446,7 +446,9 @@ let make_reifier ~loc m tdecl =
       (if List.is_empty tdecl.ptype_params
       then Some [%type: (_, [%t ltypify_exn ~loc tdecl.ptype_name.txt m]) OCanren.Reifier.t]
       else None)
-    ~pat:(ppat_var ~loc (Located.mk ~loc @@ Format.sprintf "reify_%s" tdecl.ptype_name.txt))
+    ~pat:
+      (let name = if is_new () then Printf.sprintf "%s_reify" tdecl.ptype_name.txt else "reify" in
+       ppat_var ~loc (Located.mk ~loc name))
     tdecl
 ;;
 
@@ -457,7 +459,11 @@ let make_prj ~loc m tdecl =
       (if List.is_empty tdecl.ptype_params
       then Some [%type: (_, [%t gtypify_exn tdecl.ptype_name.txt ~loc m]) OCanren.Reifier.t]
       else None)
-    ~pat:(ppat_var ~loc (Located.mk ~loc @@ Format.sprintf "prj_exn_%s" tdecl.ptype_name.txt))
+    ~pat:
+      (let name =
+         if is_new () then Printf.sprintf "%s_prj_exn" tdecl.ptype_name.txt else "prj_exn"
+       in
+       ppat_var ~loc (Located.mk ~loc name))
     tdecl
 ;;
 

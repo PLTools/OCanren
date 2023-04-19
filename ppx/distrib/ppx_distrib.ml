@@ -346,9 +346,25 @@ let () =
               let (module S : STRAT) = make_strat () in
               { tdecl with ptype_name = S.logic_typ_name tdecl; ptype_manifest = Some abbrev }
             in
+            let injected_typ_decl =
+              let open Ppx_distrib_expander in
+              let abbrev =
+                injectify
+                  ~loc
+                  (make_injected_strat_2 tdecl)
+                  (Stdlib.Option.get tdecl.ptype_manifest)
+              in
+              let (module S : STRAT) = make_strat () in
+              { tdecl with
+                ptype_name = S.injected_typ_name tdecl
+              ; ptype_manifest = Some abbrev
+              ; ptype_attributes = []
+              }
+            in
             let stru =
               pstr_type ~loc is_rec [ tdecl ]
               :: pstr_type ~loc is_rec [ ltyp_decl ]
+              :: pstr_type ~loc is_rec [ injected_typ_decl ]
               :: Reify_impl.process1 tdecl
             in
             pstr_include ~loc (include_infos ~loc (pmod_structure ~loc stru))
