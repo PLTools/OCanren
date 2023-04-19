@@ -108,9 +108,10 @@
                                                                       gmap;
                                                                       show
                                                                       }]
-      let (reify_hum_moves :
+      type hum_moves_injected = GT.int OCanren.ilogic Move.ground_injected
+      let (hum_moves_reify :
         (_, GT.int OCanren.logic Move.ground_logic) OCanren.Reifier.t) =
         Move.ground_reify OCanren.reify
-      let (prj_exn_hum_moves : (_, GT.int Move.ground) OCanren.Reifier.t) =
+      let (hum_moves_prj_exn : (_, GT.int Move.ground) OCanren.Reifier.t) =
         Move.ground_prj_exn OCanren.prj_exn
     end

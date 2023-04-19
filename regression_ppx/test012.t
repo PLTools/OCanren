@@ -28,21 +28,50 @@
               f__005_)
              <*> f__006_)
             <*> subj__007_
-      let rec __jtyp fa fa1 fa0 =
-        let open OCanren.Env.Monad in
-          OCanren.Reifier.fix
-            (fun _ -> OCanren.prj_exn <..> (chain (jtyp_fmapt fa fa1 fa0)))
-      and __targ fa fa0 =
-        let open OCanren.Env.Monad in
-          OCanren.Reifier.fix
-            (fun _ -> OCanren.prj_exn <..> (chain (targ_fmapt fa fa0)))
-      let fix =
-        let rec jtyp_prj_exn fa eta =
-          (__jtyp fa (jtyp_prj_exn fa) (targ_prj_exn fa)) eta
-        and targ_prj_exn fa eta = (__targ fa (jtyp_prj_exn fa)) eta in
-        (jtyp_prj_exn, targ_prj_exn)
-      let jtyp_prj_exn eta = let (f, _) = fix in f eta
-      let targ_prj_exn eta = let (_, f) = fix in f eta
+      include
+        struct
+          let rec __jtyp fa fa1 fa0 =
+            let open OCanren.Env.Monad in
+              OCanren.Reifier.fix
+                (fun _ -> OCanren.prj_exn <..> (chain (jtyp_fmapt fa fa1 fa0)))
+          and __targ fa fa0 =
+            let open OCanren.Env.Monad in
+              OCanren.Reifier.fix
+                (fun _ -> OCanren.prj_exn <..> (chain (targ_fmapt fa fa0)))
+          let fix =
+            let rec jtyp_prj_exn fa eta =
+              (__jtyp fa (jtyp_prj_exn fa) (targ_prj_exn fa)) eta
+            and targ_prj_exn fa eta = (__targ fa (jtyp_prj_exn fa)) eta in
+            (jtyp_prj_exn, targ_prj_exn)
+          let jtyp_prj_exn eta = let (f, _) = fix in f eta
+          let targ_prj_exn eta = let (_, f) = fix in f eta
+        end
+      include
+        struct
+          let rec __jtyp fa fa1 fa0 =
+            let open OCanren.Env.Monad in
+              OCanren.Reifier.fix
+                (fun _ ->
+                   OCanren.reify <..>
+                     (chain
+                        (OCanren.Reifier.zed
+                           (OCanren.Reifier.rework ~fv:(jtyp_fmapt fa fa1 fa0)))))
+          and __targ fa fa0 =
+            let open OCanren.Env.Monad in
+              OCanren.Reifier.fix
+                (fun _ ->
+                   OCanren.reify <..>
+                     (chain
+                        (OCanren.Reifier.zed
+                           (OCanren.Reifier.rework ~fv:(targ_fmapt fa fa0)))))
+          let fix =
+            let rec jtyp_reify fa eta =
+              (__jtyp fa (jtyp_reify fa) (targ_reify fa)) eta
+            and targ_reify fa eta = (__targ fa (jtyp_reify fa)) eta in
+            (jtyp_reify, targ_reify)
+          let jtyp_reify eta = let (f, _) = fix in f eta
+          let targ_reify eta = let (_, f) = fix in f eta
+        end
     end
   let rec pp_arg fa ppf =
     (function
