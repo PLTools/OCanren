@@ -36,13 +36,11 @@
       type nonrec id = GT.int[@@deriving gt ~options:{ gmap; fmt }]
       type nonrec id_logic = GT.int OCanren.logic[@@deriving
                                                    gt ~options:{ gmap; fmt }]
-      let (reify_id : (_, GT.int OCanren.logic) OCanren.Reifier.t) =
+      type nonrec id_injected = GT.int OCanren.ilogic
+      let (id_reify : (_, GT.int OCanren.logic) OCanren.Reifier.t) =
         OCanren.reify
-      let (prj_exn_id : (_, GT.int) OCanren.Reifier.t) = OCanren.prj_exn
+      let (id_prj_exn : (_, GT.int) OCanren.Reifier.t) = OCanren.prj_exn
     end
-  type id_injected = GT.int OCanren.ilogic
-  let id_prj_exn = OCanren.prj_exn
-  let id_reify = OCanren.reify
   include
     struct
       type ('a1, 'a0) targ_fuly =

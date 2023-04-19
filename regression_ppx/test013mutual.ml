@@ -8,11 +8,6 @@ type nonrec polarity =
 
 [%%ocanren_inject type nonrec id = GT.int [@@deriving gt ~options:{ gmap; fmt }]]
 
-type id_injected = GT.int OCanren.ilogic
-
-let id_prj_exn = OCanren.prj_exn
-let id_reify = OCanren.reify
-
 (* TODO: add arrays *)
 
 [%%distrib
