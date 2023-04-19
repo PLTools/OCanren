@@ -96,29 +96,66 @@
               <*> f__014_)
              <*> f__015_)
             <*> subj__016_
-      let rec __jtype fa6 fa5 fa4 fa3 fa2 fa1 fa0 =
-        let open OCanren.Env.Monad in
-          OCanren.Reifier.fix
-            (fun _ ->
-               OCanren.prj_exn <..>
-                 (chain (jtype_fmapt fa6 fa5 fa4 fa3 fa2 fa1 fa0)))
-      and __targ fa1 fa0 =
-        let open OCanren.Env.Monad in
-          OCanren.Reifier.fix
-            (fun _ -> OCanren.prj_exn <..> (chain (targ_fmapt fa1 fa0)))
-      let fix =
-        let rec jtype_prj_exn eta =
-          (__jtype (OCanren.Std.List.prj_exn targ_prj_exn) targ_prj_exn
-             id_prj_exn OCanren.prj_exn jtype_prj_exn
-             (OCanren.Std.Option.prj_exn jtype_prj_exn)
-             (OCanren.Std.List.prj_exn jtype_prj_exn)) eta
-        and targ_prj_exn eta =
-          (__targ jtype_prj_exn
-             (OCanren.Std.Option.prj_exn
-                (OCanren.Std.Pair.prj_exn polarity_prj_exn jtype_prj_exn))) eta in
-        (jtype_prj_exn, targ_prj_exn)
-      let jtype_prj_exn eta = let (f, _) = fix in f eta
-      let targ_prj_exn eta = let (_, f) = fix in f eta
+      include
+        struct
+          let rec __jtype fa6 fa5 fa4 fa3 fa2 fa1 fa0 =
+            let open OCanren.Env.Monad in
+              OCanren.Reifier.fix
+                (fun _ ->
+                   OCanren.prj_exn <..>
+                     (chain (jtype_fmapt fa6 fa5 fa4 fa3 fa2 fa1 fa0)))
+          and __targ fa1 fa0 =
+            let open OCanren.Env.Monad in
+              OCanren.Reifier.fix
+                (fun _ -> OCanren.prj_exn <..> (chain (targ_fmapt fa1 fa0)))
+          let fix =
+            let rec jtype_prj_exn eta =
+              (__jtype (OCanren.Std.List.prj_exn targ_prj_exn) targ_prj_exn
+                 id_prj_exn OCanren.prj_exn jtype_prj_exn
+                 (OCanren.Std.Option.prj_exn jtype_prj_exn)
+                 (OCanren.Std.List.prj_exn jtype_prj_exn)) eta
+            and targ_prj_exn eta =
+              (__targ jtype_prj_exn
+                 (OCanren.Std.Option.prj_exn
+                    (OCanren.Std.Pair.prj_exn polarity_prj_exn jtype_prj_exn)))
+                eta in
+            (jtype_prj_exn, targ_prj_exn)
+          let jtype_prj_exn eta = let (f, _) = fix in f eta
+          let targ_prj_exn eta = let (_, f) = fix in f eta
+        end
+      include
+        struct
+          let rec __jtype fa6 fa5 fa4 fa3 fa2 fa1 fa0 =
+            let open OCanren.Env.Monad in
+              OCanren.Reifier.fix
+                (fun _ ->
+                   OCanren.reify <..>
+                     (chain
+                        (OCanren.Reifier.zed
+                           (OCanren.Reifier.rework
+                              ~fv:(jtype_fmapt fa6 fa5 fa4 fa3 fa2 fa1 fa0)))))
+          and __targ fa1 fa0 =
+            let open OCanren.Env.Monad in
+              OCanren.Reifier.fix
+                (fun _ ->
+                   OCanren.reify <..>
+                     (chain
+                        (OCanren.Reifier.zed
+                           (OCanren.Reifier.rework ~fv:(targ_fmapt fa1 fa0)))))
+          let fix =
+            let rec jtype_reify eta =
+              (__jtype (OCanren.Std.List.reify targ_reify) targ_reify id_reify
+                 OCanren.reify jtype_reify
+                 (OCanren.Std.Option.reify jtype_reify)
+                 (OCanren.Std.List.reify jtype_reify)) eta
+            and targ_reify eta =
+              (__targ jtype_reify
+                 (OCanren.Std.Option.reify
+                    (OCanren.Std.Pair.reify polarity_reify jtype_reify))) eta in
+            (jtype_reify, targ_reify)
+          let jtype_reify eta = let (f, _) = fix in f eta
+          let targ_reify eta = let (_, f) = fix in f eta
+        end
     end
   let rec pp_arg ppf =
     (function
