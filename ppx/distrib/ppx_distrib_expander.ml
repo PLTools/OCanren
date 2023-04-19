@@ -217,7 +217,14 @@ include struct
               let loc = t.ptyp_loc in
               ptyp_constr
                 ~loc
-                (Located.mk ~loc (lident_of_list [ "OCanren"; stdname_of_sort S.sort ]))
+                (Located.mk
+                   ~loc
+                   (lident_of_list
+                      [ "OCanren"
+                      ; (match S.sort with
+                        | `Injected -> "ilogic"
+                        | _ -> stdname_of_sort S.sort)
+                      ]))
                 [ ptyp_tuple ~loc (List.map ~f:helper ps) ]
           | Ptyp_constr ({ txt = Ldot (Lident "GT", _) }, []) -> oca_logic_ident ~loc:t.ptyp_loc t
           | _ ->
@@ -266,7 +273,7 @@ include struct
 
   let gtypify_exn ~loc = make_typ_exn ~loc (fun ~loc:_ t -> t)
 
-  let%expect_test _ =
+  let%expect_test "Generation of logic types" =
     let loc = Location.none in
     let test i =
       let t2 =
@@ -377,6 +384,8 @@ let%expect_test "injectify" =
     in
     Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
   in
+  test [%stri type nonrec x = GT.int];
+  [%expect {| GT.int OCanren.ilogic |}];
   test [%stri type nonrec x = GT.int t];
   [%expect {|    GT.int OCanren.ilogic t OCanren.ilogic |}];
   test [%stri type nonrec ground = ground t];
