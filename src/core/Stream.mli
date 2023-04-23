@@ -90,6 +90,8 @@ val hd : 'a t -> 'a
 (** [tl s] gets a tail of the stream *)
 val tl : 'a t -> 'a t
 
+val msplit: 'a t -> ('a * 'a t) option
+
 IFDEF STATS THEN
 (* Gets a counter *)
 val unwrap_suspended_counter : unit -> int
