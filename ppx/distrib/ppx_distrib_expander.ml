@@ -431,7 +431,7 @@ let make_strat () =
 ;;
 
 type ('a, 'b, 'ri) the_result =
-  { t : 'a
+  { t : 'a (** fully abstract type definitions *)
   ; ground : 'a
   ; logic : 'a
   ; injected : 'a

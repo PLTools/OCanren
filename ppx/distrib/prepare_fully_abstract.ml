@@ -57,6 +57,24 @@ let str_type_ = Ast_helper.Str.type_
 open Myhelpers
 
 let run loc tdecls =
+  assert (
+    match tdecls with
+    | [] -> false
+    | _ -> true);
+  let add_extra_attributes =
+    (* Usually deriving attribute is attached to the last typdeclaration *)
+    let last, prefix =
+      let r = List.rev tdecls in
+      List.hd r, List.tl r
+    in
+    if List.for_all
+         (function
+           | { ptype_attributes = [] } -> true
+           | _ -> false)
+         prefix
+    then fun _ -> last.ptype_attributes
+    else Fun.id
+  in
   let open Ppxlib.Ast_builder.Default in
   (*   let tdecl =
     { tdecl with
@@ -137,6 +155,7 @@ let run loc tdecls =
     let full_t =
       { full_t with
         ptype_name = { full_t.ptype_name with txt = full_t_name }
+      ; ptype_attributes = add_extra_attributes full_t.ptype_attributes
       ; ptype_params =
           full_t.ptype_params
           @ FoldInfo.map mapa ~f:(fun { FoldInfo.param_name } ->
@@ -172,7 +191,6 @@ let run loc tdecls =
       in
       result_type
     in
-    (* str_type_ ~loc Nonrecursive [ full_t ], str_type_ ~loc Recursive [ abbrev_typ ] *)
     (full_t, abbrev_typ) :: acc
   in
   List.fold_left f [] tdecls

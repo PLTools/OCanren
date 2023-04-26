@@ -445,7 +445,8 @@ let () =
             let items =
               let fully_abstract_types = List.map full_and_ground_list ~f:fst in
               List.concat
-                [ [ pstr_type ~loc is_rec rez.t ]
+                [ []
+                ; List.map rez.t ~f:(fun t -> pstr_type ~loc Nonrecursive [ t ])
                 ; [ pstr_type ~loc is_rec (filter_out_gt_attributes rez.ground) ]
                 ; [ pstr_type ~loc is_rec (filter_out_gt_attributes rez.logic) ]
                 ; [ pstr_type ~loc is_rec rez.injected ]
