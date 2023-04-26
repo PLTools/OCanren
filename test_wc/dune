@@ -8,7 +8,7 @@
  (modules main debug_var peano)
  (preprocess
   (pps
-   ppx_expect
+   ppx_expect_nobase
    OCanren-ppx.ppx_wildcard
    OCanren-ppx.ppx_repr
    OCanren-ppx.ppx_fresh
@@ -23,7 +23,7 @@
  (libraries OCanren OCanren.tester)
  (preprocess
   (pps
-   ppx_expect
+   ppx_expect_nobase
    OCanren-ppx.ppx_wildcard
    OCanren-ppx.ppx_repr
    OCanren-ppx.ppx_fresh
