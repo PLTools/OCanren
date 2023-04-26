@@ -152,6 +152,20 @@
   (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -new-typenames -pretty))
  (libraries OCanren OCanren.tester))
 
+(executables
+ (names test014mutual)
+ (modules test014mutual)
+ (package OCanren)
+ (public_names -)
+ (flags
+  (:standard
+   ;-dsource
+   ;
+   ))
+ (preprocess
+  (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -new-typenames -pretty))
+ (libraries OCanren OCanren.tester))
+
 (cram
  (package OCanren)
  (applies_to test001)
@@ -272,3 +286,12 @@
   %{project_root}/ppx/pp_ocanren_all.exe
   test013mutual.ml
   test013mutual.exe))
+
+(cram
+ (package OCanren)
+ (applies_to test014)
+ (deps
+  (package OCanren-ppx)
+  %{project_root}/ppx/pp_ocanren_all.exe
+  test014mutual.ml
+  test014mutual.exe))

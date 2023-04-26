@@ -43,10 +43,10 @@
     end
   include
     struct
-      type ('a1, 'a0) targ_fuly =
+      type nonrec ('a1, 'a0) targ_fuly =
         | T of 'a1 
-        | Wildcard of 'a0 
-      and ('a6, 'a5, 'a4, 'a3, 'a2, 'a1, 'a0) jtype_fuly =
+        | Wildcard of 'a0 [@@deriving gt ~options:{ gmap }]
+      type nonrec ('a6, 'a5, 'a4, 'a3, 'a2, 'a1, 'a0) jtype_fuly =
         | Array of 'a0 
         | Class of 'a4 * 'a6 
         | Interface of 'a4 * 'a5 
