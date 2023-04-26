@@ -26,7 +26,27 @@ let pp_input ppf = function
 ;;
 
 (* For mutual recursion gt only available for regular types. Currently we forbit it at all *)
-let filter_out_gt_attributes tdecls = tdecls
+let filter_out_gt_attributes tdecls =
+  let helper attrs =
+    List.filter attrs ~f:(fun attr ->
+        match attr.attr_name.txt with
+        | "deriving" ->
+            (match attr.attr_payload with
+            | PStr [%str gt] | PStr [%str gt ~options:[%e? _]] -> false
+            | _ -> true)
+        | _ -> true)
+  in
+  match tdecls with
+  | [] | [ _ ] -> tdecls
+  | _ ->
+      let len = List.length tdecls in
+      List.mapi tdecls ~f:(fun i ->
+          if i < len - 1
+          then
+            function
+            | { ptype_attributes; _ } as g -> { g with ptype_attributes = helper ptype_attributes }
+          else Fun.id)
+;;
 
 let knot_reifiers_sig ~loc reifiers =
   List.concat_map reifiers ~f:(fun ri ->
@@ -392,7 +412,7 @@ let () =
               List.concat
                 [ List.map
                     ~f:(fun x ->
-                      of_tdecl ~loc is_rec [ { x with ptype_attributes = gt_attributes } ])
+                      of_tdecl ~loc Nonrecursive [ { x with ptype_attributes = gt_attributes } ])
                     rez.t
                 ; [ of_tdecl ~loc is_rec (filter_out_gt_attributes rez.ground) ]
                 ; [ of_tdecl ~loc is_rec (filter_out_gt_attributes rez.logic) ]
