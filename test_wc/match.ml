@@ -171,8 +171,8 @@ module _ = struct
       (Pair.reify (Triple.reify OCanren.reify OCanren.reify OCanren.reify) OCanren.reify)
       ([%show:
          ( (GT.bool logic, GT.bool logic, GT.bool logic) Std.Triple.logic
-         , GT.int logic )
-         Std.Pair.logic]
+           , GT.int logic )
+           Std.Pair.logic]
          ())
       eta
   ;;
@@ -311,7 +311,7 @@ module _ = struct
           (q =/= w __ _F _T)
           (q =/= w _F _T __)
           (q =/= w __ __ _F)
-          (debug_var !!1 (Fun.flip OCanren.reify) (fun _ ->
+          (debug_var !!1 OCanren.reify (fun _ ->
              (* OCanren.set_diseq_logging true; *)
              success))
           (q === w __ __ _T)
