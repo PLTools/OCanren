@@ -11,7 +11,7 @@ into [OCaml](http://ocaml.org). Nowadays, the implementation of `OCanren` strong
 Previous implementation was based on [microKanren](http://webyrd.net/scheme-2013/papers/HemannMuKanren2013.pdf)
 with [disequality constraints](http://scheme2011.ucombinator.org/papers/Alvis2011.pdf).
 
-See [installation instructions](#installation-via-opam), [API documentation](https://PLTools.github.io/OCanren/api/) for more details, and [ReadTheDocs](https://ocanren.rtfd.io/) for detailed information.
+See [installation instructions](#installation-via-opam), [API documentation](https://PLTools.github.io/OCanren/api/) for more details, and [ReadTheDocs](https://ocanren.rtfd.io/) for detailed information. (All papers about OCanren are not located in the [separate repo](https://github.com/PLTools/papers).)
 
 Check our [template repository for OCanren projects](https://github.com/Kakadu/OCanren-basic-template) for faster startup!
 
