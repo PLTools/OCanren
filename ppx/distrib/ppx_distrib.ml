@@ -26,8 +26,8 @@ let pp_input ppf = function
 ;;
 
 (* For mutual recursion gt only available for regular types. Currently we forbit it at all *)
-let filter_out_gt_attributes tdecls =
-  let helper attrs =
+let filter_out_gt_attributes tdecls = tdecls
+(* let helper attrs =
     List.filter attrs ~f:(fun attr ->
         match attr.attr_name.txt with
         | "deriving" ->
@@ -40,8 +40,7 @@ let filter_out_gt_attributes tdecls =
   | [] | [ _ ] -> tdecls
   | _ ->
       List.map tdecls ~f:(function { ptype_attributes; _ } as g ->
-          { g with ptype_attributes = helper ptype_attributes })
-;;
+          { g with ptype_attributes = helper ptype_attributes }) *)
 
 let knot_reifiers ~loc ?(kind = Reify_impl.Prj_exn) reifiers base_decls =
   (* Format.eprintf "%s%d\n%!" __FILE__ __LINE__; *)
@@ -443,9 +442,13 @@ let () =
             (* Format.eprintf "%s%d\n%!" __FILE__ __LINE__; *)
             let open Ppxlib.Ast_builder.Default in
             let items =
+              let gt_attributes = (List.hd (List.rev tdecls)).ptype_attributes in
               let fully_abstract_types = List.map full_and_ground_list ~f:fst in
               List.concat
-                [ [ pstr_type ~loc is_rec rez.t ]
+                [ List.map
+                    ~f:(fun x ->
+                      pstr_type ~loc is_rec [ { x with ptype_attributes = gt_attributes } ])
+                    rez.t
                 ; [ pstr_type ~loc is_rec (filter_out_gt_attributes rez.ground) ]
                 ; [ pstr_type ~loc is_rec (filter_out_gt_attributes rez.logic) ]
                 ; [ pstr_type ~loc is_rec rez.injected ]

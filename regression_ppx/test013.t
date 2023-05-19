@@ -1,5 +1,5 @@
   $ ../ppx/pp_ocanren_all.exe test013mutual.ml -pretty -new-typenames
-  let () = print_endline "test012"
+  let () = print_endline "test013"
   include
     struct
       type nonrec polarity_fuly =
@@ -45,8 +45,8 @@
     struct
       type ('a1, 'a0) targ_fuly =
         | T of 'a1 
-        | Wildcard of 'a0 
-      and ('a6, 'a5, 'a4, 'a3, 'a2, 'a1, 'a0) jtype_fuly =
+        | Wildcard of 'a0 [@@deriving gt ~options:{ gmap }]
+      type ('a6, 'a5, 'a4, 'a3, 'a2, 'a1, 'a0) jtype_fuly =
         | Array of 'a0 
         | Class of 'a4 * 'a6 
         | Interface of 'a4 * 'a5 
@@ -59,8 +59,12 @@
         | Intersect of 'a0 [@@deriving gt ~options:{ gmap }]
       type targ = (jtype, (polarity * jtype) GT.option) targ_fuly
       and jtype =
-        (targ OCanren.Std.List.ground, targ, id, int, jtype, jtype GT.option,
-          jtype OCanren.Std.List.ground) jtype_fuly
+        (targ OCanren.Std.List.ground, targ, id, GT.int, jtype,
+          jtype GT.option, jtype OCanren.Std.List.ground) jtype_fuly[@@deriving
+                                                                      gt
+                                                                      ~options:
+                                                                      { gmap
+                                                                      }]
       type targ_logic =
         (jtype_logic,
           (polarity_logic, jtype_logic) OCanren.Std.Pair.logic GT.option
@@ -68,8 +72,13 @@
           targ_fuly OCanren.logic
       and jtype_logic =
         (targ_logic OCanren.Std.List.logic, targ_logic, id_logic,
-          int OCanren.logic, jtype_logic, jtype_logic GT.option OCanren.logic,
-          jtype_logic OCanren.Std.List.logic) jtype_fuly OCanren.logic
+          GT.int OCanren.logic, jtype_logic,
+          jtype_logic GT.option OCanren.logic,
+          jtype_logic OCanren.Std.List.logic) jtype_fuly OCanren.logic[@@deriving
+                                                                      gt
+                                                                      ~options:
+                                                                      { gmap
+                                                                      }]
       type targ_injected =
         (jtype_injected,
           (polarity_injected, jtype_injected) OCanren.Std.Pair.injected
@@ -77,7 +86,7 @@
           targ_fuly OCanren.ilogic
       and jtype_injected =
         (targ_injected OCanren.Std.List.injected, targ_injected, id_injected,
-          int OCanren.ilogic, jtype_injected,
+          GT.int OCanren.ilogic, jtype_injected,
           jtype_injected GT.option OCanren.ilogic,
           jtype_injected OCanren.Std.List.injected) jtype_fuly OCanren.ilogic
       let targ_fmapt f__019_ f__020_ subj__021_ =
@@ -193,6 +202,6 @@
          OCanren.Stream.take)
         |> (Stdlib.List.iter (Format.printf "%a\n%!" pp_typ))
   $ ./test013mutual.exe
-  test012
+  test013
   Wildcard None
   (Array [ _.1])

@@ -4,16 +4,21 @@
     struct
       type ('a, 'a0) targ_fuly =
         | T of 'a0 * 'a 
-        | TNoarg 
-      and ('a, 'a1, 'a0) jtyp_fuly =
+        | TNoarg [@@deriving gt ~options:{ gmap }]
+      type ('a, 'a1, 'a0) jtyp_fuly =
         | Array of 'a1 
         | V of 'a0 
         | Other of 'a [@@deriving gt ~options:{ gmap }]
       type 'a targ = ('a, 'a jtyp) targ_fuly
-      and 'a jtyp = ('a, 'a jtyp, 'a targ) jtyp_fuly
+      and 'a jtyp = ('a, 'a jtyp, 'a targ) jtyp_fuly[@@deriving
+                                                      gt ~options:{ gmap }]
       type 'a targ_logic = ('a, 'a jtyp_logic) targ_fuly OCanren.logic
       and 'a jtyp_logic =
-        ('a, 'a jtyp_logic, 'a targ_logic) jtyp_fuly OCanren.logic
+        ('a, 'a jtyp_logic, 'a targ_logic) jtyp_fuly OCanren.logic[@@deriving
+                                                                    gt
+                                                                      ~options:
+                                                                      { gmap
+                                                                      }]
       type 'a targ_injected = ('a, 'a jtyp_injected) targ_fuly OCanren.ilogic
       and 'a jtyp_injected =
         ('a, 'a jtyp_injected, 'a targ_injected) jtyp_fuly OCanren.ilogic
