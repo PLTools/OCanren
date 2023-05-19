@@ -1,4 +1,4 @@
-let () = print_endline "test012"
+let () = print_endline "test013"
 
 [%%ocanren_inject
 type nonrec polarity =
@@ -21,7 +21,7 @@ and jtype =
   | Interface of id * targ
   | V of
       { id : id
-      ; index : int
+      ; index : GT.int
       ; upb : jtype
       ; lwb : jtype GT.option
       }

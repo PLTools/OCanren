@@ -204,7 +204,7 @@ include struct
           S.mangle_lident ~loc (lazy (List.map ~f:helper xs)) txt
       | t ->
           (match t.ptyp_desc with
-          (* Inprinciple, special treating of Pairs is not required,
+          (* In principle, special treating of pairs is not required,
             but it is easier to study the generated code with this specialization *)
           | Ptyp_tuple [ l; r ] ->
               ptyp_constr
@@ -826,8 +826,8 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
                     (Exp.construct
                        (Located.map_lident cd.pcd_name)
                        (if List.is_empty args
-                       then None
-                       else Some (Exp.mytuple ~loc (List.map args ~f:(Exp.lident ~loc)))))
+                        then None
+                        else Some (Exp.mytuple ~loc (List.map args ~f:(Exp.lident ~loc)))))
               | Pcstr_record ls ->
                   let add_args rhs =
                     List.fold_right ~init:rhs ls ~f:(fun { pld_name = { txt } } acc ->
@@ -904,8 +904,8 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
       ppat_var
         ~loc
         (if Reify_impl.is_new ()
-        then Located.sprintf ~loc "%s_fmapt" tdecl.ptype_name.txt
-        else Located.sprintf ~loc "fmapt")
+         then Located.sprintf ~loc "%s_fmapt" tdecl.ptype_name.txt
+         else Located.sprintf ~loc "fmapt")
     in
     value_binding ~loc ~pat ~expr
   in
@@ -923,8 +923,8 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
       let names_2 = List.map names ~f:mangle in
       let rez =
         [%type:
-          ( [%t ptyp_constr ~loc lident (List.map names ~f:(fun s -> ptyp_var ~loc s))]
-          , [%t ptyp_constr ~loc lident_g (List.map names_2 ~f:(fun s -> ptyp_var ~loc s))] )
+          ( [%t ptyp_constr ~loc lident (List.map names ~f:(ptyp_var ~loc))]
+          , [%t ptyp_constr ~loc lident_g (List.map names_2 ~f:(ptyp_var ~loc))] )
           OCanren.Reifier.t]
       in
       List.fold_right names ~init:rez ~f:(fun name acc ->
