@@ -785,3 +785,8 @@ module Tabling =
       g := currier g_tabled;
       !g
   end
+
+
+let reify_in_empty reifier x =
+  let st = State.empty () in
+  reifier (State.env st) x

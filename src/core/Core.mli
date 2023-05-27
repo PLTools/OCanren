@@ -316,3 +316,6 @@ module PrunesControl : sig
   val is_exceeded: unit -> bool
   val skipped_prunes : unit -> int
 end
+
+(** Runs reifier on empty state. Useful to debug execution order *)
+val reify_in_empty: ('a, 'b) Reifier.t -> 'a -> 'b
