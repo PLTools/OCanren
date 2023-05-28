@@ -26,7 +26,7 @@ module State :
   end
 
 (** Goal is a function that converts a state into a lazy stream of states. *)
-type 'a goal'
+type 'a goal' = State.t -> 'a
 
 (** @canonical OCanren.goal *)
 type goal = State.t Stream.t goal'
