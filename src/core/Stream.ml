@@ -87,8 +87,9 @@ let rec mplus xs ys =
   let () = IFDEF STATS THEN mplus_counter_incr () ELSE () END in
   match xs with
   | Nil           -> force ys
-  | Cons (x, xs)  -> cons x (from_fun @@ fun () -> mplus (force ys) xs)
   | Thunk   _     -> from_fun (fun () -> mplus (force ys) xs)
+  | Cons (x, Nil) -> cons x ys
+  | Cons (x, xs)  -> cons x (from_fun @@ fun () -> mplus (force ys) xs)
   | Waiting ss    ->
     let ys = force ys in
     (* handling waiting streams is tricky *)
@@ -119,8 +120,9 @@ let rec bind s f =
   let () = IFDEF STATS THEN bind_counter_incr () ELSE () END in
   match s with
   | Nil           -> Nil
-  | Cons (x, s)   -> mplus (f x) (from_fun (fun () -> bind (force s) f))
   | Thunk zz      -> from_fun (fun () -> bind (zz ()) f)
+  | Cons (x, Nil) -> f x
+  | Cons (x, s)   -> mplus (f x) (from_fun (fun () -> bind (force s) f))
   | Waiting ss    ->
     match unwrap_suspended ss with
     | Waiting ss ->
