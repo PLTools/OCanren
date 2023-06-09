@@ -98,3 +98,7 @@ module Peep = Peep
 
 let _ = Peep.unification_counter
 END
+
+
+let mplusS = Stream.mplus
+let bindS = Stream.bind
