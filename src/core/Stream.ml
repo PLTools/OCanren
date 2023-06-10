@@ -119,10 +119,18 @@ and unwrap_suspended ss =
 let rec bind s f =
   let () = IFDEF STATS THEN bind_counter_incr () ELSE () END in
   match s with
-  | Nil           -> Nil
-  | Thunk zz      -> from_fun (fun () -> bind (zz ()) f)
-  | Cons (x, Nil) -> f x
-  | Cons (x, s)   -> mplus (f x) (from_fun (fun () -> bind (force s) f))
+  | Nil           -> 
+      (* print_endline "bind 1st branch"; *)
+      Nil
+  | Thunk zz      -> 
+    (* print_endline "bind 2nd branch"; *)
+    from_fun (fun () -> bind (zz ()) f)
+  | Cons (x, Nil) -> 
+    (* print_endline "bind 3rd branch"; *)
+    f x
+  | Cons (x, s)   ->     
+      (* print_endline "bind 4th branch"; *)
+      mplus (f x) (from_fun (fun () -> bind (force s) f))
   | Waiting ss    ->
     match unwrap_suspended ss with
     | Waiting ss ->
