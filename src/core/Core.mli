@@ -23,6 +23,8 @@ module State :
   sig
     (** @canonical OCanren.State.t *)
     type t
+    val new_scope : t -> t
+    val fresh : t -> _ ilogic 
   end
 
 (** Goal is a function that converts a state into a lazy stream of states. *)

@@ -21,7 +21,7 @@ type t = {anchor : Term.Var.env; mutable next : int}
 
 (* TODO: document next two values *)
 let last_anchor = ref 11
-let first_var = 10
+let first_var = 0
 
 let empty () =
   incr last_anchor;

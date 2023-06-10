@@ -100,5 +100,6 @@ let _ = Peep.unification_counter
 END
 
 
-let mplusS = Stream.mplus
-let bindS = Stream.bind
+let mplus = Stream.mplus
+let bind = Stream.bind
+let pause = Stream.from_fun
