@@ -84,12 +84,23 @@ let force x =
   | xs        -> xs
 
 let rec mplus xs ys =
+  assert (match ys with Thunk _ -> true | _ -> false);
   let () = IFDEF STATS THEN mplus_counter_incr () ELSE () END in
   match xs with
-  | Nil           -> force ys
-  | Thunk   _     -> from_fun (fun () -> mplus (force ys) xs)
-  | Cons (x, Nil) -> cons x ys
-  | Cons (x, xs)  -> cons x (from_fun @@ fun () -> mplus (force ys) xs)
+  | Nil           ->
+      print_string "  mplus 1st branch\n";
+      ys
+  | Thunk   _     ->
+      print_string "  mplus 2nd branch\n";
+      from_fun (fun () ->
+        print_endline "HERE";
+        mplus (force ys) xs)
+  | Cons (x, Nil) ->
+      print_string "  mplus 3rd branch\n";
+      cons x ys
+  | Cons (x, xs)  ->
+      print_string "  mplus 4th branch\n";
+      cons x (from_fun @@ fun () -> mplus (force ys) xs)
   | Waiting ss    ->
     let ys = force ys in
     (* handling waiting streams is tricky *)
@@ -119,17 +130,17 @@ and unwrap_suspended ss =
 let rec bind s f =
   let () = IFDEF STATS THEN bind_counter_incr () ELSE () END in
   match s with
-  | Nil           -> 
-      (* print_endline "bind 1st branch"; *)
+  | Nil           ->
+      print_string "  bind 1st branch\n";
       Nil
-  | Thunk zz      -> 
-    (* print_endline "bind 2nd branch"; *)
-    from_fun (fun () -> bind (zz ()) f)
-  | Cons (x, Nil) -> 
-    (* print_endline "bind 3rd branch"; *)
-    f x
-  | Cons (x, s)   ->     
-      (* print_endline "bind 4th branch"; *)
+  | Thunk zz      ->
+      print_string "  bind 2nd branch\n";
+      from_fun (fun () -> bind (zz ()) f)
+  | Cons (x, Nil) ->
+      print_string "  bind 3rd branch\n";
+      f x
+  | Cons (x, s)   ->
+      print_string "  bind 4th branch\n";
       mplus (f x) (from_fun (fun () -> bind (force s) f))
   | Waiting ss    ->
     match unwrap_suspended ss with
