@@ -787,6 +787,11 @@ module Tabling =
   end
 
 
+let reify_in_state st reifier x =
+  let env = State.env st in
+  let subst = State.subst st in
+  reifier (State.env st) (Subst.reify env subst x |> Obj.magic)
+
 let reify_in_empty reifier x =
   let st = State.empty () in
   reifier (State.env st) x

@@ -24,7 +24,7 @@ module State :
     (** @canonical OCanren.State.t *)
     type t
     val new_scope : t -> t
-    val fresh : t -> _ ilogic 
+    val fresh : t -> _ ilogic
   end
 
 (** Goal is a function that converts a state into a lazy stream of states. *)
@@ -321,3 +321,5 @@ end
 
 (** Runs reifier on empty state. Useful to debug execution order *)
 val reify_in_empty: ('a, 'b) Reifier.t -> 'a -> 'b
+
+val reify_in_state: State.t -> ('a, 'b) Reifier.t -> 'a -> 'b
