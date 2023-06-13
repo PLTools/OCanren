@@ -157,7 +157,10 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
       ~fvar:(fun ((_, subst) as acc) x y ->
         match walk env subst x, walk env subst y with
         | Var x, Var y      ->
-          if Var.equal x y then acc else extend x (Term.repr y) acc
+            if Var.equal x y then acc else
+            if Term.Var.(x.index > y.index)
+            then extend x (Term.repr y) acc
+            else extend y (Term.repr x) acc
         | Var x, Value y    -> extend x y acc
         | Value x, Var y    -> extend y x acc
         | Value x, Value y  -> helper x y acc
