@@ -12,7 +12,7 @@
   q=5;
   }
   fun q -> OCanren.Fresh.one (fun w -> delay (fun () -> q === some w)), 1 answer {
-  q=Some (_.11);
+  q=Some (_.1);
   }
   fun q -> q === Result.ok !!5, 1 answer {
   q=Ok (5);
@@ -23,7 +23,7 @@
          delay
            (fun () -> conj (q === Result.ok r) (conde [r === !!5; success]))), all answers {
   q=Ok (5);
-  q=Ok (_.11);
+  q=Ok (_.1);
   }
   fun q ->
     OCanren.Fresh.two
@@ -32,6 +32,6 @@
            (fun () ->
               conde
                 [(q === Result.ok s) &&& (s =/= !!4); q === Result.error r])), all answers {
-  q=Ok (_.12 [=/= 4]);
-  q=Error (_.11);
+  q=Ok (_.2 [=/= 4]);
+  q=Error (_.1);
   }

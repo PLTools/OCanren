@@ -96,30 +96,30 @@
   q=S (O);
   }
   fun q r -> mulo q r (s (s (s (s o)))), 1 answer {
-  q=S (S (S (S (O)))); r=S (O);
-  }
-  fun q r -> mulo q r (s (s (s (s o)))), 3 answers {
-  q=S (S (S (S (O)))); r=S (O);
-  q=S (S (O)); r=S (S (O));
   q=S (O); r=S (S (S (S (O))));
   }
+  fun q r -> mulo q r (s (s (s (s o)))), 3 answers {
+  q=S (O); r=S (S (S (S (O))));
+  q=S (S (S (S (O)))); r=S (O);
+  q=S (S (O)); r=S (S (O));
+  }
   fun q r -> mulo q r o, 1 answer {
-  q=O; r=_.11;
+  q=O; r=_.1;
   }
   fun p q r -> mulo p q r, 3 answers {
-  q=O; r=_.11; s=O;
+  q=O; r=_.1; s=O;
   q=S (O); r=O; s=O;
   q=S (O); r=S (O); s=S (O);
   }
   fun q r s -> mulo q r s, 10 answers {
-  q=O; r=_.11; s=O;
+  q=O; r=_.1; s=O;
   q=S (O); r=O; s=O;
   q=S (O); r=S (O); s=S (O);
   q=S (S (O)); r=O; s=O;
-  q=S (S (S (O))); r=O; s=O;
   q=S (O); r=S (S (O)); s=S (S (O));
+  q=S (S (S (O))); r=O; s=O;
   q=S (S (S (S (O)))); r=O; s=O;
   q=S (S (O)); r=S (O); s=S (S (O));
   q=S (S (S (S (S (O))))); r=O; s=O;
-  q=S (S (S (S (S (S (O)))))); r=O; s=O;
+  q=S (O); r=S (S (S (O))); s=S (S (S (O)));
   }

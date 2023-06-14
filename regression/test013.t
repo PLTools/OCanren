@@ -139,10 +139,10 @@
   q=Some (S (O));
   }
   fun q r -> Nat.mulo q r q, 3 answers {
-  q=O; r=_.11;
+  q=O; r=_.1;
   q=S (O); r=S (O);
   q=S (S (O)); r=S (O);
   }
   fun q -> List.lengtho q ?$3, all answers {
-  q=[_.11; _.14; _.17];
+  q=[_.1; _.4; _.7];
   }

@@ -222,7 +222,7 @@
   q=None;
   }
   fun q -> fresh x (q === (some x)), 1 answer {
-  q=Some (_.11);
+  q=Some (_.1);
   }
   fun q -> fresh () (q === (some (!! 42))), 1 answer {
   q=Some (42);
@@ -231,5 +231,5 @@
   q=[];
   }
   fun q -> fresh x (q === (cons x (nil ()))), 1 answer {
-  q=:: (_.11, []);
+  q=:: (_.1, []);
   }

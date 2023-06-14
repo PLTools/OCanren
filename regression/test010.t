@@ -79,18 +79,18 @@
                 (z === !(2 + 2)))), all answers {
   }
   fun q -> q =/= !5, all answers {
-  q=_.10 [=/= 5];
+  q=_.0 [=/= 5];
   }
   fun q -> (q =/= !3) &&& (q === !3), all answers {
   }
   fun q -> (q === !3) &&& (!3 =/= q), all answers {
   }
   fun q r -> (q =/= !!(true)) &&& (q =/= r), all answers {
-  q=_.10 [=/= _.11; =/= true]; r=_.11;
+  q=_.0 [=/= true]; r=_.1 [=/= _.0 [=/= true]];
   }
   fun q -> q =/= Std.nil (), all answers {
-  q=_.10 [=/= []];
+  q=_.0 [=/= []];
   }
   fun q -> q =/= !<(!!2), all answers {
-  q=_.10 [=/= [2]];
+  q=_.0 [=/= [2]];
   }

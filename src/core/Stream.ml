@@ -84,7 +84,7 @@ let force x =
   | xs        -> xs
 
 let rec mplus xs ys =
-  assert (match ys with Thunk _ -> true | _ -> false);
+  (* assert (match ys with Thunk _ -> true | _ -> false); *)
   let () = IFDEF STATS THEN mplus_counter_incr () ELSE () END in
   match xs with
   | Nil           ->

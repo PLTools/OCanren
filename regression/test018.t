@@ -1,6 +1,6 @@
   $ ./test018prjc.exe
   fun q -> Fresh.one (fun r -> q === q), all answers {
-  q=Var1 (10);
+  q=Var1 (0);
   }
   fun q -> Fresh.two (fun r s -> (r =/= s) &&& (q === X.a r)), all answers {
   q=A (Var2 (11));
