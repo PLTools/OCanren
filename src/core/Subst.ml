@@ -172,8 +172,10 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
       | Var z, WC v | WC v, Var z -> extend (Obj.magic v) (Obj.repr z) acc
       | Value z, WC v | WC v, Value z -> extend (Obj.magic v) (Obj.repr z) acc
       | Var x, Var y ->
-        if Term.Var.equal x y then acc
-        else extend x (Term.repr y) acc
+          let cmp = Term.Var.compare x y in
+          if cmp < 0 then extend x (Term.repr y) acc
+          else if cmp > 0 then extend y (Term.repr x) acc
+          else acc
       | Var x, Value y -> extend x y acc
       | Value x, Var y -> extend y x acc
       | Value x, Value y  -> helper x y acc
