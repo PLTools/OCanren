@@ -37,6 +37,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - run: opam update
+      - name: Install dev version of GT
+        run: |
+          opam source GT --dev-repo
+          opam pin add GT ./GT -y
+
       - name: Install dependencies for documentation
         run: opam install odoc pa_ppx --yes
 
