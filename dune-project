@@ -25,7 +25,7 @@
   camlp5
   logger-p5
   (GT
-   (>= 0.5))
+   (>= 0.5.2))
   (benchmark :with-test)
   (ocamlformat
    (and

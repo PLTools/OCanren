@@ -103,6 +103,52 @@
        |> OCanren.Stream.take)
       |>
       (Stdlib.List.iter (Format.printf "%a\n%!" (pp_typ Format.pp_print_int)))
+  include
+    struct
+      include
+        struct
+          type nonrec ('a, 'a0) t_fuly =
+            | [] [@name "nil"]
+            | (::) of 'a * 'a0 [@name "cons"][@@deriving
+                                               gt ~options:{ gmap; show }]
+          type 'a t = ('a, 'a t) t_fuly[@@deriving gt ~options:{ gmap; show }]
+          type 'a t_logic = ('a, 'a t_logic) t_fuly OCanren.logic[@@deriving
+                                                                   gt
+                                                                     ~options:
+                                                                     {
+                                                                      gmap;
+                                                                      show
+                                                                     }]
+          type 'a t_injected = ('a, 'a t_injected) t_fuly OCanren.ilogic
+          let t_fmapt f__015_ f__016_ subj__017_ =
+            let open OCanren.Env.Monad in
+              (((OCanren.Env.Monad.return (GT.gmap t_fuly)) <*> f__015_) <*>
+                 f__016_)
+                <*> subj__017_
+          let (t_prj_exn :
+            ('a, 'a_2) OCanren.Reifier.t ->
+              ('a t_injected, 'a_2 t) OCanren.Reifier.t)
+            =
+            fun ra ->
+              let open OCanren.Env.Monad in
+                OCanren.Reifier.fix
+                  (fun self -> OCanren.prj_exn <..> (chain (t_fmapt ra self)))
+          let (t_reify :
+            ('a, 'a_2) OCanren.Reifier.t ->
+              ('a t_injected, 'a_2 t_logic) OCanren.Reifier.t)
+            =
+            fun ra ->
+              let open OCanren.Env.Monad in
+                OCanren.Reifier.fix
+                  (fun self ->
+                     OCanren.reify <..>
+                       (chain
+                          (OCanren.Reifier.zed
+                             (OCanren.Reifier.rework ~fv:(t_fmapt ra self)))))
+        end
+      let nil () = OCanren.inj []
+      let cons _x__009_ _x__010_ = OCanren.inj (_x__009_ :: _x__010_)
+    end
   $ ./test012mutual.exe
   test012
   noarg
