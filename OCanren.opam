@@ -31,7 +31,7 @@ depends: [
   "logger-p5"
   "GT" {>= "0.5.2"}
   "benchmark" {with-test}
-  "ocamlformat" {with-test & >= "0.22"}
+  "ocamlformat" {with-test & >= "0.25.1"}
   "ppx_inline_test"
   "mtime" {< "2.0.0"}
   "odoc" {with-doc}
