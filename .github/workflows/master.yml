@@ -47,6 +47,10 @@ jobs:
         run: opam install odoc pa_ppx --yes
 
       - run: opam install . --yes --deps-only --with-test --with-doc
+
+      - name: List installed packages
+        run: opam list
+
       - run: opam exec -- make #dune build
       - run: opam exec -- make test # dune runtest
 
