@@ -3,6 +3,10 @@
 ### Changed
 
 - Make type 'OCanren.Std.List.ground' to be 'Stdlib.List.t'. It simplifies some injections.
+- Minimal GT version is 0.5.2. We fixed few issues there. With old one a few tests may fail.
+- The extension `ppx_distrib` should be used as `[%%ocanren_inject ...]` from now on. We also support mutually recursuve types there.
+- Wildcards in unification (camlp5 extension)
+- Remove dependecy on `base`
 
 ## 0.3.0 (28-04-2022)
 
