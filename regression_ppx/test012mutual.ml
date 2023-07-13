@@ -24,9 +24,7 @@ and pp_typ fa ppf : 'a jtyp -> unit = function
 open OCanren
 
 let () =
-  OCanren.(run q)
-    (fun q -> q === !!TNoarg)
-    (fun rr -> rr#reify (targ_prj_exn OCanren.prj_exn))
+  OCanren.(run q) (fun q -> q === !!TNoarg) (fun rr -> rr#reify (targ_prj_exn OCanren.prj_exn))
   |> OCanren.Stream.take
   |> Stdlib.List.iter (Format.printf "%a\n%!" (pp_arg Format.pp_print_int))
 ;;
@@ -39,34 +37,13 @@ let () =
   |> Stdlib.List.iter (Format.printf "%a\n%!" (pp_typ Format.pp_print_int))
 ;;
 
-(* include struct
-  type nonrec ('a, 'b) t =
+include struct
+  [%%ocanren_inject
+  type 'a t =
     | [] [@name "nil"]
-    | ( :: ) of 'a * 'b [@name "cons"]
-  [@@deriving gt ~options:{ gmap; show }]
+    | ( :: ) of 'a * 'a t [@name "cons"]
+  [@@deriving gt ~options:{ gmap; show }]]
 
-  type 'a ground = ('a, 'a ground) t [@@deriving gt ~options:{ gmap; show }]
-  type 'a logic = ('a, 'a logic) t OCanren.logic [@@deriving gt ~options:{ gmap; show }]
-  type 'a injected = ('a, 'a injected) t OCanren.ilogic
-
-  let fmapt f__013_ f__014_ subj__015_ =
-    let open OCanren.Env.Monad in
-    OCanren.Env.Monad.return (GT.gmap t) <*> f__013_ <*> f__014_ <*> subj__015_
-  ;;
-
-  let prj_exn ra =
-    let open OCanren.Env.Monad in
-    OCanren.Reifier.fix (fun self -> OCanren.prj_exn <..> chain (fmapt ra self))
-  ;;
-
-  let reify ra =
-    let open OCanren.Env.Monad in
-    OCanren.Reifier.fix (fun self ->
-      OCanren.reify
-      <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt ra self))))
-  ;;
-
-  let nil () = OCanren.inji []
-  let cons _x__009_ _x__010_ = OCanren.inji (_x__009_ :: _x__010_)
+  let nil () = OCanren.inj []
+  let cons _x__009_ _x__010_ = OCanren.inj (_x__009_ :: _x__010_)
 end
- *)

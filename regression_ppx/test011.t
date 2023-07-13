@@ -8,17 +8,21 @@
         struct
           type nonrec ('targ, 'a1, 'a0) t =
             | Array of 'a1 
-            | Var of 'a0 [@@deriving gt ~options:{ fmt; gmap }]
+            | Var of 'a0 [@@deriving gt ~options:{ show; fmt; gmap }]
           type 'targ ground = ('targ, 'targ ground, GT.int) t[@@deriving
                                                                gt
                                                                  ~options:
-                                                                 { fmt; gmap
+                                                                 {
+                                                                   show;
+                                                                   fmt;
+                                                                   gmap
                                                                  }]
           type 'targ logic =
             ('targ, 'targ logic, GT.int OCanren.logic) t OCanren.logic[@@deriving
                                                                       gt
                                                                       ~options:
                                                                       {
+                                                                      show;
                                                                       fmt;
                                                                       gmap
                                                                       }]
@@ -60,10 +64,16 @@
   include
     struct
       type nonrec 'a0 t =
-        | Typ of 'a0 [@@deriving gt ~options:{ fmt; gmap }]
-      type ground = ground JType.ground t[@@deriving gt ~options:{ fmt; gmap }]
+        | Typ of 'a0 [@@deriving gt ~options:{ show; fmt; gmap }]
+      type ground = ground JType.ground t[@@deriving
+                                           gt ~options:{ show; fmt; gmap }]
       type logic = logic JType.logic t OCanren.logic[@@deriving
-                                                      gt ~options:{ fmt; gmap }]
+                                                      gt
+                                                        ~options:{
+                                                                   show;
+                                                                   fmt;
+                                                                   gmap
+                                                                 }]
       type injected = injected JType.injected t OCanren.ilogic
       let fmapt f__012_ subj__013_ =
         let open OCanren.Env.Monad in

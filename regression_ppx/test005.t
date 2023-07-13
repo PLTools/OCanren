@@ -29,7 +29,7 @@
   
     let () =
       (let open OCanren in
-      run q )
+       run q )
         (fun q -> q === Std.pair (Std.pair !!1 !!2) (Std.nil ()))
         (fun rr -> rr#reify prj_exn)
       |> OCanren.Stream.hd
@@ -90,7 +90,7 @@
   
     let () =
       (let open OCanren in
-      run q )
+       run q )
         (fun q -> q === Std.List.cons !!(!!1, !!2, !!3) (Std.nil ()))
         (fun rr -> rr#reify prj_exn)
       |> OCanren.Stream.hd

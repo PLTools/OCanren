@@ -1010,7 +1010,7 @@
   
     let () =
       (let open OCanren in
-      run q )
+       run q )
         (fun q -> q === inj (!!true, !!5, !!"x"))
         (fun rr -> rr#reify prj_exn)
       |> Stream.iter (fun (b, n, s) -> Printf.printf "%b %d %S\n" b n s)
