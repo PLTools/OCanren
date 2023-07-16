@@ -439,9 +439,10 @@ type ('a, 'b, 'ri) the_result =
   ; prj_exn : 'ri
   ; reify : 'ri
   ; other : structure_item list
+  ; other_sigs : signature_item list
   }
 
-let cons_results { t; ground; logic; other; injected; fmapt; prj_exn; reify } next =
+let cons_results { t; ground; logic; injected; fmapt; prj_exn; reify; other; other_sigs } next =
   { t = t :: next.t
   ; ground = ground :: next.ground
   ; logic = logic :: next.logic
@@ -450,6 +451,7 @@ let cons_results { t; ground; logic; other; injected; fmapt; prj_exn; reify } ne
   ; prj_exn = prj_exn :: next.prj_exn
   ; reify = reify :: next.reify
   ; other = other @ next.other
+  ; other_sigs = other_sigs @ next.other_sigs
   }
 ;;
 
@@ -462,6 +464,7 @@ let empty_rez va vb ri =
   ; reify = ri
   ; prj_exn = ri
   ; other = []
+  ; other_sigs = []
   }
 ;;
 
@@ -942,6 +945,7 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
   ; prj_exn = add_typ ~kind:Prj_exn (make_reifier_gen ~kind:Prj_exn is_rec tdecl)
   ; reify = add_typ ~kind:Reify (make_reifier_gen ~kind:Reify is_rec tdecl)
   ; other = creators
+  ; other_sigs = [] (* TODO: signatures of creators will be added later *)
   }
 ;;
 

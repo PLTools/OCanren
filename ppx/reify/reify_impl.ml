@@ -439,39 +439,57 @@ let make_reifier_composition ~pat ?(typ = None) kind tdecl =
   pstr_value ~loc Nonrecursive [ value_binding ~loc ~pat ~expr:(add_args body) ]
 ;;
 
+let make_reifier_name tdecl =
+  if is_new () then Printf.sprintf "%s_reify" tdecl.ptype_name.txt else "reify"
+;;
+
+let make_prj_name tdecl =
+  if is_new () then Printf.sprintf "%s_prj_exn" tdecl.ptype_name.txt else "prj_exn"
+;;
+
+let make_prj_type ~loc m tdecl =
+  [%type: (_, [%t gtypify_exn tdecl.ptype_name.txt ~loc m]) OCanren.Reifier.t]
+;;
+
+let make_reifier_type ~loc m tdecl =
+  [%type: (_, [%t ltypify_exn ~loc tdecl.ptype_name.txt m]) OCanren.Reifier.t]
+;;
+
 let make_reifier ~loc m tdecl =
   make_reifier_composition
     Reify
-    ~typ:
-      (if List.is_empty tdecl.ptype_params
-      then Some [%type: (_, [%t ltypify_exn ~loc tdecl.ptype_name.txt m]) OCanren.Reifier.t]
-      else None)
-    ~pat:
-      (let name = if is_new () then Printf.sprintf "%s_reify" tdecl.ptype_name.txt else "reify" in
-       ppat_var ~loc (Located.mk ~loc name))
+    ~typ:(if List.is_empty tdecl.ptype_params then Some (make_reifier_type ~loc m tdecl) else None)
+    ~pat:(ppat_var ~loc (Located.mk ~loc (make_reifier_name tdecl)))
     tdecl
 ;;
 
 let make_prj ~loc m tdecl =
   make_reifier_composition
     Prj_exn
-    ~typ:
-      (if List.is_empty tdecl.ptype_params
-      then Some [%type: (_, [%t gtypify_exn tdecl.ptype_name.txt ~loc m]) OCanren.Reifier.t]
-      else None)
-    ~pat:
-      (let name =
-         if is_new () then Printf.sprintf "%s_prj_exn" tdecl.ptype_name.txt else "prj_exn"
-       in
-       ppat_var ~loc (Located.mk ~loc name))
+    ~typ:(if List.is_empty tdecl.ptype_params then Some (make_prj_type ~loc m tdecl) else None)
+    ~pat:(ppat_var ~loc (Located.mk ~loc (make_prj_name tdecl)))
     tdecl
 ;;
 
-let process1 tdecl =
+let process_str tdecl =
   let loc = tdecl.ptype_loc in
   match tdecl.ptype_manifest with
   | Some m ->
       (* TODO(Kakadu): find a way not to pass both manifest and type declration *)
       [ make_reifier ~loc m tdecl; make_prj ~loc m tdecl ]
+  | _ -> failwiths ~loc "no manifest"
+;;
+
+let process_sig tdecl =
+  let loc = tdecl.ptype_loc in
+  match tdecl.ptype_manifest with
+  | Some m ->
+      [ (let name = Located.mk ~loc (make_prj_name tdecl) in
+         psig_value ~loc
+         @@ value_description ~loc ~prim:[] ~name ~type_:(make_prj_type ~loc m tdecl))
+      ; (let name = Located.mk ~loc (make_reifier_name tdecl) in
+         psig_value ~loc
+         @@ value_description ~loc ~prim:[] ~name ~type_:(make_reifier_type ~loc m tdecl))
+      ]
   | _ -> failwiths ~loc "no manifest"
 ;;
