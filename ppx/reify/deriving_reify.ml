@@ -23,17 +23,17 @@ open Stdppx
 
 let str_type_decl : (_, _) Deriving.Generator.t =
   Deriving.Generator.make Deriving.Args.empty (fun ~loc:_ ~path:_ (_, info) ->
-    List.concat_map info ~f:Reify_impl.process1)
+      List.concat_map info ~f:Reify_impl.process_str)
 ;;
 
 let () =
   Deriving.add "reify" ~str_type_decl ~extension:(fun ~loc ~path:_ ->
-    Reify_impl.reifier_of_core_type ~loc Reify)
+      Reify_impl.reifier_of_core_type ~loc Reify)
   |> Deriving.ignore
 ;;
 
 let () =
   Deriving.add "prj_exn" ~extension:(fun ~loc ~path:_ ->
-    Reify_impl.reifier_of_core_type ~loc Prj_exn)
+      Reify_impl.reifier_of_core_type ~loc Prj_exn)
   |> Deriving.ignore
 ;;

@@ -6,7 +6,22 @@
   
   let () = print_endline "test009"
   
-  module _ = struct
+  module _ : sig
+    include sig
+      type nonrec ('a1, 'a0) t = LInt of 'a1 | LBool of 'a0 [@@deriving gt ~options:{gmap}]
+  
+      type nonrec ground = (GT.int, GT.bool) t [@@deriving gt ~options:{gmap}]
+  
+      type nonrec logic = (GT.int OCanren.logic, GT.bool OCanren.logic) t OCanren.logic
+      [@@deriving gt ~options:{gmap}]
+  
+      type nonrec injected = (GT.int OCanren.ilogic, GT.bool OCanren.ilogic) t OCanren.ilogic
+  
+      val prj_exn : (injected, ground) OCanren.Reifier.t
+  
+      val reify : (injected, logic) OCanren.Reifier.t
+    end
+  end = struct
     include struct
       type nonrec ('a1, 'a0) t = LInt of 'a1 | LBool of 'a0 [@@deriving gt ~options:{gmap}]
   

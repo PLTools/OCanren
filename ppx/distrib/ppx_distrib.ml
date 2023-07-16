@@ -42,13 +42,21 @@ let filter_out_gt_attributes tdecls = tdecls
       List.map tdecls ~f:(function { ptype_attributes; _ } as g ->
           { g with ptype_attributes = helper ptype_attributes }) *)
 
+let knot_reifiers_sig ~loc reifiers =
+  List.concat_map reifiers ~f:(fun ri ->
+      let open Ppx_distrib_expander in
+      match ri.Reifier_info.typ with
+      | None -> []
+      | Some t ->
+          let open Ppxlib.Ast_builder.Default in
+          let name = Located.mk ~loc ri.Reifier_info.name in
+          [ psig_value ~loc (value_description ~loc ~name ~prim:[] ~type_:t) ])
+;;
+
 let knot_reifiers ~loc ?(kind = Reify_impl.Prj_exn) reifiers base_decls =
-  (* Format.eprintf "%s%d\n%!" __FILE__ __LINE__; *)
   assert (List.length reifiers = List.length base_decls);
   match reifiers with
-  | [] ->
-      (* Format.eprintf "%s%d\n%!" __FILE__ __LINE__; *)
-      []
+  | [] -> []
   | [ h ] ->
       let open Ppxlib.Ast_builder.Default in
       let open Ppx_distrib_expander in
@@ -309,32 +317,32 @@ open Ppxlib.Ast_builder.Default
 
 let () =
   let extensions =
-    let generate ~loc is_rec type_pairs_list =
-      let open Ppx_distrib_expander in
-      let items =
-        let rez = process_main ~loc is_rec type_pairs_list in
-        (* Format.eprintf "after process_main %a\n%!" pp_attributes rez.ground.ptype_attributes; *)
-        List.concat
-          [ [ pstr_type ~loc Nonrecursive [ rez.t ] ]
-          ; [ pstr_type ~loc is_rec [ rez.ground ] ]
-          ; [ pstr_type ~loc is_rec [ rez.logic ] ]
-          ; [ pstr_type ~loc is_rec [ rez.injected ] ]
-          ; [ pstr_value ~loc Nonrecursive [ rez.fmapt ] ]
-          ; knot_reifiers ~loc ~kind:Prj_exn [ rez.prj_exn ] [ rez.ground ]
-          ; knot_reifiers ~loc ~kind:Reify [ rez.reify ] [ rez.ground ]
-          ; rez.other
-          ]
-      in
-      pstr_include ~loc (include_infos ~loc (pmod_structure ~loc items))
-    in
-    let make_extension name =
-      Extension.declare
-        name
-        Extension.Context.Structure_item
-        (classify_tdecl ())
-        (fun ~loc ~path:_ -> function
+    let make_extension_gen (type ai a) :
+         ctx:a Extension.Context.t
+        -> of_tdecl:(loc:location -> rec_flag -> type_declaration list -> ai)
+        -> (* TODO: maybe all arguments should return lists of values? *)
+           of_value:(loc:location -> rec_flag -> value_binding -> ai list)
+        -> group_items:(loc:location -> ai list -> a)
+        -> knot_reifiers:
+             (loc:location
+              -> ?kind:Reify_impl.kind
+              -> Ppx_distrib_expander.Reifier_info.t list
+              -> type_declaration list
+              -> ai list)
+        -> other_stuff:
+             (( type_declaration list
+              , value_binding list
+              , Ppx_distrib_expander.Reifier_info.t list )
+              Ppx_distrib_expander.the_result
+              -> ai list)
+        -> string
+        -> Extension.t
+      =
+     fun ~ctx ~of_tdecl ~of_value ~group_items ~knot_reifiers ~other_stuff name ->
+      Extension.declare name ctx (classify_tdecl ()) (fun ~loc ~path:_ -> function
         | Other (_, []) -> failwith "Not supported"
         | Other (is_rec, [ ({ ptype_kind = Ptype_abstract; ptype_manifest = Some _ } as tdecl) ]) ->
+            (* type abbreviation *)
             let open Ppxlib.Ast_builder.Default in
             let ltyp_decl =
               let open Ppx_distrib_expander in
@@ -360,55 +368,23 @@ let () =
               }
             in
             let stru =
-              pstr_type ~loc is_rec [ tdecl ]
-              :: pstr_type ~loc is_rec [ ltyp_decl ]
-              :: pstr_type ~loc is_rec [ injected_typ_decl ]
-              :: Reify_impl.process1 tdecl
+              List.concat
+                [ [ of_tdecl ~loc is_rec [ tdecl ] ]
+                ; [ of_tdecl ~loc is_rec [ ltyp_decl ] ]
+                ; [ of_tdecl ~loc is_rec [ injected_typ_decl ] (* :: Reify_impl.process1 tdecl *) ]
+                ; other_stuff
+                    { (Ppx_distrib_expander.empty_rez [] [] []) with
+                      other = Reify_impl.process_str tdecl
+                    ; other_sigs = Reify_impl.process_sig tdecl
+                    }
+                ]
             in
-            pstr_include ~loc (include_infos ~loc (pmod_structure ~loc stru))
-        | Other (is_rec, [ ({ ptype_manifest = Some _ } as tdecl) ]) ->
-            (* let tdecl = { tdecl with ptype_attributes } in
-                 let open Ppxlib.Ast_builder.Default in
-                 let ltyp_decl =
-                   let open Ppx_distrib_expander in
-                   let abbrev =
-                     ltypify_exn
-                       ~loc
-                       (make_logic_strat_2 tdecl)
-                       (Stdlib.Option.get tdecl.ptype_manifest)
-                   in
-                   let (module S : STRAT) = make_strat () in
-                   { tdecl with
-                     ptype_name = S.logic_typ_name tdecl
-                   ; ptype_manifest = Some abbrev
-                   }
-                 in
-                 let stru =
-                   pstr_type ~loc is_rec [ tdecl ]
-                   :: pstr_type ~loc is_rec [ ltyp_decl ]
-                   :: Reify_impl.process1 tdecl
-                 in
-                 pstr_include ~loc (include_infos ~loc (pmod_structure ~loc stru)) *)
-            assert false
-        (*         | Other (is_rec, [ ({ ptype_manifest = None; ptype_kind = Ptype_record labs } as tdecl) ])
-          ->
-            let full_t, normal_t = Prepare_fully_abstract.run loc [tdecl] in
-            generate ~loc full_t is_rec normal_t [] *)
-        (* alias of record *)
-        (* let type_pairs_list =
-                   Prepare_fully_abstract.run loc [ { tdecl with ptype_attributes } ]
-                 in
-                 generate ~loc is_rec type_pairs_list *)
-        (*  pstr_type
-              ~loc
-              Nonrecursive
-              [ { tdecl with
-                  ptype_attributes =
-                    attribute_of_warning loc "Not supported" :: tdecl.ptype_attributes
-                }
-              ] *)
-        | Other (is_rec, [ ({ ptype_manifest = None; ptype_kind = Ptype_record _ } as tdecl) ])
+            group_items ~loc stru
+        | Other (_is_rec, [ { ptype_manifest = Some _ } ]) ->
+            (* TODO *)
+            failwith "Should not happen, don't remember why"
         | Other (is_rec, [ tdecl ]) ->
+            (* ADT or record *)
             let fuly, ground =
               match Prepare_fully_abstract.run loc [ tdecl ] with
               | [ p ] -> p
@@ -416,20 +392,21 @@ let () =
             in
             let rez = Ppx_distrib_expander.process_main ~loc is_rec (fuly, ground) in
             let open Ppxlib.Ast_builder.Default in
-            let items =
+            let stru =
               List.concat
-                [ [ pstr_type ~loc Nonrecursive [ rez.t ] ]
-                ; [ pstr_type ~loc is_rec [ rez.ground ] ]
-                ; [ pstr_type ~loc is_rec [ rez.logic ] ]
-                ; [ pstr_type ~loc is_rec [ rez.injected ] ]
-                ; [ pstr_value ~loc Nonrecursive [ rez.fmapt ] ]
+                [ [ of_tdecl ~loc Nonrecursive [ rez.t ] ]
+                ; [ of_tdecl ~loc is_rec [ rez.ground ] ]
+                ; [ of_tdecl ~loc is_rec [ rez.logic ] ]
+                ; [ of_tdecl ~loc is_rec [ rez.injected ] ]
+                ; of_value ~loc Nonrecursive rez.fmapt
                 ; knot_reifiers ~loc ~kind:Prj_exn [ rez.prj_exn ] [ ground ]
                 ; knot_reifiers ~loc ~kind:Reify [ rez.reify ] [ ground ]
-                ; rez.other
+                ; other_stuff Ppx_distrib_expander.(cons_results rez (empty_rez [] [] []))
                 ]
             in
-            pstr_include ~loc (include_infos ~loc (pmod_structure ~loc items))
+            group_items ~loc stru
         | Other (is_rec, (_ :: _ :: _ as tdecls)) ->
+            (* Mutual recursion *)
             let full_and_ground_list = Prepare_fully_abstract.run loc tdecls in
             let rez =
               List.fold_left
@@ -439,7 +416,6 @@ let () =
                 ~init:(Ppx_distrib_expander.empty_rez [] [] [])
                 full_and_ground_list
             in
-            (* Format.eprintf "%s%d\n%!" __FILE__ __LINE__; *)
             let open Ppxlib.Ast_builder.Default in
             let items =
               let gt_attributes = (List.hd (List.rev tdecls)).ptype_attributes in
@@ -447,22 +423,22 @@ let () =
               List.concat
                 [ List.map
                     ~f:(fun x ->
-                      pstr_type ~loc is_rec [ { x with ptype_attributes = gt_attributes } ])
+                      of_tdecl ~loc is_rec [ { x with ptype_attributes = gt_attributes } ])
                     rez.t
-                ; [ pstr_type ~loc is_rec (filter_out_gt_attributes rez.ground) ]
-                ; [ pstr_type ~loc is_rec (filter_out_gt_attributes rez.logic) ]
-                ; [ pstr_type ~loc is_rec rez.injected ]
-                ; List.map rez.fmapt ~f:(fun vb -> pstr_value ~loc Nonrecursive [ vb ])
+                ; [ of_tdecl ~loc is_rec (filter_out_gt_attributes rez.ground) ]
+                ; [ of_tdecl ~loc is_rec (filter_out_gt_attributes rez.logic) ]
+                ; [ of_tdecl ~loc is_rec rez.injected ]
+                ; List.concat_map rez.fmapt ~f:(fun vb -> of_value ~loc Nonrecursive vb)
                 ; knot_reifiers ~loc ~kind:Prj_exn rez.prj_exn fully_abstract_types
                 ; knot_reifiers ~loc ~kind:Reify rez.reify fully_abstract_types
-                ; rez.other
+                ; other_stuff rez
                 ]
             in
-            pstr_include ~loc (include_infos ~loc (pmod_structure ~loc items))
+            group_items ~loc items
         | Explicit
             ( (attributes1, (params1, kind1, private1, manifest1))
             , (rec_2, (params2, kind2, private2, manifest2))
-            , other_decls ) ->
+            , _other_decls ) ->
             let open Ppxlib.Ast_builder.Default in
             let base_tdecl =
               let td =
@@ -490,9 +466,50 @@ let () =
               in
               { td with ptype_attributes = attributes1 }
             in
-            generate ~loc rec_2 (base_tdecl, spec_td))
+            let is_rec = rec_2 in
+            let open Ppx_distrib_expander in
+            let items =
+              let rez = process_main ~loc is_rec (base_tdecl, spec_td) in
+              (* Format.eprintf "after process_main %a\n%!" pp_attributes rez.ground.ptype_attributes; *)
+              List.concat
+                [ [ of_tdecl ~loc Nonrecursive [ rez.t ] ]
+                ; [ of_tdecl ~loc is_rec [ rez.ground ] ]
+                ; [ of_tdecl ~loc is_rec [ rez.logic ] ]
+                ; [ of_tdecl ~loc is_rec [ rez.injected ] ]
+                ; of_value ~loc Nonrecursive rez.fmapt
+                ; knot_reifiers ~loc ~kind:Prj_exn [ rez.prj_exn ] [ rez.ground ]
+                ; knot_reifiers ~loc ~kind:Reify [ rez.reify ] [ rez.ground ]
+                ; other_stuff Ppx_distrib_expander.(cons_results rez (empty_rez [] [] []))
+                ]
+            in
+            group_items ~loc items)
     in
-    [ make_extension "distrib"; make_extension "ocanren_inject" ]
+    let make_extension_str =
+      make_extension_gen
+        ~ctx:Extension.Context.Structure_item
+        ~of_value:(fun ~loc flg v -> [ pstr_value ~loc flg [ v ] ])
+        ~of_tdecl:Ast_builder.Default.pstr_type
+        ~group_items:(fun ~loc stru ->
+          pstr_include ~loc (include_infos ~loc (pmod_structure ~loc stru)))
+        ~knot_reifiers
+        ~other_stuff:(fun rez -> rez.other)
+    in
+    let make_extension_sig =
+      make_extension_gen
+        ~ctx:Extension.Context.Signature_item
+        ~of_value:(fun ~loc:_ _flg _v ->
+          (* We usually pu fmap here, but it should not be in the signature *)
+          [])
+        ~of_tdecl:Ast_builder.Default.psig_type
+        ~group_items:(fun ~loc stru ->
+          psig_include ~loc (include_infos ~loc (pmty_signature ~loc stru)))
+        ~knot_reifiers:(fun ~loc ?kind:_ reifiers _ -> knot_reifiers_sig ~loc reifiers)
+        ~other_stuff:(fun rez -> rez.other_sigs)
+    in
+    [ make_extension_str "distrib"
+    ; make_extension_sig "ocanren_inject"
+    ; make_extension_str "ocanren_inject"
+    ]
   in
   Ppxlib.Driver.register_transformation ~extensions "distrib"
 ;;
