@@ -156,6 +156,11 @@ val run : (unit ->
             ('b -> 'c * State.t Stream.t) * ('e -> 'd -> 'f)) ->
            'a -> 'e -> 'f Stream.t
 
+val run_hacky : (unit ->
+            ('a -> State.t -> 'b) * ('c -> Env.t -> 'd) *
+            ('b -> 'c * State.t Stream.t) * ('e -> 'd -> 'f)) ->
+           'a -> 'e -> 'f Stream.t
+
 (** Successor function *)
 val succ : (unit ->
             ('a -> State.t -> 'b) * ('c -> Env.t -> 'd) * ('e -> 'f * 'g) *

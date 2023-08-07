@@ -629,6 +629,18 @@ let run n g h =
     uncurr h @@ reifier (Obj.magic @@ Answer.ctr_term answ) (Answer.env answ)
   )
 
+let run_hacky n g h =
+  let adder, reifier, ext, uncurr = n () in
+  let args, stream = ext @@ adder g @@ State.empty () in
+  stream
+  |> Stream.map (fun st ->
+    match State.reify args st with
+    | [answ] ->
+        uncurr h @@ reifier (Obj.magic @@ Answer.ctr_term answ) (Answer.env answ)
+    | _ -> failwith "Bad case, should not happen"
+  )
+
+
 (** ************************************************************************* *)
 (** Tabling primitives                                                        *)
 

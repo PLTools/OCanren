@@ -83,23 +83,25 @@ let force x =
   | Thunk zz  -> zz ()
   | xs        -> xs
 
+let t4k = true
+
 let rec mplus xs ys =
   (* assert (match ys with Thunk _ -> true | _ -> false); *)
   let () = IFDEF STATS THEN mplus_counter_incr () ELSE () END in
   match xs with
   | Nil           ->
-      (* print_string "  mplus 1st branch\n"; *)
+      if t4k then print_string "  mplus 1\n";
       ys
   | Thunk   _     ->
-      (* print_string "  mplus 2nd branch\n"; *)
+      if t4k then print_string "  mplus 2\n";
       from_fun (fun () ->
         (* print_endline "HERE"; *)
         mplus (force ys) xs)
   | Cons (x, Nil) ->
-      (* print_string "  mplus 3rd branch\n"; *)
+      if t4k then print_string "  mplus 3\n";
       cons x ys
   | Cons (x, xs)  ->
-      (* print_string "  mplus 4th branch\n"; *)
+      if t4k then print_string "  mplus 4\n";
       cons x (from_fun @@ fun () -> mplus (force ys) xs)
   | Waiting ss    ->
     let ys = force ys in
@@ -131,16 +133,16 @@ let rec bind s f =
   let () = IFDEF STATS THEN bind_counter_incr () ELSE () END in
   match s with
   | Nil           ->
-      (* print_string "  bind 1st branch\n"; *)
+      if t4k then print_string "  bind 1\n";
       Nil
   | Thunk zz      ->
-      (* print_string "  bind 2nd branch\n"; *)
+      if t4k then print_string "  bind 2\n";
       from_fun (fun () -> bind (zz ()) f)
   | Cons (x, Nil) ->
-      (* print_string "  bind 3rd branch\n"; *)
+      if t4k then print_string "  bind 3\n";
       f x
   | Cons (x, s)   ->
-      (* print_string "  bind 4th branch\n"; *)
+      if t4k then print_string "  bind 4\n";
       mplus (f x) (from_fun (fun () -> bind (force s) f))
   | Waiting ss    ->
     match unwrap_suspended ss with
