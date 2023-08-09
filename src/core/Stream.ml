@@ -83,23 +83,33 @@ let force x =
   | Thunk zz  -> zz ()
   | xs        -> xs
 
+let to_int x =
+  assert (Obj.is_block (Obj.repr x));
+  (Obj.magic x: int)
 let t4k = true
 
 let rec mplus xs ys =
-  (* assert (match ys with Thunk _ -> true | _ -> false); *)
   let () = IFDEF STATS THEN mplus_counter_incr () ELSE () END in
   match xs with
   | Nil           ->
-      if t4k then print_string "  mplus 1\n";
-      ys
-  | Thunk   _     ->
-      if t4k then print_string "  mplus 2\n";
-      from_fun (fun () ->
-        (* print_endline "HERE"; *)
-        mplus (force ys) xs)
+      if t4k then Printf.printf "  mplus 1: ys = 0x%X\n" (to_int ys);
+      force ys
+  | Thunk _     ->
+      if t4k then begin
+        let rez = from_fun (fun () -> mplus (force ys) xs) in
+        Printf.printf "  mplus 2: xs=0x%X ys=0x%X ~~> Thunk _ = 0x%X\n"
+          (to_int xs) (to_int xs) (to_int rez);
+        rez
+      end else
+        from_fun (fun () -> mplus (force ys) xs)
   | Cons (x, Nil) ->
-      if t4k then print_string "  mplus 3\n";
-      cons x ys
+      if t4k then begin
+        let rez = cons x ys in 
+        Printf.printf "  mplus 3: xs=0x%X ys=0x%X ~~> 0x%X\n"
+          (to_int xs) (to_int xs) (to_int rez);
+        rez
+      end else 
+        cons x ys
   | Cons (x, xs)  ->
       if t4k then print_string "  mplus 4\n";
       cons x (from_fun @@ fun () -> mplus (force ys) xs)
@@ -129,6 +139,7 @@ and unwrap_suspended ss =
     | Some s, ss -> mplus (force s) @@ Waiting ss
     | None , ss  -> Waiting ss
 
+
 let rec bind s f =
   let () = IFDEF STATS THEN bind_counter_incr () ELSE () END in
   match s with
@@ -136,14 +147,28 @@ let rec bind s f =
       if t4k then print_string "  bind 1\n";
       Nil
   | Thunk zz      ->
-      if t4k then print_string "  bind 2\n";
-      from_fun (fun () -> bind (zz ()) f)
+      if t4k then begin
+        let delayed = (fun () -> bind (zz ()) f) in
+        let rez = from_fun delayed in
+        Printf.printf "  bind 2. 0x%X ~~> (Thunk 0x%X) == 0x%X\n"
+          (to_int s) (to_int delayed) (to_int rez);
+        rez
+      end
+      else from_fun (fun () -> bind (zz ()) f)
   | Cons (x, Nil) ->
-      if t4k then print_string "  bind 3\n";
-      f x
-  | Cons (x, s)   ->
-      if t4k then print_string "  bind 4\n";
-      mplus (f x) (from_fun (fun () -> bind (force s) f))
+      if t4k then begin
+        Printf.printf "  bind 3: 0x%X ~~> ...\n"
+           (to_int s);
+        f x
+      end else f x
+  | Cons (x, rest)   ->
+      if t4k then begin
+        let rhs = (from_fun (fun () -> bind (force rest) f)) in
+        Printf.printf "  bind 4: 0x%X ~~> mplus ... 0x%X\n"
+           (to_int s) (to_int rhs);
+        mplus (f x) rhs
+      end else
+      mplus (f x) (from_fun (fun () -> bind (force rest) f))
   | Waiting ss    ->
     match unwrap_suspended ss with
     | Waiting ss ->
