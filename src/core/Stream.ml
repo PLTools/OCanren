@@ -55,7 +55,7 @@ END
 module List = Stdlib.List
 
 type 'a t =
-  | Nil
+  | Nil of string
   | Cons    of 'a * ('a t)
   | Thunk   of 'a thunk
   | Waiting of 'a suspended list
@@ -64,8 +64,9 @@ and 'a thunk =
 and 'a suspended =
   {is_ready: unit -> bool; zz: 'a thunk}
 
-let nil         = Nil
-let single x    = Cons (x, Nil)
+let nil         = Nil ""
+let nil_ msg    = Nil msg
+let single x    = Cons (x, nil)
 let cons x s    = Cons (x, s)
 let from_fun zz =
   let () = IFDEF STATS THEN from_fun_counter_incr () ELSE () END in
@@ -74,7 +75,7 @@ let from_fun zz =
 let suspend ~is_ready f = Waiting [{is_ready; zz=f}]
 
 let rec of_list = function
-| []    -> Nil
+| []    -> Nil ""
 | x::xs -> Cons (x, of_list xs)
 
 let force x =
@@ -91,7 +92,7 @@ let t4k = true
 let rec mplus xs ys =
   let () = IFDEF STATS THEN mplus_counter_incr () ELSE () END in
   match xs with
-  | Nil           ->
+  | Nil _ ->
       if t4k then Printf.printf "  mplus 1: ys = 0x%X\n" (to_int ys);
       force ys
   | Thunk _     ->
@@ -102,13 +103,13 @@ let rec mplus xs ys =
         rez
       end else
         from_fun (fun () -> mplus (force ys) xs)
-  | Cons (x, Nil) ->
+  | Cons (x, Nil _) ->
       if t4k then begin
-        let rez = cons x ys in 
+        let rez = cons x ys in
         Printf.printf "  mplus 3: xs=0x%X ys=0x%X ~~> 0x%X\n"
           (to_int xs) (to_int xs) (to_int rez);
         rez
-      end else 
+      end else
         cons x ys
   | Cons (x, xs)  ->
       if t4k then print_string "  mplus 4\n";
@@ -143,9 +144,9 @@ and unwrap_suspended ss =
 let rec bind s f =
   let () = IFDEF STATS THEN bind_counter_incr () ELSE () END in
   match s with
-  | Nil           ->
-      if t4k then print_string "  bind 1\n";
-      Nil
+  | Nil msg ->
+      if t4k then Printf.printf "  bind  1: Nil from %s\n" msg;
+      Nil ("#"  ^ msg)
   | Thunk zz      ->
       if t4k then begin
         let delayed = (fun () -> bind (zz ()) f) in
@@ -155,7 +156,7 @@ let rec bind s f =
         rez
       end
       else from_fun (fun () -> bind (zz ()) f)
-  | Cons (x, Nil) ->
+  | Cons (x, Nil _) ->
       if t4k then begin
         Printf.printf "  bind 3: 0x%X ~~> ...\n"
            (to_int s);
@@ -177,7 +178,7 @@ let rec bind s f =
     | s          -> bind s f
 
 let rec msplit = function
-| Nil           -> None
+| Nil _         -> None
 | Cons (x, xs)  -> Some (x, xs)
 | Thunk zz      -> msplit @@ zz ()
 | Waiting ss    ->
@@ -191,7 +192,7 @@ let is_empty s =
   | None    -> true
 
 let rec map f = function
-| Nil          -> Nil
+| Nil _       -> Nil ""
 | Cons (x, xs) -> Cons (f x, map f xs)
 | Thunk zzz    -> from_fun (fun () -> map f @@ zzz ())
 | Waiting ss   ->
@@ -200,7 +201,7 @@ let rec map f = function
 
 let mapi f =
   let rec helper i xs = match msplit xs with
-    | None -> Nil
+    | None -> Nil ""
     | Some (h, tl) -> Cons (f i h, from_fun (fun () -> helper (1+i) tl))
   in
   helper 0
@@ -214,7 +215,7 @@ let rec filter p s =
   match msplit s with
   | Some (x, s) when p x -> Cons (x, from_fun (fun () -> filter p s))
   | Some (x, s) -> from_fun (fun () -> filter p s)
-  | None        -> Nil
+  | None        -> nil
 
 let rec fold f acc s =
   match msplit s with
@@ -223,7 +224,7 @@ let rec fold f acc s =
 
 let rec zip xs ys =
   match msplit xs, msplit ys with
-  | None,         None          -> Nil
+  | None,         None          -> nil
   | Some (x, xs), Some (y, ys)  -> Cons ((x, y), zip xs ys)
   | _                           -> invalid_arg "OCanren fatal (Stream.zip): streams have different lengths"
 
@@ -235,13 +236,13 @@ let hd s =
 let tl s =
   match msplit s with
   | Some (_, xs) -> xs
-  | None         -> Nil
+  | None         -> nil
 
 let rec retrieve ?(n=(-1)) s =
   if n = 0
   then [], s
   else match msplit s with
-  | None          -> [], Nil
+  | None          -> [], nil
   | Some (x, s)  -> let xs, s = retrieve ~n:(n-1) s in x::xs, s
 
 let take ?n s = fst @@ retrieve ?n s

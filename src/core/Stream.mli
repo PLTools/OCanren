@@ -26,6 +26,8 @@ type 'a t
 
 val nil : 'a t
 
+val nil_ : string -> 'a t
+
 val single : 'a -> 'a t
 
 val cons : 'a -> 'a t -> 'a t

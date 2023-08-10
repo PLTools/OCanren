@@ -373,7 +373,8 @@ let (===) x y st =
     success st
   | None    ->
     let () = IFDEF STATS THEN unification_time_incr _t ELSE () END in
-    failure st
+    Stream.nil_ (Format.asprintf "unif _|_: %s === %s"
+      (Term.show (Obj.repr x)) (Term.show (Obj.repr y)))
 
 let unify = (===)
 
