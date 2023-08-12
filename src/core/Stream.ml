@@ -86,7 +86,7 @@ let to_int x =
 
 type trace_t = Full | Small | No_trace
 
-let t4k = Small
+let t4k = No_trace
 
 let rec mplus xs ys =
   (* let () = IFDEF STATS THEN mplus_counter_incr () ELSE () END in *)
