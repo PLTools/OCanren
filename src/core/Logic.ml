@@ -127,6 +127,8 @@ module Reifier = struct
     ;;
 
   let rec zed f x = f (zed f) x
+
+  let id : _ = fun env -> Fun.id
 end
 
 let reify = Reifier.reify

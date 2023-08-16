@@ -90,6 +90,8 @@ module Reifier : sig
 
   (** Fix point combinator for Call-by-value *)
   val zed: (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b
+
+  val id: ('a, 'a) t
 end
 
 (** [inj x] injects [x] into logical [x]. *)
