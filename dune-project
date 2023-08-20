@@ -30,7 +30,8 @@
   (ocamlformat
    (and
     :with-test
-    (>= 0.25.1)))
+    (>= 0.25.1)
+    (< 0.26)))
   ppx_inline_test
   (mtime
    (< 2.0.0)))
