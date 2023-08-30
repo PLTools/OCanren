@@ -5,18 +5,18 @@ OCanren can be installed using `opam <https://opam.ocaml.org/doc/Install.html>`_
 install opam itself, initialize it and install right compiler version.
 
 * ``opam init --bare`` if your opam has not been initialized before
-* ``opam switch create 4.14.0 --packages=ocaml-variants.4.14.0+options,ocaml-option-flambda`` installes right compiler. (4.14.0 is a custom switch identifier)
-* ``eval $(opam env)`` updates an environment. Opam should write invocation of this command to your ``/.bashrc``
+* ``opam switch create 4.14.1 --packages=ocaml-variants.4.14.0+options,ocaml-option-flambda`` installes right compiler. (4.14.1 is a custom switch identifier)
+* ``eval $(opam env)`` updates an environment. Opam will put the invocation of this command to your ``~/.bashrc``.
 * check that ``ocamlc -v`` prints right compiler version
 
 Then, install dependencies and ``OCanren``:
 
 
-* Install GT (pick one command)
-    * ``opam install GT -y`` to install GT from opam repository.
-    * ``opam pin add GT https://github.com/JetBrains-Research/GT.git -n -y`` for fresh GT.
-* ``git clone https://github.com/JetBrains-Research/OCanren.git``
+* ``git clone https://github.com/PLTools/OCanren.git``
 * ``cd OCanren``
+* Install GT dependency (pick one command)
+    * ``git clone https://github.com/PLTools/GT.git`` to use GT as a vendored library.
+    * ``opam install GT -y`` to install GT from the main opam repository.
 * ``opam install . --deps-only --yes``
 * ``make``
 * ``make tests``

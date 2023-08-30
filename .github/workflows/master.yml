@@ -3,7 +3,8 @@ name: Build master
 on:
   push:
     paths-ignore:
-      - 'papers/**'
+      - 'doc/**'
+      - README.md
       # do not run CI if we are writing a paper
       # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-ignoring-paths
     branches:
