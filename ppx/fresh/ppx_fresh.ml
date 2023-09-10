@@ -198,26 +198,50 @@ let mapper =
           in
           (match reconstruct_args args with
           | Some (xs : string list) ->
-              let ans =
-                List.fold_right
-                  xs
-                  ~f:(fun ident acc ->
+              let to_pat ident = Pat.var ~loc (Ast_builder.Default.Located.mk ident ~loc) in
+              let rec loop = function
+                | [] -> [%expr delay (fun () -> [%e new_body])]
+                | ident1 :: ident2 :: ident3 :: ident4 :: ident5 :: tl ->
+                    [%expr
+                      Fresh.five
+                        (fun
+                          [%p to_pat ident1]
+                          [%p to_pat ident2]
+                          [%p to_pat ident3]
+                          [%p to_pat ident4]
+                          [%p to_pat ident5]
+                        -> [%e loop tl])]
+                | ident1 :: ident2 :: ident3 :: ident4 :: tl ->
+                    [%expr
+                      Fresh.four
+                        (fun
+                          [%p to_pat ident1]
+                          [%p to_pat ident2]
+                          [%p to_pat ident3]
+                          [%p to_pat ident4]
+                        -> [%e loop tl])]
+                | ident1 :: ident2 :: ident3 :: tl ->
+                    [%expr
+                      Fresh.three (fun [%p to_pat ident1] [%p to_pat ident2] [%p to_pat ident3] ->
+                          [%e loop tl])]
+                | ident1 :: ident2 :: tl ->
+                    [%expr Fresh.two (fun [%p to_pat ident1] [%p to_pat ident2] -> [%e loop tl])]
+                | ident :: tl ->
                     [%expr
                       Fresh.one
                         (fun [%p Pat.var ~loc (Ast_builder.Default.Located.mk ident ~loc)] ->
-                          [%e acc])])
-                  ~init:[%expr delay (fun () -> [%e new_body])]
+                          [%e loop tl])]
               in
-              ans
+              loop xs
           | None ->
-              Stdlib.Format.eprintf "Can't reconstruct args of 'fresh'";
+              Format.eprintf "Can't reconstruct args of 'fresh'";
               { e with pexp_desc = Pexp_apply (e1, [ Nolabel, new_body ]) })
       | Pexp_apply (d, [ (_, body) ]) when is_defer d ->
           let ans = [%expr delay (fun () -> [%e self#expression body])] in
           ans
       | Pexp_apply (d, body) when is_unif d ->
           (* let loc_str =
-               Stdlib.Format.asprintf "%a" Selected_ast.Ast.Location.print_compact e.pexp_loc;
+               Caml.Format.asprintf "%a" Selected_ast.Ast.Location.print_compact e.pexp_loc;
              in
              let body = (Labelled "loc", Exp.constant (Pconst_string (loc_str,None))) :: body in *)
           Exp.apply ~loc:e.pexp_loc d body
