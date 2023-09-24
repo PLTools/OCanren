@@ -17,93 +17,93 @@
  * (enclosed in the file COPYING).
  *)
 
-open Printf
-open GT
 open OCanren
-open OCanren.Std
 
 module Tree = struct
   ocanren type 'a tree = Leaf | Node of 'a * 'a tree * 'a tree
 
-  type inttree = int tree [@@deriving gt ~options:{show}]
+  type inttree = GT.int tree [@@deriving gt ~options:{show}]
   (* A shortcut for "ground" tree we're going to work with in "functional" code *)
-  type rtree = Nat.ground tree [@@deriving gt ~options:{show}]
+  type rtree = Std.Nat.ground tree [@@deriving gt ~options:{show}]
 
   (* Logic counterpart *)
-  type ltree = Nat.logic tree_logic [@@deriving gt ~options:{show}]
+  type ltree = Std.Nat.logic tree_logic [@@deriving gt ~options:{show}]
 
-  let leaf    () : Nat.injected tree_injected = inj Leaf
-  let node a b c : Nat.injected tree_injected = inj @@ Node (a,b,c)
+  let leaf    () : Std.Nat.injected tree_injected = inj Leaf
+  let node a b c : Std.Nat.injected tree_injected = inj @@ Node (a,b,c)
 
   (* Injection *)
-  let rec inj_tree : inttree -> Nat.injected tree_injected = fun tree ->
-     inj @@ GT.(gmap tree_fuly nat inj_tree tree)
+  let rec inj_tree : inttree -> Std.Nat.injected tree_injected = fun tree ->
+     inj @@ GT.(gmap tree_fuly Std.nat inj_tree tree)
 
   (* Projection *)
   let rec prj_tree : rtree -> inttree =
-    fun x -> GT.(gmap tree_fuly) Nat.to_int prj_tree x
+    fun eta -> GT.(gmap tree_fuly) Std.Nat.to_int prj_tree eta
 
-  let reify_tree : (Nat.injected tree_injected, ltree) Reifier.t = tree_reify Nat.reify
+  let reify_tree : (Std.Nat.injected tree_injected, ltree) Reifier.t =
+    tree_reify Std.Nat.reify
 
-  let prj_tree : (Nat.injected tree_injected, inttree) Reifier.t =
-    let rec tree_to_int x = GT.gmap tree_fuly Nat.to_int ( tree_to_int) x in
+  let prj_exn_tree : (Std.Nat.injected tree_injected, inttree) Reifier.t =
+    let rec tree_to_int x = GT.gmap tree_fuly Std.Nat.to_int (tree_to_int) x in
     Reifier.fmap tree_to_int (tree_prj_exn Std.Nat.prj_exn)
 end
 
-open Tree
-
-
 let () =
-  (* Demo about reification *)
-
-  let _: Tree.ltree Stream.t =
-    run q (fun q  -> q === leaf ())
+  let open Tree in
+  (* Demo about full blown reification *)
+  let answers: Tree.ltree Stream.t =
+    run q (fun q -> q === leaf ())
         (fun qs -> qs#reify Tree.reify_tree)
   in
-  (* run q (fun q  -> q === leaf ())
-        (fun qs -> qs#reify Tree.prjc_tree) *)
-  ()
-
-
+  assert (Stream.take answers = [Value Leaf]);
+  (* reification to ground representation *)
+  let answers: Tree.inttree Stream.t =
+    run q (fun q -> q === leaf ())
+        (fun qs -> qs#reify Tree.prj_exn_tree)
+  in
+  assert (Stream.take answers = [Leaf])
 
 (* Relational insert into a search tree *)
-let rec inserto a t' t'' = conde [
-  (t' === leaf ()) &&& (t'' === node a (leaf ()) (leaf ()) );
-  fresh (x l r l')
-    (t' === node x l r)
-    Nat.(conde [
-      (t'' === t') &&& (a === x);
-      (t'' === (node x l' r  )) &&& (a < x) &&& (inserto a l l');
-      (t'' === (node x l  l' )) &&& (a > x) &&& (inserto a r l')
-    ])
-]
+let rec inserto a t' t'' =
+  let open Tree in
+  conde
+    [ (t' === leaf ()) &&& (t'' === node a (leaf ()) (leaf ()))
+    ; fresh (x l r l')
+        (t' === node x l r)
+        (conde [
+          (t'' === t') &&& (a === x);
+          (t'' === node x l' r ) &&& Std.Nat.(a < x) &&& inserto a l l';
+          (t'' === node x l  l') &&& Std.Nat.(a > x) &&& inserto a r l';
+        ])
+    ]
 
 (* Top-level wrapper for insertion --- takes and returns non-logic data *)
-let insert : int -> inttree -> inttree = fun a t ->
+let insert : int -> Tree.inttree -> Tree.inttree = fun a t ->
   Stream.hd @@
-  run q (fun q  -> inserto (nat a) (inj_tree t) q)
-        (fun qs -> qs#reify Tree.prj_tree)
+  run q (fun q  -> inserto (Std.nat a) (Tree.inj_tree t) q)
+        (fun qs -> qs#reify Tree.prj_exn_tree)
 
 (* Top-level wrapper for "inverse" insertion --- returns an integer, which
    has to be inserted to convert t into t' *)
-let insert' t t' =
-  Nat.to_int @@ Stream.hd @@
-  run q (fun q  -> inserto q (inj_tree t) (inj_tree t'))
-        (fun qs -> qs#reify Nat.prj_exn)
+let uninsert t t' =
+  Std.Nat.to_int @@ Stream.hd @@
+  run q (fun q  -> inserto q (Tree.inj_tree t) (Tree.inj_tree t'))
+        (fun qs -> qs#reify Std.Nat.prj_exn)
 
 (* Entry point *)
 let _ =
-  let insert_list l =
-    let rec inner t = function
-    | []    -> t
-    | x::xs ->
-      let t' = insert x t in
-      printf "Inserting %d into %s makes %s\n%!" x (show_inttree t) (show_inttree t');
-      inner t' xs
+  let open Printf in
+  let insert_list xs =
+    let f acc x =
+      let acc2 = insert x acc in
+      printf "Inserting %d into %s makes %s\n%!" x (Tree.show_inttree acc)
+        (Tree.show_inttree acc2);
+      acc2
     in
-    inner Leaf l
+    (* The opening of OCanren hides Stdlib.List *)
+    Stdlib.List.fold_left  f Leaf xs
   in
   ignore @@ insert_list [1; 2; 3; 4];
   let t  = insert_list [3; 2; 4; 1] in
   let t' = insert 8 t in
-  Printf.printf "Inverse insert: %d\n" @@ insert' t t'
+  printf "Inverse insert: %d\n" @@ uninsert t t'
