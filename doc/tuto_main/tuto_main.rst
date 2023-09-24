@@ -1,5 +1,5 @@
-The Tutorial
-============
+Yue Li's tutorial
+=================
 
 .. toctree::
    :maxdepth: 1

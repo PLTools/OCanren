@@ -4,9 +4,10 @@ Welcome to OCanren's documentation!
 .. toctree::
    :maxdepth: 1
 
-   tuto_main/tuto_main
    Installation
    PPX
+   Appendo
+   tuto_main/tuto_main
    camlp5
    papers
 

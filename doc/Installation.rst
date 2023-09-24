@@ -5,7 +5,7 @@ OCanren can be installed using `opam <https://opam.ocaml.org/doc/Install.html>`_
 install opam itself, initialize it and install right compiler version.
 
 * ``opam init --bare`` if your opam has not been initialized before
-* ``opam switch create 4.14.1 --packages=ocaml-variants.4.14.0+options,ocaml-option-flambda`` installes right compiler. (4.14.1 is a custom switch identifier)
+* ``opam switch create 4.14.1 --packages=ocaml-variants.4.14.1+options,ocaml-option-flambda`` installes right compiler. (4.14.1 is a custom switch identifier)
 * ``eval $(opam env)`` updates an environment. Opam will put the invocation of this command to your ``~/.bashrc``.
 * check that ``ocamlc -v`` prints right compiler version
 

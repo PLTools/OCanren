@@ -8,17 +8,29 @@ expression to its string form. For example, it rewrites ``let _ = REPR(1+2)`` to
 
 .. code-block::
 
-   $ camlp5o `ocamlfind query logger`/pa_log.cmo pr_o.cmo a.ml
-   let _ = "1 + 2", 1 + 2
+    $ echo 'REPR(1+2)' > /tmp/a.ml
+    $ camlp5o `ocamlfind query logger`/pa_log.cmo pr_o.cmo /tmp/a.ml
+    let _ = "1 + 2", 1 + 2
 
 For OCanren itself we use syntax extension to simplify writing relational programs
 
 .. code-block::
 
-   $  cat a.ml
-   let _ = fresh (x) z
-   $  camlp5o _build/camlp5/pa_ocanren.cmo pr_o.cmo a.ml
-   let _ = OCanren.Fresh.one (fun x -> delay (fun () -> z))
+    $ echo 'let _ = fresh (x) z' > /tmp/a.ml
+    $ camlp5o _build/default/camlp5/pa_ocanren.cma pr_o.cmo /tmp/a.ml
+    let _ = OCanren.Fresh.one (fun x -> delay (fun () -> z))
+
+
+Camlp5 syntax extension is actually two syntax extensions
+
+  * the one that make syntax similar to Scheme's miniKanren. PPXes do the same.
+  * another one, which makes it more ocaml-like (@dboulytchev likes this syntax very much)
+
+Here we will try to describe the second one.
+
+.. note::
+
+  Frankly speaking, PPXes are documented better.
 
 .. _ocanren-vs-miniKanren:
 
@@ -59,13 +71,12 @@ OCanren-specific Camlp5 syntax extension
 
 This section is a part of Yue Li's tutorial on OCanren.
 
-We take a
-look at the
+We take a look at the
 `implementation <https://github.com/JetBrains-Research/OCanren/blob/master/camlp5/pa_ocanren.ml>`__ of
 the ``ocanren{}`` quotation which we will call *the formula parser* in
 the rest of this lesson. Our terminology follows `Camlp5 Reference
-Manual <https://camlp5.github.io/doc/htmlc/>`__. We take a top-down
-approach, starting with an overview of the structure of the parser, then
+Manual <https://camlp5.github.io/doc/htmlc/>`__.
+We take a top-down approach, starting with an overview of the structure of the parser, then
 explain its individual parts.
 
 The structure of the parser: an overview
