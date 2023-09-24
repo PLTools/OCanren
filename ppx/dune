@@ -24,6 +24,12 @@
  (modules pp_distrib))
 
 (executable
+ (public_name pp_tester)
+ (package OCanren-ppx)
+ (libraries ppx_tester)
+ (modules pp_tester))
+
+(executable
  (public_name pp_deriving_reify)
  (package OCanren-ppx)
  (libraries ppx_deriving_reify)

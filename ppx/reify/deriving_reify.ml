@@ -17,7 +17,26 @@
  * (enclosed in the file COPYING).
  *)
 
-(* module Pprintast_ = Pprintast *)
+(*
+# type 'a t = 'a OCanren.Std.List.injected [@@deriving reify];;
+type 'a t = 'a OCanren.Std.List.injected
+val reify :
+  ('a, 'b) OCanren__.Logic.Reifier.t ->
+  ('a OCanren.Std.List.injected, 'b OCanren.Std.List.logic)
+  OCanren__.Logic.Reifier.t = <fun>
+val prj_exn :
+  ('a, 'b) OCanren__.Logic.Reifier.t ->
+  ('a OCanren.Std.List.injected, 'b OCanren.Std.List.ground)
+  OCanren__.Logic.Reifier.t = <fun>
+
+# [%reify: GT.int OCanren.Std.List.injected];;
+- : ('_weak2 OCanren.ilogic OCanren.Std.List.injected,
+     '_weak2 OCanren.logic OCanren.Std.List.logic)
+    OCanren__.Logic.Reifier.t
+= <fun>
+
+
+*)
 open Ppxlib
 open Stdppx
 

@@ -54,6 +54,21 @@
       let lBool _x__002_ = OCanren.inji (LBool _x__002_)
     end
   end
+  
+  let () =
+    let open OCanren in
+    let open Tester in
+    run_r OCanren.reify
+      (GT.show OCanren.logic (GT.show GT.int))
+      1 q Tester.qh
+      ("<string repr of goal>", fun q -> q === inj 1) ;
+    [%tester run_r OCanren.reify (GT.show OCanren.logic (GT.show GT.int)) 1 (fun q -> q === inj 1)]
 
   $ ./test009.exe
   test009
+  <string repr of goal>, 1 answer {
+  q=1;
+  }
+  fun q -> q === (inj 1), 1 answer {
+  q=1;
+  }

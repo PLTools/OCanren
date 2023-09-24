@@ -21,3 +21,16 @@ end = struct
 
   type nonrec ground = (GT.int, GT.bool) t]
 end
+
+let () =
+  let open OCanren in
+  let open Tester in
+  run_r
+    OCanren.reify
+    (GT.show OCanren.logic (GT.show GT.int))
+    1
+    q
+    Tester.qh
+    ("<string repr of goal>", fun q -> q === inj 1);
+  [%tester run_r OCanren.reify (GT.show OCanren.logic (GT.show GT.int)) 1 (fun q -> q === inj 1)]
+;;

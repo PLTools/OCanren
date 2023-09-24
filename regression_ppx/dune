@@ -91,7 +91,7 @@
    ;
    ))
  (preprocess
-  (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
+  (pps OCanren-ppx.ppx_tester OCanren-ppx.ppx_distrib GT.ppx_all -- -pretty))
  (libraries OCanren OCanren.tester))
 
 (executables
