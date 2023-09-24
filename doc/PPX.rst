@@ -1,53 +1,77 @@
-*****************
-Syntax extensions
-*****************
+*********************
+PPX Syntax extensions
+*********************
 
 .. _without-syntax-extensions:
 
 Writing OCanren **without** syntax extensions
 =============================================
 
-OCanren and original miniKanren consist of many syntax extension. There we describe how to write relation in OCanren without them, to make values of the obvious.
+OCanren and original miniKanren consist of many syntax extension.
+Here we describe how to write relations in OCanren without extension.
 
-This is how we write relation without syntax extensions. The top of the input is techinal stuff for loading right packages into OCaml toplevel.
+This is how we write relation without syntax extensions. The top of the input is techinal stuff for loading right packages into OCaml toplevel. The commands assumes that OCanren is already installed (meaning via ``opam install OCanren --yes`` or after ``git clone`` and ``make install``). When you will copy-paste the following examples to terminal, omit leading ``$``.
 
 .. code-block::
 
-   $ ocaml -stdin  -impl - <<EOF
-   #use "topfind";;
-   #require "OCanren";;
-   #rectypes;;
-   open OCanren
-   open OCanren.Std
+  $ ocaml -stdin  -impl - <<EOF
+  #use "topfind";;
+  #require "OCanren";;
+  #rectypes;;
 
-   let rec appendo x y xy =
-      conde [
-         (x === Std.nil()) &&& (y === xy);
-         Fresh.three (fun h tl tmp -> (x === h % tl) &&& (appendo tl y tmp) &&& (xy === h % tmp))
+  let rec appendo x y xy =
+    let open OCanren in
+    let open OCanren.Std in
+    conde
+      [ (x === Std.nil ()) &&& (y === xy)
+      ; Fresh.three (fun h tl tmp ->
+          (x === h % tl) &&& (appendo tl y tmp) &&& (xy === h % tmp)
+        )
       ]
-   EOF
 
-This is how we use PPX exntesion to simplify code. It allows us
+  let answers =
+    let open OCanren in
+    run q (fun xs -> appendo (Std.list inj [1; 2]) (Std.list inj [3; 4]) xs)
+      (fun xs -> xs#reify (Std.List.prj_exn OCanren.prj_exn))
+    |> Stream.take
 
-* not to think about count of fresh varaibles
-* automatically insert ``&&&`` when creating fresh variables
+  let () =
+    List.iter (fun xs -> print_endline (GT.show GT.list (GT.show GT.int) xs)) answers
+  EOF
+
+Now we will use PPX extension to simplify the code. It allows us
+
+* not to think about count of fresh varaibles;
+* automatically insert ``&&&`` when creating fresh variables.
 
 .. code-block::
 
-   $ ocaml -stdin  -impl - <<EOF                                                                                4.13.1+flambda
-   #use "topfind";;
-   #require "OCanren";;
-   #rectypes;;
-   open OCanren
-   open OCanren.Std
+  $ ocaml -stdin  -impl - <<EOF
+  #use "topfind";;
+  #require "OCanren";;
+  #rectypes;;
+  #require "OCanren-ppx.ppx_fresh";;
 
-   #require "OCanren-ppx.ppx_fresh";;
-   let rec appendo x y xy =
-         conde [
-            fresh () (x === Std.nil()) (y === xy);
-            fresh (h tl tmp) (x === h % tl) (appendo tl y tmp) (xy === h % tmp)
-         ]
-   EOF
+  let rec appendo x y xy =
+    let open OCanren in
+    let open OCanren.Std in
+    conde
+      [ fresh () (x === Std.nil()) (y === xy)
+      ; fresh (h tl tmp)
+          (x === h % tl)
+          (appendo tl y tmp)
+          (xy === h % tmp)
+      ]
+
+  let answers =
+    let open OCanren in
+    run q (fun xs -> appendo (Std.list inj [1; 2]) (Std.list inj [3; 4]) xs)
+      (fun xs -> xs#reify (Std.List.prj_exn OCanren.prj_exn))
+    |> Stream.take
+
+  let () =
+    List.iter (fun xs -> print_endline (GT.show GT.list (GT.show GT.int) xs)) answers
+  EOF
 
 There is also a camlp5 extension for simplifing relations described `here <./camlp5.html>`__.
 
@@ -56,8 +80,12 @@ There is also a camlp5 extension for simplifing relations described `here <./cam
 PPX syntax extensions
 =====================
 
-PPX syntax extensions are not related to camlp5 and should be used, for example,
-if you want decent IDE support. Main extensions are compilable by ``make ppx``
+PPX syntax extensions could be used without camlp5.
+They are able to provide miniKanren-specific syntax for relations,
+generate types for logic and ground representation for user-defined types,
+and provide more convenience for testing relations.
+Camlp5 extension relies on PPX extension for genereation of types.
+PPX extensions are compilable by ``make ppx``
 
 
 `ppx_repr`
@@ -67,24 +95,50 @@ An analogue for `logger <https://opam.ocaml.org/packages/logger-p5>`__ library i
 
 .. code-block::
 
-   $ cat regression_ppx/test002repr.ml
-   let _ = REPR(1+2)
-   $ ./pp_repr.native regression_ppx/test002repr.ml
-   let _ = ("1 + 2", (1 + 2))
-   $ ./pp_repr.native -print-transformations
-   repr
+  $ ocaml -stdin -impl - <<EOF
+  #use "topfind";;
+  #require "OCanren-ppx.ppx_repr";;
+
+  let (repr,x) = REPR(1+2);;
+  let () = Printf.printf "The text expression %S compiles to %d\n" repr x;;
+  EOF
 
 `ppx_fresh`
 ~~~~~~~~~~~
 
-An OCanren-specific syntax extension  extension for creating fresh variables. It provides canonical miniKanren syntax from the Scheme
+An OCanren-specific syntax extension  extension for creating fresh variables.
+It provides canonical miniKanren syntax similar to the one from Scheme-based miniKanren.
 
 .. code-block::
 
-   $ echo 'let _ = fresh (x) z' | dune exec ppx/pp_fresh.exe --  -impl -
-   let _ = Fresh.one (fun x -> delay (fun () -> z))
-   $ dune exec ppx/pp_fresh.exe --  -print-transformations
-   pa_minikanren
+  $ ocaml -stdin -dsource -impl - <<EOF
+  #use "topfind";;
+  #require "OCanren";;
+  #require "OCanren-ppx.ppx_repr";;
+  #require "OCanren-ppx.ppx_fresh";;
+  #rectypes;;
+  open OCanren;;
+  let one_el xs = fresh (x) (xs === Std.(x % nil()));;
+  let answers =
+    run q one_el
+      (fun xs -> xs#reify (Std.List.reify OCanren.reify))
+    |> Stream.take
+
+  let () =
+    List.iter
+      (fun xs -> print_endline (GT.show Std.List.logic (GT.show OCanren.logic (GT.show GT.int)) xs))
+      answers
+  EOF
+
+It should print a representation of singleton list of a free variable. For example:
+
+.. code-block::
+
+   [_.11]
+
+.. note::
+
+  Reread by Kakadu on 2022-09-24 was paused here.
 
 `ppx_distrib`
 ~~~~~~~~~~~~~

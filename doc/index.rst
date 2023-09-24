@@ -6,8 +6,8 @@ Welcome to OCanren's documentation!
 
    tuto_main/tuto_main
    Installation
-   camlp5
    PPX
+   camlp5
    papers
 
 
