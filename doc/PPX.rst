@@ -136,9 +136,51 @@ It should print a representation of singleton list of a free variable. For examp
 
    [_.11]
 
-.. note::
+`ppx_tester`
+~~~~~~~~~~~~~
 
-  Reread by Kakadu on 2022-09-24 was paused here.
+There is `OCanren.tester` library which simplifies running and printing results of the query.
+The main function is ``run_r`` which takes reifier, pretty-printer, number of expected results, a query
+and two numerals to support polyvariadic query. Adding these numerals may be cumbersome, so there is a syntax extension which calculates right numeral from the number of lambda-abstration in the passed relation.
+
+You can use the ``tester`` library via
+
+.. code-block::
+
+  $ ocaml -stdin -dsource -impl - <<EOF
+  #use "topfind";;
+  #require "OCanren";;
+  #require "OCanren.tester";;
+  #require "OCanren-ppx.ppx_repr";;
+  #require "OCanren-ppx.ppx_tester";;
+  #require "OCanren-ppx.ppx_fresh";;
+  #rectypes;;
+  open OCanren;;
+  open Tester;;
+  let _ =
+    (* without ppx_tester *)
+    run_r OCanren.reify (GT.show OCanren.logic (GT.show GT.int)) 1
+      q Tester.qh
+      ("<string repr of goal>", (fun q -> q === (inj 1)));;
+
+  let _ =
+    (* with ppx_tester *)
+    [%tester
+      run_r OCanren.reify (GT.show OCanren.logic (GT.show GT.int)) 1
+        (fun q -> q === (inj 1))];;
+
+  EOF
+
+It will print something like
+
+.. code-block::
+
+  <string repr of goal>, 1 answer {
+  q=1;
+  }
+  fun q -> q === (inj 1), 1 answer {
+  q=1;
+  }
 
 `ppx_distrib`
 ~~~~~~~~~~~~~
@@ -149,49 +191,68 @@ Below we use extension point with two type definitions. First one is nonrecursiv
 
 .. code-block::
 
-   ✗ dune exec ppx/pp_distrib.exe --  -impl - <<EOF
-   heredoc>[%%distrib
-   type nonrec 'a t =
-      | Z
-      | S of 'a
-   [@@deriving gt ~options:{ gmap; show }]
+    ✗ ocaml -stdin -dsource -impl - <<EOF
+    #use "topfind";;
+    #require "OCanren";;
+    #require "OCanren-ppx.ppx_distrib";;
+    #require "GT.ppx_all";;
+    #rectypes;;
+    [%%distrib
+      type nonrec 'a t =
+        | Z
+        | S of 'a
+      [@@deriving gt ~options:{ gmap; show }]
 
-   type ground = ground t]
-   heredoc> EOF
-   include
-      struct
-         type nonrec 'a t =
-            | Z
-            | S of 'a [@@deriving gt ~options:{ gmap; show }]
-         type ground = ground t[@@deriving gt ~options:{ gmap; show }]
-         type logic = logic t OCanren.logic[@@deriving gt ~options:{ gmap; show }]
-         type injected = injected t OCanren.ilogic
-         let fmapt a subj__002_ =
-            let open Env.Monad in
-            ((Env.Monad.return (GT.gmap t)) <*> a) <*> subj__002_
-         let (prj_exn : (_, ground t) Reifier.t) =
-            let open Env.Monad in
-            let open Env.Monad.Syntax in
-               Reifier.fix (fun self -> OCanren.prj_exn <..> (chain (fmapt self)))
-         let (reify : (_, logic t OCanren.logic) Reifier.t) =
-            let open Env.Monad in
-            let open Env.Monad.Syntax in
-               Reifier.fix
-                  (fun self ->
-                     OCanren.reify <..>
-                     (chain (Reifier.zed (Reifier.rework ~fv:(fmapt self)))))
-         let z () = OCanren.inji Z
-         let s _x__001_ = OCanren.inji (S _x__001_)
-      end
+      type ground = ground t];;
+
+    #show_type t;;
+    #show_type ground;;
+    #show_type logic;;
+    #show reify;;
+    #show prj_exn;;
+
+    EOF
+
+It will output expanded type and value definitions.
+
+.. code-block::
+
+    type 'a t = Z | S of 'a
+    type ground = ground t
+    type logic = logic t OCanren.logic
+    val reify : (injected, logic) OCanren.Reifier.t
+    val prj_exn : (injected, ground) OCanren.Reifier.t
+
 
 `ppx_deriving_reify`
 ~~~~~~~~~~~~~~~~~~~~
 
-Simplifies inline generation of reifiers for already known types.
+Simplifies inline generation of reifiers for already known types. With it we can specify a type, and syntax extension will try to build reifier for it. There is a syntax exension in GT, which work similarly.
 
 .. code-block::
 
-   $ dune exec ppx/pp_deriving_reify.exe --  -impl - <<EOF
-   let _ = [%reify: GT.int GT.list]
-   EOF
-   let _ = Std.List.reify OCanren.reify
+    ✗ ocaml -stdin -dsource -impl - <<EOF
+    #use "topfind";;
+    #require "OCanren";;
+    #require "OCanren.tester";;
+    #require "OCanren-ppx.ppx_deriving_reify";;
+    #require "GT.ppx_all";;
+    #rectypes;;
+    open OCanren;;
+    open Tester;;
+    let _ =
+      run_r
+        [%prj_exn: GT.int OCanren.Std.List.injected]
+        ([%show:    GT.int OCanren.Std.List.ground] ())
+        1
+        q Tester.qh
+        ("", (fun q -> q === Std.list inj [1;2;3]));;
+    EOF
+
+will output
+
+.. code-block::
+
+    , 1 answer {
+    q=[1; 2; 3];
+    }
