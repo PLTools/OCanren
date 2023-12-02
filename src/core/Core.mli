@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2023
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -60,7 +60,7 @@ val diseq : 'a ilogic -> 'a ilogic -> goal
 *)
 val structural :
   'a  ->
-  ('a , 'b) Reifier.t ->
+  ('a, 'b) Reifier.t ->
   ('b -> bool) ->
   goal
 
@@ -299,7 +299,7 @@ END
 
 See also: {!structural}.
 *)
-val debug_var : 'a ilogic -> ('a ilogic -> Env.t -> 'b) -> ('b list -> goal) -> goal
+val debug_var : 'a ilogic -> (Env.t -> 'a ilogic -> 'b) -> ('b list -> goal) -> goal
 
 (** The goal [only_head f] returns no answers when [f] returns:
   - empty stream when [f] returns empty stream;

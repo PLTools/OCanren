@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2023
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -394,7 +394,7 @@ let conj f g st =
 
 let debug_var v reifier call = fun st ->
   let xs = List.map (fun answ ->
-    reifier (Obj.magic @@ Answer.ctr_term answ) (Answer.env answ)
+    reifier (Answer.env answ) (Obj.magic @@ Answer.ctr_term answ)
     ) (State.reify v st)
   in
   call xs st
