@@ -27,17 +27,17 @@
         class ['a1, 'a1_2, 'a0, 'a0_2, 'extra_t, 'syn_t] gmap_t_t fa1 fa0 =
           let _ = fa1 in
           fun _fself_t ->
-            object
-              inherit [unit, 'a1, 'a1_2, unit, 'a0, 'a0_2, unit, 'extra_t, ('a1_2, 'a0_2) t] t_t
+             object
+               inherit [unit, 'a1, 'a1_2, unit, 'a0, 'a0_2, unit, 'extra_t, ('a1_2, 'a0_2) t] t_t
   
-              constraint 'extra_t = ('a1, 'a0) t
+               constraint 'extra_t = ('a1, 'a0) t
   
-              constraint 'syn_t = ('a1_2, 'a0_2) t
+               constraint 'syn_t = ('a1_2, 'a0_2) t
   
-              method c_Symb () _ _x__005_ = Symb (fa1 () _x__005_)
+               method c_Symb () _ _x__005_ = Symb (fa1 () _x__005_)
   
-              method c_Seq () _ _x__006_ = Seq (fa0 () _x__006_)
-            end
+               method c_Seq () _ _x__006_ = Seq (fa0 () _x__006_)
+             end
   
         let gmap_t fa1 fa0 =
           let _ = fa1 in
@@ -46,19 +46,19 @@
         class ['a1, 'a0, 'extra_t] show_t_t fa1 fa0 =
           let _ = fa1 in
           fun _fself_t ->
-            object
-              inherit [unit, 'a1, string, unit, 'a0, string, unit, 'extra_t, string] t_t
+             object
+               inherit [unit, 'a1, string, unit, 'a0, string, unit, 'extra_t, string] t_t
   
-              constraint 'extra_t = ('a1, 'a0) t
+               constraint 'extra_t = ('a1, 'a0) t
   
-              method c_Symb () _ _x__007_ =
-                let () = () in
-                Printf.sprintf "Symb (%s)" (fa1 () _x__007_)
+               method c_Symb () _ _x__007_ =
+                 let () = () in
+                 Printf.sprintf "Symb (%s)" (fa1 () _x__007_)
   
-              method c_Seq () _ _x__008_ =
-                let () = () in
-                Printf.sprintf "Seq (%s)" (fa0 () _x__008_)
-            end
+               method c_Seq () _ _x__008_ =
+                 let () = () in
+                 Printf.sprintf "Seq (%s)" (fa0 () _x__008_)
+             end
   
         let show_t fa1 fa0 =
           let _ = fa1 in

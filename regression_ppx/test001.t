@@ -226,7 +226,8 @@
                OCanren.Reifier.t ) =
        fun ra rb rc ->
         let open OCanren.Env.Monad in
-        OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> chain (fmapt ra rb rc))
+        OCanren.Reifier.fix (fun _ ->
+            OCanren.prj_exn <..> chain (fmapt ra rb rc) )
   
       let (reify :
                ('a, 'a_2) OCanren.Reifier.t

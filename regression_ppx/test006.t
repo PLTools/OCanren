@@ -25,17 +25,17 @@
         class ['s, 's_2, 'xs, 'xs_2, 'extra_t, 'syn_t] gmap_t_t fs fxs =
           let _ = fs in
           fun _fself_t ->
-            object
-              inherit [unit, 's, 's_2, unit, 'xs, 'xs_2, unit, 'extra_t, ('s_2, 'xs_2) t] t_t
+             object
+               inherit [unit, 's, 's_2, unit, 'xs, 'xs_2, unit, 'extra_t, ('s_2, 'xs_2) t] t_t
   
-              constraint 'extra_t = ('s, 'xs) t
+               constraint 'extra_t = ('s, 'xs) t
   
-              constraint 'syn_t = ('s_2, 'xs_2) t
+               constraint 'syn_t = ('s_2, 'xs_2) t
   
-              method c_Symb () _ _x__005_ = Symb (fs () _x__005_)
+               method c_Symb () _ _x__005_ = Symb (fs () _x__005_)
   
-              method c_Seq () _ _x__006_ = Seq (fxs () _x__006_)
-            end
+               method c_Seq () _ _x__006_ = Seq (fxs () _x__006_)
+             end
   
         let gmap_t fs fxs =
           let _ = fs in
@@ -238,31 +238,31 @@
           let _ = fxs in
           let _ = fs in
           fun _fself_t ->
-            object
-              inherit
-                [ unit
-                , 's
-                , 's_2
-                , unit
-                , 't
-                , 't_2
-                , unit
-                , 'xs
-                , 'xs_2
-                , unit
-                , 'extra_t
-                , ('s_2, 't_2, 'xs_2) t ]
-                t_t
+             object
+               inherit
+                 [ unit
+                 , 's
+                 , 's_2
+                 , unit
+                 , 't
+                 , 't_2
+                 , unit
+                 , 'xs
+                 , 'xs_2
+                 , unit
+                 , 'extra_t
+                 , ('s_2, 't_2, 'xs_2) t ]
+                 t_t
   
-              constraint 'extra_t = ('s, 't, 'xs) t
+               constraint 'extra_t = ('s, 't, 'xs) t
   
-              constraint 'syn_t = ('s_2, 't_2, 'xs_2) t
+               constraint 'syn_t = ('s_2, 't_2, 'xs_2) t
   
-              method c_Closure () _ _x__014_ _x__015_ _x__016_ =
-                Closure (fs () _x__014_, ft () _x__015_, fxs () _x__016_)
+               method c_Closure () _ _x__014_ _x__015_ _x__016_ =
+                 Closure (fs () _x__014_, ft () _x__015_, fxs () _x__016_)
   
-              method c_Val () _ _x__017_ = Val (ft () _x__017_)
-            end
+               method c_Val () _ _x__017_ = Val (ft () _x__017_)
+             end
   
         let gmap_t fs ft fxs =
           let _ = fxs in
@@ -791,17 +791,17 @@
         class ['a1, 'a1_2, 'a0, 'a0_2, 'extra_t, 'syn_t] gmap_t_t fa1 fa0 =
           let _ = fa1 in
           fun _fself_t ->
-            object
-              inherit [unit, 'a1, 'a1_2, unit, 'a0, 'a0_2, unit, 'extra_t, ('a1_2, 'a0_2) t] t_t
+             object
+               inherit [unit, 'a1, 'a1_2, unit, 'a0, 'a0_2, unit, 'extra_t, ('a1_2, 'a0_2) t] t_t
   
-              constraint 'extra_t = ('a1, 'a0) t
+               constraint 'extra_t = ('a1, 'a0) t
   
-              constraint 'syn_t = ('a1_2, 'a0_2) t
+               constraint 'syn_t = ('a1_2, 'a0_2) t
   
-              method c_Symb () _ _x__026_ = Symb (fa1 () _x__026_)
+               method c_Symb () _ _x__026_ = Symb (fa1 () _x__026_)
   
-              method c_Seq () _ _x__027_ = Seq (fa0 () _x__027_)
-            end
+               method c_Seq () _ _x__027_ = Seq (fa0 () _x__027_)
+             end
   
         let gmap_t fa1 fa0 =
           let _ = fa1 in
