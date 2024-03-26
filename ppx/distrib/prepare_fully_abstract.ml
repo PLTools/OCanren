@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren PPX
- * Copyright (C) 2016-2023
+ * Copyright (C) 2016-2024
  *   Dmitrii Kosarev aka Kakadu
  * St.Petersburg State University, JetBrains Research
  *)
@@ -58,14 +58,14 @@ open Myhelpers
 
 let run loc tdecls =
   let open Ppxlib.Ast_builder.Default in
-  (*   let tdecl =
-    { tdecl with
-      ptype_attributes =
-        List.filter
-          (fun a -> a.attr_name.Location.txt <> "put_distrib_here")
-          tdecl.ptype_attributes
-    }
-  in *)
+  (* let tdecl =
+       { tdecl with
+         ptype_attributes =
+           List.filter
+             (fun a -> a.attr_name.Location.txt <> "put_distrib_here")
+             tdecl.ptype_attributes
+       }
+     in *)
   (* convert type to fully-abstract one *)
   let abstracting_internal_type typ (n, map, args) =
     match typ with

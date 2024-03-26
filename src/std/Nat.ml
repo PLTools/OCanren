@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2024
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -82,7 +82,7 @@ let prj_exn : (groundi, ground) Reifier.t =
 
 let reify_nat = reify
 let prj_exn_nat = prj_exn
-                
+
 let o   = Logic.inj O
 let s x = Logic.inj (S x)
 
@@ -147,7 +147,7 @@ let maxo x y z = conde [
   (z === x) &&& (x >= y);
   (z === y) &&& (x <  y)
 ]
-               
+
 let mino x y z = conde [
   (z === x) &&& (x <= y);
   (z === y) &&& (x >  y)

@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren. PPX suntax extensions.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2024
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -34,12 +34,11 @@ let mapper =
     method! expression e =
       match e with
       | { pexp_desc = Pexp_construct ({ txt = Lident "REPR"; _ }, Some e); _ } as expr ->
-        let text = string_of_expression e in
-        { expr with
-          pexp_desc =
-            Pexp_tuple
-              [ Ast_helper.Exp.constant (Pconst_string (text, e.pexp_loc, None)); e ]
-        }
+          let text = string_of_expression e in
+          { expr with
+            pexp_desc =
+              Pexp_tuple [ Ast_helper.Exp.constant (Pconst_string (text, e.pexp_loc, None)); e ]
+          }
       | e -> super#expression e
   end
 ;;

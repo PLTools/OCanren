@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren PPX
- * Copyright (C) 2016-2023
+ * Copyright (C) 2016-2024
  *   Dmitrii Kosarev aka Kakadu
  * St.Petersburg State University, JetBrains Research
  *)
@@ -73,7 +73,7 @@ let notify fmt =
   Format.kasprintf
     (fun s -> ignore (Sys.command (Printf.sprintf "notify-send %S" s)))
       (* (fun s ->
-      assert (
-        0 = Sys.command (Printf.sprintf "dunstify --action='replyAction,reply' %S" s))) *)
+         assert (
+           0 = Sys.command (Printf.sprintf "dunstify --action='replyAction,reply' %S" s))) *)
     fmt
 ;;

@@ -30,16 +30,16 @@
   (ocamlformat
    (and
     :with-test
-    (>= 0.25.1)
-    (< 0.26)))
+    (>= 0.26.1)
+    (< 0.27)))
   ppx_inline_test
   (mtime
    (< 2.0.0)))
  (authors
   "Dmitrii Boulytchev https://github.com/dboulytchev"
   "Dmitrii Kosarev https://github.com/Kakadu"
-  "Evgenii Moiseenko https://github.com/eupp"
   "Petr Lozov https://github.com/Lozov-Petr"
+  "Evgenii Moiseenko https://github.com/eupp"
   "JetBrains Research https://research.jetbrains.org")
  (bug_reports "https://github.com/JetBrains-Research/OCanren/issues")
  (maintainers "Dmitrii Kosarev Kakadu@pm.me"))

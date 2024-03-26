@@ -22,5 +22,5 @@ let () =
 
   (* Format.printf "ans = %s\n%!" ans; *)
   Stdlib.Out_channel.with_open_text "delta-path.cfg" (fun ch ->
-    output_string ch ans);
+      output_string ch ans);
   ()

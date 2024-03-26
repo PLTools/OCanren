@@ -1,7 +1,7 @@
 (*
  * pa_ocanren: a camlp5 extension to implement syntax-level
  * miniKanren constructs.
- * Copyright (C) 2015-2023
+ * Copyright (C) 2015-2024
  * Dmitri Boulytchev, St.Petersburg State University
  *
  * This software is free software; you can redistribute it and/or
@@ -173,7 +173,7 @@ let type_reifier mode ctyp =
   | <:ctyp< $lid:id$ >>             -> <:expr< $lid:(m id)$ >>
   | <:ctyp< $longid:p$ . $lid:t$ >> -> <:expr< $longid:p$ . $lid:(m t)$ >>
   | _                               -> raise (Stream.Error "INTERNAL ERROR: \"^\" expects a (qualified) type name")
-     
+
 (* Decorate type expressions *)
 let rec decorate_type ctyp =
   let loc = MLast.loc_of_ctyp ctyp in
@@ -327,7 +327,7 @@ EXTEND
   ];
 
   ocanrun_args: [[
-    args=LIST1 ocanrun_arg SEP "," -> List.concat args 
+    args=LIST1 ocanrun_arg SEP "," -> List.concat args
   ]];
 
   ocanrun_arg: [[
@@ -337,9 +337,9 @@ EXTEND
         | None -> type_reifier `Project typ
         | _    -> type_reifier `Reify   typ
       in
-      List.map (fun name -> (name, rei)) names                                                     
+      List.map (fun name -> (name, rei)) names
   ]];
-  
+
   ocanren_embedding: [
     [ "ocanren"; "{"; e=ocanren_expr; "}" -> e ]
   ];
@@ -422,10 +422,10 @@ EXTEND
         ]
     | [ e = expr LEVEL "simple" -> return e ]
   ];
-  
+
   ctyp: [
-            [ "ocanren"; "{"; t=ctyp; "}" -> decorate_type t        ] | 
-   "simple" [ "!"; "("; t=ctyp; ")"       -> <:ctyp< ocanren $t$ >> ] 
-  ]; 
+            [ "ocanren"; "{"; t=ctyp; "}" -> decorate_type t        ] |
+   "simple" [ "!"; "("; t=ctyp; ")"       -> <:ctyp< ocanren $t$ >> ]
+  ];
 
 END;

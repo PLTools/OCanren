@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren. PPX syntax extensions.
- * Copyright (C) 2015-2023
+ * Copyright (C) 2015-2024
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -18,7 +18,7 @@
  *)
 
 (*
-# type 'a t = 'a OCanren.Std.List.injected [@@deriving reify];;
+   # type 'a t = 'a OCanren.Std.List.injected [@@deriving reify];;
 type 'a t = 'a OCanren.Std.List.injected
 val reify :
   ('a, 'b) OCanren__.Logic.Reifier.t ->
@@ -34,8 +34,6 @@ val prj_exn :
      '_weak2 OCanren.logic OCanren.Std.List.logic)
     OCanren__.Logic.Reifier.t
 = <fun>
-
-
 *)
 open Ppxlib
 open Stdppx

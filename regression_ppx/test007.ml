@@ -45,12 +45,12 @@ module Scheme_rez = struct
     conde
       [ Fresh.one (fun s -> q === val_ s &&& Scheme.inhabit s)
       ; Fresh.two (fun env f ->
-          q
-          === closure env f
-          &&& Scheme.inhabit f
-          &&& Scheme.inhabit_list
-                (fun p -> Fresh.two (fun a b -> p === Std.pair a b &&& Scheme.inhabit b))
-                env)
+            q
+            === closure env f
+            &&& Scheme.inhabit f
+            &&& Scheme.inhabit_list
+                  (fun p -> Fresh.two (fun a b -> p === Std.pair a b &&& Scheme.inhabit b))
+                  env)
       ]
   ;;
 

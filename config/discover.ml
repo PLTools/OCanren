@@ -117,11 +117,11 @@ let discover_logger_flags cfg =
   let cmos =
     extract_words logger_archives
     |> List.map (fun file ->
-         if Filename.basename file = pr_o_cmo then
-           Filename.concat camlp5_dir pr_o_cmo
-         else if Filename.basename file = pr_dump_cmo then
-           Filename.concat camlp5_dir pr_dump_cmo
-         else file)
+           if Filename.basename file = pr_o_cmo then
+             Filename.concat camlp5_dir pr_o_cmo
+           else if Filename.basename file = pr_dump_cmo then
+             Filename.concat camlp5_dir pr_dump_cmo
+           else file)
   in
   Cfg.Flags.write_lines "logger-flags.cfg" cmos
 
@@ -159,10 +159,10 @@ let gen_tests_dune _ tests =
 let gen_cram_files tests path =
   tests
   |> List.iter (fun name ->
-       Scanf.sscanf name "%[a-zA-Z]%d%[a-zA-Z]" (fun prefix n _suffix ->
-         let ch = open_out (Printf.sprintf "%s/%s%03d.t" path prefix n) in
-         Printf.fprintf ch "  $ ./%s.exe" name;
-         close_out ch))
+         Scanf.sscanf name "%[a-zA-Z]%d%[a-zA-Z]" (fun prefix n _suffix ->
+             let ch = open_out (Printf.sprintf "%s/%s%03d.t" path prefix n) in
+             Printf.fprintf ch "  $ ./%s.exe" name;
+             close_out ch))
 
 (*** command line arguments ***)
 
@@ -208,27 +208,27 @@ let args =
 
 let () =
   Cfg.main ~name:"OCanren" ~args (fun cfg ->
-    let testnames =
-      if !tests || !tests_dune || !all then
-        match !tests_dir with
-        | Some dir -> get_tests dir
-        | None -> failwith "-tests-dir argument is not set"
-      else []
-    in
+      let testnames =
+        if !tests || !tests_dune || !all then
+          match !tests_dir with
+          | Some dir -> get_tests dir
+          | None -> failwith "-tests-dir argument is not set"
+        else []
+      in
 
-    if !stats_flags || !all_flags then discover_stats ();
-    if !doc_flags || !all_flags then discover_docs ();
+      if !stats_flags || !all_flags then discover_stats ();
+      if !doc_flags || !all_flags then discover_docs ();
 
-    if !tests || !all then discover_tests cfg testnames;
-    let () =
-      match !cram_dir with
-      | Some dir -> gen_cram_files testnames dir
-      | None -> ()
-    in
-    if !tests_dune || !all then gen_tests_dune cfg testnames;
-    if !camlp5_flags || !all_flags || !all then discover_camlp5_flags cfg;
-    if !gt_flags || !all_flags || !all then (
-      discover_stubs_dir cfg;
-      discover_gt_flags cfg);
-    if !logger_flags || !all_flags || !all then discover_logger_flags cfg;
-    ())
+      if !tests || !all then discover_tests cfg testnames;
+      let () =
+        match !cram_dir with
+        | Some dir -> gen_cram_files testnames dir
+        | None -> ()
+      in
+      if !tests_dune || !all then gen_tests_dune cfg testnames;
+      if !camlp5_flags || !all_flags || !all then discover_camlp5_flags cfg;
+      if !gt_flags || !all_flags || !all then (
+        discover_stubs_dir cfg;
+        discover_gt_flags cfg);
+      if !logger_flags || !all_flags || !all then discover_logger_flags cfg;
+      ())

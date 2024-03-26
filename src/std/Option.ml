@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2024
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -77,7 +77,7 @@ let prj_exn : 'a 'b. ('a, 'b) Reifier.t -> ('a groundi, 'b ground) Reifier.t =
 
 let reify_option = reify
 let prj_exn_option = prj_exn
-                   
+
 let some x  = Logic.inji (Some x)
 let none () = Logic.inji None
 

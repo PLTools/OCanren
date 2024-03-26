@@ -6,7 +6,7 @@
  * St.Petersburg State University, JetBrains Research
  *)
 
-val run
-  :  Warnings.loc
+val run :
+     Warnings.loc
   -> Ppxlib.type_declaration list
   -> (Ppxlib.type_declaration * Ppxlib.type_declaration) list

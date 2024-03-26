@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren. PPX syntax extensions.
- * Copyright (C) 2015-2023
+ * Copyright (C) 2015-2024
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -116,8 +116,7 @@ let make_new_mangler kind tname =
             Pprintast.expression
             (pexp_ident ~loc (Located.mk ~loc lid))
     ;;
-  end
-  in
+  end in
   (module New_mangler : NAME_MANGLER)
 ;;
 
@@ -249,7 +248,7 @@ let make_reifier_for_tuple ~loc kind = function
 ;;
 
 let create_lident_mangler sort : loc:Location.t -> core_type list Lazy.t -> Longident.t -> core_type
-  =
+    =
   let prim_typ, add_suffix, std_suffix =
     match sort with
     | `Injected -> "ilogic", Printf.sprintf "%s_injected", "injected"

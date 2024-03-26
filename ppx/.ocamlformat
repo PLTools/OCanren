@@ -64,3 +64,4 @@ break-collection-expressions=fit-or-vertical
 break-cases=fit-or-vertical
 break-before-in=fit-or-vertical
 assignment-operator=begin-line
+ocp-indent-compat=false

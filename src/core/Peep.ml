@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2020
+ * Copyright (C) 2015-2024
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *

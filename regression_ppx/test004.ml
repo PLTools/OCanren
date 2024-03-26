@@ -17,38 +17,38 @@ module _ = struct
     let prj_exn =
       let open Env.Monad.Syntax in
       Reifier.fix (fun rself ->
-        Reifier.compose
-          OCanren.prj_exn
-          (let* self = rself in
-           Env.Monad.return (GT.gmap t self)))
+          Reifier.compose
+            OCanren.prj_exn
+            (let* self = rself in
+             Env.Monad.return (GT.gmap t self)))
     ;;
 
     (* good reifier *)
     let reify : (injected, logic) Reifier.t =
       let open Env.Monad.Syntax in
       Reifier.fix (fun rself ->
-        Reifier.compose
-          OCanren.reify
-          (let* self = rself in
-           let rec foo = function
-             | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
-             | Value x -> Value ((GT.gmap t self) x)
-           in
-           Env.Monad.return foo))
+          Reifier.compose
+            OCanren.reify
+            (let* self = rself in
+             let rec foo = function
+               | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+               | Value x -> Value ((GT.gmap t self) x)
+             in
+             Env.Monad.return foo))
     ;;
 
     (* trying to make bad  reifier *)
     let reify_bad : (injected, injected t OCanren.logic) Reifier.t =
       let open Env.Monad.Syntax in
       Reifier.fix (fun rself ->
-        Reifier.compose
-          OCanren.reify
-          (let* _self = rself in
-           let rec foo = function
-             | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
-             | Value x -> Value ((GT.gmap t Fun.id) x)
-           in
-           Env.Monad.return foo))
+          Reifier.compose
+            OCanren.reify
+            (let* _self = rself in
+             let rec foo = function
+               | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+               | Value x -> Value ((GT.gmap t Fun.id) x)
+             in
+             Env.Monad.return foo))
     ;;
 
     let z () = OCanren.inji Z
@@ -59,16 +59,14 @@ module _ = struct
   let () = run_peano 1 q qh (REPR (fun q -> q === z ()))
 
   let v : injected =
-    match
-      run q (fun q -> fresh m (q === succ m)) (fun rr -> rr#reify reify_bad) |> Stream.hd
-    with
-    | Value (S var) -> var
-    | _ -> assert false
+    match run q (fun q -> fresh m (q === succ m)) (fun rr -> rr#reify reify_bad) |> Stream.hd with
+      | Value (S var) -> var
+      | _ -> assert false
   ;;
 
   let () =
     try run_peano 1 q qh (REPR (fun q -> q === v)) with
-    | Failure s -> Format.printf "Failure: %s\n%!" s
+      | Failure s -> Format.printf "Failure: %s\n%!" s
   ;;
 
   let v : injected t OCanren__Logic.logic =

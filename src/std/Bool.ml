@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2024
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -26,7 +26,7 @@ module List = Stdlib.List
 @type ground     = GT.bool              with show, html, eq, compare, foldr, foldl, gmap, fmt
 @type t          = GT.bool              with show, html, eq, compare, foldr, foldl, gmap, fmt
 @type logic      = GT.bool Logic.logic  with show, html, eq, compare, foldr, foldl, gmap, fmt
-                                                                                                                                     
+
 @type bool       = ground               with show, html, eq, compare, foldr, foldl, gmap, fmt
 @type bool_logic = logic                with show, html, eq, compare, foldr, foldl, gmap, fmt
 
@@ -54,7 +54,7 @@ let prj_exn : (bool ilogic, bool) Reifier.t = Logic.prj_exn
 
 let reify_bool = reify
 let prj_exn_bool = prj_exn
-                 
+
 let falso = Logic.inj false
 let truo  = Logic.inj true
 

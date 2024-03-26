@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren PPX
- * Copyright (C) 2016-2023
+ * Copyright (C) 2016-2024
  *   Dmitrii Kosarev aka Kakadu, Petr Lozov
  * St.Petersburg State University, JetBrains Research
  *)
@@ -137,8 +137,7 @@ let make_logic_strat_2 tdecl =
     ;;
 
     let mangle_lident = Reify_impl.create_lident_mangler `Reify
-  end
-  in
+  end in
   (module I : STRAT2)
 ;;
 
@@ -184,8 +183,7 @@ let make_injected_strat_2 tdecl =
     ;;
 
     let mangle_lident = Reify_impl.create_lident_mangler `Injected
-  end
-  in
+  end in
   (module I : STRAT2)
 ;;
 
@@ -205,7 +203,7 @@ include struct
       | t ->
           (match t.ptyp_desc with
           (* In principle, special treating of pairs is not required,
-            but it is easier to study the generated code with this specialization *)
+             but it is easier to study the generated code with this specialization *)
           | Ptyp_tuple [ l; r ] ->
               ptyp_constr
                 ~loc
@@ -425,8 +423,7 @@ let make_strat () =
       then Located.mk ~loc "injected"
       else Located.sprintf ~loc "%s_injected" tdecl.ptype_name.txt
     ;;
-  end
-  in
+  end in
   (module M : STRAT)
 ;;
 
@@ -549,13 +546,6 @@ let make_reifier_gen ~kind is_rec tdecl : Reifier_info.t =
     then Reify_impl.string_of_kind kind
     else Printf.sprintf "%s_%s" tdecl.ptype_name.txt (Reify_impl.string_of_kind kind)
   in
-  (* let pat =
-    if Reify_impl.is_old ()
-    then pat
-    else (
-      let name = Printf.sprintf "%s_%s" tdecl.ptype_name.txt (Reify_impl.string_of_kind kind) in
-      ppat_var ~loc (Located.mk ~loc name))
-  in *)
   match tdecl.ptype_manifest with
   | Some manifest ->
       let rec helper typ : expression =
@@ -745,17 +735,17 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
       })
   in
   let ltyp =
-    (*     let ptype_attributes =
-      List.concat_map tdecl.ptype_attributes ~f:(fun attr ->
-        match attr.attr_name.txt with
-        | "distrib" -> []
-        | "deriving" ->
-          remove_deriving_gmap attr
-          |> (function
-          | Some x -> [ x ]
-          | None -> [])
-        | _ -> [ attr ])
-    in *)
+    (* let ptype_attributes =
+         List.concat_map tdecl.ptype_attributes ~f:(fun attr ->
+           match attr.attr_name.txt with
+           | "distrib" -> []
+           | "deriving" ->
+             remove_deriving_gmap attr
+             |> (function
+             | Some x -> [ x ]
+             | None -> [])
+           | _ -> [ attr ])
+       in *)
     let ptype_name = S.logic_typ_name tdecl in
     let ptype_manifest =
       match tdecl.ptype_manifest with
@@ -880,15 +870,15 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
             Caml.__FILE__
             Caml.__LINE__)
   in
-  (*   let typ_of_decl decl =
-    ptyp_constr
-      ~loc
-      (Located.mk ~loc (Lident decl.ptype_name.txt))
-      (List.map decl.ptype_params ~f:(fun (t, _) ->
-           match t.ptyp_desc with
-           | Ptyp_var _v -> t
-           | _ -> assert false))
-  in *)
+  (* let typ_of_decl decl =
+       ptyp_constr
+         ~loc
+         (Located.mk ~loc (Lident decl.ptype_name.txt))
+         (List.map decl.ptype_params ~f:(fun (t, _) ->
+              match t.ptyp_desc with
+              | Ptyp_var _v -> t
+              | _ -> assert false))
+     in *)
   let make_fmapt decl =
     let names =
       extract_names (name_type_params_in_td decl).ptype_params
@@ -932,7 +922,7 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
       in
       List.fold_right names ~init:rez ~f:(fun name acc ->
           [%type:
-            ([%t ptyp_var ~loc name], [%t ptyp_var ~loc (mangle name)]) OCanren.Reifier.t
+               ([%t ptyp_var ~loc name], [%t ptyp_var ~loc (mangle name)]) OCanren.Reifier.t
             -> [%t acc]])
     in
     { ri with Reifier_info.typ = Some injected_typ }
@@ -951,7 +941,7 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
 
 (* TODO(Kakadu): remember why this is really needed *)
 (*
-let process_composable =
+   let process_composable =
   List.map ~f:(fun tdecl ->
       let loc = tdecl.pstr_loc in
       match tdecl.pstr_desc with
@@ -973,38 +963,38 @@ let process_composable =
           | None -> tdecl)
       | _ -> tdecl)
 ;;
- *)
+*)
 (* let prepare_reifiers (rs : Reifier_info.t list) =
-  let names = [] (* type params of original decl *) in
-  let mk_arg_reifier s = sprintf "r%s" s in
-  let add_args tdecl rhs =
-    let loc = tdecl.ptype_loc in
-    Exp.funs ~loc rhs (List.map ~f:mk_arg_reifier names)
-  in
-  match rs with
-  | [] -> []
-  | [ h ] ->
-      let loc = h.Reifier_info.decl.ptype_loc in
-      let pat = ppat_var ~loc (Located.mk ~loc h.Reifier_info.name) in
-      [ value_binding ~loc ~pat ~expr:(add_args h.Reifier_info.decl h.Reifier_info.body) ]
-  | rs ->
-      let mutual_names = List.map rs ~f:(fun { Reifier_info.decl } -> decl.ptype_name.txt) in
-      let mutual_args ~loc e =
-        pexp_fun
-          ~loc
-          nolabel
-          None
-          (ppat_tuple
+     let names = [] (* type params of original decl *) in
+     let mk_arg_reifier s = sprintf "r%s" s in
+     let add_args tdecl rhs =
+       let loc = tdecl.ptype_loc in
+       Exp.funs ~loc rhs (List.map ~f:mk_arg_reifier names)
+     in
+     match rs with
+     | [] -> []
+     | [ h ] ->
+         let loc = h.Reifier_info.decl.ptype_loc in
+         let pat = ppat_var ~loc (Located.mk ~loc h.Reifier_info.name) in
+         [ value_binding ~loc ~pat ~expr:(add_args h.Reifier_info.decl h.Reifier_info.body) ]
+     | rs ->
+         let mutual_names = List.map rs ~f:(fun { Reifier_info.decl } -> decl.ptype_name.txt) in
+         let mutual_args ~loc e =
+           pexp_fun
              ~loc
-             (List.map mutual_names ~f:(fun name -> ppat_var ~loc (Located.mk ~loc name))))
-          e
-      in
-      List.concat
-        [ List.map rs ~f:(fun { Reifier_info.name; decl; body } ->
-              let loc = decl.ptype_loc in
-              let pat = ppat_var ~loc (Located.mk ~loc name) in
-              value_binding ~loc ~pat ~expr:(mutual_args ~loc @@ add_args decl body))
-        ; List.concat_map rs ~f:(fun _ -> [])
-        ]
-;;
- *)
+             nolabel
+             None
+             (ppat_tuple
+                ~loc
+                (List.map mutual_names ~f:(fun name -> ppat_var ~loc (Located.mk ~loc name))))
+             e
+         in
+         List.concat
+           [ List.map rs ~f:(fun { Reifier_info.name; decl; body } ->
+                 let loc = decl.ptype_loc in
+                 let pat = ppat_var ~loc (Located.mk ~loc name) in
+                 value_binding ~loc ~pat ~expr:(mutual_args ~loc @@ add_args decl body))
+           ; List.concat_map rs ~f:(fun _ -> [])
+           ]
+   ;;
+*)

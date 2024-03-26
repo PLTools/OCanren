@@ -15,8 +15,8 @@ maintainer: ["Dmitrii Kosarev Kakadu@pm.me"]
 authors: [
   "Dmitrii Boulytchev https://github.com/dboulytchev"
   "Dmitrii Kosarev https://github.com/Kakadu"
-  "Evgenii Moiseenko https://github.com/eupp"
   "Petr Lozov https://github.com/Lozov-Petr"
+  "Evgenii Moiseenko https://github.com/eupp"
   "JetBrains Research https://research.jetbrains.org"
 ]
 license: "LGPL-2.1"
@@ -31,7 +31,7 @@ depends: [
   "logger-p5"
   "GT" {>= "0.5.2"}
   "benchmark" {with-test}
-  "ocamlformat" {with-test & >= "0.25.1" & < "0.26"}
+  "ocamlformat" {with-test & >= "0.26.1" & < "0.27"}
   "ppx_inline_test"
   "mtime" {< "2.0.0"}
   "odoc" {with-doc}

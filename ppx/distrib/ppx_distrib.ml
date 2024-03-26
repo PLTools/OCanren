@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren PPX
- * Copyright (C) 2016-2023
+ * Copyright (C) 2016-2024
  *   Dmitrii Kosarev aka Kakadu
  * St.Petersburg State University, JetBrains Research
  *)
@@ -27,20 +27,6 @@ let pp_input ppf = function
 
 (* For mutual recursion gt only available for regular types. Currently we forbit it at all *)
 let filter_out_gt_attributes tdecls = tdecls
-(* let helper attrs =
-    List.filter attrs ~f:(fun attr ->
-        match attr.attr_name.txt with
-        | "deriving" ->
-            (match attr.attr_payload with
-            | PStr [%str gt] | PStr [%str gt ~options:[%e? _]] -> false
-            | _ -> true)
-        | _ -> true)
-  in
-  match tdecls with
-  | [] | [ _ ] -> tdecls
-  | _ ->
-      List.map tdecls ~f:(function { ptype_attributes; _ } as g ->
-          { g with ptype_attributes = helper ptype_attributes }) *)
 
 let knot_reifiers_sig ~loc reifiers =
   List.concat_map reifiers ~f:(fun ri ->
@@ -60,11 +46,6 @@ let knot_reifiers ~loc ?(kind = Reify_impl.Prj_exn) reifiers base_decls =
   | [ h ] ->
       let open Ppxlib.Ast_builder.Default in
       let open Ppx_distrib_expander in
-      (*       let nameR =
-        match kind with
-        | Reify_impl.Reify -> "reify"
-        | Prj_exn -> "prj_exn"
-      in *)
       let base_decl = List.hd base_decls in
       let rec_flag =
         (* Without mutual recursion we rely on fixpoint *)
@@ -197,18 +178,7 @@ let classify_tdecl () =
   let pattern =
     let open Ast_pattern in
     let map3 ~f p = p |> map2 ~f:(fun a b -> a, b) |> map2 ~f:(fun (a, b) c -> f a b c) in
-    (* let map3' ~f p =
-      p |> map2' ~f:(fun loc a b -> loc, a, b) |> map2 ~f:(fun (loc, a, b) c -> f loc a b c)
-    in*)
     let map4 ~f p = p |> map3 ~f:(fun a b c -> a, b, c) |> map2 ~f:(fun (a, b, c) d -> f a b c d) in
-    (*     let map5 ~f p =
-      p |> map3 ~f:(fun a b c -> a, b, c) |> map3 ~f:(fun (a, b, c) d e -> f a b c d e)
-    in
-    let map4' ~f p =
-      p
-      |> map3' ~f:(fun loc a b c -> loc, a, b, c)
-      |> map2 ~f:(fun (loc, a, b, c) d -> f loc a b c d)
-    in *)
     let rec conde xs =
       match xs with
       | [] -> failwith "bad argument"
@@ -318,26 +288,25 @@ open Ppxlib.Ast_builder.Default
 let () =
   let extensions =
     let make_extension_gen (type ai a) :
-         ctx:a Extension.Context.t
+           ctx:a Extension.Context.t
         -> of_tdecl:(loc:location -> rec_flag -> type_declaration list -> ai)
         -> (* TODO: maybe all arguments should return lists of values? *)
            of_value:(loc:location -> rec_flag -> value_binding -> ai list)
         -> group_items:(loc:location -> ai list -> a)
         -> knot_reifiers:
-             (loc:location
+             (   loc:location
               -> ?kind:Reify_impl.kind
               -> Ppx_distrib_expander.Reifier_info.t list
               -> type_declaration list
               -> ai list)
         -> other_stuff:
-             (( type_declaration list
-              , value_binding list
-              , Ppx_distrib_expander.Reifier_info.t list )
-              Ppx_distrib_expander.the_result
+             (   ( type_declaration list
+                 , value_binding list
+                 , Ppx_distrib_expander.Reifier_info.t list )
+                 Ppx_distrib_expander.the_result
               -> ai list)
         -> string
-        -> Extension.t
-      =
+        -> Extension.t =
      fun ~ctx ~of_tdecl ~of_value ~group_items ~knot_reifiers ~other_stuff name ->
       Extension.declare name ctx (classify_tdecl ()) (fun ~loc ~path:_ -> function
         | Other (_, []) -> failwith "Not supported"
