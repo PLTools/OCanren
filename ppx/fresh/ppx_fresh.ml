@@ -210,14 +210,14 @@ let mapper =
               in
               ans
           | None ->
-              Caml.Format.eprintf "Can't reconstruct args of 'fresh'";
+              Stdlib.Format.eprintf "Can't reconstruct args of 'fresh'";
               { e with pexp_desc = Pexp_apply (e1, [ Nolabel, new_body ]) })
       | Pexp_apply (d, [ (_, body) ]) when is_defer d ->
           let ans = [%expr delay (fun () -> [%e self#expression body])] in
           ans
       | Pexp_apply (d, body) when is_unif d ->
           (* let loc_str =
-               Caml.Format.asprintf "%a" Selected_ast.Ast.Location.print_compact e.pexp_loc;
+               Stdlib.Format.asprintf "%a" Selected_ast.Ast.Location.print_compact e.pexp_loc;
              in
              let body = (Labelled "loc", Exp.constant (Pconst_string (loc_str,None))) :: body in *)
           Exp.apply ~loc:e.pexp_loc d body
@@ -309,7 +309,7 @@ let mapper =
       | Pexp_open (_od, ee) -> { e with pexp_desc = Pexp_open (_od, self#expression ee) }
       | Pexp_letop _ | Pexp_extension _ | Pexp_pack _ -> e
     (* | _ ->
-       Caml.Format.printf "%a\n%a\n%!" Location.print loc Pprintast.expression e;
+       Stdlib.Format.printf "%a\n%a\n%!" Location.print loc Pprintast.expression e;
        assert false*)
   end
 ;;

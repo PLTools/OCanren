@@ -11,7 +11,7 @@ open Stdppx
 open Ppxlib.Ast_builder.Default
 open Ppxlib.Ast_helper
 open Printf
-module Format = Caml.Format
+module Format = Stdlib.Format
 open Myhelpers
 
 let use_logging = false
@@ -28,12 +28,12 @@ let notify fmt =
   Printf.ksprintf
     (fun s ->
       let _cmd = Printf.sprintf "notify-send %S" s in
-      let (_ : int) = Caml.Sys.command _cmd in
+      let (_ : int) = Stdlib.Sys.command _cmd in
       ())
     fmt
 ;;
 
-let ( @@ ) = Caml.( @@ )
+let ( @@ ) = Stdlib.( @@ )
 let nolabel = Asttypes.Nolabel
 
 let mangle_construct_name name =
@@ -617,7 +617,8 @@ let make_reifier_gen ~kind is_rec tdecl : Reifier_info.t =
                              | Reify ->
                                  [%expr OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:[%e fmapt])]
                              | Prj_exn -> fmapt])]
-        | _ -> failwiths ~loc:manifest.ptyp_loc "Not supported %s %d" Caml.__FILE__ Caml.__LINE__
+        | _ ->
+            failwiths ~loc:manifest.ptyp_loc "Not supported %s %d" Stdlib.__FILE__ Stdlib.__LINE__
       in
       { Reifier_info.typ = None; body = body (); name = pat_name; decl = tdecl }
   | None -> assert false
@@ -867,8 +868,8 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
           failwiths
             ~loc:base_tdecl.ptype_loc
             "%s %d Open and abstract types are not supported"
-            Caml.__FILE__
-            Caml.__LINE__)
+            Stdlib.__FILE__
+            Stdlib.__LINE__)
   in
   (* let typ_of_decl decl =
        ptyp_constr

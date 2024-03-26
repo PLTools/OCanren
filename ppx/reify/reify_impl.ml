@@ -20,7 +20,7 @@
 open Ppxlib
 open Stdppx
 open Ppxlib.Ast_builder.Default
-module Format = Caml.Format
+module Format = Stdlib.Format
 open Myhelpers
 
 type naming =
@@ -413,7 +413,7 @@ let make_reifier_composition ~pat ?(typ = None) kind tdecl =
   let helper = reifier_of_core_type kind in
   let manifest =
     match tdecl.ptype_manifest with
-    | None -> failwiths "A type without manifest %s %d" Caml.__FILE__ Caml.__LINE__
+    | None -> failwiths "A type without manifest %s %d" Stdlib.__FILE__ Stdlib.__LINE__
     | Some m -> m
   in
   let body =
@@ -427,7 +427,8 @@ let make_reifier_composition ~pat ?(typ = None) kind tdecl =
           (Exp.ident ~loc @@ lident_of_list [ "OCanren"; "Std"; "Pair"; reifier_name ])
           [ helper ~loc l; helper ~loc r ]
     | Ptyp_tuple _ -> helper ~loc manifest
-    | _ -> failwiths ~loc "This type is not expected as manifest %s %d" Caml.__FILE__ Caml.__LINE__
+    | _ ->
+        failwiths ~loc "This type is not expected as manifest %s %d" Stdlib.__FILE__ Stdlib.__LINE__
   in
   let loc = tdecl.ptype_loc in
   let pat =

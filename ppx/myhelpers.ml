@@ -20,7 +20,8 @@ let extract_names =
   List.map ~f:(fun (typ, _) ->
       match typ.ptyp_desc with
       | Ptyp_var s -> s
-      | _ -> failwith (Caml.Format.asprintf "Don't know what to do with %a" Pprintast.core_type typ))
+      | _ ->
+          failwith (Stdlib.Format.asprintf "Don't know what to do with %a" Pprintast.core_type typ))
 ;;
 
 open Ppxlib.Ast_builder.Default
@@ -31,7 +32,7 @@ module Located = struct
 
   (* let mknoloc txt = { txt; loc = Location.none } *)
   let map_loc ~f l = { l with txt = f l.txt }
-  let sprintf ~loc fmt = Caml.Format.kasprintf (mk ~loc) fmt
+  let sprintf ~loc fmt = Stdlib.Format.kasprintf (mk ~loc) fmt
 end
 
 module Exp = struct
