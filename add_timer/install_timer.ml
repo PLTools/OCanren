@@ -9,7 +9,10 @@ module Impl : T = struct
   let elapsed = Mtime_clock.elapsed
   let abs_diff start fin =
     let span = Mtime.Span.abs_diff start fin in
-    Mtime.Span.({s = to_s span; ms = to_ms span})
+    let ns = Mtime.Span.to_float_ns span in
+    let ms = ns *. 1000000.0 in
+    let s = ms *. 1000.0 in
+    {s; ms }
 
 end
 

@@ -34,7 +34,7 @@
     (< 0.27)))
   ppx_inline_test
   (mtime
-   (< 2.0.0)))
+   (>= 2.0.0)))
  (authors
   "Dmitrii Boulytchev https://github.com/dboulytchev"
   "Dmitrii Kosarev https://github.com/Kakadu"

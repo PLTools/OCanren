@@ -33,7 +33,7 @@ depends: [
   "benchmark" {with-test}
   "ocamlformat" {with-test & >= "0.26.1" & < "0.27"}
   "ppx_inline_test"
-  "mtime" {< "2.0.0"}
+  "mtime" {>= "2.0.0"}
   "odoc" {with-doc}
 ]
 build: [
