@@ -19,9 +19,9 @@ authors: [
   "Evgenii Moiseenko https://github.com/eupp"
   "JetBrains Research https://research.jetbrains.org"
 ]
-license: "LGPL-2.1"
-homepage: "https://github.com/JetBrains-Research/OCanren"
-bug-reports: "https://github.com/JetBrains-Research/OCanren/issues"
+license: "LGPL-2.1-only"
+homepage: "https://github.com/PLTools/OCanren"
+bug-reports: "https://github.com/PLTools/OCanren/issues"
 depends: [
   "dune" {>= "2.9"}
   "ocaml" {>= "4.10"}
@@ -52,4 +52,4 @@ build: [
   ]
   ["dune" "install" "-p" name "--create-install-files" name]
 ]
-dev-repo: "git+https://github.com/JetBrains-Research/OCanren.git"
+dev-repo: "git+https://github.com/PLTools/OCanren.git"

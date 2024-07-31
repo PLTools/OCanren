@@ -4,10 +4,10 @@
 
 (generate_opam_files true)
 
-(license LGPL-2.1)
+(license LGPL-2.1-only)
 
 (source
- (github JetBrains-Research/OCanren))
+ (github PLTools/OCanren))
 
 (name OCanren)
 
@@ -41,7 +41,7 @@
   "Petr Lozov https://github.com/Lozov-Petr"
   "Evgenii Moiseenko https://github.com/eupp"
   "JetBrains Research https://research.jetbrains.org")
- (bug_reports "https://github.com/JetBrains-Research/OCanren/issues")
+ (bug_reports "https://github.com/PLTools/OCanren/issues")
  (maintainers "Dmitrii Kosarev Kakadu@pm.me"))
 
 (package
@@ -59,11 +59,10 @@
    (and
     (>= 0.26.0)
     (<= 0.28.0)))
-  base ; TODO: get rid of 'base'
   ppx_inline_test
   ppx_expect)
  (authors
   "Dmitrii Kosarev https://github.com/Kakadu"
   "JetBrains Research https://research.jetbrains.org")
- (bug_reports "https://github.com/JetBrains-Research/OCanren/issues")
+ (bug_reports "https://github.com/PLTools/OCanren/issues")
  (maintainers "Dmitrii Kosarev Kakadu@pm.me"))

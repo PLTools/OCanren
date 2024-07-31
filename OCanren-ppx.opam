@@ -28,15 +28,14 @@ authors: [
   "Dmitrii Kosarev https://github.com/Kakadu"
   "JetBrains Research https://research.jetbrains.org"
 ]
-license: "LGPL-2.1"
-homepage: "https://github.com/JetBrains-Research/OCanren"
-bug-reports: "https://github.com/JetBrains-Research/OCanren/issues"
+license: "LGPL-2.1-only"
+homepage: "https://github.com/PLTools/OCanren"
+bug-reports: "https://github.com/PLTools/OCanren/issues"
 depends: [
   "dune" {>= "2.9"}
   "ocaml" {>= "4.10"}
   "dune-configurator"
   "ppxlib" {>= "0.26.0" & <= "0.28.0"}
-  "base"
   "ppx_inline_test"
   "ppx_expect"
   "odoc" {with-doc}
@@ -57,4 +56,4 @@ build: [
   ]
   ["dune" "install" "-p" name "--create-install-files" name]
 ]
-dev-repo: "git+https://github.com/JetBrains-Research/OCanren.git"
+dev-repo: "git+https://github.com/PLTools/OCanren.git"
