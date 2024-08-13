@@ -371,7 +371,7 @@ let reifier_of_core_type ?(reifier_for_var = Fun.id) ~loc kind =
         Exp.apply ~loc (pexp_ident ~loc (Located.mk ~loc (Lident reifier_name))) (Lazy.force args)
     | Lident "t" ->
         Exp.apply ~loc (pexp_ident ~loc (Located.mk ~loc (Lident reifier_name))) (Lazy.force args)
-    | _ -> assert false
+    | _ -> pexp_extension ~loc @@ Location.error_extensionf ~loc "Can't construct reifier "
   in
   let rec helper typ : expression =
     let loc = typ.ptyp_loc in
