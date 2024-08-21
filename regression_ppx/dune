@@ -196,6 +196,8 @@
 (cram
  (package OCanren)
  (applies_to test005)
+ (enabled_if
+  (< %{ocaml-config:version} "5"))
  (deps
   (package OCanren-ppx)
   %{project_root}/ppx/pp_ocanren_all.exe
@@ -207,6 +209,8 @@
 (cram
  (package OCanren)
  (applies_to test006)
+ (enabled_if
+  (< %{ocaml-config:version} "5"))
  (deps
   (package OCanren-ppx)
   %{project_root}/ppx/pp_ocanren_all.exe
@@ -217,6 +221,8 @@
 (cram
  (package OCanren)
  (applies_to test007)
+ (enabled_if
+  (< %{ocaml-config:version} "5"))
  (deps
   (package OCanren-ppx)
   %{project_root}/ppx/pp_ocanren_all.exe
