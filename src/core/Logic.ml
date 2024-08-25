@@ -37,7 +37,14 @@ let logic = {logic with
       method compare   = logic.plugins#compare
       method foldl     = logic.plugins#foldl
       method foldr     = logic.plugins#foldr
-      method fmt fa fmt l = Format.fprintf fmt "%s" (self#show (Format.asprintf "%a" fa) l)
+      method fmt fa =
+        let rec self ppf = function
+        | Value a -> fa ppf a
+        | Var (n, []) -> Format.fprintf ppf "_.%d" n
+        | Var (n, cs) -> Format.fprintf ppf "_.%d =/= [ %a ]" n (Format.pp_print_list self) cs
+        in
+        self
+
       method show fa x =
         GT.transform(logic)
           (fun fself -> object
