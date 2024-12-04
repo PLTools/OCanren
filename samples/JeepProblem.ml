@@ -21,7 +21,7 @@ open OCanren
 open OCanren.Std
 
 module Move = struct
-  ocanren type 'a move =
+  ocanren type nonrec 'a move =
     | Forward  of 'a
     | Backward of 'a
     | Unload   of 'a
