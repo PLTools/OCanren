@@ -174,7 +174,7 @@
   fun q ->
     OCanren.Fresh.two
       (fun x y -> delay (fun () -> conj (!![x; y] === q) (y =/= x))), all answers {
-  q=[_.11; _.12 [=/= _.11]];
+  q=[_.11 [=/= _.12]; _.12];
   }
   fun q ->
     OCanren.Fresh.two
@@ -247,7 +247,7 @@
   fun x ->
     OCanren.Fresh.two
       (fun y z -> delay (fun () -> conj (x =/= !![y; !2]) (x === !![z; !2]))), all answers {
-  q=[_.12 [=/= _.11]; 2];
+  q=[_.12; 2];
   }
   fun q -> distincto (!2 % (!3 %< q)), all answers {
   q=_.35 [=/= 2; =/= 3];
