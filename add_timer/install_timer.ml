@@ -10,9 +10,10 @@ module Impl : T = struct
   let abs_diff start fin =
     let span = Mtime.Span.abs_diff start fin in
     let ns = Mtime.Span.to_float_ns span in
-    let ms = ns *. 1000000.0 in
-    let s = ms *. 1000.0 in
+    let ms = ns /. 1000000.0 in
+    let s = ms /. 1000.0 in
     {s; ms }
+
 
 end
 
