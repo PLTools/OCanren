@@ -148,13 +148,14 @@
  (modules test013mutual)
  (package OCanren)
  (public_names -)
- (flags
-  (:standard
-   ;-dsource
-   ;
-   ))
  (preprocess
-  (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -new-typenames -pretty))
+  (pps
+   OCanren-ppx.ppx_distrib
+   GT.ppx_all
+   OCanren-ppx.ppx_fresh
+   --
+   -new-typenames
+   -pretty))
  (libraries OCanren OCanren.tester))
 
 (executables
@@ -162,13 +163,30 @@
  (modules test014diseq)
  (package OCanren)
  (public_names -)
- (flags
-  (:standard
-   ;-dsource
-   ;
-   ))
  (preprocess
-  (pps OCanren-ppx.ppx_fresh OCanren-ppx.ppx_deriving_reify GT.ppx_all))
+  (pps
+   GT.ppx_all
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_tester
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_deriving_reify
+   --
+   -pretty))
+ (libraries OCanren OCanren.tester))
+
+(executables
+ (names test015diseq)
+ (modules test015diseq)
+ (package OCanren)
+ (public_names -)
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_deriving_reify
+   GT.ppx_all
+   OCanren-ppx.ppx_repr
+   --
+   -pretty))
  (libraries OCanren OCanren.tester))
 
 (cram
@@ -306,3 +324,12 @@
   %{project_root}/ppx/pp_ocanren_all.exe
   test014diseq.ml
   test014diseq.exe))
+
+(cram
+ (package OCanren)
+ (applies_to test015)
+ (deps
+  (package OCanren-ppx)
+  %{project_root}/ppx/pp_ocanren_all.exe
+  test015diseq.ml
+  test015diseq.exe))
