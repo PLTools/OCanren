@@ -28,8 +28,7 @@ open Ppxlib
 let string_of_expression e =
   Format.set_margin 1000;
   Format.set_max_indent 0;
-  let ans = Format.asprintf "%a" Pprintast.expression e in
-  ans
+  Format.asprintf "%a" Pprintast.expression e
 ;;
 
 let name = "tester"
@@ -42,7 +41,9 @@ let () =
         (pstr_eval
            (pexp_apply
               __
-              ((nolabel ** __) ^:: (nolabel ** __) ^:: (nolabel ** __) ^:: (nolabel ** __) ^:: nil))
+              ((nolabel ** __) ^:: (nolabel ** __) ^:: (nolabel ** __) ^:: (nolabel ** __) ^:: nil
+              |> map2 ~f:(fun a b -> [ a; b ])
+              ||| ((nolabel ** __) ^:: (nolabel ** __) ^:: nil |> map0 ~f:[])))
            nil
         ^:: nil)
     in
@@ -50,7 +51,7 @@ let () =
         name
         Extension.Context.Expression
         pattern
-        (fun ~loc ~path:_ runner reifier shower n realtion ->
+        (fun ~loc ~path:_ runner reifier_shower n relation ->
           let open Ppxlib.Ast_builder.Default in
           let count =
             let rec helper acc e =
@@ -58,7 +59,7 @@ let () =
               | Pexp_fun (_, _, _, body) -> helper (1 + acc) body
               | _ -> acc
             in
-            helper 0 realtion
+            helper 0 relation
           in
           let middle =
             match count with
@@ -70,13 +71,13 @@ let () =
             | _ -> failwith (Printf.sprintf "5 and more arguments are not supported")
           in
           let last =
-            let s = string_of_expression @@ realtion in
+            let s = string_of_expression relation in
             let open Ppxlib.Ast_builder.Default in
-            [%expr [%e pexp_constant ~loc (Pconst_string (s, loc, None))], [%e realtion]]
+            [%expr [%e pexp_constant ~loc (Pconst_string (s, loc, None))], [%e relation]]
           in
           pexp_apply ~loc runner
           @@ List.map (fun e -> Nolabel, e)
-          @@ List.concat [ [ reifier; shower; n ]; middle; [ last ] ])
+          @@ List.concat [ reifier_shower @ [ n ]; middle; [ last ] ])
     ]
   in
   Ppxlib.Driver.register_transformation ~extensions name
