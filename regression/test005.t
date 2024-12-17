@@ -19,14 +19,14 @@
   q=[("x", V ("y")) | _.13];
   }
   fun q -> infero (abs varX (v varX)) q, 1 answer {
-  q=Arr (_.18, _.18);
+  q=Arr (_.21, _.21);
   }
   fun q -> infero (abs varF (abs varX (app (v varF) (v varX)))) q, 1 answer {
-  q=Arr (Arr (_.30, _.26), Arr (_.30, _.26));
+  q=Arr (Arr (_.54, _.26), Arr (_.54, _.26));
   }
   fun q -> infero (abs varX (abs varF (app (v varF) (v varX)))) q, 1 answer {
-  q=Arr (_.30, Arr (Arr (_.30, _.26), _.26));
+  q=Arr (_.64, Arr (Arr (_.64, _.26), _.26));
   }
   fun q -> infero q (arr (p varX) (p varX)), 1 answer {
-  q=Abs (_.29, V (_.29));
+  q=Abs (_.30, V (_.30));
   }
