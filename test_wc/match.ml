@@ -45,13 +45,6 @@ module _ = struct
              (if explicit then bool_dom l &&& bool_dom r else success)))]
   ;;
 
-  let naive_rel q rez =
-    conde
-      [ fresh () (q === Std.pair !!true __) (rez === !!1)
-      ; fresh temp (q =/= Std.pair !!true temp) (rez === !!2)
-      ]
-  ;;
-
   let%expect_test "Without disequalities at all" =
     let xxx q rez =
       conde
@@ -83,6 +76,13 @@ module _ = struct
       q=((false, true), 2);
       q=((true, true), 2);
       } |}]
+  ;;
+
+  let naive_rel q rez =
+    conde
+      [ fresh () (q === Std.pair !!true __) (rez === !!1)
+      ; fresh temp (q =/= Std.pair !!true temp) (rez === !!2)
+      ]
   ;;
 
   let%expect_test " " =
