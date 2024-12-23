@@ -90,6 +90,10 @@ module VarMap =
       match f (try Some (find k m) with Not_found -> None) with
       | Some x -> add k x m
       | None   -> remove k m
+
+    let iteri f m =
+      let i = ref 0 in
+      iter (fun k v -> f !i k v; incr i) m
   end
 
 type t = Obj.t

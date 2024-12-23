@@ -47,9 +47,16 @@ module Binding =
 
     let hash {var; term} = Hashtbl.hash (Term.Var.hash var, Term.hash term)
 
-    let pp ppf { var ; term } =
-      Format.fprintf ppf "%a -> %a" Term.pp (Obj.repr var) Term.pp term
+    let pp ppf {var; term} =
+      Format.fprintf ppf "{ var.idx = %d; term=%s }" var.Term.Var.index (Term.show term)
   end
+
+let varmap_of_bindings : Binding.t list -> Term.t Term.VarMap.t =
+  Stdlib.List.fold_left (fun (acc: _ Term.VarMap.t) Binding.{var;term}    ->
+    assert (not (Term.VarMap.mem var acc));
+    Term.VarMap.add var term acc
+  )
+  Term.VarMap.empty
 
 type t = Term.t Term.VarMap.t
 
@@ -154,6 +161,11 @@ let extend ~scope env subst var term  =
 
 exception Unification_failed
 
+let log fmt =
+  if false
+  then Format.kasprintf (Format.printf "%s\n%!") fmt
+  else Format.ifprintf Format.std_formatter fmt
+
 let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
   (* The idea is to do the unification and collect the unification prefix during the process *)
   let extend var term (prefix, subst) =
@@ -161,6 +173,7 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
     (Binding.({var; term})::prefix, subst)
   in
   let rec helper x y acc =
+    (* log "unify '%s' and '%s'" (Term.show x) (Term.show y); *)
     let open Term in
     fold2 x y ~init:acc
       ~fvar:(fun ((_, subst) as acc) x y ->
@@ -191,6 +204,15 @@ let apply env subst x = Obj.magic @@
   map env subst (Term.repr x)
     ~fvar:(fun v -> Term.repr v)
     ~fval:(fun x -> Term.repr x)
+
+let unify_map env subst map =
+  let vars, terms =
+    Term.VarMap.fold (fun v term acc -> (v :: fst acc, term :: snd acc)) map ([],[])
+  in
+  (* log "var   = %s" (Term.show (Obj.magic (apply env subst vars))); *)
+  (* log "terms = %s" (Term.show (Obj.magic (apply env subst terms))); *)
+  unify env subst (Obj.magic vars) (Obj.magic terms)
+
 
 let freevars env subst x =
   Env.freevars env @@ apply env subst x

@@ -19,6 +19,11 @@
 (* to avoid clash with Std.List (i.e. logic list) *)
 module List = Stdlib.List
 
+let log fmt =
+  if false
+  then Format.kasprintf (Format.printf "%s\n%!") fmt
+  else Format.ifprintf Format.std_formatter fmt
+
 module Answer =
   struct
     module S = Set.Make(Term)
@@ -125,14 +130,15 @@ module Disjunct :
       if Term.VarMap.is_empty d then Format.fprintf ppf "<empty>"
       else
         Format.fprintf ppf "[| ";
-        Term.VarMap.iter (fun k v ->
-          Format.fprintf ppf "@[%d =/= %s@], @," k.Term.Var.index (Term.show v)
+        Term.VarMap.iteri (fun i k v ->
+          if i<>0 then  Format.fprintf ppf ", ";
+          Format.fprintf ppf " @[%d =/= %s@]" k.Term.Var.index (Term.show v)
           ) d;
         Format.fprintf ppf " |]"
 
-    let update t =
-      ListLabels.fold_left ~init:t
-        ~f:(let open Subst.Binding in fun acc {var; term} ->
+    let update : t -> _ -> t = fun init ->
+      ListLabels.fold_left ~init
+        ~f:(fun acc {Subst.Binding.var; term} ->
           if Term.VarMap.mem var acc then
             (* in this case we have subformula of the form (x =/= t1) \/ (x =/= t2) which is always SAT *)
             raise Disequality_fulfilled
@@ -161,12 +167,32 @@ module Disjunct :
       | Fulfiled      -> raise Disequality_fulfilled
       | Violated      -> raise Disequality_violated
 
-    let rec recheck env subst t =
+    let rec recheck env subst (t: t): t  =
+      (* log "Disjunct.recheck: %a" pp t; *)
       let var, term = Term.VarMap.max_binding t in
+      (* log "       max bind index =  %d" var.Term.Var.index; *)
       let unchecked = Term.VarMap.remove var t in
+      (* log "       unchecked: %a" pp unchecked; *)
       match refine env subst (Obj.magic var) term with
-      | Fulfiled       -> raise Disequality_fulfilled
-      | Refined delta  -> update unchecked delta
+      | Fulfiled       ->
+          raise Disequality_fulfilled
+      | Refined delta  -> (
+          (* When leading terms are reified into something new, we still need to
+             do whole unification, beacuse other pairs may need walking ---
+             (we postponed walking, so som einformation may be lost.)
+             See issue #173
+          *)
+          (* log "Refined into: %a" (Format.pp_print_list Subst.Binding.pp) delta; *)
+          match Subst.unify_map env subst t with
+          | None ->
+            (* not unifiable --- always distinct *)
+            raise Disequality_fulfilled
+          | Some ([], _) -> raise Disequality_violated
+          | Some (bnds, _subst) ->
+              (* TODO(Kakadu): reconstruction of map from binding list could hurt performance  *)
+              let rez = Subst.varmap_of_bindings bnds in
+              (* log "Disjunct.recheck returns %a" pp rez; *)
+              rez)
       | Violated       ->
         if Term.VarMap.is_empty unchecked then
           raise Disequality_violated
@@ -254,9 +280,12 @@ module Conjunct :
       if M.is_empty map
       then Format.fprintf ppf "{}"
       else
+        let idx = ref 0 in
         Format.fprintf ppf "{ ";
         M.iter (fun k v ->
-          Format.fprintf ppf "@[%d: %a@],@ " k Disjunct.pp v
+          if !idx <> 0 then Format.fprintf ppf " ,";
+          Format.fprintf ppf "@[%d: %a@]" k Disjunct.pp v;
+          incr idx
         ) map;
         Format.fprintf ppf " }"
 
@@ -280,11 +309,14 @@ module Conjunct :
       ) t Term.VarMap.empty
 
     let recheck env subst t =
-      M.fold (fun id disj acc ->
+      (* log "Conjunct.recheck. %a" pp t; *)
+      let rez = M.fold (fun id disj acc ->
           try
             M.add id (Disjunct.recheck env subst disj) acc
           with Disequality_fulfilled -> acc
-      ) t M.empty
+      ) t M.empty in
+      (* log "rechecked =  %a" pp rez; *)
+      rez
 
     let merge_disjoint env subst =
       M.union (fun _ _ _ ->
@@ -375,6 +407,11 @@ type t = Conjunct.t Term.VarMap.t
 
 let empty = Term.VarMap.empty
 
+let pp ppf : t -> unit  =
+  Term.VarMap.iter (fun k v ->
+    Format.fprintf ppf "@[%d: %a@]@," k.Term.Var.index Conjunct.pp v
+    )
+
 (* merges all conjuncts (linked to different variables) into one *)
 let combine env subst cstore =
   Term.VarMap.fold (fun _ -> Conjunct.merge_disjoint env subst) cstore Conjunct.empty
@@ -394,17 +431,19 @@ let add env subst cstore x y =
     | Disequality_violated  -> None
 
 let recheck env subst cstore bs =
-  let helper var cstore =
+  let helper var cstore : t =
     try
       let conj = Term.VarMap.find var cstore in
       let cstore = Term.VarMap.remove var cstore in
       update env subst (Conjunct.recheck env subst conj) cstore
+
     with Not_found -> cstore
   in
   try
     let cstore = ListLabels.fold_left bs ~init:cstore
-      ~f:(let open Subst.Binding in fun cstore {var; term} ->
+      ~f:(fun cstore {Subst.Binding.var; term} ->
         let cstore = helper var cstore in
+        (* log "cstore = %a" pp cstore; *)
         match Env.var env term with
         | Some u -> helper u cstore
         | None   -> cstore
@@ -418,8 +457,3 @@ let project env subst cstore fv =
 
 let reify env subst cstore x =
   Conjunct.reify env subst (combine env subst cstore) x
-
-let pp ppf : t -> unit  =
-  Term.VarMap.iter (fun k v ->
-    Format.fprintf ppf "@[%d: %a@]@," k.Term.Var.index Conjunct.pp v
-    )
