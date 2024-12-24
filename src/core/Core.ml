@@ -796,3 +796,8 @@ module Tabling =
 let reify_in_empty reifier x =
   let st = State.empty () in
   reifier (State.env st) x
+
+let trace_diseq : goal = fun st ->
+  Format.printf "%a\n%!" Disequality.pp (State.constraints st);
+  success st
+

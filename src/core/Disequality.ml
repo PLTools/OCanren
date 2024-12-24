@@ -91,6 +91,9 @@ module Disjunct :
     (* Disjunction.t is a set of single disequalities joint by disjunction *)
     type t
 
+
+    val pp : Format.formatter -> t -> unit
+
     (* [make env subst x y] creates new disjunct from the disequality [x =/= y] *)
     val make : Env.t -> Subst.t -> 'a -> 'a -> t
 
@@ -117,6 +120,15 @@ module Disjunct :
   end =
   struct
     type t = Term.t Term.VarMap.t
+
+    let pp ppf d =
+      if Term.VarMap.is_empty d then Format.fprintf ppf "<empty>"
+      else
+        Format.fprintf ppf "[| ";
+        Term.VarMap.iter (fun k v ->
+          Format.fprintf ppf "@[%d =/= %s@], @," k.Term.Var.index (Term.show v)
+          ) d;
+        Format.fprintf ppf " |]"
 
     let update t =
       ListLabels.fold_left ~init:t
@@ -208,6 +220,8 @@ module Conjunct :
 
     val empty : t
 
+    val pp : Format.formatter -> t -> unit
+
     val is_empty : t -> bool
 
     val make : Env.t -> Subst.t -> 'a -> 'a -> t
@@ -235,6 +249,16 @@ module Conjunct :
     module M = Map.Make(struct type t = int let compare = (-) end)
 
     type t = Disjunct.t M.t
+
+    let pp ppf map =
+      if M.is_empty map
+      then Format.fprintf ppf "{}"
+      else
+        Format.fprintf ppf "{ ";
+        M.iter (fun k v ->
+          Format.fprintf ppf "@[%d: %a@],@ " k Disjunct.pp v
+        ) map;
+        Format.fprintf ppf " }"
 
     let empty = M.empty
 
@@ -394,3 +418,8 @@ let project env subst cstore fv =
 
 let reify env subst cstore x =
   Conjunct.reify env subst (combine env subst cstore) x
+
+let pp ppf : t -> unit  =
+  Term.VarMap.iter (fun k v ->
+    Format.fprintf ppf "@[%d: %a@]@," k.Term.Var.index Conjunct.pp v
+    )

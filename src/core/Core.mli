@@ -321,3 +321,5 @@ end
 
 (** Runs reifier on empty state. Useful to debug execution order *)
 val reify_in_empty: ('a, 'b) Reifier.t -> 'a -> 'b
+
+val trace_diseq: goal
