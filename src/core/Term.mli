@@ -67,6 +67,9 @@ module VarMap :
     include Map.S with type key = Var.t
 
     val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
+
+    val iteri: (int -> key -> 'a -> unit) -> 'a t -> unit
+
   end
 
 (* [t] type of untyped OCaml term *)

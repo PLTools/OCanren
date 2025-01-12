@@ -29,7 +29,10 @@ module Binding :
     val equal : t -> t -> bool
     val compare : t -> t -> int
     val hash : t -> int
+    val pp: Format.formatter -> t -> unit
   end
+
+val varmap_of_bindings: Binding.t list -> Term.t Term.VarMap.t
 
 type t
 
@@ -63,6 +66,8 @@ val freevars : Env.t -> t -> 'a -> Term.VarSet.t
  *   [y] is subsumed by [x] (i.e. [x] is more general than [x]) if such a unification succeeds.
  *)
 val unify : ?subsume:bool -> ?scope:Term.Var.scope -> Env.t -> t -> 'a -> 'a -> (Binding.t list * t) option
+
+val unify_map: Env.t -> t -> Term.t Term.VarMap.t -> (Obj.t Term.VarMap.t * t) option
 
 val merge_disjoint : Env.t -> t -> t -> t
 

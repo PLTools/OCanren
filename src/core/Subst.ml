@@ -46,7 +46,17 @@ module Binding =
       if res <> 0 then res else Term.compare t p
 
     let hash {var; term} = Hashtbl.hash (Term.Var.hash var, Term.hash term)
+
+    let pp ppf {var; term} =
+      Format.fprintf ppf "{ var.idx = %d; term=%s }" var.Term.Var.index (Term.show term)
   end
+
+let varmap_of_bindings : Binding.t list -> Term.t Term.VarMap.t =
+  Stdlib.List.fold_left (fun (acc: _ Term.VarMap.t) Binding.{var;term}    ->
+    assert (not (Term.VarMap.mem var acc));
+    Term.VarMap.add var term acc
+  )
+  Term.VarMap.empty
 
 type t = Term.t Term.VarMap.t
 
@@ -145,37 +155,57 @@ let extend ~scope env subst var term  =
 
 exception Unification_failed
 
-let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
+let log fmt =
+  if false
+  then Format.kasprintf (Format.printf "%s\n%!") fmt
+  else Format.ifprintf Format.std_formatter fmt
+
+let ext ~scope ~env add_delta var term (prefix, subst) =
+  let subst = extend ~scope env subst var term in
+  (add_delta Binding.{var; term} prefix, subst)
+
+let rec unify_helper subsume ext env x y acc =
+  (* log "unify '%s' and '%s'" (Term.show x) (Term.show y); *)
+  let open Term in
+  fold2 x y ~init:acc
+    ~fvar:(fun ((_, subst) as acc) x y ->
+      match walk env subst x, walk env subst y with
+      | Var x, Var y      ->
+        if Var.equal x y then acc else ext x (Term.repr y) acc
+      | Var x, Value y    -> ext x y acc
+      | Value x, Var y    -> ext y x acc
+      | Value x, Value y  -> unify_helper subsume ext env x y acc
+    )
+    ~fval:(fun acc x y ->
+        if x = y then acc else raise Unification_failed
+    )
+    ~fk:(fun ((_, subst) as acc) l v y ->
+        if subsume && (l = Term.R)
+        then raise Unification_failed
+        else match walk env subst v with
+        | Var v    -> ext v y acc
+        | Value x  -> unify_helper subsume ext env x y acc
+    )
+
+let unify_gen ?(subsume=false) ?(scope=Term.Var.non_local_scope) add_delta empty_delta env subst x y =
   (* The idea is to do the unification and collect the unification prefix during the process *)
-  let extend var term (prefix, subst) =
-    let subst = extend ~scope env subst var term in
-    (Binding.({var; term})::prefix, subst)
-  in
-  let rec helper x y acc =
-    let open Term in
-    fold2 x y ~init:acc
-      ~fvar:(fun ((_, subst) as acc) x y ->
-        match walk env subst x, walk env subst y with
-        | Var x, Var y      ->
-          if Var.equal x y then acc else extend x (Term.repr y) acc
-        | Var x, Value y    -> extend x y acc
-        | Value x, Var y    -> extend y x acc
-        | Value x, Value y  -> helper x y acc
-      )
-      ~fval:(fun acc x y ->
-          if x = y then acc else raise Unification_failed
-      )
-      ~fk:(fun ((_, subst) as acc) l v y ->
-          if subsume && (l = Term.R)
-          then raise Unification_failed
-          else match walk env subst v with
-          | Var v    -> extend v y acc
-          | Value x  -> helper x y acc
-      )
-  in
   try
     let x, y = Term.(repr x, repr y) in
-    Some (helper x y ([], subst))
+    Some (unify_helper subsume (ext ~scope ~env add_delta) env x y (empty_delta, subst))
+  with Term.Different_shape _ | Unification_failed | Occurs_check -> None
+
+let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) =
+  unify_gen ~subsume ~scope List.cons []
+
+let unify_map env subst map : (Obj.t Term.VarMap.t * t) option =
+  let add_delta {Binding.var; term} m = Term.VarMap.add var term m in
+  let subsume = false in
+  let scope = Term.Var.non_local_scope in
+  try
+    Stdlib.Option.some @@
+    Term.VarMap.fold (fun var term acc ->
+      unify_helper subsume (ext  ~scope ~env add_delta) env (Obj.magic var) term acc
+    ) map (Term.VarMap.empty, subst)
   with Term.Different_shape _ | Unification_failed | Occurs_check -> None
 
 let apply env subst x = Obj.magic @@
