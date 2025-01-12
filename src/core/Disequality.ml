@@ -185,12 +185,8 @@ module Disjunct :
           | None ->
             (* not unifiable --- always distinct *)
             raise Disequality_fulfilled
-          | Some ([], _) -> raise Disequality_violated
-          | Some (bnds, _subst) ->
-              (* TODO(Kakadu): reconstruction of map from binding list could hurt performance  *)
-              let rez = Subst.varmap_of_bindings bnds in
-              (* log "Disjunct.recheck returns %a" pp rez; *)
-              rez)
+          | Some (delta, _) when Term.VarMap.is_empty delta -> raise Disequality_violated
+          | Some (bnds, _subst) -> bnds)
       | Violated       ->
         let unchecked = Term.VarMap.remove var t in
         (* log "       unchecked: %a" pp unchecked; *)

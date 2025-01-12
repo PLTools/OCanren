@@ -67,7 +67,7 @@ val freevars : Env.t -> t -> 'a -> Term.VarSet.t
  *)
 val unify : ?subsume:bool -> ?scope:Term.Var.scope -> Env.t -> t -> 'a -> 'a -> (Binding.t list * t) option
 
-val unify_map: Env.t -> t -> Term.t Term.VarMap.t -> (Binding.t list * t) option
+val unify_map: Env.t -> t -> Term.t Term.VarMap.t -> (Obj.t Term.VarMap.t * t) option
 
 val merge_disjoint : Env.t -> t -> t -> t
 
