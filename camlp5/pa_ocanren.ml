@@ -1,7 +1,7 @@
 (*
  * pa_ocanren: a camlp5 extension to implement syntax-level
  * miniKanren constructs.
- * Copyright (C) 2015-2024
+ * Copyright (C) 2015-2025
  * Dmitri Boulytchev, St.Petersburg State University
  *
  * This software is free software; you can redistribute it and/or

@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2025
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -36,7 +36,7 @@ open Core
 (** Type synonyms to comply with the generic naming scheme *)
 @type bool       = ground with show, html, eq, compare, foldr, foldl, gmap, fmt
 @type bool_logic = logic  with show, html, eq, compare, foldr, foldl, gmap, fmt
-                                     
+
 (** {2 Relational API} *)
 
 (** Logic injection (for reification) *)
@@ -54,7 +54,7 @@ val prj_exn: (bool ilogic, bool) Reifier.t
 (** Synonyms to comply with the generic naming scheme *)
 val reify_bool   : (bool ilogic, bool Logic.logic) Reifier.t
 val prj_exn_bool : (bool ilogic, bool) Reifier.t
-  
+
 (** Constants *)
 val falso : groundi
 val truo  : groundi

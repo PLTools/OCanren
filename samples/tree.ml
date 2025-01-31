@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * Tree: binary search tree.
- * Copyright (C) 2022-2023
+ * Copyright (C) 2022-2025
  * Dmitri Boulytchev, Dmitrii Kosarev
  * St.Petersburg State University, JetBrains Research
  *

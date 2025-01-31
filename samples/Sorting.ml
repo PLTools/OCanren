@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * Sort: relational sorting.
- * Copyright (C) 2016-2022
+ * Copyright (C) 2016-2025
  * Dmitri Boulytchev, Dmitrii Kosarev
  * St.Petersburg State University, JetBrains Research
  *

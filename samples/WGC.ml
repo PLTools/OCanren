@@ -1,4 +1,5 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
+
 open GT
 
 module L = List
@@ -73,21 +74,8 @@ let rec eval state moves state' =
     )
     ]
 
-
-(* module T1 = struct
-  [%% distrib
-    type nonrec t = A [@@deriving gt ~options:{gmap}]
-    type ground = t]
-end
-
-module T2 = struct
-  [%%distrib
-  type nonrec 'a t = B of 'a [@@deriving gt ~options:{gmap}]
-  type ground =  T1.ground t ]
-end *)
-
-ocanren type state    = (GT.bool * GT.bool * GT.bool * GT.bool) * (GT.bool * GT.bool * GT.bool * GT.bool);;
-(* type solution = move logic Std.List.logic [@@deriving gt ~options:{show}] *)
+ocanren type state    =
+  (GT.bool * GT.bool * GT.bool * GT.bool) * (GT.bool * GT.bool * GT.bool * GT.bool);;
 ocanren type solution = move Std.List.ground
 
 let _ =

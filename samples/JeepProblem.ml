@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * "Jeep Problem" (https://en.wikipedia.org/wiki/Jeep_problem)
- * Copyright (C) 2016-2022
+ * Copyright (C) 2016-2025
  * Dmitri Boulytchev, Peter Lozov
  * St.Petersburg State University, JetBrains Research
  *

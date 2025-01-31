@@ -1,7 +1,7 @@
 (* SPDX-License-Identifier: LGPL-2.1-or-later *)
 (*
  * OCanren.
- * Copyright (C) 2015-2022
+ * Copyright (C) 2015-2025
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *

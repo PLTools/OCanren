@@ -1,6 +1,6 @@
 (*
  * OCanren.
- * Copyright (C) 2015-2017
+ * Copyright (C) 2015-2015
  * Dmitri Boulytchev, Dmitry Kosarev, Alexey Syomin, Evgeny Moiseenko
  * St.Petersburg State University, JetBrains Research
  *
@@ -19,7 +19,7 @@
 (* A type for a runtime configuration *)
 
 val do_occurs_check : unit -> bool
-  
+
 val occurs_check_on  : unit -> unit
 val occurs_check_off : unit -> unit
-                                                   
+
