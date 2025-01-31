@@ -49,9 +49,9 @@
                    (OCanren.Reifier.zed
                       (OCanren.Reifier.rework ~fv:(fmapt OCanren.reify OCanren.reify)) ) )
   
-      let lInt _x__001_ = OCanren.inji (LInt _x__001_)
+      let lInt _x__001_ = OCanren.inj (LInt _x__001_)
   
-      let lBool _x__002_ = OCanren.inji (LBool _x__002_)
+      let lBool _x__002_ = OCanren.inj (LBool _x__002_)
     end
   end
   

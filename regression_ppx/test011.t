@@ -57,8 +57,8 @@
                           (OCanren.Reifier.zed
                              (OCanren.Reifier.rework
                                 ~fv:(fmapt rtarg self OCanren.reify)))))
-          let array _x__001_ = OCanren.inji (Array _x__001_)
-          let var _x__002_ = OCanren.inji (Var _x__002_)
+          let array _x__001_ = OCanren.inj (Array _x__001_)
+          let var _x__002_ = OCanren.inj (Var _x__002_)
         end
     end
   include
@@ -91,5 +91,5 @@
                  (chain
                     (OCanren.Reifier.zed
                        (OCanren.Reifier.rework ~fv:(fmapt (JType.reify self))))))
-      let typ _x__010_ = OCanren.inji (Typ _x__010_)
+      let typ _x__010_ = OCanren.inj (Typ _x__010_)
     end

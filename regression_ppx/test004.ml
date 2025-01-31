@@ -51,8 +51,8 @@ module _ = struct
              Env.Monad.return foo))
     ;;
 
-    let z () = OCanren.inji Z
-    let succ _x__001_ = OCanren.inji (S _x__001_)
+    let z () = OCanren.inj Z
+    let succ _x__001_ = OCanren.inj (S _x__001_)
   end
 
   let run_peano n = run_r reify (GT.show logic) n

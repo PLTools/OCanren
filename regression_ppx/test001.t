@@ -28,9 +28,9 @@
                    (OCanren.Reifier.zed
                       (OCanren.Reifier.rework ~fv:(fmapt self)) ) )
   
-      let z () = OCanren.inji Z
+      let z () = OCanren.inj Z
   
-      let s _x__001_ = OCanren.inji (S _x__001_)
+      let s _x__001_ = OCanren.inj (S _x__001_)
     end
   
     let run_peano_exn n = run_r prj_exn (GT.show ground) n
@@ -74,9 +74,9 @@
             <..> chain
                    (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt ra))) )
   
-      let none () = OCanren.inji None
+      let none () = OCanren.inj None
   
-      let some _x__005_ = OCanren.inji (Some _x__005_)
+      let some _x__005_ = OCanren.inj (Some _x__005_)
     end
   
     let run_option n =
@@ -128,9 +128,9 @@
                    (OCanren.Reifier.zed
                       (OCanren.Reifier.rework ~fv:(fmapt ra self)) ) )
   
-      let nil () = OCanren.inji []
+      let nil () = OCanren.inj []
   
-      let cons _x__009_ _x__010_ = OCanren.inji (_x__009_ :: _x__010_)
+      let cons _x__009_ _x__010_ = OCanren.inj (_x__009_ :: _x__010_)
     end
   
     let __ : ('a -> string) -> ('a logic as 'b) -> string = GT.show logic
@@ -189,13 +189,13 @@
                    (OCanren.Reifier.zed
                       (OCanren.Reifier.rework ~fv:(fmapt OCanren.reify)) ) )
   
-      let forward _x__016_ = OCanren.inji (Forward _x__016_)
+      let forward _x__016_ = OCanren.inj (Forward _x__016_)
   
-      let backward _x__017_ = OCanren.inji (Backward _x__017_)
+      let backward _x__017_ = OCanren.inj (Backward _x__017_)
   
-      let unload _x__018_ = OCanren.inji (Unload _x__018_)
+      let unload _x__018_ = OCanren.inj (Unload _x__018_)
   
-      let fill _x__019_ = OCanren.inji (Fill _x__019_)
+      let fill _x__019_ = OCanren.inj (Fill _x__019_)
     end
   end
   

@@ -27,7 +27,7 @@
             OCanren.reify
             <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt ra self))) )
   
-      let cons _x__001_ _x__002_ = OCanren.inji (Cons (_x__001_, _x__002_))
+      let cons _x__001_ _x__002_ = OCanren.inj (Cons (_x__001_, _x__002_))
     end
   end
   
@@ -58,7 +58,7 @@
             OCanren.reify
             <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt ra OCanren.reify))) )
   
-      let make_t name v = OCanren.inji {name; v}
+      let make_t name v = OCanren.inj {name; v}
     end
   
     let () =

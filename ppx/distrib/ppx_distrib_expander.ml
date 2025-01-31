@@ -793,7 +793,7 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
     else (
       let name cd = mangle_construct_name cd.pcd_name.txt in
       let make_stri prim_pat add_args rhs =
-        [%stri let [%p prim_pat] = [%e add_args [%expr OCanren.inji [%e rhs]]]]
+        [%stri let [%p prim_pat] = [%e add_args [%expr OCanren.inj [%e rhs]]]]
       in
       match base_tdecl.ptype_kind with
       | Ptype_variant cds ->

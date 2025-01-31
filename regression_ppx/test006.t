@@ -194,9 +194,9 @@
                    (OCanren.Reifier.zed
                       (OCanren.Reifier.rework ~fv:(fmapt OCanren.reify (Std.List.reify self))) ) )
   
-      let symb _x__001_ = OCanren.inji (Symb _x__001_)
+      let symb _x__001_ = OCanren.inj (Symb _x__001_)
   
-      let seq _x__002_ = OCanren.inji (Seq _x__002_)
+      let seq _x__002_ = OCanren.inj (Seq _x__002_)
     end
   end
   
@@ -501,9 +501,9 @@
                            (fmapt OCanren.reify Gterm.reify
                               (Std.List.reify (Std.Pair.reify OCanren.reify self)) ) ) ) )
   
-      let closure _x__008_ _x__009_ _x__010_ = OCanren.inji (Closure (_x__008_, _x__009_, _x__010_))
+      let closure _x__008_ _x__009_ _x__010_ = OCanren.inj (Closure (_x__008_, _x__009_, _x__010_))
   
-      let val_ _x__011_ = OCanren.inji (Val _x__011_)
+      let val_ _x__011_ = OCanren.inj (Val _x__011_)
     end
   end
   
@@ -633,7 +633,7 @@
         OCanren.Reifier.fix (fun _ ->
             OCanren.reify <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:fmapt)) )
   
-      let t x y = OCanren.inji (T {x; y})
+      let t x y = OCanren.inj (T {x; y})
     end
   end
   
@@ -761,7 +761,7 @@
         OCanren.Reifier.fix (fun _ ->
             OCanren.reify <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:fmapt)) )
   
-      let make_t x y = OCanren.inji {x; y}
+      let make_t x y = OCanren.inj {x; y}
     end
   end
   
@@ -960,9 +960,9 @@
                    (OCanren.Reifier.zed
                       (OCanren.Reifier.rework ~fv:(fmapt OCanren.reify (Std.List.reify self))) ) )
   
-      let symb _x__021_ = OCanren.inji (Symb _x__021_)
+      let symb _x__021_ = OCanren.inj (Symb _x__021_)
   
-      let seq _x__022_ = OCanren.inji (Seq _x__022_)
+      let seq _x__022_ = OCanren.inj (Seq _x__022_)
     end
   end
   

@@ -2,7 +2,7 @@ open OCanren
 open Tester
 
 module _ = struct
-  [%%distrib
+  [%%ocanren_inject
   type nonrec 'a t =
     | Z
     | S of 'a
@@ -20,7 +20,7 @@ module _ = struct
 end
 
 module _ = struct
-  [%%distrib
+  [%%ocanren_inject
   type nonrec 'a t =
     | None
     | Some of 'a

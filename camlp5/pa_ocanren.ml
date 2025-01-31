@@ -75,7 +75,7 @@ let rec fix_term e =
            | _  ->
               <:expr< $e1'$ $fix_term e2$ >>
          in
-         <:expr< OCanren.inji $fixed$ >>
+         <:expr< OCanren.inj $fixed$ >>
 
       | _ ->
          (match e with
@@ -92,7 +92,7 @@ let rec fix_term e =
   | _ ->
     (* everything else *)
     (match ctor e with
-     | Some e -> <:expr< OCanren.inji $e$ >>
+     | Some e -> <:expr< OCanren.inj $e$ >>
      | _ -> e
     )
 

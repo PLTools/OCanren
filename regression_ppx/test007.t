@@ -279,9 +279,9 @@
                    (OCanren.Reifier.zed
                       (OCanren.Reifier.rework ~fv:(fmapt OCanren.reify (Std.List.reify self))) ) )
   
-      let symb _x__001_ = OCanren.inji (Symb _x__001_)
+      let symb _x__001_ = OCanren.inj (Symb _x__001_)
   
-      let seq _x__002_ = OCanren.inji (Seq _x__002_)
+      let seq _x__002_ = OCanren.inj (Seq _x__002_)
     end
   
     let rec inhabit_list el xs =
@@ -674,9 +674,9 @@
                               (Std.List.reify (OCanren.Std.Pair.reify OCanren.reify Scheme.reify))
                               Scheme.reify ) ) ) )
   
-      let val_ _x__008_ = OCanren.inji (Val _x__008_)
+      let val_ _x__008_ = OCanren.inj (Val _x__008_)
   
-      let closure _x__009_ _x__010_ = OCanren.inji (Closure (_x__009_, _x__010_))
+      let closure _x__009_ _x__010_ = OCanren.inj (Closure (_x__009_, _x__010_))
     end
   
     let (_ : injected) = val_ (Scheme.symb !!"a")

@@ -95,10 +95,7 @@ end
 (** [inj x] injects [x] into logical [x]. *)
 val inj : 'a -> 'a ilogic
 
-(** A synonim to [inj].
-
-    @deprecated Use {!(!!)} instead. *)
-val inji : 'a -> 'a ilogic
+(* TODO: If we expose that [inj] is identity, will it work faster? *)
 
 (** A synonym for {!inj} (for non-parametric types). *)
 val (!!) : 'a -> 'a ilogic

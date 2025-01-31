@@ -72,8 +72,7 @@ let from_logic = function
 
 type 'a ilogic
 
-external inji : 'a -> 'a ilogic = "%identity"
-let inj = inji
+external inj : 'a -> 'a ilogic = "%identity"
 
 let (!!) = inj
 
