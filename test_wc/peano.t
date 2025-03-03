@@ -15,3 +15,5 @@
   }
   fun q -> fresh () (le3 q) (q === (of_int 4)), all answers {
   }
+  fun q -> __ =/= (let open Std.Nat in succ (succ __)), all answers {
+  }
