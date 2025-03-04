@@ -38,4 +38,7 @@ let _ = [%tester run_nat (-1) (fun q -> fresh () (le3 q) (q === of_int 0))]
 let _ = [%tester run_nat (-1) (fun q -> fresh () (le3 q) (q === of_int 4))]
 
 (* Questionable case *)
-let _ = [%tester run_nat (-1) (fun q -> __ =/= Std.Nat.(succ (succ __)))]
+let _ = [%tester run_nat (-1) (fun _ -> __ =/= Std.Nat.(succ (succ __)))]
+
+(* Obvious case *)
+let _ = [%tester run_nat (-1) (fun _ -> __ =/= Std.Nat.(succ (succ zero)))]
