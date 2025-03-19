@@ -134,11 +134,6 @@
  (modules test012mutual)
  (package OCanren)
  (public_names -)
- (flags
-  (:standard
-   -dsource
-   ;
-   ))
  (preprocess
   (pps OCanren-ppx.ppx_distrib GT.ppx_all -- -new-typenames -pretty))
  (libraries OCanren OCanren.tester))
