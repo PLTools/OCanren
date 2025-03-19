@@ -39,3 +39,18 @@
   See also: Camlp5 syntax extension {!module-"OCanren.Pa_ocanren"} (currenly, I don't know how to specify a link to another package, it should be avaiable at {{:../../OCanren/Pa_ocanren/index.html}here}.
 
 *)
+open Ppxlib
+
+type ground_input =
+  rec_flag * ((core_type * (variance * injectivity)) list * type_kind * private_flag * core_type)
+
+type input =
+  | Explicit of
+      (Ppxlib__Import.attributes
+      * ((core_type * (variance * injectivity)) list * type_kind * private_flag * core_type option))
+      * ground_input
+      * structure_item list
+  | Other of (Asttypes.rec_flag * type_declaration list)
+
+val pp_input : Format.formatter -> input -> unit
+val classify_tdecl : unit -> (Parsetree.payload, input -> 'a, 'a) Ppxlib__Ast_pattern0.t

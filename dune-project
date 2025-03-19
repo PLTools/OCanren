@@ -32,7 +32,7 @@
     :with-test
     (>= 0.26.1)
     (< 0.27)))
-  ppx_inline_test
+  ppx_inline_test_nobase
   (mtime
    (>= 2.0.0)))
  (authors
@@ -59,8 +59,8 @@
    (and
     (>= 0.26.0)
     (<= 0.28.0)))
-  ppx_inline_test
-  ppx_expect)
+  ppx_inline_test_nobase
+  ppx_expect_nobase)
  (authors
   "Dmitrii Kosarev https://github.com/Kakadu"
   "JetBrains Research https://research.jetbrains.org")

@@ -1,6 +1,7 @@
 (library
  (name ppx_distrib)
  (public_name OCanren-ppx.ppx_distrib)
+ (wrapped false)
  (kind ppx_rewriter)
  (libraries
   ppxlib.stdppx
@@ -11,15 +12,22 @@
  (modules ppx_distrib ppx_distrib_expander)
  (flags
   (:standard -linkall))
- (inline_tests)
  (preprocess
-  (pps ppxlib.metaquot ppx_inline_test ppx_expect)))
+  (pps ppxlib.metaquot)))
 
 (library
  (name prepare_fully_abstract)
  (public_name OCanren-ppx.prepare_fully_abstract)
  (modules prepare_fully_abstract)
  (libraries ppxlib myhelpers reify_impl)
+ (preprocess
+  (pps ppxlib.metaquot)))
+
+(library
+ (name distrib_tests)
+ (modules distrib_tests)
+ (package OCanren-ppx)
+ (libraries ppx_distrib)
  (inline_tests)
  (preprocess
-  (pps ppxlib.metaquot ppx_expect)))
+  (pps ppxlib.metaquot ppx_inline_test_nobase ppx_expect_nobase)))

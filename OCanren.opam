@@ -32,7 +32,7 @@ depends: [
   "GT" {>= "0.5.2"}
   "benchmark" {with-test}
   "ocamlformat" {with-test & >= "0.26.1" & < "0.27"}
-  "ppx_inline_test"
+  "ppx_inline_test_nobase"
   "mtime" {>= "2.0.0"}
   "odoc" {with-doc}
 ]

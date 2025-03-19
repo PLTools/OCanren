@@ -8,7 +8,7 @@
   (:standard -warn-error -A -rectypes))
  (inline_tests)
  (preprocess
-  (pps ppxlib.metaquot ppx_inline_test ppx_expect)))
+  (pps ppxlib.metaquot ppx_inline_test_nobase ppx_expect_nobase)))
 
 (library
  (name reify_impl)
@@ -17,7 +17,7 @@
  (libraries ppxlib ppxlib.stdppx OCanren-ppx.internals)
  (inline_tests)
  (preprocess
-  (pps ppxlib.metaquot ppx_inline_test ppx_expect ppx_meta_lident)))
+  (pps ppxlib.metaquot ppx_inline_test_nobase ppx_expect_nobase ppx_meta_lident)))
 
 (library
  (name ppx_meta_lident)
@@ -29,4 +29,4 @@
   (:standard -warn-error -A))
  (inline_tests)
  (preprocess
-  (pps ppxlib.metaquot ppx_inline_test ppx_expect)))
+  (pps ppxlib.metaquot ppx_inline_test_nobase ppx_expect_nobase)))

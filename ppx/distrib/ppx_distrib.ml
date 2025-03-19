@@ -263,46 +263,6 @@ let classify_tdecl () =
   pattern
 ;;
 
-let%expect_test _ =
-  let loc = Location.none in
-  let wrap both =
-    Ast_pattern.parse
-      (classify_tdecl ())
-      loc
-      ~on_error:(fun () -> assert false)
-      (PStr both)
-      (Format.printf "%a\n%!" pp_input)
-  in
-  wrap
-    [%str
-      type nonrec 'a t = A of 'a
-      type ground = int t];
-  [%expect {| Explicit |}];
-  wrap
-    [%str
-      type nonrec 'a t = A of 'a t2
-      and 'a t2 = B of 'a t];
-  [%expect {| Other |}];
-  wrap [%str type nonrec 'a t = A of 'a];
-  [%expect {| Other |}];
-  wrap [%str type nonrec 'a t = ('a * 'a) Std.List.ground];
-  [%expect {| Other |}];
-  wrap
-    [%str
-      type nonrec 'a t =
-        { asdf : 'a
-        ; asqqq : GT.int
-        }];
-  [%expect {| Other |}];
-  wrap
-    [%str
-      type 'targ ground =
-        | Array of 'targ ground
-        | Var of GT.int
-      [@@deriving gt ~options:{ show; fmt; gmap }]];
-  [%expect {| Other |}]
-;;
-
 open Ppxlib.Ast_builder.Default
 
 let () =

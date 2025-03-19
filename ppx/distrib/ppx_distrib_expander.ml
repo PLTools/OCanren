@@ -270,137 +270,7 @@ include struct
   ;;
 
   let gtypify_exn ~loc = make_typ_exn ~loc (fun ~loc:_ t -> t)
-
-  let%expect_test "Generation of logic types" =
-    let loc = Location.none in
-    let test i =
-      let t2 =
-        match i.pstr_desc with
-        | Pstr_type (_, [ ({ ptype_manifest = Some t } as td) ]) ->
-            let st = make_logic_strat_2 td in
-            ltypify_exn ~loc st t
-        | _ -> assert false
-      in
-      Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
-    in
-    test [%stri type t1 = (int * int) Std.List.ground];
-    [%expect
-      {|
-        (int OCanren.logic, int OCanren.logic) OCanren.Std.Pair.logic
-          OCanren.Std.List.logic |}];
-    test [%stri type t2 = (int * int * int) GT.list];
-    [%expect
-      {|
-        (int OCanren.logic * int OCanren.logic * int OCanren.logic) OCanren.logic
-          OCanren.Std.List.logic |}];
-    test [%stri type t2 = GT.bool * GT.int * GT.string];
-    [%expect
-      {|
-      (GT.bool OCanren.logic * GT.int OCanren.logic * GT.string OCanren.logic)
-        OCanren.logic
-       |}];
-    ()
-  ;;
-
-  let%expect_test _ =
-    let loc = Location.none in
-    let test i =
-      let t2 =
-        match i.pstr_desc with
-        | Pstr_type (_, [ { ptype_manifest = Some t } ]) ->
-            let st =
-              (module struct
-                let sort = `Reify
-                let self_typ_name = "u_logic"
-                let fully_abstract_name = "u_fuly"
-                let is_selfrec_name = String.equal fully_abstract_name
-                let is_fully_name = is_selfrec_name
-                let ground_typ_name = "u"
-                let logic_typ_name = "u_logic"
-                let injected_typ_name = ""
-
-                let define_as_fuly_abstract ~loc args =
-                  ptyp_constr
-                    ~loc
-                    (Located.mk ~loc (lident_of_list [ "OCanren"; "logic" ]))
-                    [ ptyp_constr
-                        ~loc
-                        (Located.mk ~loc (Lident fully_abstract_name))
-                        (Lazy.force args)
-                    ]
-                ;;
-
-                let mangle_lident = Reify_impl.create_lident_mangler sort
-              end : STRAT2)
-            in
-            ltypify_exn ~loc st t
-        | _ -> assert false
-      in
-      Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
-    in
-    Reify_impl.(config.naming_style <- New_naming);
-    test [%stri type nonrec u = state u_fuly];
-    [%expect {| state_logic u_fuly OCanren.logic |}];
-    Reify_impl.(config.naming_style <- Old_naming);
-    ()
-  ;;
 end
-
-let%expect_test "injectify" =
-  let loc = Location.none in
-  let test i =
-    let t2 =
-      match i.pstr_desc with
-      | Pstr_type (_, [ { ptype_manifest = Some t } ]) ->
-          injectify
-            ~loc
-            (module struct
-              let sort = `Injected
-              let self_typ_name = "injected"
-              let is_selfrec_name s = String.equal s "ground"
-              let is_fully_name = String.equal "t"
-              let ground_typ_name = ""
-              let logic_typ_name = ""
-              let injected_typ_name = "injected"
-              let fully_abstract_name = "t"
-
-              let define_as_fuly_abstract ~loc args =
-                ptyp_constr
-                  ~loc
-                  (Located.mk ~loc (lident_of_list [ "OCanren"; "ilogic" ]))
-                  [ ptyp_constr
-                      ~loc
-                      (Located.mk ~loc (Lident fully_abstract_name))
-                      (Lazy.force args)
-                  ]
-              ;;
-
-              let mangle_lident = Reify_impl.create_lident_mangler sort
-            end)
-            t
-      | _ -> assert false
-    in
-    Format.printf "%a\n%!" Ppxlib.Pprintast.core_type t2
-  in
-  test [%stri type nonrec x = GT.int];
-  [%expect {| GT.int OCanren.ilogic |}];
-  test [%stri type nonrec x = GT.int t];
-  [%expect {|    GT.int OCanren.ilogic t OCanren.ilogic |}];
-  test [%stri type nonrec ground = ground t];
-  [%expect {|    injected t OCanren.ilogic |}];
-  test [%stri type nonrec ground = int GT.list];
-  [%expect {|    int OCanren.ilogic OCanren.Std.List.injected |}];
-  test [%stri type nonrec ground = GT.int * GT.int];
-  [%expect {|    (GT.int OCanren.ilogic, GT.int OCanren.ilogic) OCanren.Std.Pair.injected |}];
-  test [%stri type nonrec ground = (GT.int * GT.string) Std.List.ground];
-  [%expect
-    {|
-    (GT.int OCanren.ilogic, GT.string OCanren.ilogic) OCanren.Std.Pair.injected
-      OCanren.Std.List.injected |}];
-  test [%stri type nonrec ground = GT.int t];
-  [%expect {| GT.int OCanren.ilogic t OCanren.ilogic |}];
-  ()
-;;
 
 let manifest_of_tdecl_exn tdecl =
   match tdecl.ptype_manifest with
@@ -513,24 +383,6 @@ let filter_out_gmap_attr attrs =
 ;;
 
 let decorate_with_attributes tdecl attrs = { tdecl with ptype_attributes = attrs }
-
-let%expect_test _ =
-  let loc = Location.none in
-  let tdecl =
-    match [%stri type a = A [@@deriving gt ~options:{ gmap; show }]].pstr_desc with
-    | Pstr_type (_, [ h ]) -> h
-    | _ -> assert false
-  in
-  let new_attrs = List.filter_map tdecl.ptype_attributes ~f:remove_deriving_gmap in
-  (* Format.printf "%a\n%!" Pprintast.type_declaration tdecl; *)
-  let new_decl = { tdecl with ptype_attributes = new_attrs } in
-  let new_s = pstr_type ~loc Nonrecursive [ new_decl ] in
-  Format.printf "%a\n%!" Pprintast.structure_item new_s;
-  [%expect {|
-    type nonrec a =
-      | A [@@deriving gt ~options:{ show }]|}]
-;;
-
 let mk_arg_reifier s = sprintf "r%s" s
 
 let make_reifier_gen ~kind is_rec tdecl : Reifier_info.t =
@@ -665,37 +517,6 @@ let reifier_for_fully_abstract ~kind tdecl =
   { Reifier_info.typ = None; body = body (); name = pat_name; decl = tdecl }
 ;;
 
-let%expect_test _ =
-  let loc = Location.none in
-  let tdecl =
-    match
-      [%stri
-        type ('a, 'b) either =
-          | A of 'a
-          | B of 'b]
-        .pstr_desc
-    with
-    | Pstr_type (_, [ h ]) -> h
-    | _ -> assert false
-  in
-  let e = reifier_for_fully_abstract ~kind:Prj_exn tdecl in
-  Format.printf "%a\n%!" Pprintast.expression e.Reifier_info.body;
-  [%expect
-    {|
-    let open OCanren.Env.Monad in
-      OCanren.Reifier.fix (fun _ -> OCanren.prj_exn <..> (chain (fmapt fa fb)))|}];
-  let e = reifier_for_fully_abstract ~kind:Reify tdecl in
-  Format.printf "%a\n%!" Pprintast.expression e.Reifier_info.body;
-  [%expect
-    {|
-    let open OCanren.Env.Monad in
-      OCanren.Reifier.fix
-        (fun _ ->
-           OCanren.reify <..>
-             (chain
-                (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt fa fb)))))|}]
-;;
-
 let pp_attributes ppf attrs =
   List.iteri attrs ~f:(fun i -> function
     | { attr_payload = PStr stru } -> Format.fprintf ppf "%d: %a\n%!" i Pprintast.structure stru
@@ -769,7 +590,7 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
         when Reify_impl.is_new () && String.equal name (tdecl.ptype_name.txt ^ "_fuly") ->
           let oca_logic_ident ~loc = Located.mk ~loc (Ldot (Lident "OCanren", "ilogic")) in
           let add_ilogic ~loc t = ptyp_constr ~loc (oca_logic_ident ~loc) [ t ] in
-          add_ilogic ~loc @@ ptyp_constr ~loc cname (List.map ~f:helper args) |> Base.Option.some
+          add_ilogic ~loc @@ ptyp_constr ~loc cname (List.map ~f:helper args) |> fun x -> Some x
       | Some ({ ptyp_desc = Ptyp_constr (_, _) } as typ) -> Some (helper typ)
       | t ->
           (* Format.printf "HERR %s %d\n%!" __FILE__ __LINE__; *)
