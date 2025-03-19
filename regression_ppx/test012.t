@@ -2,10 +2,10 @@
   let () = print_endline "test012"
   include
     struct
-      type ('a, 'a0) targ_fuly =
+      type nonrec ('a, 'a0) targ_fuly =
         | T of 'a0 * 'a 
         | TNoarg [@@deriving gt ~options:{ gmap }]
-      type ('a, 'a1, 'a0) jtyp_fuly =
+      type nonrec ('a, 'a1, 'a0) jtyp_fuly =
         | Array of 'a1 
         | V of 'a0 
         | Other of 'a [@@deriving gt ~options:{ gmap }]
