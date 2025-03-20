@@ -96,8 +96,8 @@ module _ = struct
           (fresh (l r) (scru === (Std.pair l r))
              (if explicit then (bool_dom l) &&& (bool_dom r) else success)), all answers {
       q=((true, _.16), 1);
-      q=((_.17, _.18 [=/= _.13]), 2);
       q=((_.17 [=/= true], _.18), 2);
+      q=((_.17, _.18), 2);
       } |}]
   ;;
 
@@ -238,12 +238,12 @@ module _ = struct
           (if explicit
            then ((bool_dom l) &&& (bool_dom m)) &&& (bool_dom r)
            else success), all answers {
-      q=((_.13, false, true), 1);
-      q=((false, true, _.15), 2);
-      q=((_.13, _.14 [=/= true], false), 3);
-      q=((_.13, _.14 [=/= false; =/= true], true), 4);
-      q=((_.13 [=/= false], _.14, false), 3);
-      q=((_.13 [=/= false], _.14 [=/= false], true), 4);
+      q=((_.16, false, true), 1);
+      q=((false, true, _.17), 2);
+      q=((_.18, _.19 [=/= true], false), 3);
+      q=((_.20, _.21 [=/= false; =/= true], true), 4);
+      q=((_.18 [=/= false], _.19, false), 3);
+      q=((_.20 [=/= false], _.21 [=/= false], true), 4);
       } |}]
   ;;
 
@@ -275,11 +275,11 @@ module _ = struct
           (if explicit
            then ((bool_dom l) &&& (bool_dom m)) &&& (bool_dom r)
            else success), all answers {
-      q=((_.13, false, true), 1);
-      q=((false, true, _.15), 2);
-      q=((_.13, _.14, false), 3);
-      q=((_.13, _.14 [=/= false], true), 4);
-      q=((_.13 [=/= _.21], _.14, true), 4);
+      q=((_.17, false, true), 1);
+      q=((false, true, _.20), 2);
+      q=((_.26, _.27, false), 3);
+      q=((_.24, _.25 [=/= false], true), 4);
+      q=((_.24, _.25, true), 4);
       } |}]
   ;;
 
