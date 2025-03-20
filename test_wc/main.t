@@ -47,7 +47,7 @@
   fun q ->
     fresh (a b) (q =/= (pair (!! 1) __)) (q === (pair __ (!! 1)))
       (q === (pair a b)), all answers {
-  q=(_.11 [=/= 1], 1);
+  q=(_.13 [=/= 1], 1);
   }
   fun q -> fresh () (q === ((!! 1) % ((!! 2) % __))) (q === (__ % __)), all answers {
   q=[1; 2 | _.11];
