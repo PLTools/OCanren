@@ -39,7 +39,8 @@ jobs:
       - name: Install dev version of GT
         run: |
           opam source GT --dev-repo
-          opam pin add GT ./GT -y
+          opam exec -- dune b @install -p GT
+          opam exec -- dune install -p GT
 
       - name: Install dependencies for documentation
         run: opam install odoc pa_ppx --yes
