@@ -136,7 +136,7 @@
  (public_names -)
  (flags
   (:standard
-   ;-dsource
+   -dsource
    ;
    ))
  (preprocess

@@ -75,8 +75,8 @@ let _ =
         (a b)
         (q === pair a b)
         (* (debug_var a OCanren.reify (fun _ ->
-               let () = OCanren.set_diseq_logging true in
-               success)) *)
+           let () = OCanren.set_diseq_logging true in
+           success)) *)
         (q =/= pair !!1 __)
         (q === pair __ !!1))]
 ;;
@@ -86,7 +86,7 @@ let _ =
 let _ =
   [%tester
     run_pair (-1) (fun q ->
-      fresh (a b) (q =/= pair !!1 __) (* (q =/= pair __ !!1)  *) (q === pair a b))]
+      fresh (a b) (q =/= pair !!1 __) (* (q =/= pair __ !!1) *) (q === pair a b))]
 ;;
 
 let _ =
@@ -187,8 +187,8 @@ let _ =
         (Std.pair x !!1 =/= Std.pair !!2 y)
         (x === !!2)
         (* (debug_var x OCanren.reify (fun _ ->
-               let () = OCanren.set_diseq_logging true in
-               trace_diseq_constraints)) *)
+           let () = OCanren.set_diseq_logging true in
+           trace_diseq_constraints)) *)
         (y === !!9)
         (Std.pair x y === q))]
 ;;
@@ -283,7 +283,7 @@ module _ = struct
         fresh
           www
           (Std.pair (le !!"one" !!"x") (le !!"one" !!"x")
-          =/= Std.pair (le __ www) (le __ www))
+           =/= Std.pair (le __ www) (le __ www))
         (* gives an answer, bvecause it simplifies to www=/= "x" *))]
   ;;
 end

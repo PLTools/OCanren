@@ -787,36 +787,36 @@ let process_main ~loc rec_ (base_tdecl, tdecl) =
 ;;
 *)
 (* let prepare_reifiers (rs : Reifier_info.t list) =
-     let names = [] (* type params of original decl *) in
-     let mk_arg_reifier s = sprintf "r%s" s in
-     let add_args tdecl rhs =
-       let loc = tdecl.ptype_loc in
-       Exp.funs ~loc rhs (List.map ~f:mk_arg_reifier names)
-     in
-     match rs with
-     | [] -> []
-     | [ h ] ->
-         let loc = h.Reifier_info.decl.ptype_loc in
-         let pat = ppat_var ~loc (Located.mk ~loc h.Reifier_info.name) in
-         [ value_binding ~loc ~pat ~expr:(add_args h.Reifier_info.decl h.Reifier_info.body) ]
-     | rs ->
-         let mutual_names = List.map rs ~f:(fun { Reifier_info.decl } -> decl.ptype_name.txt) in
-         let mutual_args ~loc e =
-           pexp_fun
-             ~loc
-             nolabel
-             None
-             (ppat_tuple
+        let names = [] (* type params of original decl *) in
+        let mk_arg_reifier s = sprintf "r%s" s in
+        let add_args tdecl rhs =
+          let loc = tdecl.ptype_loc in
+          Exp.funs ~loc rhs (List.map ~f:mk_arg_reifier names)
+        in
+        match rs with
+        | [] -> []
+        | [ h ] ->
+            let loc = h.Reifier_info.decl.ptype_loc in
+            let pat = ppat_var ~loc (Located.mk ~loc h.Reifier_info.name) in
+            [ value_binding ~loc ~pat ~expr:(add_args h.Reifier_info.decl h.Reifier_info.body) ]
+        | rs ->
+            let mutual_names = List.map rs ~f:(fun { Reifier_info.decl } -> decl.ptype_name.txt) in
+            let mutual_args ~loc e =
+              pexp_fun
                 ~loc
-                (List.map mutual_names ~f:(fun name -> ppat_var ~loc (Located.mk ~loc name))))
-             e
-         in
-         List.concat
-           [ List.map rs ~f:(fun { Reifier_info.name; decl; body } ->
-                 let loc = decl.ptype_loc in
-                 let pat = ppat_var ~loc (Located.mk ~loc name) in
-                 value_binding ~loc ~pat ~expr:(mutual_args ~loc @@ add_args decl body))
-           ; List.concat_map rs ~f:(fun _ -> [])
-           ]
-   ;;
+                nolabel
+                None
+                (ppat_tuple
+                   ~loc
+                   (List.map mutual_names ~f:(fun name -> ppat_var ~loc (Located.mk ~loc name))))
+                e
+            in
+            List.concat
+              [ List.map rs ~f:(fun { Reifier_info.name; decl; body } ->
+                    let loc = decl.ptype_loc in
+                    let pat = ppat_var ~loc (Located.mk ~loc name) in
+                    value_binding ~loc ~pat ~expr:(mutual_args ~loc @@ add_args decl body))
+              ; List.concat_map rs ~f:(fun _ -> [])
+              ]
+      ;;
 *)
