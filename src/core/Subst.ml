@@ -141,8 +141,7 @@ let rec occurs env subst var term =
 let extend ~scope env subst var term  =
   (* if occurs env subst var term then raise Occurs_check *)
   if Runconf.do_occurs_check () then occurs env subst var term;
-    (* assert (VarEnv.var env var <> VarEnv.var env term); *)
-  occurs env subst var term;
+  (* assert (VarEnv.var env var <> VarEnv.var env term); *)
 
   (* It is safe to modify variables destructively if the case of scopes match.
    * There are two cases:
