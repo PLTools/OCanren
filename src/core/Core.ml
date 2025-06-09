@@ -154,7 +154,6 @@ module Prunes : sig
   type t
 
   val empty   : t
-  (* Returns false when constraints are violated *)
   val recheck : t -> Env.t -> Subst.t -> rez
   val check_last : t -> Env.t -> Subst.t -> rez
   val extend  : t -> Term.VarTbl.key -> ('a, 'b) reifier -> 'b cond -> t
