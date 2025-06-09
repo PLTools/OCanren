@@ -178,8 +178,8 @@ module Disjunct :
           raise Disequality_fulfilled
       | Refined delta  -> (
           (* When leading terms are reified into something new, we still need to
-             do whole unification, beacuse other pairs may need walking ---
-             (we postponed walking, so som einformation may be lost.)
+             do whole unification, because other pairs may need walking ---
+             (we postponed walking, so some information may be lost.)
              See issue #173
           *)
           (* log "Refined into: %a" (Format.pp_print_list Subst.Binding.pp) delta; *)

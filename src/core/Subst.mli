@@ -89,6 +89,7 @@ module Answer :
     val subsumed : Env.t -> t -> t -> bool
   end
 
+(* see [apply] *)
 val reify : Env.t -> t -> 'a -> Answer.t
 
 IFDEF STATS THEN

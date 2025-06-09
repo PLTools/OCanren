@@ -87,10 +87,6 @@ module Reifier = struct
         let i, cs = Term.Var.reify (reify env) v in
         Var (i, cs)
 
-  (* can be implemented more efficiently,
-    * without allocation of `'a logic`,
-    * but for demonstration purposes this implementation is okay
-    *)
   let prj_exn : ('a ilogic, 'a) t =
     fun env t ->
       match Term.var t with

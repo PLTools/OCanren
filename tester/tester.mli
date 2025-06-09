@@ -1,7 +1,7 @@
 (** {1 Main}   *)
 
-(** In this module you can find convenience functions to speedup your introduction to OCanre.
-    In realy projects, more likely you will need more low-level interface like {!OCanren.run}. *)
+(** In this module you can find convenience functions to speedup your introduction to OCanren.
+    In real projects, more likely you will need more low-level interface like {!OCanren.run}. *)
 
 (**
   The call [run_r reifier to_string count num num_handler ("description", goal)] should be used
