@@ -24,7 +24,7 @@ homepage: "https://github.com/PLTools/OCanren"
 bug-reports: "https://github.com/PLTools/OCanren/issues"
 depends: [
   "dune" {>= "2.9"}
-  "ocaml" {>= "4.10"}
+  "ocaml" {>= "4.14.2"}
   "dune-configurator"
   "ocamlfind"
   "camlp5"

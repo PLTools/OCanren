@@ -19,7 +19,7 @@
   "The family of miniKanren derivatives has many implementations. This\none is typed embedding to OCaml. The original implementation for\nthis is in scheme and can be found at https://github.com/michaelballantyne/faster-miniKanren .\n\nFeatures:\n1) disequality constraints\n2) relational standard library: lists, nats\n")
  (depends
   (ocaml
-   (>= 4.10))
+   (>= 4.14.2))
   dune-configurator
   ocamlfind
   camlp5
@@ -53,7 +53,7 @@
   "PPX rewriters for writing relational programs more conveniently.\n\n1) `ppx_fresh` -- a clone of original miniKanren syntax\n\n  fresh (x...) goal\n\nexpands into\n\n  Fresh.numeral (fun x ... -> goal)\n\n2) `ppx_distrib` for easier generation of type-safe wrappers: distrib functor, etc...\n\n  [%%distrib\n    type t = fully_abstract_typee\n    type ground = ...\n  ]\n\n3) `ppx_repr` for test. Expands `REPR(expr)` to `(string_of_expr expr, expr)`\n")
  (depends
   (ocaml
-   (>= 4.10))
+   (>= 4.14.2))
   dune-configurator
   (ppxlib
    (and
