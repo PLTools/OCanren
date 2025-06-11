@@ -26,7 +26,8 @@ module List = Stdlib.List
 
 @type 'a logic =
 | Var   of GT.int * 'a logic GT.list
-| Value of 'a with show, gmap, html, eq, compare, foldl, foldr, fmt
+| Value of 'a
+with show, gmap, html, eq, compare, foldl, foldr, fmt
 
 let logic = {logic with
   plugins =
@@ -67,8 +68,8 @@ exception Not_a_value
 let to_logic x = Value x
 
 let from_logic = function
-| Value x    -> x
-| Var (n, _) -> raise Not_a_value
+| Var _ -> raise Not_a_value
+| Value x -> x
 
 type 'a ilogic
 
@@ -95,8 +96,8 @@ module Reifier = struct
 
   let prj onvar env t =
     match reify env t with
-    | Value x -> x
     | Var (v, _) -> onvar v
+    | Value x -> x
 
   let apply r (env, a) = r env a
 
@@ -108,14 +109,10 @@ module Reifier = struct
 
   let rec fix f = fun env eta -> f (fix f) env eta
 
-  let rework :
-      'a 'b.
-      fv:('a Env.m -> 'b Env.m)
-      -> ('a logic Env.m -> 'b logic Env.m)
-      -> 'a logic Env.m
-      -> 'b logic Env.m
-    =
-    fun ~fv fdeq x ->
+  let rework : 'a 'b. fv:('a Env.m -> 'b Env.m)
+            -> ('a logic Env.m -> 'b logic Env.m)
+            -> 'a logic Env.m -> 'b logic Env.m
+  = fun ~fv fdeq x ->
       let open Env.Monad in
       let open Env.Monad.Syntax in
       let* x = x in
@@ -126,7 +123,6 @@ module Reifier = struct
       | Value t ->
         let+ inner = fv (return t) in
         Value inner
-    ;;
 
   let rec zed f x = f (zed f) x
 end
