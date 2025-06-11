@@ -19,7 +19,7 @@
 type t
 
 (* [empty] empty disequality constraint store *)
-val empty  : t
+val empty : t
 
 (* [add env subst diseq x y] adds constraint [x =/= y] into disequality constraint store *)
 val add : Env.t -> Subst.t -> t -> 'a -> 'a -> t option
@@ -41,6 +41,7 @@ val merge_disjoint : Env.t -> Subst.t -> t -> t -> t
 
 module Answer :
   sig
+
     (* [Answer.t] result of reification of disequality constraints *)
     type t
 
@@ -52,4 +53,4 @@ module Answer :
 
 val reify : Env.t -> Subst.t -> t -> 'a -> Answer.t list
 
-val pp: Format.formatter -> t -> unit
+val pp : Format.formatter -> t -> unit
