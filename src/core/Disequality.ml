@@ -122,8 +122,7 @@ module Disjunct :
     val simplify : Env.t -> Subst.t -> t -> t option
 
     val reify : Env.t -> Subst.t -> t -> Subst.Binding.t list
-  end =
-  struct
+  end = struct
 
     type t = Term.t Term.VarMap.t
 
