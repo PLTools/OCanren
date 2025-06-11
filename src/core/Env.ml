@@ -41,10 +41,8 @@ let check_exn env v =
 
 let var env x =
   match Term.var x with
-  | (Some v) as res -> check_exn env v; res
+  | (Some v) as res -> check_exn env v ; res
   | None            -> None
-
-let is_var env x = (var env x) <> None
 
 let freevars env x =
   Term.fold (Term.repr x) ~init:Term.VarSet.empty
@@ -57,7 +55,7 @@ let is_open env x =
   try
     Term.iter (Term.repr x)
       ~fvar:(fun _ -> raise Open_Term)
-      ~fval:(fun _ -> ());
+      ~fval:(fun _ -> ()) ;
     false
   with Open_Term -> true
 
