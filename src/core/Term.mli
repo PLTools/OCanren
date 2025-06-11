@@ -19,43 +19,40 @@
 
 (* [Term] encapsulates unsafe operations on untyped OCaml's values extended with the logic variables *)
 
+(* [t] type of untyped OCaml term *)
+type t = Obj.t
+
 (* [Var] logic variables and operations on them *)
 module Var :
   sig
+    type term = t
     type env = int
-
     type scope
-
     type anchor
 
     type t =
       { anchor        : anchor;
         env           : env;
         index         : int;
-        mutable subst : Obj.t option;
+        mutable subst : term option;
         scope         : scope;
-        constraints   : Obj.t list
+        constraints   : term list
       }
 
     val tabling_env : env
 
     val non_local_scope : scope
-
     val new_scope : unit -> scope
-
-    val valid_anchor : anchor -> bool
-
-    val dummy : t
 
     val make : env:env -> scope:scope -> int -> t
 
     val reify : ('a -> 'b) -> t -> int * 'b list
 
     val equal : t -> t -> bool
-
     val compare : t -> t -> int
-
     val hash : t -> int
+
+    val describe : Format.formatter -> t -> unit
   end
 
 module VarSet : Set.S with type elt = Var.t
@@ -64,20 +61,18 @@ module VarTbl : Hashtbl.S with type key = Var.t
 
 module VarMap :
   sig
+
     include Map.S with type key = Var.t
 
-    val update : key -> ('a option -> 'a option) -> 'a t -> 'a t
-
     val iteri: (int -> key -> 'a -> unit) -> 'a t -> unit
-
   end
-
-(* [t] type of untyped OCaml term *)
-type t = Obj.t
 
 type value
 
 val repr : 'a -> t
+
+val show : t -> string
+val pp : Format.formatter -> t -> unit
 
 (* [var x] if [x] is logic variable returns it, otherwise returns [None] *)
 val var : 'a -> Var.t option
@@ -116,7 +111,3 @@ val fold2 :
 val equal   : t -> t -> bool
 val compare : t -> t -> int
 val hash    : t -> int
-
-val show : t -> string
-val describe_var : Format.formatter -> Var.t -> unit
-val pp : Format.formatter -> 'a -> unit
