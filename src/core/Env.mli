@@ -26,9 +26,9 @@ type t
 
 (** Creates a new environment. Environment has an internal state: a counter of
     the variable index introduced last. That's why {!empty} has extra unit argument. *)
-val empty         : unit -> t
+val empty : unit -> t
 
-val create        : anchor:Term.Var.env -> t
+val create : anchor:Term.Var.env -> t
 
 (** Creating a fresh variable takes an extra argument [scope] to decide if
     storing a substituted value inside a variable is OKay.
@@ -36,21 +36,20 @@ val create        : anchor:Term.Var.env -> t
     The idea was recommended by
     {{: https://github.com/michaelballantyne/faster-minikanren#set-var-val }faster-miniKanren}
     implementation. *)
-val fresh         : scope:Term.Var.scope -> t -> 'a
+val fresh : scope:Term.Var.scope -> t -> 'a
 
-val check         : t -> Term.Var.t -> bool
+val check : t -> Term.Var.t -> bool
 
-val check_exn     : t -> Term.Var.t -> unit
+val check_exn : t -> Term.Var.t -> unit
 
-val is_var        : t -> 'a -> bool
+(* See [Term.var] *)
+val var : t -> 'a -> Term.Var.t option
 
-val var           : t -> 'a -> Term.Var.t option
+val freevars : t -> 'a -> Term.VarSet.t
 
-val freevars      : t -> 'a -> Term.VarSet.t
+val is_open : t -> 'a -> bool
 
-val is_open       : t -> 'a -> bool
-
-val equal         : t -> t -> bool
+val equal : t -> t -> bool
 
 (** Essentially, a reader monad over Env.t. Useful for reification. *)
 module Monad : sig
