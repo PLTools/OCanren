@@ -314,7 +314,7 @@ module State =
     let reify x { env ; subst ; ctrs } =
       let answ = Subst.reify env subst x in
       match Disequality.reify env subst ctrs x with
-      | [] -> [Answer.make env answ]
+      | [] -> (* [Answer.make env answ] *) assert false
       | diseqs -> ListLabels.map diseqs ~f:begin fun diseq ->
         let rec helper forbidden t = Term.map t ~fval:Term.repr
           ~fvar:begin fun v -> Term.repr @@
