@@ -318,14 +318,14 @@ module State =
       | diseqs -> ListLabels.map diseqs ~f:begin fun diseq ->
         let rec helper forbidden t = Term.map t ~fval:Term.repr
           ~fvar:begin fun v -> Term.repr @@
-            if List.mem v.Term.Var.index forbidden then v
+            if Term.VarSet.mem v forbidden then v
             else { v with Term.Var.constraints = Disequality.Answer.extract diseq v
                 |> List.filter begin fun dt ->
                   match Env.var env dt with
-                  | Some u -> not @@ List.mem u.Term.Var.index forbidden
+                  | Some u -> not @@ Term.VarSet.mem u forbidden
                   | None   -> true
                 end
-                |> List.map (fun x -> helper (v.Term.Var.index::forbidden) x)
+                |> List.map (fun x -> helper (Term.VarSet.add v forbidden) x)
                 (* TODO: represent [Var.constraints] as [Set];
                  * TODO: hide all manipulations on [Var.t] inside [Var] module;
                  *)
@@ -333,7 +333,7 @@ module State =
               }
           end
         in
-        Answer.make env (helper [] answ)
+        Answer.make env @@ helper Term.VarSet.empty answ
       end
   end
 
