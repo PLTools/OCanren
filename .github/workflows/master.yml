@@ -43,6 +43,9 @@ jobs:
           opam exec -- dune b @install -p GT
           opam exec -- dune install -p GT
 
+      - name: List installed packages
+        run: opam list
+
       - name: Install dependencies for documentation
         run: opam install odoc pa_ppx --yes
 

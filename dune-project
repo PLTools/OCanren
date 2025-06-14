@@ -58,7 +58,7 @@
   (ppxlib
    (and
     (>= 0.26.0)
-    (<= 0.28.0)))
+    (< 0.34.0)))
   ppx_inline_test_nobase
   ppx_expect_nobase)
  (authors
