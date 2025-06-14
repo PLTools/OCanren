@@ -39,6 +39,7 @@ jobs:
       - name: Install dev version of GT
         run: |
           opam source GT --dev-repo
+          opam install GT/GT.opam --deps-only --with-test --yes
           opam exec -- dune b @install -p GT
           opam exec -- dune install -p GT
 
