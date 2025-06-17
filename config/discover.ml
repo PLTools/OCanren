@@ -128,10 +128,16 @@ let discover_logger_flags cfg =
 let discover_stats () =
   let filename = "instrumentalization.cfg" in
   Sys.command (Printf.sprintf "rm -fr '%s'" filename) |> ignore;
-  try
-    let _ = Unix.getenv "OCANREN_STATS" in
-    Cfg.Flags.write_lines filename [ "-D"; "STATS" ]
-  with Not_found -> Cfg.Flags.write_lines filename []
+  List.concat
+    [
+      (match Unix.getenv "OCANREN_STATS" with
+      | exception Not_found -> []
+      | _ -> [ "-D"; "STATS" ]);
+      (match Unix.getenv "OCANREN_NON_ABSTRACT_GOAL" with
+      | exception Not_found -> []
+      | _ -> [ "-D"; "NON_ABSTRACT_GOAL" ]);
+    ]
+  |> Cfg.Flags.write_lines filename
 
 let discover_docs () =
   let filename = "package-doc.cfg" in

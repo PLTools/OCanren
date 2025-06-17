@@ -25,8 +25,13 @@ module State :
     type t
   end
 
+IFDEF NON_ABSTRACT_GOAL THEN
+(** Goal is a function that converts a state into a lazy stream of states. *)
+type 'a goal' = State.t -> 'a
+ELSE
 (** Goal is a function that converts a state into a lazy stream of states. *)
 type 'a goal'
+END
 
 (** @canonical OCanren.goal *)
 type goal = State.t Stream.t goal'
