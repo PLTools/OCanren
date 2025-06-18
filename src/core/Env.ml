@@ -29,6 +29,8 @@ let empty () =
 
 let create ~anchor = {anchor; next = first_var}
 
+let pp ppf env = Format.fprintf ppf "ENV(%d)" env.anchor
+
 let fresh ~scope e =
   let v = Obj.magic (Term.Var.make ~env:e.anchor ~scope e.next) in
   e.next <- 1 + e.next;
@@ -37,7 +39,8 @@ let fresh ~scope e =
 let check env v = (v.Term.Var.env = env.anchor)
 
 let check_exn env v =
-  if check env v then () else failwith "OCanren fatal (Env.check): wrong environment"
+  if check env v then ()
+  else failwith "OCanren fatal (Env.check): wrong environment"
 
 let var env x =
   match Term.var x with
