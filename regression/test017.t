@@ -64,24 +64,24 @@
   q=b;
   }
   fun q -> patho arco2 !!"a" q, 10 answers {
-  q=_.11;
+  q=_.10;
   q=a;
-  q=_.14;
-  q=_.15;
+  q=_.10;
+  q=_.10;
   q=a;
   q=a;
-  q=_.20;
-  q=_.21;
-  q=_.22;
-  q=_.23;
+  q=_.10;
+  q=_.10;
+  q=_.10;
+  q=_.10;
   }
   fun q -> patho_tabled !!"a" q, 10 answers {
-  q=_.11;
+  q=_.10;
   q=a;
   }
   fun q -> patho_tabled !!"a" q, 10 answers {
   q=a;
-  q=_.11;
+  q=_.10;
   }
   fun q -> patho arco3 !!"a" q, 10 answers {
   q=_.10 [=/= a; =/= b];
@@ -101,5 +101,5 @@
   }
   fun q -> patho_tabled !!"a" q, 10 answers {
   q=a;
-  q=_.11 [=/= a; =/= b];
+  q=_.10 [=/= a; =/= b];
   }

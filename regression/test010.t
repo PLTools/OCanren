@@ -86,7 +86,7 @@
   fun q -> (q === !3) &&& (!3 =/= q), all answers {
   }
   fun q r -> (q =/= !!(true)) &&& (q =/= r), all answers {
-  q=_.10 [=/= _.11; =/= true]; r=_.11;
+  q=_.10 [=/= true]; r=_.11 [=/= _.10 [=/= true]];
   }
   fun q -> q =/= Std.nil (), all answers {
   q=_.10 [=/= []];
