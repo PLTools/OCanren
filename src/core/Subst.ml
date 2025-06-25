@@ -153,7 +153,9 @@ let unify ?(subsume=false) ?(scope=Term.Var.non_local_scope) env subst x y =
       match walk env subst x, walk env subst y with
       | Var x, Var y ->
         if Term.Var.equal x y then acc
-        else extend x (Term.repr y) acc
+        else
+          let x, y = if not subsume && Term.Var.compare x y < 0 then y, x else x, y in
+          extend x (Term.repr y) acc
       | Var x, Value y -> extend x y acc
       | Value x, Var y -> extend y x acc
       | Value x, Value y  -> helper x y acc

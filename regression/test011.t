@@ -162,7 +162,7 @@
   fun q ->
     OCanren.Fresh.two
       (fun x y -> delay (fun () -> conj (!![x; y] === q) (x =/= y))), all answers {
-  q=[_.11 [=/= _.12]; _.12];
+  q=[_.11; _.12 [=/= _.11]];
   }
   fun q -> Fresh.two (fun a d -> ?&[!![a; d] === q; q =/= !![!5; !6]]), all answers {
   q=[_.11; _.12 [=/= 6]];
@@ -180,13 +180,13 @@
     OCanren.Fresh.two
       (fun x y ->
          delay (fun () -> conj (conj (!![x; y] === q) (x =/= y)) (y =/= x))), all answers {
-  q=[_.11 [=/= _.12]; _.12];
+  q=[_.11; _.12 [=/= _.11]];
   }
   fun q ->
     OCanren.Fresh.two
       (fun x y ->
          delay (fun () -> conj (conj (!![x; y] === q) (x =/= y)) (x =/= y))), all answers {
-  q=[_.11 [=/= _.12]; _.12];
+  q=[_.11; _.12 [=/= _.11]];
   }
   fun q -> (q =/= !5) &&& (!5 =/= q), all answers {
   q=_.10 [=/= 5];
@@ -250,7 +250,7 @@
   q=[_.12 [=/= _.11]; 2];
   }
   fun q -> distincto (!2 % (!3 %< q)), all answers {
-  q=_.35 [=/= 2; =/= 3];
+  q=_.10 [=/= 2; =/= 3];
   }
   fun q -> remembero !1 (!1 % (!2 % (!1 %< !3))) q, all answers {
   q=[2; 3];

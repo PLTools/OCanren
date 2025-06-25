@@ -80,8 +80,7 @@ module Var =
 
     let reify r { index ; constraints } = index, List.map (fun x -> r @@ Obj.obj x) constraints
 
-    let equal x y =
-      (x.index = y.index) && (x.env = y.env)
+    let equal x y = x == y || x.index = y.index && x.env = y.env
 
     let compare x y =
       if x.index <> y.index then x.index - y.index else x.env - y.env
