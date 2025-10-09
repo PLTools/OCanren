@@ -1,0 +1,8 @@
+(library
+ (name ppx_wildcard)
+ (public_name OCanren-ppx.ppx_wildcard)
+ (kind ppx_rewriter)
+ (libraries base ppxlib)
+ (modules ppx_wildcard)
+ (preprocess
+  (pps ppxlib.metaquot)))
