@@ -800,3 +800,20 @@ let trace_diseq : goal = fun st ->
   Format.printf "%a\n%!" Disequality.pp (State.constraints st) ;
   success st
 
+IFDEF NON_ABSTRACT_GOAL THEN
+let reify_in_state st reifier x =
+  let env = State.env st in
+  let subst = State.subst st in
+  reifier (State.env st) (Subst.reify env subst x |> Obj.magic)
+
+let is_ground v st cb =
+  let ans = Subst.reify (State.env st) (State.subst st) v in
+  cb (not(Term.is_var ans))
+
+let is_ground_bool
+  : bool ilogic -> State.t -> onvar:(unit->unit) -> on_ground:(bool -> unit) -> unit =
+  fun v st ~onvar ~on_ground ->
+    let ans = Subst.reify (State.env st) (State.subst st) (Obj.magic v) in
+    if (Term.is_var ans) then onvar()
+    else on_ground (Obj.magic ans : bool)
+END

@@ -123,6 +123,12 @@ let is_box t =
   t <= Obj.last_non_constant_constructor_tag &&
   t >= Obj.first_non_constant_constructor_tag
 
+let is_var x =
+  let x = Obj.repr x in
+  let tx = Obj.tag x in
+  is_box tx && Var.has_var_structure tx (Obj.size x) x
+;;
+
 let is_int = (=) Obj.int_tag
 let is_str = (=) Obj.string_tag
 let is_dbl = (=) Obj.double_tag
