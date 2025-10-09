@@ -1,0 +1,40 @@
+(env
+ (_
+  (flags
+   (:standard -rectypes))))
+
+(executables
+ (names main debug_var peano)
+ (modules main debug_var peano)
+ (preprocess
+  (pps
+   ppx_expect
+   OCanren-ppx.ppx_wildcard
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_tester
+   OCanren-ppx.ppx_distrib
+   GT.ppx_all))
+ (libraries OCanren OCanren.tester))
+
+(library
+ (name match)
+ (modules match)
+ (libraries OCanren OCanren.tester)
+ (preprocess
+  (pps
+   ppx_expect
+   OCanren-ppx.ppx_wildcard
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_tester
+   GT.ppx_all))
+ (inline_tests))
+
+(cram
+ (deps
+  ./main.exe
+  ./debug_var.exe
+  ./peano.exe
+  ;
+  ))
