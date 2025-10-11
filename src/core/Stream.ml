@@ -197,3 +197,14 @@ let rec retrieve ?(n=(-1)) s =
   | Some (x, s)  -> let xs, s = retrieve ~n:(n-1) s in x::xs, s
 
 let take ?n s = fst @@ retrieve ?n s
+
+let iteri_k n stream fin f =
+  let rec helper i n stream ~f =
+    if i > n then fin (i - 1)
+    else
+      f i
+        (fun () -> msplit stream)
+        (fun tl -> helper (1 + i) n ~f tl)
+  in
+  helper 0 n ~f stream
+
