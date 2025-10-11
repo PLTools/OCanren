@@ -92,6 +92,17 @@ val tl : 'a t -> 'a t
 
 val msplit: 'a t -> ('a * 'a t) option
 
+(** [iteri_k n stream fin k] iterates over [stream] trying to get first [n] answers.
+
+  Answers are extracted one by one using !{msplit} and are possed to continuation function.
+  If all answers are received, then [fin (n-1)] is executed.
+  The continuation function receives delay stream extract and a continuation to continue
+  processin the tail of the stream.
+*)
+val iteri_k: int -> 'a t -> (int -> 'b) ->
+  (int -> (unit -> ('a * 'a t) option) -> ('a t -> 'b) -> 'b) ->
+  'b
+
 IFDEF STATS THEN
 (* Gets a counter *)
 val unwrap_suspended_counter : unit -> int
