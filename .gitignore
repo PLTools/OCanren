@@ -11,4 +11,5 @@ _build
 /.vscode
 .merlin
 /oc-qtc*
+_coverage
 
