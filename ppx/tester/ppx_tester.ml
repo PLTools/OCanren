@@ -1,6 +1,6 @@
 (*
  * OCanren. PPX syntax extensions.
- * Copyright (C) 2016-2024
+ * Copyright (C) 2016-2025
  *   Dmitrii Kosarev aka Kakadu
  * St.Petersburg State University, JetBrains Research
  *)
@@ -11,13 +11,13 @@
 
   Expands
 
-    {[ let __ _ = [%tester runR OCanren.reify show_int show_intl (fun q -> q === !!1)] ]}
+    {[ let __ _ = [%tester run_r OCanren.reify show_intl 1 (fun q -> q === !!1)] ]}
 
   to
 
   {[
     let __ _ =
-      runR OCanren.reify show_int show_intl q qh
+      run_r OCanren.reify show_intl 1 q qh
         ("<string repr of goal>", (fun q -> q === (!! 1)))
   ]}
 
