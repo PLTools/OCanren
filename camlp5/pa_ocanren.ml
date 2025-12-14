@@ -244,7 +244,7 @@ let decorate_type_decl t =
             let gt = <:expr< gt ~{options = {gmap=gmap; show=show}} >> in
             <:attribute_body< deriving $exp:gt$; >>
           in
-          let attrs = <:vala< a >> :: attrs in
+          let attrs =   attrs in
           <:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ $itemattrs:attrs$ >>
       | _ -> raise (Stream.Error "INTERNAL ERROR: unsupported case, probably antiquotation")
       )

@@ -4,10 +4,10 @@
    (:standard -rectypes))))
 
 (executables
- (names test001 test002repr)
- (modules test001 test002repr)
+ (names test001 test002repr test017)
+ (modules test001 test002repr test017)
  (package OCanren)
- (public_names - -)
+ (public_names - - -)
  (flags
   (:standard
    ;-dsource
@@ -347,3 +347,13 @@
   %{project_root}/ppx/pp_ocanren_all.exe
   test016diseq.ml
   test016diseq.exe))
+
+(cram
+ (package OCanren)
+ (applies_to test017)
+ (deps
+  (package OCanren-ppx)
+  %{project_root}/ppx/pp_ocanren_all.exe
+  %{project_root}/ppx/pp_distrib.exe
+  test017.ml
+  test017.exe))

@@ -87,3 +87,14 @@ module _ = struct
   type nonrec ('a, 'b, 'c) t = 'a * 'b * 'c [@@deriving gt ~options:{ gmap; show }]
   type nonrec ('a, 'b, 'c) ground = ('a, 'b, 'c) t]
 end
+
+open GT
+open OCanren
+open OCanren.Std
+
+[%%ocanren_inject
+type lam =
+  | Var of string
+  | Abs of string * lam
+  | App of lam * lam
+[@@deriving gt ~options:{ gmap; show }]]

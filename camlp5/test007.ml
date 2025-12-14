@@ -46,4 +46,14 @@ module _ = struct
   ocanren type state = (GT.bool * GT.bool * GT.bool * GT.bool) * (GT.bool * GT.bool * GT.bool * GT.bool)
 end
 
+module _ = struct
+  ocanren type lam =
+    Var of GT.string
+  | Abs of GT.string * lam
+  | App of lam * lam
+
+  ocanren type value = Closure of env * lam
+  and          env   = (GT.string * value) GT.list
+end
+
 let () = print_endline "test007"
