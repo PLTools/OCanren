@@ -356,19 +356,19 @@ let () =
             group_items ~loc stru
         | Other (is_rec, (_ :: _ :: _ as tdecls)) ->
             (* Mutual recursion *)
-            let full_and_ground_list = Prepare_fully_abstract.run loc tdecls in
+            let fully_abstract_types, abbreviaions = Prepare_fully_abstract.run loc tdecls in
             let rez =
               List.fold_left
                 ~f:(fun acc (full, g) ->
                   let rez = Ppx_distrib_expander.process_main ~loc is_rec (full, g) in
                   Ppx_distrib_expander.cons_results rez acc)
                 ~init:(Ppx_distrib_expander.empty_rez [] [] [])
-                full_and_ground_list
+                fully_abstract_types
             in
             let open Ppxlib.Ast_builder.Default in
             let items =
               let gt_attributes = (List.hd (List.rev tdecls)).ptype_attributes in
-              let fully_abstract_types = List.map full_and_ground_list ~f:fst in
+              (* let fully_abstract_types = List.map full_and_ground_list ~f:fst in *)
               List.concat
                 [ List.map
                     ~f:(fun x ->
