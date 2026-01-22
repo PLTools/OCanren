@@ -27,8 +27,8 @@
   (file %{project_root}/ppx/pp_distrib_gt_reify.exe))
  (libraries GT OCanren))
 
-(executable
- (name len)
+(executables
+ (names len)
  (modules len)
  (preprocess
   (action
@@ -73,10 +73,34 @@
  (deps tree.exe sorting.exe WGC.exe JeepProblem.exe len.exe))
 
 (cram
- (deps
-  tree.exe
-  sorting.exe
-  WGC.exe
-  JeepProblem.exe
-  ;
-  ))
+ (applies_to tree)
+ (deps tree.exe))
+
+(cram
+ (applies_to sorting)
+ (deps sorting.exe))
+
+(cram
+ (applies_to WGC)
+ (deps WGC.exe))
+
+(cram
+ (applies_to Jeep)
+ (deps JeepProblem.exe))
+
+(library
+ (name hypercube)
+ (modules hypercube)
+ (libraries GT OCanren OCanren.tester)
+ (inline_tests)
+ ;  (instrumentation
+ ;   (backend bisect_ppx))
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_distrib
+   OCanren-ppx.ppx_deriving_reify
+   GT.ppx_all
+   ppx_expect))
+ (preprocessor_deps
+  (file %{project_root}/ppx/pp_ocanren_all.exe)))
