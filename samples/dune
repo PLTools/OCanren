@@ -43,7 +43,23 @@
   (file %{project_root}/camlp5/pp5+ocanren+dump.exe)
   (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe)
   (file %{project_root}/camlp5/pp5+ocanren+o.exe))
- (libraries GT OCanren benchmark))
+ (libraries GT OCanren))
+
+(executable
+ (name bench_reverso)
+ (modules bench_reverso)
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_tester
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_deriving_reify
+   GT.ppx_all))
+ (preprocessor_deps
+  (file %{project_root}/ppx/pp_distrib_gt_reify.exe)
+  (file %{project_root}/camlp5/pp5+ocanren+dump.exe)
+  (file %{project_root}/camlp5/pp5+gt+plugins+ocanren+logger+dump.exe)
+  (file %{project_root}/camlp5/pp5+ocanren+o.exe))
+ (libraries GT OCanren OCanren.tester benchmark))
 
 (executable
  (name JeepProblem)
@@ -70,7 +86,13 @@
 
 (alias
  (name all)
- (deps tree.exe sorting.exe WGC.exe JeepProblem.exe len.exe))
+ (deps
+  tree.exe
+  sorting.exe
+  WGC.exe
+  JeepProblem.exe
+  len.exe
+  bench_reverso.exe))
 
 (cram
  (deps
