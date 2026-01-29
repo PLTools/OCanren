@@ -43,10 +43,11 @@ let decapitalize =
 let rec ctor e =
   let loc = MLast.loc_of_expr e in
   match e with
-  | <:expr< $uid:u$ >>            -> Some e
-  | <:expr< $longid:m$ . ($e$) >> -> (match ctor e with Some e -> Some (<:expr< $longid:m$ . ($e$) >>) | _ -> None)
-  | <:expr< $m$ . ($e$) >>        -> (match ctor e with Some e -> Some (<:expr< $m$ . ($e$) >>) | _ -> None)
-  | _                             -> None
+  | <:expr< $uid:u$ >>                     -> Some e
+  | <:expr< $longid:m$ . ($e$) >>          -> (match ctor e with Some e -> Some (<:expr< $longid:m$ . ($e$) >>) | _ -> None)
+  | <:expr< $m$ . ($e$) >>                 -> (match ctor e with Some e -> Some (<:expr< $m$ . ($e$) >>) | _ -> None)
+  | <:expr< $longid:prefix$ . $uid:con$ >> -> Some e
+  | _                                      -> None
 
 let list_of_list es =
   let loc      = MLast.loc_of_expr (List.hd es) in
