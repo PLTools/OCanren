@@ -28,6 +28,8 @@ type t
     the variable index introduced last. That's why {!empty} has extra unit argument. *)
 val empty : unit -> t
 
+val pp : Format.formatter -> t -> unit
+
 val create : anchor:Term.Var.env -> t
 
 (** Creating a fresh variable takes an extra argument [scope] to decide if
