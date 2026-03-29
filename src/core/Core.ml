@@ -360,6 +360,12 @@ module Trace :
     val pp : Format.formatter -> t -> unit
 
     val extract_last : unit -> t
+
+    val marshal : out_channel -> t -> unit
+    val unmarshal : ?env:Term.Var.env -> ?scope:Term.Var.scope -> in_channel -> t
+
+    val marshal_to_file : string -> t -> unit
+    val unmarshal_from_file : ?env:Term.Var.env -> ?scope:Term.Var.scope -> string -> t
   end = struct
 
     type t = (Term.t * Term.t) list
@@ -384,6 +390,26 @@ module Trace :
     let extract_last () = match !saved_state with
     | Some st -> extract st.State.trace
     | None -> raise Not_found
+
+    let rec marshal chan = function
+    | [] -> ()
+    | (t1, t2)::xs ->
+      Term.marshal chan t1 ;
+      Term.marshal chan t2 ;
+      marshal chan xs
+
+    let[@tail_mod_cons] rec unmarshal ?(env=0) ?(scope=Term.Var.non_local_scope) chan =
+      match Term.unmarshal ~env ~scope chan with
+      | exception End_of_file -> []
+      | t1 ->
+        let t2 = Term.unmarshal ~env ~scope chan in
+        (t1, t2) :: unmarshal ~env ~scope chan
+
+    let marshal_to_file filename value =
+      Out_channel.with_open_bin filename @@ fun oc -> marshal oc value
+
+    let unmarshal_from_file ?env ?scope filename =
+      In_channel.with_open_bin filename @@ unmarshal ?env ?scope
   end
 
 END

@@ -308,8 +308,15 @@ IFDEF TRACE THEN
 
 module Trace : sig
   type t
+
   val pp : Format.formatter -> t -> unit
   val extract_last : unit -> t
+
+  val marshal : out_channel -> t -> unit
+  val unmarshal : ?env:Term.Var.env -> ?scope:Term.Var.scope -> in_channel -> t
+
+  val marshal_to_file : string -> t -> unit
+  val unmarshal_from_file : ?env:Term.Var.env -> ?scope:Term.Var.scope -> string -> t
 end
 
 END

@@ -7,8 +7,8 @@
    (:standard -rectypes))))
 
 (executables
- (names tree sorting WGC add)
- (modules tree sorting WGC add)
+ (names tree sorting WGC add show_trace)
+ (modules tree sorting WGC add show_trace)
  (flags
   (:standard
    ;-dsource
