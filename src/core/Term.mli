@@ -117,3 +117,6 @@ val fold2 :
 val equal   : t -> t -> bool
 val compare : t -> t -> int
 val hash    : t -> int
+
+val marshal : out_channel -> t -> unit
+val unmarshal : env:Var.env -> scope:Var.scope -> in_channel -> t

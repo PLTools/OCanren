@@ -304,6 +304,23 @@ val disj_counter        : unit -> int
 val delay_counter       : unit -> int
 END
 
+IFDEF TRACE THEN
+
+module Trace : sig
+  type t
+
+  val pp : Format.formatter -> t -> unit
+  val extract_last : unit -> t
+
+  val marshal : out_channel -> t -> unit
+  val unmarshal : ?env:Term.Var.env -> ?scope:Term.Var.scope -> in_channel -> t
+
+  val marshal_to_file : string -> t -> unit
+  val unmarshal_from_file : ?env:Term.Var.env -> ?scope:Term.Var.scope -> string -> t
+end
+
+END
+
 (** The call [debug_var var reifier callback] performs reification of variable [var] in a current state using [reifier] and passes list of answer to [callback] (multiple answers can arise in presence of disequality constraints). The [callback] can investigate reified value and construct required goal to continue search.
 
 See also: {!structural}.

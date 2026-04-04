@@ -133,6 +133,9 @@ let discover_stats () =
       (match Unix.getenv "OCANREN_STATS" with
       | exception Not_found -> []
       | _ -> [ "-D"; "STATS" ]);
+      (match Unix.getenv "OCANREN_TRACE" with
+      | exception Not_found -> []
+      | _ -> [ "-D"; "TRACE" ]);
       (match Unix.getenv "OCANREN_NON_ABSTRACT_GOAL" with
       | exception Not_found -> []
       | _ -> [ "-D"; "NON_ABSTRACT_GOAL" ]);
