@@ -25,7 +25,8 @@
  (deps
   %{project_root}/config/package-doc.cfg
   (package GT)
-  (:cmas pa_ocanren.cmxa))
+  (:cmas pa_ocanren.cmxa)
+  pa_ocanren.a)
  (action
   (run
    mkcamlp5.opt
@@ -85,7 +86,8 @@
  (targets pp5+ocanren+o.exe)
  (deps
   %{project_root}/config/package-doc.cfg
-  (:cmas pa_ocanren.cmxa))
+  (:cmas pa_ocanren.cmxa)
+  pa_ocanren.a)
  (action
   (run
    mkcamlp5.opt
@@ -102,7 +104,8 @@
  (deps
   %{project_root}/config/package-doc.cfg
   (package GT)
-  (:cmas pa_ocanren.cmxa))
+  (:cmas pa_ocanren.cmxa)
+  pa_ocanren.a)
  (action
   (run
    mkcamlp5.opt
@@ -119,7 +122,8 @@
  (deps
   %{project_root}/config/package-doc.cfg
   (package GT)
-  (:cmas pa_ocanren.cma))
+  (:cmas pa_ocanren.cma)
+  pa_ocanren.a)
  (action
   (run
    mkcamlp5
@@ -135,7 +139,8 @@
  (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
-  (:cmas pa_ocanren.cmxa))
+  (:cmas pa_ocanren.cmxa)
+  pa_ocanren.a)
  (action
   (run
    mkcamlp5.opt
@@ -153,7 +158,8 @@
  (package OCanren)
  (deps
   %{project_root}/config/package-doc.cfg
-  (:cmas pa_ocanren.cmxa))
+  (:cmas pa_ocanren.cmxa)
+  pa_ocanren.a)
  (action
   (run
    mkcamlp5.opt

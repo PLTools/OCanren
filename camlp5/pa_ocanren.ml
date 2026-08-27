@@ -187,7 +187,7 @@ let rec decorate_type ctyp =
   | <:ctyp< option $y$ >>    -> <:ctyp< OCanren.Std.Option.logic $decorate_type y$ >>
   | <:ctyp< $x$ $y$ >>       -> let t = <:ctyp< $x$ $decorate_type y$ >> in <:ctyp< OCanren.logic $t$ >>
   | <:ctyp< $longid:p$ . $lid:t$ >>  -> <:ctyp< OCanren.logic $ctyp$ >>
-  | <:ctyp< ( $list:ts$ ) >> -> fold_right1 (fun t1 t2 -> <:ctyp< OCanren.Std.Pair.logic $t1$ $t2$ >> ) @@ List.map decorate_type ts
+  | <:ctyp< ( $list:ts$ ) >> -> fold_right1 (fun t1 t2 -> <:ctyp< OCanren.Std.Pair.logic $t1$ $t2$ >> ) @@ List.map decorate_type (List.map snd ts)
   | _                        -> ctyp
 
 let add_freshes ~loc vars body =
