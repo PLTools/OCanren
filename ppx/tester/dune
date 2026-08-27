@@ -2,9 +2,34 @@
  (name ppx_tester)
  (public_name OCanren-ppx.ppx_tester)
  (kind ppx_rewriter)
- (libraries ppxlib)
- (modules ppx_tester)
+ (libraries
+  ppxlib
+  ;
+  (select
+   Migration.ml
+   from
+   (fake_lt38 -> Migration.lt38.ml)
+   (fake_ge38 -> Migration.ge38.ml))
+  ;
+  )
+ (modules ppx_tester Migration)
  (flags
   (:standard -linkall))
  (preprocess
   (pps ppxlib.metaquot)))
+
+(library
+ (name fake_lt38)
+ (package OCanren-ppx)
+ (modules)
+ (enabled_if
+  (and %{read:../../config/lt38.txt}))
+ (libraries))
+
+(library
+ (name fake_ge38)
+ (package OCanren-ppx)
+ (modules)
+ (enabled_if
+  (and %{read:../../config/ge38.txt}))
+ (libraries))

@@ -34,7 +34,8 @@
   tests.dune.tpl
   (source_tree ../regression))
  (mode
-  (promote-into ../regression))
+  (promote
+   (into ../regression)))
  (action
   (run
    ./discover.exe
@@ -42,3 +43,14 @@
    -tests-dune
    -tests-dir
    %{project_root}/regression)))
+
+(executable
+ (name version_check)
+ (modules version_check)
+ (libraries dune-build-info ppxlib))
+
+(rule
+ (targets lt38.txt ge38.txt)
+ (deps ./version_check.exe)
+ (action
+  (run ./version_check.exe)))

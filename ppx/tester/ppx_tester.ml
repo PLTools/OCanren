@@ -53,14 +53,7 @@ let () =
         pattern
         (fun ~loc ~path:_ runner reifier_shower n relation ->
           let open Ppxlib.Ast_builder.Default in
-          let count =
-            let rec helper acc e =
-              match e.pexp_desc with
-              | Pexp_fun (_, _, _, body) -> helper (1 + acc) body
-              | _ -> acc
-            in
-            helper 0 relation
-          in
+          let count = Migration.count relation in
           let middle =
             match count with
             | 0 -> failwith "Bad syntax"

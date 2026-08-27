@@ -53,8 +53,8 @@ let is_call_fresh = need_insert_fname ~name:"call_fresh"
 
 let is_unif =
   classify_name ~f:(function
-      | Lident s -> String.length s >= 3 && String.equal (String.sub s ~pos:0 ~len:3) "==="
-      | _ -> false)
+    | Lident s -> String.length s >= 3 && String.equal (String.sub s ~pos:0 ~len:3) "==="
+    | _ -> false)
 ;;
 
 let is_conj = need_insert_fname ~name:"conj"
@@ -251,7 +251,8 @@ let mapper =
           in
           let ans = { e with pexp_desc = ans } in
           ans
-      | Pexp_fun (l, opt, pat, e) ->
+      | _ -> super#expression e
+    (* | Pexp_fun (l, opt, pat, e) ->
           { e with pexp_desc = Pexp_fun (l, opt, pat, self#expression e) }
       | Pexp_construct (_, None) -> e
       | Pexp_construct (id, Some e1) ->
@@ -331,10 +332,7 @@ let mapper =
           { e with pexp_desc = Pexp_try (scru, List.map ~f:self#case cases) }
       | Pexp_object _ | Pexp_unreachable -> e
       | Pexp_open (_od, ee) -> { e with pexp_desc = Pexp_open (_od, self#expression ee) }
-      | Pexp_letop _ | Pexp_extension _ | Pexp_pack _ -> e
-    (* | _ ->
-       Stdlib.Format.printf "%a\n%a\n%!" Location.print loc Pprintast.expression e;
-       assert false*)
+      | Pexp_letop _ | Pexp_extension _ | Pexp_pack _ -> e *)
   end
 ;;
 
