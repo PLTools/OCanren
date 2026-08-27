@@ -26,6 +26,8 @@ module State :
 
     IFDEF NON_ABSTRACT_GOAL THEN
     val last_introduced_var : t -> int
+    val new_scope : t -> t
+    val fresh : t -> _ ilogic
     END
   end
 
