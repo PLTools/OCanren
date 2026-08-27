@@ -336,6 +336,12 @@ module State =
         in
         Answer.make env @@ helper Term.VarSet.empty answ
       end
+
+
+
+    IFDEF NON_ABSTRACT_GOAL THEN
+    let last_introduced_var {env} = Env.last_introduced_var env
+    END
   end
 
 let (!!!) = Obj.magic

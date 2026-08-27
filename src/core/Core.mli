@@ -23,6 +23,10 @@ module State :
   sig
     (** @canonical OCanren.State.t *)
     type t
+
+    IFDEF NON_ABSTRACT_GOAL THEN
+    val last_introduced_var : t -> int
+    END
   end
 
 IFDEF NON_ABSTRACT_GOAL THEN

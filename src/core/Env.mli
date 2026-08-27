@@ -89,3 +89,11 @@ end
 
 (** An alias for a reader monad {!Monad.t}. *)
 type 'a m = 'a Monad.t
+
+IFDEF NON_ABSTRACT_GOAL THEN
+
+(** How many variables were introduced? (for debug purposes) *)
+val last_introduced_var : t -> int
+ELSE
+
+END

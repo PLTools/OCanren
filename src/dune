@@ -41,6 +41,7 @@
       %{read-lines:../config/instrumentalization.cfg}
       %{input-file}))
     Core
+    Env
     Stream
     Subst
     Option

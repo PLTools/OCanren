@@ -23,6 +23,8 @@ type t = {anchor : Term.Var.env; mutable next : int}
 let last_anchor = ref 11
 let first_var = 10
 
+let last_introduced_var t = t.next
+
 let empty () =
   incr last_anchor;
   {anchor = !last_anchor; next = first_var}
